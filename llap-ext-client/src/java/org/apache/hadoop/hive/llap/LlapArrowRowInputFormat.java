@@ -25,16 +25,28 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import java.io.IOException;
+import org.apache.arrow.memory.BufferAllocator;
+import org.apache.hadoop.hive.ql.io.arrow.RootAllocatorFactory;
+import java.util.UUID;
 
 /*
  * Adapts an Arrow batch reader to a row reader
+ * Only used for testing
  */
 public class LlapArrowRowInputFormat implements InputFormat<NullWritable, Row> {
 
   private LlapBaseInputFormat baseInputFormat;
 
   public LlapArrowRowInputFormat(long arrowAllocatorLimit) {
-    baseInputFormat = new LlapBaseInputFormat(true, arrowAllocatorLimit);
+    BufferAllocator allocator = RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(arrowAllocatorLimit).newChildAllocator(
+        //allocator name, use UUID for testing
+        UUID.randomUUID().toString(),
+        //No use for reservation, allocators claim memory from the same pool,
+        //but allocate/releases are tracked per-allocator
+        0,
+        //Limit passed in by client
+        arrowAllocatorLimit);
+    baseInputFormat = new LlapBaseInputFormat(true, allocator);
   }
 
   @Override

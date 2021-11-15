@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -204,12 +205,14 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
             case TIMESTAMP: {
               TimestampColumnVector vector = (TimestampColumnVector) column;
               vector.setIsUTC(true);
+              vector.setUsingProlepticCalendar(true);
               vector.set(rowId, ((TimestampObjectInspector) inspector)
                   .getPrimitiveJavaObject(obj).toSqlTimestamp());
               break;
             }
             case DATE: {
-              LongColumnVector vector = (LongColumnVector) column;
+              DateColumnVector vector = (DateColumnVector) column;
+              vector.setUsingProlepticCalendar(true);
               vector.vector[rowId] = ((DateObjectInspector) inspector)
                   .getPrimitiveWritableObject(obj).getDays();
               break;

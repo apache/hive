@@ -29,7 +29,6 @@ public class TruncFloatNoScale extends TruncFloat {
 
   public TruncFloatNoScale() {
     super();
-    colNum = -1;
   }
 
   public TruncFloatNoScale(int colNum, int outputColumnNum) {

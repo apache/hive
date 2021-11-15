@@ -1,0 +1,334 @@
+PREHOOK: query: CREATE TABLE dest1_n174(key STRING, c1 INT, c2 STRING, C3 INT, c4 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n174
+POSTHOOK: query: CREATE TABLE dest1_n174(key STRING, c1 INT, c2 STRING, C3 INT, c4 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n174
+PREHOOK: query: EXPLAIN EXTENDED
+FROM srcpart src
+INSERT OVERWRITE TABLE dest1_n174 
+SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(DISTINCT src.value) 
+WHERE src.ds = '2008-04-08'
+GROUP BY substr(src.key,1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n174
+POSTHOOK: query: EXPLAIN EXTENDED
+FROM srcpart src
+INSERT OVERWRITE TABLE dest1_n174 
+SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(DISTINCT src.value) 
+WHERE src.ds = '2008-04-08'
+GROUP BY substr(src.key,1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n174
+OPTIMIZED SQL: SELECT SUBSTR(`key`, 1, 1) AS `_o__c0`, COUNT(DISTINCT SUBSTR(`value`, 5)) AS `_o__c1`, SUBSTR(`key`, 1, 1) || SUM(SUBSTR(`value`, 5)) AS `_o__c2`, SUM(DISTINCT SUBSTR(`value`, 5)) AS `_o__c3`, COUNT(DISTINCT `value`) AS `_o__c4`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08'
+GROUP BY SUBSTR(`key`, 1, 1)
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT _col1), sum(_col1), sum(DISTINCT _col1), count(DISTINCT _col2)
+                      keys: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 1000 Data size: 294000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        null sort order: zzz
+                        numBuckets: -1
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1000 Data size: 294000 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col4 (type: double)
+                        auto parallelism: false
+            Execution mode: llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [src]
+              /srcpart/ds=2008-04-08/hr=12 [src]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0), sum(VALUE._col1), sum(DISTINCT KEY._col1:1._col0), count(DISTINCT KEY._col1:2._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 316 Data size: 36972 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), concat(_col0, _col2) (type: string), UDFToInteger(_col3) (type: int), UDFToInteger(_col4) (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 316 Data size: 88796 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 1
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 316 Data size: 88796 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          bucketing_version 2
+                          column.name.delimiter ,
+                          columns key,c1,c2,c3,c4
+                          columns.comments 
+                          columns.types string:int:string:int:int
+#### A masked pattern was here ####
+                          name default.dest1_n174
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1_n174
+                    TotalFiles: 1
+                    GatherStats: true
+                    MultiFileSpray: false
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int)
+                    outputColumnNames: key, c1, c2, c3, c4
+                    Statistics: Num rows: 316 Data size: 88796 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(c1), max(c1), count(c1), compute_bit_vector_hll(c1), max(length(c2)), avg(COALESCE(length(c2),0)), count(c2), compute_bit_vector_hll(c2), min(c3), max(c3), count(c3), compute_bit_vector_hll(c3), min(c4), max(c4), count(c4), compute_bit_vector_hll(c4)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                      Statistics: Num rows: 1 Data size: 952 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        null sort order: 
+                        numBuckets: -1
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 952 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: int), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: int), _col19 (type: bigint), _col20 (type: binary)
+                        auto parallelism: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                Statistics: Num rows: 1 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), UDFToLong(_col13) (type: bigint), UDFToLong(_col14) (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'LONG' (type: string), UDFToLong(_col17) (type: bigint), UDFToLong(_col18) (type: bigint), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                  Statistics: Num rows: 1 Data size: 1324 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 1324 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21,_col22,_col23,_col24,_col25,_col26,_col27,_col28,_col29
+                          columns.types string:bigint:double:bigint:bigint:binary:string:bigint:bigint:bigint:bigint:binary:string:bigint:double:bigint:bigint:binary:string:bigint:bigint:bigint:bigint:binary:string:bigint:bigint:bigint:bigint:binary
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,c1,c2,c3,c4
+                columns.comments 
+                columns.types string:int:string:int:int
+#### A masked pattern was here ####
+                name default.dest1_n174
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n174
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+#### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, c1, c2, c3, c4
+          Column Types: string, int, string, int, int
+          Table: default.dest1_n174
+          Is Table Level Stats: true
+
+PREHOOK: query: FROM srcpart src
+INSERT OVERWRITE TABLE dest1_n174 
+SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(DISTINCT src.value) 
+WHERE src.ds = '2008-04-08'
+GROUP BY substr(src.key,1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n174
+POSTHOOK: query: FROM srcpart src
+INSERT OVERWRITE TABLE dest1_n174 
+SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(DISTINCT src.value) 
+WHERE src.ds = '2008-04-08'
+GROUP BY substr(src.key,1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n174
+POSTHOOK: Lineage: dest1_n174.c1 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n174.c2 EXPRESSION [(srcpart)src.FieldSchema(name:key, type:string, comment:default), (srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n174.c3 EXPRESSION [(srcpart)src.null, ]
+POSTHOOK: Lineage: dest1_n174.c4 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n174.key EXPRESSION [(srcpart)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n174.* FROM dest1_n174
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n174
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1_n174.* FROM dest1_n174
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n174
+#### A masked pattern was here ####
+0	1	00.0	0	1
+1	71	132828.0	10044	71
+2	69	251142.0	15780	69
+3	62	364008.0	20119	62
+4	74	4105526.0	30965	74
+5	6	5794.0	278	6
+6	5	6796.0	331	5
+7	6	71470.0	447	6
+8	8	81524.0	595	8
+9	7	92094.0	577	7

@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.apache.commons.collections.Bag;
 import org.apache.commons.collections.bag.TreeBag;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,35 +226,10 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
    * @throws UDFArgumentException
    */
   public static ExprNodeGenericFuncDesc newInstance(GenericUDF genericUDF,
-      String funcText,
-      List<ExprNodeDesc> children) throws UDFArgumentException {
+      String funcText, List<ExprNodeDesc> children) throws UDFArgumentException {
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for (int i = 0; i < childrenOIs.length; i++) {
       childrenOIs[i] = children.get(i).getWritableObjectInspector();
-    }
-
-    // Check if a bigint is implicitely cast to a double as part of a comparison
-    // Perform the check here instead of in GenericUDFBaseCompare to guarantee it is only run once per operator
-    if (genericUDF instanceof GenericUDFBaseCompare && children.size() == 2) {
-
-      TypeInfo oiTypeInfo0 = children.get(0).getTypeInfo();
-      TypeInfo oiTypeInfo1 = children.get(1).getTypeInfo();
-
-      SessionState ss = SessionState.get();
-      Configuration conf = (ss != null) ? ss.getConf() : new Configuration();
-
-      LogHelper console = new LogHelper(LOG);
-
-      // For now, if a bigint is going to be cast to a double throw an error or warning
-      if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
-          (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
-        String error = StrictChecks.checkTypeSafety(conf);
-        if (error != null) throw new UDFArgumentException(error);
-        console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
-      } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
-          (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
-        console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
-      }
     }
 
     ObjectInspector oi = genericUDF.initializeAndFoldConstants(childrenOIs);

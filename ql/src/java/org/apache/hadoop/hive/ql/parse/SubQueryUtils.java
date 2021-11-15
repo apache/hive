@@ -18,14 +18,19 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getTableAlias;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -100,6 +105,68 @@ public class SubQueryUtils {
     node.addChild(expr);
     return node;
   }
+
+  static public void subqueryRestrictionCheck(QB qb, ASTNode subqueryExprNode, RelNode srcRel,
+      boolean forHavingClause, Set<ASTNode> corrScalarQueries, Context ctx,
+      LinkedHashMap<RelNode, RowResolver> relToHiveRR)
+      throws SemanticException {
+
+    assert(subqueryExprNode.getType() == HiveParser.TOK_SUBQUERY_EXPR);
+
+    /*
+     * Restriction : Subquery is not allowed in LHS
+     */
+    if (subqueryExprNode.getChildren().size() == 3
+        && subqueryExprNode.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+      throw new CalciteSubquerySemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
+          subqueryExprNode.getChild(2), "SubQuery on left hand side is not supported."));
+    }
+
+    // avoid subquery restrictions for SOME/ALL for now
+    if(subqueryExprNode.getChild(0).getChildCount() > 1
+        && (subqueryExprNode.getChild(0).getChild(1).getType() == HiveParser.KW_SOME
+        || subqueryExprNode.getChild(0).getChild(1).getType() == HiveParser.KW_ALL)) {
+      return;
+    }
+
+    // TOK_SUBQUERY_EXPR
+    //  0. TOK_SUBQUERY_OP
+    //     0. TYPE: IN/SOME/EXISTS
+    //     1. Comparion op: >, < etc
+    //  1. TOK_QUERY:   Subquery
+    //  2. LHS expr
+    //final ASTNode clonedSubExprAST = (ASTNode) SubQueryUtils.adaptor.dupTree(subqueryExprNode);
+    //we do not care about the transformation or rewriting of AST
+    // which following statement does
+    // we only care about the restriction checks they perform.
+    // We plan to get rid of these restrictions later
+    int sqIdx = qb.incrNumSubQueryPredicates();
+    ASTNode outerQueryExpr = (ASTNode) subqueryExprNode.getChild(2);
+
+    if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+      throw new CalciteSubquerySemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
+          outerQueryExpr, "IN/EXISTS/SOME/ALL subqueries are not allowed in LHS"));
+    }
+
+    QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subqueryExprNode,
+        subqueryExprNode, ctx);
+
+    RowResolver inputRR = relToHiveRR.get(srcRel);
+
+    String havingInputAlias = null;
+
+    boolean [] subqueryConfig = {false, false};
+    subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
+        havingInputAlias, subqueryConfig);
+
+    if(subqueryConfig[0]) {
+      corrScalarQueries.add(subqueryExprNode);
+    }
+    //}
+  }
+
 
 
   /*
@@ -195,7 +262,8 @@ public class SubQueryUtils {
       /*
        *  Restriction.7.h :: SubQuery predicates can appear only as top level conjuncts.
        */
-      throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
           subQuery, "Only SubQuery expressions that are top level conjuncts are allowed"));
     }
   }
@@ -215,14 +283,14 @@ public class SubQueryUtils {
       ASTNode next = stack.pop();
 
       switch(next.getType()) {
-        case HiveParser.TOK_SUBQUERY_EXPR:
-          subQueries.add(next);
-          break;
-        default:
-          int childCount = next.getChildCount();
-          for(int i = childCount - 1; i >= 0; i--) {
-            stack.push((ASTNode) next.getChild(i));
-          }
+      case HiveParser.TOK_SUBQUERY_EXPR:
+        subQueries.add(next);
+        break;
+      default:
+        int childCount = next.getChildCount();
+        for(int i = childCount - 1; i >= 0; i--) {
+          stack.push((ASTNode) next.getChild(i));
+        }
       }
     }
   }
@@ -236,19 +304,10 @@ public class SubQueryUtils {
     ASTNode sq = (ASTNode) sqAST.getChild(1);
     ASTNode outerQueryExpr = (ASTNode) sqAST.getChild(2);
 
-    /*
-     * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
-     */
-    if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR ) {
-
-      throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-          originalSQAST.getChild(1), "Only 1 SubQuery expression is supported."));
-    }
-
-   return new QBSubQuery(outerQueryId, sqIdx, sq, outerQueryExpr,
-       buildSQOperator(sqOp),
-       originalSQAST,
-       ctx);
+    return new QBSubQuery(outerQueryId, sqIdx, sq, outerQueryExpr,
+        buildSQOperator(sqOp),
+        originalSQAST,
+        ctx);
   }
 
   static SubQueryTypeDef buildSQOperator(ASTNode astSQOp) throws SemanticException {
@@ -280,8 +339,8 @@ public class SubQueryUtils {
             .getText());
         GenericUDAFResolver udafResolver = FunctionRegistry.getGenericUDAFResolver(functionName);
         if (udafResolver != null) {
-            // we need to know if it is COUNT since this is specialized for IN/NOT IN
-            // corr subqueries.
+          // we need to know if it is COUNT since this is specialized for IN/NOT IN
+          // corr subqueries.
           if(udafResolver instanceof GenericUDAFCount) {
             return 2;
           }
@@ -308,15 +367,7 @@ public class SubQueryUtils {
     if ((joinNode.getToken().getType() == HiveParser.TOK_TABREF)
         || (joinNode.getToken().getType() == HiveParser.TOK_SUBQUERY)
         || (joinNode.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
-      String tableName = SemanticAnalyzer.getUnescapedUnqualifiedTableName((ASTNode) joinNode.getChild(0))
-          .toLowerCase();
-      String alias = joinNode.getChildCount() == 1 ? tableName
-          : SemanticAnalyzer.unescapeIdentifier(joinNode.getChild(joinNode.getChildCount() - 1)
-          .getText().toLowerCase());
-      alias = (joinNode.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ?
-          SemanticAnalyzer.unescapeIdentifier(joinNode.getChild(1).getText().toLowerCase()) :
-            alias;
-      aliases.add(alias);
+      aliases.add(getTableAlias(joinNode));
     } else {
       ASTNode left = (ASTNode) joinNode.getChild(0);
       ASTNode right = (ASTNode) joinNode.getChild(1);
@@ -529,7 +580,7 @@ public class SubQueryUtils {
       List<ASTNode> corrExprs,
       RowResolver sqRR) {
 
-    subQueryAST = (ASTNode) ParseDriver.adaptor.dupTree(subQueryAST);
+    subQueryAST = (ASTNode) SubQueryUtils.adaptor.dupTree(subQueryAST);
     ASTNode qry = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_QUERY, "TOK_QUERY");
 
@@ -638,7 +689,7 @@ public class SubQueryUtils {
     ASTNode searchCond = isNull(createColRefAST(sqAlias, colAlias));
 
     for(ASTNode e : corrExprs ) {
-      ASTNode p = (ASTNode) ParseDriver.adaptor.dupTree(e);
+      ASTNode p = (ASTNode) SubQueryUtils.adaptor.dupTree(e);
       p = isNull(p);
       searchCond = orAST(searchCond, p);
     }
@@ -663,13 +714,13 @@ public class SubQueryUtils {
   static void checkForSubqueries(ASTNode node, boolean disallow) throws SemanticException {
     // allow NOT but throw an error for rest
     if(node.getType() == HiveParser.TOK_SUBQUERY_EXPR
-            && disallow) {
+        && disallow) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              "Invalid subquery. Subquery in UDAF is not allowed."));
+          "Invalid subquery. Subquery in UDAF is not allowed."));
     }
     if (node.getType() == HiveParser.TOK_FUNCTION
-            || node.getType() == HiveParser.TOK_FUNCTIONDI
-            || node.getType() == HiveParser.TOK_FUNCTIONSTAR) {
+        || node.getType() == HiveParser.TOK_FUNCTIONDI
+        || node.getType() == HiveParser.TOK_FUNCTIONSTAR) {
       if (node.getChild(0).getType() == HiveParser.Identifier) {
         String functionName = SemanticAnalyzer.unescapeIdentifier(node.getChild(0).getText());
         GenericUDAFResolver udafResolver = FunctionRegistry.getGenericUDAFResolver(functionName);
@@ -679,7 +730,7 @@ public class SubQueryUtils {
       }
     }
     for(int i=0; i<node.getChildCount(); i++) {
-        checkForSubqueries((ASTNode)node.getChild(i), disallow);
+      checkForSubqueries((ASTNode)node.getChild(i), disallow);
     }
   }
   /*
@@ -687,14 +738,14 @@ public class SubQueryUtils {
    *  it is top level expression, else it throws an error
    */
   public static void checkForTopLevelSubqueries(ASTNode selExprList) throws SemanticException{
-   // should be either SELECT or SELECT DISTINCT
+    // should be either SELECT or SELECT DISTINCT
     assert(selExprList.getType() == HiveParser.TOK_SELECT
-            || selExprList.getType() == HiveParser.TOK_SELECTDI);
+        || selExprList.getType() == HiveParser.TOK_SELECTDI);
     for(int i=0; i<selExprList.getChildCount(); i++) {
       ASTNode selExpr = (ASTNode)selExprList.getChild(i);
       // could get either query hint or select expr
       assert(selExpr.getType() == HiveParser.TOK_SELEXPR
-        || selExpr.getType() == HiveParser.QUERY_HINT);
+          || selExpr.getType() == HiveParser.QUERY_HINT);
 
       if(selExpr.getType() == HiveParser.QUERY_HINT) {
         // skip query hints
@@ -702,10 +753,10 @@ public class SubQueryUtils {
       }
 
       if(selExpr.getChildCount() == 1
-        && selExpr.getChild(0).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+          && selExpr.getChild(0).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
         if(selExprList.getType() == HiveParser.TOK_SELECTDI) {
           throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                  "Invalid subquery. Subquery with DISTINCT clause is not supported!"));
+              "Invalid subquery. Subquery with DISTINCT clause is not supported!"));
 
         }
         continue; //we are good since subquery is top level expression

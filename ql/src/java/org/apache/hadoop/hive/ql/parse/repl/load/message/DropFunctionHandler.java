@@ -18,12 +18,14 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.function.drop.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -31,17 +33,24 @@ import java.util.List;
 
 public class DropFunctionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropFunctionMessage msg = deserializer.getDropFunctionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     String qualifiedFunctionName =
         FunctionUtils.qualifyFunctionName(msg.getFunctionName(), actualDbName);
+    // When the load is invoked via Scheduler's executor route, the function resources will not be
+    // there in classpath. Processing drop function event tries to unregister the function resulting
+    // in ClassNotFoundException being thrown in such case.
+    // Obtaining FunctionInfo object from FunctionRegistry will add the function's resources URLs to UDFClassLoader.
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(qualifiedFunctionName);
     DropFunctionDesc desc = new DropFunctionDesc(
             qualifiedFunctionName, false, context.eventOnlyReplicationSpec());
-    Task<FunctionWork> dropFunctionTask = TaskFactory.get(new FunctionWork(desc), context.hiveConf);
+    Task<DDLWork> dropFunctionTask =
+        TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, desc, true,
+                context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     context.log.debug(
-        "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getFunctionName()
+        "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getName()
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
     return Collections.singletonList(dropFunctionTask);

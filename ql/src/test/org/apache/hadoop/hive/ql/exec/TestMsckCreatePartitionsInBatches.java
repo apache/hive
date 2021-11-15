@@ -17,16 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.CheckResult.PartitionResult;
@@ -54,6 +44,22 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 public class TestMsckCreatePartitionsInBatches {
   private static HiveConf hiveConf;
   private static Msck msck;
@@ -77,7 +83,7 @@ public class TestMsckCreatePartitionsInBatches {
       throw new HiveException(e);
     }
     msck = new Msck( false, false);
-    msck.init(hiveConf);
+    msck.init(Msck.getMsckConf(hiveConf));
   }
 
   @Before
@@ -131,6 +137,7 @@ public class TestMsckCreatePartitionsInBatches {
     for (int i = 0; i < numOfParts; i++) {
       PartitionResult result = new PartitionResult();
       result.setPartitionName("city=dummyCity_" + String.valueOf(i));
+      result.setTableName("dummyTable");
       partsNotInMs.add(result);
     }
     return partsNotInMs;
@@ -146,14 +153,14 @@ public class TestMsckCreatePartitionsInBatches {
   public void testNumberOfCreatePartitionCalls() throws Exception {
     // create 10 dummy partitions
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(10);
-    IMetaStoreClient spyDb = Mockito.spy(db);
+    IMetaStoreClient spyDb = spy(db);
     // batch size of 5 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 5, 2, 0);
     // there should be 2 calls to create partitions with each batch size of 5
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
-    Mockito.verify(spyDb, Mockito.times(2)).add_partitions(argParts.capture(), ifNotExistsArg.capture(), needResultsArg.capture());
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
+    verify(spyDb, times(2)).add_partitions(argParts.capture(), ifNotExistsArg.capture(), needResultsArg.capture());
     // confirm the batch sizes were 5, 5 in the two calls to create partitions
     List<List<Partition>> apds = argParts.getAllValues();
     int retryAttempt = 1;
@@ -175,14 +182,14 @@ public class TestMsckCreatePartitionsInBatches {
   public void testUnevenNumberOfCreatePartitionCalls() throws Exception {
     // create 9 dummy partitions
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(9);
-    IMetaStoreClient spyDb = Mockito.spy(db);
+    IMetaStoreClient spyDb = spy(db);
     // batch size of 5 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 5, 2, 0);
     // there should be 2 calls to create partitions with batch sizes of 5, 4
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
-    Mockito.verify(spyDb, Mockito.times(2)).add_partitions(argParts.capture(), ifNotExistsArg.capture(), needResultsArg.capture());
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
+    verify(spyDb, times(2)).add_partitions(argParts.capture(), ifNotExistsArg.capture(), needResultsArg.capture());
     // confirm the batch sizes were 5, 4 in the two calls to create partitions
     List<List<Partition>> apds = argParts.getAllValues();
     int retryAttempt = 1;
@@ -204,7 +211,7 @@ public class TestMsckCreatePartitionsInBatches {
   public void testEqualNumberOfPartitions() throws Exception {
     // create 13 dummy partitions
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(13);
-    IMetaStoreClient spyDb = Mockito.spy(db);
+    IMetaStoreClient spyDb = spy(db);
     // batch size of 13 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 13, 2, 0);
     // there should be 1 call to create partitions with batch sizes of 13
@@ -212,7 +219,7 @@ public class TestMsckCreatePartitionsInBatches {
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
     // there should be 1 call to create partitions with batch sizes of 13
-    Mockito.verify(spyDb, Mockito.times(1)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
+    verify(spyDb, times(1)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
       needResultsArg.capture());
     Assert.assertEquals("Unexpected number of batch size", 13,
         argParts.getValue().size());
@@ -230,17 +237,16 @@ public class TestMsckCreatePartitionsInBatches {
   public void testSmallNumberOfPartitions() throws Exception {
     // create 10 dummy partitions
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(10);
-    IMetaStoreClient spyDb = Mockito.spy(db);
+    IMetaStoreClient spyDb = spy(db);
     // batch size of 20 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 20, 2, 0);
     // there should be 1 call to create partitions with batch sizes of 10
-    Mockito.verify(spyDb, Mockito.times(1)).add_partitions(Mockito.anyObject(), Mockito.anyBoolean(),
-      Mockito.anyBoolean());
+    verify(spyDb, times(1)).add_partitions(Mockito.anyObject(), anyBoolean(), anyBoolean());
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
     // there should be 1 call to create partitions with batch sizes of 10
-    Mockito.verify(spyDb, Mockito.times(1)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
+    verify(spyDb, times(1)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
       needResultsArg.capture());
     Assert.assertEquals("Unexpected number of batch size", 10,
         argParts.getValue().size());
@@ -258,20 +264,19 @@ public class TestMsckCreatePartitionsInBatches {
   public void testBatchingWhenException() throws Exception {
     // create 13 dummy partitions
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(23);
-    IMetaStoreClient spyDb = Mockito.spy(db);
+    IMetaStoreClient spyDb = spy(db);
     // first call to createPartitions should throw exception
-    Mockito.doThrow(HiveException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
-      .add_partitions(Mockito.anyObject(), Mockito.anyBoolean(),
-        Mockito.anyBoolean());
+    doThrow(MetaException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
+      .add_partitions(any(), anyBoolean(), anyBoolean());
 
     // test with a batch size of 30 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 30, 2, 0);
     // confirm the batch sizes were 23, 15, 8 in the three calls to create partitions
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
     // there should be 3 calls to create partitions with batch sizes of 23, 15, 8
-    Mockito.verify(spyDb, Mockito.times(3)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
+    verify(spyDb, times(3)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
       needResultsArg.capture());
     List<List<Partition>> apds = argParts.getAllValues();
     int retryAttempt = 1;
@@ -298,9 +303,9 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testRetriesExhaustedBatchSize() throws Exception {
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(17);
-    IMetaStoreClient spyDb = Mockito.spy(db);
-    Mockito.doThrow(HiveException.class).when(spyDb)
-      .add_partitions(Mockito.anyObject(), Mockito.anyBoolean(), Mockito.anyBoolean());
+    IMetaStoreClient spyDb = spy(db);
+    doThrow(MetaException.class).when(spyDb)
+      .add_partitions(any(), anyBoolean(), anyBoolean());
     // batch size of 5 and decaying factor of 2
     Exception ex = null;
     try {
@@ -313,9 +318,9 @@ public class TestMsckCreatePartitionsInBatches {
     // there should be 5 calls to create partitions with batch sizes of 17, 15, 7, 3, 1
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
     // there should be 5 calls to create partitions with batch sizes of 17, 15, 7, 3, 1
-    Mockito.verify(spyDb, Mockito.times(5)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
+    verify(spyDb, times(5)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
       needResultsArg.capture());
     List<List<Partition>> apds = argParts.getAllValues();
     int retryAttempt = 1;
@@ -345,9 +350,9 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testMaxRetriesReached() throws Exception {
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(17);
-    IMetaStoreClient spyDb = Mockito.spy(db);
-    Mockito.doThrow(HiveException.class).when(spyDb)
-      .add_partitions(Mockito.anyObject(), Mockito.anyBoolean(), Mockito.anyBoolean());
+    IMetaStoreClient spyDb = spy(db);
+    doThrow(MetaException.class).when(spyDb)
+      .add_partitions(any(), anyBoolean(), anyBoolean());
     // batch size of 5 and decaying factor of 2
     Exception ex = null;
     try {
@@ -359,8 +364,8 @@ public class TestMsckCreatePartitionsInBatches {
     Assert.assertTrue("Unexpected class of exception thrown", ex instanceof RetryUtilities.RetryException);
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
-    Mockito.verify(spyDb, Mockito.times(2)).add_partitions(argParts.capture(), ifNotExistsArg.capture(), needResultsArg.capture());
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
+    verify(spyDb, times(2)).add_partitions(argParts.capture(), ifNotExistsArg.capture(), needResultsArg.capture());
     List<List<Partition>> apds = argParts.getAllValues();
     int retryAttempt = 1;
     Assert.assertEquals(
@@ -381,9 +386,9 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testOneMaxRetries() throws Exception {
     Set<PartitionResult> partsNotInMs = createPartsNotInMs(17);
-    IMetaStoreClient spyDb = Mockito.spy(db);
-    Mockito.doThrow(HiveException.class).when(spyDb)
-      .add_partitions(Mockito.anyObject(), Mockito.anyBoolean(), Mockito.anyBoolean());
+    IMetaStoreClient spyDb = spy(db);
+    doThrow(MetaException.class).when(spyDb)
+      .add_partitions(any(), anyBoolean(), anyBoolean());
     // batch size of 5 and decaying factor of 2
     Exception ex = null;
     try {
@@ -396,9 +401,9 @@ public class TestMsckCreatePartitionsInBatches {
     // there should be 5 calls to create partitions with batch sizes of 17, 15, 7, 3, 1
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
-    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass((Class) List.class);
+    ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
     // there should be 5 calls to create partitions with batch sizes of 17, 15, 7, 3, 1
-    Mockito.verify(spyDb, Mockito.times(1)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
+    verify(spyDb, times(1)).add_partitions(argParts.capture(), ifNotExistsArg.capture(),
       needResultsArg.capture());
     List<List<Partition>> apds = argParts.getAllValues();
     int retryAttempt = 1;

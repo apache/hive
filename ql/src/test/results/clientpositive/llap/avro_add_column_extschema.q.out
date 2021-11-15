@@ -1,0 +1,162 @@
+PREHOOK: query: CREATE TABLE avro_extschema_literal
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"number", "type":"int" },
+    { "name":"first_name", "type":"string" },
+    { "name":"last_name", "type":"string" }
+  ] }')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_literal
+POSTHOOK: query: CREATE TABLE avro_extschema_literal
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"number", "type":"int" },
+    { "name":"first_name", "type":"string" },
+    { "name":"last_name", "type":"string" }
+  ] }')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_literal
+PREHOOK: query: DESCRIBE avro_extschema_literal
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_literal
+POSTHOOK: query: DESCRIBE avro_extschema_literal
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_literal
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+PREHOOK: query: ALTER TABLE avro_extschema_literal UNSET TBLPROPERTIES ('avro.schema.literal')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@avro_extschema_literal
+PREHOOK: Output: default@avro_extschema_literal
+POSTHOOK: query: ALTER TABLE avro_extschema_literal UNSET TBLPROPERTIES ('avro.schema.literal')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@avro_extschema_literal
+POSTHOOK: Output: default@avro_extschema_literal
+PREHOOK: query: ALTER TABLE avro_extschema_literal
+CHANGE COLUMN number number bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@avro_extschema_literal
+PREHOOK: Output: default@avro_extschema_literal
+POSTHOOK: query: ALTER TABLE avro_extschema_literal
+CHANGE COLUMN number number bigint
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@avro_extschema_literal
+POSTHOOK: Output: default@avro_extschema_literal
+PREHOOK: query: DESCRIBE avro_extschema_literal
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_literal
+POSTHOOK: query: DESCRIBE avro_extschema_literal
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_literal
+number              	bigint              	                    
+first_name          	string              	                    
+last_name           	string              	                    
+PREHOOK: query: ALTER TABLE avro_extschema_literal
+ADD COLUMNS (age int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@avro_extschema_literal
+PREHOOK: Output: default@avro_extschema_literal
+POSTHOOK: query: ALTER TABLE avro_extschema_literal
+ADD COLUMNS (age int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@avro_extschema_literal
+POSTHOOK: Output: default@avro_extschema_literal
+PREHOOK: query: DESCRIBE avro_extschema_literal
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_literal
+POSTHOOK: query: DESCRIBE avro_extschema_literal
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_literal
+number              	bigint              	                    
+first_name          	string              	                    
+last_name           	string              	                    
+age                 	int                 	                    
+PREHOOK: query: CREATE TABLE avro_extschema_url
+STORED AS AVRO
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_url
+POSTHOOK: query: CREATE TABLE avro_extschema_url
+STORED AS AVRO
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_url
+PREHOOK: query: DESCRIBE avro_extschema_url
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_url
+POSTHOOK: query: DESCRIBE avro_extschema_url
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_url
+col1                	string              	                    
+col2                	string              	                    
+col3                	double              	                    
+col4                	string              	                    
+col5                	string              	                    
+col6                	int                 	                    
+PREHOOK: query: ALTER TABLE avro_extschema_url UNSET TBLPROPERTIES ('avro.schema.url')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@avro_extschema_url
+PREHOOK: Output: default@avro_extschema_url
+POSTHOOK: query: ALTER TABLE avro_extschema_url UNSET TBLPROPERTIES ('avro.schema.url')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@avro_extschema_url
+POSTHOOK: Output: default@avro_extschema_url
+PREHOOK: query: ALTER TABLE avro_extschema_url
+CHANGE COLUMN col6 col6 bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@avro_extschema_url
+PREHOOK: Output: default@avro_extschema_url
+POSTHOOK: query: ALTER TABLE avro_extschema_url
+CHANGE COLUMN col6 col6 bigint
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@avro_extschema_url
+POSTHOOK: Output: default@avro_extschema_url
+PREHOOK: query: DESCRIBE avro_extschema_url
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_url
+POSTHOOK: query: DESCRIBE avro_extschema_url
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_url
+col1                	string              	                    
+col2                	string              	                    
+col3                	double              	                    
+col4                	string              	                    
+col5                	string              	                    
+col6                	bigint              	                    
+PREHOOK: query: ALTER TABLE avro_extschema_url
+ADD COLUMNS (col7 int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@avro_extschema_url
+PREHOOK: Output: default@avro_extschema_url
+POSTHOOK: query: ALTER TABLE avro_extschema_url
+ADD COLUMNS (col7 int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@avro_extschema_url
+POSTHOOK: Output: default@avro_extschema_url
+PREHOOK: query: DESCRIBE avro_extschema_url
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_url
+POSTHOOK: query: DESCRIBE avro_extschema_url
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_url
+col1                	string              	                    
+col2                	string              	                    
+col3                	double              	                    
+col4                	string              	                    
+col5                	string              	                    
+col6                	bigint              	                    
+col7                	int                 	                    
+#### A masked pattern was here ####

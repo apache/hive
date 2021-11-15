@@ -64,6 +64,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -140,6 +141,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -174,6 +176,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -258,6 +261,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -292,6 +296,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -350,6 +355,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	508                 
 	rawDataSize         	5400                
@@ -440,6 +446,7 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14_n1
 POSTHOOK: Output: default@nzhang_part14_n1@value= 
 POSTHOOK: Output: default@nzhang_part14_n1@value=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value= ).key EXPRESSION []
@@ -532,6 +539,7 @@ POSTHOOK: query: insert overwrite table nzhang_part14_n1 partition(value)
 select key, value from src5_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src5_n0
+POSTHOOK: Output: default@nzhang_part14_n1
 POSTHOOK: Output: default@nzhang_part14_n1@value=val_165
 POSTHOOK: Output: default@nzhang_part14_n1@value=val_238
 POSTHOOK: Output: default@nzhang_part14_n1@value=val_27
@@ -1084,6 +1092,7 @@ select key, value, ds, hr from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14_n1
 POSTHOOK: Output: default@nzhang_part14_n1@ds=1/hr=2
 POSTHOOK: Output: default@nzhang_part14_n1@ds=1/hr=3
 POSTHOOK: Output: default@nzhang_part14_n1@ds=2/hr=1

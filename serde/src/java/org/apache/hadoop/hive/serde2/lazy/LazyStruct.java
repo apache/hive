@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.primitives.Bytes;
+
+import org.apache.hadoop.hive.serde2.MultiDelimitSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -294,10 +296,10 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     }
     // the indexes of the delimiters
     int[] delimitIndexes = findIndexes(rawRow, fieldDelimit);
-    int diff = fieldDelimit.length - 1;
+    int diff = fieldDelimit.length - MultiDelimitSerDe.REPLACEMENT_DELIM_LENGTH;
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
-    for (int i = 1; i < fields.length; i++) {
+    for (int i = 1; i <= fields.length; i++) {
       if (delimitIndexes[i - 1] != -1) {
         int start = delimitIndexes[i - 1] + fieldDelimit.length;
         startPosition[i] = start - i * diff;
@@ -305,7 +307,6 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
         startPosition[i] = length + 1;
       }
     }
-    startPosition[fields.length] = length + 1;
     Arrays.fill(fieldInited, false);
     parsed = true;
   }
@@ -315,7 +316,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     if (fields.length <= 1) {
       return new int[0];
     }
-    int[] indexes = new int[fields.length - 1];
+    int[] indexes = new int[fields.length];
     Arrays.fill(indexes, -1);
     indexes[0] = Bytes.indexOf(array, target);
     if (indexes[0] == -1) {

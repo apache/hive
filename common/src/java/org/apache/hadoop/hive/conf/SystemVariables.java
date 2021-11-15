@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class SystemVariables {
 
   private static final Logger l4j = LoggerFactory.getLogger(SystemVariables.class);
-  protected static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
+  protected static final Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
   private static final SystemVariables INSTANCE = new SystemVariables();
   private static final Map<String, VariableCoercion> COERCIONS =
       ImmutableMap.<String, VariableCoercion>builder()
@@ -88,6 +88,10 @@ public class SystemVariables {
   }
 
   protected final String substitute(Configuration conf, String expr, int depth) {
+    long maxLength = 0;
+    if (conf != null) {
+      maxLength = HiveConf.getSizeVar(conf, HiveConf.ConfVars.HIVE_QUERY_MAX_LENGTH);
+    }
     Matcher match = varPat.matcher("");
     String eval = expr;
     StringBuilder builder = new StringBuilder();
@@ -107,12 +111,18 @@ public class SystemVariables {
           found = true;
         }
         builder.append(eval.substring(prev, match.start())).append(substitute);
+        if (maxLength > 0 && builder.length() > maxLength) {
+          throw new IllegalStateException("Query length longer than hive.query.max.length ("+builder.length()+">"+maxLength+").");
+        }
         prev = match.end();
       }
       if (!found) {
         return eval;
       }
       builder.append(eval.substring(prev));
+      if (maxLength > 0 && builder.length() > maxLength) {
+        throw new IllegalStateException("Query length longer than hive.query.max.length ("+builder.length()+">"+maxLength+").");
+      }
       eval = builder.toString();
     }
     if (s > depth) {

@@ -18,15 +18,22 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestGenericUDAFCorrelation extends TestCase {
+/**
+ * TestGenericUDAFCorrelation.
+ *
+ */
+public class TestGenericUDAFCorrelation {
 
+  @Test
   public void testCorr() throws HiveException {
     GenericUDAFCorrelation corr = new GenericUDAFCorrelation();
     GenericUDAFEvaluator eval1 = corr.getEvaluator(

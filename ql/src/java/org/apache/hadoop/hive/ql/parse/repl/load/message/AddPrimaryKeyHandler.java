@@ -22,23 +22,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.Constraints;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.add.AlterTableAddConstraintDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 
 public class AddPrimaryKeyHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AddPrimaryKeyMessage msg = deserializer.getAddPrimaryKeyMessage(context.dmd.getPayload());
 
-    List<SQLPrimaryKey> pks = null;
+    List<SQLPrimaryKey> pks;
     try {
       pks = msg.getPrimaryKeys();
     } catch (Exception e) {
@@ -49,26 +49,29 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
       }
     }
 
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> tasks = new ArrayList<Task<?>>();
     if (pks.isEmpty()) {
       return tasks;
     }
 
-    String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? pks.get(0).getTable_name() : context.tableName;
+    final String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
+    final String actualTblName = pks.get(0).getTable_name();
+    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
 
     for (SQLPrimaryKey pk : pks) {
       pk.setTable_db(actualDbName);
       pk.setTable_name(actualTblName);
     }
 
-    AlterTableDesc addConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, pks, new ArrayList<SQLForeignKey>(),
-        new ArrayList<SQLUniqueConstraint>(), context.eventOnlyReplicationSpec());
-    Task<DDLWork> addConstraintsTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
+    Constraints constraints = new Constraints(pks, null, null, null, null, null);
+    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(tName,
+        context.eventOnlyReplicationSpec(), constraints);
+    Task<DDLWork> addConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet,
+            addConstraintsDesc, true, context.getDumpDirectory(),
+            context.getMetricCollector()), context.hiveConf);
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-    return Collections.singletonList(addConstraintsTask);    
+    return Collections.singletonList(addConstraintsTask);
   }
 }

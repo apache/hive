@@ -22,7 +22,7 @@ import org.junit.Test;
 
 public class TestTableName {
   @Test
-  public void fullname() {
+  public void fullName() {
     TableName name = new TableName("cat", "db", "t");
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
@@ -32,20 +32,56 @@ public class TestTableName {
   }
 
   @Test
+  public void fullNameWithMetaTable() {
+    TableName name = new TableName("cat", "db", "t", "meta");
+    Assert.assertEquals("cat", name.getCat());
+    Assert.assertEquals("db", name.getDb());
+    Assert.assertEquals("t", name.getTable());
+    Assert.assertEquals("meta", name.getMetaTable());
+    Assert.assertEquals("cat.db.t", name.toString());
+    Assert.assertEquals("db.t", name.getDbTable());
+  }
+
+  @Test
   public void fromString() {
-    TableName name = TableName.fromString("cat.db.tab", null, null);
+    TableName name = TableName.fromString("cat.db.tab", null, null, null);
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
 
-    name = TableName.fromString("db.tab", "cat", null);
+    name = TableName.fromString("db.tab", "cat", null, null);
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
 
-    name = TableName.fromString("tab", "cat", "db");
+    name = TableName.fromString("tab", "cat", "db", null);
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
+
+    name = TableName.fromString("tab", "cat", "db", "metatable");
+    Assert.assertEquals("cat", name.getCat());
+    Assert.assertEquals("db", name.getDb());
+    Assert.assertEquals("tab", name.getTable());
+    Assert.assertEquals("metatable", name.getMetaTable());
+
+    try {
+      TableName.fromString(null, null, null, null);
+      Assert.fail("Name can't be null");
+    } catch (IllegalArgumentException e) {
+      Assert.assertTrue(true);
+    }
+  }
+
+  @Test
+  public void testNotEmptyDbTable() {
+    TableName name = new TableName("cat", "db", "t");
+    Assert.assertEquals("db.t", name.getNotEmptyDbTable());
+
+    name = new TableName("cat", null, "t");
+    Assert.assertEquals("t", name.getNotEmptyDbTable());
+
+    name = new TableName("cat", "", "t");
+    Assert.assertEquals("t", name.getNotEmptyDbTable());
   }
 }

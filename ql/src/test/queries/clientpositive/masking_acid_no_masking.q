@@ -2,6 +2,7 @@
 -- when all tables are marked eligible for masking. This shouldn't break any ACID operations.
 
 set hive.mapred.mode=nonstrict;
+set hive.security.authorization.enabled=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;

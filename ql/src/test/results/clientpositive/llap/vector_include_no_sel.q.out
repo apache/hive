@@ -204,6 +204,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkOperator
@@ -231,6 +232,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkOperator
@@ -259,20 +261,21 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col2, _col16
+                outputColumnNames: _col0, _col2, _col17
                 Statistics: Num rows: 200000 Data size: 18599796 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col0 = _col16) and (_col2 = 'M')) or ((_col0 = _col16) and (_col2 = 'U'))) (type: boolean)
+                  predicate: (((_col0 = _col17) and (_col2 = 'M')) or ((_col0 = _col17) and (_col2 = 'U'))) (type: boolean)
                   Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(1)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)

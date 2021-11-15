@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -42,277 +42,63 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestObjectInspectorConverters.
  *
  */
-public class TestObjectInspectorConverters extends TestCase {
+public class TestObjectInspectorConverters {
 
+  @Test
   public void testObjectInspectorConverters() throws Throwable {
     try {
       // Boolean
-      Converter booleanConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
-      assertEquals("BooleanConverter", new BooleanWritable(false),
-          booleanConverter.convert(Integer.valueOf(0)));
-      assertEquals("BooleanConverter", new BooleanWritable(true),
-          booleanConverter.convert(Integer.valueOf(1)));
-      assertEquals("BooleanConverter", null, booleanConverter.convert(null));
+      convertBoolean();
 
       // Byte
-      Converter byteConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableByteObjectInspector);
-      assertEquals("ByteConverter", new ByteWritable((byte) 0), byteConverter
-          .convert(Integer.valueOf(0)));
-      assertEquals("ByteConverter", new ByteWritable((byte) 1), byteConverter
-          .convert(Integer.valueOf(1)));
-      assertEquals("ByteConverter", null, byteConverter.convert(null));
+      convertByte();
 
       // Short
-      Converter shortConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableShortObjectInspector);
-      assertEquals("ShortConverter", new ShortWritable((short) 0),
-          shortConverter.convert(Integer.valueOf(0)));
-      assertEquals("ShortConverter", new ShortWritable((short) 1),
-          shortConverter.convert(Integer.valueOf(1)));
-      assertEquals("ShortConverter", null, shortConverter.convert(null));
+      convertShort();
 
       // Int
-      Converter intConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableIntObjectInspector);
-      assertEquals("IntConverter", new IntWritable(0), intConverter
-          .convert(Integer.valueOf(0)));
-      assertEquals("IntConverter", new IntWritable(1), intConverter
-          .convert(Integer.valueOf(1)));
-      assertEquals("IntConverter", null, intConverter.convert(null));
+      convertInt();
 
       // Long
-      Converter longConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-      assertEquals("LongConverter", new LongWritable(0), longConverter
-          .convert(Integer.valueOf(0)));
-      assertEquals("LongConverter", new LongWritable(1), longConverter
-          .convert(Integer.valueOf(1)));
-      assertEquals("LongConverter", null, longConverter.convert(null));
+      convertLong();
 
       // Float
-      Converter floatConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableFloatObjectInspector);
-      assertEquals("LongConverter", new FloatWritable(0), floatConverter
-          .convert(Integer.valueOf(0)));
-      assertEquals("LongConverter", new FloatWritable(1), floatConverter
-          .convert(Integer.valueOf(1)));
-      assertEquals("LongConverter", null, floatConverter.convert(null));
+      convertFloat();
 
       // Double
-      Converter doubleConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-      assertEquals("DoubleConverter", new DoubleWritable(0), doubleConverter
-          .convert(Integer.valueOf(0)));
-      assertEquals("DoubleConverter", new DoubleWritable(1), doubleConverter
-          .convert(Integer.valueOf(1)));
-      assertEquals("DoubleConverter", null, doubleConverter.convert(null));
+      convertDouble();
 
       // Char
-      Converter charConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
-        PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
-      assertEquals("CharConverter", new HiveChar("TRUE", -1), charConverter
-        .convert(Boolean.valueOf(true)));
-      assertEquals("CharConverter", new HiveChar("FALSE", -1), charConverter
-        .convert(Boolean.valueOf(false)));
-
-      charConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
-        PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
-      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("TRUE", -1)), charConverter
-        .convert(Boolean.valueOf(true)));
-      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("FALSE", -1)), charConverter
-        .convert(Boolean.valueOf(false)));
-
-      charConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-        PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
-      assertEquals("CharConverter", new HiveChar("0", -1), charConverter
-        .convert(Integer.valueOf(0)));
-      assertEquals("CharConverter", new HiveChar("1", -1), charConverter
-        .convert(Integer.valueOf(1)));
-
-      charConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-        PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
-      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("0", -1)), charConverter
-        .convert(Integer.valueOf(0)));
-      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("1", -1)), charConverter
-        .convert(Integer.valueOf(1)));
-
-      charConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-        PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
-      assertEquals("CharConverter", new HiveChar("hive", -1), charConverter
-        .convert(String.valueOf("hive")));
-
-      charConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-        PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
-      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("hive", -1)), charConverter
-        .convert(String.valueOf("hive")));
+	  convertChar();
 
       // VarChar
-      Converter varcharConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
-        PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
-      assertEquals("VarCharConverter", new HiveVarchar("TRUE", -1), varcharConverter
-        .convert(Boolean.valueOf(true)));
-      assertEquals("VarCharConverter", new HiveVarchar("FALSE", -1), varcharConverter
-        .convert(Boolean.valueOf(false)));
-
-      varcharConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
-        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
-      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("TRUE", -1)), varcharConverter
-        .convert(Boolean.valueOf(true)));
-      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("FALSE", -1)), varcharConverter
-        .convert(Boolean.valueOf(false)));
-
-      varcharConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-        PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
-      assertEquals("VarCharConverter", new HiveVarchar("0", -1), varcharConverter
-        .convert(Integer.valueOf(0)));
-      assertEquals("VarCharConverter", new HiveVarchar("1", -1), varcharConverter
-        .convert(Integer.valueOf(1)));
-
-      varcharConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
-      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("0", -1)), varcharConverter
-        .convert(Integer.valueOf(0)));
-      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("1", -1)), varcharConverter
-        .convert(Integer.valueOf(1)));
-
-      varcharConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-        PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
-      assertEquals("VarCharConverter", new HiveVarchar("hive", -1), varcharConverter
-        .convert(String.valueOf("hive")));
-
-      varcharConverter = ObjectInspectorConverters.getConverter(
-        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
-      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("hive", -1)), varcharConverter
-        .convert(String.valueOf("hive")));
+	  convertVarChar();
 
       // Text
-      Converter textConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("0"), textConverter
-          .convert(Integer.valueOf(0)));
-      assertEquals("TextConverter", new Text("1"), textConverter
-          .convert(Integer.valueOf(1)));
-      assertEquals("TextConverter", null, textConverter.convert(null));
-
-      textConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("hive"), textConverter
-          .convert(new BytesWritable(new byte[]
-              {(byte)'h', (byte)'i',(byte)'v',(byte)'e'})));
-      assertEquals("TextConverter", null, textConverter.convert(null));
-
-      textConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("hive"), textConverter
-	  .convert(new Text("hive")));
-      assertEquals("TextConverter", null, textConverter.convert(null));
-
-      textConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("hive"), textConverter
-	  .convert(new String("hive")));
-      assertEquals("TextConverter", null, textConverter.convert(null));
-
-      textConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("100.001000000000000000"), textConverter
-	  .convert(HiveDecimal.create("100.001")));
-      assertEquals("TextConverter", null, textConverter.convert(null));
-
-      // Varchar
-      PrimitiveTypeInfo varchar5TI =
-          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
-      PrimitiveTypeInfo varchar30TI =
-          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(30)");
-      PrimitiveObjectInspector varchar5OI =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar5TI);
-      PrimitiveObjectInspector varchar30OI =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar30TI);
-      // Value should be truncated to varchar length 5
-      varcharConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
-          varchar5OI);
-      assertEquals("VarcharConverter", "100.0",
-          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
-
-      varcharConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
-          varchar30OI);
-      assertEquals("VarcharConverter", "100.001000000000000000",
-          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
-
-      // Char
-      PrimitiveTypeInfo char5TI =
-          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
-      PrimitiveTypeInfo char30TI =
-          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(30)");
-      PrimitiveObjectInspector char5OI =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char5TI);
-      PrimitiveObjectInspector char30OI =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char30TI);
-      // Value should be truncated to char length 5
-      charConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
-          char5OI);
-      assertEquals("CharConverter", "100.0",
-          charConverter.convert(HiveDecimal.create("100.001")).toString());
-      // Char value should be have space padding to full char length
-      charConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
-          char30OI);
-      assertEquals("CharConverter", "100.001000000000000000        ",
-          charConverter.convert(HiveDecimal.create("100.001")).toString());
+      convertText();
 
       // Binary
-      Converter baConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
-      assertEquals("BAConverter", new BytesWritable(new byte[]
-          {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
-          baConverter.convert("hive"));
-      assertEquals("BAConverter", null, baConverter.convert(null));
-
-      baConverter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
-          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
-      assertEquals("BAConverter", new BytesWritable(new byte[]
-          {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
-          baConverter.convert(new Text("hive")));
-      assertEquals("BAConverter", null, baConverter.convert(null));
+      converBinary();
 
       // Union
-      ArrayList<String> fieldNames = new ArrayList<String>();
+      convertUnion();
+
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+
+  }
+
+private void convertUnion() {
+	ArrayList<String> fieldNames = new ArrayList<String>();
       fieldNames.add("firstInteger");
       fieldNames.add("secondString");
       fieldNames.add("thirdBoolean");
@@ -397,14 +183,280 @@ public class TestObjectInspectorConverters extends TestCase {
       expectedObjectExtra.setObject(null);
 
       assertEquals(expectedObjectExtra, convertedObjectExtra); // we should get back null
+}
 
-    } catch (Throwable e) {
-      e.printStackTrace();
-      throw e;
-    }
+private void converBinary() {
+	Converter baConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
+      assertEquals("BAConverter", new BytesWritable(new byte[]
+          {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
+          baConverter.convert("hive"));
+      assertEquals("BAConverter", null, baConverter.convert(null));
 
-  }
+      baConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
+      assertEquals("BAConverter", new BytesWritable(new byte[]
+          {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
+          baConverter.convert(new Text("hive")));
+      assertEquals("BAConverter", null, baConverter.convert(null));
+}
 
+private void convertText() {
+	Converter textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("0"), textConverter
+          .convert(Integer.valueOf(0)));
+      assertEquals("TextConverter", new Text("1"), textConverter
+          .convert(Integer.valueOf(1)));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("hive"), textConverter
+          .convert(new BytesWritable(new byte[]
+              {(byte)'h', (byte)'i',(byte)'v',(byte)'e'})));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("hive"), textConverter
+	  .convert(new Text("hive")));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("hive"), textConverter
+	  .convert(new String("hive")));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("100.001000000000000000"), textConverter
+	  .convert(HiveDecimal.create("100.001")));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+}
+
+private void convertVarChar() {
+	Converter varcharConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
+        PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
+      assertEquals("VarCharConverter", new HiveVarchar("TRUE", -1), varcharConverter
+        .convert(Boolean.valueOf(true)));
+      assertEquals("VarCharConverter", new HiveVarchar("FALSE", -1), varcharConverter
+        .convert(Boolean.valueOf(false)));
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
+      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("TRUE", -1)), varcharConverter
+        .convert(Boolean.valueOf(true)));
+      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("FALSE", -1)), varcharConverter
+        .convert(Boolean.valueOf(false)));
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+        PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
+      assertEquals("VarCharConverter", new HiveVarchar("0", -1), varcharConverter
+        .convert(Integer.valueOf(0)));
+      assertEquals("VarCharConverter", new HiveVarchar("1", -1), varcharConverter
+        .convert(Integer.valueOf(1)));
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
+      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("0", -1)), varcharConverter
+        .convert(Integer.valueOf(0)));
+      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("1", -1)), varcharConverter
+        .convert(Integer.valueOf(1)));
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+        PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
+      assertEquals("VarCharConverter", new HiveVarchar("hive", -1), varcharConverter
+        .convert(String.valueOf("hive")));
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
+      assertEquals("VarCharConverter", new HiveVarcharWritable(new HiveVarchar("hive", -1)), varcharConverter
+        .convert(String.valueOf("hive")));
+
+      // Varchar
+      PrimitiveTypeInfo varchar5TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
+      PrimitiveTypeInfo varchar30TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(30)");
+      PrimitiveObjectInspector varchar5OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar5TI);
+      PrimitiveObjectInspector varchar30OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar30TI);
+      // Value should be truncated to varchar length 5
+      varcharConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          varchar5OI);
+      assertEquals("VarcharConverter", "100.0",
+          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          varchar30OI);
+      assertEquals("VarcharConverter", "100.001000000000000000",
+          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
+}
+
+private void convertChar() {
+	Converter charConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
+        PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
+      assertEquals("CharConverter", new HiveChar("TRUE", -1), charConverter
+        .convert(Boolean.valueOf(true)));
+      assertEquals("CharConverter", new HiveChar("FALSE", -1), charConverter
+        .convert(Boolean.valueOf(false)));
+
+      charConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
+      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("TRUE", -1)), charConverter
+        .convert(Boolean.valueOf(true)));
+      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("FALSE", -1)), charConverter
+        .convert(Boolean.valueOf(false)));
+
+      charConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+        PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
+      assertEquals("CharConverter", new HiveChar("0", -1), charConverter
+        .convert(Integer.valueOf(0)));
+      assertEquals("CharConverter", new HiveChar("1", -1), charConverter
+        .convert(Integer.valueOf(1)));
+
+      charConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
+      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("0", -1)), charConverter
+        .convert(Integer.valueOf(0)));
+      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("1", -1)), charConverter
+        .convert(Integer.valueOf(1)));
+
+      charConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+        PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
+      assertEquals("CharConverter", new HiveChar("hive", -1), charConverter
+        .convert(String.valueOf("hive")));
+
+      charConverter = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
+      assertEquals("CharConverter", new HiveCharWritable(new HiveChar("hive", -1)), charConverter
+        .convert(String.valueOf("hive")));
+
+      // Char
+      PrimitiveTypeInfo char5TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
+      PrimitiveTypeInfo char30TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(30)");
+      PrimitiveObjectInspector char5OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char5TI);
+      PrimitiveObjectInspector char30OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char30TI);
+      // Value should be truncated to char length 5
+      charConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          char5OI);
+      assertEquals("CharConverter", "100.0",
+          charConverter.convert(HiveDecimal.create("100.001")).toString());
+      // Char value should be have space padding to full char length
+      charConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          char30OI);
+      assertEquals("CharConverter", "100.001000000000000000        ",
+          charConverter.convert(HiveDecimal.create("100.001")).toString());
+}
+
+private void convertDouble() {
+	Converter doubleConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+      assertEquals("DoubleConverter", new DoubleWritable(0), doubleConverter
+          .convert(Integer.valueOf(0)));
+      assertEquals("DoubleConverter", new DoubleWritable(1), doubleConverter
+          .convert(Integer.valueOf(1)));
+      assertEquals("DoubleConverter", null, doubleConverter.convert(null));
+}
+
+private void convertFloat() {
+	Converter floatConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableFloatObjectInspector);
+      assertEquals("LongConverter", new FloatWritable(0), floatConverter
+          .convert(Integer.valueOf(0)));
+      assertEquals("LongConverter", new FloatWritable(1), floatConverter
+          .convert(Integer.valueOf(1)));
+      assertEquals("LongConverter", null, floatConverter.convert(null));
+}
+
+private void convertLong() {
+	Converter longConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+      assertEquals("LongConverter", new LongWritable(0), longConverter
+          .convert(Integer.valueOf(0)));
+      assertEquals("LongConverter", new LongWritable(1), longConverter
+          .convert(Integer.valueOf(1)));
+      assertEquals("LongConverter", null, longConverter.convert(null));
+}
+
+private void convertInt() {
+	Converter intConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+      assertEquals("IntConverter", new IntWritable(0), intConverter
+          .convert(Integer.valueOf(0)));
+      assertEquals("IntConverter", new IntWritable(1), intConverter
+          .convert(Integer.valueOf(1)));
+      assertEquals("IntConverter", null, intConverter.convert(null));
+}
+
+private void convertShort() {
+	Converter shortConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableShortObjectInspector);
+      assertEquals("ShortConverter", new ShortWritable((short) 0),
+          shortConverter.convert(Integer.valueOf(0)));
+      assertEquals("ShortConverter", new ShortWritable((short) 1),
+          shortConverter.convert(Integer.valueOf(1)));
+      assertEquals("ShortConverter", null, shortConverter.convert(null));
+}
+
+private void convertByte() {
+	Converter byteConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+      assertEquals("ByteConverter", new ByteWritable((byte) 0), byteConverter
+          .convert(Integer.valueOf(0)));
+      assertEquals("ByteConverter", new ByteWritable((byte) 1), byteConverter
+          .convert(Integer.valueOf(1)));
+      assertEquals("ByteConverter", null, byteConverter.convert(null));
+}
+
+private void convertBoolean() {
+	Converter booleanConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector,
+          PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
+      assertEquals("BooleanConverter", new BooleanWritable(false),
+          booleanConverter.convert(Integer.valueOf(0)));
+      assertEquals("BooleanConverter", new BooleanWritable(true),
+          booleanConverter.convert(Integer.valueOf(1)));
+      assertEquals("BooleanConverter", null, booleanConverter.convert(null));
+}
+
+  @Test
   public void testGetConvertedOI() throws Throwable {
     // Try with types that have type params
     PrimitiveTypeInfo varchar5TI =

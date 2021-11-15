@@ -1,3 +1,4 @@
+--! qt:disabled:disabled by 54b4b2d428bb in 2018
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.llap.io.enabled=false;

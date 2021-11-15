@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +30,16 @@ import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -56,13 +58,27 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 
 class AvroSerializer {
+
   /**
    * The Schema to use when serializing Map keys.
    * Since we're sharing this across Serializer instances, it must be immutable;
    * any properties need to be added in a static initializer.
    */
   private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
-  AvroGenericRecordWritable cache = new AvroGenericRecordWritable();
+  private AvroGenericRecordWritable cache = new AvroGenericRecordWritable();
+  private boolean defaultProleptic;
+  private final boolean legacyConversion;
+
+  AvroSerializer() {
+    this.legacyConversion = ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED.defaultBoolVal;
+  }
+
+  AvroSerializer(Configuration configuration) {
+    this.defaultProleptic = HiveConf.getBoolVar(
+        configuration, ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN);
+    this.legacyConversion =
+        HiveConf.getBoolVar(configuration, ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED);
+  }
 
   // Hive is pretty simple (read: stupid) in writing out values via the serializer.
   // We're just going to go through, matching indices.  Hive formats normally
@@ -173,7 +189,7 @@ class AvroSerializer {
     List<? extends StructField> allStructFieldRefs = ssoi.getAllStructFieldRefs();
     List<Object> structFieldsDataAsList = ssoi.getStructFieldsDataAsList(o);
     GenericData.Record record = new GenericData.Record(schema);
-    ArrayList<TypeInfo> allStructFieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+    List<TypeInfo> allStructFieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
 
     for(int i  = 0; i < size; i++) {
       Field field = schema.getFields().get(i);
@@ -210,12 +226,15 @@ class AvroSerializer {
       return vc.getValue();
     case DATE:
       Date date = ((DateObjectInspector)fieldOI).getPrimitiveJavaObject(structFieldData);
-      return DateWritableV2.dateToDays(date);
+      return defaultProleptic ? date.toEpochDay() :
+          CalendarUtils.convertDateToHybrid(date.toEpochDay());
     case TIMESTAMP:
       Timestamp timestamp =
         ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
+      long millis = defaultProleptic ? timestamp.toEpochMilli() :
+          CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
       timestamp = TimestampTZUtil.convertTimestampToZone(
-          timestamp, TimeZone.getDefault().toZoneId(), ZoneOffset.UTC);
+          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
       return timestamp.toEpochMilli();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");

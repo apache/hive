@@ -30,14 +30,19 @@ import org.apache.hadoop.hive.serde2.thrift.test.IntString;
 import org.apache.hadoop.hive.serde2.thrift.test.PropValueUnion;
 import org.apache.hadoop.hive.serde2.thrift.test.SetIntString;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  * TestThriftObjectInspectors.
  *
  */
-public class TestThriftObjectInspectors extends TestCase {
+public class TestThriftObjectInspectors {
 
+  @Test
   public void testThriftObjectInspectors() throws Throwable {
 
     try {
@@ -129,6 +134,7 @@ public class TestThriftObjectInspectors extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
+  @Test
   public void testThriftSetObjectInspector() throws Throwable {
 
     try {

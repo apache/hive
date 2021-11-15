@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2;
 
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -30,8 +30,13 @@ import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestSerdeWithFieldComments extends TestCase {
+/**
+ * TestSerdeWithFieldComments.
+ */
+public class TestSerdeWithFieldComments {
 
   private StructField mockedStructField(String name, String oiTypeName,
                                         String comment) {
@@ -47,6 +52,7 @@ public class TestSerdeWithFieldComments extends TestCase {
     return m;
   }
 
+  @Test
   public void testFieldComments() throws MetaException, SerDeException {
     StructObjectInspector mockSOI = mock(StructObjectInspector.class);
     when(mockSOI.getCategory()).thenReturn(ObjectInspector.Category.STRUCT);

@@ -72,6 +72,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private byte[] vLongBytes;
   private long[] scratchLongs;
   private byte[] scratchBuffer;
+  private byte[] scratchLongBytes;
 
   private final Field root;
   private Deque<Field> stack = new ArrayDeque<>();
@@ -405,12 +406,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     if (scratchLongs == null) {
       scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
       scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES];
+      scratchLongBytes = new byte[LazyBinaryUtils.VLONG_BYTES_LEN];
     }
     LazyBinarySerDe.writeToByteStream(
         output,
         dec,
         scratchLongs,
-        scratchBuffer);
+        scratchBuffer,
+        scratchLongBytes
+        );
     finishElement();
   }
 
@@ -420,12 +424,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     if (scratchLongs == null) {
       scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
       scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES];
+      scratchLongBytes = new byte[LazyBinaryUtils.VLONG_BYTES_LEN];
     }
     LazyBinarySerDe.writeToByteStream(
         output,
         decWritable,
         scratchLongs,
-        scratchBuffer);
+        scratchBuffer,
+        scratchLongBytes
+        );
     finishElement();
   }
 

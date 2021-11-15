@@ -172,7 +172,7 @@ public interface HiveHistory {
    *
    * @param task
    */
-  public void startTask(String queryId, Task<? extends Serializable> task,
+  public void startTask(String queryId, Task<?> task,
       String taskName);
 
   /**
@@ -180,7 +180,7 @@ public interface HiveHistory {
    *
    * @param task
    */
-  public void endTask(String queryId, Task<? extends Serializable> task);
+  public void endTask(String queryId, Task<?> task);
 
   /**
    * Logs progress of a task if ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS is
@@ -188,7 +188,7 @@ public interface HiveHistory {
    *
    * @param task
    */
-  public void progressTask(String queryId, Task<? extends Serializable> task);
+  public void progressTask(String queryId, Task<?> task);
 
 
   /**

@@ -40,8 +40,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -73,8 +73,6 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc() {
   }
 
-  private final static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PartitionDesc.class);
-
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
     this.tableDesc = table;
     setPartSpec(partSpec);
@@ -90,10 +88,6 @@ public class PartitionDesc implements Serializable, Cloneable {
     } else {
       setProperties(part.getMetadataFromPartitionSchema());
     }
-  }
-
-  public PartitionDesc(final Partition part) throws HiveException {
-    this(part, getTableDesc(part.getTable()));
   }
 
   /**
@@ -177,10 +171,10 @@ public class PartitionDesc implements Serializable, Cloneable {
   public Deserializer getDeserializer(Configuration conf) throws Exception {
     Properties schema = getProperties();
     String clazzName = getDeserializerClassName();
-    Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(clazzName)
-        .asSubclass(Deserializer.class), conf);
-    SerDeUtils.initializeSerDe(deserializer, conf, getTableDesc().getProperties(), schema);
-    return deserializer;
+    AbstractSerDe serDe = ReflectionUtil.newInstance(conf.getClassByName(clazzName)
+        .asSubclass(AbstractSerDe.class), conf);
+    serDe.initialize(conf, getTableDesc().getProperties(), schema);
+    return serDe;
   }
 
   public void setInputFileFormatClass(
@@ -223,6 +217,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
+    properties.remove("columns.comments");
     if (properties instanceof CopyOnFirstWriteProperties) {
       this.properties = properties;
     } else {
@@ -255,7 +250,12 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    String tableName = getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    String metaTable = getProperties().getProperty("metaTable");
+    if (metaTable != null && tableName != null) {
+      return tableName + "." + metaTable;
+    }
+    return tableName;
   }
 
   @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

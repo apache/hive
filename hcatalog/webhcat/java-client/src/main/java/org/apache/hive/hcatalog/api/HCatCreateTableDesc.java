@@ -99,7 +99,7 @@ public class HCatCreateTableDesc {
    *
    * @return the table name
    */
-  @Deprecated // @deprecated in favour of {@link HCatTable.#getTableName()}. To be removed in Hive 0.16.
+  @Deprecated // @deprecated in favour of {@link HCatTable.#getDbTableName()}. To be removed in Hive 0.16.
   public String getTableName() {
     return this.hcatTable.getTableName();
   }

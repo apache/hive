@@ -1,0 +1,119 @@
+PREHOOK: query: DESCRIBE FUNCTION position
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION position
+POSTHOOK: type: DESCFUNCTION
+position(substr, str[, pos]) - Returns the position of the first occurance of substr in str after position pos
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED position
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED position
+POSTHOOK: type: DESCFUNCTION
+position(substr, str[, pos]) - Returns the position of the first occurance of substr in str after position pos
+Synonyms: locate
+Example:
+  > SELECT position('bar', 'foobarbar', 5) FROM src LIMIT 1;
+  7
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT position('abc', 'abcd'),
+       position('ccc', 'abcabc'),
+       position('23', 123),
+       position(23, 123),
+       position('abc', 'abcabc', 2),
+       position('abc', 'abcabc', '2'),
+       position(1, TRUE),
+       position(1, FALSE),
+       position(CAST('2' AS TINYINT), '12345'),
+       position('34', CAST('12345' AS SMALLINT)),
+       position('456', CAST('123456789012' AS BIGINT)),
+       position('.25', CAST(1.25 AS FLOAT)),
+       position('.0', CAST(16.0 AS DOUBLE)),
+       position(null, 'abc'),
+       position('abc', null),
+       position('abc', 'abcd', null),
+       position('abc', 'abcd', 'invalid number')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT position('abc', 'abcd'),
+       position('ccc', 'abcabc'),
+       position('23', 123),
+       position(23, 123),
+       position('abc', 'abcabc', 2),
+       position('abc', 'abcabc', '2'),
+       position(1, TRUE),
+       position(1, FALSE),
+       position(CAST('2' AS TINYINT), '12345'),
+       position('34', CAST('12345' AS SMALLINT)),
+       position('456', CAST('123456789012' AS BIGINT)),
+       position('.25', CAST(1.25 AS FLOAT)),
+       position('.0', CAST(16.0 AS DOUBLE)),
+       position(null, 'abc'),
+       position('abc', null),
+       position('abc', 'abcd', null),
+       position('abc', 'abcd', 'invalid number')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: int), 0 (type: int), 2 (type: int), 2 (type: int), 4 (type: int), 4 (type: int), 0 (type: int), 0 (type: int), 2 (type: int), 3 (type: int), 4 (type: int), 2 (type: int), 3 (type: int), null (type: int), null (type: int), 0 (type: int), 0 (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+            ListSink
+
+PREHOOK: query: SELECT position('abc', 'abcd'),
+       position('ccc', 'abcabc'),
+       position('23', 123),
+       position(23, 123),
+       position('abc', 'abcabc', 2),
+       position('abc', 'abcabc', '2'),
+       position(1, TRUE),
+       position(1, FALSE),
+       position(CAST('2' AS TINYINT), '12345'),
+       position('34', CAST('12345' AS SMALLINT)),
+       position('456', CAST('123456789012' AS BIGINT)),
+       position('.25', CAST(1.25 AS FLOAT)),
+       position('.0', CAST(16.0 AS DOUBLE)),
+       position(null, 'abc'),
+       position('abc', null),
+       position('abc', 'abcd', null),
+       position('abc', 'abcd', 'invalid number')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT position('abc', 'abcd'),
+       position('ccc', 'abcabc'),
+       position('23', 123),
+       position(23, 123),
+       position('abc', 'abcabc', 2),
+       position('abc', 'abcabc', '2'),
+       position(1, TRUE),
+       position(1, FALSE),
+       position(CAST('2' AS TINYINT), '12345'),
+       position('34', CAST('12345' AS SMALLINT)),
+       position('456', CAST('123456789012' AS BIGINT)),
+       position('.25', CAST(1.25 AS FLOAT)),
+       position('.0', CAST(16.0 AS DOUBLE)),
+       position(null, 'abc'),
+       position('abc', null),
+       position('abc', 'abcd', null),
+       position('abc', 'abcd', 'invalid number')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	0	2	2	4	4	0	0	2	3	4	2	3	NULL	NULL	0	0

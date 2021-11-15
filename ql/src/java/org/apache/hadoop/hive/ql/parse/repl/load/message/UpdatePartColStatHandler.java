@@ -33,26 +33,29 @@ import java.util.List;
  */
 public class UpdatePartColStatHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     UpdatePartitionColumnStatMessage upcsm =
             deserializer.getUpdatePartitionColumnStatMessage(context.dmd.getPayload());
 
     // Update tablename and database name in the statistics object
     ColumnStatistics colStats = upcsm.getColumnStatistics();
-    ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
-    if (!context.isTableNameEmpty()) {
-      colStatsDesc.setTableName(context.tableName);
+    // In older version of hive, engine might not have set.
+    if (colStats.getEngine() == null) {
+      colStats.setEngine(org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE);
     }
+    ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
     if (!context.isDbNameEmpty()) {
       colStatsDesc.setDbName(context.dbName);
-      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName,
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, colStatsDesc.getTableName(),
                   null);
     }
 
     try {
       return ReplUtils.addTasksForLoadingColStats(colStats, context.hiveConf, updatedMetadata,
-                                                  upcsm.getTableObject(), upcsm.getWriteId());
+                                                  upcsm.getTableObject(), upcsm.getWriteId(),
+                                                  context.getDumpDirectory(),
+                                                  context.getMetricCollector());
     } catch(Exception e) {
       throw new SemanticException(e);
     }

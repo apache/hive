@@ -20,6 +20,7 @@
 package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,8 +113,9 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
       // Set up a common id hash for this job, so that when we create any temporary directory
       // later on, it is guaranteed to be unique.
       String idHash;
+      DecimalFormat df = new DecimalFormat("#.####################");
       if ((idHash = conf.get(HCatConstants.HCAT_OUTPUT_ID_HASH)) == null) {
-        idHash = String.valueOf(Math.random());
+        idHash = String.valueOf(df.format(Math.random()));
       }
       conf.set(HCatConstants.HCAT_OUTPUT_ID_HASH,idHash);
 

@@ -373,6 +373,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
@@ -414,6 +415,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator

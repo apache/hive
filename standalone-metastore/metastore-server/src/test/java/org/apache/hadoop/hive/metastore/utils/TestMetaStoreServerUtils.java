@@ -838,9 +838,28 @@ public class TestMetaStoreServerUtils {
     result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
     assertEquals(expectedConnectionURL, result);
 
-    connectionURL = "jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true";
+    connectionURL = "jdbc:derby:memory:${test.tmp.dir}/"
+        + MetaStoreServerUtils.JUNIT_DATABASE_PREFIX + ";create=true";
     result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
     assertEquals(connectionURL, result);
+  }
+
+  @Test
+  public void testConversionToSignificantNumericTypes() {
+    assertEquals("1", MetaStoreServerUtils.getNormalisedPartitionValue("0001", "tinyint"));
+    assertEquals("1", MetaStoreServerUtils.getNormalisedPartitionValue("0001", "smallint"));
+    assertEquals("10", MetaStoreServerUtils.getNormalisedPartitionValue("00010", "int"));
+    assertEquals("-10", MetaStoreServerUtils.getNormalisedPartitionValue("-00010", "int"));
+
+    assertEquals("10", MetaStoreServerUtils.getNormalisedPartitionValue("00010", "bigint"));
+    assertEquals("-10", MetaStoreServerUtils.getNormalisedPartitionValue("-00010", "bigint"));
+
+    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "float"));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "float"));
+    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.010000", "double"));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.010000", "double"));
+    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "decimal"));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal"));
   }
 
 }

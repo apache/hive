@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,14 +32,14 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.ForwardWalker;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -84,11 +85,11 @@ public class PointLookupOptimizer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // 1. Trigger transformation
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R1", FilterOperator.getOperatorName() + "%"), new FilterTransformer());
 
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
-    GraphWalker ogw = new ForwardWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
+    SemanticGraphWalker ogw = new ForwardWalker(disp);
 
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
@@ -96,7 +97,7 @@ public class PointLookupOptimizer extends Transform {
     return pctx;
   }
 
-  private class FilterTransformer implements NodeProcessor {
+  private class FilterTransformer implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -108,9 +109,7 @@ public class PointLookupOptimizer extends Transform {
       ExprNodeDesc newPredicate = generateInClause(predicate);
       if (newPredicate != null) {
         // Replace filter in current FIL with new FIL
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Generated new predicate with IN clause: " + newPredicate);
-        }
+        LOG.debug("Generated new predicate with IN clause: {}", newPredicate);
         filterOp.getConf().setPredicate(newPredicate);
       }
 
@@ -118,13 +117,13 @@ public class PointLookupOptimizer extends Transform {
     }
 
     private ExprNodeDesc generateInClause(ExprNodeDesc predicate) throws SemanticException {
-      Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), new OrExprProcessor());
 
       // The dispatcher fires the processor corresponding to the closest matching
       // rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, null);
-      GraphWalker egw = new PreOrderOnceWalker(disp);
+      SemanticDispatcher disp = new DefaultRuleDispatcher(null, exprRules, null);
+      SemanticGraphWalker egw = new PreOrderOnceWalker(disp);
 
       List<Node> startNodes = new ArrayList<Node>();
       startNodes.add(predicate);
@@ -135,7 +134,7 @@ public class PointLookupOptimizer extends Transform {
     }
   }
 
-  private class OrExprProcessor implements NodeProcessor {
+  private class OrExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -188,8 +187,7 @@ public class PointLookupOptimizer extends Transform {
           }
 
           // One child
-          conjunctions = new ArrayList<ExprNodeDesc>(1);
-          conjunctions.add(child);
+          conjunctions = Collections.singletonList(child);
         }
 
         // 3. We will extract the literals to introduce in the IN clause.
@@ -243,7 +241,7 @@ public class PointLookupOptimizer extends Transform {
       List<String> names = new ArrayList<String>();
       List<TypeInfo> typeInfos = new ArrayList<TypeInfo>();
       for (int i = 0; i < children.size(); i++) {
-        List<ExprNodeDesc> constantFields = new ArrayList<ExprNodeDesc>(children.size());
+        List<ExprNodeDesc> constantFields = new ArrayList<ExprNodeDesc>();
 
         for (String keyString : columnConstantsMap.keySet()) {
           Pair<ExprNodeColumnDesc, ExprNodeConstantDesc> columnConstant =

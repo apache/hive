@@ -24,32 +24,34 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.executor.QueryExecutor;
 
-public class FunctionDatetime extends Function {
-  public FunctionDatetime(Exec e) {
-    super(e);
+public class FunctionDatetime extends BuiltinFunctions {
+  public FunctionDatetime(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 
    * Register functions
    */
   @Override
-  public void register(Function f) {
-    f.map.put("DATE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { date(ctx); }});
-    f.map.put("FROM_UNIXTIME", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { fromUnixtime(ctx); }});
-    f.map.put("NOW", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { now(ctx); }});
-    f.map.put("TIMESTAMP_ISO", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { timestampIso(ctx); }});
-    f.map.put("TO_TIMESTAMP", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { toTimestamp(ctx); }});
-    f.map.put("UNIX_TIMESTAMP", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { unixTimestamp(ctx); }});
-  
-    f.specMap.put("CURRENT_DATE", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentDate(ctx); }});
-    f.specMap.put("CURRENT_TIMESTAMP", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentTimestamp(ctx); }});
-    f.specMap.put("SYSDATE", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentTimestamp(ctx); }});
+  public void register(BuiltinFunctions f) {
+    f.map.put("DATE", this::date);
+    f.map.put("FROM_UNIXTIME", this::fromUnixtime);
+    f.map.put("NOW", ctx -> now(ctx));
+    f.map.put("TIMESTAMP_ISO", this::timestampIso);
+    f.map.put("TO_TIMESTAMP", this::toTimestamp);
+    f.map.put("UNIX_TIMESTAMP", this::unixTimestamp);
+    f.map.put("CURRENT_TIME_MILLIS", this::currentTimeMillis);
 
-    f.specSqlMap.put("CURRENT_DATE", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentDateSql(ctx); }});
-    f.specSqlMap.put("CURRENT_TIMESTAMP", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentTimestampSql(ctx); }});
+    f.specMap.put("CURRENT_DATE", this::currentDate);
+    f.specMap.put("CURRENT_TIMESTAMP", this::currentTimestamp);
+    f.specMap.put("SYSDATE", this::currentTimestamp);
+
+    f.specSqlMap.put("CURRENT_DATE", (FuncSpecCommand) this::currentDateSql);
+    f.specSqlMap.put("CURRENT_TIMESTAMP", (FuncSpecCommand) this::currentTimestampSql);
  }
   
   /**
@@ -103,7 +105,7 @@ public class FunctionDatetime extends Function {
       evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
     } 
     else {
-      evalString(exec.getFormattedText(ctx));
+      evalString(Exec.getFormattedText(ctx));
     }
   }
   
@@ -169,7 +171,7 @@ public class FunctionDatetime extends Function {
    * FROM_UNIXTIME() function (convert seconds since 1970-01-01 00:00:00 to timestamp)
    */
   void fromUnixtime(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
+    int cnt = BuiltinFunctions.getParamCount(ctx);
     if (cnt == 0) {
       evalNull();
       return;
@@ -187,5 +189,9 @@ public class FunctionDatetime extends Function {
    */
   void unixTimestamp(HplsqlParser.Expr_func_paramsContext ctx) {
     evalVar(new Var(System.currentTimeMillis()/1000));
+  }
+
+  public void currentTimeMillis(HplsqlParser.Expr_func_paramsContext ctx) {
+    evalVar(new Var(System.currentTimeMillis()));
   }
 }  

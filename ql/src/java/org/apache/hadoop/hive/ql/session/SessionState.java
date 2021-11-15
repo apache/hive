@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessController;
@@ -47,7 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -56,6 +57,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -72,7 +74,10 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -91,8 +96,10 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -106,6 +113,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,10 +128,10 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState {
+public class SessionState implements ISessionAuthState{
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
-  private static final String TMP_PREFIX = "_tmp_space.db";
+  public static final String TMP_PREFIX = "_tmp_space.db";
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
@@ -131,13 +139,21 @@ public class SessionState {
   static final String INFO_FILE_NAME = "inuse.info";
 
   /**
+   *
+   */
+  private final ConcurrentHashMap<String, Map<Object, Object>> cache = new ConcurrentHashMap<>();
+
+  /**
    * Concurrent since SessionState is often propagated to workers in thread pools
    */
   private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
       new ConcurrentHashMap<>();
-  private final Map<String, SessionHiveMetaStoreClient.TempTable> tempPartitions =
+  private final Map<String, TempTable> tempPartitions =
       new ConcurrentHashMap<>();
+
+  // Prepared statement plans
+  private final Map<String, SemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -153,6 +169,11 @@ public class SessionState {
    * silent mode.
    */
   protected boolean isSilent;
+
+  /**
+   * silent mode.
+   */
+  protected boolean isQtestLogging;
 
   /**
    * verbose mode
@@ -250,6 +271,8 @@ public class SessionState {
 
   private SparkSession sparkSession;
 
+  private final Map<Class, Object> dynamicVars = new HashMap<>();
+
   /**
    * Gets information about HDFS encryption
    */
@@ -302,6 +325,8 @@ public class SessionState {
 
   private final Registry registry;
 
+  private final CleanupService cleanupService;
+
   /**
    * Used to cache functions in use for a query, during query planning
    * and is later used for function usage authorization.
@@ -325,11 +350,30 @@ public class SessionState {
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  private Hive hiveDb;
+  private final Map<String, QueryState> queryStateMap = new HashMap<>();
+
+  public QueryState getQueryState(String queryId) {
+    return queryStateMap.get(queryId);
+  }
+
+  public void addQueryState(String queryId, QueryState queryState) {
+    queryStateMap.put(queryId, queryState);
+  }
+
+  public void removeQueryState(String queryId) {
+    queryStateMap.remove(queryId);
+  }
+
+  @Override
   public HiveConf getConf() {
     return sessionConf;
   }
 
   public void setConf(HiveConf conf) {
+    if (hiveDb != null) {
+      hiveDb.setConf(conf);
+    }
     this.sessionConf = conf;
   }
 
@@ -365,6 +409,10 @@ public class SessionState {
     }
   }
 
+  public boolean getIsQtestLogging() {
+    return isQtestLogging;
+  }
+
   public boolean isHiveServerQuery() {
     return this.isHiveServerQuery;
   }
@@ -374,6 +422,10 @@ public class SessionState {
       sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
+  }
+
+  public void setIsQtestLogging(boolean isQtestLogging) {
+    this.isQtestLogging = isQtestLogging;
   }
 
   public ReentrantLock getCompileLock() {
@@ -389,11 +441,11 @@ public class SessionState {
   }
 
   public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+    this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
   }
 
   public boolean getIsUsingThriftJDBCBinarySerDe() {
-	return isUsingThriftJDBCBinarySerDe;
+    return isUsingThriftJDBCBinarySerDe;
   }
 
   public void setIsHiveServerQuery(boolean isHiveServerQuery) {
@@ -405,6 +457,10 @@ public class SessionState {
   }
 
   public SessionState(HiveConf conf, String userName) {
+    this(conf, userName, SyncCleanupService.INSTANCE);
+  }
+
+  public SessionState(HiveConf conf, String userName, CleanupService cleanupService) {
     this.sessionConf = conf;
     this.userName = userName;
     this.registry = new Registry(false);
@@ -415,7 +471,6 @@ public class SessionState {
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
-    overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
@@ -432,6 +487,7 @@ public class SessionState {
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
     killQuery = new NullKillQuery();
+    this.cleanupService = cleanupService;
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
   }
@@ -457,7 +513,7 @@ public class SessionState {
     final String currThreadName = Thread.currentThread().getName();
     if (!currThreadName.contains(logPrefix)) {
       final String newThreadName = logPrefix + " " + currThreadName;
-      LOG.info("Updating thread name to {}", newThreadName);
+      LOG.debug("Updating thread name to {}", newThreadName);
       Thread.currentThread().setName(newThreadName);
     }
   }
@@ -468,7 +524,7 @@ public class SessionState {
     final String currThreadName = Thread.currentThread().getName();
     if (currThreadName.contains(logPrefix)) {
       final String[] names = currThreadName.split(logPrefix);
-      LOG.info("Resetting thread name to {}", names[names.length - 1]);
+      LOG.debug("Resetting thread name to {}", names[names.length - 1]);
       Thread.currentThread().setName(names[names.length - 1].trim());
     }
   }
@@ -523,7 +579,7 @@ public class SessionState {
   }
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     try {
-      return getHdfsEncryptionShim(FileSystem.get(sessionConf));
+      return getHdfsEncryptionShim(FileSystem.get(sessionConf), sessionConf);
     }
     catch(HiveException hiveException) {
       throw hiveException;
@@ -533,20 +589,31 @@ public class SessionState {
     }
   }
 
-  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
-    if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
-      try {
-        if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShims.put(fs.getUri(), ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf));
-        } else {
-          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
-        }
-      } catch (Exception e) {
-        throw new HiveException(e);
-      }
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs, HiveConf conf) throws HiveException {
+
+    if (!"hdfs".equals(fs.getUri().getScheme())) {
+      LOG.warn("Unable to get hdfs encryption shim, because FileSystem URI schema is not hdfs. Returning null. "
+          + "FileSystem URI: " + fs.getUri());
+      return null;
     }
 
-    return hdfsEncryptionShims.get(fs.getUri());
+    if (conf.getBoolVar(ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON)) {
+      if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
+          hdfsEncryptionShims.put(fs.getUri(), getHdfsEncryptionShimInternal(fs));
+      }
+      return hdfsEncryptionShims.get(fs.getUri());
+
+    } else { // skip the cache
+      return getHdfsEncryptionShimInternal(fs);
+    }
+  }
+
+  private HadoopShims.HdfsEncryptionShim getHdfsEncryptionShimInternal(FileSystem fs) throws HiveException {
+    try {
+      return ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
@@ -872,6 +939,10 @@ public class SessionState {
     }
   }
 
+  public CleanupService getCleanupService() {
+    return cleanupService;
+  }
+
   private void dropSessionPaths(Configuration conf) throws IOException {
     if (hdfsSessionPath != null) {
       if (hdfsSessionPathLockFile != null) {
@@ -898,9 +969,7 @@ public class SessionState {
       } else {
         fs = path.getFileSystem(conf);
       }
-      fs.cancelDeleteOnExit(path);
-      fs.delete(path, true);
-      LOG.info("Deleted directory: {} on fs with scheme {}", path, fs.getScheme());
+      cleanupService.deleteRecursive(path, fs);
     } catch (IllegalArgumentException | UnsupportedOperationException | IOException e) {
       LOG.error("Failed to delete path at {} on fs with scheme {}", path,
           (fs == null ? "Unknown-null" : fs.getScheme()), e);
@@ -975,7 +1044,7 @@ public class SessionState {
     authorizerV2.applyAuthorizationConfigPolicy(sessionConf);
     // update config in Hive thread local as well and init the metastore client
     try {
-      Hive.get(sessionConf).getMSC();
+      Hive.getWithoutRegisterFns(sessionConf).getMSC();
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
@@ -1173,6 +1242,17 @@ public class SessionState {
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
+    public boolean getIsQtestLogging() {
+      SessionState ss = SessionState.get();
+      // use the session or the one supplied in constructor
+      return (ss != null) ? ss.getIsQtestLogging() : false;
+    }
+
     /**
      * Logs into the log file.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
@@ -1264,7 +1344,9 @@ public class SessionState {
      * @param detail Extra detail to log which will be not printed if null
      */
     public void printError(String error, String detail) {
-      getErrStream().println(error);
+      if(!getIsSilent() || getIsQtestLogging()) {
+        getErrStream().println(error);
+      }
       LOG.error(error + StringUtils.defaultString(detail));
     }
   }
@@ -1343,35 +1425,35 @@ public class SessionState {
    * @throws IOException
    */
   public void loadReloadableAuxJars() throws IOException {
-    final Set<String> reloadedAuxJars = new HashSet<String>();
+    LOG.info("Reloading auxiliary JAR files");
 
     final String renewableJarPath = sessionConf.getVar(ConfVars.HIVERELOADABLEJARS);
     // do nothing if this property is not specified or empty
-    if (renewableJarPath == null || renewableJarPath.isEmpty()) {
+    if (StringUtils.isBlank(renewableJarPath)) {
+      LOG.warn("Configuration {} not specified", ConfVars.HIVERELOADABLEJARS);
       return;
     }
 
-    Set<String> jarPaths = FileUtils.getJarFilesByPath(renewableJarPath, sessionConf);
-
     // load jars under the hive.reloadable.aux.jars.path
-    if (!jarPaths.isEmpty()) {
-      reloadedAuxJars.addAll(jarPaths);
-    }
+    final Set<String> jarPaths = FileUtils.getJarFilesByPath(renewableJarPath, sessionConf);
+
+    LOG.info("Auxiliary JAR files discovered for reload: {}", jarPaths);
 
     // remove the previous renewable jars
-    if (preReloadableAuxJars != null && !preReloadableAuxJars.isEmpty()) {
+    if (!preReloadableAuxJars.isEmpty()) {
       Utilities.removeFromClassPath(preReloadableAuxJars.toArray(new String[0]));
     }
 
-    if (reloadedAuxJars != null && !reloadedAuxJars.isEmpty()) {
+    if (!jarPaths.isEmpty()) {
       AddToClassPathAction addAction = new AddToClassPathAction(
-          SessionState.get().getConf().getClassLoader(), reloadedAuxJars);
+          SessionState.get().getConf().getClassLoader(), jarPaths);
       final ClassLoader currentCLoader = AccessController.doPrivileged(addAction);
       sessionConf.setClassLoader(currentCLoader);
       Thread.currentThread().setContextClassLoader(currentCLoader);
     }
+
     preReloadableAuxJars.clear();
-    preReloadableAuxJars.addAll(reloadedAuxJars);
+    preReloadableAuxJars.addAll(jarPaths);
   }
 
   static void registerJars(List<String> newJars) throws IllegalArgumentException {
@@ -1505,7 +1587,7 @@ public class SessionState {
         Set<String> downloadedValues = new HashSet<String>();
 
         for (URI uri : downloadedURLs) {
-          String resourceValue = uri.toString();
+          String resourceValue = uri.getPath();
           downloadedValues.add(resourceValue);
           localized.add(resourceValue);
           if (reverseResourcePathMap.containsKey(resourceValue)) {
@@ -1775,6 +1857,7 @@ public class SessionState {
       txnMgr.closeTxnManager();
     }
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
+    Utilities.restoreSessionSpecifiedClassLoader(getClass().getClassLoader());
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);
@@ -1805,9 +1888,38 @@ public class SessionState {
       unCacheDataNucleusClassLoaders();
     } finally {
       // removes the threadlocal variables, closes underlying HMS connection
-      Hive.closeCurrent();
+      if (hiveDb != null) {
+        hiveDb.close(true);
+        hiveDb = null;
+      }
     }
     progressMonitor = null;
+    // Hadoop's ReflectionUtils caches constructors for the classes it instantiated.
+    // In UDFs, this can result in classloaders not getting GCed for a temporary function,
+    // resulting in a PermGen leak when used extensively from HiveServer2
+    // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
+    // cleared up, we would have to retain this to avoid mem leak.
+    clearReflectionUtilsCache();
+    for (Object each : dynamicVars.values()) {
+      if (each instanceof Closeable) {
+        ((Closeable)each).close();
+      }
+    }
+    dynamicVars.clear();
+  }
+
+  private void clearReflectionUtilsCache() {
+    Method clearCacheMethod;
+    try {
+      clearCacheMethod = ReflectionUtils.class.getDeclaredMethod("clearCache");
+      if (clearCacheMethod != null) {
+        clearCacheMethod.setAccessible(true);
+        clearCacheMethod.invoke(null);
+        LOG.debug("Cleared Hadoop ReflectionUtils CONSTRUCTOR_CACHE");
+      }
+    } catch (Exception e) {
+      LOG.info("Failed to clear up Hadoop ReflectionUtils CONSTRUCTOR_CACHE", e);
+    }
   }
 
   private void unCacheDataNucleusClassLoaders() {
@@ -1909,6 +2021,7 @@ public class SessionState {
     }
   }
 
+  @Override
   public String getUserName() {
     return userName;
   }
@@ -1924,7 +2037,12 @@ public class SessionState {
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
   }
-  public Map<String, SessionHiveMetaStoreClient.TempTable> getTempPartitions() {
+
+  public Map<String, SemanticAnalyzer> getPreparePlans() {
+    return preparePlanMap;
+  }
+
+  public Map<String, TempTable> getTempPartitions() {
     return tempPartitions;
   }
 
@@ -1953,6 +2071,15 @@ public class SessionState {
 
   public void setSparkSession(SparkSession sparkSession) {
     this.sparkSession = sparkSession;
+  }
+
+  public void addDynamicVar(Object object) {
+    dynamicVars.put(object.getClass(), object);
+  }
+
+  public <T> T getDynamicVar(Class<T> clazz) {
+    Object value = dynamicVars.get(clazz);
+    return value == null ? null : clazz.cast(value);
   }
 
   /**
@@ -2078,6 +2205,45 @@ public class SessionState {
   public String getNewSparkSessionId() {
     return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
   }
+
+  /**
+   * Can be called when we start compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void startScope(String queryId) {
+    Map<Object, Object> existingVal = cache.put(queryId, new HashMap<>());
+    Preconditions.checkState(existingVal == null);
+  }
+
+  /**
+   * Can be called when we end compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void endScope(String queryId) {
+    Map<Object, Object> existingVal = cache.remove(queryId);
+    Preconditions.checkState(existingVal != null);
+  }
+
+  /**
+   * Retrieves the query cache for the given query.
+   * @param queryId the unique identifier of the query
+   * @return the cache for the query
+   */
+  public Map<Object, Object> getQueryCache(String queryId) {
+    return cache.get(queryId);
+  }
+
+  public Hive getHiveDb() throws HiveException {
+    if (hiveDb == null) {
+      hiveDb = Hive.createHiveForSession(sessionConf);
+      // Need to setAllowClose to false. For legacy reasons, the Hive object is stored
+      // in thread local storage. If allowClose is true, the session can get closed when
+      // the thread goes away which is not desirable when the Hive object is used across
+      // different queries in the session.
+      hiveDb.setAllowClose(false);
+    }
+    return hiveDb;
+  }
 }
 
 class ResourceMaps {
@@ -2140,5 +2306,4 @@ class ResourceMaps {
     }
     return result;
   }
-
 }

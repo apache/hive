@@ -133,4 +133,8 @@ public class ForeignKeyInfo implements Serializable {
     sb.append("]");
     return sb.toString();
   }
+
+  public static boolean isForeignKeyInfoNotEmpty(ForeignKeyInfo info) {
+    return info != null && !info.getForeignKeys().isEmpty();
+  }
 }

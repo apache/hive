@@ -17,37 +17,45 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import org.mockito.Mockito;
 
 /**
  * Tests for the compactor Initiator thread.
@@ -71,8 +79,8 @@ public class TestInitiator extends CompactorTest {
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(Worker.hostname() + "-193892");
-    txnHandler.findNextToCompact("nosuchhost-193892");
+    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", "4.0.0"));
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0"));
 
     startInitiator();
 
@@ -98,7 +106,7 @@ public class TestInitiator extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "rfrw1", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact("nosuchhost-193892");
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0"));
 
     conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 1L, TimeUnit.MILLISECONDS);
 
@@ -200,35 +208,48 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
+  /**
+   * Test that HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD triggers compaction.
+   *
+   * @throws Exception
+   */
   @Test
-  public void cleanEmptyAbortedTxns() throws Exception {
-    // Test that we are cleaning aborted transactions with no components left in txn_components.
-    // Put one aborted transaction with an entry in txn_components to make sure we don't
-    // accidently clean it too.
-    Table t = newTable("default", "ceat", false);
-
+  public void compactExpiredAbortedTxns() throws Exception {
+    Table t = newTable("default", "expiredAbortedTxns", false);
+    // abort a txn
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
-    comp.setTablename("ceat");
-    comp.setOperationType(DataOperationType.UPDATE);
+    comp.setOperationType(DataOperationType.DELETE);
+    comp.setTablename("expiredAbortedTxns");
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
-    LockResponse res = txnHandler.lock(req);
+    txnHandler.lock(req);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
-    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50);
-    OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(
-      TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50, "user", "hostname"));
-    txnHandler.abortTxns(new AbortTxnsRequest(resp.getTxn_ids()));
-    GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
-    Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
+    // before setting, check that no compaction is queued
+    initiateAndVerifyCompactionQueueLength(0);
 
+    // negative number disables threshold check
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, -1,
+        TimeUnit.MILLISECONDS);
+    Thread.sleep(1L);
+    initiateAndVerifyCompactionQueueLength(0);
+
+    // set to 1 ms, wait 1 ms, and check that minor compaction is queued
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 1, TimeUnit.MILLISECONDS);
+    Thread.sleep(1L);
+    ShowCompactResponse rsp = initiateAndVerifyCompactionQueueLength(1);
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+  }
+
+  private ShowCompactResponse initiateAndVerifyCompactionQueueLength(int expectedLength)
+      throws Exception {
     startInitiator();
-
-    openTxns = txnHandler.getOpenTxns();
-    Assert.assertEquals(1, openTxns.getOpen_txnsSize());
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(expectedLength, rsp.getCompactsSize());
+    return rsp;
   }
 
   @Test
@@ -389,6 +410,42 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals("initiated", compacts.get(0).getState());
     Assert.assertEquals("cphdp", compacts.get(0).getTablename());
     Assert.assertEquals("ds=today", compacts.get(0).getPartitionname());
+    Assert.assertEquals(CompactionType.MAJOR, compacts.get(0).getType());
+  }
+
+  @Test
+  public void compactCamelCasePartitionValue() throws Exception {
+    Table t = newTable("default", "test_table", true);
+    Partition p = newPartition(t, "ToDay");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "test_table", 23);
+
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+    comp.setTablename("test_table");
+    comp.setPartitionname("dS=ToDay");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    long writeid = allocateWriteId("default", "test_table", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("initiated", compacts.get(0).getState());
+    Assert.assertEquals("test_table", compacts.get(0).getTablename());
+    Assert.assertEquals("ds=ToDay", compacts.get(0).getPartitionname());
     Assert.assertEquals(CompactionType.MAJOR, compacts.get(0).getType());
   }
 
@@ -769,6 +826,255 @@ public class TestInitiator extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(0, compacts.size());
   }
+
+  @Test
+  public void processCompactionCandidatesInParallel() throws Exception {
+    Table t = newTable("default", "dp", true);
+    List<LockComponent> components = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      Partition p = newPartition(t, "part" + (i + 1));
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+      comp.setTablename("dp");
+      comp.setPartitionname("ds=part" + (i + 1));
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions("default", "dp", 23);
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId("default", "dp", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(10, compacts.size());
+  }
+
+
+  @Test
+  public void compactTableWithMultipleBase() throws Exception {
+    Table t = newTable("default", "nctdpnhe", false);
+
+    addBaseFile(t, null, 50L, 50);
+    addBaseFile(t, null, 100L, 50);
+
+    burnThroughTransactions("default", "nctdpnhe", 102);
+
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+    comp.setTablename("nctdpnhe");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    long writeid = allocateWriteId("default", "nctdpnhe", txnid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals("initiated",rsp.getCompacts().get(0).getState());
+
+    startWorker();
+    Thread.sleep(1L);
+    ShowCompactResponse response = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("ready for cleaning",response.getCompacts().get(0).getState());
+  }
+
+  /**
+   * Tests org.apache.hadoop.hive.ql.txn.compactor.CompactorThread#findUserToRunAs(java.lang.String, org.apache.hadoop
+   * .hive.metastore.api.Table).
+   * Used by Worker and Initiator.
+   * Initiator caches this via Initiator#resolveUserToRunAs.
+   * @throws Exception
+   */
+  @Test
+  public void testFindUserToRunAs() throws Exception {
+    Table t = newTable("default", "tfutra", false);
+
+    CompactorThread initiator = new Initiator();
+    initiator.setConf(conf);
+    
+    String userFromConf = "randomUser123";
+
+    // user set in config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    initiator.setConf(conf);
+    Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+
+    // table dir owner (is probably not "randomUser123")
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // simulate restarting Initiator
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+  }
+
+  /**
+   * Tests org.apache.hadoop.hive.ql.txn.compactor.Initiator#resolveUserToRunAs(java.util.Map, 
+   * org.apache.hadoop.hive.metastore.api.Table, org.apache.hadoop.hive.metastore.api.Partition)
+   * Used by Initiator only.
+   * @throws Exception
+   */
+  @Test
+  public void resolveUserToRunAs() throws Exception {
+    Table t = newTable("default", "tfutra", false);
+
+    Map<String, String> tblNameOwners = new HashMap<>();
+    Initiator initiator = new Initiator();
+
+    String userFromConf = "randomUser123";
+
+    // user set in config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    initiator.setConf(conf);
+    Assert.assertEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+
+    
+    // table dir owner (is probably not "randomUser123")
+    // config changes can happen on Initiator restart; a restart would clear cache
+    tblNameOwners = new HashMap<>();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+    // table dir owner again, retrieved from cache
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+  }
+
+  @Test public void testInitiatorFailure() throws Exception {
+    String tableName = "my_table";
+    Table t = newTable("default", tableName, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 1);
+
+    // 2 aborts
+    for (int i = 0; i < 2; i++) {
+      long txnid = openTxn();
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setTablename(tableName);
+      comp.setOperationType(DataOperationType.UPDATE);
+      List<LockComponent> components = new ArrayList<LockComponent>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      LockResponse res = txnHandler.lock(req);
+      txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    }
+
+    // run and fail initiator
+    Initiator initiator = Mockito.spy(new Initiator());
+    initiator.setThreadId((int) t.getId());
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
+        .when(initiator).resolveTable(any());
+    initiator.run();
+
+    // verify status of table compaction
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("did not initiate", compacts.get(0).getState());
+    Assert.assertEquals(tableName, compacts.get(0).getTablename());
+  }
+
+  @Test
+  public void noCompactForInsertOnly() throws Exception {
+    Map<String, String> parameters = new HashMap<String, String>(1);
+    parameters.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+    newTable("default", "ncfio", false, parameters);
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM, false);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 1);
+
+    // 2 aborts
+    for (int i = 0; i < 2; i++) {
+      long txnid = openTxn();
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setTablename("ncfio");
+      comp.setOperationType(DataOperationType.UPDATE);
+      List<LockComponent> components = new ArrayList<LockComponent>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      txnHandler.lock(req);
+      txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    }
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(0, rsp.getCompactsSize());
+  }
+
+
+  @Test
+  public void testInitiatorHostAndVersion() throws Exception {
+    String tableName = "my_table";
+    Table t = newTable("default", tableName, false);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 1);
+
+    // 2 aborts
+    for (int i = 0; i < 2; i++) {
+      long txnid = openTxn();
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setTablename(tableName);
+      comp.setOperationType(DataOperationType.UPDATE);
+      List<LockComponent> components = new ArrayList<>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      txnHandler.lock(req);
+      txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    }
+
+    // need to mock the runtime version, because the manifest file won't be there in the mvn test setup
+    Initiator initiator = Mockito.spy(new Initiator());
+    initiator.setThreadId((int) t.getId());
+    initiator.setConf(conf);
+    String runtimeVersion = "4.0.0-SNAPSHOT";
+    doReturn(runtimeVersion).when(initiator).getRuntimeVersion();
+    initiator.init(new AtomicBoolean(true));
+    initiator.run();
+
+    // verify status of table compaction
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("initiated", compacts.get(0).getState());
+    Assert.assertEquals(tableName, compacts.get(0).getTablename());
+    Assert.assertEquals(runtimeVersion, compacts.get(0).getInitiatorVersion());
+    // split the threadid
+    String[] parts = compacts.get(0).getInitiatorId().split("-");
+    Assert.assertTrue(parts.length > 1);
+    Assert.assertEquals(ServerUtils.hostname(), String.join("-", Arrays.copyOfRange(parts, 0, parts.length - 1)));
+  }
+
+  private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {
+    FindNextCompactRequest request = new FindNextCompactRequest();
+    request.setWorkerId(workerId);
+    request.setWorkerVersion(workerVersion);
+    return request;
+  }
+
   @Override
   boolean useHive130DeltaDirName() {
     return false;

@@ -18,12 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestUDFUnbase64 extends TestCase {
+/**
+ * TestUDFUnbase64.
+ */
+public class TestUDFUnbase64 {
+  @Test
   public void testUnbase64Conversion(){
     Text base64 = new Text();
     // Let's make sure we only read the relevant part of the writable in case of reuse

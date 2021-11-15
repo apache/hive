@@ -1,0 +1,2512 @@
+PREHOOK: query: explain extended prepare pcount from select count(*) from src where key > ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended prepare pcount from select count(*) from src where key > ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`src`
+WHERE `key` > CAST(? AS STRING)
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key > CAST( $1 AS STRING)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (key > CAST( $1 AS STRING)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [src]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pcount from select count(*) from src where key > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key > CAST( '200' AS STRING)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key > CAST( '200' AS STRING)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pcount from select count(*) from src where key > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+378
+PREHOOK: query: prepare pcount from select count(*) from src where key > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+497
+PREHOOK: query: explain prepare p1 from select * from src where key > ? order by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare p1 from select * from src where key > ? order by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key > CAST( $1 AS STRING)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key > CAST( $1 AS STRING)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Top N Key Operator
+                      sort order: +
+                      keys: key (type: string)
+                      null sort order: z
+                      Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Select Operator
+                        expressions: key (type: string), value (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key > CAST( '100' AS STRING)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key > CAST( '100' AS STRING)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Top N Key Operator
+                      sort order: +
+                      keys: key (type: string)
+                      null sort order: z
+                      Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Select Operator
+                        expressions: key (type: string), value (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+PREHOOK: query: explain
+    prepare pint
+    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+    prepare pint
+    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  filterExpr: ((cint <= $1) and (cbigint <= $2) and (cfloat <> $3)) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 183480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((cint <= $1) and (cbigint <= $2) and (cfloat <> $3)) (type: boolean)
+                    Statistics: Num rows: 1365 Data size: 20400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint (type: tinyint)
+                      outputColumnNames: ctinyint
+                      Statistics: Num rows: 1365 Data size: 20400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: avg(ctinyint)
+                        keys: ctinyint (type: tinyint)
+                        minReductionHashAggr: 0.9040293
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 131 Data size: 10352 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: tinyint)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: tinyint)
+                          Statistics: Num rows: 131 Data size: 10352 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: struct<count:bigint,sum:double,input:tinyint>)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: double)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 131 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (_col1 < $4) (type: boolean)
+                    Statistics: Num rows: 43 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col1 (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 43 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 43 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pint
+    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pint
+    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  filterExpr: ((cint <= 100) and (cbigint <= 5000000) and (cfloat <> 0.023)) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 183480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((cint <= 100) and (cbigint <= 5000000) and (cfloat <> 0.023)) (type: boolean)
+                    Statistics: Num rows: 3080 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint (type: tinyint)
+                      outputColumnNames: ctinyint
+                      Statistics: Num rows: 3080 Data size: 46000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: avg(ctinyint)
+                        keys: ctinyint (type: tinyint)
+                        minReductionHashAggr: 0.95746756
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 131 Data size: 10352 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: tinyint)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: tinyint)
+                          Statistics: Num rows: 131 Data size: 10352 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: struct<count:bigint,sum:double,input:tinyint>)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: double)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 131 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (_col1 < 0) (type: boolean)
+                    Statistics: Num rows: 43 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col1 (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 43 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 43 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pint
+    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pint
+    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-51.0
+PREHOOK: query: explain
+    prepare psint
+    from select count(*) as ag from alltypesorc where ctinyint = ?  and csmallint != ? group by cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+    prepare psint
+    from select count(*) as ag from alltypesorc where ctinyint = ?  and csmallint != ? group by cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  filterExpr: ((ctinyint = UDFToByte($1)) and (csmallint <> UDFToShort($2))) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 110092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ctinyint = UDFToByte($1)) and (csmallint <> UDFToShort($2))) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 55048 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: cint
+                      Statistics: Num rows: 6144 Data size: 55048 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: cint (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 6104 Data size: 67060 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 6104 Data size: 67060 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6104 Data size: 67060 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 6104 Data size: 48832 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 6104 Data size: 48832 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare psint
+    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: prepare psint
+    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  filterExpr: ((ctinyint <= UDFToByte(3)) and (csmallint <> UDFToShort(10))) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 110092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ctinyint <= UDFToByte(3)) and (csmallint <> UDFToShort(10))) (type: boolean)
+                    Statistics: Num rows: 4096 Data size: 36708 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: cint
+                      Statistics: Num rows: 4096 Data size: 36708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: cint (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 4096 Data size: 45004 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 4096 Data size: 45004 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4096 Data size: 45004 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 4096 Data size: 32768 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 4096 Data size: 32768 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare psint
+    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: prepare psint
+    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+553
+547
+523
+1665
+PREHOOK: query: create table tcharvchar(c char(10), v varchar(50)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tcharvchar
+POSTHOOK: query: create table tcharvchar(c char(10), v varchar(50)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tcharvchar
+PREHOOK: query: insert into tcharvchar values ('c1', 'v10'), ('c2', 'v100')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tcharvchar
+POSTHOOK: query: insert into tcharvchar values ('c1', 'v10'), ('c2', 'v100')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tcharvchar
+POSTHOOK: Lineage: tcharvchar.c SCRIPT []
+POSTHOOK: Lineage: tcharvchar.v SCRIPT []
+PREHOOK: query: explain prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tcharvchar
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tcharvchar
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tcharvchar
+                  filterExpr: ((c = CAST( $1 AS CHAR(10))) and (v <> CAST( $2 AS varchar(50)))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c = CAST( $1 AS CHAR(10))) and (v <> CAST( $2 AS varchar(50)))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@tcharvchar
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@tcharvchar
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: tcharvchar
+                  filterExpr: ((c = CAST( 'c1' AS CHAR(10))) and (v <> CAST( 'v1' AS varchar(50)))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c = CAST( 'c1' AS CHAR(10))) and (v <> CAST( 'v1' AS varchar(50)))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@tcharvchar
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@tcharvchar
+#### A masked pattern was here ####
+1
+PREHOOK: query: drop table tcharvchar
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tcharvchar
+PREHOOK: Output: default@tcharvchar
+POSTHOOK: query: drop table tcharvchar
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tcharvchar
+POSTHOOK: Output: default@tcharvchar
+PREHOOK: query: create table tdatets(t timestamp, d date, dc decimal(10,2)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tdatets
+POSTHOOK: query: create table tdatets(t timestamp, d date, dc decimal(10,2)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tdatets
+PREHOOK: query: insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date), 5.00)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tdatets
+POSTHOOK: query: insert into tdatets values ( cast('2011-01-01 00:00:00' as timestamp), cast('1919-11-01' as date), 5.00)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tdatets
+POSTHOOK: Lineage: tdatets.d SCRIPT []
+POSTHOOK: Lineage: tdatets.dc SCRIPT []
+POSTHOOK: Lineage: tdatets.t SCRIPT []
+PREHOOK: query: insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date), 4.00)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tdatets
+POSTHOOK: query: insert into tdatets values ( cast('2010-01-01 04:00:00' as timestamp), cast('1918-11-01' as date), 4.00)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tdatets
+POSTHOOK: Lineage: tdatets.d SCRIPT []
+POSTHOOK: Lineage: tdatets.dc SCRIPT []
+POSTHOOK: Lineage: tdatets.t SCRIPT []
+PREHOOK: query: explain
+    prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tdatets
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+    prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tdatets
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tdatets
+                  filterExpr: ((t <> CAST( $1 AS TIMESTAMP)) and (d <> CAST( $2 AS DATE)) and (dc > CAST( $3 AS decimal(10,2)))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((t <> CAST( $1 AS TIMESTAMP)) and (d <> CAST( $2 AS DATE)) and (dc > CAST( $3 AS decimal(10,2)))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@tdatets
+#### A masked pattern was here ####
+POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@tdatets
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: tdatets
+                  filterExpr: ((t <> CAST( '2012-01-01 00:01:01' AS TIMESTAMP)) and (d <> CAST( '2020-01-01' AS DATE)) and (dc > CAST( 1 AS decimal(10,2)))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((t <> CAST( '2012-01-01 00:01:01' AS TIMESTAMP)) and (d <> CAST( '2020-01-01' AS DATE)) and (dc > CAST( 1 AS decimal(10,2)))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@tdatets
+#### A masked pattern was here ####
+POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@tdatets
+#### A masked pattern was here ####
+2
+PREHOOK: query: drop table tdatets
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tdatets
+PREHOOK: Output: default@tdatets
+POSTHOOK: query: drop table tdatets
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tdatets
+POSTHOOK: Output: default@tdatets
+PREHOOK: query: explain prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  filterExpr: (cint > UDFToInteger((($1 + $2) + $3))) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 146784 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint > UDFToInteger((($1 + $2) + $3))) (type: boolean)
+                    Statistics: Num rows: 4096 Data size: 48944 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint (type: tinyint), cbigint (type: bigint)
+                      outputColumnNames: ctinyint, cbigint
+                      Statistics: Num rows: 4096 Data size: 48944 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(ctinyint), max(cbigint)
+                        keys: ctinyint (type: tinyint)
+                        minReductionHashAggr: 0.9680176
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 131 Data size: 1968 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: tinyint)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: tinyint)
+                          Statistics: Num rows: 131 Data size: 1968 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: tinyint), _col2 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 131 Data size: 1968 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: tinyint), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 131 Data size: 1572 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 131 Data size: 1572 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-64	NULL
+-62	NULL
+-58	NULL
+-57	NULL
+-54	NULL
+-50	NULL
+-44	NULL
+-42	NULL
+-39	NULL
+-38	NULL
+-37	NULL
+-36	NULL
+-35	NULL
+-31	NULL
+-29	NULL
+-27	NULL
+-26	NULL
+-24	NULL
+-23	NULL
+-22	NULL
+-18	NULL
+-17	NULL
+-16	NULL
+-14	NULL
+-12	NULL
+-11	NULL
+-10	NULL
+-9	NULL
+-8	NULL
+-6	NULL
+-5	NULL
+-4	NULL
+-3	NULL
+-2	NULL
+0	NULL
+1	NULL
+2	NULL
+5	NULL
+7	NULL
+8	2141237419
+11	2145498388
+13	NULL
+17	NULL
+19	NULL
+21	NULL
+22	NULL
+25	NULL
+26	NULL
+28	NULL
+29	NULL
+32	NULL
+33	NULL
+36	NULL
+43	NULL
+44	NULL
+45	NULL
+47	NULL
+50	NULL
+51	NULL
+53	NULL
+54	NULL
+55	NULL
+56	NULL
+57	NULL
+58	NULL
+59	NULL
+60	NULL
+61	NULL
+-63	NULL
+-61	NULL
+-60	NULL
+-59	NULL
+-56	NULL
+-55	NULL
+-53	NULL
+-52	NULL
+-51	2140002067
+-49	NULL
+-48	NULL
+-47	NULL
+-46	NULL
+-45	NULL
+-43	NULL
+-41	NULL
+-40	NULL
+-34	NULL
+-33	NULL
+-32	NULL
+-30	NULL
+-28	NULL
+-25	NULL
+-21	NULL
+-20	NULL
+-19	NULL
+-15	NULL
+-13	NULL
+-7	NULL
+-1	NULL
+3	NULL
+4	NULL
+6	NULL
+9	NULL
+10	NULL
+12	NULL
+14	NULL
+15	NULL
+16	NULL
+18	NULL
+20	NULL
+23	NULL
+24	NULL
+27	NULL
+30	NULL
+31	NULL
+34	NULL
+35	NULL
+37	NULL
+38	NULL
+39	NULL
+40	NULL
+41	NULL
+42	NULL
+46	NULL
+48	NULL
+49	NULL
+52	NULL
+62	NULL
+NULL	1864027286
+PREHOOK: query: explain prepare pconcat
+    from select count(*) from src where key > concat(?, ?)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pconcat
+    from select count(*) from src where key > concat(?, ?)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key > concat(CAST( $1 AS STRING), $2)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key > concat(CAST( $1 AS STRING), $2)) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pconcat
+    from select count(*) from src where key > concat(?, ?)
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pconcat
+    from select count(*) from src where key > concat(?, ?)
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key > concat(CAST( '1' AS STRING), '20')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key > concat(CAST( '1' AS STRING), '20')) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pconcat
+    from select count(*) from src where key > concat(?, ?)
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pconcat
+    from select count(*) from src where key > concat(?, ?)
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+474
+PREHOOK: query: create table daysales (customer int) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@daysales
+POSTHOOK: query: create table daysales (customer int) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@daysales
+PREHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales@dt=2001-01-01
+POSTHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales@dt=2001-01-01
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-01).customer SCRIPT []
+PREHOOK: query: insert into daysales partition(dt='2001-01-03') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales@dt=2001-01-03
+POSTHOOK: query: insert into daysales partition(dt='2001-01-03') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales@dt=2001-01-03
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer SCRIPT []
+PREHOOK: query: insert into daysales partition(dt='2001-01-03') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales@dt=2001-01-03
+POSTHOOK: query: insert into daysales partition(dt='2001-01-03') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales@dt=2001-01-03
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer SCRIPT []
+PREHOOK: query: explain prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: daysales
+                  filterExpr: ((dt = CAST( $1 AS STRING)) and (customer = UDFToInteger($2))) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((dt = CAST( $1 AS STRING)) and (customer = UDFToInteger($2))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: daysales
+                  filterExpr: ((dt = CAST( '2001-01-01' AS STRING)) and (customer = UDFToInteger(1))) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((dt = CAST( '2001-01-01' AS STRING)) and (customer = UDFToInteger(1))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+1
+PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+2
+PREHOOK: query: create table testParam(c char(5), v varchar(10), d decimal(10,3), dt date) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testParam
+POSTHOOK: query: create table testParam(c char(5), v varchar(10), d decimal(10,3), dt date) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testParam
+PREHOOK: query: insert into testParam values ('ch1', 'var1', 1000.34,'1947-12-12' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testparam
+POSTHOOK: query: insert into testParam values ('ch1', 'var1', 1000.34,'1947-12-12' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testparam
+POSTHOOK: Lineage: testparam.c SCRIPT []
+POSTHOOK: Lineage: testparam.d SCRIPT []
+POSTHOOK: Lineage: testparam.dt SCRIPT []
+POSTHOOK: Lineage: testparam.v SCRIPT []
+PREHOOK: query: insert into testParam values ('ch2', 'var2', 2000.00,'1967-02-02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testparam
+POSTHOOK: query: insert into testParam values ('ch2', 'var2', 2000.00,'1967-02-02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testparam
+POSTHOOK: Lineage: testparam.c SCRIPT []
+POSTHOOK: Lineage: testparam.d SCRIPT []
+POSTHOOK: Lineage: testparam.dt SCRIPT []
+POSTHOOK: Lineage: testparam.v SCRIPT []
+PREHOOK: query: CREATE TABLE alltypes(
+    c char(5),
+    v varchar(10),
+    d decimal(10,3),
+    dt date,
+    bl boolean,
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    ctimestamp1 TIMESTAMP)
+    stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: CREATE TABLE alltypes(
+    c char(5),
+    v varchar(10),
+    d decimal(10,3),
+    dt date,
+    bl boolean,
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    ctimestamp1 TIMESTAMP)
+    stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypes
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into alltypes select c,v,d,dt,cboolean1,ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,ctimestamp1
+    from testParam join alltypesorc where ctinyint is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@testparam
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: insert into alltypes select c,v,d,dt,cboolean1,ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,ctimestamp1
+    from testParam join alltypesorc where ctinyint is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@testparam
+POSTHOOK: Output: default@alltypes
+POSTHOOK: Lineage: alltypes.bl SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypes.c SIMPLE [(testparam)testparam.FieldSchema(name:c, type:char(5), comment:null), ]
+POSTHOOK: Lineage: alltypes.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypes.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: alltypes.d SIMPLE [(testparam)testparam.FieldSchema(name:d, type:decimal(10,3), comment:null), ]
+POSTHOOK: Lineage: alltypes.dt SIMPLE [(testparam)testparam.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: alltypes.v SIMPLE [(testparam)testparam.FieldSchema(name:v, type:varchar(10), comment:null), ]
+PREHOOK: query: explain prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+ OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+ OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c > CAST( $1 AS CHAR(5))) or (v > CAST( $2 AS varchar(10))) or (d > CAST( $3 AS decimal(10,3))) or (dt > CAST( $4 AS DATE)) or (ctinyint > UDFToByte($5)) or (csmallint > UDFToShort($6)) or (cint > UDFToInteger($7)) or (cfloat > UDFToFloat($8)) or (cdouble > UDFToDouble($9)) or (cstring1 > CAST( $10 AS STRING)) or (ctimestamp1 > CAST( $11 AS TIMESTAMP)) or (cbigint > UDFToLong($12))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c > CAST( $1 AS CHAR(5))) or (v > CAST( $2 AS varchar(10))) or (d > CAST( $3 AS decimal(10,3))) or (dt > CAST( $4 AS DATE)) or (ctinyint > UDFToByte($5)) or (csmallint > UDFToShort($6)) or (cint > UDFToInteger($7)) or (cfloat > UDFToFloat($8)) or (cdouble > UDFToDouble($9)) or (cstring1 > CAST( $10 AS STRING)) or (ctimestamp1 > CAST( $11 AS TIMESTAMP)) or (cbigint > UDFToLong($12))) (type: boolean)
+                    Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c > CAST( 'a' AS CHAR(5))) or (v > CAST( 'v' AS varchar(10))) or (d > CAST( 1000 AS decimal(10,3))) or (dt > CAST( '1954-12-12' AS DATE)) or (ctinyint > UDFToByte(0)) or (csmallint > UDFToShort(7476)) or (cint > UDFToInteger(528534766)) or (cfloat > UDFToFloat(24)) or (cdouble > UDFToDouble(5780.3)) or (cstring1 > CAST( 'cvLH6Eat2yFsyy' AS STRING)) or (ctimestamp1 > CAST( '1968-12-31 15:59:46.674' AS TIMESTAMP)) or (cbigint > UDFToLong(0))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c > CAST( 'a' AS CHAR(5))) or (v > CAST( 'v' AS varchar(10))) or (d > CAST( 1000 AS decimal(10,3))) or (dt > CAST( '1954-12-12' AS DATE)) or (ctinyint > UDFToByte(0)) or (csmallint > UDFToShort(7476)) or (cint > UDFToInteger(528534766)) or (cfloat > UDFToFloat(24)) or (cdouble > UDFToDouble(5780.3)) or (cstring1 > CAST( 'cvLH6Eat2yFsyy' AS STRING)) or (ctimestamp1 > CAST( '1968-12-31 15:59:46.674' AS TIMESTAMP)) or (cbigint > UDFToLong(0))) (type: boolean)
+                    Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+18346
+PREHOOK: query: explain prepare palltypesLess from
+select count(*) from alltypes where c < ? OR v < ? OR d < ? OR dt < ? OR ctinyint < ? OR csmallint < ? OR cint < ?
+                                 OR cfloat < ? OR cdouble < ? OR cstring1 < ? OR ctimestamp1 < ? OR cbigint < ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare palltypesLess from
+select count(*) from alltypes where c < ? OR v < ? OR d < ? OR dt < ? OR ctinyint < ? OR csmallint < ? OR cint < ?
+                                 OR cfloat < ? OR cdouble < ? OR cstring1 < ? OR ctimestamp1 < ? OR cbigint < ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c < CAST( $1 AS CHAR(5))) or (v < CAST( $2 AS varchar(10))) or (d < CAST( $3 AS decimal(10,3))) or (dt < CAST( $4 AS DATE)) or (ctinyint < UDFToByte($5)) or (csmallint < UDFToShort($6)) or (cint < UDFToInteger($7)) or (cfloat < UDFToFloat($8)) or (cdouble < UDFToDouble($9)) or (cstring1 < CAST( $10 AS STRING)) or (ctimestamp1 < CAST( $11 AS TIMESTAMP)) or (cbigint < UDFToLong($12))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c < CAST( $1 AS CHAR(5))) or (v < CAST( $2 AS varchar(10))) or (d < CAST( $3 AS decimal(10,3))) or (dt < CAST( $4 AS DATE)) or (ctinyint < UDFToByte($5)) or (csmallint < UDFToShort($6)) or (cint < UDFToInteger($7)) or (cfloat < UDFToFloat($8)) or (cdouble < UDFToDouble($9)) or (cstring1 < CAST( $10 AS STRING)) or (ctimestamp1 < CAST( $11 AS TIMESTAMP)) or (cbigint < UDFToLong($12))) (type: boolean)
+                    Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c > CAST( 'd' AS CHAR(5))) or (v > CAST( 'z' AS varchar(10))) or (d > CAST( 10000 AS decimal(10,3))) or (dt > CAST( '1995-12-12' AS DATE)) or (ctinyint > UDFToByte(0)) or (csmallint > UDFToShort(7476)) or (cint > UDFToInteger(528534766)) or (cfloat > UDFToFloat(24)) or (cdouble > UDFToDouble(5780.3)) or (cstring1 > CAST( 'cvLH6Eat2yFsyy' AS STRING)) or (ctimestamp1 > CAST( '1968-12-31 15:59:46.674' AS TIMESTAMP)) or (cbigint > UDFToLong(0))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c > CAST( 'd' AS CHAR(5))) or (v > CAST( 'z' AS varchar(10))) or (d > CAST( 10000 AS decimal(10,3))) or (dt > CAST( '1995-12-12' AS DATE)) or (ctinyint > UDFToByte(0)) or (csmallint > UDFToShort(7476)) or (cint > UDFToInteger(528534766)) or (cfloat > UDFToFloat(24)) or (cdouble > UDFToDouble(5780.3)) or (cstring1 > CAST( 'cvLH6Eat2yFsyy' AS STRING)) or (ctimestamp1 > CAST( '1968-12-31 15:59:46.674' AS TIMESTAMP)) or (cbigint > UDFToLong(0))) (type: boolean)
+                    Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 8 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare palltypesGreater from
+select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
+                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+18336
+PREHOOK: query: explain prepare pequal from
+select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
+                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pequal from
+select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
+                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c = CAST( $1 AS CHAR(5))) or (v = CAST( $2 AS varchar(10))) or (d = CAST( $3 AS decimal(10,3))) or (dt = CAST( $4 AS DATE)) or (ctinyint = UDFToByte($5)) or (csmallint = UDFToShort($6)) or (cint = UDFToInteger($7)) or (cfloat = UDFToFloat($8)) or (cdouble = UDFToDouble($9)) or (cstring1 = CAST( $10 AS STRING)) or (ctimestamp1 = CAST( $11 AS TIMESTAMP)) or (cbigint = UDFToLong($12))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c = CAST( $1 AS CHAR(5))) or (v = CAST( $2 AS varchar(10))) or (d = CAST( $3 AS decimal(10,3))) or (dt = CAST( $4 AS DATE)) or (ctinyint = UDFToByte($5)) or (csmallint = UDFToShort($6)) or (cint = UDFToInteger($7)) or (cfloat = UDFToFloat($8)) or (cdouble = UDFToDouble($9)) or (cstring1 = CAST( $10 AS STRING)) or (ctimestamp1 = CAST( $11 AS TIMESTAMP)) or (cbigint = UDFToLong($12))) (type: boolean)
+                    Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pequal from
+select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
+                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pequal from
+select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
+                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c = CAST( 'ch1' AS CHAR(5))) or (v = CAST( 'var1' AS varchar(10))) or (d = CAST( 1000.34 AS decimal(10,3))) or (dt = CAST( '1947-12-12' AS DATE)) or (ctinyint = UDFToByte(11)) or (csmallint = UDFToShort(0)) or (cint = UDFToInteger(529436599)) or (cfloat = UDFToFloat(1)) or (cdouble = UDFToDouble(1.4)) or (cstring1 = CAST( 'xTlDv24JYv4s' AS STRING)) or (ctimestamp1 = CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP)) or (cbigint = UDFToLong(133))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c = CAST( 'ch1' AS CHAR(5))) or (v = CAST( 'var1' AS varchar(10))) or (d = CAST( 1000.34 AS decimal(10,3))) or (dt = CAST( '1947-12-12' AS DATE)) or (ctinyint = UDFToByte(11)) or (csmallint = UDFToShort(0)) or (cint = UDFToInteger(529436599)) or (cfloat = UDFToFloat(1)) or (cdouble = UDFToDouble(1.4)) or (cstring1 = CAST( 'xTlDv24JYv4s' AS STRING)) or (ctimestamp1 = CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP)) or (cbigint = UDFToLong(133))) (type: boolean)
+                    Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pequal from
+select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
+                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pequal from
+select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
+                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+10300
+PREHOOK: query: explain prepare pin from
+select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
+    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pin from
+select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
+    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: (((c) IN (CAST( $1 AS CHAR(5)), CAST( $2 AS CHAR(5))) and (v) IN (CAST( $3 AS varchar(10)), CAST( $4 AS varchar(10))) and (d) IN (CAST( $5 AS decimal(10,3)), CAST( $6 AS decimal(10,3))) and (dt = CAST( $7 AS DATE))) or ((ctinyint = UDFToByte($8)) and (csmallint) IN (UDFToShort($9), UDFToShort($10), UDFToShort($11)) and (cint) IN (UDFToInteger($12), UDFToInteger($13), UDFToInteger($14)) and (cfloat) IN (UDFToFloat($15), UDFToFloat($16)) and (cdouble) IN (UDFToDouble($17), UDFToDouble($18), UDFToDouble($19))) or ((cstring1) IN (CAST( $20 AS STRING), CAST( $21 AS STRING), CAST( $22 AS STRING)) and (ctimestamp1 = CAST( $23 AS TIMESTAMP))) or (cbigint = UDFToLong($24))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((c) IN (CAST( $1 AS CHAR(5)), CAST( $2 AS CHAR(5))) and (v) IN (CAST( $3 AS varchar(10)), CAST( $4 AS varchar(10))) and (d) IN (CAST( $5 AS decimal(10,3)), CAST( $6 AS decimal(10,3))) and (dt = CAST( $7 AS DATE))) or ((ctinyint = UDFToByte($8)) and (csmallint) IN (UDFToShort($9), UDFToShort($10), UDFToShort($11)) and (cint) IN (UDFToInteger($12), UDFToInteger($13), UDFToInteger($14)) and (cfloat) IN (UDFToFloat($15), UDFToFloat($16)) and (cdouble) IN (UDFToDouble($17), UDFToDouble($18), UDFToDouble($19))) or ((cstring1) IN (CAST( $20 AS STRING), CAST( $21 AS STRING), CAST( $22 AS STRING)) and (ctimestamp1 = CAST( $23 AS TIMESTAMP))) or (cbigint = UDFToLong($24))) (type: boolean)
+                    Statistics: Num rows: 15478 Data size: 7247775 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 15478 Data size: 7247775 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pin from
+select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
+    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pin from
+select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
+    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: (((c) IN (CAST( 'ch1' AS CHAR(5)), CAST( 'ch2' AS CHAR(5))) and (v) IN (CAST( 'var1' AS varchar(10)), CAST( 'var2' AS varchar(10))) and (d) IN (CAST( 1000.34 AS decimal(10,3)), CAST( 2000 AS decimal(10,3))) and (dt = CAST( '1947-12-12' AS DATE))) or ((ctinyint = UDFToByte(11)) and (csmallint) IN (UDFToShort(15601), UDFToShort(0), UDFToShort(1)) and (cint) IN (UDFToInteger(788564623), UDFToInteger(78856), UDFToInteger(23)) and (cfloat) IN (UDFToFloat(1), UDFToFloat(18)) and (cdouble) IN (UDFToDouble(0), UDFToDouble(15601), UDFToDouble(23.1))) or ((cstring1) IN (CAST( 'xTlDv24JYv4s' AS STRING), CAST( 'str1' AS STRING), CAST( 'stre' AS STRING)) and (ctimestamp1 = CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP))) or (cbigint = UDFToLong(133))) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((c) IN (CAST( 'ch1' AS CHAR(5)), CAST( 'ch2' AS CHAR(5))) and (v) IN (CAST( 'var1' AS varchar(10)), CAST( 'var2' AS varchar(10))) and (d) IN (CAST( 1000.34 AS decimal(10,3)), CAST( 2000 AS decimal(10,3))) and (dt = CAST( '1947-12-12' AS DATE))) or ((ctinyint = UDFToByte(11)) and (csmallint) IN (UDFToShort(15601), UDFToShort(0), UDFToShort(1)) and (cint) IN (UDFToInteger(788564623), UDFToInteger(78856), UDFToInteger(23)) and (cfloat) IN (UDFToFloat(1), UDFToFloat(18)) and (cdouble) IN (UDFToDouble(0), UDFToDouble(15601), UDFToDouble(23.1))) or ((cstring1) IN (CAST( 'xTlDv24JYv4s' AS STRING), CAST( 'str1' AS STRING), CAST( 'stre' AS STRING)) and (ctimestamp1 = CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP))) or (cbigint = UDFToLong(133))) (type: boolean)
+                    Statistics: Num rows: 15478 Data size: 7247775 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 15478 Data size: 7247775 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pin from
+select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
+    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pin from
+select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
+    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+9174
+PREHOOK: query: explain prepare pbetween from
+    select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
+    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pbetween from
+    select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
+    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c BETWEEN CAST( $1 AS CHAR(5)) AND CAST( $2 AS CHAR(5)) and v BETWEEN CAST( $3 AS varchar(10)) AND CAST( $4 AS varchar(10)) and d BETWEEN CAST( $5 AS decimal(10,3)) AND CAST( $6 AS decimal(10,3)) and dt BETWEEN CAST( $7 AS DATE) AND CAST( $8 AS DATE)) or (ctinyint BETWEEN UDFToByte($9) AND UDFToByte($10) and csmallint BETWEEN UDFToShort($11) AND UDFToShort($12) and cint BETWEEN UDFToInteger($13) AND UDFToInteger($14) and cfloat BETWEEN UDFToFloat($15) AND UDFToFloat($16) and cdouble BETWEEN UDFToDouble($17) AND UDFToDouble($18)) or (cstring1 BETWEEN CAST( $19 AS STRING) AND CAST( $20 AS STRING) and ctimestamp1 BETWEEN CAST( $21 AS TIMESTAMP) AND CAST( $22 AS TIMESTAMP)) or cbigint BETWEEN UDFToLong($23) AND UDFToLong($24)) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c BETWEEN CAST( $1 AS CHAR(5)) AND CAST( $2 AS CHAR(5)) and v BETWEEN CAST( $3 AS varchar(10)) AND CAST( $4 AS varchar(10)) and d BETWEEN CAST( $5 AS decimal(10,3)) AND CAST( $6 AS decimal(10,3)) and dt BETWEEN CAST( $7 AS DATE) AND CAST( $8 AS DATE)) or (ctinyint BETWEEN UDFToByte($9) AND UDFToByte($10) and csmallint BETWEEN UDFToShort($11) AND UDFToShort($12) and cint BETWEEN UDFToInteger($13) AND UDFToInteger($14) and cfloat BETWEEN UDFToFloat($15) AND UDFToFloat($16) and cdouble BETWEEN UDFToDouble($17) AND UDFToDouble($18)) or (cstring1 BETWEEN CAST( $19 AS STRING) AND CAST( $20 AS STRING) and ctimestamp1 BETWEEN CAST( $21 AS TIMESTAMP) AND CAST( $22 AS TIMESTAMP)) or cbigint BETWEEN UDFToLong($23) AND UDFToLong($24)) (type: boolean)
+                    Statistics: Num rows: 2266 Data size: 1061232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2266 Data size: 1061232 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pbetween from
+select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
+    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pbetween from
+select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
+    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypes
+                  filterExpr: ((c BETWEEN CAST( 'ch1' AS CHAR(5)) AND CAST( 'ch2' AS CHAR(5)) and v BETWEEN CAST( 'var1' AS varchar(10)) AND CAST( 'var2' AS varchar(10)) and d BETWEEN CAST( 1000.34 AS decimal(10,3)) AND CAST( 2000 AS decimal(10,3)) and dt BETWEEN CAST( '1947-12-12' AS DATE) AND CAST( '1968-12-31' AS DATE)) or (ctinyint BETWEEN UDFToByte(11) AND UDFToByte(1000) and csmallint BETWEEN UDFToShort(15601) AND UDFToShort(1) and cint BETWEEN UDFToInteger(788564623) AND UDFToInteger(23) and cfloat BETWEEN UDFToFloat(1) AND UDFToFloat(18) and cdouble BETWEEN UDFToDouble(0) AND UDFToDouble(15601)) or (cstring1 BETWEEN CAST( 'xTlDv24JYv4s' AS STRING) AND CAST( 'str1' AS STRING) and ctimestamp1 BETWEEN CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP) AND CAST( '2020-12-31 16:00:01' AS TIMESTAMP)) or cbigint BETWEEN UDFToLong(0) AND UDFToLong(133)) (type: boolean)
+                  Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c BETWEEN CAST( 'ch1' AS CHAR(5)) AND CAST( 'ch2' AS CHAR(5)) and v BETWEEN CAST( 'var1' AS varchar(10)) AND CAST( 'var2' AS varchar(10)) and d BETWEEN CAST( 1000.34 AS decimal(10,3)) AND CAST( 2000 AS decimal(10,3)) and dt BETWEEN CAST( '1947-12-12' AS DATE) AND CAST( '1968-12-31' AS DATE)) or (ctinyint BETWEEN UDFToByte(11) AND UDFToByte(1000) and csmallint BETWEEN UDFToShort(15601) AND UDFToShort(1) and cint BETWEEN UDFToInteger(788564623) AND UDFToInteger(23) and cfloat BETWEEN UDFToFloat(1) AND UDFToFloat(18) and cdouble BETWEEN UDFToDouble(0) AND UDFToDouble(15601)) or (cstring1 BETWEEN CAST( 'xTlDv24JYv4s' AS STRING) AND CAST( 'str1' AS STRING) and ctimestamp1 BETWEEN CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP) AND CAST( '2020-12-31 16:00:01' AS TIMESTAMP)) or cbigint BETWEEN UDFToLong(0) AND UDFToLong(133)) (type: boolean)
+                    Statistics: Num rows: 2266 Data size: 1061232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2266 Data size: 1061232 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pbetween from
+select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
+    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pbetween from
+select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
+    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+18346
+PREHOOK: query: DROP TABLE testParam
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testparam
+PREHOOK: Output: default@testparam
+POSTHOOK: query: DROP TABLE testParam
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testparam
+POSTHOOK: Output: default@testparam
+PREHOOK: query: DROP TABLE alltypes
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: DROP TABLE alltypes
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alltypes
+POSTHOOK: Output: default@alltypes

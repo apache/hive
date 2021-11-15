@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -76,6 +77,14 @@ public class TestDatabases extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
+    HiveMetaStoreClient.setProcessorIdentifier("UnitTest@TestDatabases");
+    HiveMetaStoreClient.setProcessorCapabilities(new String[] {
+        "HIVEFULLACIDREAD",
+        "EXTWRITE",
+        "EXTREAD",
+        "HIVEBUCKET2"
+    } );
+
     // Get new client
     client = metaStore.getClient();
 
@@ -150,7 +159,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database createdDatabase = client.getDatabase(database.getName());
 
     Assert.assertNull("Comparing description", createdDatabase.getDescription());
-    Assert.assertEquals("Comparing location", metaStore.getWarehouseRoot() + "/" +
+    Assert.assertEquals("Comparing location", metaStore.getExternalWarehouseRoot() + "/" +
                                                   createdDatabase.getName() + ".db", createdDatabase.getLocationUri());
     Assert.assertEquals("Comparing parameters", new HashMap<String, String>(),
         createdDatabase.getParameters());
@@ -158,6 +167,17 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing owner name", SecurityUtils.getUser(),
         createdDatabase.getOwnerName());
     Assert.assertEquals("Comparing owner type", PrincipalType.USER, createdDatabase.getOwnerType());
+  }
+
+  @Test
+  public void testCreateDatabaseOwnerName() throws Exception{
+    DatabaseBuilder databaseBuilder = new DatabaseBuilder()
+        .setCatalogName("hive")
+        .setName("dummy")
+        .setOwnerName(null);
+
+    Database db = databaseBuilder.create(client, metaStore.getConf());
+    Assert.assertNotNull("Owner name should be filled", db.getOwnerName());
   }
 
   @Test(expected = MetaException.class)
@@ -176,7 +196,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database database = testDatabases[0];
 
     // Invalid character in new database name
-    database.setName("test_database_1;");
+    database.setName("test_database§1;");
     client.createDatabase(database);
   }
 
@@ -204,7 +224,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Default database name", "default", database.getName());
     Assert.assertEquals("Default database description", "Default Hive database",
         database.getDescription());
-    Assert.assertEquals("Default database location", metaStore.getWarehouseRoot(),
+    Assert.assertEquals("Default database location", metaStore.getExternalWarehouseRoot(),
         new Path(database.getLocationUri()));
     Assert.assertEquals("Default database parameters", new HashMap<String, String>(),
         database.getParameters());
@@ -457,7 +477,7 @@ public class TestDatabases extends MetaStoreClientTest {
             .setName(originalDatabase.getName())
             .setOwnerType(PrincipalType.GROUP)
             .setOwnerName("owner2")
-            .setLocation(metaStore.getWarehouseRoot() + "/database_location_2")
+            .setLocation(metaStore.getExternalWarehouseRoot() + "/database_location_2")
             .setDescription("dummy description 2")
             .addParam("param_key_1", "param_value_1_2")
             .addParam("param_key_2_3", "param_value_2_3")
@@ -654,7 +674,7 @@ public class TestDatabases extends MetaStoreClientTest {
                .setName("dummy")
                .setOwnerType(PrincipalType.ROLE)
                .setOwnerName("owner")
-               .setLocation(metaStore.getWarehouseRoot() + "/database_location")
+               .setLocation(metaStore.getExternalWarehouseRoot() + "/database_location")
                .setDescription("dummy description")
                .addParam("param_key_1", "param_value_1")
                .addParam("param_key_2", "param_value_2")

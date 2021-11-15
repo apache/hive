@@ -1,0 +1,644 @@
+PREHOOK: query: CREATE TABLE T1_n18(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n18
+POSTHOOK: query: CREATE TABLE T1_n18(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n18
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n18 PARTITION (ds='1')
+SELECT * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n18@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n18 PARTITION (ds='1')
+SELECT * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n18@ds=1
+POSTHOOK: Lineage: t1_n18 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n18 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN select count(distinct key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select count(distinct key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: key (type: string)
+                      mode: final
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count(_col0)
+                        minReductionHashAggr: 0.8333333
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+6
+PREHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT key), count(), count(key), sum(DISTINCT key)
+                      bucketGroup: true
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: double)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2), sum(VALUE._col3)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+6	10	10	28.0
+PREHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT key), count(), count(key), sum(DISTINCT key)
+                      bucketGroup: true
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint), _col3 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0), count(VALUE._col1), count(VALUE._col2), sum(DISTINCT KEY._col1:1._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 6 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 6 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+1	1	1	2.0
+1	1	1	4.0
+1	1	1	8.0
+1	1	1	9.0
+1	3	3	0.0
+1	3	3	5.0
+PREHOOK: query: EXPLAIN select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT key), count(), count(key), sum(DISTINCT key)
+                      bucketGroup: true
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint), _col3 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0), count(VALUE._col1), count(VALUE._col2), sum(DISTINCT KEY._col1:1._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 702 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+0	1	3	3	0.0
+2	1	1	1	2.0
+4	1	1	1	4.0
+5	1	3	3	5.0
+8	1	1	1	8.0
+9	1	1	1	9.0
+PREHOOK: query: EXPLAIN select count(distinct key+key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select count(distinct key+key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: (UDFToDouble(key) + UDFToDouble(key)) (type: double)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: double)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col0)
+                  minReductionHashAggr: 0.8333333
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct key+key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key+key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+6
+PREHOOK: query: EXPLAIN select count(distinct 1) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select count(distinct 1) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 150 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 10 Data size: 150 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: true (type: boolean)
+                      minReductionHashAggr: 0.9
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    minReductionHashAggr: 0.4
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct 1) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct 1) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+1
+PREHOOK: query: EXPLAIN select count(distinct key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select count(distinct key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n18
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: complete
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: complete
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct key) from T1_n18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n18
+PREHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key) from T1_n18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n18
+POSTHOOK: Input: default@t1_n18@ds=1
+#### A masked pattern was here ####
+6

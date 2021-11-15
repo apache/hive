@@ -9,9 +9,9 @@ MSCK TABLE repairtable_n2;
 
 show partitions repairtable_n2;
 
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n2/p1=c/p2=a/p3=b;
-dfs -touchz ${system:test.warehouse.dir}/repairtable_n2/p1=c/p2=a/p3=b/datafile;
-dfs -touchz ${system:test.warehouse.dir}/repairtable_n2/p1=c/datafile;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_n2/p1=c/p2=a/p3=b;
+dfs -touchz ${system:test.local.warehouse.dir}/repairtable_n2/p1=c/p2=a/p3=b/datafile;
+dfs -touchz ${system:test.local.warehouse.dir}/repairtable_n2/p1=c/datafile;
 
 MSCK TABLE default.repairtable_n2;
 show partitions repairtable_n2;

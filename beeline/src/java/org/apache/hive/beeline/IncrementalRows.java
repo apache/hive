@@ -63,6 +63,7 @@ public class IncrementalRows extends Rows {
   }
 
 
+  @Override
   public boolean hasNext() {
     if (endOfResult) {
       return false;
@@ -87,6 +88,7 @@ public class IncrementalRows extends Rows {
     return (nextRow != null);
   }
 
+  @Override
   public Object next() {
     if (!hasNext()) {
       throw new NoSuchElementException();

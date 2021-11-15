@@ -1,0 +1,113 @@
+PREHOOK: query: create table t_letters (z char(12), x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_letters
+POSTHOOK: query: create table t_letters (z char(12), x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_letters
+PREHOOK: query: insert into t_letters values
+('one', 1, 50),
+('two', 2, 30),
+('three', 3, 30),
+('four', 4, 60),
+('five', 5, 70),
+('six', 6, 80)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_letters
+POSTHOOK: query: insert into t_letters values
+('one', 1, 50),
+('two', 2, 30),
+('three', 3, 30),
+('four', 4, 60),
+('five', 5, 70),
+('six', 6, 80)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_letters
+POSTHOOK: Lineage: t_letters.x SCRIPT []
+POSTHOOK: Lineage: t_letters.y SCRIPT []
+POSTHOOK: Lineage: t_letters.z SCRIPT []
+PREHOOK: query: create table t_roman (z char(12), x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_roman
+POSTHOOK: query: create table t_roman (z char(12), x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_roman
+PREHOOK: query: insert into t_roman values
+('I', 1, 50),
+('II', 2, 30),
+('III', 3, 30),
+('IV', 4, 60),
+('V', 5, 70),
+('VI', 6, 80)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_roman
+POSTHOOK: query: insert into t_roman values
+('I', 1, 50),
+('II', 2, 30),
+('III', 3, 30),
+('IV', 4, 60),
+('V', 5, 70),
+('VI', 6, 80)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_roman
+POSTHOOK: Lineage: t_roman.x SCRIPT []
+POSTHOOK: Lineage: t_roman.y SCRIPT []
+POSTHOOK: Lineage: t_roman.z SCRIPT []
+PREHOOK: query: select x1.`z`, x1.`x`, x1.`y`,
+       x2.`z`, x2.`x`, x2.`y`
+from t_letters x1 full outer join t_roman x2 on (x1.`x` > 3) and (x2.`x` < 4) and (x1.`x` = x2.`x`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_letters
+PREHOOK: Input: default@t_roman
+#### A masked pattern was here ####
+POSTHOOK: query: select x1.`z`, x1.`x`, x1.`y`,
+       x2.`z`, x2.`x`, x2.`y`
+from t_letters x1 full outer join t_roman x2 on (x1.`x` > 3) and (x2.`x` < 4) and (x1.`x` = x2.`x`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_letters
+POSTHOOK: Input: default@t_roman
+#### A masked pattern was here ####
+one         	1	50	NULL	NULL	NULL
+NULL	NULL	NULL	I           	1	50
+two         	2	30	NULL	NULL	NULL
+NULL	NULL	NULL	II          	2	30
+three       	3	30	NULL	NULL	NULL
+NULL	NULL	NULL	III         	3	30
+four        	4	60	NULL	NULL	NULL
+NULL	NULL	NULL	IV          	4	60
+five        	5	70	NULL	NULL	NULL
+NULL	NULL	NULL	V           	5	70
+six         	6	80	NULL	NULL	NULL
+NULL	NULL	NULL	VI          	6	80
+PREHOOK: query: select x1.`z`, x1.`x`, x1.`y`,
+       x2.`z`, x2.`x`, x2.`y`
+from t_letters x1 full outer join t_roman x2 on (x1.`x` > 2) and (x2.`x` < 4) and (x1.`x` = x2.`x`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_letters
+PREHOOK: Input: default@t_roman
+#### A masked pattern was here ####
+POSTHOOK: query: select x1.`z`, x1.`x`, x1.`y`,
+       x2.`z`, x2.`x`, x2.`y`
+from t_letters x1 full outer join t_roman x2 on (x1.`x` > 2) and (x2.`x` < 4) and (x1.`x` = x2.`x`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_letters
+POSTHOOK: Input: default@t_roman
+#### A masked pattern was here ####
+one         	1	50	NULL	NULL	NULL
+NULL	NULL	NULL	I           	1	50
+two         	2	30	NULL	NULL	NULL
+NULL	NULL	NULL	II          	2	30
+three       	3	30	III         	3	30
+four        	4	60	NULL	NULL	NULL
+NULL	NULL	NULL	IV          	4	60
+five        	5	70	NULL	NULL	NULL
+NULL	NULL	NULL	V           	5	70
+six         	6	80	NULL	NULL	NULL
+NULL	NULL	NULL	VI          	6	80

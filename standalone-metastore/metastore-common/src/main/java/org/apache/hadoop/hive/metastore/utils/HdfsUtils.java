@@ -22,7 +22,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -185,7 +185,7 @@ public class HdfsUtils {
         return false;
       }
     } catch (Exception e) {
-      throw new IOException("Cannot execute DistCp process: " + e, e);
+      throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
       conf.setBoolean("mapred.mapper.new-api", false);
     }
@@ -193,15 +193,7 @@ public class HdfsUtils {
 
   private static List<String> constructDistCpParams(List<Path> srcPaths, Path dst,
                                                     Configuration conf) {
-    List<String> params = new ArrayList<>();
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
-      String distCpOption = entry.getKey();
-      String distCpVal = entry.getValue();
-      params.add("-" + distCpOption);
-      if ((distCpVal != null) && (!distCpVal.isEmpty())){
-        params.add(distCpVal);
-      }
-    }
+    List<String> params = constructDistCpOptions(conf);
     if (params.size() == 0){
       // if no entries were added via conf, we initiate our defaults
       params.add("-update");
@@ -213,6 +205,21 @@ public class HdfsUtils {
     params.add(dst.toString());
     return params;
   }
+
+  public static List<String> constructDistCpOptions(Configuration conf) {
+    List<String> options = new ArrayList<>();
+    for (Map.Entry<String, String> entry : conf
+        .getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()) {
+      String distCpOption = entry.getKey();
+      String distCpVal = entry.getValue();
+      options.add("-" + distCpOption);
+      if ((distCpVal != null) && (!distCpVal.isEmpty())) {
+        options.add(distCpVal);
+      }
+    }
+    return options;
+  }
+
 
   public static Path getFileIdPath(
       FileSystem fileSystem, Path path, long fileId) {
@@ -362,10 +369,7 @@ public class HdfsUtils {
     Iterables.removeIf(entries, new Predicate<AclEntry>() {
       @Override
       public boolean apply(AclEntry input) {
-        if (input.getName() == null) {
-          return true;
-        }
-        return false;
+        return input == null || input.getName() == null;
       }
     });
   }

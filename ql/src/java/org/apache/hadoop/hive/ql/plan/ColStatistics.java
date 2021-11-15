@@ -30,6 +30,8 @@ public class ColStatistics {
   private Range range;
   private boolean isPrimaryKey;
   private boolean isEstimated;
+  private boolean isFilteredColumn;
+  private byte[] bitVectors;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -110,6 +112,14 @@ public class ColStatistics {
     this.range = r;
   }
 
+  public byte[] getBitVectors() {
+    return bitVectors;
+  }
+
+  public void setBitVectors(byte[] bitVectors) {
+    this.bitVectors = bitVectors;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -149,6 +159,7 @@ public class ColStatistics {
     clone.setNumFalses(numFalses);
     clone.setPrimaryKey(isPrimaryKey);
     clone.setIsEstimated(isEstimated);
+    clone.setIsFilteredColumn(isFilteredColumn);
     if (range != null ) {
       clone.setRange(range.clone());
     }
@@ -196,4 +207,18 @@ public class ColStatistics {
       return sb.toString();
     }
   }
+
+  public void setFilterColumn() {
+    isFilteredColumn = true;
+  }
+
+  private void setIsFilteredColumn(boolean isFilteredColumn2) {
+    isFilteredColumn=isFilteredColumn2;
+    
+  }
+  
+  public boolean isFilteredColumn() {
+    return isFilteredColumn;
+  }
+  
 }

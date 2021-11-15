@@ -2,6 +2,7 @@
 create database db_alter_onr;
 describe database db_alter_onr;
 
+explain alter database db_alter_onr set owner user user1;
 alter database db_alter_onr set owner user user1;
 describe database db_alter_onr;
 

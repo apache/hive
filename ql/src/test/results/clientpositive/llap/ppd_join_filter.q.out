@@ -1,0 +1,979 @@
+PREHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        auto parallelism: true
+                    Group By Operator
+                      aggregations: min(key)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [a]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2, _col3
+                Position of Big Table: 1
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: double), _col3 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2
+                          columns.types string:double:double
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  isSamplingPred: false
+                  predicate: ((UDFToDouble(_col1) + 1.0D) < 5.0D) (type: boolean)
+                  Statistics: Num rows: 105 Data size: 28455 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), (UDFToDouble(_col1) + 2.0D) (type: double), (UDFToDouble(_col1) + 3.0D) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      numBuckets: -1
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col1 (type: double), _col2 (type: double)
+                      auto parallelism: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	2.0	3.0
+0	2.0	3.0
+0	2.0	3.0
+2	4.0	5.0
+PREHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        auto parallelism: true
+                    Group By Operator
+                      aggregations: min(key)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [a]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2, _col3
+                Position of Big Table: 1
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: double), _col3 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2
+                          columns.types string:double:double
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  isSamplingPred: false
+                  predicate: ((UDFToDouble(_col1) + 1.0D) < 5.0D) (type: boolean)
+                  Statistics: Num rows: 105 Data size: 28455 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), (UDFToDouble(_col1) + 2.0D) (type: double), (UDFToDouble(_col1) + 3.0D) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      numBuckets: -1
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col1 (type: double), _col2 (type: double)
+                      auto parallelism: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	2.0	3.0
+0	2.0	3.0
+0	2.0	3.0
+2	4.0	5.0
+PREHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        auto parallelism: true
+                    Group By Operator
+                      aggregations: min(key)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [a]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2, _col3
+                Position of Big Table: 1
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: double), _col3 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2
+                          columns.types string:double:double
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  isSamplingPred: false
+                  predicate: ((UDFToDouble(_col1) + 1.0D) < 5.0D) (type: boolean)
+                  Statistics: Num rows: 105 Data size: 28455 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), (UDFToDouble(_col1) + 2.0D) (type: double), (UDFToDouble(_col1) + 3.0D) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      numBuckets: -1
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col1 (type: double), _col2 (type: double)
+                      auto parallelism: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	2.0	3.0
+0	2.0	3.0
+0	2.0	3.0
+2	4.0	5.0
+PREHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5) AS `t4` ON `t0`.`key` = `t4`.`key`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        auto parallelism: true
+                    Group By Operator
+                      aggregations: min(key)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [a]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2, _col3
+                Position of Big Table: 1
+                Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: double), _col3 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 166 Data size: 17098 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2
+                          columns.types string:double:double
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  isSamplingPred: false
+                  predicate: ((UDFToDouble(_col1) + 1.0D) < 5.0D) (type: boolean)
+                  Statistics: Num rows: 105 Data size: 28455 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), (UDFToDouble(_col1) + 2.0D) (type: double), (UDFToDouble(_col1) + 3.0D) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      numBuckets: -1
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 105 Data size: 10815 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col1 (type: double), _col2 (type: double)
+                      auto parallelism: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select a.key, b.k2, b.k3
+from src a
+join (
+select key,
+min(key) as k,
+min(key)+1 as k1,
+min(key)+2 as k2,
+min(key)+3 as k3
+from src
+group by key
+) b
+on a.key=b.key and b.k1 < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	2.0	3.0
+0	2.0	3.0
+0	2.0	3.0
+2	4.0	5.0

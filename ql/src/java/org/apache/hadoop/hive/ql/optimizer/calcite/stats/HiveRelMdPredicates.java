@@ -39,7 +39,6 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
@@ -316,7 +315,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
 
     public JoinConditionBasedPredicateInference(Join joinRel,
             RexNode lPreds, RexNode rPreds) {
-      this(joinRel, joinRel instanceof SemiJoin, lPreds, rPreds);
+      this(joinRel, ((Join) joinRel).isSemiJoin(), lPreds, rPreds);
     }
 
     private JoinConditionBasedPredicateInference(Join joinRel, boolean isSemiJoin,
@@ -416,6 +415,8 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       switch (joinType) {
       case INNER:
       case LEFT:
+      case SEMI:
+      case ANTI:
         infer(leftPreds, allExprsDigests, inferredPredicates,
             nonFieldsPredicates, includeEqualityInference,
             joinType == JoinRelType.LEFT ? rightFieldsBitSet
@@ -425,6 +426,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       switch (joinType) {
       case INNER:
       case RIGHT:
+      case SEMI:
         infer(rightPreds, allExprsDigests, inferredPredicates,
             nonFieldsPredicates, includeEqualityInference,
             joinType == JoinRelType.RIGHT ? leftFieldsBitSet
@@ -453,7 +455,8 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         }
       }
 
-      if (joinType == JoinRelType.INNER && !nonFieldsPredicates.isEmpty()) {
+      if ((joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI) &&
+              !nonFieldsPredicates.isEmpty()) {
         // Predicates without field references can be pushed to both inputs
         final Set<String> leftPredsSet = new HashSet<String>(
                 Lists.transform(leftPreds, HiveCalciteUtil.REX_STR_FN));
@@ -471,16 +474,15 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
 
       switch (joinType) {
       case INNER:
-        Iterable<RexNode> pulledUpPredicates;
-        if (isSemiJoin) {
-          pulledUpPredicates = Iterables.concat(leftPreds, leftInferredPredicates);
-        } else {
-          pulledUpPredicates = Iterables.concat(leftPreds, rightPreds,
+        Iterable<RexNode> pulledUpPredicates = Iterables.concat(leftPreds, rightPreds,
                 RelOptUtil.conjunctions(joinRel.getCondition()), inferredPredicates);
-        }
         return RelOptPredicateList.of(rexBuilder,
           pulledUpPredicates, leftInferredPredicates, rightInferredPredicates);
+      case SEMI:
+        return RelOptPredicateList.of(rexBuilder, Iterables.concat(leftPreds, leftInferredPredicates),
+          leftInferredPredicates, rightInferredPredicates);
       case LEFT:
+      case ANTI:
         return RelOptPredicateList.of(rexBuilder,
           leftPreds, EMPTY_LIST, rightInferredPredicates);
       case RIGHT:

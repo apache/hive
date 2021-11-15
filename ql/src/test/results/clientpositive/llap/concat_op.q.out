@@ -1,0 +1,313 @@
+PREHOOK: query: explain select key || value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key || value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Select Operator
+            expressions: concat(key, value) (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select concat('a','b','c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select concat('a','b','c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+abc
+PREHOOK: query: select 'a' || 'b' || 'c'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'a' || 'b' || 'c'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+abc
+PREHOOK: query: select '1' || 2+3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '1' || 2+3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+15
+PREHOOK: query: select 1+2 || '7'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1+2 || '7'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+37
+PREHOOK: query: select 1 || 1 || 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 || 1 || 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+111
+PREHOOK: query: select 1.2 || 1.7
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1.2 || 1.7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.21.7
+PREHOOK: query: select 1 + 1 || 1 + 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 + 1 || 1 + 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+22
+PREHOOK: query: select 9 + 9 || 9 + 9
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 9 + 9 || 9 + 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1818
+PREHOOK: query: select 1 + 1 || 1 + 1 || 1 + 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 + 1 || 1 + 1 || 1 + 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+222
+PREHOOK: query: select '1' || 4 / 2 || 1 + 2 * 1 || (6 & 4) || (1 | 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '1' || 4 / 2 || 1 + 2 * 1 || (6 & 4) || (1 | 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+12.0345
+PREHOOK: query: select 0 ^ 1 || '2' || 1 ^ 2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 0 ^ 1 || '2' || 1 ^ 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123
+PREHOOK: query: create table ct1 (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct1
+POSTHOOK: query: create table ct1 (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct1
+PREHOOK: query: create table ct2 (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct2
+POSTHOOK: query: create table ct2 (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct2
+PREHOOK: query: insert into ct1 values (7),(5),(3),(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ct1
+POSTHOOK: query: insert into ct1 values (7),(5),(3),(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ct1
+POSTHOOK: Lineage: ct1.c SCRIPT []
+PREHOOK: query: insert into ct2 values (8),(6),(4),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ct2
+POSTHOOK: query: insert into ct2 values (8),(6),(4),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ct2
+POSTHOOK: Lineage: ct2.c SCRIPT []
+PREHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@ct1
+PREHOOK: Input: default@ct2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_v1
+POSTHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@ct1
+POSTHOOK: Input: default@ct2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_v1
+POSTHOOK: Lineage: ct_v1.c EXPRESSION [(ct1)ct1.FieldSchema(name:c, type:int, comment:null), (ct2)ct2.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1 order by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ct1
+PREHOOK: Input: default@ct2
+PREHOOK: Input: default@ct_v1
+#### A masked pattern was here ####
+POSTHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1 order by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ct1
+POSTHOOK: Input: default@ct2
+POSTHOOK: Input: default@ct_v1
+#### A masked pattern was here ####
+1	2x	c+c=2, c*c=1, (c&c)=1
+2	6x	c+c=4, c*c=4, (c&c)=2
+3	12x	c+c=6, c*c=9, (c&c)=3
+4	20x	c+c=8, c*c=16, (c&c)=4
+5	30x	c+c=10, c*c=25, (c&c)=5
+6	42x	c+c=12, c*c=36, (c&c)=6
+7	56x	c+c=14, c*c=49, (c&c)=7
+8	72x	c+c=16, c*c=64, (c&c)=8
+PREHOOK: query: select *, 'x' || (c&3) , 'a' || c*c+c || 'b' from ct_v1
+		order by 'a' || c*c+c || 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ct1
+PREHOOK: Input: default@ct2
+PREHOOK: Input: default@ct_v1
+#### A masked pattern was here ####
+POSTHOOK: query: select *, 'x' || (c&3) , 'a' || c*c+c || 'b' from ct_v1
+		order by 'a' || c*c+c || 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ct1
+POSTHOOK: Input: default@ct2
+POSTHOOK: Input: default@ct_v1
+#### A masked pattern was here ####
+3	x3	a12b
+4	x0	a20b
+1	x1	a2b
+5	x1	a30b
+6	x2	a42b
+7	x3	a56b
+2	x2	a6b
+8	x0	a72b
+PREHOOK: query: select 'x' || (c&3) from ct_v1
+		group by 'x' || (c&3) order by 'x' || (c&3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ct1
+PREHOOK: Input: default@ct2
+PREHOOK: Input: default@ct_v1
+#### A masked pattern was here ####
+POSTHOOK: query: select 'x' || (c&3) from ct_v1
+		group by 'x' || (c&3) order by 'x' || (c&3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ct1
+POSTHOOK: Input: default@ct2
+POSTHOOK: Input: default@ct_v1
+#### A masked pattern was here ####
+x0
+x1
+x2
+x3
+PREHOOK: query: explain select concat('a','b','c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select concat('a','b','c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'abc' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain select 'a' || 'b' || 'c'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select 'a' || 'b' || 'c'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'abc' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select true and false or false and true or true
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select true and false or false and true or true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: explain formatted select key || value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain formatted select key || value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"default\",\n        \"src\"\n      ],\n      \"table:alias\": \"src\",\n      \"inputs\": [],\n      \"rowCount\": 500.0,\n      \"avgRowSize\": 9.624,\n      \"rowType\": [\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"key\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"value\"\n        },\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ],\n      \"colStats\": [\n        {\n          \"name\": \"key\",\n          \"ndv\": 316\n        },\n        {\n          \"name\": \"value\",\n          \"ndv\": 307\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"op\": {\n            \"name\": \"||\",\n            \"kind\": \"OTHER_FUNCTION\",\n            \"syntax\": \"SPECIAL\"\n          },\n          \"operands\": [\n            {\n              \"input\": 0,\n              \"name\": \"$0\"\n            },\n            {\n              \"input\": 1,\n              \"name\": \"$1\"\n            }\n          ]\n        }\n      ],\n      \"rowCount\": 500.0\n    }\n  ]\n}","optimizedSQL":"SELECT `key` || `value` AS `_o__c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"src","columns:":["key","value"],"database:":"default","table:":"src","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"concat(key, value) (type: string)","columnExprMap:":{"_col0":"concat(key, value)"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+PREHOOK: query: explain formatted select key || value || key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain formatted select key || value || key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"default\",\n        \"src\"\n      ],\n      \"table:alias\": \"src\",\n      \"inputs\": [],\n      \"rowCount\": 500.0,\n      \"avgRowSize\": 9.624,\n      \"rowType\": [\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"key\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"value\"\n        },\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ],\n      \"colStats\": [\n        {\n          \"name\": \"key\",\n          \"ndv\": 316\n        },\n        {\n          \"name\": \"value\",\n          \"ndv\": 307\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"op\": {\n            \"name\": \"||\",\n            \"kind\": \"OTHER_FUNCTION\",\n            \"syntax\": \"SPECIAL\"\n          },\n          \"operands\": [\n            {\n              \"op\": {\n                \"name\": \"||\",\n                \"kind\": \"OTHER_FUNCTION\",\n                \"syntax\": \"SPECIAL\"\n              },\n              \"operands\": [\n                {\n                  \"input\": 0,\n                  \"name\": \"$0\"\n                },\n                {\n                  \"input\": 1,\n                  \"name\": \"$1\"\n                }\n              ]\n            },\n            {\n              \"input\": 0,\n              \"name\": \"$0\"\n            }\n          ]\n        }\n      ],\n      \"rowCount\": 500.0\n    }\n  ]\n}","optimizedSQL":"SELECT `key` || `value` || `key` AS `_o__c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"src","columns:":["key","value"],"database:":"default","table:":"src","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"concat(concat(key, value), key) (type: string)","columnExprMap:":{"_col0":"concat(concat(key, value), key)"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+PREHOOK: query: explain formatted select key || value || key || value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain formatted select key || value || key || value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"default\",\n        \"src\"\n      ],\n      \"table:alias\": \"src\",\n      \"inputs\": [],\n      \"rowCount\": 500.0,\n      \"avgRowSize\": 9.624,\n      \"rowType\": [\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"key\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"value\"\n        },\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ],\n      \"colStats\": [\n        {\n          \"name\": \"key\",\n          \"ndv\": 316\n        },\n        {\n          \"name\": \"value\",\n          \"ndv\": 307\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"op\": {\n            \"name\": \"||\",\n            \"kind\": \"OTHER_FUNCTION\",\n            \"syntax\": \"SPECIAL\"\n          },\n          \"operands\": [\n            {\n              \"op\": {\n                \"name\": \"||\",\n                \"kind\": \"OTHER_FUNCTION\",\n                \"syntax\": \"SPECIAL\"\n              },\n              \"operands\": [\n                {\n                  \"op\": {\n                    \"name\": \"||\",\n                    \"kind\": \"OTHER_FUNCTION\",\n                    \"syntax\": \"SPECIAL\"\n                  },\n                  \"operands\": [\n                    {\n                      \"input\": 0,\n                      \"name\": \"$0\"\n                    },\n                    {\n                      \"input\": 1,\n                      \"name\": \"$1\"\n                    }\n                  ]\n                },\n                {\n                  \"input\": 0,\n                  \"name\": \"$0\"\n                }\n              ]\n            },\n            {\n              \"input\": 1,\n              \"name\": \"$1\"\n            }\n          ]\n        }\n      ],\n      \"rowCount\": 500.0\n    }\n  ]\n}","optimizedSQL":"SELECT `key` || `value` || `key` || `value` AS `_o__c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"src","columns:":["key","value"],"database:":"default","table:":"src","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"concat(concat(concat(key, value), key), value) (type: string)","columnExprMap:":{"_col0":"concat(concat(concat(key, value), key), value)"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}

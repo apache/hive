@@ -85,6 +85,10 @@ public class TestHiveConf {
     checkConfVar(ConfVars.HIVETESTMODEDUMMYSTATAGGR, "");
     checkHiveConf(ConfVars.HIVETESTMODEDUMMYSTATAGGR.varname, "value2");
 
+    //Property defined for hive masking algorithm
+    checkConfVar(ConfVars.HIVE_MASKING_ALGO, "sha256");
+    checkHiveConf(ConfVars.HIVE_MASKING_ALGO.varname, "sha256");
+
     // Property defined in hive-site.xml only
     checkHadoopConf("test.property1", null);
     checkHiveConf("test.property1", "value1");
@@ -151,7 +155,8 @@ public class TestHiveConf {
         "fs.s3.awsSecretAccessKey",
         "fs.s3n.awsSecretAccessKey",
         "dfs.adls.oauth2.credential",
-        "fs.adl.oauth2.credential"
+        "fs.adl.oauth2.credential",
+        "fs.azure.account.oauth2.client.secret"
     );
 
     for (String hiddenConfig : hiddenList) {

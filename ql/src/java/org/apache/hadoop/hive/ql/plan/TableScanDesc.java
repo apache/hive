@@ -18,16 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
@@ -37,6 +31,18 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.mapred.TextInputFormat;
+
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
@@ -89,7 +95,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private List<String> neededNestedColumnPaths;
 
   // all column names referenced including virtual columns. used in ColumnAccessAnalyzer
-  private transient List<String> referencedColumns;
+  private List<String> referencedColumns;
 
   public static final String FILTER_EXPR_CONF_STR =
       "hive.io.filter.expr.serialized";
@@ -99,6 +105,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public static final String FILTER_OBJECT_CONF_STR =
       "hive.io.filter.object";
+
+  public static final String PARTITION_PRUNING_FILTER =
+      "hive.io.pruning.filter";
+
+  public static final String AS_OF_TIMESTAMP =
+      "hive.io.as.of.timestamp";
+
+  public static final String AS_OF_VERSION =
+      "hive.io.as.of.version";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
@@ -114,13 +129,19 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
-  private transient TableSample tableSample;
+  private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
 
-  private transient Table tableMetadata;
+  private TableSample tableSample;
+
+  private Table tableMetadata;
 
   private BitSet includedBuckets;
 
   private int numBuckets = -1;
+
+  private String asOfVersion = null;
+
+  private String asOfTimestamp = null;
 
   public TableScanDesc() {
     this(null, null);
@@ -132,10 +153,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   public TableScanDesc(final String alias, Table tblMetadata) {
-    this(alias, null, tblMetadata);
+    this(alias, null, tblMetadata, null);
   }
 
   public TableScanDesc(final String alias, List<VirtualColumn> vcs, Table tblMetadata) {
+    this(alias, vcs, tblMetadata, null);
+  }
+
+  public TableScanDesc(final String alias, List<VirtualColumn> vcs, Table tblMetadata,
+      TableScanOperator.ProbeDecodeContext probeDecodeContext) {
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
@@ -143,17 +169,21 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     if (tblMetadata != null) {
       dbName = tblMetadata.getDbName();
       tableName = tblMetadata.getTableName();
+      numBuckets = tblMetadata.getNumBuckets();
+      asOfTimestamp = tblMetadata.getAsOfTimestamp();
+      asOfVersion = tblMetadata.getAsOfVersion();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
     }
+    this.probeDecodeContext = probeDecodeContext;
   }
 
   @Override
   public Object clone() {
     List<VirtualColumn> vcs = new ArrayList<VirtualColumn>(getVirtualCols());
-    return new TableScanDesc(getAlias(), vcs, this.tableMetadata);
+    return new TableScanDesc(getAlias(), vcs, this.tableMetadata, this.probeDecodeContext);
   }
 
   @Explain(displayName = "alias")
@@ -235,6 +265,18 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public void setFilterExpr(ExprNodeGenericFuncDesc filterExpr) {
     this.filterExpr = filterExpr;
+  }
+
+  @Explain(displayName = "probeDecodeDetails", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public String getProbeDecodeString() {
+    if (probeDecodeContext == null) {
+      return null;
+    }
+    return probeDecodeContext.toString();
+  }
+
+  public void setProbeDecodeContext(TableScanOperator.ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContext = probeDecodeContext;
   }
 
   public Serializable getFilterObject() {
@@ -457,7 +499,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean isNeedSkipHeaderFooters() {
     boolean rtn = false;
-    if (tableMetadata != null && tableMetadata.getTTable() != null) {
+    if (tableMetadata != null && tableMetadata.getTTable() != null
+        && TextInputFormat.class
+        .isAssignableFrom(tableMetadata.getInputFormatClass())) {
       Map<String, String> params = tableMetadata.getTTable().getParameters();
       if (params != null) {
         String skipHVal = params.get(serdeConstants.HEADER_COUNT);
@@ -470,10 +514,26 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return rtn;
   }
 
-  @Override
-  @Explain(displayName = "properties", explainLevels = { Level.DEFAULT, Level.USER, Level.EXTENDED })
-  public Map<String, String> getOpProps() {
+  @Override public Map<String, String> getOpProps() {
     return opProps;
+  }
+
+  @Explain(displayName = "properties", explainLevels = { Level.DEFAULT, Level.USER, Level.EXTENDED })
+  public Map<String, String> getOpPropsWithStorageHandlerProps() {
+    HiveStorageHandler storageHandler = tableMetadata.getStorageHandler();
+    return storageHandler == null
+            ? opProps
+            : storageHandler.getOperatorDescProperties(this, opProps);
+  }
+
+  @Explain(displayName = "As of version")
+  public String getAsOfVersion() {
+    return asOfVersion;
+  }
+
+  @Explain(displayName = "As of timestamp")
+  public String getAsOfTimestamp() {
+    return asOfTimestamp;
   }
 
   public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {

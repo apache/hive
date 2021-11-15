@@ -1,0 +1,2874 @@
+PREHOOK: query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mi1
+POSTHOOK: query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mi1
+PREHOOK: query: CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mi2
+POSTHOOK: query: CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mi2
+PREHOOK: query: CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mi3
+POSTHOOK: query: CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mi3
+PREHOOK: query: CREATE TABLE mi4(value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mi4
+POSTHOOK: query: CREATE TABLE mi4(value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mi4
+PREHOOK: query: EXPLAIN
+FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-0, Stage-3
+  Stage-1 depends on stages: Stage-5
+  Stage-7 depends on stages: Stage-1, Stage-3
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2, Stage-3
+  Stage-3 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (_col0 < 100) (type: boolean)
+                  Statistics: Num rows: 263 Data size: 46814 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 263 Data size: 24985 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 263 Data size: 24985 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi1
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 263 Data size: 24985 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+                  Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 87 Data size: 8265 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 87 Data size: 8265 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi2
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 87 Data size: 8265 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                        minReductionHashAggr: 0.9885057
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+                  Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi3
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: key
+                      Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key)
+                        keys: '2008-04-08' (type: string), '12' (type: string)
+                        minReductionHashAggr: 0.9885057
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                        Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: '2008-04-08' (type: string), '12' (type: string)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: '2008-04-08' (type: string), '12' (type: string)
+                          Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary)
+                Filter Operator
+                  predicate: (_col0 >= 300) (type: boolean)
+                  Statistics: Num rows: 263 Data size: 46814 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col1 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 263 Data size: 23933 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 263 Data size: 23933 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                keys: '2008-04-08' (type: string), '12' (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), '2008-04-08' (type: string), '12' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                  Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-5
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.mi1
+
+  Stage: Stage-6
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.mi2
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi2
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 12
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.mi3
+
+  Stage: Stage-8
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.mi3
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: target/warehouse/mi4.out
+
+PREHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT mi1.* FROM mi1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi1.* FROM mi1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+11	val_11
+12	val_12
+12	val_12
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+15	val_15
+15	val_15
+17	val_17
+18	val_18
+18	val_18
+18	val_18
+18	val_18
+19	val_19
+2	val_2
+20	val_20
+24	val_24
+24	val_24
+24	val_24
+24	val_24
+26	val_26
+26	val_26
+26	val_26
+26	val_26
+27	val_27
+28	val_28
+30	val_30
+33	val_33
+34	val_34
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+4	val_4
+41	val_41
+42	val_42
+42	val_42
+42	val_42
+42	val_42
+43	val_43
+44	val_44
+47	val_47
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+51	val_51
+51	val_51
+53	val_53
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+58	val_58
+58	val_58
+64	val_64
+65	val_65
+66	val_66
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+76	val_76
+76	val_76
+77	val_77
+78	val_78
+8	val_8
+80	val_80
+82	val_82
+83	val_83
+83	val_83
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+98	val_98
+98	val_98
+PREHOOK: query: SELECT mi2.* FROM mi2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi2.* FROM mi2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi2
+#### A masked pattern was here ####
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+104	val_104
+104	val_104
+105	val_105
+111	val_111
+113	val_113
+113	val_113
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+120	val_120
+120	val_120
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+150	val_150
+152	val_152
+152	val_152
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+170	val_170
+172	val_172
+172	val_172
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+179	val_179
+179	val_179
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+190	val_190
+191	val_191
+191	val_191
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+PREHOOK: query: SELECT mi3.* FROM mi3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi3
+PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi3.* FROM mi3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi3
+POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+200	2008-04-08	12
+200	2008-04-08	12
+200	2008-04-08	12
+200	2008-04-08	12
+201	2008-04-08	12
+202	2008-04-08	12
+203	2008-04-08	12
+203	2008-04-08	12
+203	2008-04-08	12
+203	2008-04-08	12
+205	2008-04-08	12
+205	2008-04-08	12
+205	2008-04-08	12
+205	2008-04-08	12
+207	2008-04-08	12
+207	2008-04-08	12
+207	2008-04-08	12
+207	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+209	2008-04-08	12
+209	2008-04-08	12
+209	2008-04-08	12
+209	2008-04-08	12
+213	2008-04-08	12
+213	2008-04-08	12
+213	2008-04-08	12
+213	2008-04-08	12
+214	2008-04-08	12
+216	2008-04-08	12
+216	2008-04-08	12
+216	2008-04-08	12
+216	2008-04-08	12
+217	2008-04-08	12
+217	2008-04-08	12
+217	2008-04-08	12
+217	2008-04-08	12
+218	2008-04-08	12
+219	2008-04-08	12
+219	2008-04-08	12
+219	2008-04-08	12
+219	2008-04-08	12
+221	2008-04-08	12
+221	2008-04-08	12
+221	2008-04-08	12
+221	2008-04-08	12
+222	2008-04-08	12
+223	2008-04-08	12
+223	2008-04-08	12
+223	2008-04-08	12
+223	2008-04-08	12
+224	2008-04-08	12
+224	2008-04-08	12
+224	2008-04-08	12
+224	2008-04-08	12
+226	2008-04-08	12
+228	2008-04-08	12
+229	2008-04-08	12
+229	2008-04-08	12
+229	2008-04-08	12
+229	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+233	2008-04-08	12
+233	2008-04-08	12
+233	2008-04-08	12
+233	2008-04-08	12
+235	2008-04-08	12
+237	2008-04-08	12
+237	2008-04-08	12
+237	2008-04-08	12
+237	2008-04-08	12
+238	2008-04-08	12
+238	2008-04-08	12
+238	2008-04-08	12
+238	2008-04-08	12
+239	2008-04-08	12
+239	2008-04-08	12
+239	2008-04-08	12
+239	2008-04-08	12
+241	2008-04-08	12
+242	2008-04-08	12
+242	2008-04-08	12
+242	2008-04-08	12
+242	2008-04-08	12
+244	2008-04-08	12
+247	2008-04-08	12
+248	2008-04-08	12
+249	2008-04-08	12
+252	2008-04-08	12
+255	2008-04-08	12
+255	2008-04-08	12
+255	2008-04-08	12
+255	2008-04-08	12
+256	2008-04-08	12
+256	2008-04-08	12
+256	2008-04-08	12
+256	2008-04-08	12
+257	2008-04-08	12
+258	2008-04-08	12
+260	2008-04-08	12
+262	2008-04-08	12
+263	2008-04-08	12
+265	2008-04-08	12
+265	2008-04-08	12
+265	2008-04-08	12
+265	2008-04-08	12
+266	2008-04-08	12
+272	2008-04-08	12
+272	2008-04-08	12
+272	2008-04-08	12
+272	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+274	2008-04-08	12
+275	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+278	2008-04-08	12
+278	2008-04-08	12
+278	2008-04-08	12
+278	2008-04-08	12
+280	2008-04-08	12
+280	2008-04-08	12
+280	2008-04-08	12
+280	2008-04-08	12
+281	2008-04-08	12
+281	2008-04-08	12
+281	2008-04-08	12
+281	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+283	2008-04-08	12
+284	2008-04-08	12
+285	2008-04-08	12
+286	2008-04-08	12
+287	2008-04-08	12
+288	2008-04-08	12
+288	2008-04-08	12
+288	2008-04-08	12
+288	2008-04-08	12
+289	2008-04-08	12
+291	2008-04-08	12
+292	2008-04-08	12
+296	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@mi4
+PREHOOK: query: SELECT mi4.* FROM mi4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi4.* FROM mi4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi4
+#### A masked pattern was here ####
+val_302
+val_305
+val_306
+val_307
+val_307
+val_307
+val_307
+val_308
+val_309
+val_309
+val_309
+val_309
+val_310
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_315
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_317
+val_317
+val_317
+val_317
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_321
+val_321
+val_321
+val_321
+val_322
+val_322
+val_322
+val_322
+val_323
+val_325
+val_325
+val_325
+val_325
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_331
+val_331
+val_331
+val_331
+val_332
+val_333
+val_333
+val_333
+val_333
+val_335
+val_336
+val_338
+val_339
+val_341
+val_342
+val_342
+val_342
+val_342
+val_344
+val_344
+val_344
+val_344
+val_345
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_351
+val_353
+val_353
+val_353
+val_353
+val_356
+val_360
+val_362
+val_364
+val_365
+val_366
+val_367
+val_367
+val_367
+val_367
+val_368
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_373
+val_374
+val_375
+val_377
+val_378
+val_379
+val_382
+val_382
+val_382
+val_382
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_386
+val_389
+val_392
+val_393
+val_394
+val_395
+val_395
+val_395
+val_395
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_397
+val_397
+val_397
+val_397
+val_399
+val_399
+val_399
+val_399
+val_400
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_402
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_404
+val_404
+val_404
+val_404
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_407
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_411
+val_413
+val_413
+val_413
+val_413
+val_414
+val_414
+val_414
+val_414
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_418
+val_419
+val_421
+val_424
+val_424
+val_424
+val_424
+val_427
+val_429
+val_429
+val_429
+val_429
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_432
+val_435
+val_436
+val_437
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_439
+val_439
+val_439
+val_439
+val_443
+val_444
+val_446
+val_448
+val_449
+val_452
+val_453
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_455
+val_457
+val_458
+val_458
+val_458
+val_458
+val_459
+val_459
+val_459
+val_459
+val_460
+val_462
+val_462
+val_462
+val_462
+val_463
+val_463
+val_463
+val_463
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_467
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_470
+val_472
+val_475
+val_477
+val_478
+val_478
+val_478
+val_478
+val_479
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_481
+val_482
+val_483
+val_484
+val_485
+val_487
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_490
+val_491
+val_492
+val_492
+val_492
+val_492
+val_493
+val_494
+val_495
+val_496
+val_497
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+PREHOOK: query: EXPLAIN
+FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-0, Stage-3
+  Stage-1 depends on stages: Stage-5
+  Stage-7 depends on stages: Stage-1, Stage-3
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2, Stage-3
+  Stage-3 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (_col0 < 100) (type: boolean)
+                  Statistics: Num rows: 263 Data size: 46814 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 263 Data size: 24985 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 263 Data size: 24985 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi1
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 263 Data size: 24985 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+                  Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 87 Data size: 8265 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 87 Data size: 8265 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi2
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 87 Data size: 8265 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                        minReductionHashAggr: 0.9885057
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+                  Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi3
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: key
+                      Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key)
+                        keys: '2008-04-08' (type: string), '12' (type: string)
+                        minReductionHashAggr: 0.9885057
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                        Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: '2008-04-08' (type: string), '12' (type: string)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: '2008-04-08' (type: string), '12' (type: string)
+                          Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary)
+                Filter Operator
+                  predicate: (_col0 >= 300) (type: boolean)
+                  Statistics: Num rows: 263 Data size: 46814 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col1 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 263 Data size: 23933 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 263 Data size: 23933 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                keys: '2008-04-08' (type: string), '12' (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), '2008-04-08' (type: string), '12' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                  Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-5
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.mi1
+
+  Stage: Stage-6
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.mi2
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi2
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 12
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.mi3
+
+  Stage: Stage-8
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.mi3
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: target/warehouse/mi4.out
+
+PREHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT mi1.* FROM mi1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi1.* FROM mi1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+11	val_11
+12	val_12
+12	val_12
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+15	val_15
+15	val_15
+17	val_17
+18	val_18
+18	val_18
+18	val_18
+18	val_18
+19	val_19
+2	val_2
+20	val_20
+24	val_24
+24	val_24
+24	val_24
+24	val_24
+26	val_26
+26	val_26
+26	val_26
+26	val_26
+27	val_27
+28	val_28
+30	val_30
+33	val_33
+34	val_34
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+4	val_4
+41	val_41
+42	val_42
+42	val_42
+42	val_42
+42	val_42
+43	val_43
+44	val_44
+47	val_47
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+51	val_51
+51	val_51
+53	val_53
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+58	val_58
+58	val_58
+64	val_64
+65	val_65
+66	val_66
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+76	val_76
+76	val_76
+77	val_77
+78	val_78
+8	val_8
+80	val_80
+82	val_82
+83	val_83
+83	val_83
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+98	val_98
+98	val_98
+PREHOOK: query: SELECT mi2.* FROM mi2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi2.* FROM mi2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi2
+#### A masked pattern was here ####
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+104	val_104
+104	val_104
+105	val_105
+111	val_111
+113	val_113
+113	val_113
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+120	val_120
+120	val_120
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+149	val_149
+149	val_149
+150	val_150
+152	val_152
+152	val_152
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+170	val_170
+172	val_172
+172	val_172
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+179	val_179
+179	val_179
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+190	val_190
+191	val_191
+191	val_191
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+199	val_199
+PREHOOK: query: SELECT mi3.* FROM mi3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi3
+PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi3.* FROM mi3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi3
+POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+200	2008-04-08	12
+200	2008-04-08	12
+200	2008-04-08	12
+200	2008-04-08	12
+201	2008-04-08	12
+202	2008-04-08	12
+203	2008-04-08	12
+203	2008-04-08	12
+203	2008-04-08	12
+203	2008-04-08	12
+205	2008-04-08	12
+205	2008-04-08	12
+205	2008-04-08	12
+205	2008-04-08	12
+207	2008-04-08	12
+207	2008-04-08	12
+207	2008-04-08	12
+207	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+208	2008-04-08	12
+209	2008-04-08	12
+209	2008-04-08	12
+209	2008-04-08	12
+209	2008-04-08	12
+213	2008-04-08	12
+213	2008-04-08	12
+213	2008-04-08	12
+213	2008-04-08	12
+214	2008-04-08	12
+216	2008-04-08	12
+216	2008-04-08	12
+216	2008-04-08	12
+216	2008-04-08	12
+217	2008-04-08	12
+217	2008-04-08	12
+217	2008-04-08	12
+217	2008-04-08	12
+218	2008-04-08	12
+219	2008-04-08	12
+219	2008-04-08	12
+219	2008-04-08	12
+219	2008-04-08	12
+221	2008-04-08	12
+221	2008-04-08	12
+221	2008-04-08	12
+221	2008-04-08	12
+222	2008-04-08	12
+223	2008-04-08	12
+223	2008-04-08	12
+223	2008-04-08	12
+223	2008-04-08	12
+224	2008-04-08	12
+224	2008-04-08	12
+224	2008-04-08	12
+224	2008-04-08	12
+226	2008-04-08	12
+228	2008-04-08	12
+229	2008-04-08	12
+229	2008-04-08	12
+229	2008-04-08	12
+229	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+230	2008-04-08	12
+233	2008-04-08	12
+233	2008-04-08	12
+233	2008-04-08	12
+233	2008-04-08	12
+235	2008-04-08	12
+237	2008-04-08	12
+237	2008-04-08	12
+237	2008-04-08	12
+237	2008-04-08	12
+238	2008-04-08	12
+238	2008-04-08	12
+238	2008-04-08	12
+238	2008-04-08	12
+239	2008-04-08	12
+239	2008-04-08	12
+239	2008-04-08	12
+239	2008-04-08	12
+241	2008-04-08	12
+242	2008-04-08	12
+242	2008-04-08	12
+242	2008-04-08	12
+242	2008-04-08	12
+244	2008-04-08	12
+247	2008-04-08	12
+248	2008-04-08	12
+249	2008-04-08	12
+252	2008-04-08	12
+255	2008-04-08	12
+255	2008-04-08	12
+255	2008-04-08	12
+255	2008-04-08	12
+256	2008-04-08	12
+256	2008-04-08	12
+256	2008-04-08	12
+256	2008-04-08	12
+257	2008-04-08	12
+258	2008-04-08	12
+260	2008-04-08	12
+262	2008-04-08	12
+263	2008-04-08	12
+265	2008-04-08	12
+265	2008-04-08	12
+265	2008-04-08	12
+265	2008-04-08	12
+266	2008-04-08	12
+272	2008-04-08	12
+272	2008-04-08	12
+272	2008-04-08	12
+272	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+273	2008-04-08	12
+274	2008-04-08	12
+275	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+277	2008-04-08	12
+278	2008-04-08	12
+278	2008-04-08	12
+278	2008-04-08	12
+278	2008-04-08	12
+280	2008-04-08	12
+280	2008-04-08	12
+280	2008-04-08	12
+280	2008-04-08	12
+281	2008-04-08	12
+281	2008-04-08	12
+281	2008-04-08	12
+281	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+283	2008-04-08	12
+284	2008-04-08	12
+285	2008-04-08	12
+286	2008-04-08	12
+287	2008-04-08	12
+288	2008-04-08	12
+288	2008-04-08	12
+288	2008-04-08	12
+288	2008-04-08	12
+289	2008-04-08	12
+291	2008-04-08	12
+292	2008-04-08	12
+296	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+298	2008-04-08	12
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@mi4
+PREHOOK: query: SELECT mi4.* FROM mi4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi4.* FROM mi4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi4
+#### A masked pattern was here ####
+val_302
+val_305
+val_306
+val_307
+val_307
+val_307
+val_307
+val_308
+val_309
+val_309
+val_309
+val_309
+val_310
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_315
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_317
+val_317
+val_317
+val_317
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_321
+val_321
+val_321
+val_321
+val_322
+val_322
+val_322
+val_322
+val_323
+val_325
+val_325
+val_325
+val_325
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_331
+val_331
+val_331
+val_331
+val_332
+val_333
+val_333
+val_333
+val_333
+val_335
+val_336
+val_338
+val_339
+val_341
+val_342
+val_342
+val_342
+val_342
+val_344
+val_344
+val_344
+val_344
+val_345
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_351
+val_353
+val_353
+val_353
+val_353
+val_356
+val_360
+val_362
+val_364
+val_365
+val_366
+val_367
+val_367
+val_367
+val_367
+val_368
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_373
+val_374
+val_375
+val_377
+val_378
+val_379
+val_382
+val_382
+val_382
+val_382
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_386
+val_389
+val_392
+val_393
+val_394
+val_395
+val_395
+val_395
+val_395
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_397
+val_397
+val_397
+val_397
+val_399
+val_399
+val_399
+val_399
+val_400
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_402
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_404
+val_404
+val_404
+val_404
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_407
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_411
+val_413
+val_413
+val_413
+val_413
+val_414
+val_414
+val_414
+val_414
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_418
+val_419
+val_421
+val_424
+val_424
+val_424
+val_424
+val_427
+val_429
+val_429
+val_429
+val_429
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_432
+val_435
+val_436
+val_437
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_439
+val_439
+val_439
+val_439
+val_443
+val_444
+val_446
+val_448
+val_449
+val_452
+val_453
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_455
+val_457
+val_458
+val_458
+val_458
+val_458
+val_459
+val_459
+val_459
+val_459
+val_460
+val_462
+val_462
+val_462
+val_462
+val_463
+val_463
+val_463
+val_463
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_467
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_470
+val_472
+val_475
+val_477
+val_478
+val_478
+val_478
+val_478
+val_479
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_481
+val_482
+val_483
+val_484
+val_485
+val_487
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_490
+val_491
+val_492
+val_492
+val_492
+val_492
+val_493
+val_494
+val_495
+val_496
+val_497
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498

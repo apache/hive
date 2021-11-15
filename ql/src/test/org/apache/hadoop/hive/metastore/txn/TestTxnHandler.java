@@ -18,6 +18,10 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
@@ -29,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
@@ -41,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -58,6 +64,10 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -75,8 +85,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,6 +102,7 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import static org.apache.hadoop.hive.metastore.utils.LockTypeUtil.getEncoding;
 
 /**
  * Tests for TxnHandler.
@@ -100,7 +115,8 @@ public class TestTxnHandler {
   private TxnStore txnHandler;
 
   public TestTxnHandler() throws Exception {
-    TxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     Configuration conf = ctx.getConfiguration();
     conf.getLoggerConfig(CLASS_NAME).setLevel(Level.DEBUG);
@@ -192,34 +208,68 @@ public class TestTxnHandler {
     boolean gotException = false;
     try {
       txnHandler.abortTxn(new AbortTxnRequest(2));
-    }
-    catch(NoSuchTxnException ex) {
+    } catch(NoSuchTxnException ex) {
       gotException = true;
-      //if this wasn't an empty txn, we'd get a better msg
-      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(2), ex.getMessage());
+      // this is the last committed, so it is still in the txns table
+      Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(2) + " is already committed.", ex.getMessage());
     }
     Assert.assertTrue(gotException);
     gotException = false;
     txnHandler.commitTxn(new CommitTxnRequest(3));
     try {
       txnHandler.abortTxn(new AbortTxnRequest(3));
-    }
-    catch(NoSuchTxnException ex) {
+    } catch(NoSuchTxnException ex) {
       gotException = true;
       //txn 3 is not empty txn, so we get a better msg
       Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(3) + " is already committed.", ex.getMessage());
     }
     Assert.assertTrue(gotException);
-    
+
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
+    txnHandler.setOpenTxnTimeOutMillis(1000);
+    gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(2));
+    } catch(NoSuchTxnException ex) {
+      gotException = true;
+      // now the second transaction is cleared and since it was empty, we do not recognize it anymore
+      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(2), ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
+
     gotException = false;
     try {
       txnHandler.abortTxn(new AbortTxnRequest(4));
-    }
-    catch(NoSuchTxnException ex) {
+    } catch(NoSuchTxnException ex) {
       gotException = true;
       Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(4), ex.getMessage());
     }
     Assert.assertTrue(gotException);
+  }
+
+  @Test
+  public void testAbortTxns() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
+    List<Long> txnList = openedTxns.getTxn_ids();
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+
+    OpenTxnRequest replRqst = new OpenTxnRequest(2, "me", "localhost");
+    replRqst.setReplPolicy("default.*");
+    replRqst.setTxn_type(TxnType.REPL_CREATED);
+    replRqst.setReplSrcTxnIds(Arrays.asList(1L, 2L));
+    List<Long> targetTxns = txnHandler.openTxns(replRqst).getTxn_ids();
+
+    assertTrue(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+    txnHandler.abortTxns(new AbortTxnsRequest(targetTxns));
+    assertFalse(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+
+    GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
+    assertEquals(5, txnsInfo.getOpen_txns().size());
+    txnsInfo.getOpen_txns().forEach(txn ->
+      assertEquals(TxnState.ABORTED, txn.getState())
+    );
   }
 
   @Test
@@ -412,7 +462,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -435,7 +485,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("yourtable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -449,7 +499,7 @@ public class TestTxnHandler {
     // Test that two different partitions don't collide on their locks
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -459,7 +509,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("yourpartition");
+    comp.setPartitionname("yourpartition=yourvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -473,7 +523,7 @@ public class TestTxnHandler {
     // Test that two different partitions don't collide on their locks
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -483,7 +533,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -497,7 +547,7 @@ public class TestTxnHandler {
     // Test that two shared read locks can share a partition
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -507,7 +557,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
@@ -521,7 +571,7 @@ public class TestTxnHandler {
     // Test that exclusive lock blocks shared reads
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -531,7 +581,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.INSERT);
     components.clear();
     components.add(comp);
@@ -541,7 +591,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
@@ -555,7 +605,7 @@ public class TestTxnHandler {
     // Test that write can acquire after read
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -565,7 +615,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
@@ -580,7 +630,7 @@ public class TestTxnHandler {
     // Test that exclusive lock blocks read and write
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -590,7 +640,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
@@ -600,7 +650,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.UPDATE);
     components.clear();
     components.add(comp);
@@ -615,7 +665,7 @@ public class TestTxnHandler {
     // Test that read blocks exclusive
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -625,7 +675,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -639,7 +689,7 @@ public class TestTxnHandler {
     // Test that exclusive blocks read and exclusive
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -649,7 +699,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
@@ -659,7 +709,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -673,7 +723,7 @@ public class TestTxnHandler {
     // Test that read can acquire after write
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -684,7 +734,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
@@ -694,11 +744,11 @@ public class TestTxnHandler {
   }
 
   @Test
-  public void testLockSWSWSR() throws Exception {
+  public void testLockSWSWSW() throws Exception {
     // Test that write blocks write but read can still acquire
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -709,7 +759,43 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
+    comp.setOperationType(DataOperationType.DELETE);
+    components.clear();
+    components.add(comp);
+    req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
+    res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+
+    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition=myvalue");
+    comp.setOperationType(DataOperationType.INSERT);
+    components.clear();
+    components.add(comp);
+    req = new LockRequest(components, "me", "localhost");
+    res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+  }
+
+  @Test
+  public void testLockEWEWSR() throws Exception {
+    // Test that write blocks write but read can still acquire
+    LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition=myvalue");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
+    LockResponse res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+
+    comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
@@ -720,7 +806,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.INSERT);
     components.clear();
     components.add(comp);
@@ -728,12 +814,13 @@ public class TestTxnHandler {
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
   }
+
   @Ignore("now that every op has a txn ctx, we don't produce the error expected here....")
   @Test
   public void testWrongLockForOperation() throws Exception {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -741,19 +828,19 @@ public class TestTxnHandler {
     req.setTxnid(openTxn());
     Exception expectedError = null;
     try {
-      LockResponse res = txnHandler.lock(req);
-    }
-    catch(Exception e) {
+      txnHandler.lock(req);
+    } catch(Exception e) {
       expectedError = e;
     }
     Assert.assertTrue(expectedError != null && expectedError.getMessage().contains("Unexpected DataOperationType"));
   }
+
   @Test
-  public void testLockSWSWSW() throws Exception {
+  public void testLockEWEWEW() throws Exception {
     // Test that write blocks two writes
-    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -762,9 +849,9 @@ public class TestTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
 
-    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
@@ -773,9 +860,9 @@ public class TestTxnHandler {
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
 
-    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
@@ -790,7 +877,7 @@ public class TestTxnHandler {
     // Test that exclusive blocks exclusive and write
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -800,7 +887,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -810,7 +897,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
@@ -825,7 +912,7 @@ public class TestTxnHandler {
     // Test that exclusive blocks exclusive and read
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -835,7 +922,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
@@ -845,7 +932,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
@@ -856,10 +943,10 @@ public class TestTxnHandler {
 
   @Test
   public void testCheckLockAcquireAfterWaiting() throws Exception {
-    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
-    comp.setOperationType(DataOperationType.DELETE);
+    comp.setPartitionname("mypartition=myvalue");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -871,8 +958,8 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
-    comp.setOperationType(DataOperationType.UPDATE);
+    comp.setPartitionname("mypartition=myvalue");
+    comp.setOperationType(DataOperationType.INSERT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -901,7 +988,7 @@ public class TestTxnHandler {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -924,14 +1011,14 @@ public class TestTxnHandler {
     // Test more than one lock can be handled in a lock request
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(2);
     components.add(comp);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("anotherpartition");
+    comp.setPartitionname("anotherpartition=anothervalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -949,14 +1036,14 @@ public class TestTxnHandler {
     // Test that two shared read locks can share a partition
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(2);
     components.add(comp);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("anotherpartition");
+    comp.setPartitionname("anotherpartition=anothervalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -967,7 +1054,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -1023,7 +1110,7 @@ public class TestTxnHandler {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -1070,7 +1157,7 @@ public class TestTxnHandler {
     HeartbeatRequest h = new HeartbeatRequest();
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -1135,14 +1222,14 @@ public class TestTxnHandler {
     try {
       LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
       comp.setTablename("mytable");
-      comp.setPartitionname("mypartition");
+      comp.setPartitionname("mypartition=myvalue");
       comp.setOperationType(DataOperationType.NO_TXN);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
       LockResponse res = txnHandler.lock(req);
       assertTrue(res.getState() == LockState.ACQUIRED);
-      Thread.sleep(10);
+      Thread.sleep(1000);
       txnHandler.performTimeOuts();
       txnHandler.checkLock(new CheckLockRequest(res.getLockid()));
       fail("Told there was a lock, when it should have timed out.");
@@ -1157,7 +1244,7 @@ public class TestTxnHandler {
     long timeout = txnHandler.setTimeout(1);
     try {
       txnHandler.openTxns(new OpenTxnRequest(503, "me", "localhost"));
-      Thread.sleep(10);
+      Thread.sleep(1000);
       txnHandler.performTimeOuts();
       GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
       int numAborted = 0;
@@ -1173,14 +1260,16 @@ public class TestTxnHandler {
 
   @Test
   public void testReplTimeouts() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     long timeout = txnHandler.setTimeout(1);
     try {
       OpenTxnRequest request = new OpenTxnRequest(3, "me", "localhost");
       OpenTxnsResponse response = txnHandler.openTxns(request);
       request.setReplPolicy("default.*");
       request.setReplSrcTxnIds(response.getTxn_ids());
+      request.setTxn_type(TxnType.REPL_CREATED);
       OpenTxnsResponse responseRepl = txnHandler.openTxns(request);
-      Thread.sleep(10);
+      Thread.sleep(1000);
       txnHandler.performTimeOuts();
       GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
       int numAborted = 0;
@@ -1306,7 +1395,7 @@ public class TestTxnHandler {
     components = new ArrayList<LockComponent>(1);
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.PARTITION, "yourdb");
     comp.setTablename("yourtable");
-    comp.setPartitionname("yourpartition");
+    comp.setPartitionname("yourpartition=yourvalue");
     comp.setOperationType(DataOperationType.INSERT);
     components.add(comp);
     req = new LockRequest(components, "you", "remotehost");
@@ -1349,7 +1438,7 @@ public class TestTxnHandler {
         assertEquals(0, lock.getTxnid());
         assertEquals("yourdb", lock.getDbname());
         assertEquals("yourtable", lock.getTablename());
-        assertEquals("yourpartition", lock.getPartname());
+        assertEquals("yourpartition=yourvalue", lock.getPartname());
         assertEquals(LockState.ACQUIRED, lock.getState());
         assertEquals(LockType.SHARED_READ, lock.getType());
         assertTrue(lock.toString(), begining <= lock.getLastheartbeat() &&
@@ -1370,21 +1459,25 @@ public class TestTxnHandler {
   @Ignore("Wedges Derby")
   public void deadlockDetected() throws Exception {
     LOG.debug("Starting deadlock test");
+
     if (txnHandler instanceof TxnHandler) {
       final TxnHandler tHndlr = (TxnHandler)txnHandler;
       Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-      Statement stmt = conn.createStatement();
-      long now = tHndlr.getDbTime(conn);
-      stmt.executeUpdate("insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, " +
-          "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
-          "'scooby.com')");
-      stmt.executeUpdate("insert into HIVE_LOCKS (hl_lock_ext_id, hl_lock_int_id, hl_txnid, " +
-          "hl_db, hl_table, hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, " +
-          "hl_user, hl_host) values (1, 1, 1, 'mydb', 'mytable', 'mypartition', '" +
-          tHndlr.LOCK_WAITING + "', '" + tHndlr.LOCK_EXCLUSIVE + "', " + now + ", 'fred', " +
-          "'scooby.com')");
-      conn.commit();
-      tHndlr.closeDbConn(conn);
+      try {
+        Statement stmt = conn.createStatement();
+        long now = tHndlr.getDbTime(conn);
+        stmt.executeUpdate("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", " +
+                "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
+                "'scooby.com')");
+        stmt.executeUpdate("INSERT INTO \"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", " +
+                "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", " +
+                "\"HL_USER\", \"HL_HOST\") VALUES (1, 1, 1, 'MYDB', 'MYTABLE', 'MYPARTITION', '" +
+                tHndlr.LOCK_WAITING + "', '" + getEncoding(LockType.EXCLUSIVE) + "', " + now + ", 'fred', " +
+                "'scooby.com')");
+        conn.commit();
+      } finally {
+        tHndlr.closeDbConn(conn);
+      }
 
       final AtomicBoolean sawDeadlock = new AtomicBoolean();
 
@@ -1405,7 +1498,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn1, e, "thread t1");
+                    tHndlr.checkRetryable(e, "thread t1");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1435,7 +1528,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn2, e, "thread t2");
+                    tHndlr.checkRetryable(e, "thread t2");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1483,7 +1576,7 @@ public class TestTxnHandler {
    *      conf.setVar(HiveConf.ConfVars.METASTOREPWD, "hive");
    *      conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "com.mysql.jdbc.Driver");
    * 3. Remove TxnDbUtil.prepDb(); in TxnHandler.checkQFileTestHack()
-   *      
+   *
    */
   @Ignore("multiple threads wedge Derby")
   @Test
@@ -1492,7 +1585,7 @@ public class TestTxnHandler {
     final AtomicInteger stepTracker = new AtomicInteger(0);
     /**
      * counter = 0;
-     * Thread1 counter=1, lock, wait 3s, check counter(should be 2), counter=3, unlock 
+     * Thread1 counter=1, lock, wait 3s, check counter(should be 2), counter=3, unlock
      * Thread2 counter=2, lock (and block), inc counter, should be 4
      */
     Thread t1 = new Thread("MutexTest1") {
@@ -1552,6 +1645,7 @@ public class TestTxnHandler {
     }
     Assert.assertEquals("5 means both threads have completed", 5, stepTracker.get());
   }
+
   private final static class ErrorHandle implements Thread.UncaughtExceptionHandler {
     Throwable error = null;
     @Override
@@ -1583,12 +1677,12 @@ public class TestTxnHandler {
     rqst.setReplPolicy(replPolicy);
     rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
             .boxed().collect(Collectors.toList()));
-
+    rqst.setTxn_type(TxnType.REPL_CREATED);
     OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
     List<Long> txnList = openedTxns.getTxn_ids();
     assertEquals(txnList.size(), numTxn);
-    int numTxnPresentNow = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXNS where TXN_ID >= " +
-            txnList.get(0) + " and TXN_ID <= " + txnList.get(numTxn - 1));
+    int numTxnPresentNow = TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXNS\" WHERE \"TXN_ID\" >= " +
+            txnList.get(0) + " and \"TXN_ID\" <= " + txnList.get(numTxn - 1));
     assertEquals(numTxn, numTxnPresentNow);
 
     checkReplTxnForTest(startId, lastId, replPolicy, txnList);
@@ -1600,6 +1694,7 @@ public class TestTxnHandler {
     for (Long txnId : txnList) {
       AbortTxnRequest rqst = new AbortTxnRequest(txnId);
       rqst.setReplPolicy(replPolicy);
+      rqst.setTxn_type(TxnType.REPL_CREATED);
       txnHandler.abortTxn(rqst);
     }
     checkReplTxnForTest(txnList.get(0), txnList.get(txnList.size() - 1), replPolicy, new ArrayList<>());
@@ -1607,9 +1702,9 @@ public class TestTxnHandler {
 
   private void checkReplTxnForTest(Long startTxnId, Long endTxnId, String replPolicy, List<Long> targetTxnId)
           throws Exception {
-    String[] output = TxnDbUtil.queryToString(conf, "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where " +
-            " RTM_SRC_TXN_ID >=  " + startTxnId + "and RTM_SRC_TXN_ID <=  " + endTxnId +
-            " and RTM_REPL_POLICY = \'" + replPolicy + "\'").split("\n");
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT \"RTM_TARGET_TXN_ID\" FROM \"REPL_TXN_MAP\" WHERE " +
+            " \"RTM_SRC_TXN_ID\" >=  " + startTxnId + "AND \"RTM_SRC_TXN_ID\" <=  " + endTxnId +
+            " AND \"RTM_REPL_POLICY\" = \'" + replPolicy + "\'").split("\n");
     assertEquals(output.length - 1, targetTxnId.size());
     for (int idx = 1; idx < output.length; idx++) {
       long txnId = Long.parseLong(output[idx].trim());
@@ -1617,12 +1712,34 @@ public class TestTxnHandler {
     }
   }
 
+  private boolean targetTxnsPresentInReplTxnMap(Long startTxnId, Long endTxnId, List<Long> targetTxnId) throws Exception {
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT \"RTM_TARGET_TXN_ID\" FROM \"REPL_TXN_MAP\" WHERE " +
+            " \"RTM_SRC_TXN_ID\" >=  " + startTxnId + "AND \"RTM_SRC_TXN_ID\" <=  " + endTxnId).split("\n");
+    List<Long> replayedTxns = new ArrayList<>();
+    for (int idx = 1; idx < output.length; idx++) {
+      replayedTxns.add(Long.parseLong(output[idx].trim()));
+    }
+    return replayedTxns.equals(targetTxnId);
+  }
+
+  private void createDatabaseForReplTests(String dbName, String catalog) throws Exception {
+    String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = '" + dbName + "' and \"CTLG_NAME\" = '" + catalog + "'";
+    String[] output = TestTxnDbUtil.queryToString(conf, query).split("\n");
+    if (output.length == 1) {
+      query = "INSERT INTO \"DBS\"(\"DB_ID\", \"NAME\", \"CTLG_NAME\", \"DB_LOCATION_URI\")  VALUES (1, '" + dbName + "','" + catalog + "','dummy')";
+      TestTxnDbUtil.executeUpdate(conf, query);
+    }
+  }
+
   @Test
   public void testReplOpenTxn() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     int numTxn = 50000;
-    String[] output = TxnDbUtil.queryToString(conf, "select ntxn_next from NEXT_TXN_ID").split("\n");
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"").split("\n");
     long startTxnId = Long.parseLong(output[1].trim());
+    txnHandler.setOpenTxnTimeOutMillis(50000);
     List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
+    txnHandler.setOpenTxnTimeOutMillis(1000);
     assert(txnList.size() == numTxn);
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
   }
@@ -1630,7 +1747,7 @@ public class TestTxnHandler {
   @Test
   public void testReplAllocWriteId() throws Exception {
     int numTxn = 2;
-    String[] output = TxnDbUtil.queryToString(conf, "select ntxn_next from NEXT_TXN_ID").split("\n");
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"").split("\n");
     long startTxnId = Long.parseLong(output[1].trim());
     List<Long> srcTxnIdList = LongStream.rangeClosed(startTxnId, numTxn+startTxnId-1)
             .boxed().collect(Collectors.toList());
@@ -1690,25 +1807,128 @@ public class TestTxnHandler {
     assertFalse(failed);
   }
 
+  @Test
+  public void allocateNextWriteIdRetriesAfterDetectingConflictingConcurrentInsert() throws Exception {
+    String dbName = "abc";
+    String tableName = "def";
+    int numTxns = 2;
+    int iterations = 20;
+    // use TxnHandler instance w/ increased retry limit
+    long originalLimit = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, iterations + 1);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    try (Connection dbConn = ((TxnHandler) txnHandler).getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+         Statement stmt = dbConn.createStatement()) {
+      // run this multiple times to get write-write conflicts with relatively high chance
+      for (int i = 0; i < iterations; ++i) {
+        // make sure these 2 tables have no records of our dbName.tableName
+        // this ensures that allocateTableWriteIds() will try to insert into next_write_id (instead of update)
+        stmt.executeUpdate("TRUNCATE TABLE \"NEXT_WRITE_ID\"");
+        stmt.executeUpdate("TRUNCATE TABLE \"TXN_TO_WRITE_ID\"");
+        dbConn.commit();
+
+        OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(numTxns, "me", "localhost"));
+        AllocateTableWriteIdsRequest request = new AllocateTableWriteIdsRequest(dbName, tableName);
+        resp.getTxn_ids().forEach(request::addToTxnIds);
+
+        // thread 1: allocating write ids for dbName.tableName
+        CompletableFuture<AllocateTableWriteIdsResponse> future1 = CompletableFuture.supplyAsync(() -> {
+          try {
+            return txnHandler.allocateTableWriteIds(request);
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
+
+        // thread 2: simulating another thread allocating write ids for the same dbName.tableName
+        // (using direct DB insert as a workaround)
+        CompletableFuture<Void> future2 = CompletableFuture.runAsync(() -> {
+          try {
+            Thread.sleep(10);
+            stmt.executeUpdate(String.format("INSERT INTO \"NEXT_WRITE_ID\" " +
+                "VALUES ('%s', '%s', 1)", dbName, tableName));
+            dbConn.commit();
+          } catch (Exception e) {
+            LOG.warn("Inserting next_write_id directly into DB failed: " + e.getMessage());
+          }
+        });
+
+        CompletableFuture.allOf(future1, future2).join();
+
+        // validate that all write ids allocation attempts have (eventually) succeeded
+        AllocateTableWriteIdsResponse result = future1.get();
+        assertEquals(2, result.getTxnToWriteIds().size());
+        assertEquals(i * numTxns + 1, result.getTxnToWriteIds().get(0).getTxnId());
+        assertEquals(1, result.getTxnToWriteIds().get(0).getWriteId());
+        assertEquals(i * numTxns + 2, result.getTxnToWriteIds().get(1).getTxnId());
+        assertEquals(2, result.getTxnToWriteIds().get(1).getWriteId());
+      }
+      // restore to original retry limit value
+      MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, originalLimit);
+    }
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfo() throws MetaException {
+    testGetMaterializationInvalidationInfo(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenTableHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfo(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenCurrentTxnListHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfo(
+            new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  private void testGetMaterializationInvalidationInfo(
+          ValidReadTxnList currentValidTxnList, ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
+    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    }
+
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
+    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+            creationMetadata, currentValidTxnList.toString());
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
   private void updateTxns(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
-    stmt.executeUpdate("update TXNS set txn_last_heartbeat = txn_last_heartbeat + 1");
+    stmt.executeUpdate("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = \"TXN_LAST_HEARTBEAT\" + 1");
   }
 
   private void updateLocks(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
-    stmt.executeUpdate("update HIVE_LOCKS set hl_last_heartbeat = hl_last_heartbeat + 1");
+    stmt.executeUpdate("UPDATE \"HIVE_LOCKS\" SET \"HL_LAST_HEARTBEAT\" = \"HL_LAST_HEARTBEAT\" + 1");
   }
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 
   private long openTxn() throws MetaException {

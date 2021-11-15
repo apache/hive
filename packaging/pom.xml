@@ -37,7 +37,7 @@
       <id>dist</id>
       <build>
         <plugins>
-    <!-- plugins are always listed in sorted order by groupId, artifectId -->
+    <!-- plugins are always listed in sorted order by groupId, artifactId -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
@@ -57,7 +57,22 @@
                   <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
               </execution>
-            </executions>
+              <execution>
+                <id>assemble-beeline</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <finalName>apache-hive-beeline-${project.version}</finalName>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <descriptors>
+                    <descriptor>src/main/assembly/beeline.xml</descriptor>
+                  </descriptors>
+                  <tarLongFileMode>posix</tarLongFileMode>
+                </configuration>
+                </execution>
+              </executions>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -131,6 +146,17 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <!-- Add iceberg dependencies only with iceberg build -->
+    <profile>
+      <id>iceberg</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-iceberg-handler</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 
@@ -269,11 +295,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hive-hcatalog-streaming</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -317,6 +338,11 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-kudu-handler</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 

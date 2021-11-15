@@ -661,7 +661,7 @@ public class TestVectorArithmetic {
             dataTypePhysicalVariations == null ? null : Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (arithmeticTestMode == ArithmeticTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

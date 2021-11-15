@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
@@ -113,7 +114,7 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   }
 
   @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
+  public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
     evictionDispatcher.notifyEvicted(this);
   }
 
@@ -123,8 +124,23 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   }
 
   @Override
-  public String getTag() {
+  public long markForEviction() {
+    return 0;
+  }
+
+  @Override
+  public void removeProactiveEvictionMark() {
+    //No-op
+  }
+
+  @Override
+  public boolean isMarkedForEviction() {
+    return false;
+  }
+
+  @Override
+  public CacheTag getTag() {
     // We don't care about these.
-    return "OrcEstimates";
+    return CacheTag.build("OrcEstimates");
   }
 }

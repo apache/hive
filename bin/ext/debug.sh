@@ -71,14 +71,12 @@ get_debug_params(){
   set_debug_defaults
   parse_debug $1
 
-  # For Debug -XX:+UseParallelGC is needed, as it is a (unfortunately not perfect)
-  # workaround for JVM 6862295 bug, that affects some JVMs still in use
   if does_jvm_support_ti; then
-    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -agentlib:jdwp=transport=dt_socket,server=y,$port,$main_suspend"
-    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -agentlib:jdwp=transport=dt_socket,server=y,$child_suspend"
+    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -agentlib:jdwp=transport=dt_socket,server=y,$port,$main_suspend"
+    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -agentlib:jdwp=transport=dt_socket,server=y,$child_suspend"
   else
-    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$port,$main_suspend"
-    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$child_suspend"
+    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$port,$main_suspend"
+    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$child_suspend"
   fi
 }
 
@@ -95,5 +93,15 @@ debug_help(){
   echo "mainSuspend=<y|n>           Should main JVM wait with execution for the debugger to connect. Default: y"
   echo "childSuspend=<y|n>          Should child JVMs wait with execution for the debugger to connect. Default: n"
   echo "swapSuspend                 Swaps suspend options between main and child JVMs"
+  echo
+  echo "Environment:"
+  echo
+  echo "HADOOP_HOME: [$HADOOP_HOME]"
+  echo "HIVE_HOME  : [$HIVE_HOME]"
+  echo "HIVE_CONF  : [$HIVE_CONF_DIR]"
+  echo "SPARK_HOME : [$SPARK_HOME]"
+  echo "TEZ_CONF   : [$TEZ_CONF_DIR]"
+  echo "HBASE_HOME : [$HBASE_HOME]"
+  echo "HBASE_CONF : [$HBASE_CONF_DIR]"
   echo
 }

@@ -34,12 +34,12 @@ public class PhysicalContext {
   protected HiveConf conf;
   private ParseContext parseContext;
   private Context context;
-  protected List<Task<? extends Serializable>> rootTasks;
-  protected Task<? extends Serializable> fetchTask;
+  protected List<Task<?>> rootTasks;
+  protected Task<?> fetchTask;
 
   public PhysicalContext(HiveConf conf, ParseContext parseContext,
-      Context context, List<Task<? extends Serializable>> rootTasks,
-      Task<? extends Serializable> fetchTask) {
+      Context context, List<Task<?>> rootTasks,
+      Task<?> fetchTask) {
     super();
     this.conf = conf;
     this.parseContext = parseContext;
@@ -72,27 +72,27 @@ public class PhysicalContext {
     this.context = context;
   }
 
-  public List<Task<? extends Serializable>> getRootTasks() {
+  public List<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(List<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(List<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
-  public Task<? extends Serializable> getFetchTask() {
+  public Task<?> getFetchTask() {
     return fetchTask;
   }
 
-  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+  public void setFetchTask(Task<?> fetchTask) {
     this.fetchTask = fetchTask;
   }
 
-  public void addToRootTask(Task<? extends Serializable> tsk){
+  public void addToRootTask(Task<?> tsk){
     rootTasks.add(tsk);
   }
 
-  public void removeFromRootTask(Task<? extends Serializable> tsk){
+  public void removeFromRootTask(Task<?> tsk){
     rootTasks.remove(tsk);
   }
 }

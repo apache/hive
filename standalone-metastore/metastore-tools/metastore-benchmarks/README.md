@@ -60,16 +60,18 @@ Alternatively you can use [bin/hbench](../bin/hbench) script which use Maven to 
     java -jar hbench-jar-with-dependencies.jar -H `hostname` <optins> [test]...
 
 ### Examples
+1. Run all tests with default settings
+    java -jar hmsbench-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname`
 
-1. Run tests with 500 objects created, 10 times warm-up and exclude concurrent operations and drop operations
+2. Run tests with 500 objects created, 10 times warm-up and exclude concurrent operations and drop operations
 
-    java -jar hmsbench-jar-with-dependencies.jar -H `hostname` -N 500 -W 10 -E 'drop.*' -E 'concurrent.*'
+    java -jar hmsbench-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname` -N 500 -W 10 -E 'drop.*' -E 'concurrent.*'
 
-2. Run tests, produce output in tab-separated format and write individual data points in 'data' directory
+3. Run tests, produce output in tab-separated format and write individual data points in 'data' directory
 
-    java -jar hmsbench-jar-with-dependencies.jar -H host.com -o result.csv --csv --savedata data
+    java -jar hmsbench-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname` -o result.csv --csv --savedata data
 
-3. Run tests on localhost
+4. Run tests on localhost
  * save raw data in directory /tmp/benchdata
  * sanitize results (remove outliers)
  * produce tab-separated file

@@ -1,0 +1,62 @@
+PREHOOK: query: DESCRIBE FUNCTION cbrt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION cbrt
+POSTHOOK: type: DESCFUNCTION
+cbrt(double) - Returns the cube root of a double value.
+PREHOOK: query: DESC FUNCTION EXTENDED cbrt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED cbrt
+POSTHOOK: type: DESCFUNCTION
+cbrt(double) - Returns the cube root of a double value.
+Example:
+ > SELECT cbrt(27.0);
+ 3.0
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCbrt
+Function type:BUILTIN
+PREHOOK: query: explain select cbrt(27.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select cbrt(27.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 3.0D (type: double)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+cbrt(0.0),
+cbrt(1.0),
+cbrt(-1),
+cbrt(27),
+cbrt(-27.0),
+cbrt(87860583272930481),
+cbrt(cast(null as double))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+cbrt(0.0),
+cbrt(1.0),
+cbrt(-1),
+cbrt(27),
+cbrt(-27.0),
+cbrt(87860583272930481),
+cbrt(cast(null as double))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0.0	1.0	-1.0	3.0	-3.0	444561.0	NULL

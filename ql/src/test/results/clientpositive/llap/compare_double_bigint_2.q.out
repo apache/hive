@@ -1,4 +1,4 @@
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: select * from src where cast(1 as bigint) = cast(1.0 as double) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -1,0 +1,498 @@
+PREHOOK: query: EXPLAIN
+ FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+ FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: ((key < '20') and (key > '15')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key < '20') and (key > '15')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: ((key > '15') and (key < '20')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key > '15') and (key < '20')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+150	val_150	150	val_150
+152	val_152	152	val_152
+152	val_152	152	val_152
+152	val_152	152	val_152
+152	val_152	152	val_152
+153	val_153	153	val_153
+155	val_155	155	val_155
+156	val_156	156	val_156
+157	val_157	157	val_157
+158	val_158	158	val_158
+160	val_160	160	val_160
+162	val_162	162	val_162
+163	val_163	163	val_163
+164	val_164	164	val_164
+164	val_164	164	val_164
+164	val_164	164	val_164
+164	val_164	164	val_164
+165	val_165	165	val_165
+165	val_165	165	val_165
+165	val_165	165	val_165
+165	val_165	165	val_165
+166	val_166	166	val_166
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+168	val_168	168	val_168
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+17	val_17	17	val_17
+170	val_170	170	val_170
+172	val_172	172	val_172
+172	val_172	172	val_172
+172	val_172	172	val_172
+172	val_172	172	val_172
+174	val_174	174	val_174
+174	val_174	174	val_174
+174	val_174	174	val_174
+174	val_174	174	val_174
+175	val_175	175	val_175
+175	val_175	175	val_175
+175	val_175	175	val_175
+175	val_175	175	val_175
+176	val_176	176	val_176
+176	val_176	176	val_176
+176	val_176	176	val_176
+176	val_176	176	val_176
+177	val_177	177	val_177
+178	val_178	178	val_178
+179	val_179	179	val_179
+179	val_179	179	val_179
+179	val_179	179	val_179
+179	val_179	179	val_179
+18	val_18	18	val_18
+18	val_18	18	val_18
+18	val_18	18	val_18
+18	val_18	18	val_18
+180	val_180	180	val_180
+181	val_181	181	val_181
+183	val_183	183	val_183
+186	val_186	186	val_186
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+189	val_189	189	val_189
+19	val_19	19	val_19
+190	val_190	190	val_190
+191	val_191	191	val_191
+191	val_191	191	val_191
+191	val_191	191	val_191
+191	val_191	191	val_191
+192	val_192	192	val_192
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+194	val_194	194	val_194
+195	val_195	195	val_195
+195	val_195	195	val_195
+195	val_195	195	val_195
+195	val_195	195	val_195
+196	val_196	196	val_196
+197	val_197	197	val_197
+197	val_197	197	val_197
+197	val_197	197	val_197
+197	val_197	197	val_197
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+2	val_2	2	val_2
+PREHOOK: query: EXPLAIN
+ FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+ FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: ((key < '20') and (key > '15')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key < '20') and (key > '15')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: ((key > '15') and (key < '20')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key > '15') and (key < '20')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM 
+  src a
+ RIGHT OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+150	val_150	150	val_150
+152	val_152	152	val_152
+152	val_152	152	val_152
+152	val_152	152	val_152
+152	val_152	152	val_152
+153	val_153	153	val_153
+155	val_155	155	val_155
+156	val_156	156	val_156
+157	val_157	157	val_157
+158	val_158	158	val_158
+160	val_160	160	val_160
+162	val_162	162	val_162
+163	val_163	163	val_163
+164	val_164	164	val_164
+164	val_164	164	val_164
+164	val_164	164	val_164
+164	val_164	164	val_164
+165	val_165	165	val_165
+165	val_165	165	val_165
+165	val_165	165	val_165
+165	val_165	165	val_165
+166	val_166	166	val_166
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+167	val_167	167	val_167
+168	val_168	168	val_168
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+169	val_169	169	val_169
+17	val_17	17	val_17
+170	val_170	170	val_170
+172	val_172	172	val_172
+172	val_172	172	val_172
+172	val_172	172	val_172
+172	val_172	172	val_172
+174	val_174	174	val_174
+174	val_174	174	val_174
+174	val_174	174	val_174
+174	val_174	174	val_174
+175	val_175	175	val_175
+175	val_175	175	val_175
+175	val_175	175	val_175
+175	val_175	175	val_175
+176	val_176	176	val_176
+176	val_176	176	val_176
+176	val_176	176	val_176
+176	val_176	176	val_176
+177	val_177	177	val_177
+178	val_178	178	val_178
+179	val_179	179	val_179
+179	val_179	179	val_179
+179	val_179	179	val_179
+179	val_179	179	val_179
+18	val_18	18	val_18
+18	val_18	18	val_18
+18	val_18	18	val_18
+18	val_18	18	val_18
+180	val_180	180	val_180
+181	val_181	181	val_181
+183	val_183	183	val_183
+186	val_186	186	val_186
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+187	val_187	187	val_187
+189	val_189	189	val_189
+19	val_19	19	val_19
+190	val_190	190	val_190
+191	val_191	191	val_191
+191	val_191	191	val_191
+191	val_191	191	val_191
+191	val_191	191	val_191
+192	val_192	192	val_192
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+193	val_193	193	val_193
+194	val_194	194	val_194
+195	val_195	195	val_195
+195	val_195	195	val_195
+195	val_195	195	val_195
+195	val_195	195	val_195
+196	val_196	196	val_196
+197	val_197	197	val_197
+197	val_197	197	val_197
+197	val_197	197	val_197
+197	val_197	197	val_197
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+199	val_199	199	val_199
+2	val_2	2	val_2

@@ -125,5 +125,3 @@ public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregat
     }
   }
 }
-
-// End SqlSumAggFunction.java

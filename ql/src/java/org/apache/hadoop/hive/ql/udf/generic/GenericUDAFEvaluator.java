@@ -116,8 +116,9 @@ public abstract class GenericUDAFEvaluator implements Closeable {
   }
 
   /**
-   * Additionally setup GenericUDAFEvaluator with MapredContext before initializing.
-   * This is only called in runtime of MapRedTask.
+   * Additionally setup GenericUDAFEvaluator with MapredContext before initializing. A MapredContext
+   * can be an instance of MapredContext or its subclasses, depending on execution engine (e.g.
+   * TezContext).
    *
    * @param mapredContext context
    */

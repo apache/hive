@@ -21,10 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
@@ -46,8 +48,8 @@ import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
@@ -160,8 +162,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
             } else {
               subFieldType = getProjectedType(elemType, subFieldType);
             }
-            return Types.buildGroup(Repetition.OPTIONAL).as(OriginalType.LIST).addFields(
-              subFieldType).named(fieldType.getName());
+          return Types.buildGroup(Repetition.OPTIONAL).as(LogicalTypeAnnotation.listType())
+              .addFields(subFieldType).named(fieldType.getName());
           }
         }
         break;
@@ -284,6 +286,25 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     return null;
   }
 
+  /**
+   * Get the proleptic from some metadata, otherwise return null.
+   */
+  public static Boolean getWriterDateProleptic(Map<String, String> metadata) {
+    if (metadata == null) {
+      return null;
+    }
+    String value = metadata.get(DataWritableWriteSupport.WRITER_DATE_PROLEPTIC);
+    try {
+      if (value != null) {
+        return Boolean.valueOf(value);
+      }
+    } catch (DateTimeException e) {
+      throw new RuntimeException("Can't parse writer proleptic property stored in file metadata", e);
+    }
+
+    return null;
+  }
+  
   /**
    * Return the columns which contains required nested attribute level
    * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
@@ -485,6 +506,48 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     } else if (!metadata.get(writerTimezone).equals(keyValueMetaData.get(writerTimezone))) {
       throw new IllegalStateException("Metadata contains a writer time zone that does not match "
           + "file footer's writer time zone.");
+    }
+
+    String writerProleptic = DataWritableWriteSupport.WRITER_DATE_PROLEPTIC;
+    if (!metadata.containsKey(writerProleptic)) {
+      if (keyValueMetaData.containsKey(writerProleptic)) {
+        metadata.put(writerProleptic, keyValueMetaData.get(writerProleptic));
+      }
+    } else if (!metadata.get(writerProleptic).equals(keyValueMetaData.get(writerProleptic))) {
+      throw new IllegalStateException("Metadata contains a writer proleptic property value that does not match "
+          + "file footer's value.");
+    }
+
+    String prolepticDefault = ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT.varname;
+    if (!metadata.containsKey(prolepticDefault)) {
+      metadata.put(prolepticDefault, String.valueOf(HiveConf.getBoolVar(
+          configuration, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT)));
+    }
+
+    if (!metadata.containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+      final String legacyConversion;
+      if(keyValueMetaData.containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+        // If there is meta about the legacy conversion then the file should be read in the same way it was written. 
+        legacyConversion = keyValueMetaData.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      } else if(keyValueMetaData.containsKey(DataWritableWriteSupport.WRITER_TIMEZONE)) {
+        // If there is no meta about the legacy conversion but there is meta about the timezone then we can infer the
+        // file was written with the new rules.
+        legacyConversion = "false";
+      } else {
+        // If there is no meta at all then it is not possible to determine which rules were used to write the file.
+        // Choose between old/new rules using the respective configuration property.
+        legacyConversion = String.valueOf(
+            HiveConf.getBoolVar(configuration, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED));
+      }
+      metadata.put(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY, legacyConversion);
+    } else {
+      String ctxMeta = metadata.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      String fileMeta = keyValueMetaData.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      if (!Objects.equals(ctxMeta, fileMeta)) {
+        throw new IllegalStateException(
+            "Different values for " + DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY + " metadata: context ["
+                + ctxMeta + "], file [" + fileMeta + "].");
+      }
     }
 
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);

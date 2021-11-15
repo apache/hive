@@ -48,6 +48,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   public static final int FULL_OUTER_JOIN = 3;
   public static final int UNIQUE_JOIN = 4;
   public static final int LEFT_SEMI_JOIN = 5;
+  public static final int ANTI_JOIN = 6;
 
   // used to handle skew join
   private boolean handleSkewJoin = false;
@@ -115,6 +116,8 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   // non-transient field, used at runtime to kill a task if it exceeded memory limits when running in LLAP
   protected MemoryMonitorInfo memoryMonitorInfo;
+  private int fkJoinTableIndex = -1;
+  private boolean nonFkSideIsFiltered;
 
   public JoinDesc() {
   }
@@ -156,6 +159,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     ret.setHandleSkewJoin(handleSkewJoin);
     ret.setSkewKeyDefinition(getSkewKeyDefinition());
     ret.setTagOrder(getTagOrder().clone());
+    ret.setFkJoinTableIndex(fkJoinTableIndex);
+    ret.setNonFkSideIsFiltered(nonFkSideIsFiltered);
     if (getMemoryMonitorInfo() != null) {
       ret.setMemoryMonitorInfo(new MemoryMonitorInfo(getMemoryMonitorInfo()));
     }
@@ -212,6 +217,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.inMemoryDataSize = clone.inMemoryDataSize;
     this.memoryMonitorInfo = clone.memoryMonitorInfo;
     this.colExprMap = clone.colExprMap;
+    this.fkJoinTableIndex = clone.fkJoinTableIndex;
+    this.nonFkSideIsFiltered = clone.nonFkSideIsFiltered;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
@@ -691,6 +698,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     leftInputJoin = joinDesc.leftInputJoin;
     streamAliases = joinDesc.streamAliases;
     joinKeys = joinDesc.joinKeys;
+    fkJoinTableIndex = joinDesc.fkJoinTableIndex;
+    nonFkSideIsFiltered = joinDesc.nonFkSideIsFiltered;
   }
 
   public void setQBJoinTreeProps(QBJoinTree joinTree) {
@@ -704,6 +713,28 @@ public class JoinDesc extends AbstractOperatorDesc {
     aliasToOpInfo = joinTree.getAliasToOpInfo();
     leftInputJoin = joinTree.getJoinSrc() != null;
     streamAliases = joinTree.getStreamAliases();
+    fkJoinTableIndex = joinTree.getFkJoinTableIndex();
+    nonFkSideIsFiltered = joinTree.isNonFkSideIsFiltered();
+  }
+
+  public int getFkJoinTableIndex() {
+    return fkJoinTableIndex;
+  }
+
+  public void setFkJoinTableIndex(int fkJoinTableIndex) {
+    this.fkJoinTableIndex = fkJoinTableIndex;
+  }
+
+  public boolean isNonFkSideIsFiltered() {
+    return nonFkSideIsFiltered;
+  }
+
+  public void setNonFkSideIsFiltered(boolean nonFkSideIsFiltered) {
+    this.nonFkSideIsFiltered = nonFkSideIsFiltered;
+  }
+
+  public boolean isPkFkJoin() {
+    return fkJoinTableIndex >= 0;
   }
 
   public void cloneQBJoinTreeProps(JoinDesc joinDesc) {
@@ -717,6 +748,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>(joinDesc.aliasToOpInfo);
     leftInputJoin = joinDesc.leftInputJoin;
     streamAliases = joinDesc.streamAliases == null ? null : new ArrayList<String>(joinDesc.streamAliases);
+    fkJoinTableIndex = joinDesc.getFkJoinTableIndex();
+    nonFkSideIsFiltered = joinDesc.isNonFkSideIsFiltered();
     if (joinDesc.joinKeys != null) {
       joinKeys = new ExprNodeDesc[joinDesc.joinKeys.length][];
       for(int i = 0; i < joinDesc.joinKeys.length; i++) {
@@ -749,7 +782,10 @@ public class JoinDesc extends AbstractOperatorDesc {
           Objects.equals(getFiltersStringMap(), otherDesc.getFiltersStringMap()) &&
           Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
           Objects.equals(getCondsList(), otherDesc.getCondsList()) &&
+          Objects.equals(getResidualFilterExprsString(), otherDesc.getResidualFilterExprsString()) &&
           getHandleSkewJoin() == otherDesc.getHandleSkewJoin() &&
+          getFkJoinTableIndex() == otherDesc.getFkJoinTableIndex() &&
+          isNonFkSideIsFiltered() == otherDesc.isNonFkSideIsFiltered() &&
           Objects.equals(getNullSafeString(), otherDesc.getNullSafeString());
     }
     return false;

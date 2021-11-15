@@ -1,0 +1,62 @@
+PREHOOK: query: explain
+with Q1 as ( select key from sRc where key = '5')
+select CPS.key from Q1 CPS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with Q1 as ( select key from sRc where key = '5')
+select CPS.key from Q1 CPS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '5') (type: boolean)
+          Filter Operator
+            predicate: (key = '5') (type: boolean)
+            Select Operator
+              expressions: '5' (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain
+with Q1 as ( select key from q2 where key = '5'),
+Q2 as ( select key from sRc where key = '5')
+select CPS.key from Q1 CPS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with Q1 as ( select key from q2 where key = '5'),
+Q2 as ( select key from sRc where key = '5')
+select CPS.key from Q1 CPS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '5') (type: boolean)
+          Filter Operator
+            predicate: (key = '5') (type: boolean)
+            Select Operator
+              expressions: '5' (type: string)
+              outputColumnNames: _col0
+              ListSink
+

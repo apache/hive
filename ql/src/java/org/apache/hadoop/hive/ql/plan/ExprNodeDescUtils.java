@@ -18,6 +18,17 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -26,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -35,12 +47,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -51,9 +63,12 @@ import org.apache.hadoop.util.ReflectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class ExprNodeDescUtils {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(ExprNodeDescUtils.class);
 
   public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources) {
     for (int i = 0; i < sources.size(); i++) {
@@ -197,6 +212,50 @@ public class ExprNodeDescUtils {
     return false;
   }
 
+
+  /**
+   * Creates a conjunction (AND) of two expressions flattening nested conjunctions if possible.
+   * <p>
+   * The method is equivalent to calling: {@code and(Arrays.asList(e1, e2))}
+   * </p>
+   */
+  public static ExprNodeGenericFuncDesc and(ExprNodeDesc e1, ExprNodeDesc e2) {
+    return and(Arrays.asList(e1, e2));
+  }
+
+  /**
+   * Creates a conjunction (AND) of the given expressions flattening nested conjunctions if possible.
+   * <pre>
+   * Input: OR(A, B), C, AND(D, AND(E, F))
+   * Output: AND(OR(A, B), C, D, E, F)
+   * </pre>
+   * TODO: Replace mergePredicates ?
+   */
+  public static ExprNodeGenericFuncDesc and(List<ExprNodeDesc> exps) {
+    List<ExprNodeDesc> flatExps = new ArrayList<>();
+    for (ExprNodeDesc e : exps) {
+      split(e, flatExps);
+    }
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", flatExps);
+  }
+
+  /**
+   * Create an expression for computing a murmur hash by recursively hashing given expressions by two:
+   * <pre>
+   * Input: HASH(A, B, C, D)
+   * Output: HASH(HASH(HASH(A,B),C),D)
+   * </pre>
+   */
+  public static ExprNodeGenericFuncDesc murmurHash(List<ExprNodeDesc> exps) {
+    assert exps.size() >= 2;
+    ExprNodeDesc hashExp = exps.get(0);
+    for (int i = 1; i < exps.size(); i++) {
+      List<ExprNodeDesc> hArgs = Arrays.asList(hashExp, exps.get(i));
+      hashExp = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFMurmurHash(), "hash", hArgs);
+    }
+    return (ExprNodeGenericFuncDesc) hashExp;
+  }
+
   /**
    * bind two predicates by AND op
    */
@@ -308,9 +367,14 @@ public class ExprNodeDescUtils {
 
   public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
       Operator<?> current, Operator<?> terminal, boolean foldExpr) throws SemanticException {
-    ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>();
+    return backtrack(sources, current, terminal, foldExpr, false);
+  }
+
+  public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
+      Operator<?> current, Operator<?> terminal, boolean foldExpr, boolean stayInSameVertex) throws SemanticException {
+    ArrayList<ExprNodeDesc> result = new ArrayList<>();
     for (ExprNodeDesc expr : sources) {
-      result.add(backtrack(expr, current, terminal, foldExpr));
+      result.add(backtrack(expr, current, terminal, foldExpr, stayInSameVertex));
     }
     return result;
   }
@@ -322,7 +386,12 @@ public class ExprNodeDescUtils {
 
   public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
       Operator<?> terminal, boolean foldExpr) throws SemanticException {
-    Operator<?> parent = getSingleParent(current, terminal);
+    return backtrack(source, current, terminal, foldExpr, false);
+  }
+
+  public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
+      Operator<?> terminal, boolean foldExpr, boolean stayInSameVertex) throws SemanticException {
+    Operator<?> parent = stayInSameVertex ? getSameVertexParent(current, terminal) : getSingleParent(current, terminal);
     if (parent == null) {
       return source;
     }
@@ -333,7 +402,7 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
-      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal, foldExpr);
+      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal, foldExpr, stayInSameVertex);
       for (ExprNodeDesc child : children) {
         if (child == null) {
           // Could not resolve all of the function children, fail
@@ -352,12 +421,12 @@ public class ExprNodeDescUtils {
     }
     if (source instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc column = (ExprNodeColumnDesc) source;
-      return backtrack(column, parent, terminal);
+      return backtrack(column, parent, terminal, stayInSameVertex);
     }
     if (source instanceof ExprNodeFieldDesc) {
       // field expression should be resolved
       ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
-      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal, foldExpr);
+      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal, foldExpr, stayInSameVertex);
       if (fieldDesc == null) {
         return null;
       }
@@ -370,13 +439,13 @@ public class ExprNodeDescUtils {
 
   // Resolve column expression to input expression by using expression mapping in current operator
   private static ExprNodeDesc backtrack(ExprNodeColumnDesc column, Operator<?> current,
-      Operator<?> terminal) throws SemanticException {
+      Operator<?> terminal, boolean stayInSameVertex) throws SemanticException {
     Map<String, ExprNodeDesc> mapping = current.getColumnExprMap();
     if (mapping == null) {
-      return backtrack((ExprNodeDesc)column, current, terminal);
+      return backtrack(column, current, terminal, false, stayInSameVertex);
     }
     ExprNodeDesc mapped = mapping.get(column.getColumn());
-    return mapped == null ? null : backtrack(mapped, current, terminal);
+    return mapped == null ? null : backtrack(mapped, current, terminal, false, stayInSameVertex);
   }
 
   public static Operator<?> getSingleParent(Operator<?> current, Operator<?> terminal)
@@ -398,6 +467,30 @@ public class ExprNodeDescUtils {
       return terminal;
     }
     throw new SemanticException("Met multiple parent operators");
+  }
+
+  /**
+   * When Multi-Parent backtrack to the same Vertex (non-RS) branch and return the found parent.
+   * @param current Parent OP
+   * @param terminal End Op
+   * @return parent Op or Null when not found
+   */
+  public static Operator<?> getSameVertexParent(Operator<?> current, Operator<?> terminal) {
+    if (current == terminal) {
+      return null;
+    }
+    List<Operator<?>> parents = current.getParentOperators();
+    if (parents == null || parents.isEmpty()) {
+      return null;
+    }
+    if (parents.size() == 1) {
+      return parents.get(0);
+    }
+    if (terminal != null && parents.contains(terminal)) {
+      return terminal;
+    }
+    // When multi-parent, backtrack to non-RS parent branches looking for the src Expr
+    return parents.stream().filter(op -> !(op instanceof ReduceSinkOperator)).findFirst().get();
   }
 
   public static List<ExprNodeDesc> resolveJoinKeysAsRSColumns(List<ExprNodeDesc> sourceList,
@@ -448,8 +541,13 @@ public class ExprNodeDescUtils {
           // Join key expression is likely some expression involving functions/operators, so there
           // is no actual table column for this. But the ReduceSink operator should still have an
           // output column corresponding to this expression, using the columnInternalName.
-          // TODO: does tableAlias matter for this kind of expression?
-          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, "", false);
+          String tabAlias = "";
+          // HIVE-21746: Set tabAlias when possible, such as for constant folded column
+          // that has foldedFromTab info.
+          if (source instanceof ExprNodeConstantDesc) {
+            tabAlias = ((ExprNodeConstantDesc) source).getFoldedFromTab();
+          }
+          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, tabAlias, false);
         }
       }
     }
@@ -568,44 +666,51 @@ public class ExprNodeDescUtils {
     } catch (Exception e) {
       return null;
     }
-	}
+  }
 
-	public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
-		for (ExprNodeDesc exprNodeDesc : exprDescList) {
-			getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
-		}
-	}
+  public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap) {
+    for (ExprNodeDesc exprNodeDesc : exprDescList) {
+      getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
+    }
+  }
 
-	/**
-	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 *
-	 * @param exprDesc
-	 * @param hashCodeToColumnDescMap
-	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
-	 *            they are logically referring to same projection
-	 */
-	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
-		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
-		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeFieldDesc) {
-			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
-					hashCodeToColumnDescMap);
-		} else if( exprDesc instanceof  ExprNodeSubQueryDesc) {
-		    getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
-                    hashCodeToColumnDescMap);
+  /**
+   * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
+   *
+   * @param exprDesc
+   * @param hashCodeToColumnDescMap
+   */
+  public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeToColumnDescMap) {
+    if (exprDesc instanceof ExprNodeColumnDesc) {
+      Collection<ExprNodeColumnDesc> nodes = hashCodeToColumnDescMap.get(exprDesc.hashCode());
+      boolean insert = true;
+      for (ExprNodeColumnDesc node : nodes) {
+        if (node.isSame(exprDesc)) {
+          insert = false;
+          break;
         }
-
-	}
+      }
+      if (insert) {
+        nodes.add((ExprNodeColumnDesc) exprDesc);
+      }
+    } else if (exprDesc instanceof ExprNodeColumnListDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeFieldDesc) {
+      getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
+          hashCodeToColumnDescMap);
+    } else if(exprDesc instanceof  ExprNodeSubQueryDesc) {
+      getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
+          hashCodeToColumnDescMap);
+    }
+  }
 
   public static boolean isConstant(ExprNodeDesc value) {
     if (value instanceof ExprNodeConstantDesc) {
@@ -645,17 +750,21 @@ public class ExprNodeDescUtils {
 
   public static PrimitiveTypeInfo deriveMinArgumentCast(
       ExprNodeDesc childExpr, TypeInfo targetType) {
+    return deriveMinArgumentCast(childExpr.getTypeInfo(), targetType);
+  }
+
+  public static PrimitiveTypeInfo deriveMinArgumentCast(
+      TypeInfo childTi, TypeInfo targetType) {
     assert targetType instanceof PrimitiveTypeInfo : "Not a primitive type" + targetType;
     PrimitiveTypeInfo pti = (PrimitiveTypeInfo)targetType;
     // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
     // We also don't do anything for non-primitive children (maybe we should assert).
     if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) {
+        || (!(childTi instanceof PrimitiveTypeInfo))) {
       return pti;
     }
-    PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
-    return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
+    return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory((PrimitiveTypeInfo) childTi);
   }
 
   /**
@@ -783,6 +892,28 @@ public class ExprNodeDescUtils {
       expr = expr.getChildren().get(0);
     }
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
+  }
+
+  /*
+   * Extracts all referenced columns from the subtree.
+   */
+  public static Set<ExprNodeColumnDesc> findAllColumnDescs(ExprNodeDesc expr) {
+    Set<ExprNodeColumnDesc> ret = new HashSet<>();
+    findAllColumnDescs(ret, expr);
+    return ret;
+  }
+
+  private static void findAllColumnDescs(Set<ExprNodeColumnDesc> ret, ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
+      for (ExprNodeDesc c : func.getChildren()) {
+        findAllColumnDescs(ret, c);
+      }
+    }
+
+    if (expr instanceof ExprNodeColumnDesc) {
+      ret.add((ExprNodeColumnDesc) expr);
+    }
   }
 
   // Find the constant origin of a certain column if it is originated from a constant
@@ -980,20 +1111,7 @@ public class ExprNodeDescUtils {
     return true;
   }
 
-  // Given an expression this method figures out if the type for the expression belongs to string group
-  // e.g. (String, Char, Varchar etc)
-  public static boolean isStringType(ExprNodeDesc expr) {
-    TypeInfo typeInfo = expr.getTypeInfo();
-    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
-      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) ==
-          PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP) {
-        return true;
-      }
-    }
-    return false;
-  }
-    // Given an expression this method figures out if the type for the expression is integer
+  // Given an expression this method figures out if the type for the expression is integer
   // i.e. INT, SHORT, TINYINT (BYTE) or LONG
   public static boolean isIntegerType(ExprNodeDesc expr) {
     TypeInfo typeInfo = expr.getTypeInfo();
@@ -1019,6 +1137,185 @@ public class ExprNodeDescUtils {
       return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
     }
     return false;
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> inputExpr) throws UDFArgumentException {
+    List<ExprNodeDesc> operands=new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc e : inputExpr) {
+      conjunctiveDecomposition(e, operands);
+    }
+    for (int i = 0; i < operands.size(); i++) {
+      ExprNodeDesc curr = operands.get(i);
+      if (isOr(curr)) {
+        if (deterministicIntersection(curr.getChildren(), operands)) {
+          operands.remove(i);
+          i--;
+        }
+      }
+    }
+
+    if (operands.isEmpty()) {
+      return null;
+    }
+    if (operands.size() > 1) {
+      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), operands);
+    } else {
+      return operands.get(0);
+    }
+  }
+
+  /**
+   * Checks wether the two expression sets have a common deterministic intersection.
+   */
+  private static boolean deterministicIntersection(List<ExprNodeDesc> li1, List<ExprNodeDesc> li2) {
+    for (ExprNodeDesc e1 : li1) {
+      if (!isDeterministic(e1)) {
+        continue;
+      }
+      for (ExprNodeDesc e2 : li2) {
+        if (e1.isSame(e2)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isAnd(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        conjunctiveDecomposition(c, operands);
+      }
+    } else {
+      if (isTrue(expr)) {
+        return;
+      }
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+
+  }
+
+  private static boolean isTrue(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc c = (ExprNodeConstantDesc) expr;
+      if (Boolean.TRUE.equals(c.getValue())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc conjunction(ExprNodeDesc node1, ExprNodeDesc node2) throws UDFArgumentException {
+    List<ExprNodeDesc> operands = Lists.newArrayList(node1, node2);
+    return conjunction(operands);
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> nodes, ExprNodeDesc exprNode)
+      throws UDFArgumentException {
+    if (nodes == null) {
+      return exprNode;
+    }
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
+    if (exprNode != null) {
+      operands.add(exprNode);
+    }
+    operands.addAll(nodes);
+    return conjunction(operands);
+  }
+
+  public static ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {
+    if (e1 == null) {
+      return e2;
+    }
+    if (e2 == null) {
+      return e1;
+    }
+    if (e1.isSame(e2)) {
+      return e1;
+    }
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
+    disjunctiveDecomposition(e1, operands);
+    disjunctiveDecomposition(e2, operands);
+    return disjunction(operands);
+  }
+
+  public static ExprNodeDesc disjunction(List<ExprNodeDesc> operands) throws UDFArgumentException {
+    if (operands.size() == 0) {
+      return null;
+    }
+    if (operands.size() == 1) {
+      return operands.get(0);
+    }
+    return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPOr(), operands);
+  }
+
+  public static void disjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isOr(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        disjunctiveDecomposition(c, operands);
+      }
+    } else {
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+  }
+
+  public static boolean isOr(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPOr);
+    }
+    return false;
+  }
+
+  public static boolean isAnd(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPAnd);
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc replaceTabAlias(ExprNodeDesc expr, String oldAlias, String newAlias) {
+    if (expr == null) {
+      return null;
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        replaceTabAlias(c, oldAlias, newAlias);
+      }
+    }
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
+      if (exprNodeColumnDesc.getTabAlias() != null && exprNodeColumnDesc.getTabAlias().equals(oldAlias)) {
+        exprNodeColumnDesc.setTabAlias(newAlias);
+      }
+    }
+    return expr;
+  }
+
+  public static void replaceTabAlias(Map<String, ExprNodeDesc> exprMap, String oldAlias, String newAlias) {
+    if (exprMap != null) {
+      ExprNodeDescUtils.replaceTabAlias(exprMap.values(), oldAlias, newAlias);
+    }
+  }
+
+  public static void replaceTabAlias(Collection<ExprNodeDesc> exprs, String oldAlias, String newAlias) {
+    if (exprs != null) {
+      for (ExprNodeDesc expr : exprs) {
+        replaceTabAlias(expr, oldAlias, newAlias);
+      }
+    }
+
   }
 
 }

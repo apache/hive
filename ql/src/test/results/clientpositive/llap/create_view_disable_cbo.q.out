@@ -1,0 +1,114 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS cdh_82023_repro_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS cdh_82023_repro_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:cdh_82023_repro_db
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `cdh_82023_repro_db`.`data` (
+  `text` string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: cdh_82023_repro_db@data
+PREHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `cdh_82023_repro_db`.`data` (
+  `text` string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: cdh_82023_repro_db@data
+POSTHOOK: Output: database:cdh_82023_repro_db
+PREHOOK: query: CREATE VIEW IF NOT EXISTS `cdh_82023_repro_db`.`background` AS
+SELECT
+  *
+FROM
+  `cdh_82023_repro_db`.`data` `xouter`
+WHERE
+  `xouter`.`text` NOT IN (
+    SELECT
+      UPPER(`xinner`.`text`)
+    FROM
+      `cdh_82023_repro_db`.`data` `xinner`
+    GROUP BY
+      UPPER(`xinner`.`text`)
+  )
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: cdh_82023_repro_db@data
+PREHOOK: Output: cdh_82023_repro_db@background
+PREHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: query: CREATE VIEW IF NOT EXISTS `cdh_82023_repro_db`.`background` AS
+SELECT
+  *
+FROM
+  `cdh_82023_repro_db`.`data` `xouter`
+WHERE
+  `xouter`.`text` NOT IN (
+    SELECT
+      UPPER(`xinner`.`text`)
+    FROM
+      `cdh_82023_repro_db`.`data` `xinner`
+    GROUP BY
+      UPPER(`xinner`.`text`)
+  )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: cdh_82023_repro_db@data
+POSTHOOK: Output: cdh_82023_repro_db@background
+POSTHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: Lineage: background.text EXPRESSION [(data)xouter.FieldSchema(name:text, type:string, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[42][tables = [xouter, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM `cdh_82023_repro_db`.`background`
+PREHOOK: type: QUERY
+PREHOOK: Input: cdh_82023_repro_db@background
+PREHOOK: Input: cdh_82023_repro_db@data
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM `cdh_82023_repro_db`.`background`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: cdh_82023_repro_db@background
+POSTHOOK: Input: cdh_82023_repro_db@data
+#### A masked pattern was here ####
+PREHOOK: query: CREATE VIEW IF NOT EXISTS `cdh_82023_repro_db`.`foreground`AS
+SELECT
+  *
+FROM
+  `cdh_82023_repro_db`.`background`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: cdh_82023_repro_db@background
+PREHOOK: Input: cdh_82023_repro_db@data
+PREHOOK: Output: cdh_82023_repro_db@foreground
+PREHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: query: CREATE VIEW IF NOT EXISTS `cdh_82023_repro_db`.`foreground`AS
+SELECT
+  *
+FROM
+  `cdh_82023_repro_db`.`background`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: cdh_82023_repro_db@background
+POSTHOOK: Input: cdh_82023_repro_db@data
+POSTHOOK: Output: cdh_82023_repro_db@foreground
+POSTHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: Lineage: foreground.text EXPRESSION [(data)xouter.FieldSchema(name:text, type:string, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[43][tables = [xouter, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM `cdh_82023_repro_db`.`foreground`
+PREHOOK: type: QUERY
+PREHOOK: Input: cdh_82023_repro_db@background
+PREHOOK: Input: cdh_82023_repro_db@data
+PREHOOK: Input: cdh_82023_repro_db@foreground
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM `cdh_82023_repro_db`.`foreground`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: cdh_82023_repro_db@background
+POSTHOOK: Input: cdh_82023_repro_db@data
+POSTHOOK: Input: cdh_82023_repro_db@foreground
+#### A masked pattern was here ####
+PREHOOK: query: DROP DATABASE IF EXISTS `cdh_82023_repro_db` CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:cdh_82023_repro_db
+PREHOOK: Output: cdh_82023_repro_db@background
+PREHOOK: Output: cdh_82023_repro_db@data
+PREHOOK: Output: cdh_82023_repro_db@foreground
+PREHOOK: Output: database:cdh_82023_repro_db
+POSTHOOK: query: DROP DATABASE IF EXISTS `cdh_82023_repro_db` CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:cdh_82023_repro_db
+POSTHOOK: Output: cdh_82023_repro_db@background
+POSTHOOK: Output: cdh_82023_repro_db@data
+POSTHOOK: Output: cdh_82023_repro_db@foreground
+POSTHOOK: Output: database:cdh_82023_repro_db

@@ -52,7 +52,10 @@ public class Statistics implements Serializable {
 
   private long numRows;
   private long runTimeNumRows;
+  // dataSize represents raw data size (estimated in-memory size based on row schema) after decompression and decoding.
   private long dataSize;
+  // totalFileSize represents on-disk size.
+  private long totalFileSize;
   private long numErasureCodedFiles;
   private State basicStatsState;
   private Map<String, ColStatistics> columnStats;
@@ -60,18 +63,27 @@ public class Statistics implements Serializable {
   private boolean runtimeStats;
 
   public Statistics() {
-    this(0, 0, 0);
+    this(0, 0, 0, 0);
   }
 
-  public Statistics(long nr, long ds, long numEcFiles) {
+  public Statistics(long nr, long ds, long fs, long numEcFiles) {
     numRows = nr;
     dataSize = ds;
+    totalFileSize = fs;
     numErasureCodedFiles = numEcFiles;
     runTimeNumRows = -1;
     columnStats = null;
     columnStatsState = State.NONE;
 
     updateBasicStatsState();
+  }
+
+  public void setTotalFileSize(final long totalFileSize) {
+    this.totalFileSize = totalFileSize;
+  }
+
+  public long getTotalFileSize() {
+    return totalFileSize;
   }
 
   public long getNumRows() {
@@ -191,7 +203,7 @@ public class Statistics implements Serializable {
 
   @Override
   public Statistics clone() {
-    Statistics clone = new Statistics(numRows, dataSize, numErasureCodedFiles);
+    Statistics clone = new Statistics(numRows, dataSize, totalFileSize, numErasureCodedFiles);
     clone.setRunTimeNumRows(runTimeNumRows);
     clone.setBasicStatsState(basicStatsState);
     clone.setColumnStatsState(columnStatsState);

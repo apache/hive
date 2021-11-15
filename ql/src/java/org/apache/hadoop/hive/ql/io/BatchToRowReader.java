@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -70,7 +71,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.RecordReader;
 
 /**
@@ -91,7 +91,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
   private final boolean[] included;
   private int rowInBatch = 0;
 
-  private final int rowIdIdx;
+  protected List<VirtualColumnHandler> virtualColumnHandlers;
 
   public BatchToRowReader(RecordReader<NullWritable, VectorizedRowBatch> vrbReader,
       VectorizedRowBatchCtx vrbCtx, List<Integer> includedCols) {
@@ -108,17 +108,41 @@ public abstract class BatchToRowReader<StructType, UnionType>
     } else {
       Arrays.fill(included, true);
     }
-    // Create struct for ROW__ID virtual column and extract index
-    this.rowIdIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
-    if (this.rowIdIdx >= 0) {
-      included[rowIdIdx] = true;
+
+    virtualColumnHandlers = requestedVirtualColumns();
+    for (VirtualColumnHandler handler : virtualColumnHandlers) {
+      int idx = vrbCtx.findVirtualColumnNum(handler.virtualColumn);
+      if (idx >= 0) {
+        included[idx] = true;
+        handler.indexInSchema = idx;
+        batch.cols[idx].noNulls = false;
+        Arrays.fill(batch.cols[idx].isNull, true);
+      }
     }
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Including the columns " + DebugUtils.toString(included));
     }
     this.included = included;
   }
 
+  /**
+   * Wrapper class to map a virtual column to a handler defined by subclasses of {@link BatchToRowReader}.
+   * The handler should be a set operation which sets the value of the virtual column value
+   * in the current row.
+   */
+  public static class VirtualColumnHandler {
+    private final VirtualColumn virtualColumn;
+    private final Consumer<Object> handler;
+    private int indexInSchema = -1;
+
+    public VirtualColumnHandler(VirtualColumn virtualColumn, Consumer<Object> handler) {
+      this.virtualColumn = virtualColumn;
+      this.handler = handler;
+    }
+  }
+
+  protected abstract List<VirtualColumnHandler> requestedVirtualColumns();
   protected abstract StructType createStructObject(Object previous, List<TypeInfo> childrenTypes);
   protected abstract void setStructCol(StructType structObj, int i, Object value);
   protected abstract Object getStructCol(StructType structObj, int i);
@@ -126,7 +150,6 @@ public abstract class BatchToRowReader<StructType, UnionType>
   protected abstract UnionType createUnionObject(List<TypeInfo> childrenTypes, Object previous);
   protected abstract void setUnion(UnionType unionObj, byte tag, Object object);
   protected abstract Object getUnionField(UnionType unionObj);
-  protected abstract void populateRecordIdentifier(StructType o);
 
   @Override
   public NullWritable createKey() {
@@ -155,9 +178,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
       return false;
     }
 
-    if (this.rowIdIdx >= 0) {
-      populateRecordIdentifier(null);
-    }
+    virtualColumnHandlers.forEach(handler -> handler.handler.accept(null));
 
     StructType value = (StructType) previous;
     for (int i = 0; i < schema.size(); ++i) {
@@ -165,18 +186,31 @@ public abstract class BatchToRowReader<StructType, UnionType>
       try {
         setStructCol(value, i,
             nextValue(batch.cols[i], rowInBatch, schema.get(i), getStructCol(value, i)));
-        if (i == rowIdIdx) {
-          // Populate key
-          populateRecordIdentifier((StructType) getStructCol(value, i));
-        }
       } catch (Throwable t) {
-        LOG.error("Error at row " + rowInBatch + "/" + batch.size + ", column " + i
-            + "/" + schema.size() + " " + batch.cols[i], t);
-        throw (t instanceof IOException) ? (IOException)t : new IOException(t);
+        throwIOException(i, t);
       }
     }
+
+    for (VirtualColumnHandler handler : virtualColumnHandlers) {
+      if (handler.indexInSchema < 0 || !included[handler.indexInSchema] ||
+              handler.indexInSchema >= getStructLength(value)) {
+        continue;
+      }
+      try {
+        handler.handler.accept(getStructCol(value, handler.indexInSchema));
+      } catch (Throwable t) {
+        throwIOException(handler.indexInSchema, t);
+      }
+    }
+
     ++rowInBatch;
     return true;
+  }
+
+  private void throwIOException(int i, Throwable t) throws IOException {
+    LOG.error("Error at row " + rowInBatch + "/" + batch.size + ", column " + i
+        + "/" + schema.size() + " " + batch.cols[i], t);
+    throw (t instanceof IOException) ? (IOException) t : new IOException(t);
   }
 
   /**

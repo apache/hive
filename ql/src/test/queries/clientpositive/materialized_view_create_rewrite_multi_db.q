@@ -3,6 +3,7 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
+set hive.materializedview.rewriting.sql=false;
 set hive.stats.column.autogather=true;
 
 create database db1;

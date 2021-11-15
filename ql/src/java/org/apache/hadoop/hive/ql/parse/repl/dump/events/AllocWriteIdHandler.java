@@ -49,6 +49,15 @@ class AllocWriteIdHandler extends AbstractEventHandler<AllocWriteIdMessage> {
       return;
     }
 
+    // If replication policy is replaced with new included/excluded tables list, then events
+    // corresponding to tables which are not included in old policy but included in new policy
+    // should be skipped. Those tables would be bootstrapped along with the current incremental
+    // replication dump.
+    // Note: If any event dump reaches here, it means, it is included in new replication policy.
+    if (!ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, eventMessage.getTableName())) {
+      return;
+    }
+
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);
     dmd.write();

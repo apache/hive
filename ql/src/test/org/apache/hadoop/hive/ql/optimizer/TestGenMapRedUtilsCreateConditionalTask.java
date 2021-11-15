@@ -59,7 +59,7 @@ import static org.mockito.Mockito.when;
 public class TestGenMapRedUtilsCreateConditionalTask {
   private static HiveConf hiveConf;
 
-  private Task<? extends Serializable> dummyMRTask;
+  private Task<?> dummyMRTask;
 
   @BeforeClass
   public static void initializeSessionState() {
@@ -187,9 +187,9 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null,
         moveTaskList, hiveConf, dummyMRTask, new LineageState());
     ConditionalTask conditionalTask = (ConditionalTask)dummyMRTask.getChildTasks().get(0);
-    Task<? extends Serializable> moveOnlyTask = conditionalTask.getListTasks().get(0);
-    Task<? extends Serializable> mergeOnlyTask = conditionalTask.getListTasks().get(1);
-    Task<? extends Serializable> mergeAndMoveTask = conditionalTask.getListTasks().get(2);
+    Task<?> moveOnlyTask = conditionalTask.getListTasks().get(0);
+    Task<?> mergeOnlyTask = conditionalTask.getListTasks().get(1);
+    Task<?> mergeAndMoveTask = conditionalTask.getListTasks().get(2);
 
     /*
      * OPTIMIZATION
@@ -228,9 +228,9 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null,
         moveTaskList, hiveConf, dummyMRTask, new LineageState());
     ConditionalTask conditionalTask = (ConditionalTask)dummyMRTask.getChildTasks().get(0);
-    Task<? extends Serializable> moveOnlyTask = conditionalTask.getListTasks().get(0);
-    Task<? extends Serializable> mergeOnlyTask = conditionalTask.getListTasks().get(1);
-    Task<? extends Serializable> mergeAndMoveTask = conditionalTask.getListTasks().get(2);
+    Task<?> moveOnlyTask = conditionalTask.getListTasks().get(0);
+    Task<?> mergeOnlyTask = conditionalTask.getListTasks().get(1);
+    Task<?> mergeAndMoveTask = conditionalTask.getListTasks().get(2);
 
     // Verify moveOnlyTask is NOT optimized
     assertEquals(1, moveOnlyTask.getChildTasks().size());
@@ -263,9 +263,9 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null,
         moveTaskList, hiveConf, dummyMRTask, new LineageState());
     ConditionalTask conditionalTask = (ConditionalTask)dummyMRTask.getChildTasks().get(0);
-    Task<? extends Serializable> moveOnlyTask = conditionalTask.getListTasks().get(0);
-    Task<? extends Serializable> mergeOnlyTask = conditionalTask.getListTasks().get(1);
-    Task<? extends Serializable> mergeAndMoveTask = conditionalTask.getListTasks().get(2);
+    Task<?> moveOnlyTask = conditionalTask.getListTasks().get(0);
+    Task<?> mergeOnlyTask = conditionalTask.getListTasks().get(1);
+    Task<?> mergeAndMoveTask = conditionalTask.getListTasks().get(2);
 
     // Verify moveOnlyTask is NOT optimized
     assertEquals(1, moveOnlyTask.getChildTasks().size());
@@ -309,7 +309,7 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     return moveTask;
   }
 
-  private void verifyMoveTask(Task<? extends Serializable> task, Path source, Path target) {
+  private void verifyMoveTask(Task<?> task, Path source, Path target) {
     MoveTask moveTask = (MoveTask)task;
     assertEquals(source, moveTask.getWork().getLoadFileWork().getSourcePath());
     assertEquals(target, moveTask.getWork().getLoadFileWork().getTargetDir());

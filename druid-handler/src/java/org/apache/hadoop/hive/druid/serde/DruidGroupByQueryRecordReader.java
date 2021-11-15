@@ -45,8 +45,8 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<Row> {
   @Override public boolean nextKeyValue() {
     // Results
 
-    if (queryResultsIterator.hasNext()) {
-      final Row row = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      final Row row = getQueryResultsIterator().next();
       // currently druid supports only MapBasedRow as Jackson SerDe so it should safe to cast without check
       currentRow = (MapBasedRow) row;
       currentEvent = currentRow.getEvent();
@@ -87,7 +87,7 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<Row> {
   }
 
   @Override public float getProgress() throws IOException {
-    return queryResultsIterator.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() ? 0 : 1;
   }
 
 }

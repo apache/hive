@@ -400,7 +400,7 @@ public class TestVectorStringConcat {
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (stringConcatTestMode == StringConcatTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

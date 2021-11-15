@@ -1,4 +1,3 @@
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
 create table ptestfilter_n2 (a string, b int) partitioned by (c double);
 INSERT OVERWRITE TABLE ptestfilter_n2 PARTITION (c) select 'Col1', 1, null;

@@ -1,0 +1,83 @@
+PREHOOK: query: create table t (a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values ('1'),('x'),('2.0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values ('1'),('x'),('2.0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+PREHOOK: query: explain
+select * from t where a in (1.0,'x',2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from t where a in (1.0,'x',2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t
+          filterExpr: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
+          Filter Operator
+            predicate: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
+            Select Operator
+              expressions: a (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select * from t where a in (1.0,'x',2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t where a in (1.0,'x',2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1
+x
+2.0
+PREHOOK: query: create table ax(s char(1),t char(10))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ax
+POSTHOOK: query: create table ax(s char(1),t char(10))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ax
+PREHOOK: query: insert into ax values ('a','a'),('a','a '),('b','bb')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ax
+POSTHOOK: query: insert into ax values ('a','a'),('a','a '),('b','bb')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ax
+POSTHOOK: Lineage: ax.s SCRIPT []
+POSTHOOK: Lineage: ax.t SCRIPT []
+PREHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 1	1

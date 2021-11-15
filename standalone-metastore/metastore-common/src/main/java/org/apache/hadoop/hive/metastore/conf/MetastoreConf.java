@@ -17,13 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.conf;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
-import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -39,6 +32,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.hive.common.util.SuppressFBWarnings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A set of definitions of config values used by the Metastore.  One of the key aims of this
@@ -80,30 +83,40 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String EVENT_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
+  static final String ACID_METRICS_TASK_CLASS =
+      "org.apache.hadoop.hive.metastore.metrics.AcidMetricService";
   @VisibleForTesting
   static final String METASTORE_DELEGATION_MANAGER_CLASS =
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
   @VisibleForTesting
-  static final String ACID_COMPACTION_HISTORY_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService";
-  @VisibleForTesting
   static final String ACID_HOUSE_KEEPER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService";
   @VisibleForTesting
+  static final String ACID_TXN_CLEANER_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService";
+  @VisibleForTesting
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService";
-  @VisibleForTesting
-  static final String ACID_WRITE_SET_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidWriteSetService";
+
+  public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
+          "metastore.authentication.ldap.userMembershipKey";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
+  private static volatile URL hiveSiteURL = null;
   private static URL hiveDefaultURL = null;
-  private static URL hiveSiteURL = null;
   private static URL hiveMetastoreSiteURL = null;
   private static URL metastoreSiteURL = null;
   private static AtomicBoolean beenDumped = new AtomicBoolean();
 
   private static Map<String, ConfVars> keyToVars;
+
+  static {
+    keyToVars = new HashMap<>(ConfVars.values().length * 2);
+    for (ConfVars var : ConfVars.values()) {
+      keyToVars.put(var.varname, var);
+      keyToVars.put(var.hiveName, var);
+    }
+  }
 
   @VisibleForTesting
   static final String TEST_ENV_WORKAROUND = "metastore.testing.env.workaround.dont.ever.set.this.";
@@ -143,6 +156,7 @@ public class MetastoreConf {
    * TODO - I suspect the vast majority of these don't need to be here.  But it requires testing
    * before just pulling them out.
    */
+  @SuppressFBWarnings(value = "MS_MUTABLE_ARRAY")
   public static final MetastoreConf.ConfVars[] metaVars = {
       ConfVars.WAREHOUSE,
       ConfVars.REPLDIR,
@@ -165,6 +179,8 @@ public class MetastoreConf {
       ConfVars.KERBEROS_KEYTAB_FILE,
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
+      ConfVars.METASTORE_CLIENT_AUTH_MODE,
+      ConfVars.METASTORE_CLIENT_PLAIN_USERNAME,
       ConfVars.TOKEN_SIGNATURE,
       ConfVars.CACHE_PINOBJTYPES,
       ConfVars.CONNECTION_POOLING_TYPE,
@@ -230,7 +246,8 @@ public class MetastoreConf {
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.CAPABILITY_CHECK,
-      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
+      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      ConfVars.EXPRESSION_PROXY_CLASS
   };
 
   static {
@@ -251,7 +268,11 @@ public class MetastoreConf {
       ConfVars.SSL_TRUSTSTORE_PASSWORD.varname,
       ConfVars.SSL_TRUSTSTORE_PASSWORD.hiveName,
       ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.varname,
-      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.hiveName
+      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.hiveName,
+      ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
+      ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.hiveName,
+      ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
+      ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.hiveName
   );
 
   public static ConfVars getMetaConf(String name) {
@@ -260,6 +281,15 @@ public class MetastoreConf {
 
   public enum ConfVars {
     // alpha order, PLEASE!
+    ACID_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.housekeeper.interval",
+        "hive.metastore.acid.housekeeper.interval", 60, TimeUnit.SECONDS,
+        "Time interval describing how often the acid housekeeper runs."),
+    ACID_HOUSEKEEPER_SERVICE_START("metastore.acid.housekeeper.start",
+        "hive.metastore.acid.housekeeper.start", 60, TimeUnit.SECONDS,
+        "Time delay of 1st acid housekeeper run after metastore has started."),
+    ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
+        "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
+        "Time interval describing how often aborted and committed txns are cleaned."),
     ADDED_JARS("metastore.added.jars.path", "hive.added.jars.path", "",
         "This an internal parameter."),
     AGGREGATE_STATS_CACHE_CLEAN_UNTIL("metastore.aggregate.stats.cache.clean.until",
@@ -292,6 +322,11 @@ public class MetastoreConf {
     AGGREGATE_STATS_CACHE_TTL("metastore.aggregate.stats.cache.ttl",
         "hive.metastore.aggregate.stats.cache.ttl", 600, TimeUnit.SECONDS,
         "Number of seconds for a cached node to be active in the cache before they become stale."),
+    ALLOW_TENANT_BASED_STORAGE("metastore.warehouse.tenant.colocation", "hive.metastore.warehouse.tenant.colocation", false,
+        "Allows managed and external tables for a tenant to have a common parent directory\n" +
+        "For example: /user/warehouse/user1/managed and /user/warehouse/user1/external\n" +
+        "This allows users to be able to set quotas on user1 directory. These locations have to be defined on the\n" +
+        "database object explicitly when creating the DB or via alter database."),
     ALTER_HANDLER("metastore.alter.handler", "hive.metastore.alter.impl",
         HIVE_ALTER_HANDLE_CLASS,
         "Alter handler.  For now defaults to the Hive one.  Really need a better default option"),
@@ -366,13 +401,12 @@ public class MetastoreConf {
             "has an infinite lifetime."),
     CLIENT_SOCKET_TIMEOUT("metastore.client.socket.timeout", "hive.metastore.client.socket.timeout", 600,
             TimeUnit.SECONDS, "MetaStore Client socket timeout in seconds"),
-    COMPACTOR_HISTORY_REAPER_INTERVAL("metastore.compactor.history.reaper.interval",
-        "hive.compactor.history.reaper.interval", 2, TimeUnit.MINUTES,
-        "Determines how often compaction history reaper runs"),
-    COMPACTOR_HISTORY_RETENTION_ATTEMPTED("metastore.compactor.history.retention.attempted",
-        "hive.compactor.history.retention.attempted", 2,
-        new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
-        "retained in compaction history for a given table/partition."),
+    COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE("metastore.compactor.history.retention.did.not.initiate",
+        "hive.compactor.history.retention.did.not.initiate", 2,
+        new RangeValidator(0, 100), "Determines how many compaction records in state " +
+        "'did not initiate' will be retained in compaction history for a given table/partition.",
+        // deprecated keys:
+        "metastore.compactor.history.retention.attempted", "hive.compactor.history.retention.attempted"),
     COMPACTOR_HISTORY_RETENTION_FAILED("metastore.compactor.history.retention.failed",
         "hive.compactor.history.retention.failed", 3,
         new RangeValidator(0, 100), "Determines how many failed compaction records will be " +
@@ -381,11 +415,146 @@ public class MetastoreConf {
         "hive.compactor.history.retention.succeeded", 3,
         new RangeValidator(0, 100), "Determines how many successful compaction records will be " +
         "retained in compaction history for a given table/partition."),
+    COMPACTOR_HISTORY_RETENTION_TIMEOUT("metastore.compactor.history.retention.timeout",
+            "hive.compactor.history.retention.timeout", 7, TimeUnit.DAYS,
+            "Determines how long failed and not initiated compaction records will be " +
+            "retained in compaction history if there is a more recent succeeded compaction on the table/partition."),
     COMPACTOR_INITIATOR_FAILED_THRESHOLD("metastore.compactor.initiator.failed.compacts.threshold",
         "hive.compactor.initiator.failed.compacts.threshold", 2,
         new RangeValidator(1, 20), "Number of consecutive compaction failures (per table/partition) " +
         "after which automatic compactions will not be scheduled any more.  Note that this must be less " +
         "than hive.compactor.history.retention.failed."),
+    COMPACTOR_INITIATOR_FAILED_RETRY_TIME("metastore.compactor.initiator.failed.retry.time",
+        "hive.compactor.initiator.failed.retry.time", 7, TimeUnit.DAYS,
+        "Time after Initiator will ignore metastore.compactor.initiator.failed.compacts.threshold "
+            + "and retry with compaction again. This will try to auto heal tables with previous failed compaction "
+            + "without manual intervention. Setting it to 0 or negative value will disable this feature."),
+    COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
+        "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
+        "directory owner."),
+    COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.replication.open.txn.threshold.warning",
+        "hive.compactor.oldest.replication.open.txn.threshold.warning",
+        14, TimeUnit.DAYS,
+        "Age of open replication transaction after which a warning will be logged. Default time unit: days"),
+    COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.replication.open.txn.threshold.error",
+        "hive.compactor.oldest.replication.open.txn.threshold.error",
+        21, TimeUnit.DAYS,
+        "Age of open replication transaction after which an error will be logged. Default time unit: days"),
+    COMPACTOR_OLDEST_OPENTXN_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.open.txn.threshold.warning",
+        "hive.compactor.oldest.open.txn.threshold.warning",
+        24, TimeUnit.HOURS,
+        "Age of oldest open non-replication transaction after which a warning will be logged. " +
+            "Default time unit: hours"),
+    COMPACTOR_OLDEST_OPENTXN_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.open.txn.threshold.error",
+        "hive.compactor.oldest.open.txn.threshold.error",
+        72, TimeUnit.HOURS,
+        "Age of oldest open non-replication transaction after which an error will be logged. "
+            + "Default time unit: hours"),
+    COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.uncleaned.aborted.txn.time.threshold.warning",
+        "hive.compactor.oldest.uncleaned.aborted.txn.time.threshold.warning",
+        24, TimeUnit.HOURS,
+        "Age of oldest aborted transaction after which a warning will be logged. Default time unit: hours"),
+    COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.uncleaned.aborted.txn.time.threshold.error",
+        "hive.compactor.oldest.uncleaned.aborted.txn.time.threshold.error",
+        48, TimeUnit.HOURS,
+        "Age of oldest aborted transaction after which an error will be logged. Default time unit: hours"),
+    COMPACTOR_TABLES_WITH_ABORTEDTXN_THRESHOLD(
+        "metastore.compactor.tables.with.aborted.txn.threshold",
+        "hive.compactor.tables.with.aborted.txn.threshold", 1,
+        "Number of tables has not been compacted and have more than " +
+            "hive.metastore.acidmetrics.table.aborted.txns.threshold (default 1500) aborted transactions. If this " +
+            "threshold is passed, a warning will be logged."),
+    COMPACTOR_OLDEST_UNCLEANED_COMPACTION_TIME_THRESHOLD(
+        "metastore.compactor.oldest.uncleaned.compaction.time.threshold",
+        "hive.compactor.oldest.uncleaned.compaction.time.threshold",
+        24, TimeUnit.HOURS,
+        "Age of oldest ready for cleaning compaction in the compaction queue. If this threshold is passed, " +
+            "a warning will be logged. Default time unit is: hours"),
+    COMPACTOR_FAILED_COMPACTION_RATIO_THRESHOLD(
+        "metastore.compactor.failed.compaction.ratio.threshold",
+        "hive.compactor.failed.compaction.ratio.threshold", .01,
+        "Ratio between the number of failed compactions + not initiated compactions and number of failed " +
+            "compactions + not initiated compactions + succeeded compactions. If this threshold is passed, a warning " +
+            "will be logged."),
+    COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.initiated.compaction.time.threshold.warning",
+        "hive.compactor.oldest.initiated.compaction.time.threshold.warning",
+        1, TimeUnit.HOURS,
+        "Age of oldest initiated compaction in the compaction queue after which a warning will be logged. " +
+            "Default time unit is: hours"),
+    COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.initiated.compaction.time.threshold.error",
+        "hive.compactor.oldest.initiated.compaction.time.threshold.error",
+        12, TimeUnit.HOURS,
+        "Age of oldest initiated compaction in the compaction queue after which an error will be logged. " +
+            "Default time unit is: hours"),
+    COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_WARNING(
+        "metastore.compactor.completed.txn.components.record.threshold.warning",
+        "hive.compactor.completed.txn.components.record.threshold.warning",
+        500000,
+        "Number of records in COMPLETED_TXN_COMPONENTS table, after which a warning will be logged."),
+    COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_ERROR(
+        "metastore.compactor.completed.txn.components.record.threshold.error",
+        "hive.compactor.completed.txn.components.record.threshold.error",
+        1000000,
+        "Number of records in COMPLETED_TXN_COMPONENTS table, after which an error will be logged."),
+    COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_WARNING(
+        "metastore.compactor.txn.to.writeid.record.threshold.warning",
+        "hive.compactor.txn.to.writeid.record.threshold.warning",
+        500000,
+        "Number of records in TXN_TO_WRITEID table, after which a warning will be logged."),
+    COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_ERROR(
+        "metastore.compactor.txn.to.writeid.record.threshold.error",
+        "hive.compactor.txn.to.writeid.record.threshold.error",
+        1000000,
+        "Number of records in TXN_TO_WRITEID table, after which an error will be logged."),
+    COMPACTOR_NUMBER_OF_DISABLED_COMPACTION_TABLES_THRESHOLD(
+        "metastore.compactor.number.of.disabled.compaction.tables.threshold",
+        "hive.compactor.number.of.disabled.compaction.tables.threshold",
+        1,
+        "If the number of writes to tables where auto-compaction is disabled reaches this threshold, a " +
+            "warning will be logged after every subsequent write to any table where auto-compaction is disabled."),
+    COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY(
+        "metastore.compactor.acid.metrics.logger.frequency",
+        "hive.compactor.acid.metrics.logger.frequency",
+        360, TimeUnit.MINUTES,
+        "Logging frequency of ACID related metrics. Set this value to 0 to completely turn off logging. " +
+            "Default time unit: minutes"),
+    METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
+            "hive.metastore.housekeeping.leader.hostname", "",
+"If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
+        "service to run housekeeping tasks at. By default this values is empty, which " +
+        "means that the current metastore will run the housekeeping tasks. If configuration" +
+        "metastore.thrift.bind.host is set on the intended leader metastore, this value should " +
+        "match that configuration. Otherwise it should be same as the hostname returned by " +
+        "InetAddress#getLocalHost#getHostName(). Given the uncertainty in the later " +
+        "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
+    METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
+        "hive.metastore.housekeeping.threads.on", false,
+        "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
+            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
+            "on Hive transactions. For a complete list of parameters required for turning on\n" +
+            "transactions, see hive.txn.manager."),
+    METASTORE_ACIDMETRICS_THREAD_ON("metastore.acidmetrics.thread.on",
+        "hive.metastore.acidmetrics.thread.on", true,
+        "Whether to run acid related metrics collection on this metastore instance."),
+    METASTORE_ACIDMETRICS_CHECK_INTERVAL("metastore.acidmetrics.check.interval",
+        "hive.metastore.acidmetrics.check.interval", 300,
+        TimeUnit.SECONDS,
+        "Time in seconds between acid related metric collection runs."),
+    METASTORE_ACIDMETRICS_EXT_ON("metastore.acidmetrics.ext.on", "hive.metastore.acidmetrics.ext.on", true,
+        "Whether to collect additional acid related metrics outside of the acid metrics service. "
+            + "(metastore.metrics.enabled and/or hive.server2.metrics.enabled are also required to be set to true.)"),
+    METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD("metastore.acidmetrics.table.aborted.txns.threshold",
+        "hive.metastore.acidmetrics.table.aborted.txns.threshold", 1500,
+        "The acid metrics system will collect the number of tables which have a large number of aborted transactions." +
+            "This parameter controls the minimum number of aborted transaction required so that a table will be counted."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -402,6 +571,12 @@ public class MetastoreConf {
             "tables or partitions to be compacted once they are determined to need compaction.\n" +
             "It will also increase the background load on the Hadoop cluster as more MapReduce jobs\n" +
             "will be running in the background."),
+    COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD("metastore.compactor.worker.detect.multiple.versions.threshold",
+      "hive.metastore.compactor.worker.detect.multiple.versions.threshold", 24, TimeUnit.HOURS,
+      "Defines a time-window in hours from the current time backwards\n," +
+            "in which a warning is being raised if multiple worker version are detected.\n" +
+            "The setting has no effect if the metastore.metrics.enabled is disabled \n" +
+            "or the metastore.acidmetrics.thread.on is turned off."),
     COMPACTOR_MINOR_STATS_COMPRESSION(
         "metastore.compactor.enable.stats.compression",
         "metastore.compactor.enable.stats.compression", true,
@@ -427,7 +602,7 @@ public class MetastoreConf {
             "To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.\n" +
             "For example, jdbc:postgresql://myhost/db?ssl=true for postgres database."),
     CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType",
-        "datanucleus.connectionPoolingType", "HikariCP", new StringSetValidator("BONECP", "DBCP",
+        "datanucleus.connectionPoolingType", "HikariCP", new StringSetValidator("DBCP",
         "HikariCP", "NONE"),
         "Specify connection pool library for datanucleus"),
     CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName",
@@ -471,7 +646,7 @@ public class MetastoreConf {
             + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
             + "This directly maps to the javax.net.ssl.trustStore Java system property. Defaults to the default Java truststore file. \n"),
     DBACCESS_SSL_TRUSTSTORE_TYPE("metastore.dbaccess.ssl.truststore.type", "hive.metastore.dbaccess.ssl.truststore.type", "jks",
-        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12"),
+        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12", "bcfks"),
         "File type for the Java truststore file that is used when encrypting the connection to the database store. \n"
             + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
             + "This directly maps to the javax.net.ssl.trustStoreType Java system property. \n"
@@ -487,7 +662,7 @@ public class MetastoreConf {
     DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
         "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_GC_INTERVAL("metastore.cluster.delegation.token.gc-interval",
-        "hive.cluster.delegation.token.gc-interval", 1, TimeUnit.HOURS, ""),
+        "hive.cluster.delegation.token.gc-interval", 15, TimeUnit.MINUTES, ""),
     DELEGATION_TOKEN_MAX_LIFETIME("metastore.cluster.delegation.token.max-lifetime",
         "hive.cluster.delegation.token.max-lifetime", 7, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_RENEW_INTERVAL("metastore.cluster.delegation.token.renew-interval",
@@ -505,6 +680,9 @@ public class MetastoreConf {
     DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE("metastore.direct.sql.max.elements.values.clause",
         "hive.direct.sql.max.elements.values.clause",
         1000, "The maximum number of values in a VALUES clause for INSERT statement."),
+    DIRECT_SQL_MAX_PARAMETERS("metastore.direct.sql.max.parameters",
+        "hive.direct.sql.max.parameters", 1000, "The maximum query parameters \n" +
+            "backend sql engine can support."),
     DIRECT_SQL_MAX_QUERY_LENGTH("metastore.direct.sql.max.query.length",
         "hive.direct.sql.max.query.length", 100, "The maximum\n" +
         " size of a query string (in KB)."),
@@ -528,6 +706,12 @@ public class MetastoreConf {
             "not blocked.\n" +
             "\n" +
             "See HIVE-4409 for more details."),
+    ALLOW_INCOMPATIBLE_COL_TYPE_CHANGES_TABLE_SERDES("metastore.allow.incompatible.col.type.changes.serdes",
+        "hive.metastore.allow.incompatible.col.type.changes.serdes",
+        "org.apache.hadoop.hive.kudu.KuduSerDe,org.apache.iceberg.mr.hive.HiveIcebergSerDe",
+        "Comma-separated list of table serdes which are allowed to make incompatible column type\n" +
+        "changes. This configuration is only applicable if metastore.disallow.incompatible.col.type.changes\n" +
+        "is true."),
     DUMP_CONFIG_ON_CREATION("metastore.dump.config.on.creation", "metastore.dump.config.on.creation", true,
         "If true, a printout of the config file (minus sensitive values) will be dumped to the " +
             "log whenever newMetastoreConf() is called.  Can produce a lot of logs"),
@@ -546,6 +730,10 @@ public class MetastoreConf {
         "hive.metastore.event.message.factory",
         "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
+    REPL_MESSAGE_FACTORY("metastore.repl.message.factory",
+            "hive.metastore.repl.message.factory",
+            "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
+            "Factory class to serialize and deserialize information in replication metrics table."),
     EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS("metastore.notification.parameters.exclude.patterns",
         "hive.metastore.notification.parameters.exclude.patterns", "",
         "List of comma-separated regexes that are used to reduced the size of HMS Notification messages."
@@ -553,8 +741,9 @@ public class MetastoreConf {
             + "present in HMS Notification. Any key-value pair whose key is matched with any regex will"
             +" be removed from Parameters map during Serialization of Table/Partition object."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
-        "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
-        "time after which events will be removed from the database listener queue"),
+        "hive.metastore.event.db.listener.timetolive", 1, TimeUnit.DAYS,
+        "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+         "is set to false. When set to true, the conf repl.event.db.listener.timetolive is used instead."),
     EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
             "hive.metastore.event.db.clean.maxevents", 10000,
             "Limit on number events to be cleaned at a time in metastore cleanNotificationEvents " +
@@ -575,6 +764,11 @@ public class MetastoreConf {
     EXPRESSION_PROXY_CLASS("metastore.expression.proxy", "hive.metastore.expression.proxy",
         "org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore",
         "Class to use to process expressions in partition pruning."),
+    DECODE_FILTER_EXPRESSION_TO_STRING("metastore.decode.filter.expression.tostring",
+        "hive.metastore.decode.filter.expression.tostring", false,
+        "If set to true convertExprToFilter method of PartitionExpressionForMetastore will decode \n" +
+            "byte array into string rather than ExprNode. This is specially required for \n" +
+            "msck command when used with filter conditions"),
     FILE_METADATA_THREADS("metastore.file.metadata.threads",
         "hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),
@@ -613,6 +807,12 @@ public class MetastoreConf {
             "However, it doesn't work correctly with integral values that are not normalized (e.g. have\n" +
             "leading zeroes, like 0012). If metastore direct SQL is enabled and works, this optimization\n" +
             "is also irrelevant."),
+    // Once exceeded, the queries should be broken into separate batches.
+    // Note: This value is not passed into the JDBC driver, therefore this batch size limit is not automatically enforced.
+    // Batch construction/splits should be done manually in code using this config value.
+    JDBC_MAX_BATCH_SIZE("metastore.jdbc.max.batch.size", "hive.metastore.jdbc.max.batch.size",
+            1000, new RangeValidator(1, null),
+            "Maximum number of update/delete/insert queries in a single JDBC batch statement (including Statement/PreparedStatement)."),
     KERBEROS_KEYTAB_FILE("metastore.kerberos.keytab.file",
         "hive.metastore.kerberos.keytab.file", "",
         "The path to the Kerberos Keytab file containing the metastore Thrift server's service principal."),
@@ -620,6 +820,97 @@ public class MetastoreConf {
         "hive-metastore/_HOST@EXAMPLE.COM",
         "The service principal for the metastore Thrift server. \n" +
             "The special string _HOST will be replaced automatically with the correct host name."),
+    THRIFT_METASTORE_AUTHENTICATION("metastore.authentication", "hive.metastore.authentication",
+            "NOSASL",
+      new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM"),
+        "Client authentication types.\n" +
+                "  NONE: no authentication check\n" +
+                "  LDAP: LDAP/AD based authentication\n" +
+                "  KERBEROS: Kerberos/GSSAPI authentication\n" +
+                "  CUSTOM: Custom authentication provider\n" +
+                "          (Use with property metastore.custom.authentication.class)\n" +
+                "  CONFIG: username and password is specified in the config" +
+                "  NOSASL:  Raw transport"),
+    METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
+            "hive.metastore.custom.authentication.class",
+            "",
+        "Custom authentication class. Used when property\n" +
+        "'metastore.authentication' is set to 'CUSTOM'. Provided class\n" +
+        "must be a proper implementation of the interface\n" +
+        "org.apache.hadoop.hive.metastore.MetaStorePasswdAuthenticationProvider. MetaStore\n" +
+        "will call its Authenticate(user, passed) method to authenticate requests.\n" +
+        "The implementation may optionally implement Hadoop's\n" +
+        "org.apache.hadoop.conf.Configurable class to grab MetaStore's Configuration object."),
+    METASTORE_PLAIN_LDAP_URL("metastore.authentication.ldap.url",
+            "hive.metastore.authentication.ldap.url", "",
+"LDAP connection URL(s),\n" +
+        "this value could contain URLs to multiple LDAP servers instances for HA,\n" +
+        "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
+        " order specified until a connection is successful."),
+    METASTORE_PLAIN_LDAP_BASEDN("metastore.authentication.ldap.baseDN",
+            "hive.metastore.authentication.ldap.baseDN", "", "LDAP base DN"),
+    METASTORE_PLAIN_LDAP_DOMAIN("metastore.authentication.ldap.Domain",
+            "hive.metastore.authentication.ldap.Domain", "", ""),
+    METASTORE_PLAIN_LDAP_GROUPDNPATTERN("metastore.authentication.ldap.groupDNPattern",
+            "hive.metastore.authentication.ldap.groupDNPattern", "",
+"COLON-separated list of patterns to use to find DNs for group entities in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Groups,DC=subdomain,DC=domain,DC=com."),
+    METASTORE_PLAIN_LDAP_GROUPFILTER("metastore.authentication.ldap.groupFilter",
+            "hive.metastore.authentication.ldap.groupFilter", "",
+"COMMA-separated list of LDAP Group names (short name not full DNs).\n" +
+        "For example: HiveAdmins,HadoopAdmins,Administrators"),
+    METASTORE_PLAIN_LDAP_USERDNPATTERN("metastore.authentication.ldap.userDNPattern",
+            "hive.metastore.authentication.ldap.userDNPattern", "",
+"COLON-separated list of patterns to use to find DNs for users in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Users,DC=subdomain,DC=domain,DC=com."),
+    METASTORE_PLAIN_LDAP_USERFILTER("metastore.authentication.ldap.userFilter",
+            "hive.metastore.authentication.ldap.userFilter", "",
+"COMMA-separated list of LDAP usernames (just short names, not full DNs).\n" +
+        "For example: hiveuser,impalauser,hiveadmin,hadoopadmin"),
+    METASTORE_PLAIN_LDAP_GUIDKEY("metastore.authentication.ldap.guidKey",
+            "hive.metastore.authentication.ldap.guidKey", "uid",
+            "LDAP attribute name whose values are unique in this LDAP server.\n" +
+                    "For example: uid or CN."),
+    METASTORE_PLAIN_LDAP_GROUPMEMBERSHIP_KEY("metastore.authentication.ldap.groupMembershipKey",
+            "hive.metastore.authentication.ldap.groupMembershipKey",
+            "member",
+    "LDAP attribute name on the group object that contains the list of distinguished names\n" +
+            "for the user, group, and contact objects that are members of the group.\n" +
+            "For example: member, uniqueMember or memberUid"),
+    METASTORE_PLAIN_LDAP_USERMEMBERSHIP_KEY(METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME,
+            "hive." + METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME,
+            "",
+            "LDAP attribute name on the user object that contains groups of which the user is\n" +
+                    "a direct member, except for the primary group, which is represented by the\n" +
+                    "primaryGroupId.\n" +
+                    "For example: memberOf"),
+    METASTORE_PLAIN_LDAP_GROUPCLASS_KEY("metastore.authentication.ldap.groupClassKey",
+            "hive.metastore.authentication.ldap.groupClassKey",
+            "groupOfNames",
+    "LDAP attribute name on the group entry that is to be used in LDAP group searches.\n" +
+            "For example: group, groupOfNames or groupOfUniqueNames."),
+    METASTORE_PLAIN_LDAP_CUSTOMLDAPQUERY("metastore.authentication.ldap.customLDAPQuery",
+            "hive.metastore.authentication.ldap.customLDAPQuery", "",
+    "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
+            "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
+            "request, succeeds if the user is part of the resultset." +
+            "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
+            "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
+            "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    METASTORE_PLAIN_LDAP_BIND_USER("metastore.authentication.ldap.binddn",
+            "hive.metastore.authentication.ldap.binddn", "",
+"The user with which to bind to the LDAP server, and search for the full domain name " +
+        "of the user being authenticated.\n" +
+        "This should be the full domain name of the user, and should have search access across all " +
+        "users in the LDAP tree.\n" +
+        "If not specified, then the user being authenticated will be used as the bind user.\n" +
+        "For example: CN=bindUser,CN=Users,DC=subdomain,DC=domain,DC=com"),
+    METASTORE_PLAIN_LDAP_BIND_PASSWORD("metastore.authentication.ldap.bindpw",
+            "hive.metastore.authentication.ldap.bindpw", "",
+"The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
+        "If the username is specified, this parameter must also be specified."),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
         "This limits the number of partitions (whole partition objects) that can be requested " +
@@ -627,8 +918,19 @@ public class MetastoreConf {
                 "get_partitions, \n" +
                 "get_partitions_with_auth, \n" +
                 "get_partitions_by_filter, \n" +
+                "get_partitions_spec_by_filter, \n" +
                 "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
+    MSC_CACHE_ENABLED("metastore.client.cache.v2.enabled",
+            "hive.metastore.client.cache.v2.enabled", true,
+            "This property enables a Caffeine Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("metastore.client.cache.v2.maxSize",
+            "hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
+            "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
+                    "Only in effect when the cache is enabled"),
+    MSC_CACHE_RECORD_STATS("metastore.client.cache.v2.recordStats",
+            "hive.metastore.client.cache.v2.recordStats", false,
+            "This property enables recording metastore client cache stats in DEBUG logs"),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
             "If the property is not set, then logging will be initialized using metastore-log4j2.properties found on the classpath.\n" +
@@ -653,10 +955,39 @@ public class MetastoreConf {
          86400, TimeUnit.SECONDS, "Maximum duration for query producing a materialization. After this time, transaction" +
          "entries that are not relevant for materializations can be removed from invalidation cache."),
 
-    RUNTIME_STATS_CLEAN_FREQUENCY("runtime.stats.clean.frequency", "hive.metastore.runtime.stats.clean.frequency", 3600,
+    RUNTIME_STATS_CLEAN_FREQUENCY("metastore.runtime.stats.clean.frequency", "hive.metastore.runtime.stats.clean.frequency", 3600,
         TimeUnit.SECONDS, "Frequency at which timer task runs to remove outdated runtime stat entries."),
-    RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
+    RUNTIME_STATS_MAX_AGE("metastore.runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
+
+    SCHEDULED_QUERIES_ENABLED("metastore.scheduled.queries.enabled", "hive.metastore.scheduled.queries.enabled", true,
+        "Wheter scheduled query metastore requests be processed"),
+    SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT("metastore.scheduled.queries.execution.timeout",
+        "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
+        "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
+    SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY("metastore.scheduled.queries.execution.maint.task.frequency",
+        "hive.metastore.scheduled.queries.execution.clean.frequency", 60, TimeUnit.SECONDS,
+        "Interval of scheduled query maintenance task. Which removes executions above max age;"
+            + "and marks executions as timed out if the condition is met"),
+    SCHEDULED_QUERIES_EXECUTION_MAX_AGE("metastore.scheduled.queries.execution.max.age",
+        "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
+        "Maximal age of a scheduled query execution entry before it is removed."),
+
+    SCHEDULED_QUERIES_AUTODISABLE_COUNT("metastore.scheduled.queries.autodisable.count",
+        "metastore.scheduled.queries.autodisable.count", 0,
+        "Scheduled queries will be automatically disabled after this number of consecutive failures."
+            + "Setting it to a non-positive number disables the feature."),
+
+    SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES(
+        "metastore.scheduled.queries.skip.opportunities.after.failures",
+        "metastore.scheduled.queries.skip.opportunities.after.failures", 0,
+        "Causes to skip schedule opportunities after consequitive failures; taking into account the last N executions. For a scheduled query which have failed its last f execution; it's next schedule will be set to skip f-1 schedule opportunitites."
+            + "Suppose that a scheduled query is scheduled to run every minute.\n"
+            + "Consider this setting to be set to 3 - which means it will only look at the last 3 executions."
+            + "In case the query failed at 1:00 then it will skip 0 opportunities; and the next execution will be scheduled to 1:01\n"
+            + "If that execution also fails it will skip 1 opportunities; next execution will happen at 1:03\n"
+            + "In case that execution fails as well it will skip 2 opportunities; so next execution will be 1:06."
+            + "If the query fails it will skip 2 opportunities again ; because it only cares with the last 3 executions based on the set value."),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
@@ -681,7 +1012,7 @@ public class MetastoreConf {
     METRICS_HADOOP2_COMPONENT_NAME("metastore.metrics.hadoop2.component", "hive.service.metrics.hadoop2.component", "hivemetastore",
                     "Component name to provide to Hadoop2 Metrics system."),
     METRICS_JSON_FILE_INTERVAL("metastore.metrics.file.frequency",
-        "hive.service.metrics.file.frequency", 1, TimeUnit.MINUTES,
+        "hive.service.metrics.file.frequency", 60000, TimeUnit.MILLISECONDS,
         "For json metric reporter, the frequency of updating JSON metrics file."),
     METRICS_JSON_FILE_LOCATION("metastore.metrics.file.location",
         "hive.service.metrics.file.location", "/tmp/report.json",
@@ -750,6 +1081,26 @@ public class MetastoreConf {
       "metastore.partition.management.table.pattern", "*",
       "Automatic partition management will look for tables using the specified table pattern"),
 
+    METASTORE_METADATA_TRANSFORMER_CLASS("metastore.metadata.transformer.class", "metastore.metadata.transformer.class",
+        "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer",
+        "Fully qualified class name for the metastore metadata transformer class \n"
+            + "which is used by HMS Server to fetch the extended tables/partitions information \n"
+            + "based on the data processor capabilities \n"
+            + " This class should implement the IMetaStoreMetadataTransformer interface"),
+    METASTORE_METADATA_TRANSFORMER_TRANSLATED_TO_EXTERNAL_FOLLOWS_RENAMES(
+        "metastore.metadata.transformer.translated.to.external.follows.renames",
+        "metastore.metadata.transformer.translated.to.external.follows.renames", true,
+        "Wether TRANSLATED_TO_EXTERNAL tables should follow renames. In case the default directory exists "
+            + "the strategy of metastore.metadata.transformer.location.mode is used"),
+    METASTORE_METADATA_TRANSFORMER_LOCATION_MODE("metastore.metadata.transformer.location.mode",
+        "metastore.metadata.transformer.location.mode", "force",
+        new StringSetValidator("seqsuffix", "seqprefix", "prohibit", "force"),
+        "Defines the strategy to use in case the default location for a translated table already exists.\n"
+            + "  seqsuffix: add a '_N' suffix to the table name to get a unique location (table,table_1,table_2,...)\n"
+            + "  seqprefix: adds a 'N_' prefix to the table name to get a unique location (table,1_table,2_table,...)\n"
+            + "  prohibit: do not consider alternate locations; throw error if the default is not available\n"
+            + "  force: use the default location even in case the directory is already available"),
+
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
     MAX_OPEN_TXNS("metastore.max.open.txns", "hive.max.open.txns", 100000,
@@ -791,7 +1142,12 @@ public class MetastoreConf {
             "This class is used to store and retrieval of raw metadata objects such as table, database"),
     REPLCMDIR("metastore.repl.cmrootdir", "hive.repl.cmrootdir", "/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
+    REPLCMENCRYPTEDDIR("metastore.repl.cm.encryptionzone.rootdir", "hive.repl.cm.encryptionzone.rootdir", ".cmroot",
+            "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
+    REPLCMFALLBACKNONENCRYPTEDDIR("metastore.repl.cm.nonencryptionzone.rootdir",
+            "hive.repl.cm.nonencryptionzone.rootdir", "",
+            "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
+    REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24 * 10, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("metastore.repl.cm.interval", "hive.repl.cm.interval", 3600, TimeUnit.SECONDS,
         "Inteval for cmroot cleanup thread."),
@@ -807,6 +1163,32 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
+    REPL_EVENT_DB_LISTENER_TTL("metastore.repl.event.db.listener.timetolive",
+            "hive.repl.event.db.listener.timetolive", 10, TimeUnit.DAYS,
+            "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+                    "is set to true. When set to false, the conf event.db.listener.timetolive is used instead."),
+    REPL_METRICS_CACHE_MAXSIZE("metastore.repl.metrics.cache.maxsize",
+      "hive.repl.metrics.cache.maxsize", 10000 /*10000 rows */,
+      "Maximum in memory cache size to collect replication metrics. The metrics will be pushed to persistent"
+        + " storage at a frequency defined by config hive.repl.metrics.update.frequency. Till metrics are persisted to"
+        + " db, it will be stored in this cache. So set this property based on number of concurrent policies running "
+        + " and the frequency of persisting the metrics to persistent storage. "
+      ),
+    REPL_METRICS_UPDATE_FREQUENCY("metastore.repl.metrics.update.frequency",
+      "hive.repl.metrics.update.frequency", 1L, TimeUnit.MINUTES /*1 minute */,
+      "Frequency at which replication Metrics will be stored in persistent storage. "
+    ),
+    REPL_METRICS_CLEANUP_FREQUENCY("metastore.repl.metrics.cleanup.frequency",
+      "hive.metastore.repl.metrics.cleanup.frequency", 1, TimeUnit.DAYS,
+      "Interval of scheduled metrics clean up task which removes metrics above max age; Max age is"
+        + " defined by the config metastore.repl.metrics.max.age. The max age should be greater than this frequency"),
+    REPL_METRICS_MAX_AGE("metastore.repl.metrics.max.age",
+      "hive.metastore.repl.metrics.max.age", 7, TimeUnit.DAYS,
+      "Maximal age of a replication metrics entry before it is removed."),
+    REPL_TXN_TIMEOUT("metastore.repl.txn.timeout", "hive.repl.txn.timeout", 11, TimeUnit.DAYS,
+      "Time after which replication transactions are declared aborted if the client has not sent a " +
+              "heartbeat. If this is a target cluster, value must be greater than" +
+              "hive.repl.event.db.listener.timetolive on the source cluster (!), ideally by 1 day."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
@@ -827,11 +1209,11 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde," +
             "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe," +
-            "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
             "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
             "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
-            "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
+            "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
+            "org.apache.hadoop.hive.serde2.OpenCSVSerde",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
     SERVER_MAX_MESSAGE_SIZE("metastore.server.max.message.size",
         "hive.metastore.server.max.message.size", 100*1024*1024L,
@@ -847,12 +1229,20 @@ public class MetastoreConf {
         "Metastore SSL certificate keystore password."),
     SSL_KEYSTORE_PATH("metastore.keystore.path", "hive.metastore.keystore.path", "",
         "Metastore SSL certificate keystore location."),
+    SSL_KEYSTORE_TYPE("metastore.keystore.type", "hive.metastore.keystore.type", "",
+            "Metastore SSL certificate keystore type."),
+    SSL_KEYMANAGERFACTORY_ALGORITHM("metastore.keymanagerfactory.algorithm", "hive.metastore.keymanagerfactory.algorithm", "",
+            "Metastore SSL certificate keystore algorithm."),
     SSL_PROTOCOL_BLACKLIST("metastore.ssl.protocol.blacklist", "hive.ssl.protocol.blacklist",
         "SSLv2,SSLv3", "SSL Versions to disable for all Hive Servers"),
     SSL_TRUSTSTORE_PATH("metastore.truststore.path", "hive.metastore.truststore.path", "",
         "Metastore SSL certificate truststore location."),
     SSL_TRUSTSTORE_PASSWORD("metastore.truststore.password", "hive.metastore.truststore.password", "",
         "Metastore SSL certificate truststore password."),
+    SSL_TRUSTSTORE_TYPE("metastore.truststore.type", "hive.metastore.truststore.type", "",
+            "Metastore SSL certificate truststore type."),
+    SSL_TRUSTMANAGERFACTORY_ALGORITHM("metastore.trustmanagerfactory.algorithm", "hive.metastore.trustmanagerfactory.algorithm", "",
+            "Metastore SSL certificate truststore algorithm."),
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
@@ -893,23 +1283,24 @@ public class MetastoreConf {
         "hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
             + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
-            + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
-            + "The default value is true."),
+            + "The supported special characters are %&'()*+,-./:;<=>?[]_|{}$^!~#@ and space. This flag applies only to"
+            + " quoted table names.\nThe default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
-        "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-          "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
+            ACID_METRICS_TASK_CLASS + "," +
+            "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
+            + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
+            + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
     TASK_THREADS_REMOTE_ONLY("metastore.task.threads.remote", "metastore.task.threads.remote",
         ACID_HOUSE_KEEPER_SERVICE_CLASS + "," +
+            ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
-            ACID_COMPACTION_HISTORY_SERVICE_CLASS + "," +
-            ACID_WRITE_SET_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
             PARTITION_MANAGEMENT_TASK_CLASS,
-        "Command separated list of tasks that will be started in separate threads.  These will be" +
+        "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
@@ -934,45 +1325,67 @@ public class MetastoreConf {
             "",
             "Specifies which dynamic service discovery method to use. Currently we support only " +
                     "\"zookeeper\" to specify ZooKeeper based service discovery."),
+    THRIFT_ZOOKEEPER_USE_KERBEROS("metastore.zookeeper.kerberos.enabled",
+            "hive.zookeeper.kerberos.enabled", true,
+            "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
+            "is kerberized, but Zookeeper is not."),
     THRIFT_ZOOKEEPER_CLIENT_PORT("metastore.zookeeper.client.port",
-            "hive.metastore.zookeeper.client.port", "2181",
+            "hive.zookeeper.client.port", "2181",
             "The port of ZooKeeper servers to talk to.\n" +
                     "If the list of Zookeeper servers specified in hive.metastore.thrift.uris" +
                     " does not contain port numbers, this value is used."),
     THRIFT_ZOOKEEPER_SESSION_TIMEOUT("metastore.zookeeper.session.timeout",
-            "hive.metastore.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
+            "hive.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
             new TimeValidator(TimeUnit.MILLISECONDS),
             "ZooKeeper client's session timeout (in milliseconds). The client is disconnected\n" +
                     "if a heartbeat is not sent in the timeout."),
     THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("metastore.zookeeper.connection.timeout",
-            "hive.metastore.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
+            "hive.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
             new TimeValidator(TimeUnit.SECONDS),
             "ZooKeeper client's connection timeout in seconds. " +
                     "Connection timeout * hive.metastore.zookeeper.connection.max.retries\n" +
                     "with exponential backoff is when curator client deems connection is lost to zookeeper."),
     THRIFT_ZOOKEEPER_NAMESPACE("metastore.zookeeper.namespace",
-            "hive.metastore.zookeeper.namespace", "hive_metastore",
+            "hive.zookeeper.namespace", "hive_metastore",
             "The parent node under which all ZooKeeper nodes for metastores are created."),
     THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES("metastore.zookeeper.connection.max.retries",
-            "hive.metastore.zookeeper.connection.max.retries", 3,
+            "hive.zookeeper.connection.max.retries", 3,
             "Max number of times to retry when connecting to the ZooKeeper server."),
     THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("metastore.zookeeper.connection.basesleeptime",
-            "hive.metastore.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
+            "hive.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
             new TimeValidator(TimeUnit.MILLISECONDS),
             "Initial amount of time (in milliseconds) to wait between retries\n" +
                     "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
+    THRIFT_ZOOKEEPER_SSL_ENABLE("metastore.zookeeper.ssl.client.enable",
+        "hive.zookeeper.ssl.client.enable", false,
+        "Set client to use TLS when connecting to ZooKeeper.  An explicit value overrides any value set via the " +
+            "zookeeper.client.secure system property (note the different name).  Defaults to false if neither is set."),
+    THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION("metastore.zookeeper.ssl.keystore.location",
+        "hive.zookeeper.ssl.keystore.location", "",
+        "Keystore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.location " +
+            "system property (note the camelCase)."),
+    THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD("metastore.zookeeper.ssl.keystore.password",
+        "hive.zookeeper.ssl.keystore.password", "",
+        "Keystore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.password" +
+            "system property (note the camelCase)."),
+    THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION("metastore.zookeeper.ssl.truststore.location",
+        "hive.zookeeper.ssl.truststore.location", "",
+        "Truststore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.location " +
+            "system property (note the camelCase)."),
+    THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD("metastore.zookeeper.ssl.truststore.password",
+        "hive.zookeeper.ssl.truststore.password", "",
+        "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
+            "system property (note the camelCase)."),
     THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
         new StringSetValidator("RANDOM", "SEQUENTIAL"),
         "Determines the selection mechanism used by metastore client to connect to remote " +
         "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
         "through hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
         "will be picked randomly"),
-    TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
-        "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
-        "Time delay of 1st reaper run after metastore start"),
-    TIMEDOUT_TXN_REAPER_INTERVAL("metastore.timedout.txn.reaper.interval",
-        "hive.timedout.txn.reaper.interval", 180, TimeUnit.SECONDS,
-        "Time interval describing how often the reaper runs"),
     TOKEN_SIGNATURE("metastore.token.signature", "hive.metastore.token.signature", "",
         "The delegation token service name to match when selecting a token from the current user's tokens."),
     METASTORE_CACHE_CAN_USE_EVENT("metastore.cache.can.use.event", "hive.metastore.cache.can.use.event", false,
@@ -980,7 +1393,13 @@ public class MetastoreConf {
     TRANSACTIONAL_EVENT_LISTENERS("metastore.transactional.event.listeners",
         "hive.metastore.transactional.event.listeners", "",
         "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +
-            " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
+            " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction." +
+            " If org.apache.hive.hcatalog.listener.DbNotificationListener is configured along with other transactional event" +
+            " listener implementation classes, make sure org.apache.hive.hcatalog.listener.DbNotificationListener is placed at" +
+            " the end of the list."),
+    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", false,
+        "If enabled, truncate for transactional tables will not delete the data directories,\n" +
+        "rather create a new base directory with no datafiles."),
     TRY_DIRECT_SQL("metastore.try.direct.sql", "hive.metastore.try.direct.sql", true,
         "Whether the metastore should try to use direct SQL queries instead of the\n" +
             "DataNucleus for certain read paths. This can improve metastore performance when\n" +
@@ -1017,6 +1436,11 @@ public class MetastoreConf {
             "class is used to store and retrieve transactions and locks"),
     TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 300, TimeUnit.SECONDS,
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
+    TXN_OPENTXN_TIMEOUT("metastore.txn.opentxn.timeout", "hive.txn.opentxn.timeout", 1000, TimeUnit.MILLISECONDS,
+        "Time before an open transaction operation should persist, otherwise it is considered invalid and rolled back"),
+    TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
+        "Set this to false, for the TxnHandler and Cleaner to not use MinHistoryLevel table and take advantage of openTxn optimisation.\n"
+            + "If the table is dropped HMS will switch this flag to false."),
     URI_RESOLVER("metastore.uri.resolver", "hive.metastore.uri.resolver", "",
             "If set, fully qualified class name of resolver for hive metastore uri's"),
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,
@@ -1024,8 +1448,28 @@ public class MetastoreConf {
             "More users can be added in ADMIN role later."),
     USE_SSL("metastore.use.SSL", "hive.metastore.use.SSL", false,
         "Set this to true for using SSL encryption in HMS server."),
+    // We should somehow unify next two options.
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
+    METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
+            "hive.metastore.client.auth.mode", "NOSASL",
+            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS"),
+            "If PLAIN, clients will authenticate using plain authentication, by providing username" +
+                    " and password. Any other value is ignored right now but may be used later."),
+    METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
+            "hive.metastore.client.plain.username",  "",
+        "The username used by the metastore client when " +
+                METASTORE_CLIENT_AUTH_MODE + " is true. The password is obtained from " +
+                    CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH + " using username as the " +
+                    "alias."),
+    THRIFT_AUTH_CONFIG_USERNAME("metastore.authentication.config.username",
+            "hive.metastore.authentication.config.username", "",
+            "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, username provided by " +
+                    "client is matched against this value."),
+    THRIFT_AUTH_CONFIG_PASSWORD("metastore.authentication.config.password",
+             "hive.metastore.authentication.config.password", "",
+            "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, password provided by " +
+                    "the client is matched against this value."),
     USE_THRIFT_FRAMED_TRANSPORT("metastore.thrift.framed.transport.enabled",
         "hive.metastore.thrift.framed.transport.enabled", false,
         "If true, the metastore Thrift interface will use TFramedTransport. When false (default) a standard TTransport is used."),
@@ -1047,9 +1491,6 @@ public class MetastoreConf {
         "hive.metastore.warehouse.external.dir", "",
         "Default location for external tables created in the warehouse. " +
         "If not set or null, then the normal warehouse location will be used as the default location."),
-    WRITE_SET_REAPER_INTERVAL("metastore.writeset.reaper.interval",
-        "hive.writeset.reaper.interval", 60, TimeUnit.SECONDS,
-        "Frequency of WriteSet reaper runs"),
     WM_DEFAULT_POOL_SIZE("metastore.wm.default.pool.size",
         "hive.metastore.wm.default.pool.size", 4,
         "The size of a default pool to create when creating an empty resource plan;\n" +
@@ -1069,6 +1510,8 @@ public class MetastoreConf {
     HIVE_IN_TEST("hive.in.test", "hive.in.test", false, "internal usage only, true in test mode"),
     HIVE_IN_TEZ_TEST("hive.in.tez.test", "hive.in.tez.test", false,
         "internal use only, true when in testing tez"),
+    HIVE_IN_TEST_ICEBERG("hive.in.iceberg.test", "hive.in.iceberg.test", false,
+        "internal usage only, true when testing iceberg"),
     // We need to track this as some listeners pass it through our config and we need to honor
     // the system properties.
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -1102,6 +1545,19 @@ public class MetastoreConf {
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
+    // External RDBMS support
+    USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
+        "hive.metastore.use.custom.database.product", false,
+        "Use an external RDBMS which is not in the list of natively supported databases (Derby,\n"
+            + "Mysql, Oracle, Postgres, MSSQL), as defined by hive.metastore.db.type. If this configuration\n"
+            + "is true, the metastore.custom.database.product.classname must be set to a valid class name"),
+    CUSTOM_RDBMS_CLASSNAME("metastore.custom.database.product.classname",
+        "hive.metastore.custom.database.product.classname", "none",
+          "Hook for external RDBMS. This class will be instantiated only when " +
+          "metastore.use.custom.database.product is set to true."),
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
+            "Comma-separated list of supported blobstore schemes."),
+
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
     HIVE_CODAHALE_METRICS_REPORTER_CLASSES("hive.service.metrics.codahale.reporter.classes",
@@ -1125,6 +1581,13 @@ public class MetastoreConf {
             + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
             "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
             "will overwrite what was set in the deprecated property."),
+    METASTORE_NUM_STRIPED_TABLE_LOCKS("metastore.num.striped.table.locks", "hive.metastore.num.striped.table.locks", 32,
+        "Number of striped locks available to provide exclusive operation support for critical table operations like add_partitions."),
+    COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
+        "hive.metastore.colstats.retain.on.column.removal", true,
+        "Whether to retain column statistics during column removals in partitioned tables - disabling this "
+            + "purges all column statistics data "
+            + "for all partition to retain working consistency"),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
@@ -1132,8 +1595,10 @@ public class MetastoreConf {
     STR_LIST_ENTRY("test.str.list", "hive.test.str.list", "a,b,c",
         "no comment"),
     LONG_TEST_ENTRY("test.long", "hive.test.long", 42, "comment"),
-    DOUBLE_TEST_ENTRY("test.double", "hive.test.double", 3.141592654, "comment"),
+    DOUBLE_TEST_ENTRY("test.double", "hive.test.double", Math.PI, "comment"),
     TIME_TEST_ENTRY("test.time", "hive.test.time", 1, TimeUnit.SECONDS, "comment"),
+    DEPRECATED_TEST_ENTRY("test.deprecated", "hive.test.deprecated", 0, new RangeValidator(0, 3), "comment",
+        "this.is.the.metastore.deprecated.name", "this.is.the.hive.deprecated.name"),
     TIME_VALIDATOR_ENTRY_INCLUSIVE("test.time.validator.inclusive", "hive.test.time.validator.inclusive", 1,
         TimeUnit.SECONDS,
         new TimeValidator(TimeUnit.MILLISECONDS, 500L, true, 1500L, true), "comment"),
@@ -1149,6 +1614,8 @@ public class MetastoreConf {
     private final Validator validator;
     private final boolean caseSensitive;
     private final String description;
+    private String deprecatedName = null;
+    private String hiveDeprecatedName = null;
 
     ConfVars(String varname, String hiveName, String defaultVal, String description) {
       this.varname = varname;
@@ -1196,6 +1663,18 @@ public class MetastoreConf {
       this.validator = validator;
       caseSensitive = false;
       this.description = description;
+    }
+
+    ConfVars(String varname, String hiveName, long defaultVal, Validator validator,
+        String description, String deprecatedName, String hiveDeprecatedName) {
+      this.varname = varname;
+      this.hiveName = hiveName;
+      this.defaultVal = defaultVal;
+      this.validator = validator;
+      caseSensitive = false;
+      this.description = description;
+      this.deprecatedName = deprecatedName;
+      this.hiveDeprecatedName = hiveDeprecatedName;
     }
 
     ConfVars(String varname, String hiveName, boolean defaultVal, String description) {
@@ -1401,6 +1880,24 @@ public class MetastoreConf {
         LOG.isDebugEnabled()) {
       LOG.debug(dumpConfig(conf));
     }
+
+    /*
+    Add deprecated config names to configuration.
+    The parameters for Configuration.addDeprecation are (oldKey, newKey) and it is assumed that the config is set via
+    newKey and the value is retrieved via oldKey.
+    However in this case we assume the value is set with the deprecated key (oldKey) in some config file and we
+    retrieve it in the code via the new key. So the parameter order we use here is: (newKey, deprecatedKey).
+    We do this with the HiveConf configs as well.
+     */
+    for (ConfVars var : ConfVars.values()) {
+      if (var.deprecatedName != null) {
+        Configuration.addDeprecation(var.getVarname(), var.deprecatedName);
+      }
+      if (var.hiveDeprecatedName != null) {
+        Configuration.addDeprecation(var.getHiveName(), var.hiveDeprecatedName);
+      }
+    }
+
     return conf;
   }
 
@@ -1410,35 +1907,39 @@ public class MetastoreConf {
     if (result == null) {
       // Nope, so look to see if our conf dir has been explicitly set
       result = seeIfConfAtThisLocation("METASTORE_CONF_DIR", name, false);
-      if (result == null) {
-        // Nope, so look to see if our home dir has been explicitly set
-        result = seeIfConfAtThisLocation("METASTORE_HOME", name, true);
-        if (result == null) {
-          // Nope, so look to see if Hive's conf dir has been explicitly set
-          result = seeIfConfAtThisLocation("HIVE_CONF_DIR", name, false);
-          if (result == null) {
-            // Nope, so look to see if Hive's home dir has been explicitly set
-            result = seeIfConfAtThisLocation("HIVE_HOME", name, true);
-            if (result == null) {
-              // Nope, so look to see if we can find a conf file by finding our jar, going up one
-              // directory, and looking for a conf directory.
-              URI jarUri = null;
-              try {
-                jarUri = MetastoreConf.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-              } catch (Throwable e) {
-                LOG.warn("Cannot get jar URI", e);
-              }
-              result = seeIfConfAtThisLocation(new File(jarUri).getParent(), name, true);
-              // At this point if we haven't found it, screw it, we don't know where it is
-              if (result == null) {
-                LOG.info("Unable to find config file " + name);
-              }
-            }
-          }
-        }
+    }
+    if (result == null) {
+      // Nope, so look to see if our home dir has been explicitly set
+      result = seeIfConfAtThisLocation("METASTORE_HOME", name, true);
+    }
+    if (result == null) {
+      // Nope, so look to see if Hive's conf dir has been explicitly set
+      result = seeIfConfAtThisLocation("HIVE_CONF_DIR", name, false);
+    }
+    if (result == null) {
+      // Nope, so look to see if Hive's home dir has been explicitly set
+      result = seeIfConfAtThisLocation("HIVE_HOME", name, true);
+    }
+    if (result == null) {
+      // Nope, so look to see if we can find a conf file by finding our jar, going up one
+      // directory, and looking for a conf directory.
+      URI jarUri = null;
+      try {
+        jarUri = MetastoreConf.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+      } catch (Throwable e) {
+        LOG.warn("Cannot get jar URI", e);
+      }
+      if (jarUri != null) {
+        result = seeIfConfAtThisLocation(new File(jarUri).getParent(), name, true);
       }
     }
-    LOG.info("Found configuration file " + result);
+
+    if (result == null) {
+      LOG.info("Unable to find config file: " + name);
+    } else {
+      LOG.info("Found configuration file: " + result);
+    }
+
     return result;
   }
 
@@ -1543,7 +2044,7 @@ public class MetastoreConf {
   public static long getLongVar(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == Long.class;
     String val = conf.get(var.varname);
-    return val == null ? conf.getLong(var.hiveName, (Long)var.defaultVal) : Long.valueOf(val);
+    return val == null ? conf.getLong(var.hiveName, (Long)var.defaultVal) : Long.parseLong(val);
   }
 
   /**
@@ -1776,18 +2277,6 @@ public class MetastoreConf {
    * @return the value set
    */
   public static String get(Configuration conf, String key) {
-    // Map this key back to the ConfVars it is associated with.
-    if (keyToVars == null) {
-      synchronized (MetastoreConf.class) {
-        if (keyToVars == null) {
-          keyToVars = new HashMap<>(ConfVars.values().length * 2);
-          for (ConfVars var : ConfVars.values()) {
-            keyToVars.put(var.varname, var);
-            keyToVars.put(var.hiveName, var);
-          }
-        }
-      }
-    }
     ConfVars var = keyToVars.get(key);
     if (var == null) {
       // Ok, this isn't one we track.  Just return whatever matches the string
@@ -1819,9 +2308,8 @@ public class MetastoreConf {
     } else if (var.defaultVal.getClass() == Double.class) {
       return Double.toString(getDoubleVar(conf, var));
     } else if (var.defaultVal.getClass() == TimeValue.class) {
-      TimeUnit timeUnit = (var.defaultVal.getClass() == TimeValue.class) ?
-          ((TimeValue)var.defaultVal).unit : null;
-      return Long.toString(getTimeVar(conf, var, timeUnit)) + timeAbbreviationFor(timeUnit);
+      TimeUnit timeUnit = ((TimeValue)var.defaultVal).unit;
+      return getTimeVar(conf, var, timeUnit) + timeAbbreviationFor(timeUnit);
     } else {
       throw new RuntimeException("Unknown type for getObject " + var.defaultVal.getClass().getName());
     }
@@ -1859,14 +2347,32 @@ public class MetastoreConf {
   }
 
   public static ZooKeeperHiveHelper getZKConfig(Configuration conf) {
-    return new ZooKeeperHiveHelper(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS),
-            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT),
-            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE),
-            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
-                    TimeUnit.MILLISECONDS),
-            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
-                    TimeUnit.MILLISECONDS),
-            MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES));
+    String keyStorePassword = "";
+    String trustStorePassword = "";
+    if (MetastoreConf.getBoolVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_ENABLE)) {
+      try {
+        keyStorePassword = MetastoreConf.getPassword(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD);
+        trustStorePassword = MetastoreConf.getPassword(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to read zookeeper configuration passwords", e);
+      }
+    }
+    return ZooKeeperHiveHelper.builder()
+        .quorum(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS))
+        .clientPort(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT))
+        .serverRegistryNameSpace(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE))
+        .connectionTimeout((int) getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT,
+            TimeUnit.MILLISECONDS))
+        .sessionTimeout((int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
+            TimeUnit.MILLISECONDS))
+        .baseSleepTime((int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+            TimeUnit.MILLISECONDS))
+        .maxRetries(MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES))
+        .sslEnabled(MetastoreConf.getBoolVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_ENABLE))
+        .keyStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
+        .keyStorePassword(keyStorePassword)
+        .trustStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
+        .trustStorePassword(trustStorePassword).build();
   }
 
   /**
@@ -1906,5 +2412,15 @@ public class MetastoreConf {
     }
     buf.append("Finished MetastoreConf object.\n");
     return buf.toString();
+  }
+
+  public static char[] getValueFromKeystore(String keystorePath, String key) throws IOException {
+    char[] valueCharArray = null;
+    if (keystorePath != null && key != null) {
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystorePath);
+      valueCharArray = conf.getPassword(key);
+    }
+    return valueCharArray;
   }
 }

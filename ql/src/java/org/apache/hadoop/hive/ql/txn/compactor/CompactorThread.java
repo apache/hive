@@ -17,18 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,11 +56,12 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected HiveConf conf;
-  protected RawStore rs;
+
   protected AtomicBoolean stop;
-  protected AtomicBoolean looped;
 
   protected int threadId;
+  protected String hostName;
+  protected String runtimeVersion;
 
   public void setThreadId(int threadId) {
     this.threadId = threadId;
@@ -78,11 +82,12 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return conf;
   }
 
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
+  public void init(AtomicBoolean stop) throws Exception {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
     this.stop = stop;
-    this.looped = looped;
+    this.hostName = ServerUtils.hostname();
+    this.runtimeVersion = getRuntimeVersion();
   }
 
   /**
@@ -110,7 +115,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws Exception if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
-  protected Partition resolvePartition(CompactionInfo ci) throws Exception {
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
     if (ci.partName != null) {
       List<Partition> parts;
       try {
@@ -120,11 +125,12 @@ public abstract class CompactorThread extends Thread implements Configurable {
           return null;
         }
       } catch (Exception e) {
-        LOG.error("Unable to find partition " + ci.getFullPartitionName() + ", " + e.getMessage());
+        LOG.error("Unable to find partition " + ci.getFullPartitionName(), e);
         throw e;
       }
       if (parts.size() != 1) {
-        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " + parts);
+        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " +
+                      Arrays.toString(parts.toArray()));
         throw new MetaException("Too many partitions for : " + ci.getFullPartitionName());
       }
       return parts.get(0);
@@ -144,18 +150,27 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   /**
-   * Determine which user to run an operation as, based on the owner of the directory to be
-   * compacted.  It is asserted that either the user running the hive metastore or the table
+   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be
+   * returned; if not: the the owner of the directory to be compacted.
+   * It is asserted that either the user running the hive metastore or the table
    * owner must be able to stat the directory and determine the owner.
    * @param location directory that will be read or written to.
    * @param t metastore table object
-   * @return username of the owner of the location.
+   * @return metastore.compactor.run.as.user value; or if that is not set: username of the owner of the location.
    * @throws java.io.IOException if neither the hive metastore user nor the table owner can stat
    * the location.
    */
   protected String findUserToRunAs(String location, Table t) throws IOException,
       InterruptedException {
     LOG.debug("Determining who to run the job as.");
+
+    // check if a specific user is set in config
+    String runUserAs = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER);
+    if (runUserAs != null && !"".equals(runUserAs)) {
+      return runUserAs;
+    }
+
+    // get table directory owner
     final Path p = new Path(location);
     final FileSystem fs = p.getFileSystem(conf);
     try {
@@ -218,12 +233,21 @@ public abstract class CompactorThread extends Thread implements Configurable {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId.incrementAndGet());
-    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.init(new AtomicBoolean());
     thread.start();
   }
 
   protected boolean replIsCompactionDisabledForTable(Table tbl) {
     // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-    return ReplUtils.isFirstIncPending(tbl.getParameters());
+    boolean isCompactDisabled = ReplUtils.isFirstIncPending(tbl.getParameters());
+    if (isCompactDisabled) {
+      LOG.info("Compaction is disabled for table " + tbl.getTableName());
+    }
+    return isCompactDisabled;
+  }
+
+  @VisibleForTesting
+  protected String getRuntimeVersion() {
+    return this.getClass().getPackage().getImplementationVersion();
   }
 }

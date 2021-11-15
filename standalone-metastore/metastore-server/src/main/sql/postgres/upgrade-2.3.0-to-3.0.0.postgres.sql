@@ -268,6 +268,9 @@ UPDATE "DBS"
 -- Add the not null constraint
 ALTER TABLE "DBS" ALTER COLUMN "CTLG_NAME" SET NOT NULL;
 
+-- Add the default catalog name
+ALTER TABLE "DBS" ALTER COLUMN "CTLG_NAME" SET DEFAULT 'hive';
+
 -- Put back the unique index 
 ALTER TABLE "DBS" ADD CONSTRAINT "UNIQUE_DATABASE" UNIQUE ("NAME", "CTLG_NAME");
 
@@ -353,6 +356,11 @@ INSERT INTO TXN_TO_WRITE_ID (T2W_DATABASE, T2W_TABLE, T2W_TXNID, T2W_WRITEID)
 -- Update TXN_COMPONENTS and COMPLETED_TXN_COMPONENTS for write ID which is same as txn ID
 UPDATE TXN_COMPONENTS SET TC_WRITEID = TC_TXNID;
 UPDATE COMPLETED_TXN_COMPONENTS SET CTC_WRITEID = CTC_TXNID;
+
+-- HIVE-23211: Fix metastore schema differences between init scripts, and upgrade scripts
+-- Not updating possible NULL values, since if NULLs existing in this table, the upgrade should fail
+ALTER TABLE TXN_COMPONENTS ALTER COLUMN TC_TXNID SET NOT NULL;
+ALTER TABLE COMPLETED_TXN_COMPONENTS ALTER COLUMN CTC_TXNID SET NOT NULL;
 
 -- These lines need to be last.  Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='3.0.0', "VERSION_COMMENT"='Hive release version 3.0.0' where "VER_ID"=1;

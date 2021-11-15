@@ -1,0 +1,39 @@
+PREHOOK: query: EXPLAIN
+CREATE TABLE INPUTDDL3(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL3
+POSTHOOK: query: EXPLAIN
+CREATE TABLE INPUTDDL3(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@INPUTDDL3
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Table
+      columns: key int, value string
+      name: default.INPUTDDL3
+      field delimiter: 	
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: CREATE TABLE INPUTDDL3(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL3
+POSTHOOK: query: CREATE TABLE INPUTDDL3(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@INPUTDDL3
+PREHOOK: query: DESCRIBE INPUTDDL3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl3
+POSTHOOK: query: DESCRIBE INPUTDDL3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl3
+key                 	int                 	                    
+value               	string              	                    

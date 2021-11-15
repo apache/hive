@@ -46,14 +46,14 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
               event.getEventType());
       return;
     }
-
     // Statistics without any data does not make sense.
-    if (withinContext.replicationSpec.isMetadataOnly()) {
+    if (withinContext.replicationSpec.isMetadataOnly()
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(new Table(tableObj), withinContext.hiveConf)) {
       return;
     }
 
     if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj), true,
-                              withinContext.hiveConf)) {
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 

@@ -9,13 +9,104 @@ set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
 -- 7. Test Select + TS + Join + Fil + GB + GB Having + Limit
-select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x limit 1;
+  SELECT key, (c_int+1)+2 AS x, sum(c_int)
+    FROM cbo_t1
+GROUP BY c_float, cbo_t1.c_int, key
+ORDER BY x, key
+   LIMIT 1;
+
 -- annoying spaces in the key
-select distinct "<"||key||">", (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key limit 2;
-select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 5;
-select key from(select key from (select key from cbo_t1 limit 5)cbo_t2  limit 5)cbo_t3  limit 5;
-select key, c_int from(select key, c_int from (select key, c_int from cbo_t1 order by c_int limit 5)cbo_t1  order by c_int limit 5)cbo_t2  order by c_int limit 5;
+  SELECT DISTINCT "<"||key||">", (c_int+c_float+1+2) AS x, sum(c_int) AS y
+    FROM cbo_t1
+GROUP BY c_float, cbo_t1.c_int, key
+   LIMIT 2;
 
-select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0) group by c_float, cbo_t1.c_int, key order by a limit 5) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key order by q/10 desc, r asc limit 5) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c order by cbo_t3.c_int+c desc, c limit 5;
+  SELECT x, y, count(*)
+    FROM (SELECT key, (c_int+c_float+1+2) AS x, sum(c_int) AS y
+            FROM cbo_t1
+        GROUP BY c_float, cbo_t1.c_int, key
+         ) R
+GROUP BY y, x
+ORDER BY x, y
+   LIMIT 5;
 
-select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc limit 5) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 limit 5) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int, c desc limit 5;
+SELECT key
+  FROM (SELECT key
+          FROM (SELECT key
+                  FROM cbo_t1
+              ORDER BY key
+                 LIMIT 5
+               ) cbo_t2
+         LIMIT 5
+       ) cbo_t3
+ LIMIT 5;
+
+  SELECT key, c_int
+    FROM (SELECT key, c_int
+            FROM (SELECT key, c_int
+                    FROM cbo_t1
+                ORDER BY c_int, key
+                   LIMIT 5
+                 ) cbo_t1
+        ORDER BY c_int
+           LIMIT 5
+         ) cbo_t2
+ORDER BY c_int
+   LIMIT 5;
+
+  SELECT cbo_t3.c_int, c, count(*)
+    FROM (SELECT key AS a, c_int+1 AS b, sum(c_int) AS c
+            FROM cbo_t1
+           WHERE (cbo_t1.c_int + 1 >= 0)
+             AND (cbo_t1.c_int > 0 OR cbo_t1.c_float >= 0)
+        GROUP BY c_float, cbo_t1.c_int, key
+        ORDER BY a, b
+           LIMIT 5
+         ) cbo_t1
+    JOIN (SELECT key AS p, c_int+1 AS q, sum(c_int) AS r
+            FROM cbo_t2
+           WHERE (cbo_t2.c_int + 1 >= 0)
+             AND (cbo_t2.c_int > 0 OR cbo_t2.c_float >= 0)
+        GROUP BY c_float, cbo_t2.c_int, key
+        ORDER BY q/10 DESC, r ASC, p ASC
+           LIMIT 5
+         ) cbo_t2 ON cbo_t1.a = p
+    JOIN cbo_t3 ON cbo_t1.a = key
+   WHERE (b + cbo_t2.q >= 0)
+     AND (b > 0 OR c_int >= 0)
+GROUP BY cbo_t3.c_int, c
+ORDER BY cbo_t3.c_int + c DESC, c ASC
+   LIMIT 5;
+
+   SELECT cbo_t3.c_int, c, count(*)
+     FROM (SELECT key AS a, c_int+1 AS b, sum(c_int) AS c
+             FROM cbo_t1
+            WHERE (cbo_t1.c_int + 1 >= 0)
+              AND (cbo_t1.c_int > 0 OR cbo_t1.c_float >= 0)
+         GROUP BY c_float, cbo_t1.c_int, key
+           HAVING cbo_t1.c_float > 0
+              AND (c_int >=1 OR c_float >= 1)
+              AND (c_int + c_float) >= 0
+         ORDER BY b % c ASC, b DESC, a ASC
+            LIMIT 5
+          ) cbo_t1
+LEFT JOIN (SELECT key AS p, c_int+1 AS q, sum(c_int) AS r
+             FROM cbo_t2
+            WHERE (cbo_t2.c_int + 1 >= 0)
+              AND (cbo_t2.c_int > 0 OR cbo_t2.c_float >= 0)
+         GROUP BY c_float, cbo_t2.c_int, key
+           HAVING cbo_t2.c_float > 0
+              AND (c_int >=1 OR c_float >= 1)
+              AND (c_int + c_float) >= 0
+         ORDER BY p, q
+            LIMIT 5
+          ) cbo_t2 ON cbo_t1.a = p
+LEFT JOIN cbo_t3 ON cbo_t1.a = key
+    WHERE (b + cbo_t2.q >= 0)
+      AND (b > 0 OR c_int >= 0)
+ GROUP BY cbo_t3.c_int, c
+   HAVING cbo_t3.c_int > 0
+      AND (c_int >=1 OR c >= 1)
+      AND (c_int + c) >= 0
+ ORDER BY cbo_t3.c_int % c ASC, cbo_t3.c_int, c DESC
+    LIMIT 5;

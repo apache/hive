@@ -27,7 +27,7 @@ import org.junit.Test;
  * Test {@link ListBucketingPruner}
  *
  */
-public class TestListBucketingPrunner extends TestCase {
+public class TestListBucketingPrunner {
 
   @Test
   public void testSkipSkewedDirectory1() {

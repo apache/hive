@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -58,6 +61,17 @@ public class QueryState {
   private long numModifiedRows = 0;
 
   static public final String USERID_TAG = "userid";
+
+  /**
+   * map of resources involved in the query.
+   */
+  private final Map<String, Object> resourceMap = new HashMap<>();
+
+  /**
+   * query level lock for ConditionalTask#resolveTask.
+   */
+  private final ReentrantLock resolveConditionalTaskLock = new ReentrantLock(true);
+
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
@@ -138,6 +152,32 @@ public class QueryState {
     }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
+  }
+
+  public void addResource(String resourceIdentifier, Object resource) {
+    resourceMap.put(resourceIdentifier, resource);
+  }
+
+  public Object getResource(String resourceIdentifier) {
+    return resourceMap.get(resourceIdentifier);
+  }
+
+  public ReentrantLock getResolveConditionalTaskLock() {
+    return resolveConditionalTaskLock;
+  }
+
+  /**
+   * Generating the new QueryState object. Making sure, that the new queryId is generated.
+   * @param conf The HiveConf which should be used
+   * @param lineageState a LineageState to be set in the new QueryState object
+   * @return The new QueryState object
+   */
+  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+    return new QueryState.Builder()
+        .withGenerateNewQueryId(true)
+        .withHiveConf(conf)
+        .withLineageState(lineageState)
+        .build();
   }
 
   /**

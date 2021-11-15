@@ -58,7 +58,7 @@ public class MathExpr {
   }
 
   public static double log2(double d) {
-    return Math.log(d) / Math.log(2);
+    return StrictMath.log(d) / StrictMath.log(2);
   }
 
   public static long abs(long v) {

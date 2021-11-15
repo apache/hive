@@ -2,7 +2,6 @@ set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
 -- enable ppd
 set hive.optimize.index.filter=true;
@@ -38,7 +37,8 @@ CREATE TABLE over10k_n9(t tinyint,
            `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
-STORED AS TEXTFILE;
+STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 --oddly this has 9999 rows not > 10K
 LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n9;
@@ -106,6 +106,7 @@ explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID h
 select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1;
 
 -- schedule compactor
+explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
 alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
 
 

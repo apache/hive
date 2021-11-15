@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.cache;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -59,7 +59,7 @@ public class TestCatalogCaching {
     objectStore.setConf(conf);
 
     // Create three catalogs
-    HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
 
     Catalog cat1 = new CatalogBuilder()
         .setName(CAT1_NAME)

@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -38,16 +39,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -57,6 +56,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,12 +72,6 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory
       .getLogger(ColumnStatsUpdateTask.class);
-
-  @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, ctx, opContext);
-  }
 
   private ColumnStatistics constructColumnStatsFromInput()
       throws SemanticException, MetaException {
@@ -109,7 +103,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
         || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
-        || columnType.equalsIgnoreCase("bigint") || columnType.equalsIgnoreCase("timestamp")) {
+        || columnType.equalsIgnoreCase("bigint")) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
@@ -274,6 +268,26 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDateStats(dateStats);
       statsObj.setStatsData(statsData);
+    } else if (columnType.equalsIgnoreCase("timestamp")) {
+      TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
+      Map<String, String> mapProp = work.getMapProp();
+      for (Entry<String, String> entry : mapProp.entrySet()) {
+        String fName = entry.getKey();
+        String value = entry.getValue();
+        if (fName.equals("numNulls")) {
+          timestampStats.setNumNulls(Long.parseLong(value));
+        } else if (fName.equals("numDVs")) {
+          timestampStats.setNumDVs(Long.parseLong(value));
+        } else if (fName.equals("lowValue")) {
+          timestampStats.setLowValue(readTimestampValue(value));
+        } else if (fName.equals("highValue")) {
+          timestampStats.setHighValue(readTimestampValue(value));
+        } else {
+          throw new SemanticException("Unknown stat");
+        }
+      }
+      statsData.setTimestampStats(timestampStats);
+      statsObj.setStatsData(statsData);
     } else {
       throw new SemanticException("Unsupported type");
     }
@@ -282,6 +296,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);
     colStat.addToStatsObj(statsObj);
+    colStat.setEngine(Constants.HIVE_ENGINE);
     return colStat;
   }
 
@@ -302,7 +317,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
     ColumnStatistics colStats = constructColumnStatsFromInput();
     SetPartitionsStatsRequest request =
-            new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+            new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
 
     // Set writeId and validWriteId list for replicated statistics. getColStats() will return
     // non-null value only during replication.
@@ -312,17 +327,9 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       Table tbl = db.getTable(dbName, tblName);
       long writeId = work.getWriteId();
       // If it's a transactional table on source and target, we will get a valid writeId
-      // associated with it. Otherwise it's a non-transactional table on source migrated to a
-      // transactional table on target, we need to craft a valid writeId here.
+      // associated with it.
       if (AcidUtils.isTransactionalTable(tbl)) {
         ValidWriteIdList writeIds;
-        if (work.getIsMigratingToTxn()) {
-          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (tmpWriteId == null) {
-            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-          }
-          writeId = tmpWriteId;
-        }
 
         // We need a valid writeId list to update column statistics for a transactional table. We
         // do not have a valid writeId list which was used to update the column stats on the
@@ -341,15 +348,16 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     try {
       Hive db = getHive();
       return persistColumnStats(db);
     } catch (Exception e) {
       setException(e);
       LOG.info("Failed to persist stats in metastore", e);
+      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
+                                       getName(), conf);
     }
-    return 1;
   }
 
   @Override
@@ -371,6 +379,17 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       // Fallback to integer parsing
       LOG.debug("Reading date value as days since epoch: {}", dateStr);
       return new Date(Long.parseLong(dateStr));
+    }
+  }
+
+  private Timestamp readTimestampValue(String timestampStr) {
+    try {
+      TimestampWritableV2 writableVal = new TimestampWritableV2(
+          org.apache.hadoop.hive.common.type.Timestamp.valueOf(timestampStr));
+      return new Timestamp(writableVal.getSeconds());
+    } catch (IllegalArgumentException err) {
+      LOG.debug("Reading timestamp value as seconds since epoch: {}", timestampStr);
+      return new Timestamp(Long.parseLong(timestampStr));
     }
   }
 }

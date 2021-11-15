@@ -34,9 +34,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.curator.shaded.com.google.common.collect.Lists;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -46,11 +48,10 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
-import org.apache.hadoop.hive.ql.plan.DDLDesc;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -62,6 +63,8 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -73,23 +76,25 @@ import com.google.common.annotations.VisibleForTesting;
 public class QueryPlan implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private static final Logger LOG = LoggerFactory.getLogger(QueryPlan.class);
+
   private String cboInfo;
   private String queryString;
   private String optimizedCBOPlan;
   private String optimizedQueryString;
 
-  private ArrayList<Task<? extends Serializable>> rootTasks;
+  private List<Task<?>> rootTasks;
   private FetchTask fetchTask;
   private final List<ReducerTimeStatsPerJob> reducerTimeStatsPerJobList;
 
-  private HashSet<ReadEntity> inputs;
+  private Set<ReadEntity> inputs;
   /**
    * Note: outputs are not all determined at compile time.
    * Some of the tasks can change the outputs at run time, because only at run
    * time, we know what are the changes.  These tasks should keep a reference
    * to the outputs here.
    */
-  private HashSet<WriteEntity> outputs;
+  private Set<WriteEntity> outputs;
   /**
    * Lineage information for the query.
    */
@@ -98,7 +103,7 @@ public class QueryPlan implements Serializable {
   private ColumnAccessInfo columnAccessInfo;
   private Schema resultSchema;
 
-  private HashMap<String, String> idToTableNameMap;
+  private Map<String, String> idToTableNameMap;
 
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
@@ -116,8 +121,10 @@ public class QueryPlan implements Serializable {
   private final boolean acidResourcesInQuery;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
   private final WriteEntity acidAnalyzeTable;
-  private final DDLDesc.DDLDescWithWriteId acidDdlDesc;
+  private final DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
+
+  private Boolean prepareQuery;
 
   public QueryPlan() {
     this(null);
@@ -130,13 +137,14 @@ public class QueryPlan implements Serializable {
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
+    this.prepareQuery = false;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
                   HiveOperation operation, Schema resultSchema) {
     this.queryString = queryString;
 
-    rootTasks = new ArrayList<Task<? extends Serializable>>(sem.getAllRootTasks());
+    rootTasks = new ArrayList<Task<?>>(sem.getAllRootTasks());
     reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
     fetchTask = sem.getFetchTask();
     // Note that inputs and outputs can be changed when the query gets executed
@@ -162,6 +170,7 @@ public class QueryPlan implements Serializable {
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
     this.cboInfo = sem.getCboInfo();
+    this.prepareQuery = false;
   }
 
   /**
@@ -182,6 +191,83 @@ public class QueryPlan implements Serializable {
     return acidSinks;
   }
 
+  /**
+   * This method is to get the proper statementId for the FileSinkOperator, a particular MoveTask belongs to.
+   * This is needed for ACID operations with direct insert on. In this case for listing the newly added or modified
+   * data the MoveTask has to know the statementId in order to list the files from the proper folder.
+   * Without knowing the statementId the files could be listed by multiple MoveTasks which could cause issues.
+   * To get the statementId, first the FSO has to be found in the acidSinks list. To do that, use
+   * the ACID operation, the path, the writeId and the moveTaskId.
+   *
+   * For queries with union all optimisation, there will be multiple FSOs with the same operation, writeId and moveTaskId.
+   * But one of these FSOs doesn't write data and its statementId is not valid, so if this FSO is selected and its statementId
+   * is returned, the file listing will find nothing. So check the acidSinks and if two of them have the same writeId, path
+   * and moveTaskId, then return -1 as statementId. With doing this, the file listing will find all partitions and files correctly.
+   *
+   * @param writeId
+   * @param moveTaskId
+   * @param acidOperation
+   * @param path
+   * @return The statementId from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
+   * -1 if there are multiple FileSinkOperators with the same value of these parameters.
+   */
+  public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+    FileSinkDesc result = null;
+    for (FileSinkDesc acidSink : acidSinks) {
+      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+          && acidSink.getTableWriteId() == writeId
+          && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
+        if (result != null) {
+          return -1;
+        }
+        result = acidSink;
+      }
+    }
+    if (result != null) {
+      return result.getStatementId();
+    } else {
+      return -1;
+    }
+  }
+
+  /**
+   * This method is to get the dynamic partition specifications inserted by the FileSinkOperator, a particular MoveTask belongs to.
+   * This is needed for insert overwrite queries for ACID tables with direct insert on, so each MoveTask could list only the
+   * files inserted by the FSO the MoveTask belongs to. In case of an insert query, the writeId and statementId is enough to
+   * identify which delta directory was written by which FSO. But in case of insert overwrite, base directories will be created
+   * without statementIds, so we need the partition information to identify which folders to list.
+   *
+   * For queries with union all optimisation, there will be multiple FSOs with the same operation, writeId and moveTaskId.
+   * But one of these FSOs doesn't contain the partition specifications, so if this FSO is selected, the file listing will not be correct.
+   * So check the acidSinks and if two of them have the same writeId, path and moveTaskId, then return null.
+   * With doing this, the file listing will find all partitions and files correctly.
+   *
+   * @param writeId
+   * @param moveTaskId
+   * @param acidOperation
+   * @param path
+   * @return The dynamic partition specifications from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
+   * null if there are multiple FileSinkOperators with the same value of these parameters.
+   */
+  public Map<String, List<Path>> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+    FileSinkDesc result = null;
+    for (FileSinkDesc acidSink : acidSinks) {
+      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+          && acidSink.getTableWriteId() == writeId
+          && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
+        if (result != null) {
+          return null;
+        }
+        result = acidSink;
+      }
+    }
+    if (result != null) {
+      return result.getDynPartitionValues();
+    } else {
+      return null;
+    }
+  }
+
   DDLDescWithWriteId getAcidDdlDesc() {
     return acidDdlDesc;
   }
@@ -192,6 +278,14 @@ public class QueryPlan implements Serializable {
 
   public String getQueryId() {
     return queryId;
+  }
+
+  public void setPrepareQuery(boolean prepareQuery) {
+    this.prepareQuery = prepareQuery;
+  }
+
+  public boolean isPrepareQuery() {
+    return prepareQuery;
   }
 
   public static String makeQueryId() {
@@ -266,12 +360,12 @@ public class QueryPlan implements Serializable {
     query.setStageGraph(new org.apache.hadoop.hive.ql.plan.api.Graph());
     query.getStageGraph().setNodeType(NodeType.STAGE);
 
-    Queue<Task<? extends Serializable>> tasksToVisit =
-      new LinkedList<Task<? extends Serializable>>();
-    Set<Task<? extends Serializable>> tasksVisited = new HashSet<Task<? extends Serializable>>();
+    Queue<Task<?>> tasksToVisit =
+      new LinkedList<Task<?>>();
+    Set<Task<?>> tasksVisited = new HashSet<Task<?>>();
     tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.size() != 0) {
-      Task<? extends Serializable> task = tasksToVisit.remove();
+      Task<?> task = tasksToVisit.remove();
       tasksVisited.add(task);
       // populate stage
       org.apache.hadoop.hive.ql.plan.api.Stage stage =
@@ -317,14 +411,14 @@ public class QueryPlan implements Serializable {
         listEntry.setNode(task.getId());
         ConditionalTask t = (ConditionalTask) task;
 
-        for (Task<? extends Serializable> listTask : t.getListTasks()) {
+        for (Task<?> listTask : t.getListTasks()) {
           if (t.getChildTasks() != null) {
             org.apache.hadoop.hive.ql.plan.api.Adjacency childEntry =
               new org.apache.hadoop.hive.ql.plan.api.Adjacency();
             childEntry.setAdjacencyType(AdjacencyType.DISJUNCTIVE);
             childEntry.setNode(listTask.getId());
             // done processing the task
-            for (Task<? extends Serializable> childTask : t.getChildTasks()) {
+            for (Task<?> childTask : t.getChildTasks()) {
               childEntry.addToChildren(childTask.getId());
               if (!tasksVisited.contains(childTask)) {
                 tasksToVisit.add(childTask);
@@ -345,7 +439,7 @@ public class QueryPlan implements Serializable {
         entry.setAdjacencyType(AdjacencyType.CONJUNCTIVE);
         entry.setNode(task.getId());
         // done processing the task
-        for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+        for (Task<?> childTask : task.getChildTasks()) {
           entry.addToChildren(childTask.getId());
           if (!tasksVisited.contains(childTask)) {
             tasksToVisit.add(childTask);
@@ -401,17 +495,17 @@ public class QueryPlan implements Serializable {
    * Extract all the counters from tasks and operators.
    */
   private void extractCounters() throws IOException {
-    Queue<Task<? extends Serializable>> tasksToVisit =
-      new LinkedList<Task<? extends Serializable>>();
-    Set<Task<? extends Serializable>> tasksVisited =
-      new HashSet<Task<? extends Serializable>>();
+    Queue<Task<?>> tasksToVisit =
+      new LinkedList<Task<?>>();
+    Set<Task<?>> tasksVisited =
+      new HashSet<Task<?>>();
     tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.peek() != null) {
-      Task<? extends Serializable> task = tasksToVisit.remove();
+      Task<?> task = tasksToVisit.remove();
       tasksVisited.add(task);
       // add children to tasksToVisit
       if (task.getChildTasks() != null) {
-        for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+        for (Task<?> childTask : task.getChildTasks()) {
           if (!tasksVisited.contains(childTask)) {
             tasksToVisit.add(childTask);
           }
@@ -452,7 +546,7 @@ public class QueryPlan implements Serializable {
         }
       } else if (task instanceof ConditionalTask) {
         ConditionalTask cTask = (ConditionalTask) task;
-        for (Task<? extends Serializable> listTask : cTask.getListTasks()) {
+        for (Task<?> listTask : cTask.getListTasks()) {
           if (!tasksVisited.contains(listTask)) {
             tasksToVisit.add(listTask);
           }
@@ -645,41 +739,38 @@ public class QueryPlan implements Serializable {
     try {
       return getJSONQuery(getQueryPlan());
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Unable to produce query plan JSON string", e);
       return e.toString();
     }
   }
 
   public String toThriftJSONString() throws IOException {
     org.apache.hadoop.hive.ql.plan.api.Query q = getQueryPlan();
-    TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
-    TJSONProtocol oprot = new TJSONProtocol(tmb);
     try {
+      TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
+      TJSONProtocol oprot = new TJSONProtocol(tmb);
       q.write(oprot);
+      return tmb.toString(StandardCharsets.UTF_8);
     } catch (TException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.warn("Unable to produce query plan Thrift string", e);
       return q.toString();
     }
-    return tmb.toString("UTF-8");
+
   }
 
   public String toBinaryString() throws IOException {
     org.apache.hadoop.hive.ql.plan.api.Query q = getQueryPlan();
-    TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
-    TBinaryProtocol oprot = new TBinaryProtocol(tmb);
     try {
+      TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
+      TBinaryProtocol oprot = new TBinaryProtocol(tmb);
       q.write(oprot);
+      byte[] buf = new byte[tmb.length()];
+      tmb.read(buf, 0, tmb.length());
+      return new String(buf);
     } catch (TException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.warn("Unable to produce query plan binary string", e);
       return q.toString();
     }
-    byte[] buf = new byte[tmb.length()];
-    tmb.read(buf, 0, tmb.length());
-    return new String(buf);
-    // return getQueryPlan().toString();
-
   }
 
   public void setStarted() {
@@ -698,11 +789,11 @@ public class QueryPlan implements Serializable {
     return done;
   }
 
-  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+  public List<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(List<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
@@ -718,7 +809,7 @@ public class QueryPlan implements Serializable {
     this.fetchTask = fetchTask;
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
@@ -726,7 +817,7 @@ public class QueryPlan implements Serializable {
     this.inputs = inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
@@ -738,11 +829,11 @@ public class QueryPlan implements Serializable {
     return resultSchema;
   }
 
-  public HashMap<String, String> getIdToTableNameMap() {
+  public Map<String, String> getIdToTableNameMap() {
     return idToTableNameMap;
   }
 
-  public void setIdToTableNameMap(HashMap<String, String> idToTableNameMap) {
+  public void setIdToTableNameMap(Map<String, String> idToTableNameMap) {
     this.idToTableNameMap = idToTableNameMap;
   }
 
@@ -870,4 +961,6 @@ public class QueryPlan implements Serializable {
   public String getCboInfo() {
     return cboInfo;
   }
+
+
 }

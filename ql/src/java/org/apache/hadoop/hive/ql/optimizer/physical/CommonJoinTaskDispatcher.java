@@ -45,10 +45,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
@@ -59,6 +58,8 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Convert tasks involving JOIN into MAPJOIN.
@@ -104,7 +105,9 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
  * MapredLocalTask. then make this new generated task depends on current task's parent task, and
  * make current task depends on this new generated task
  */
-public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher implements Dispatcher {
+public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher implements SemanticDispatcher {
+
+  protected final Logger LOG = LoggerFactory.getLogger(CommonJoinTaskDispatcher.class);
 
   HashMap<String, Long> aliasToSize = null;
 
@@ -197,7 +200,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       return;
     }
 
-    Task<? extends Serializable> childTask = mapJoinTask.getChildTasks().get(0);
+    Task<?> childTask = mapJoinTask.getChildTasks().get(0);
     if (!(childTask instanceof MapRedTask)) {
       // Nothing to do if it is not a MapReduce task.
       return;
@@ -225,14 +228,19 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
           " operator as the work associated with alias " + mapJoinAlias +
           ". Found a " + mapJoinAliasToWork.get(mapJoinAlias).getName() + " operator.");
     }
-    FileSinkOperator mapJoinTaskFileSinkOperator =
-        OperatorUtils.findSingleOperator(
-            mapJoinTaskTableScanOperator, FileSinkOperator.class);
-    if (mapJoinTaskFileSinkOperator == null) {
+
+    Set<FileSinkOperator> mapJoinTaskFileSinkOperators = 
+        OperatorUtils.findOperators(mapJoinTaskTableScanOperator, FileSinkOperator.class);
+    if (mapJoinTaskFileSinkOperators.isEmpty()) {
       throw new SemanticException("Cannot find the " + FileSinkOperator.getOperatorName() +
           " operator at the last operator of the MapJoin Task.");
     }
+    if (mapJoinTaskFileSinkOperators.size() > 1) {
+      LOG.warn("Multiple " + FileSinkOperator.getOperatorName() + " operators found at the last operator of the MapJoin Task.");
+      return;
+    }
     // The mapJoinTaskFileSinkOperator writes to a different directory
+    FileSinkOperator mapJoinTaskFileSinkOperator = mapJoinTaskFileSinkOperators.iterator().next();
     Path childMRPath = mapJoinTaskFileSinkOperator.getConf().getDirName();
     List<String> childMRAliases = childMapWork.getPathToAliases().get(childMRPath);
     if (childMRAliases == null || childMRAliases.size() != 1) {
@@ -241,7 +249,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     String childMRAlias = childMRAliases.get(0);
 
     // Sanity check to make sure there is no alias conflict after merge.
-    for (Entry<Path, ArrayList<String>> entry : childMapWork.getPathToAliases().entrySet()) {
+    for (Entry<Path, List<String>> entry : childMapWork.getPathToAliases().entrySet()) {
       Path path = entry.getKey();
       List<String> aliases = entry.getValue();
 
@@ -334,13 +342,13 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
 
     // Step 2.4: Remove this MapJoin task
-    List<Task<? extends Serializable>> parentTasks = mapJoinTask.getParentTasks();
+    List<Task<?>> parentTasks = mapJoinTask.getParentTasks();
     mapJoinTask.setParentTasks(null);
     mapJoinTask.setChildTasks(null);
     childMapRedTask.getParentTasks().remove(mapJoinTask);
     if (parentTasks != null) {
       childMapRedTask.getParentTasks().addAll(parentTasks);
-      for (Task<? extends Serializable> parentTask : parentTasks) {
+      for (Task<?> parentTask : parentTasks) {
         parentTask.getChildTasks().remove(mapJoinTask);
         if (!parentTask.getChildTasks().contains(childMapRedTask)) {
           parentTask.getChildTasks().add(childMapRedTask);
@@ -371,7 +379,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
   }
 
   @Override
-  public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
+  public Task<?> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
       throws SemanticException {
 
@@ -386,13 +394,13 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     // create conditional work list and task list
     List<Serializable> listWorks = new ArrayList<Serializable>();
-    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> listTasks = new ArrayList<Task<?>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
     // Must be deterministic order map for consistent q-test output across Java versions
-    HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
-    HashMap<Path, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
+    HashMap<Task<?>, Set<String>> taskToAliases =
+        new LinkedHashMap<Task<?>, Set<String>>();
+    Map<Path, List<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
     // start to generate multiple map join tasks

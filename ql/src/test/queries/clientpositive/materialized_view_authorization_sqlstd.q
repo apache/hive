@@ -1,8 +1,5 @@
+--! qt:authorizer
 set hive.vectorized.execution.enabled=false;
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
-set hive.security.authorization.enabled=true;
 set user.name=user1;
 
 create table amvs_table (a int, b varchar(256), c decimal(10,2));
@@ -55,3 +52,26 @@ drop materialized view amvs_mat_view2;
 
 set user.name=hive_admin_user;
 set role ADMIN;
+
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set user.name=user1;
+
+create database db1;
+create table db1.testmvtable(id int, name string) partitioned by(year int) stored as orc TBLPROPERTIES ('transactional'='true');
+insert into db1.testmvtable partition(year=2016) values(1,'Name1');
+
+create database db2;
+CREATE MATERIALIZED VIEW db2.testmv PARTITIONED ON(year) as select * from db1.testmvtable tmv where year >= 2018;
+
+-- grant all on table to user2
+grant all on table db1.testmvtable to user user2;
+set user.name=user2;
+explain select * from db1.testmvtable where year=2020;
+
+set user.name=user1;
+drop materialized view db2.testmv;
+drop table db1.testmvtable;
+drop database db1 cascade ;
+drop database db2 cascade;
+

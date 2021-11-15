@@ -45,8 +45,9 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils;
@@ -55,14 +56,13 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
  *
  */
-public class TestBeeLineWithArgs {
+  public class TestBeeLineWithArgs {
   private enum OutStream {
     ERR, OUT
   }
@@ -89,7 +89,7 @@ public class TestBeeLineWithArgs {
    */
   @BeforeClass
   public static void preTests() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = UtilsForTest.getHiveOnTezConfFromDir("../../data/conf/tez/");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
@@ -176,9 +176,9 @@ public class TestBeeLineWithArgs {
     }
     String[] args = argList.toArray(new String[argList.size()]);
     beeLine.begin(args, inputStream);
-    String output = os.toString("UTF8");
-
     beeLine.close();
+    beelineOutputStream.close();
+    String output = os.toString("UTF8");
     return output;
   }
 
@@ -769,7 +769,6 @@ public class TestBeeLineWithArgs {
    * Test Beeline could show the query progress for time-consuming query.
    * @throws Throwable
    */
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT =
@@ -797,7 +796,6 @@ public class TestBeeLineWithArgs {
    *
    * @throws Throwable
    */
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgressParallel() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
@@ -908,6 +906,8 @@ public class TestBeeLineWithArgs {
     // Set to non-zk lock manager to avoid trying to connect to zookeeper
     final String SCRIPT_TEXT = "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n"
         + "set hive.compute.query.using.stats=false;\n"
+        // Embedded BeeLine test does not work with tez engine, so reset it to mr - TODO: fix this in HIVE-25097
+        + "set hive.execution.engine=mr;"
         + "create table if not exists embeddedBeelineOutputs(d int);\n"
         + "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n"
         + "drop table embeddedBeelineOutputs;\n";
@@ -1069,6 +1069,27 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
   }
 
+  @Test
+  public void testBeelineWithSilentAndReport() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+        + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "2 rows selected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--silent=true");
+    argList.add("--report=true");
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testBeelineWithSilent() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+        + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "2 rows selected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--silent=true");
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, false);
+  }
+
   private static class Tuple<K> {
     final K pattern;
     final boolean shouldMatch;
@@ -1134,6 +1155,16 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
   }
 
+  @Test
+  public void testRowsAffected() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
+      + "insert into new_table values (1);\n";
+    final String EXPECTED_PATTERN = "1 row affected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR,
+        Collections.singletonList(new Tuple<>(EXPECTED_PATTERN, true)),
+        Arrays.asList(Modes.SCRIPT));
+  }
   /**
    * Test 'describe extended' on tables that have special white space characters in the row format.
    */

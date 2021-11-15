@@ -1,6 +1,5 @@
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 

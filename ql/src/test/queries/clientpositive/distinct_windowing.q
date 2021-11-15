@@ -17,23 +17,43 @@ create table over10k_n15(
 
 load data local inpath '../../data/files/over10k' into table over10k_n15;
 
-explain
-select distinct first_value(t) over ( partition by si order by i ) from over10k_n15 limit 10;
+ EXPLAIN
+  SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n15) sq
+ORDER BY fv
+   LIMIT 10;
 
-select distinct first_value(t) over ( partition by si order by i ) from over10k_n15 limit 10;
+  SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n15) sq
+ORDER BY fv
+   LIMIT 10;
 
-explain
-select distinct last_value(i) over ( partition by si order by i )
-from over10k_n15 limit 10;
+ EXPLAIN
+  SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n15) sq
+ORDER BY lv 
+   LIMIT 10;
 
-select distinct last_value(i) over ( partition by si order by i )
-from over10k_n15 limit 10;
+  SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n15) sq
+ORDER BY lv
+   LIMIT 10;
 
-explain
-select distinct last_value(i) over ( partition by si order by i ),
-                first_value(t)  over ( partition by si order by i )
-from over10k_n15 limit 50;
+ EXPLAIN
+  SELECT lv, fv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n15) sq
+ORDER BY lv, fv
+   LIMIT 50;
 
-select distinct last_value(i) over ( partition by si order by i ),
-                first_value(t)  over ( partition by si order by i )
-from over10k_n15 limit 50;
+  SELECT lv, fv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n15) sq 
+ORDER BY lv, fv
+   LIMIT 50;

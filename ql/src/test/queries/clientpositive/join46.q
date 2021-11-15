@@ -273,3 +273,19 @@ FULL OUTER JOIN (
       OR test2_n0.key between 100 and 102))
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2);
+
+CREATE TABLE table1 (a INT, b INT);
+INSERT INTO table1 VALUES (1, 2), (1, 2), (1, 2), (1, 2);
+
+EXPLAIN CBO
+SELECT sub1.r FROM
+    (
+        SELECT
+            RANK() OVER (ORDER BY t1.b desc) as r
+        FROM table1 t1
+                 JOIN table1 t2 ON t1.a = t2.b
+    ) sub1
+        LEFT OUTER JOIN table1 t3
+                        ON sub1.r = t3.a;
+
+DROP TABLE table1;

@@ -17,30 +17,24 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.misc.rename.AlterTableRenameDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
-import java.io.Serializable;
 import java.util.List;
 
 public class RenameTableHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
-
     AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
-    if (!context.isTableNameEmpty()) {
-      throw new SemanticException(
-          "RENAMES of tables are not supported for table-level replication");
-    }
     try {
       Table tableObjBefore = msg.getTableObjBefore();
       Table tableObjAfter = msg.getTableObjAfter();
@@ -60,19 +54,18 @@ public class RenameTableHandler extends AbstractMessageHandler {
         }
       }
 
-      String oldName = StatsUtils.getFullyQualifiedTableName(oldDbName, tableObjBefore.getTableName());
-      String newName = StatsUtils.getFullyQualifiedTableName(newDbName, tableObjAfter.getTableName());
+      TableName oldName = TableName.fromString(tableObjBefore.getTableName(), null, oldDbName);
+      TableName newName = TableName.fromString(tableObjAfter.getTableName(), null, newDbName);
       ReplicationSpec replicationSpec = context.eventOnlyReplicationSpec();
-      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObjAfter)) {
-        replicationSpec.setMigratingToTxnTable();
-      }
-      AlterTableDesc renameTableDesc = new AlterTableDesc(
-              oldName, newName, false, replicationSpec);
+
+      AlterTableRenameDesc renameTableDesc =
+          new AlterTableRenameDesc(oldName, replicationSpec, false, newName.getNotEmptyDbTable());
       renameTableDesc.setWriteId(msg.getWriteId());
-      Task<DDLWork> renameTableTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);
+      Task<DDLWork> renameTableTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet,
+              renameTableDesc, true, context.getDumpDirectory(),
+              context.getMetricCollector()), context.hiveConf);
       context.log.debug("Added rename table task : {}:{}->{}",
-                        renameTableTask.getId(), oldName, newName);
+                        renameTableTask.getId(), oldName.getNotEmptyDbTable(), newName.getNotEmptyDbTable());
 
       // oldDbName and newDbName *will* be the same if we're here
       updatedMetadata.set(context.dmd.getEventTo().toString(), newDbName,
@@ -81,8 +74,7 @@ public class RenameTableHandler extends AbstractMessageHandler {
       // Note : edge-case here in interaction with table-level REPL LOAD, where that nukes out
       // tablesUpdated. However, we explicitly don't support repl of that sort, and error out above
       // if so. If that should ever change, this will need reworking.
-      return ReplUtils.addOpenTxnTaskForMigration(oldDbName, tableObjBefore.getTableName(),
-              context.hiveConf, updatedMetadata, renameTableTask, tableObjAfter);
+      return ReplUtils.addChildTask(renameTableTask);
     } catch (Exception e) {
       throw (e instanceof SemanticException)
           ? (SemanticException) e

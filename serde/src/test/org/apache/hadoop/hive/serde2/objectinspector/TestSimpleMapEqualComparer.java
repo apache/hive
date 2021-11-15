@@ -26,15 +26,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestSimpleMapEqualComparer extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import org.junit.Test;
+
+/**
+ * SimpleMapEqualComparer Test.
+ */
+public class TestSimpleMapEqualComparer {
 
   public static class IntegerStringMapHolder {
     Map<Integer, String> mMap;
@@ -44,6 +49,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     }
   }
 
+  @Test
   public void testSameType() {
     // empty maps
     IntegerStringMapHolder o1 = new IntegerStringMapHolder();
@@ -88,6 +94,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     return serde.deserialize(t);
   }
 
+  @Test
   public void testCompatibleType() throws SerDeException, IOException {
     // empty maps
     TextStringMapHolder o1 = new TextStringMapHolder();
@@ -100,7 +107,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     tbl.setProperty(serdeConstants.LIST_COLUMNS, ObjectInspectorUtils.getFieldNames(oi1));
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi1));
     LazySerDeParameters serdeParams = new LazySerDeParameters(conf, tbl, LazySimpleSerDe.class.getName());
-    SerDeUtils.initializeSerDe(serde, conf, tbl, null);
+    serde.initialize(conf, tbl, null);
     ObjectInspector oi2 = serde.getObjectInspector();
 
     Object o2 = serializeAndDeserialize(o1, oi1, serde, serdeParams);
@@ -141,6 +148,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     return serde.deserialize(t);
   }
 
+  @Test
   public void testIncompatibleType() throws SerDeException, IOException {
     // empty maps
     StringTextMapHolder o1 = new StringTextMapHolder();
@@ -153,7 +161,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     tbl.setProperty(serdeConstants.LIST_COLUMNS, ObjectInspectorUtils.getFieldNames(oi1));
     tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi1));
     LazySerDeParameters serdeParams = new LazySerDeParameters(conf, tbl, LazySimpleSerDe.class.getName());
-    SerDeUtils.initializeSerDe(serde, conf, tbl, null);
+    serde.initialize(conf, tbl, null);
     ObjectInspector oi2 = serde.getObjectInspector();
 
     Object o2 = serializeAndDeserialize(o1, oi1, serde, serdeParams);

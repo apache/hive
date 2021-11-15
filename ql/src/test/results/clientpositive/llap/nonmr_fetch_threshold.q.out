@@ -13,10 +13,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_3]
-      Number of rows:10
-      Select Operator [SEL_2]
-        Output:["_col0","_col1","_col2","_col3"]
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2","_col3"]
+      Limit [LIM_3]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key","value"]
 
@@ -33,10 +33,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_2]
-      Number of rows:10
-      Select Operator [SEL_1]
-        Output:["_col0","_col1"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      Limit [LIM_2]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key","value"]
 
@@ -55,10 +55,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_3]
-      Number of rows:10
-      Select Operator [SEL_2]
-        Output:["_col0","_col1","_col2","_col3"]
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2","_col3"]
+      Limit [LIM_3]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key","value"]
 
@@ -75,10 +75,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_2]
-      Number of rows:10
-      Select Operator [SEL_1]
-        Output:["_col0","_col1"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      Limit [LIM_2]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key","value"]
 
@@ -115,10 +115,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_3]
-      Number of rows:10
-      Select Operator [SEL_2]
-        Output:["_col0","_col1","_col2","_col3"]
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2","_col3"]
+      Limit [LIM_3]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key","value"]
 
@@ -135,10 +135,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_2]
-      Number of rows:10
-      Select Operator [SEL_1]
-        Output:["_col0","_col1"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      Limit [LIM_2]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key","value"]
 

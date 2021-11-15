@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -73,6 +74,7 @@ public class TestHiveProtoLoggingHook {
   public void setup() throws Exception {
     conf = new HiveConf();
     conf.set(HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, "llap_queue");
+    conf.set(HiveConf.ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.varname, "3");
     conf.set(MRJobConfig.QUEUE_NAME, "mr_queue");
     conf.set(TezConfiguration.TEZ_QUEUE_NAME, "tez_queue");
     tmpFolder = folder.newFolder().getAbsolutePath();
@@ -82,6 +84,7 @@ public class TestHiveProtoLoggingHook {
     QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {};
     queryPlan.setQueryId("test_queryId");
     queryPlan.setQueryStartTime(1234L);
+    queryPlan.setQueryString("SELECT * FROM t WHERE i > 10");
     queryPlan.setRootTasks(new ArrayList<>());
     queryPlan.setInputs(new HashSet<>());
     queryPlan.setOutputs(new HashSet<>());
@@ -164,6 +167,26 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals(event.getQueue(), "llap_queue");
   }
 
+  @org.junit.Ignore("might fail intermittently")
+  @Test
+  public void testDropsEventWhenQueueIsFull() throws Exception {
+    EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
+    context.setHookType(HookType.PRE_EXEC_HOOK);
+    evtLogger.handle(context);
+    evtLogger.handle(context);
+    evtLogger.handle(context);
+    evtLogger.handle(context);
+    evtLogger.shutdown();
+    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    reader.readEvent();
+    reader.readEvent();
+    reader.readEvent();
+    try {
+      reader.readEvent();
+      Assert.fail("Expected 3 events due to queue capacity limit, got 4.");
+    } catch (EOFException expected) {}
+  }
+
   @Test
   public void testPreAndPostEventBoth() throws Exception {
     context.setHookType(HookType.PRE_EXEC_HOOK);
@@ -186,8 +209,8 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testPostEventLog() throws Exception {
     context.setHookType(HookType.POST_EXEC_HOOK);
-    context.getPerfLogger().PerfLogBegin("test", "LogTest");
-    context.getPerfLogger().PerfLogEnd("test", "LogTest");
+    context.getPerfLogger().perfLogBegin("test", "LogTest");
+    context.getPerfLogger().perfLogEnd("test", "LogTest");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);
@@ -211,6 +234,7 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testFailureEventLog() throws Exception {
     context.setHookType(HookType.ON_FAILURE_HOOK);
+    context.setErrorMessage("test_errormessage");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);
@@ -224,6 +248,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals("test_op_id", event.getOperationId());
 
     assertOtherInfo(event, OtherInfoType.STATUS, Boolean.FALSE.toString());
+    assertOtherInfo(event, OtherInfoType.ERROR_MESSAGE, "test_errormessage");
     assertOtherInfo(event, OtherInfoType.PERF, null);
   }
 
@@ -261,7 +286,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals(2, statusLen);
   }
 
-  private ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
+  public static ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
       throws IOException {
     Path path = new Path(tmpFolder);
     FileSystem fs = path.getFileSystem(conf);

@@ -22,7 +22,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -44,7 +44,7 @@ public abstract class PrunerExpressionOperatorFactory {
    * expr is a candidate else it is not a candidate but its children could be
    * final candidates.
    */
-  public static class GenericFuncExprProcessor implements NodeProcessor {
+  public static class GenericFuncExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -108,7 +108,7 @@ public abstract class PrunerExpressionOperatorFactory {
    * FieldExprProcessor.
    *
    */
-  public static class FieldExprProcessor implements NodeProcessor {
+  public static class FieldExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -145,7 +145,7 @@ public abstract class PrunerExpressionOperatorFactory {
   /**
    * Processor for column expressions.
    */
-  public static abstract class ColumnExprProcessor implements NodeProcessor {
+  public static abstract class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -166,7 +166,7 @@ public abstract class PrunerExpressionOperatorFactory {
      * @return
      */
     protected abstract ExprNodeDesc processColumnDesc(NodeProcessorCtx procCtx,
-        ExprNodeColumnDesc cd);
+                                                      ExprNodeColumnDesc cd);
 
   }
 
@@ -174,7 +174,7 @@ public abstract class PrunerExpressionOperatorFactory {
    * Processor for constants and null expressions. For such expressions the
    * processor simply clones the exprNodeDesc and returns it.
    */
-  public static class DefaultExprProcessor implements NodeProcessor {
+  public static class DefaultExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -191,7 +191,7 @@ public abstract class PrunerExpressionOperatorFactory {
    * Instantiate default expression processor.
    * @return
    */
-  public static final NodeProcessor getDefaultExprProcessor() {
+  public static final SemanticNodeProcessor getDefaultExprProcessor() {
     return new DefaultExprProcessor();
   }
 
@@ -200,7 +200,7 @@ public abstract class PrunerExpressionOperatorFactory {
    *
    * @return
    */
-  public static final NodeProcessor getGenericFuncProcessor() {
+  public static final SemanticNodeProcessor getGenericFuncProcessor() {
     return new GenericFuncExprProcessor();
   }
 
@@ -209,7 +209,7 @@ public abstract class PrunerExpressionOperatorFactory {
    *
    * @return
    */
-  public static final NodeProcessor getFieldProcessor() {
+  public static final SemanticNodeProcessor getFieldProcessor() {
     return new FieldExprProcessor();
   }
 

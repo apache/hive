@@ -23,7 +23,7 @@ describe extended alter5_n1 partition (dt='a');
 -- Cleanup
 DROP TABLE alter5_src;
 DROP TABLE alter5_n1;
-SHOW TABLES LIKE "alter*";
+SHOW TABLES LIKE "alter%";
 
 -- With non-default Database
 

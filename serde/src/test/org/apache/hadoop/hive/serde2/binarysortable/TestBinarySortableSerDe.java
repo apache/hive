@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -34,13 +34,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestBinarySortableSerDe.
  *
  */
-public class TestBinarySortableSerDe extends TestCase {
+public class TestBinarySortableSerDe {
 
   private static final String DECIMAL_CHARS = "0123456789";
 
@@ -71,7 +74,7 @@ public class TestBinarySortableSerDe extends TestCase {
     schema.setProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER, nullOrder);
 
     BinarySortableSerDe serde = new BinarySortableSerDe();
-    SerDeUtils.initializeSerDe(serde, new Configuration(), schema, null);
+    serde.initialize(new Configuration(), schema, null);
     return serde;
   }
 
@@ -135,6 +138,7 @@ public class TestBinarySortableSerDe extends TestCase {
     }
   }
 
+  @Test
   public void testBinarySortableSerDe() throws Throwable {
     try {
 

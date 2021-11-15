@@ -1,0 +1,1221 @@
+PREHOOK: query: create table if not exists emp_n2 (
+  lastname string,
+  deptid int,
+  locid int
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp_n2
+POSTHOOK: query: create table if not exists emp_n2 (
+  lastname string,
+  deptid int,
+  locid int
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp_n2
+PREHOOK: query: create table if not exists dept_n1 (
+  deptid int,
+  deptname string
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dept_n1
+POSTHOOK: query: create table if not exists dept_n1 (
+  deptid int,
+  deptname string
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dept_n1
+PREHOOK: query: create table if not exists loc (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc
+POSTHOOK: query: create table if not exists loc (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_n2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@emp_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_n2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@emp_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_n1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dept_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_n1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dept_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@loc
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@loc
+PREHOOK: query: analyze table emp_n2 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emp_n2
+PREHOOK: Output: default@emp_n2
+POSTHOOK: query: analyze table emp_n2 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emp_n2
+POSTHOOK: Output: default@emp_n2
+PREHOOK: query: analyze table dept_n1 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Output: default@dept_n1
+POSTHOOK: query: analyze table dept_n1 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Output: default@dept_n1
+PREHOOK: query: analyze table loc compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc
+PREHOOK: Output: default@loc
+POSTHOOK: query: analyze table loc compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc
+POSTHOOK: Output: default@loc
+PREHOOK: query: analyze table emp_n2 compute statistics for columns lastname,deptid,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@emp_n2
+PREHOOK: Output: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table emp_n2 compute statistics for columns lastname,deptid,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@emp_n2
+POSTHOOK: Output: default@emp_n2
+#### A masked pattern was here ####
+PREHOOK: query: analyze table dept_n1 compute statistics for columns deptname,deptid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@dept_n1
+PREHOOK: Output: default@dept_n1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table dept_n1 compute statistics for columns deptname,deptid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Output: default@dept_n1
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc compute statistics for columns state,locid,zip,year
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc
+PREHOOK: Output: default@loc
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc compute statistics for columns state,locid,zip,year
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc
+POSTHOOK: Output: default@loc
+#### A masked pattern was here ####
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: deptid is not null (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptid is not null (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: deptid is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptid is not null (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emp_n2
+                  filterExpr: (deptid is not null and lastname is not null) (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dept_n1
+                  filterExpr: (deptid is not null and deptname is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: (deptid is not null and lastname is not null) (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: (deptid is not null and deptname is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emp_n2
+                  filterExpr: (deptid is not null and lastname is not null) (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dept_n1
+                  filterExpr: (deptid is not null and deptname is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid) join emp_n2 e1 on (e.deptid = e1.deptid)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid) join emp_n2 e1 on (e.deptid = e1.deptid)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: deptid is not null (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptid is not null (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: int)
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: deptid is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptid is not null (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 768 Data size: 225024 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 768 Data size: 225024 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+PREHOOK: Input: default@loc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+POSTHOOK: Input: default@loc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: deptid is not null (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptid is not null (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: deptid is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptid is not null (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: l
+                  filterExpr: locid is not null (type: boolean)
+                  Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: locid is not null (type: boolean)
+                    Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: bigint), _col3 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 64 Data size: 18944 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 64 Data size: 18944 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+PREHOOK: Input: default@loc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+POSTHOOK: Input: default@loc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: (deptid is not null and lastname is not null) (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: (deptid is not null and deptname is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: l
+                  filterExpr: (locid is not null and state is not null) (type: boolean)
+                  Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (locid is not null and state is not null) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint), _col3 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int)
+                  null sort order: zz
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col0 (type: string), _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 64 Data size: 18944 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 64 Data size: 18944 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 left outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 left outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emp_n2
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dept_n1
+                  filterExpr: (deptid is not null and deptname is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptid (type: int), deptname (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 left semi join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 left semi join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emp_n2
+                  filterExpr: (deptid is not null and lastname is not null) (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dept_n1
+                  filterExpr: (deptid is not null and deptname is not null) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and deptname is not null) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptname (type: string), deptid (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string), _col1 (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: int)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                          Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col0 (type: string), _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 right outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 right outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emp_n2
+                  filterExpr: (deptid is not null and lastname is not null) (type: boolean)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (deptid is not null and lastname is not null) (type: boolean)
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dept_n1
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: deptid (type: int), deptname (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from emp_n2 full outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_n1
+PREHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from emp_n2 full outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Input: default@emp_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emp_n2
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dept_n1
+                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: deptid (type: int), deptname (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Full Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 54 Data size: 10476 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 54 Data size: 10476 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

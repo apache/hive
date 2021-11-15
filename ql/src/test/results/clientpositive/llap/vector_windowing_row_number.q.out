@@ -1,0 +1,1417 @@
+PREHOOK: query: drop table row_number_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table row_number_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table row_number_test as select (posexplode(split(repeat("w,", 2400), ","))) as (pos, col)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@row_number_test
+POSTHOOK: query: create table row_number_test as select (posexplode(split(repeat("w,", 2400), ","))) as (pos, col)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@row_number_test
+POSTHOOK: Lineage: row_number_test.col SCRIPT []
+POSTHOOK: Lineage: row_number_test.pos SCRIPT []
+pos	col
+PREHOOK: query: insert into row_number_test select (posexplode(split(repeat("x,", 1200), ","))) as (pos, col)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@row_number_test
+POSTHOOK: query: insert into row_number_test select (posexplode(split(repeat("x,", 1200), ","))) as (pos, col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@row_number_test
+POSTHOOK: Lineage: row_number_test.col SCRIPT []
+POSTHOOK: Lineage: row_number_test.pos SCRIPT []
+pos	col
+PREHOOK: query: insert into row_number_test select (posexplode(split(repeat("y,", 700), ","))) as (pos, col)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@row_number_test
+POSTHOOK: query: insert into row_number_test select (posexplode(split(repeat("y,", 700), ","))) as (pos, col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@row_number_test
+POSTHOOK: Lineage: row_number_test.col SCRIPT []
+POSTHOOK: Lineage: row_number_test.pos SCRIPT []
+pos	col
+PREHOOK: query: insert into row_number_test select (posexplode(split(repeat("z,", 600), ","))) as (pos, col)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@row_number_test
+POSTHOOK: query: insert into row_number_test select (posexplode(split(repeat("z,", 600), ","))) as (pos, col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@row_number_test
+POSTHOOK: Lineage: row_number_test.col SCRIPT []
+POSTHOOK: Lineage: row_number_test.pos SCRIPT []
+pos	col
+PREHOOK: query: explain vectorization detail select
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10 -- cast both
+        from row_number_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@row_number_test
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10 -- cast both
+        from row_number_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@row_number_test
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: row_number_test
+                  Statistics: Num rows: 4904 Data size: 19616 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:pos:int, 1:col:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Reduce Output Operator
+                    key expressions: CAST( pos AS STRING) (type: string)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: CAST( pos AS STRING) (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkStringOperator
+                        keyColumns: 4:string
+                        keyExpressions: CastLongToString(col 0:int) -> 4:string
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: 0:int
+                    Statistics: Num rows: 4904 Data size: 19616 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: pos (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: pos:int, col:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [string]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, string, string, bigint, string, bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1]
+                Statistics: Num rows: 4904 Data size: 19616 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col0 AS STRING) ASC NULLS FIRST
+                        partition by: CAST( _col0 AS STRING)
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRowNumber]
+                      functionInputExpressions: [null]
+                      functionNames: [row_number]
+                      keyInputColumns: []
+                      native: true
+                      nonKeyInputColumns: [1]
+                      orderExpressions: [CastLongToString(col 1:int) -> 4:string]
+                      outputColumns: [2, 1]
+                      outputTypes: [int, int]
+                      partitionExpressions: [CastLongToString(col 1:int) -> 3:string]
+                      streamingColumns: [2]
+                  Statistics: Num rows: 4904 Data size: 19616 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_0 (type: int), _col0 (type: int)
+                    outputColumnNames: row_number_window_0, _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2, 1]
+                    Statistics: Num rows: 4904 Data size: 19616 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 0 (type: int), CAST( _col0 AS STRING) (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 0 (type: int)
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 5:int, 6:string
+                          keyExpressions: ConstantVectorExpression(val 0) -> 5:int, CastLongToString(col 1:int) -> 6:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          partitionColumns: 7:int
+                          valueColumns: 2:int, 1:int
+                      Statistics: Num rows: 4904 Data size: 19616 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_0 (type: int), _col0 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:string, VALUE._col0:int, VALUE._col1:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, string, string]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [2, 3]
+                Statistics: Num rows: 4904 Data size: 39232 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col1 AS STRING) ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_1
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRowNumber]
+                      functionInputExpressions: [null]
+                      functionNames: [row_number]
+                      keyInputColumns: []
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [CastLongToString(col 3:int) -> 6:string]
+                      outputColumns: [4, 2, 3]
+                      outputTypes: [int, int, int]
+                      partitionExpressions: [ConstantVectorExpression(val 0) -> 5:int]
+                      streamingColumns: [4]
+                  Statistics: Num rows: 4904 Data size: 39232 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_1 (type: int), _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: row_number_window_1, _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4, 2, 3]
+                    Statistics: Num rows: 4904 Data size: 39232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: CAST( _col1 AS STRING) (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: CAST( _col1 AS STRING) (type: string)
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkStringOperator
+                          keyColumns: 7:string
+                          keyExpressions: CastLongToString(col 3:int) -> 7:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 4:int, 2:int, 3:int
+                      Statistics: Num rows: 4904 Data size: 39232 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_1 (type: int), _col0 (type: int), _col1 (type: int)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:int, VALUE._col1:int, VALUE._col2:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, string, string]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 2, 3]
+                Statistics: Num rows: 4904 Data size: 58848 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col2 AS STRING) ASC NULLS LAST
+                        partition by: CAST( _col2 AS STRING)
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_2
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRowNumber]
+                      functionInputExpressions: [null]
+                      functionNames: [row_number]
+                      keyInputColumns: []
+                      native: true
+                      nonKeyInputColumns: [1, 2, 3]
+                      orderExpressions: [CastLongToString(col 3:int) -> 6:string]
+                      outputColumns: [4, 1, 2, 3]
+                      outputTypes: [int, int, int, int]
+                      partitionExpressions: [CastLongToString(col 3:int) -> 5:string]
+                      streamingColumns: [4]
+                  Statistics: Num rows: 4904 Data size: 58848 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col1 (type: int), _col0 (type: int), row_number_window_2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2, 1, 4]
+                    Statistics: Num rows: 4904 Data size: 58848 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 4904 Data size: 58848 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select
+        row_number() over() as r1,
+        row_number() over(order by col) r2,
+        row_number() over(partition by col) r3,
+        row_number() over(partition by col order by col) r4,
+        row_number() over(partition by 1 order by col) r5,
+        row_number() over(partition by col order by 2) r6,
+        row_number() over(partition by 1 order by 2) r7,
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+        col
+        from row_number_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@row_number_test
+#### A masked pattern was here ####
+POSTHOOK: query: explain select
+        row_number() over() as r1,
+        row_number() over(order by col) r2,
+        row_number() over(partition by col) r3,
+        row_number() over(partition by col order by col) r4,
+        row_number() over(partition by 1 order by col) r5,
+        row_number() over(partition by col order by 2) r6,
+        row_number() over(partition by 1 order by 2) r7,
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+        col
+        from row_number_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@row_number_test
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
+        Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+        Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: row_number_test
+                  Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: 0 (type: int)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: 0 (type: int)
+                    Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: pos (type: int), col (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 10 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: int), VALUE._col9 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: int, _col8: int, _col9: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col8 AS STRING) ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_8
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_8 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: string)
+                    outputColumnNames: row_number_window_8, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: CAST( _col8 AS STRING) (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: CAST( _col8 AS STRING) (type: string)
+                      Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_8 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: string)
+        Reducer 11 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: int), VALUE._col9 (type: int), VALUE._col10 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: int, _col8: int, _col9: int, _col10: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col9 AS STRING) ASC NULLS LAST
+                        partition by: CAST( _col9 AS STRING)
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_9
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col8 (type: int), _col7 (type: int), _col6 (type: int), _col5 (type: int), _col4 (type: int), _col3 (type: int), _col2 (type: int), _col1 (type: int), _col0 (type: int), row_number_window_9 (type: int), _col10 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 0 ASC NULLS FIRST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_0 (type: int), _col0 (type: int), _col1 (type: string)
+                    outputColumnNames: row_number_window_0, _col0, _col1
+                    Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 0 (type: int), _col1 (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 0 (type: int)
+                      Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_0 (type: int), _col0 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_1
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_1 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: row_number_window_1, _col0, _col1, _col2
+                    Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_1 (type: int), _col0 (type: int), _col1 (type: int)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col3 ASC NULLS FIRST
+                        partition by: _col3
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_2
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_2 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: string)
+                    outputColumnNames: row_number_window_2, _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col3 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col3 (type: string)
+                      Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_2 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col4 ASC NULLS LAST
+                        partition by: _col4
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_3
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_3 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: string)
+                    outputColumnNames: row_number_window_3, _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 1 (type: int), _col4 (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 1 (type: int)
+                      Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_3 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS LAST
+                        partition by: 1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_4
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_4 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                    outputColumnNames: row_number_window_4, _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col5 (type: string), 2 (type: int)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: _col5 (type: string)
+                      Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_4 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int)
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 2 ASC NULLS LAST
+                        partition by: _col6
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_5
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_5 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                    outputColumnNames: row_number_window_5, _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 1 (type: int), 2 (type: int)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 1 (type: int)
+                      Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_5 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+        Reducer 8 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 2 ASC NULLS LAST
+                        partition by: 1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_6
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_6 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string)
+                    outputColumnNames: row_number_window_6, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: CAST( _col6 AS STRING) (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: CAST( _col6 AS STRING) (type: string)
+                      Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_6 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string)
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: int, _col8: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col7 AS STRING) ASC NULLS FIRST
+                        partition by: CAST( _col7 AS STRING)
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_7
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_7 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: string)
+                    outputColumnNames: row_number_window_7, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 0 (type: int), CAST( _col7 AS STRING) (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 0 (type: int)
+                      Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_7 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table row_numbers_vectorized as select
+row_number() over() as r1,
+row_number() over(order by col) r2,
+row_number() over(partition by col) r3,
+row_number() over(partition by col order by col) r4,
+row_number() over(partition by 1 order by col) r5,
+row_number() over(partition by col order by 2) r6,
+row_number() over(partition by 1 order by 2) r7,
+row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+col
+from row_number_test
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@row_number_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@row_numbers_vectorized
+POSTHOOK: query: create table row_numbers_vectorized as select
+row_number() over() as r1,
+row_number() over(order by col) r2,
+row_number() over(partition by col) r3,
+row_number() over(partition by col order by col) r4,
+row_number() over(partition by 1 order by col) r5,
+row_number() over(partition by col order by 2) r6,
+row_number() over(partition by 1 order by 2) r7,
+row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+col
+from row_number_test
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@row_number_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@row_numbers_vectorized
+POSTHOOK: Lineage: row_numbers_vectorized.col SIMPLE [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r1 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r10 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r2 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r3 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r4 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r5 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r6 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r7 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r8 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r9 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+r1	r2	r3	r4	r5	r6	r7	r8	r9	r10	col
+PREHOOK: query: explain select
+        row_number() over() as r1,
+        row_number() over(order by col) r2,
+        row_number() over(partition by col) r3,
+        row_number() over(partition by col order by col) r4,
+        row_number() over(partition by 1 order by col) r5,
+        row_number() over(partition by col order by 2) r6,
+        row_number() over(partition by 1 order by 2) r7,
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string in partition
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+        col
+        from row_number_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@row_number_test
+#### A masked pattern was here ####
+POSTHOOK: query: explain select
+        row_number() over() as r1,
+        row_number() over(order by col) r2,
+        row_number() over(partition by col) r3,
+        row_number() over(partition by col order by col) r4,
+        row_number() over(partition by 1 order by col) r5,
+        row_number() over(partition by col order by 2) r6,
+        row_number() over(partition by 1 order by 2) r7,
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string in partition
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+        col
+        from row_number_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@row_number_test
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
+        Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+        Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: row_number_test
+                  Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: 0 (type: int)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: 0 (type: int)
+                    Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: pos (type: int), col (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 10 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: int), VALUE._col9 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: int, _col8: int, _col9: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col8 AS STRING) ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_8
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_8 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: string)
+                    outputColumnNames: row_number_window_8, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: CAST( _col8 AS STRING) (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: CAST( _col8 AS STRING) (type: string)
+                      Statistics: Num rows: 4904 Data size: 593384 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_8 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: string)
+        Reducer 11 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: int), VALUE._col9 (type: int), VALUE._col10 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: int, _col8: int, _col9: int, _col10: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col9 AS STRING) ASC NULLS LAST
+                        partition by: CAST( _col9 AS STRING)
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_9
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col8 (type: int), _col7 (type: int), _col6 (type: int), _col5 (type: int), _col4 (type: int), _col3 (type: int), _col2 (type: int), _col1 (type: int), _col0 (type: int), row_number_window_9 (type: int), _col10 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4904 Data size: 613000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 0 ASC NULLS FIRST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_0 (type: int), _col0 (type: int), _col1 (type: string)
+                    outputColumnNames: row_number_window_0, _col0, _col1
+                    Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 0 (type: int), _col1 (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 0 (type: int)
+                      Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_0 (type: int), _col0 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_1
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_1 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: row_number_window_1, _col0, _col1, _col2
+                    Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_1 (type: int), _col0 (type: int), _col1 (type: int)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col3 ASC NULLS FIRST
+                        partition by: _col3
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_2
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_2 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: string)
+                    outputColumnNames: row_number_window_2, _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col3 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col3 (type: string)
+                      Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_2 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int)
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col4 ASC NULLS LAST
+                        partition by: _col4
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_3
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_3 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: string)
+                    outputColumnNames: row_number_window_3, _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 1 (type: int), _col4 (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 1 (type: int)
+                      Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_3 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS LAST
+                        partition by: 1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_4
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_4 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                    outputColumnNames: row_number_window_4, _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col5 (type: string), 2 (type: int)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: _col5 (type: string)
+                      Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_4 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int)
+        Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 2 ASC NULLS LAST
+                        partition by: _col6
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_5
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_5 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                    outputColumnNames: row_number_window_5, _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 1 (type: int), 2 (type: int)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 1 (type: int)
+                      Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_5 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+        Reducer 8 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 2 ASC NULLS LAST
+                        partition by: 1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_6
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_6 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string)
+                    outputColumnNames: row_number_window_6, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: CAST( _col6 AS STRING) (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: CAST( _col6 AS STRING) (type: string)
+                      Statistics: Num rows: 4904 Data size: 554152 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_6 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string)
+        Reducer 9 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: int, _col2: int, _col3: int, _col4: int, _col5: int, _col6: int, _col7: int, _col8: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: CAST( _col7 AS STRING) ASC NULLS FIRST
+                        partition by: CAST( _col7 AS STRING)
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_7
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: row_number_window_7 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: string)
+                    outputColumnNames: row_number_window_7, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 0 (type: int), CAST( _col7 AS STRING) (type: string)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: 0 (type: int)
+                      Statistics: Num rows: 4904 Data size: 573768 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: row_number_window_7 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table row_numbers_non_vectorized as select
+row_number() over() as r1,
+row_number() over(order by col) r2,
+row_number() over(partition by col) r3,
+row_number() over(partition by col order by col) r4,
+row_number() over(partition by 1 order by col) r5,
+row_number() over(partition by col order by 2) r6,
+row_number() over(partition by 1 order by 2) r7,
+row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+col
+from row_number_test
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@row_number_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@row_numbers_non_vectorized
+POSTHOOK: query: create table row_numbers_non_vectorized as select
+row_number() over() as r1,
+row_number() over(order by col) r2,
+row_number() over(partition by col) r3,
+row_number() over(partition by col order by col) r4,
+row_number() over(partition by 1 order by col) r5,
+row_number() over(partition by col order by 2) r6,
+row_number() over(partition by 1 order by 2) r7,
+row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
+col
+from row_number_test
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@row_number_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@row_numbers_non_vectorized
+POSTHOOK: Lineage: row_numbers_non_vectorized.col SIMPLE [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r1 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r10 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r2 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r3 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r4 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r5 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r6 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r7 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r8 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r9 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+r1	r2	r3	r4	r5	r6	r7	r8	r9	r10	col
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select exists(
+select r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, col from row_numbers_vectorized
+minus
+select r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, col from row_numbers_non_vectorized
+) diff_exists
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@row_numbers_non_vectorized
+PREHOOK: Input: default@row_numbers_vectorized
+#### A masked pattern was here ####
+POSTHOOK: query: select exists(
+select r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, col from row_numbers_vectorized
+minus
+select r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, col from row_numbers_non_vectorized
+) diff_exists
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@row_numbers_non_vectorized
+POSTHOOK: Input: default@row_numbers_vectorized
+#### A masked pattern was here ####
+diff_exists
+false
+PREHOOK: query: drop table row_numbers_non_vectorized
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@row_numbers_non_vectorized
+PREHOOK: Output: default@row_numbers_non_vectorized
+POSTHOOK: query: drop table row_numbers_non_vectorized
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@row_numbers_non_vectorized
+POSTHOOK: Output: default@row_numbers_non_vectorized
+PREHOOK: query: drop table row_numbers_vectorized
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@row_numbers_vectorized
+PREHOOK: Output: default@row_numbers_vectorized
+POSTHOOK: query: drop table row_numbers_vectorized
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@row_numbers_vectorized
+POSTHOOK: Output: default@row_numbers_vectorized
+PREHOOK: query: drop table row_number_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@row_number_test
+PREHOOK: Output: default@row_number_test
+POSTHOOK: query: drop table row_number_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@row_number_test
+POSTHOOK: Output: default@row_number_test

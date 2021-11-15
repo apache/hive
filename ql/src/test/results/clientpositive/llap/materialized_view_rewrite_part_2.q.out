@@ -110,28 +110,52 @@ POSTHOOK: Lineage: locations_n00.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n00.name SCRIPT []
 PREHOOK: query: alter table emps_n00 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n00
+PREHOOK: Output: default@emps_n00
 POSTHOOK: query: alter table emps_n00 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Output: default@emps_n00
 PREHOOK: query: alter table depts_n00 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n00
+PREHOOK: Output: default@depts_n00
 POSTHOOK: query: alter table depts_n00 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Output: default@depts_n00
 PREHOOK: query: alter table dependents_n00 add constraint pk3 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@dependents_n00
+PREHOOK: Output: default@dependents_n00
 POSTHOOK: query: alter table dependents_n00 add constraint pk3 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@dependents_n00
+POSTHOOK: Output: default@dependents_n00
 PREHOOK: query: alter table locations_n00 add constraint pk4 primary key (locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@locations_n00
+PREHOOK: Output: default@locations_n00
 POSTHOOK: query: alter table locations_n00 add constraint pk4 primary key (locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@locations_n00
+POSTHOOK: Output: default@locations_n00
 PREHOOK: query: alter table emps_n00 add constraint fk1 foreign key (deptno) references depts_n00(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n00
+PREHOOK: Output: default@emps_n00
 POSTHOOK: query: alter table emps_n00 add constraint fk1 foreign key (deptno) references depts_n00(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Output: default@emps_n00
 PREHOOK: query: alter table depts_n00 add constraint fk2 foreign key (locationid) references locations_n00(locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n00
+PREHOOK: Output: default@depts_n00
 POSTHOOK: query: alter table depts_n00 add constraint fk2 foreign key (locationid) references locations_n00(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Output: default@depts_n00
 PREHOOK: query: create materialized view mv1_part_n0 partitioned on (deptno) as
 select empid, depts_n00.deptno as deptno from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno > 10
@@ -151,7 +175,9 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n00
@@ -235,7 +261,9 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n00
@@ -319,7 +347,9 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n00
@@ -402,9 +432,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=10).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
@@ -499,8 +531,10 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=10).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
@@ -534,11 +568,43 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: depts_n00
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: deptno (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: deptno (int)
+                          Target Input: default.mv1_part_n0
+                          Partition key expr: deptno
+                          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 3
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n0
@@ -551,73 +617,29 @@ STAGE PLANS:
                       expressions: deptno (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: depts_n00
-                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: deptno (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.6
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                        Dynamic Partitioning Event Operator
-                          Target column: deptno (int)
-                          Target Input: default.mv1_part_n0
-                          Partition key expr: deptno
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                          Target Vertex: Map 1
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: may be used (ACID table)
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col1
-                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  keys: _col1 (type: int)
-                  minReductionHashAggr: 0.0
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 3 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -689,8 +711,13 @@ POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
+POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno2=20
 POSTHOOK: Output: default@mv1_part_n0@deptno2=30
+POSTHOOK: Lineage: mv1_part_n0.deptno SIMPLE [(emps_n00)emps_n00.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n0.name SIMPLE [(depts_n00)depts_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n0.name2 SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=20).deptno SIMPLE [(emps_n00)emps_n00.FieldSchema(name:deptno, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=20).empid SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=20).name SIMPLE [(depts_n00)depts_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
@@ -745,7 +772,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n0
-                  filterExpr: ((name = name2) and (deptno = deptno2)) (type: boolean)
+                  filterExpr: ((deptno = deptno2) and (name = name2)) (type: boolean)
                   Statistics: Num rows: 8 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno = deptno2) and (name = name2)) (type: boolean)
@@ -756,12 +783,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 390 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

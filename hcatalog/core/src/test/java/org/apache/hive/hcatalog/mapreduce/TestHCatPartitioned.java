@@ -358,11 +358,7 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
   private void hiveReadTest() throws Exception {
 
     String query = "select * from " + tableName;
-    int retCode = driver.run(query).getResponseCode();
-
-    if (retCode != 0) {
-      throw new Exception("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);

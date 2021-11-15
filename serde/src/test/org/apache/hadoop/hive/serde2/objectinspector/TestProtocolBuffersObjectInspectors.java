@@ -21,19 +21,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.proto.test.Complexpb.Complex;
 import org.apache.hadoop.hive.serde2.proto.test.Complexpb.IntString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 /**
  * TestProtocolBuffersObjectInspectors.
  *
  */
-public class TestProtocolBuffersObjectInspectors extends TestCase {
+public class TestProtocolBuffersObjectInspectors {
 
+  @Test
   public void testProtocolBuffersObjectInspectors() throws Throwable {
 
     try {

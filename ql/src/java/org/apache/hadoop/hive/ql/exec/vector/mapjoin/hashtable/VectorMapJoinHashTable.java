@@ -42,6 +42,15 @@ public interface VectorMapJoinHashTable extends MemoryEstimate {
       throws SerDeException, HiveException, IOException;
 
   /**
+   *
+   * @param currentKey
+   *          The key to check for existence.
+   * @return true
+   *          If HashTable contains the given key.
+   */
+  boolean containsLongKey(long currentKey);
+
+  /**
    * Get hash table size
    */
   int size();

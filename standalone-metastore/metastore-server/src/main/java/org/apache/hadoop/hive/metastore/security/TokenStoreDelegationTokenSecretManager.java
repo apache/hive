@@ -25,12 +25,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
@@ -161,7 +161,10 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     synchronized (this) {
       super.currentTokens.put(id,  tokenInfo);
       try {
-        return super.renewToken(token, renewer);
+        long res = super.renewToken(token, renewer);
+        this.tokenStore.removeToken(id);
+        this.tokenStore.addToken(id, super.currentTokens.get(id));
+        return res;
       } finally {
         super.currentTokens.remove(id);
       }
@@ -173,11 +176,11 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     DataOutputStream dos = new DataOutputStream(bos);
     key.write(dos);
     dos.flush();
-    return Base64.encodeBase64URLSafeString(bos.toByteArray());
+    return Base64.getUrlEncoder().encodeToString(bos.toByteArray());
   }
 
   public static void decodeWritable(Writable w, String idStr) throws IOException {
-    DataInputStream in = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(idStr)));
+    DataInputStream in = new DataInputStream(new ByteArrayInputStream(Base64.getUrlDecoder().decode(idStr)));
     w.readFields(in);
   }
 

@@ -1,0 +1,46 @@
+PREHOOK: query: create table t0 (s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: create table t0 (s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: create table t1 (s string, i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (s string, i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t0 select "abc"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t0
+POSTHOOK: query: insert into t0 select "abc"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t0
+POSTHOOK: Lineage: t0.s SIMPLE []
+PREHOOK: query: insert into t1 select "abc", 4
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 select "abc", 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.i SIMPLE []
+POSTHOOK: Lineage: t1.s SIMPLE []
+PREHOOK: query: select substr(t0.s, t1.i-1) from t0 join t1 on t0.s=t1.s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select substr(t0.s, t1.i-1) from t0 join t1 on t0.s=t1.s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+c

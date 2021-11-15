@@ -44,7 +44,6 @@ public class TestStatsReplicationScenariosMMNoAutogather extends TestStatsReplic
               "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     overrides.put(MetastoreConf.ConfVars.CAPABILITY_CHECK.getHiveName(), "false");
     overrides.put(HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT.varname, "1s");
-    overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
     overrides.put("mapred.input.dir.recursive", "true");
 
 

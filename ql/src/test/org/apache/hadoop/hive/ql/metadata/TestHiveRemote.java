@@ -23,7 +23,11 @@ import java.net.ServerSocket;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -36,15 +40,17 @@ public class TestHiveRemote extends TestHive {
   /**
    * Start a remote metastore and initialize a Hive object pointing at it.
    */
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    hiveConf = new HiveConf(this.getClass());
-    hiveConf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+  @BeforeClass
+  public static void setUp() throws Exception {
+    hiveConf = new HiveConf(TestHiveRemote.class);
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+  }
 
+  @Before
+  public void before() throws Exception {
+    SessionState.start(hiveConf);
     try {
       hm = Hive.get(hiveConf);
     } catch (Exception e) {
@@ -54,6 +60,12 @@ public class TestHiveRemote extends TestHive {
           + hiveConf);
       throw e;
     }
+  }
+
+  @After
+  public void after() throws IOException {
+    SessionState.get().close();
+    hm.close(false);
   }
 
   /**

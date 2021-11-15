@@ -1,0 +1,708 @@
+PREHOOK: query: create temporary table partition_test_partitioned_n1_temp(key string, value string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_test_partitioned_n1_temp
+POSTHOOK: query: create temporary table partition_test_partitioned_n1_temp(key string, value string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_test_partitioned_n1_temp
+PREHOOK: query: insert overwrite table partition_test_partitioned_n1_temp partition(dt=100) select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n1_temp partition(dt=100) select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Lineage: partition_test_partitioned_n1_temp PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n1_temp PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:216
+maxFileSize:216
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=100)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=100)
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:216
+maxFileSize:216
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: alter table partition_test_partitioned_n1_temp set fileformat rcfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Output: default@partition_test_partitioned_n1_temp
+POSTHOOK: query: alter table partition_test_partitioned_n1_temp set fileformat rcfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Output: default@partition_test_partitioned_n1_temp
+PREHOOK: query: insert overwrite table partition_test_partitioned_n1_temp partition(dt=101) select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n1_temp partition(dt=101) select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: Lineage: partition_test_partitioned_n1_temp PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n1_temp PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:2
+totalFileSize:491
+maxFileSize:275
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=100)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=100)
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:216
+maxFileSize:216
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=101)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=101)
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:275
+maxFileSize:275
+minFileSize:275
+#### A masked pattern was here ####
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt=101
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt=101
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: alter table partition_test_partitioned_n1_temp set fileformat Sequencefile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Output: default@partition_test_partitioned_n1_temp
+POSTHOOK: query: alter table partition_test_partitioned_n1_temp set fileformat Sequencefile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Output: default@partition_test_partitioned_n1_temp
+PREHOOK: query: insert overwrite table partition_test_partitioned_n1_temp partition(dt=102) select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_test_partitioned_n1_temp@dt=102
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n1_temp partition(dt=102) select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_test_partitioned_n1_temp@dt=102
+POSTHOOK: Lineage: partition_test_partitioned_n1_temp PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n1_temp PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:3
+totalFileSize:1094
+maxFileSize:603
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=100)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=100)
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:216
+maxFileSize:216
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=101)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=101)
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:275
+maxFileSize:275
+minFileSize:275
+#### A masked pattern was here ####
+
+PREHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=102)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned_n1_temp partition(dt=102)
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:partition_test_partitioned_n1_temp
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:603
+maxFileSize:603
+minFileSize:603
+#### A masked pattern was here ####
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt=101
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt=101
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt=102
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt=102
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: select key from partition_test_partitioned_n1_temp where dt >=100 and dt <= 102
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned_n1_temp
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+POSTHOOK: query: select key from partition_test_partitioned_n1_temp where dt >=100 and dt <= 102
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=100
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n1_temp@dt=102
+#### A masked pattern was here ####
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+

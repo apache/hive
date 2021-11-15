@@ -1,0 +1,46 @@
+PREHOOK: query: CREATE TABLE TEST10(key INT, value STRING) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST10
+POSTHOOK: query: CREATE TABLE TEST10(key INT, value STRING) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST10
+PREHOOK: query: EXPLAIN
+DESCRIBE TEST10
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test10
+POSTHOOK: query: EXPLAIN
+DESCRIBE TEST10
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test10
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Table
+      table: default.TEST10
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE TEST10
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test10
+POSTHOOK: query: DESCRIBE TEST10
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test10
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    

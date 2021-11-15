@@ -189,7 +189,6 @@ create table dest_dp2 (first string, word string) partitioned by (y int, m int);
 drop table if exists dest_dp3;
 create table dest_dp3 (first string, word string) partitioned by (y int, m int, d int);
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 insert into dest_dp1 partition (year) select first, word, year from src_dp;
 insert into dest_dp2 partition (y, m) select first, word, year, month from src_dp;
@@ -205,5 +204,12 @@ insert into dest_dp2 partition (y, m) select first, word, year, month
 insert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d where year=2
 insert into dest_dp2 partition (y=1, m) select f, w, m
 insert into dest_dp1 partition (year=0) select f, w;
+
+set hive.auto.convert.anti.join=false;
+select * from src1 a
+where not exists
+  (select cint from alltypesorc b
+   where a.key = b.ctinyint + 300)
+and key > 300;
 
 reset hive.metastore.disallow.incompatible.col.type.changes;

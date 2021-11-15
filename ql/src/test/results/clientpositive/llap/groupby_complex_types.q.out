@@ -1,0 +1,1197 @@
+PREHOOK: query: CREATE TABLE DEST1_n163(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST1_n163
+POSTHOOK: query: CREATE TABLE DEST1_n163(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST1_n163
+PREHOOK: query: CREATE TABLE DEST2_n41(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST2_n41
+POSTHOOK: query: CREATE TABLE DEST2_n41(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST2_n41
+PREHOOK: query: CREATE TABLE DEST3_n7(key STRUCT<col1:STRING, col2:STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST3_n7
+POSTHOOK: query: CREATE TABLE DEST3_n7(key STRUCT<col1:STRING, col2:STRING>, value BIGINT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST3_n7
+PREHOOK: query: EXPLAIN
+FROM SRC
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n163
+PREHOOK: Output: default@dest2_n41
+PREHOOK: Output: default@dest3_n7
+POSTHOOK: query: EXPLAIN
+FROM SRC
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n163
+POSTHOOK: Output: default@dest2_n41
+POSTHOOK: Output: default@dest3_n7
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-3
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: array(key) (type: array<string>)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 609248 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: array<string>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: array<string>)
+                        Statistics: Num rows: 316 Data size: 609248 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: map(key:value) (type: map<string,string>)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 464000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: map<string,string>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: map<string,string>)
+                        Statistics: Num rows: 500 Data size: 464000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: struct(key,value) (type: struct<col1:string,col2:string>)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 212000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<col1:string,col2:string>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: struct<col1:string,col2:string>)
+                        Statistics: Num rows: 500 Data size: 212000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: array<string>)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 609248 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 316 Data size: 609248 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1_n163
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: map<string,string>)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 464000 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 464000 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest2_n41
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: struct<col1:string,col2:string>)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 212000 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 212000 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest3_n7
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n163
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2_n41
+
+  Stage: Stage-6
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest3_n7
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: FROM SRC
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n163
+PREHOOK: Output: default@dest2_n41
+PREHOOK: Output: default@dest3_n7
+POSTHOOK: query: FROM SRC
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n163
+POSTHOOK: Output: default@dest2_n41
+POSTHOOK: Output: default@dest3_n7
+POSTHOOK: Lineage: dest1_n163.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n163.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest2_n41.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n41.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest3_n7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3_n7.value EXPRESSION [(src)src.null, ]
+PREHOOK: query: SELECT DEST1_n163.* FROM DEST1_n163
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n163
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DEST1_n163.* FROM DEST1_n163
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n163
+#### A masked pattern was here ####
+["0"]	3
+["10"]	1
+["100"]	2
+["103"]	2
+["104"]	2
+["105"]	1
+["11"]	1
+["111"]	1
+["113"]	2
+["114"]	1
+["116"]	1
+["118"]	2
+["119"]	3
+["12"]	2
+["120"]	2
+["125"]	2
+["126"]	1
+["128"]	3
+["129"]	2
+["131"]	1
+["133"]	1
+["134"]	2
+["136"]	1
+["137"]	2
+["138"]	4
+["143"]	1
+["145"]	1
+["146"]	2
+["149"]	2
+["15"]	2
+["150"]	1
+["152"]	2
+["153"]	1
+["155"]	1
+["156"]	1
+["157"]	1
+["158"]	1
+["160"]	1
+["162"]	1
+["163"]	1
+["164"]	2
+["165"]	2
+["166"]	1
+["167"]	3
+["168"]	1
+["169"]	4
+["17"]	1
+["170"]	1
+["172"]	2
+["174"]	2
+["175"]	2
+["176"]	2
+["177"]	1
+["178"]	1
+["179"]	2
+["18"]	2
+["180"]	1
+["181"]	1
+["183"]	1
+["186"]	1
+["187"]	3
+["189"]	1
+["19"]	1
+["190"]	1
+["191"]	2
+["192"]	1
+["193"]	3
+["194"]	1
+["195"]	2
+["196"]	1
+["197"]	2
+["199"]	3
+["2"]	1
+["20"]	1
+["200"]	2
+["201"]	1
+["202"]	1
+["203"]	2
+["205"]	2
+["207"]	2
+["208"]	3
+["209"]	2
+["213"]	2
+["214"]	1
+["216"]	2
+["217"]	2
+["218"]	1
+["219"]	2
+["221"]	2
+["222"]	1
+["223"]	2
+["224"]	2
+["226"]	1
+["228"]	1
+["229"]	2
+["230"]	5
+["233"]	2
+["235"]	1
+["237"]	2
+["238"]	2
+["239"]	2
+["24"]	2
+["241"]	1
+["242"]	2
+["244"]	1
+["247"]	1
+["248"]	1
+["249"]	1
+["252"]	1
+["255"]	2
+["256"]	2
+["257"]	1
+["258"]	1
+["26"]	2
+["260"]	1
+["262"]	1
+["263"]	1
+["265"]	2
+["266"]	1
+["27"]	1
+["272"]	2
+["273"]	3
+["274"]	1
+["275"]	1
+["277"]	4
+["278"]	2
+["28"]	1
+["280"]	2
+["281"]	2
+["282"]	2
+["283"]	1
+["284"]	1
+["285"]	1
+["286"]	1
+["287"]	1
+["288"]	2
+["289"]	1
+["291"]	1
+["292"]	1
+["296"]	1
+["298"]	3
+["30"]	1
+["302"]	1
+["305"]	1
+["306"]	1
+["307"]	2
+["308"]	1
+["309"]	2
+["310"]	1
+["311"]	3
+["315"]	1
+["316"]	3
+["317"]	2
+["318"]	3
+["321"]	2
+["322"]	2
+["323"]	1
+["325"]	2
+["327"]	3
+["33"]	1
+["331"]	2
+["332"]	1
+["333"]	2
+["335"]	1
+["336"]	1
+["338"]	1
+["339"]	1
+["34"]	1
+["341"]	1
+["342"]	2
+["344"]	2
+["345"]	1
+["348"]	5
+["35"]	3
+["351"]	1
+["353"]	2
+["356"]	1
+["360"]	1
+["362"]	1
+["364"]	1
+["365"]	1
+["366"]	1
+["367"]	2
+["368"]	1
+["369"]	3
+["37"]	2
+["373"]	1
+["374"]	1
+["375"]	1
+["377"]	1
+["378"]	1
+["379"]	1
+["382"]	2
+["384"]	3
+["386"]	1
+["389"]	1
+["392"]	1
+["393"]	1
+["394"]	1
+["395"]	2
+["396"]	3
+["397"]	2
+["399"]	2
+["4"]	1
+["400"]	1
+["401"]	5
+["402"]	1
+["403"]	3
+["404"]	2
+["406"]	4
+["407"]	1
+["409"]	3
+["41"]	1
+["411"]	1
+["413"]	2
+["414"]	2
+["417"]	3
+["418"]	1
+["419"]	1
+["42"]	2
+["421"]	1
+["424"]	2
+["427"]	1
+["429"]	2
+["43"]	1
+["430"]	3
+["431"]	3
+["432"]	1
+["435"]	1
+["436"]	1
+["437"]	1
+["438"]	3
+["439"]	2
+["44"]	1
+["443"]	1
+["444"]	1
+["446"]	1
+["448"]	1
+["449"]	1
+["452"]	1
+["453"]	1
+["454"]	3
+["455"]	1
+["457"]	1
+["458"]	2
+["459"]	2
+["460"]	1
+["462"]	2
+["463"]	2
+["466"]	3
+["467"]	1
+["468"]	4
+["469"]	5
+["47"]	1
+["470"]	1
+["472"]	1
+["475"]	1
+["477"]	1
+["478"]	2
+["479"]	1
+["480"]	3
+["481"]	1
+["482"]	1
+["483"]	1
+["484"]	1
+["485"]	1
+["487"]	1
+["489"]	4
+["490"]	1
+["491"]	1
+["492"]	2
+["493"]	1
+["494"]	1
+["495"]	1
+["496"]	1
+["497"]	1
+["498"]	3
+["5"]	3
+["51"]	2
+["53"]	1
+["54"]	1
+["57"]	1
+["58"]	2
+["64"]	1
+["65"]	1
+["66"]	1
+["67"]	2
+["69"]	1
+["70"]	3
+["72"]	2
+["74"]	1
+["76"]	2
+["77"]	1
+["78"]	1
+["8"]	1
+["80"]	1
+["82"]	1
+["83"]	2
+["84"]	2
+["85"]	1
+["86"]	1
+["87"]	1
+["9"]	1
+["90"]	3
+["92"]	1
+["95"]	2
+["96"]	1
+["97"]	2
+["98"]	2
+PREHOOK: query: SELECT DEST2_n41.* FROM DEST2_n41
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2_n41
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DEST2_n41.* FROM DEST2_n41
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2_n41
+#### A masked pattern was here ####
+{"0":"val_0"}	3
+{"10":"val_10"}	1
+{"100":"val_100"}	2
+{"103":"val_103"}	2
+{"104":"val_104"}	2
+{"105":"val_105"}	1
+{"11":"val_11"}	1
+{"111":"val_111"}	1
+{"113":"val_113"}	2
+{"114":"val_114"}	1
+{"116":"val_116"}	1
+{"118":"val_118"}	2
+{"119":"val_119"}	3
+{"12":"val_12"}	2
+{"120":"val_120"}	2
+{"125":"val_125"}	2
+{"126":"val_126"}	1
+{"128":"val_128"}	3
+{"129":"val_129"}	2
+{"131":"val_131"}	1
+{"133":"val_133"}	1
+{"134":"val_134"}	2
+{"136":"val_136"}	1
+{"137":"val_137"}	2
+{"138":"val_138"}	4
+{"143":"val_143"}	1
+{"145":"val_145"}	1
+{"146":"val_146"}	2
+{"149":"val_149"}	2
+{"15":"val_15"}	2
+{"150":"val_150"}	1
+{"152":"val_152"}	2
+{"153":"val_153"}	1
+{"155":"val_155"}	1
+{"156":"val_156"}	1
+{"157":"val_157"}	1
+{"158":"val_158"}	1
+{"160":"val_160"}	1
+{"162":"val_162"}	1
+{"163":"val_163"}	1
+{"164":"val_164"}	2
+{"165":"val_165"}	2
+{"166":"val_166"}	1
+{"167":"val_167"}	3
+{"168":"val_168"}	1
+{"169":"val_169"}	4
+{"17":"val_17"}	1
+{"170":"val_170"}	1
+{"172":"val_172"}	2
+{"174":"val_174"}	2
+{"175":"val_175"}	2
+{"176":"val_176"}	2
+{"177":"val_177"}	1
+{"178":"val_178"}	1
+{"179":"val_179"}	2
+{"18":"val_18"}	2
+{"180":"val_180"}	1
+{"181":"val_181"}	1
+{"183":"val_183"}	1
+{"186":"val_186"}	1
+{"187":"val_187"}	3
+{"189":"val_189"}	1
+{"19":"val_19"}	1
+{"190":"val_190"}	1
+{"191":"val_191"}	2
+{"192":"val_192"}	1
+{"193":"val_193"}	3
+{"194":"val_194"}	1
+{"195":"val_195"}	2
+{"196":"val_196"}	1
+{"197":"val_197"}	2
+{"199":"val_199"}	3
+{"2":"val_2"}	1
+{"20":"val_20"}	1
+{"200":"val_200"}	2
+{"201":"val_201"}	1
+{"202":"val_202"}	1
+{"203":"val_203"}	2
+{"205":"val_205"}	2
+{"207":"val_207"}	2
+{"208":"val_208"}	3
+{"209":"val_209"}	2
+{"213":"val_213"}	2
+{"214":"val_214"}	1
+{"216":"val_216"}	2
+{"217":"val_217"}	2
+{"218":"val_218"}	1
+{"219":"val_219"}	2
+{"221":"val_221"}	2
+{"222":"val_222"}	1
+{"223":"val_223"}	2
+{"224":"val_224"}	2
+{"226":"val_226"}	1
+{"228":"val_228"}	1
+{"229":"val_229"}	2
+{"230":"val_230"}	5
+{"233":"val_233"}	2
+{"235":"val_235"}	1
+{"237":"val_237"}	2
+{"238":"val_238"}	2
+{"239":"val_239"}	2
+{"24":"val_24"}	2
+{"241":"val_241"}	1
+{"242":"val_242"}	2
+{"244":"val_244"}	1
+{"247":"val_247"}	1
+{"248":"val_248"}	1
+{"249":"val_249"}	1
+{"252":"val_252"}	1
+{"255":"val_255"}	2
+{"256":"val_256"}	2
+{"257":"val_257"}	1
+{"258":"val_258"}	1
+{"26":"val_26"}	2
+{"260":"val_260"}	1
+{"262":"val_262"}	1
+{"263":"val_263"}	1
+{"265":"val_265"}	2
+{"266":"val_266"}	1
+{"27":"val_27"}	1
+{"272":"val_272"}	2
+{"273":"val_273"}	3
+{"274":"val_274"}	1
+{"275":"val_275"}	1
+{"277":"val_277"}	4
+{"278":"val_278"}	2
+{"28":"val_28"}	1
+{"280":"val_280"}	2
+{"281":"val_281"}	2
+{"282":"val_282"}	2
+{"283":"val_283"}	1
+{"284":"val_284"}	1
+{"285":"val_285"}	1
+{"286":"val_286"}	1
+{"287":"val_287"}	1
+{"288":"val_288"}	2
+{"289":"val_289"}	1
+{"291":"val_291"}	1
+{"292":"val_292"}	1
+{"296":"val_296"}	1
+{"298":"val_298"}	3
+{"30":"val_30"}	1
+{"302":"val_302"}	1
+{"305":"val_305"}	1
+{"306":"val_306"}	1
+{"307":"val_307"}	2
+{"308":"val_308"}	1
+{"309":"val_309"}	2
+{"310":"val_310"}	1
+{"311":"val_311"}	3
+{"315":"val_315"}	1
+{"316":"val_316"}	3
+{"317":"val_317"}	2
+{"318":"val_318"}	3
+{"321":"val_321"}	2
+{"322":"val_322"}	2
+{"323":"val_323"}	1
+{"325":"val_325"}	2
+{"327":"val_327"}	3
+{"33":"val_33"}	1
+{"331":"val_331"}	2
+{"332":"val_332"}	1
+{"333":"val_333"}	2
+{"335":"val_335"}	1
+{"336":"val_336"}	1
+{"338":"val_338"}	1
+{"339":"val_339"}	1
+{"34":"val_34"}	1
+{"341":"val_341"}	1
+{"342":"val_342"}	2
+{"344":"val_344"}	2
+{"345":"val_345"}	1
+{"348":"val_348"}	5
+{"35":"val_35"}	3
+{"351":"val_351"}	1
+{"353":"val_353"}	2
+{"356":"val_356"}	1
+{"360":"val_360"}	1
+{"362":"val_362"}	1
+{"364":"val_364"}	1
+{"365":"val_365"}	1
+{"366":"val_366"}	1
+{"367":"val_367"}	2
+{"368":"val_368"}	1
+{"369":"val_369"}	3
+{"37":"val_37"}	2
+{"373":"val_373"}	1
+{"374":"val_374"}	1
+{"375":"val_375"}	1
+{"377":"val_377"}	1
+{"378":"val_378"}	1
+{"379":"val_379"}	1
+{"382":"val_382"}	2
+{"384":"val_384"}	3
+{"386":"val_386"}	1
+{"389":"val_389"}	1
+{"392":"val_392"}	1
+{"393":"val_393"}	1
+{"394":"val_394"}	1
+{"395":"val_395"}	2
+{"396":"val_396"}	3
+{"397":"val_397"}	2
+{"399":"val_399"}	2
+{"4":"val_4"}	1
+{"400":"val_400"}	1
+{"401":"val_401"}	5
+{"402":"val_402"}	1
+{"403":"val_403"}	3
+{"404":"val_404"}	2
+{"406":"val_406"}	4
+{"407":"val_407"}	1
+{"409":"val_409"}	3
+{"41":"val_41"}	1
+{"411":"val_411"}	1
+{"413":"val_413"}	2
+{"414":"val_414"}	2
+{"417":"val_417"}	3
+{"418":"val_418"}	1
+{"419":"val_419"}	1
+{"42":"val_42"}	2
+{"421":"val_421"}	1
+{"424":"val_424"}	2
+{"427":"val_427"}	1
+{"429":"val_429"}	2
+{"43":"val_43"}	1
+{"430":"val_430"}	3
+{"431":"val_431"}	3
+{"432":"val_432"}	1
+{"435":"val_435"}	1
+{"436":"val_436"}	1
+{"437":"val_437"}	1
+{"438":"val_438"}	3
+{"439":"val_439"}	2
+{"44":"val_44"}	1
+{"443":"val_443"}	1
+{"444":"val_444"}	1
+{"446":"val_446"}	1
+{"448":"val_448"}	1
+{"449":"val_449"}	1
+{"452":"val_452"}	1
+{"453":"val_453"}	1
+{"454":"val_454"}	3
+{"455":"val_455"}	1
+{"457":"val_457"}	1
+{"458":"val_458"}	2
+{"459":"val_459"}	2
+{"460":"val_460"}	1
+{"462":"val_462"}	2
+{"463":"val_463"}	2
+{"466":"val_466"}	3
+{"467":"val_467"}	1
+{"468":"val_468"}	4
+{"469":"val_469"}	5
+{"47":"val_47"}	1
+{"470":"val_470"}	1
+{"472":"val_472"}	1
+{"475":"val_475"}	1
+{"477":"val_477"}	1
+{"478":"val_478"}	2
+{"479":"val_479"}	1
+{"480":"val_480"}	3
+{"481":"val_481"}	1
+{"482":"val_482"}	1
+{"483":"val_483"}	1
+{"484":"val_484"}	1
+{"485":"val_485"}	1
+{"487":"val_487"}	1
+{"489":"val_489"}	4
+{"490":"val_490"}	1
+{"491":"val_491"}	1
+{"492":"val_492"}	2
+{"493":"val_493"}	1
+{"494":"val_494"}	1
+{"495":"val_495"}	1
+{"496":"val_496"}	1
+{"497":"val_497"}	1
+{"498":"val_498"}	3
+{"5":"val_5"}	3
+{"51":"val_51"}	2
+{"53":"val_53"}	1
+{"54":"val_54"}	1
+{"57":"val_57"}	1
+{"58":"val_58"}	2
+{"64":"val_64"}	1
+{"65":"val_65"}	1
+{"66":"val_66"}	1
+{"67":"val_67"}	2
+{"69":"val_69"}	1
+{"70":"val_70"}	3
+{"72":"val_72"}	2
+{"74":"val_74"}	1
+{"76":"val_76"}	2
+{"77":"val_77"}	1
+{"78":"val_78"}	1
+{"8":"val_8"}	1
+{"80":"val_80"}	1
+{"82":"val_82"}	1
+{"83":"val_83"}	2
+{"84":"val_84"}	2
+{"85":"val_85"}	1
+{"86":"val_86"}	1
+{"87":"val_87"}	1
+{"9":"val_9"}	1
+{"90":"val_90"}	3
+{"92":"val_92"}	1
+{"95":"val_95"}	2
+{"96":"val_96"}	1
+{"97":"val_97"}	2
+{"98":"val_98"}	2
+PREHOOK: query: SELECT DEST3_n7.* FROM DEST3_n7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest3_n7
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DEST3_n7.* FROM DEST3_n7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest3_n7
+#### A masked pattern was here ####
+{"col1":"0","col2":"val_0"}	3
+{"col1":"10","col2":"val_10"}	1
+{"col1":"100","col2":"val_100"}	2
+{"col1":"103","col2":"val_103"}	2
+{"col1":"104","col2":"val_104"}	2
+{"col1":"105","col2":"val_105"}	1
+{"col1":"11","col2":"val_11"}	1
+{"col1":"111","col2":"val_111"}	1
+{"col1":"113","col2":"val_113"}	2
+{"col1":"114","col2":"val_114"}	1
+{"col1":"116","col2":"val_116"}	1
+{"col1":"118","col2":"val_118"}	2
+{"col1":"119","col2":"val_119"}	3
+{"col1":"12","col2":"val_12"}	2
+{"col1":"120","col2":"val_120"}	2
+{"col1":"125","col2":"val_125"}	2
+{"col1":"126","col2":"val_126"}	1
+{"col1":"128","col2":"val_128"}	3
+{"col1":"129","col2":"val_129"}	2
+{"col1":"131","col2":"val_131"}	1
+{"col1":"133","col2":"val_133"}	1
+{"col1":"134","col2":"val_134"}	2
+{"col1":"136","col2":"val_136"}	1
+{"col1":"137","col2":"val_137"}	2
+{"col1":"138","col2":"val_138"}	4
+{"col1":"143","col2":"val_143"}	1
+{"col1":"145","col2":"val_145"}	1
+{"col1":"146","col2":"val_146"}	2
+{"col1":"149","col2":"val_149"}	2
+{"col1":"15","col2":"val_15"}	2
+{"col1":"150","col2":"val_150"}	1
+{"col1":"152","col2":"val_152"}	2
+{"col1":"153","col2":"val_153"}	1
+{"col1":"155","col2":"val_155"}	1
+{"col1":"156","col2":"val_156"}	1
+{"col1":"157","col2":"val_157"}	1
+{"col1":"158","col2":"val_158"}	1
+{"col1":"160","col2":"val_160"}	1
+{"col1":"162","col2":"val_162"}	1
+{"col1":"163","col2":"val_163"}	1
+{"col1":"164","col2":"val_164"}	2
+{"col1":"165","col2":"val_165"}	2
+{"col1":"166","col2":"val_166"}	1
+{"col1":"167","col2":"val_167"}	3
+{"col1":"168","col2":"val_168"}	1
+{"col1":"169","col2":"val_169"}	4
+{"col1":"17","col2":"val_17"}	1
+{"col1":"170","col2":"val_170"}	1
+{"col1":"172","col2":"val_172"}	2
+{"col1":"174","col2":"val_174"}	2
+{"col1":"175","col2":"val_175"}	2
+{"col1":"176","col2":"val_176"}	2
+{"col1":"177","col2":"val_177"}	1
+{"col1":"178","col2":"val_178"}	1
+{"col1":"179","col2":"val_179"}	2
+{"col1":"18","col2":"val_18"}	2
+{"col1":"180","col2":"val_180"}	1
+{"col1":"181","col2":"val_181"}	1
+{"col1":"183","col2":"val_183"}	1
+{"col1":"186","col2":"val_186"}	1
+{"col1":"187","col2":"val_187"}	3
+{"col1":"189","col2":"val_189"}	1
+{"col1":"19","col2":"val_19"}	1
+{"col1":"190","col2":"val_190"}	1
+{"col1":"191","col2":"val_191"}	2
+{"col1":"192","col2":"val_192"}	1
+{"col1":"193","col2":"val_193"}	3
+{"col1":"194","col2":"val_194"}	1
+{"col1":"195","col2":"val_195"}	2
+{"col1":"196","col2":"val_196"}	1
+{"col1":"197","col2":"val_197"}	2
+{"col1":"199","col2":"val_199"}	3
+{"col1":"2","col2":"val_2"}	1
+{"col1":"20","col2":"val_20"}	1
+{"col1":"200","col2":"val_200"}	2
+{"col1":"201","col2":"val_201"}	1
+{"col1":"202","col2":"val_202"}	1
+{"col1":"203","col2":"val_203"}	2
+{"col1":"205","col2":"val_205"}	2
+{"col1":"207","col2":"val_207"}	2
+{"col1":"208","col2":"val_208"}	3
+{"col1":"209","col2":"val_209"}	2
+{"col1":"213","col2":"val_213"}	2
+{"col1":"214","col2":"val_214"}	1
+{"col1":"216","col2":"val_216"}	2
+{"col1":"217","col2":"val_217"}	2
+{"col1":"218","col2":"val_218"}	1
+{"col1":"219","col2":"val_219"}	2
+{"col1":"221","col2":"val_221"}	2
+{"col1":"222","col2":"val_222"}	1
+{"col1":"223","col2":"val_223"}	2
+{"col1":"224","col2":"val_224"}	2
+{"col1":"226","col2":"val_226"}	1
+{"col1":"228","col2":"val_228"}	1
+{"col1":"229","col2":"val_229"}	2
+{"col1":"230","col2":"val_230"}	5
+{"col1":"233","col2":"val_233"}	2
+{"col1":"235","col2":"val_235"}	1
+{"col1":"237","col2":"val_237"}	2
+{"col1":"238","col2":"val_238"}	2
+{"col1":"239","col2":"val_239"}	2
+{"col1":"24","col2":"val_24"}	2
+{"col1":"241","col2":"val_241"}	1
+{"col1":"242","col2":"val_242"}	2
+{"col1":"244","col2":"val_244"}	1
+{"col1":"247","col2":"val_247"}	1
+{"col1":"248","col2":"val_248"}	1
+{"col1":"249","col2":"val_249"}	1
+{"col1":"252","col2":"val_252"}	1
+{"col1":"255","col2":"val_255"}	2
+{"col1":"256","col2":"val_256"}	2
+{"col1":"257","col2":"val_257"}	1
+{"col1":"258","col2":"val_258"}	1
+{"col1":"26","col2":"val_26"}	2
+{"col1":"260","col2":"val_260"}	1
+{"col1":"262","col2":"val_262"}	1
+{"col1":"263","col2":"val_263"}	1
+{"col1":"265","col2":"val_265"}	2
+{"col1":"266","col2":"val_266"}	1
+{"col1":"27","col2":"val_27"}	1
+{"col1":"272","col2":"val_272"}	2
+{"col1":"273","col2":"val_273"}	3
+{"col1":"274","col2":"val_274"}	1
+{"col1":"275","col2":"val_275"}	1
+{"col1":"277","col2":"val_277"}	4
+{"col1":"278","col2":"val_278"}	2
+{"col1":"28","col2":"val_28"}	1
+{"col1":"280","col2":"val_280"}	2
+{"col1":"281","col2":"val_281"}	2
+{"col1":"282","col2":"val_282"}	2
+{"col1":"283","col2":"val_283"}	1
+{"col1":"284","col2":"val_284"}	1
+{"col1":"285","col2":"val_285"}	1
+{"col1":"286","col2":"val_286"}	1
+{"col1":"287","col2":"val_287"}	1
+{"col1":"288","col2":"val_288"}	2
+{"col1":"289","col2":"val_289"}	1
+{"col1":"291","col2":"val_291"}	1
+{"col1":"292","col2":"val_292"}	1
+{"col1":"296","col2":"val_296"}	1
+{"col1":"298","col2":"val_298"}	3
+{"col1":"30","col2":"val_30"}	1
+{"col1":"302","col2":"val_302"}	1
+{"col1":"305","col2":"val_305"}	1
+{"col1":"306","col2":"val_306"}	1
+{"col1":"307","col2":"val_307"}	2
+{"col1":"308","col2":"val_308"}	1
+{"col1":"309","col2":"val_309"}	2
+{"col1":"310","col2":"val_310"}	1
+{"col1":"311","col2":"val_311"}	3
+{"col1":"315","col2":"val_315"}	1
+{"col1":"316","col2":"val_316"}	3
+{"col1":"317","col2":"val_317"}	2
+{"col1":"318","col2":"val_318"}	3
+{"col1":"321","col2":"val_321"}	2
+{"col1":"322","col2":"val_322"}	2
+{"col1":"323","col2":"val_323"}	1
+{"col1":"325","col2":"val_325"}	2
+{"col1":"327","col2":"val_327"}	3
+{"col1":"33","col2":"val_33"}	1
+{"col1":"331","col2":"val_331"}	2
+{"col1":"332","col2":"val_332"}	1
+{"col1":"333","col2":"val_333"}	2
+{"col1":"335","col2":"val_335"}	1
+{"col1":"336","col2":"val_336"}	1
+{"col1":"338","col2":"val_338"}	1
+{"col1":"339","col2":"val_339"}	1
+{"col1":"34","col2":"val_34"}	1
+{"col1":"341","col2":"val_341"}	1
+{"col1":"342","col2":"val_342"}	2
+{"col1":"344","col2":"val_344"}	2
+{"col1":"345","col2":"val_345"}	1
+{"col1":"348","col2":"val_348"}	5
+{"col1":"35","col2":"val_35"}	3
+{"col1":"351","col2":"val_351"}	1
+{"col1":"353","col2":"val_353"}	2
+{"col1":"356","col2":"val_356"}	1
+{"col1":"360","col2":"val_360"}	1
+{"col1":"362","col2":"val_362"}	1
+{"col1":"364","col2":"val_364"}	1
+{"col1":"365","col2":"val_365"}	1
+{"col1":"366","col2":"val_366"}	1
+{"col1":"367","col2":"val_367"}	2
+{"col1":"368","col2":"val_368"}	1
+{"col1":"369","col2":"val_369"}	3
+{"col1":"37","col2":"val_37"}	2
+{"col1":"373","col2":"val_373"}	1
+{"col1":"374","col2":"val_374"}	1
+{"col1":"375","col2":"val_375"}	1
+{"col1":"377","col2":"val_377"}	1
+{"col1":"378","col2":"val_378"}	1
+{"col1":"379","col2":"val_379"}	1
+{"col1":"382","col2":"val_382"}	2
+{"col1":"384","col2":"val_384"}	3
+{"col1":"386","col2":"val_386"}	1
+{"col1":"389","col2":"val_389"}	1
+{"col1":"392","col2":"val_392"}	1
+{"col1":"393","col2":"val_393"}	1
+{"col1":"394","col2":"val_394"}	1
+{"col1":"395","col2":"val_395"}	2
+{"col1":"396","col2":"val_396"}	3
+{"col1":"397","col2":"val_397"}	2
+{"col1":"399","col2":"val_399"}	2
+{"col1":"4","col2":"val_4"}	1
+{"col1":"400","col2":"val_400"}	1
+{"col1":"401","col2":"val_401"}	5
+{"col1":"402","col2":"val_402"}	1
+{"col1":"403","col2":"val_403"}	3
+{"col1":"404","col2":"val_404"}	2
+{"col1":"406","col2":"val_406"}	4
+{"col1":"407","col2":"val_407"}	1
+{"col1":"409","col2":"val_409"}	3
+{"col1":"41","col2":"val_41"}	1
+{"col1":"411","col2":"val_411"}	1
+{"col1":"413","col2":"val_413"}	2
+{"col1":"414","col2":"val_414"}	2
+{"col1":"417","col2":"val_417"}	3
+{"col1":"418","col2":"val_418"}	1
+{"col1":"419","col2":"val_419"}	1
+{"col1":"42","col2":"val_42"}	2
+{"col1":"421","col2":"val_421"}	1
+{"col1":"424","col2":"val_424"}	2
+{"col1":"427","col2":"val_427"}	1
+{"col1":"429","col2":"val_429"}	2
+{"col1":"43","col2":"val_43"}	1
+{"col1":"430","col2":"val_430"}	3
+{"col1":"431","col2":"val_431"}	3
+{"col1":"432","col2":"val_432"}	1
+{"col1":"435","col2":"val_435"}	1
+{"col1":"436","col2":"val_436"}	1
+{"col1":"437","col2":"val_437"}	1
+{"col1":"438","col2":"val_438"}	3
+{"col1":"439","col2":"val_439"}	2
+{"col1":"44","col2":"val_44"}	1
+{"col1":"443","col2":"val_443"}	1
+{"col1":"444","col2":"val_444"}	1
+{"col1":"446","col2":"val_446"}	1
+{"col1":"448","col2":"val_448"}	1
+{"col1":"449","col2":"val_449"}	1
+{"col1":"452","col2":"val_452"}	1
+{"col1":"453","col2":"val_453"}	1
+{"col1":"454","col2":"val_454"}	3
+{"col1":"455","col2":"val_455"}	1
+{"col1":"457","col2":"val_457"}	1
+{"col1":"458","col2":"val_458"}	2
+{"col1":"459","col2":"val_459"}	2
+{"col1":"460","col2":"val_460"}	1
+{"col1":"462","col2":"val_462"}	2
+{"col1":"463","col2":"val_463"}	2
+{"col1":"466","col2":"val_466"}	3
+{"col1":"467","col2":"val_467"}	1
+{"col1":"468","col2":"val_468"}	4
+{"col1":"469","col2":"val_469"}	5
+{"col1":"47","col2":"val_47"}	1
+{"col1":"470","col2":"val_470"}	1
+{"col1":"472","col2":"val_472"}	1
+{"col1":"475","col2":"val_475"}	1
+{"col1":"477","col2":"val_477"}	1
+{"col1":"478","col2":"val_478"}	2
+{"col1":"479","col2":"val_479"}	1
+{"col1":"480","col2":"val_480"}	3
+{"col1":"481","col2":"val_481"}	1
+{"col1":"482","col2":"val_482"}	1
+{"col1":"483","col2":"val_483"}	1
+{"col1":"484","col2":"val_484"}	1
+{"col1":"485","col2":"val_485"}	1
+{"col1":"487","col2":"val_487"}	1
+{"col1":"489","col2":"val_489"}	4
+{"col1":"490","col2":"val_490"}	1
+{"col1":"491","col2":"val_491"}	1
+{"col1":"492","col2":"val_492"}	2
+{"col1":"493","col2":"val_493"}	1
+{"col1":"494","col2":"val_494"}	1
+{"col1":"495","col2":"val_495"}	1
+{"col1":"496","col2":"val_496"}	1
+{"col1":"497","col2":"val_497"}	1
+{"col1":"498","col2":"val_498"}	3
+{"col1":"5","col2":"val_5"}	3
+{"col1":"51","col2":"val_51"}	2
+{"col1":"53","col2":"val_53"}	1
+{"col1":"54","col2":"val_54"}	1
+{"col1":"57","col2":"val_57"}	1
+{"col1":"58","col2":"val_58"}	2
+{"col1":"64","col2":"val_64"}	1
+{"col1":"65","col2":"val_65"}	1
+{"col1":"66","col2":"val_66"}	1
+{"col1":"67","col2":"val_67"}	2
+{"col1":"69","col2":"val_69"}	1
+{"col1":"70","col2":"val_70"}	3
+{"col1":"72","col2":"val_72"}	2
+{"col1":"74","col2":"val_74"}	1
+{"col1":"76","col2":"val_76"}	2
+{"col1":"77","col2":"val_77"}	1
+{"col1":"78","col2":"val_78"}	1
+{"col1":"8","col2":"val_8"}	1
+{"col1":"80","col2":"val_80"}	1
+{"col1":"82","col2":"val_82"}	1
+{"col1":"83","col2":"val_83"}	2
+{"col1":"84","col2":"val_84"}	2
+{"col1":"85","col2":"val_85"}	1
+{"col1":"86","col2":"val_86"}	1
+{"col1":"87","col2":"val_87"}	1
+{"col1":"9","col2":"val_9"}	1
+{"col1":"90","col2":"val_90"}	3
+{"col1":"92","col2":"val_92"}	1
+{"col1":"95","col2":"val_95"}	2
+{"col1":"96","col2":"val_96"}	1
+{"col1":"97","col2":"val_97"}	2
+{"col1":"98","col2":"val_98"}	2

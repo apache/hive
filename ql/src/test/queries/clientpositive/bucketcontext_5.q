@@ -2,13 +2,15 @@
 set hive.strict.checks.bucketing=false;
 
 -- small no part, 4 bucket & big no part, 2 bucket
-CREATE TABLE bucket_small_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE bucket_small_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1');
 load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small_n13;
 load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small_n13;
 load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_small_n13;
 load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_small_n13;
 
-CREATE TABLE bucket_big_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE bucket_big_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1');
 load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n13;
 load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n13;
 set hive.cbo.enable=false;

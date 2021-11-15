@@ -40,9 +40,9 @@ import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.types.Endpoint;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hive.service.ServiceException;
 import org.slf4j.Logger;
@@ -140,6 +140,11 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     unregisterInternal();
   }
 
+  @Override
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   private void populateCache() throws IOException {
     PathChildrenCache pcc = ensureInstancesCache(0);
     populateCache(pcc, false);
@@ -201,7 +206,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
 
   @Override
   protected String getZkPathUser(final Configuration conf) {
-    return RegistryUtils.currentUser();
+    return currentUser();
   }
 
   private boolean hasLeadership() {
@@ -341,7 +346,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname));
     // Transport specific confs
-    if (HiveServer2.isHTTPTransportMode(conf)) {
+    if (HiveServer2.isHttpTransportMode(new HiveConf(conf, Configuration.class))) {
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname,
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname));
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname,

@@ -53,7 +53,7 @@ public final class VectorUDFWeekOfYearString extends VectorUDFTimestampFieldStri
   }
 
   @Override
-  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
+  protected long getField(byte[] bytes, int start, int length) throws ParseException {
     Date date = null;
     try {
       String decoded = Text.decode(bytes, start, length);

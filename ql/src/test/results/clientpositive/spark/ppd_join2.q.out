@@ -42,10 +42,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
+                  filterExpr: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -53,6 +53,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -62,10 +63,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
+                  filterExpr: ((key < '400') and value is not null and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
+                    predicate: ((key < '400') and value is not null and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1'))) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -73,6 +74,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -82,10 +84,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
+                  filterExpr: (value is not null and (key <> '306') and (sqrt(key) <> 13.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
+                    predicate: (value is not null and (key <> '306') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -93,6 +95,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -112,6 +115,7 @@ STAGE PLANS:
                   Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col3 (type: string)
                     Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
@@ -1732,10 +1736,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
+                  filterExpr: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1743,6 +1747,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -1752,10 +1757,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
+                  filterExpr: ((key < '400') and value is not null and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
+                    predicate: ((key < '400') and value is not null and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1'))) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1763,6 +1768,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -1772,10 +1778,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
+                  filterExpr: (value is not null and (key <> '306') and (sqrt(key) <> 13.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
+                    predicate: (value is not null and (key <> '306') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -1783,6 +1789,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1802,6 +1809,7 @@ STAGE PLANS:
                   Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col3 (type: string)
                     Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE

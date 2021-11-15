@@ -1,0 +1,140 @@
+PREHOOK: query: CREATE TABLE T1_n155(key STRING, val STRING)
+SKEWED BY (key, val) ON ((2, 12), (8, 18)) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n155
+POSTHOOK: query: CREATE TABLE T1_n155(key STRING, val STRING)
+SKEWED BY (key, val) ON ((2, 12), (8, 18)) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n155
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n155
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_n155
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n155
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_n155
+PREHOOK: query: CREATE TABLE T2_n91(key STRING, val STRING)
+SKEWED BY (key, val) ON ((3, 13), (8, 18)) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_n91
+POSTHOOK: query: CREATE TABLE T2_n91(key STRING, val STRING)
+SKEWED BY (key, val) ON ((3, 13), (8, 18)) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_n91
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n91
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t2_n91
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n91
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t2_n91
+PREHOOK: query: EXPLAIN
+SELECT a.*, b.* FROM T1_n155 a JOIN T2_n91 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n155
+PREHOOK: Input: default@t2_n91
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.*, b.* FROM T1_n155 a JOIN T2_n91 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n155
+POSTHOOK: Input: default@t2_n91
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.0
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), val (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        input vertices:
+                          1 Map 2
+                        Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), val (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a.*, b.* FROM T1_n155 a JOIN T2_n91 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n155
+PREHOOK: Input: default@t2_n91
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n155 a JOIN T2_n91 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n155
+POSTHOOK: Input: default@t2_n91
+#### A masked pattern was here ####
+2	12	2	22
+3	13	3	13
+8	18	8	18
+8	18	8	18
+8	28	8	18
+8	28	8	18

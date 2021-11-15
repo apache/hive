@@ -17,6 +17,18 @@
  */
 package org.apache.hadoop.hive.ql;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -24,11 +36,16 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -40,13 +57,6 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
   //bucket count for test tables; set it to 1 for easier debugging
@@ -54,8 +64,10 @@ public abstract class TxnCommandsBaseForTests {
   @Rule
   public TestName testName = new TestName();
   protected HiveConf hiveConf;
-  Driver d;
-  enum Table {
+  protected Driver d;
+  protected TxnStore txnHandler;
+
+  public enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
     ACIDTBL2("acidTbl2"),
@@ -73,9 +85,18 @@ public abstract class TxnCommandsBaseForTests {
     }
   }
 
+  public TxnStore getTxnStore() {
+    return txnHandler;
+  }
+
   @Before
   public void setUp() throws Exception {
     setUpInternal();
+
+    // set up metastore client cache
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init(hiveConf);
+    }
   }
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
@@ -103,8 +124,9 @@ public abstract class TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
-    TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -114,7 +136,7 @@ public abstract class TxnCommandsBaseForTests {
     }
     SessionState ss = SessionState.start(hiveConf);
     ss.applyAuthorizationPolicy();
-    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build(), null);
+    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build());
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -139,7 +161,7 @@ public abstract class TxnCommandsBaseForTests {
         d = null;
       }
     } finally {
-      TxnDbUtil.cleanDb(hiveConf);
+      TestTxnDbUtil.cleanDb(hiveConf);
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }
@@ -151,8 +173,34 @@ public abstract class TxnCommandsBaseForTests {
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
    */
-  List<String> stringifyValues(int[][] rowsIn) {
-    return TestTxnCommands2.stringifyValues(rowsIn);
+  public static List<String> stringifyValues(int[][] rowsIn) {
+    assert rowsIn.length > 0;
+    int[][] rows = rowsIn.clone();
+    Arrays.sort(rows, new RowComp());
+    List<String> rs = new ArrayList<>();
+    for(int[] row : rows) {
+      assert row.length > 0;
+      StringBuilder sb = new StringBuilder();
+      for(int value : row) {
+        sb.append(value).append("\t");
+      }
+      sb.setLength(sb.length() - 1);
+      rs.add(sb.toString());
+    }
+    return rs;
+  }
+  static class RowComp implements Comparator<int[]> {
+    @Override
+    public int compare(int[] row1, int[] row2) {
+      assert row1 != null && row2 != null && row1.length == row2.length;
+      for(int i = 0; i < row1.length; i++) {
+        int comp = Integer.compare(row1[i], row2[i]);
+        if(comp != 0) {
+          return comp;
+        }
+      }
+      return 0;
+    }
   }
   protected String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
@@ -161,16 +209,17 @@ public abstract class TxnCommandsBaseForTests {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
   public static void runCleaner(HiveConf hiveConf) throws Exception {
+    // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
+    Thread.sleep(MetastoreConf.getTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
   }
   public static void runInitiator(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
   }
-  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
-    CompactorThread t = null;
+    CompactorThread t;
     switch (type) {
       case INITIATOR:
         t = new Initiator();
@@ -186,25 +235,27 @@ public abstract class TxnCommandsBaseForTests {
     }
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
+    t.init(stop);
     t.run();
   }
 
   protected List<String> runStatementOnDriver(String stmt) throws Exception {
     LOG.info("Running the query: " + stmt);
-    CommandProcessorResponse cpr = d.run(stmt);
-    if(cpr.getResponseCode() != 0) {
-      throw new RuntimeException(stmt + " failed: " + cpr);
+    try {
+      d.run(stmt);
+    } catch (CommandProcessorException e) {
+      throw new RuntimeException(stmt + " failed: " + e);
     }
-    List<String> rs = new ArrayList<String>();
+    List<String> rs = new ArrayList<>();
     d.getResults(rs);
     return rs;
   }
-  CommandProcessorResponse runStatementOnDriverNegative(String stmt) throws Exception {
-    CommandProcessorResponse cpr = d.run(stmt);
-    if(cpr.getResponseCode() != 0) {
-      return cpr;
+
+  protected CommandProcessorException runStatementOnDriverNegative(String stmt) {
+    try {
+      d.run(stmt);
+    } catch (CommandProcessorException e) {
+      return e;
     }
     throw new RuntimeException("Didn't get expected failure!");
   }
@@ -228,14 +279,8 @@ public abstract class TxnCommandsBaseForTests {
    * @param expectedFiles - suffixes of expected Paths.  Must be the same length
    * @param rootPath - table or partition root where to start looking for actual files, recursively
    */
-  void assertExpectedFileSet(Set<String> expectedFiles, String rootPath) throws Exception {
-    int suffixLength = 0;
-    for(String s : expectedFiles) {
-      if(suffixLength > 0) {
-        assert suffixLength == s.length() : "all entries must be the same length. current: " + s;
-      }
-      suffixLength = s.length();
-    }
+  void assertExpectedFileSet(Set<String> expectedFiles, String rootPath, String tableName) throws Exception {
+    Pattern pattern = Pattern.compile("(.+)/(" + tableName + "/[delete_delta|delta|base].+)");
     FileSystem fs = FileSystem.get(hiveConf);
     Set<String> actualFiles = new HashSet<>();
     RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(new Path(rootPath), true);
@@ -243,7 +288,10 @@ public abstract class TxnCommandsBaseForTests {
       LocatedFileStatus lfs = remoteIterator.next();
       if(!lfs.isDirectory() && org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER.accept(lfs.getPath())) {
         String p = lfs.getPath().toString();
-        actualFiles.add(p.substring(p.length() - suffixLength, p.length()));
+        Matcher matcher = pattern.matcher(p);
+        if (matcher.matches()) {
+          actualFiles.add(matcher.group(2));
+        }
       }
     }
     Assert.assertEquals("Unexpected file list", expectedFiles, actualFiles);

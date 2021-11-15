@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.parser;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -28,14 +29,14 @@ import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -222,23 +223,18 @@ public class ExpressionTree {
 
     /**
      * Generates a JDO filter statement
-     * @param table
-     *        The table on which the filter is applied.  If table is not null,
-     *        then this method generates a JDO statement to get all partitions
-     *        of the table that match the filter.
-     *        If table is null, then this method generates a JDO statement to get all
-     *        tables that match the filter.
      * @param params
      *        A map of parameter key to values for the filter statement.
      * @param filterBuffer The filter builder that is used to build filter.
+     * @param partitionKeys
      * @throws MetaException
      */
-    public void generateJDOFilter(Configuration conf, Table table,
-        Map<String, Object> params, FilterBuilder filterBuffer) throws MetaException {
+    public void generateJDOFilter(Configuration conf,
+                                  Map<String, Object> params, FilterBuilder filterBuffer, List<FieldSchema> partitionKeys) throws MetaException {
       if (filterBuffer.hasError()) return;
       if (lhs != null) {
         filterBuffer.append (" (");
-        lhs.generateJDOFilter(conf, table, params, filterBuffer);
+        lhs.generateJDOFilter(conf, params, filterBuffer, partitionKeys);
 
         if (rhs != null) {
           if( andOr == LogicalOperator.AND ) {
@@ -247,7 +243,7 @@ public class ExpressionTree {
             filterBuffer.append(" || ");
           }
 
-          rhs.generateJDOFilter(conf, table, params, filterBuffer);
+          rhs.generateJDOFilter(conf, params, filterBuffer, partitionKeys);
         }
         filterBuffer.append (") ");
       }
@@ -271,10 +267,10 @@ public class ExpressionTree {
     }
 
     @Override
-    public void generateJDOFilter(Configuration conf, Table table, Map<String, Object> params,
-        FilterBuilder filterBuilder) throws MetaException {
-      if (table != null) {
-        generateJDOFilterOverPartitions(conf, table, params, filterBuilder);
+    public void generateJDOFilter(Configuration conf, Map<String, Object> params,
+                                  FilterBuilder filterBuilder, List<FieldSchema> partitionKeys) throws MetaException {
+      if (partitionKeys != null) {
+        generateJDOFilterOverPartitions(conf, params, filterBuilder, partitionKeys);
       } else {
         generateJDOFilterOverTables(params, filterBuilder);
       }
@@ -344,24 +340,28 @@ public class ExpressionTree {
       }
     }
 
-    private void generateJDOFilterOverPartitions(Configuration conf, Table table,
-        Map<String, Object> params,  FilterBuilder filterBuilder) throws MetaException {
-      int partitionColumnCount = table.getPartitionKeys().size();
-      int partitionColumnIndex = getPartColIndexForFilter(table, filterBuilder);
+    private void generateJDOFilterOverPartitions(Configuration conf,
+                                                 Map<String, Object> params, FilterBuilder filterBuilder, List<FieldSchema> partitionKeys) throws MetaException {
+      int partitionColumnCount = partitionKeys.size();
+      int partitionColumnIndex = getPartColIndexForFilter(partitionKeys, filterBuilder);
       if (filterBuilder.hasError()) return;
 
       boolean canPushDownIntegral =
           MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.INTEGER_JDO_PUSHDOWN);
       String valueAsString = getJdoFilterPushdownParam(
-          table, partitionColumnIndex, filterBuilder, canPushDownIntegral);
+              partitionColumnIndex, filterBuilder, canPushDownIntegral, partitionKeys);
       if (filterBuilder.hasError()) return;
 
       String paramName = PARAM_PREFIX + params.size();
-      params.put(paramName, valueAsString);
+      if (operator == Operator.LIKE) {
+        params.put(paramName, makeJdoFilterForLike(valueAsString));
+      } else {
+        params.put(paramName, valueAsString);
+      }
 
       boolean isOpEquals = operator == Operator.EQUALS;
       if (isOpEquals || operator == Operator.NOTEQUALS || operator == Operator.NOTEQUALS2) {
-        String partitionKey = table.getPartitionKeys().get(partitionColumnIndex).getName();
+        String partitionKey = partitionKeys.get(partitionColumnIndex).getName();
         makeFilterForEquals(partitionKey, valueAsString, paramName, params,
             partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder);
         return;
@@ -384,6 +384,30 @@ public class ExpressionTree {
       }
     }
 
+    private static String makeJdoFilterForLike(String likePattern) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < likePattern.length(); i++) {
+        // Make a special case for "\\_" and "\\%"
+        char n = likePattern.charAt(i);
+        if (n == '\\'
+            && i + 1 < likePattern.length()
+            && (likePattern.charAt(i + 1) == '_' || likePattern.charAt(i + 1) == '%')) {
+          sb.append(likePattern.charAt(i + 1));
+          i++;
+          continue;
+        }
+
+        if (n == '_') {
+          sb.append(".");
+        } else if (n == '%') {
+          sb.append(".*");
+        } else {
+          sb.append(likePattern.charAt(i));
+        }
+      }
+      return sb.toString();
+    }
+
     /**
      * @return true iff filter pushdown for this operator can be done for integral types.
      */
@@ -396,22 +420,21 @@ public class ExpressionTree {
     /**
      * Get partition column index in the table partition column list that
      * corresponds to the key that is being filtered on by this tree node.
-     * @param table The table.
+     * @param partitionKeys list of partition keys.
      * @param filterBuilder filter builder used to report error, if any.
      * @return The index.
      */
     public int getPartColIndexForFilter(
-        Table table, FilterBuilder filterBuilder) throws MetaException {
+        List<FieldSchema> partitionKeys, FilterBuilder filterBuilder) throws MetaException {
+      assert (partitionKeys.size() > 0);
       int partitionColumnIndex;
-      assert (table.getPartitionKeys().size() > 0);
-      for (partitionColumnIndex = 0; partitionColumnIndex < table.getPartitionKeys().size();
-          ++partitionColumnIndex) {
-        if (table.getPartitionKeys().get(partitionColumnIndex).getName().
-            equalsIgnoreCase(keyName)) {
+      for (partitionColumnIndex = 0; partitionColumnIndex < partitionKeys.size();
+           ++partitionColumnIndex) {
+        if (partitionKeys.get(partitionColumnIndex).getName().equalsIgnoreCase(keyName)) {
           break;
         }
       }
-      if( partitionColumnIndex == table.getPartitionKeys().size()) {
+      if( partitionColumnIndex == partitionKeys.size()) {
         filterBuilder.setError("Specified key <" + keyName +
             "> is not a partitioning key for the table");
         return -1;
@@ -423,15 +446,15 @@ public class ExpressionTree {
     /**
      * Validates and gets the query parameter for JDO filter pushdown based on the column
      * and the constant stored in this node.
-     * @param table The table.
+     * @param partitionKeys
      * @param partColIndex The index of the column to check.
      * @param filterBuilder filter builder used to report error, if any.
      * @return The parameter string.
      */
-    private String getJdoFilterPushdownParam(Table table, int partColIndex,
-        FilterBuilder filterBuilder, boolean canPushDownIntegral) throws MetaException {
+    private String getJdoFilterPushdownParam(int partColIndex,
+                                             FilterBuilder filterBuilder, boolean canPushDownIntegral, List<FieldSchema> partitionKeys) throws MetaException {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
-      String colType = table.getPartitionKeys().get(partColIndex).getType();
+      String colType = partitionKeys.get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
       if (!colType.equals(ColumnType.STRING_TYPE_NAME)
           && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
@@ -566,20 +589,20 @@ public class ExpressionTree {
   }
 
   /** Generate the JDOQL filter for the given expression tree
-   * @param table the table being queried
    * @param params the input map which is updated with the
    *     the parameterized values. Keys are the parameter names and values
    *     are the parameter values
    * @param filterBuilder the filter builder to append to.
+   * @param partitionKeys
    */
-  public void generateJDOFilterFragment(Configuration conf, Table table,
-      Map<String, Object> params, FilterBuilder filterBuilder) throws MetaException {
+  public void generateJDOFilterFragment(Configuration conf,
+                                        Map<String, Object> params, FilterBuilder filterBuilder, List<FieldSchema> partitionKeys) throws MetaException {
     if (root == null) {
       return;
     }
 
     filterBuilder.append(" && ( ");
-    root.generateJDOFilter(conf, table, params, filterBuilder);
+    root.generateJDOFilter(conf, params, filterBuilder, partitionKeys);
     filterBuilder.append(" )");
   }
 

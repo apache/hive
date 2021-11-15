@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordSource;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -44,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -91,6 +92,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   // A field because we cannot multi-inherit.
   transient InterruptibleProcessing interruptChecker;
+
+  transient NullOrdering nullOrdering;
 
   /** Kryo ctor. */
   protected CommonMergeJoinOperator() {
@@ -164,12 +167,30 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     sources = ((TezContext) MapredContext.get()).getRecordSources();
     interruptChecker = new InterruptibleProcessing();
 
-    if (sources[0] instanceof ReduceRecordSource &&
-        parentOperators != null && !parentOperators.isEmpty()) {
-      // Tell ReduceRecordSource to flush last record as this is a reduce
-      // side SMB
+    nullOrdering = NullOrdering.NULLS_FIRST;
+    if (sources[0] instanceof ReduceRecordSource) {
+      ReduceRecordSource reduceRecordSource = (ReduceRecordSource) sources[0];
+      if (reduceRecordSource.getKeyTableDesc() != null &&
+              reduceRecordSource.getKeyTableDesc().getProperties() != null) {
+        String nullSortOrder = reduceRecordSource.getKeyTableDesc().getProperties()
+                .getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
+        if (nullOrdering != null && !nullSortOrder.isEmpty()) {
+          nullOrdering = NullOrdering.fromSign(nullSortOrder.charAt(0));
+        }
+      }
+      nullOrdering = NullOrdering.defaultNullOrder(hconf);
+    }
+
+    if (parentOperators != null && !parentOperators.isEmpty()) {
+      // Tell RecordSource to flush last record even if its a map side SMB. SMB expect its
+      // parent group by operators to emit the record as and when aggregation is done.
+      // In case of group by with FINAL/MERGE_PARTIAL mode, the records are expected to come
+      // in a sorted order to group by operator and the group by operator is suppose to
+      // emit the aggregated value to next node once a record with different value
+      // is received. In case we dont flush here, the last aggregate value will not be
+      // emitted as it will keep waiting for the next different record.
       for (RecordSource source : sources) {
-        ((ReduceRecordSource) source).setFlushLastRecord(true);
+        source.setFlushLastRecord(true);
       }
     }
   }
@@ -226,6 +247,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);
+    addToAliasFilterTags(alias, value, nextKeyGroup);
     if (nextKeyGroup) {
       //assert this.nextGroupStorage[alias].size() == 0;
       this.nextGroupStorage[alias].addRow(value);
@@ -573,9 +595,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       return compareKeysMany(comparators, k1, k2);
     } else {
       return compareKey(comparators, 0,
-          (WritableComparable) k1.get(0),
-          (WritableComparable) k2.get(0),
-          nullsafes != null ? nullsafes[0]: false);
+              k1.get(0),
+              k2.get(0),
+              nullsafes != null ? nullsafes[0]: false);
     }
   }
 
@@ -587,9 +609,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     int ret = 0;
     final int size = k1.size();
     for (int i = 0; i < size; i++) {
-      WritableComparable key_1 = (WritableComparable) k1.get(i);
-      WritableComparable key_2 = (WritableComparable) k2.get(i);
-      ret = compareKey(comparators, i, key_1, key_2,
+      ret = compareKey(comparators, i, k1.get(i), k2.get(i),
           nullsafes != null ? nullsafes[i] : false);
       if (ret != 0) {
         return ret;
@@ -600,24 +620,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   @SuppressWarnings("rawtypes")
   private int compareKey(final WritableComparator comparators[], final int pos,
-      final WritableComparable key_1,
-      final WritableComparable key_2,
+      final Object key_1,
+      final Object key_2,
       final boolean nullsafe) {
-
-    if (key_1 == null && key_2 == null) {
-      if (nullsafe) {
-        return 0;
-      } else {
-        return -1;
-      }
-    } else if (key_1 == null) {
-      return -1;
-    } else if (key_2 == null) {
-      return 1;
-    }
-
     if (comparators[pos] == null) {
-      comparators[pos] = WritableComparator.get(key_1.getClass());
+      comparators[pos] = WritableComparatorFactory.get(key_1, nullsafe, nullOrdering);
     }
     return comparators[pos].compare(key_1, key_2);
   }

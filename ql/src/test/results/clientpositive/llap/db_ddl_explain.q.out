@@ -1,0 +1,172 @@
+PREHOOK: query: EXPLAIN CREATE DATABASE d
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:d
+POSTHOOK: query: EXPLAIN CREATE DATABASE d
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:d
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Database
+      database type:
+      name: d
+
+PREHOOK: query: CREATE DATABASE d
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:d
+POSTHOOK: query: CREATE DATABASE d
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:d
+PREHOOK: query: EXPLAIN SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: EXPLAIN SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Databases
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+d
+default
+PREHOOK: query: EXPLAIN DESCRIBE DATABASE d
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:d
+POSTHOOK: query: EXPLAIN DESCRIBE DATABASE d
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:d
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Database
+      database: d
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE DATABASE d
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:d
+POSTHOOK: query: DESCRIBE DATABASE d
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:d
+d		location/in/test		hive_test_user	USER		
+PREHOOK: query: EXPLAIN ALTER DATABASE d SET dbproperties('test'='yesthisis')
+PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:d
+POSTHOOK: query: EXPLAIN ALTER DATABASE d SET dbproperties('test'='yesthisis')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:d
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Set Database Properties
+      name: d
+      properties:
+        test yesthisis
+
+PREHOOK: query: ALTER DATABASE d SET dbproperties('test'='yesthisis')
+PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:d
+POSTHOOK: query: ALTER DATABASE d SET dbproperties('test'='yesthisis')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:d
+PREHOOK: query: EXPLAIN SHOW CREATE DATABASE d
+PREHOOK: type: SHOW_CREATEDATABASE
+PREHOOK: Input: database:d
+POSTHOOK: query: EXPLAIN SHOW CREATE DATABASE d
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:d
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Create Database
+      database name: d
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW CREATE DATABASE d
+PREHOOK: type: SHOW_CREATEDATABASE
+PREHOOK: Input: database:d
+POSTHOOK: query: SHOW CREATE DATABASE d
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:d
+CREATE DATABASE `d`
+LOCATION
+#### A masked pattern was here ####
+WITH DBPROPERTIES (
+  'test'='yesthisis')
+PREHOOK: query: EXPLAIN USE d
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:d
+POSTHOOK: query: EXPLAIN USE d
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:d
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Switch Database
+      name: d
+
+PREHOOK: query: USE d
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:d
+POSTHOOK: query: USE d
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:d
+PREHOOK: query: EXPLAIN DROP DATABASE d
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:d
+PREHOOK: Output: database:d
+POSTHOOK: query: EXPLAIN DROP DATABASE d
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:d
+POSTHOOK: Output: database:d
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Database
+      database: d
+      if exists: false
+
+PREHOOK: query: DROP DATABASE d
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:d
+PREHOOK: Output: database:d
+POSTHOOK: query: DROP DATABASE d
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:d
+POSTHOOK: Output: database:d

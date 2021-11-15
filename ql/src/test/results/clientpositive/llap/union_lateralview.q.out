@@ -1,0 +1,345 @@
+PREHOOK: query: create table test_union_lateral_view(key int, arr_ele int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_union_lateral_view
+POSTHOOK: query: create table test_union_lateral_view(key int, arr_ele int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_union_lateral_view
+PREHOOK: query: EXPLAIN 
+INSERT OVERWRITE TABLE test_union_lateral_view
+SELECT b.key, d.arr_ele, d.value
+FROM (
+ SELECT c.arr_ele as arr_ele, a.key as key, a.value as value
+ FROM (
+   SELECT key, value, array(1,2,3) as arr
+   FROM src
+
+   UNION ALL
+   
+   SELECT key, value, array(1,2,3) as arr
+   FROM srcpart
+   WHERE ds = '2008-04-08' and hr='12'
+ ) a LATERAL VIEW EXPLODE(arr) c AS arr_ele
+) d
+LEFT OUTER JOIN src b
+ON d.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_union_lateral_view
+POSTHOOK: query: EXPLAIN 
+INSERT OVERWRITE TABLE test_union_lateral_view
+SELECT b.key, d.arr_ele, d.value
+FROM (
+ SELECT c.arr_ele as arr_ele, a.key as key, a.value as value
+ FROM (
+   SELECT key, value, array(1,2,3) as arr
+   FROM src
+
+   UNION ALL
+   
+   SELECT key, value, array(1,2,3) as arr
+   FROM srcpart
+   WHERE ds = '2008-04-08' and hr='12'
+ ) a LATERAL VIEW EXPLODE(arr) c AS arr_ele
+) d
+LEFT OUTER JOIN src b
+ON d.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_union_lateral_view
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 5 <- Union 2 (CONTAINS)
+        Reducer 3 <- Map 6 (SIMPLE_EDGE), Union 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), array(1,2,3) (type: array<int>)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 117000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Lateral View Forward
+                      Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col3
+                          Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col1 (type: string)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col1 (type: string)
+                              Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: int), _col2 (type: string)
+                      Select Operator
+                        expressions: _col2 (type: array<int>)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
+                        UDTF Operator
+                          Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col3
+                            Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Select Operator
+                              expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
+                              outputColumnNames: _col0, _col1, _col2
+                              Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                key expressions: _col1 (type: string)
+                                null sort order: z
+                                sort order: +
+                                Map-reduce partition columns: _col1 (type: string)
+                                Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((ds = '2008-04-08') and (hr = '12')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), array(1,2,3) (type: array<int>)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 117000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Lateral View Forward
+                      Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col3
+                          Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col1 (type: string)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col1 (type: string)
+                              Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: int), _col2 (type: string)
+                      Select Operator
+                        expressions: _col2 (type: array<int>)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
+                        UDTF Operator
+                          Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col3
+                            Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Select Operator
+                              expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
+                              outputColumnNames: _col0, _col1, _col2
+                              Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                key expressions: _col1 (type: string)
+                                null sort order: z
+                                sort order: +
+                                Map-reduce partition columns: _col1 (type: string)
+                                Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: key (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: key (type: string)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col2, _col3
+                Statistics: Num rows: 1552 Data size: 234527 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: UDFToInteger(_col3) (type: int), _col0 (type: int), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1552 Data size: 147440 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1552 Data size: 147440 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test_union_lateral_view
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: key, arr_ele, value
+                    Statistics: Num rows: 1552 Data size: 147440 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), min(arr_ele), max(arr_ele), count(arr_ele), compute_bit_vector_hll(arr_ele), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 492 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 794 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 794 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_union_lateral_view
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, arr_ele, value
+          Column Types: int, int, string
+          Table: default.test_union_lateral_view
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_union_lateral_view
+SELECT b.key, d.arr_ele, d.value
+FROM (
+ SELECT c.arr_ele as arr_ele, a.key as key, a.value as value
+ FROM (
+   SELECT key, value, array(1,2,3) as arr
+   FROM src
+
+   UNION ALL
+   
+   SELECT key, value, array(1,2,3) as arr
+   FROM srcpart
+   WHERE ds = '2008-04-08' and hr='12'
+ ) a LATERAL VIEW EXPLODE(arr) c AS arr_ele
+) d
+LEFT OUTER JOIN src b
+ON d.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_union_lateral_view
+POSTHOOK: query: INSERT OVERWRITE TABLE test_union_lateral_view
+SELECT b.key, d.arr_ele, d.value
+FROM (
+ SELECT c.arr_ele as arr_ele, a.key as key, a.value as value
+ FROM (
+   SELECT key, value, array(1,2,3) as arr
+   FROM src
+
+   UNION ALL
+   
+   SELECT key, value, array(1,2,3) as arr
+   FROM srcpart
+   WHERE ds = '2008-04-08' and hr='12'
+ ) a LATERAL VIEW EXPLODE(arr) c AS arr_ele
+) d
+LEFT OUTER JOIN src b
+ON d.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_union_lateral_view
+POSTHOOK: Lineage: test_union_lateral_view.arr_ele SCRIPT []
+POSTHOOK: Lineage: test_union_lateral_view.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_union_lateral_view.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, arr_ele, value from test_union_lateral_view order by key, arr_ele limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_union_lateral_view
+#### A masked pattern was here ####
+POSTHOOK: query: select key, arr_ele, value from test_union_lateral_view order by key, arr_ele limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_union_lateral_view
+#### A masked pattern was here ####
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	1	val_0
+0	2	val_0
+0	2	val_0

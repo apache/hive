@@ -106,23 +106,17 @@ PREHOOK: query: create table s2 as
 with q1 as ( select key from src where key = '4')
 select * from q1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@q1
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@q1
 PREHOOK: Output: default@s2
-PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: create table s2 as
 with q1 as ( select key from src where key = '4')
 select * from q1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@q1
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@q1
 POSTHOOK: Output: default@s2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: Lineage: s2.key SIMPLE [(q1)q1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: s2.key SIMPLE []
 PREHOOK: query: select * from s2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s2

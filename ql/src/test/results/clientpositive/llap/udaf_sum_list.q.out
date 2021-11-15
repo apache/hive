@@ -1,0 +1,15 @@
+PREHOOK: query: create temporary function sum_list as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSumList'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: sum_list
+POSTHOOK: query: create temporary function sum_list as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSumList'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: sum_list
+PREHOOK: query: select sum_list(array(key, key)) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum_list(array(key, key)) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+260182

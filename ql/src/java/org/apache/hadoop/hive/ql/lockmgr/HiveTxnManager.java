@@ -20,14 +20,16 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
-import org.apache.hadoop.hive.ql.ddl.database.LockDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.DriverState;
+import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -49,6 +51,16 @@ public interface HiveTxnManager {
    * @throws LockException if a transaction is already open.
    */
   long openTxn(Context ctx, String user) throws LockException;
+
+ /**
+  * Open a new transaction.
+  * @param ctx Context for this query
+  * @param user Hive user who is opening this transaction.
+  * @param txnType transaction type.
+  * @return The new transaction id
+  * @throws LockException if a transaction is already open.
+  */
+  long openTxn(Context ctx, String user, TxnType txnType) throws LockException;
 
   /**
    * Open a new transaction in target cluster.
@@ -120,10 +132,10 @@ public interface HiveTxnManager {
    * @param plan query plan
    * @param ctx Context for this query
    * @param username name of the user for this query
-   * @param lDrvState the state to inform if the query cancelled or not
+   * @param driverState the state to inform if the query cancelled or not
    * @throws LockException if there is an error getting the locks
    */
-   void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException;
+   void acquireLocks(QueryPlan plan, Context ctx, String username, DriverState driverState) throws LockException;
 
   /**
    * Release specified locks.
@@ -161,6 +173,8 @@ public interface HiveTxnManager {
    */
   void heartbeat() throws LockException;
 
+  GetOpenTxnsResponse getOpenTxns() throws LockException;
+
   /**
    * Get the transactions that are currently valid.  The resulting
    * {@link ValidTxnList} object can be passed as string to the processing
@@ -171,6 +185,18 @@ public interface HiveTxnManager {
    * @throws LockException
    */
   ValidTxnList getValidTxns() throws LockException;
+
+ /**
+  * Get the transactions that are currently valid.  The resulting
+  * {@link ValidTxnList} object can be passed as string to the processing
+  * tasks for use in the reading the data.  This call should be made once up
+  * front by the planner and should never be called on the backend,
+  * as this will violate the isolation level semantics.
+  * @return list of valid transactions.
+  * @param  excludeTxnTypes list of transaction types that should be excluded.
+  * @throws LockException
+  */
+  ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException;
 
   /**
    * Get the table write Ids that are valid for the current transaction.  The resulting
@@ -265,7 +291,10 @@ public interface HiveTxnManager {
    */
   boolean recordSnapshot(QueryPlan queryPlan);
 
+  @Deprecated
   boolean isImplicitTransactionOpen();
+
+  boolean isImplicitTransactionOpen(Context ctx);
 
   boolean isTxnOpen();
   /**
@@ -319,4 +348,12 @@ public interface HiveTxnManager {
    */
   LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
       throws LockException;
+
+ long getLatestTxnIdInConflict() throws LockException;
+
+ /**
+  * Return the queryId this txnManager is handling
+  * @return
+  */
+ String getQueryid();
 }

@@ -318,6 +318,15 @@ public enum Type {
     }
   }
 
+  public static Type fromJavaSQLType(int javaSQLType) {
+    for (Type each : Type.values()) {
+      if (each.javaSQLType == javaSQLType) {
+        return each;
+      }
+    }
+    return null;
+  }
+
   /**
    * Prefix used to quote a literal of this type (may be null)
    */

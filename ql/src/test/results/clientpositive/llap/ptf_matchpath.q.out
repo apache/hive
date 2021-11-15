@@ -79,12 +79,13 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: fl_num (type: string), year (type: int), month (type: int), day_of_month (type: int)
+                    null sort order: azzz
                     sort order: ++++
                     Map-reduce partition columns: fl_num (type: string)
                     Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                     value expressions: origin_city_name (type: string), arr_delay (type: float)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -211,12 +212,13 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: 0 (type: int), fl_num (type: string), year (type: int), month (type: int), day_of_month (type: int)
+                    null sort order: azzzz
                     sort order: +++++
                     Map-reduce partition columns: 0 (type: int)
                     Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                     value expressions: origin_city_name (type: string), arr_delay (type: float)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -341,12 +343,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: 0 (type: int), _col6 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int)
+                        null sort order: azzzz
                         sort order: +++++
                         Map-reduce partition columns: 0 (type: int)
                         Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col5 (type: float)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

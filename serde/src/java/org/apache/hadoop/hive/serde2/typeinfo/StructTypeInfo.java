@@ -42,8 +42,8 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private ArrayList<String> allStructFieldNames;
-  private ArrayList<TypeInfo> allStructFieldTypeInfos;
+  private List<String> allStructFieldNames;
+  private List<TypeInfo> allStructFieldTypeInfos;
 
   /**
    * For java serialization use only.
@@ -70,15 +70,14 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
   /**
    * For java serialization use only.
    */
-  public void setAllStructFieldNames(ArrayList<String> allStructFieldNames) {
+  public void setAllStructFieldNames(List<String> allStructFieldNames) {
     this.allStructFieldNames = allStructFieldNames;
   }
 
   /**
    * For java serialization use only.
    */
-  public void setAllStructFieldTypeInfos(
-      ArrayList<TypeInfo> allStructFieldTypeInfos) {
+  public void setAllStructFieldTypeInfos(List<TypeInfo> allStructFieldTypeInfos) {
     this.allStructFieldTypeInfos = allStructFieldTypeInfos;
   }
 
@@ -86,8 +85,8 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
    * For TypeInfoFactory use only.
    */
   StructTypeInfo(List<String> names, List<TypeInfo> typeInfos) {
-    allStructFieldNames = new ArrayList<String>(names);
-    allStructFieldTypeInfos = new ArrayList<TypeInfo>(typeInfos);
+    allStructFieldNames = new ArrayList<>(names);
+    allStructFieldTypeInfos = new ArrayList<>(typeInfos);
   }
 
   @Override
@@ -95,11 +94,11 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
     return Category.STRUCT;
   }
 
-  public ArrayList<String> getAllStructFieldNames() {
+  public List<String> getAllStructFieldNames() {
     return allStructFieldNames;
   }
 
-  public ArrayList<TypeInfo> getAllStructFieldTypeInfos() {
+  public List<TypeInfo> getAllStructFieldTypeInfos() {
     return allStructFieldTypeInfos;
   }
 

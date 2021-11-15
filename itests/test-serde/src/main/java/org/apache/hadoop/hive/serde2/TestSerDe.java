@@ -82,9 +82,12 @@ public class TestSerDe extends AbstractSerDe {
   }
 
   @Override
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     separator = DefaultSeparator;
-    String altSep = tbl.getProperty(DEFAULT_SERIALIZATION_FORMAT);
+    String altSep = properties.getProperty(DEFAULT_SERIALIZATION_FORMAT);
     if (altSep != null && altSep.length() > 0) {
       try {
         byte[] b = new byte[1];
@@ -95,7 +98,7 @@ public class TestSerDe extends AbstractSerDe {
       }
     }
 
-    String columnProperty = tbl.getProperty(COLUMNS);
+    String columnProperty = properties.getProperty(COLUMNS);
     if (columnProperty == null || columnProperty.length() == 0) {
       // Hack for tables with no columns
       // Treat it as a table with a single column called "col"
@@ -105,7 +108,7 @@ public class TestSerDe extends AbstractSerDe {
     } else {
       columnNames = Arrays.asList(columnProperty.split(","));
       cachedObjectInspector = MetadataListStructObjectInspector
-          .getInstance(columnNames,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty(COLUMNS_COMMENTS))));
+          .getInstance(columnNames,Lists.newArrayList(Splitter.on('\0').split(properties.getProperty(COLUMNS_COMMENTS))));
     }
     LOG.info(getClass().getName() + ": initialized with columnNames: "
         + columnNames);
@@ -199,12 +202,6 @@ public class TestSerDe extends AbstractSerDe {
     }
     serializeCache.set(sb.toString());
     return serializeCache;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
 }

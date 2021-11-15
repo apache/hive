@@ -20,12 +20,7 @@
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class ColumnStatsMerger {
-  protected final Logger LOG = LoggerFactory.getLogger(ColumnStatsMerger.class.getName());
-
-  public abstract void merge(ColumnStatisticsObj aggregateColStats,
-      ColumnStatisticsObj newColStats);
+  public abstract void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats);
 }

@@ -88,7 +88,7 @@ public class HCatAddPartitionDesc {
    *
    * @return the table name
    */
-  @Deprecated // @deprecated in favour of {@link HCatPartition.#getTableName()}. To be removed in Hive 0.16.
+  @Deprecated // @deprecated in favour of {@link HCatPartition.#getDbTableName()}. To be removed in Hive 0.16.
   public String getTableName() {
     return hcatPartition == null? tableName : hcatPartition.getTableName();
   }

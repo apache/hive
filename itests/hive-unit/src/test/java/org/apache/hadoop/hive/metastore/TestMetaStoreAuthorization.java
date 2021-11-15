@@ -29,10 +29,15 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 
-public class TestMetaStoreAuthorization extends TestCase {
+/**
+ * TestMetaStoreAuthorization.
+ */
+public class TestMetaStoreAuthorization {
   protected HiveConf conf = new HiveConf();
 
   private int port;
@@ -43,6 +48,7 @@ public class TestMetaStoreAuthorization extends TestCase {
     conf.setTimeVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60, TimeUnit.SECONDS);
   }
 
+  @Test
   public void testIsWritable() throws Exception {
     setup();
     String testDir = System.getProperty("test.warehouse.dir", "/tmp");
@@ -66,6 +72,7 @@ public class TestMetaStoreAuthorization extends TestCase {
     }
   }
 
+  @Test
   public void testMetaStoreAuthorization() throws Exception {
     setup();
     MetaStoreTestUtils.startMetaStoreWithRetry(conf);

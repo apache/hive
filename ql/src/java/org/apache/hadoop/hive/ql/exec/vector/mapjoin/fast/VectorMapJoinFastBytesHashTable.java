@@ -53,6 +53,12 @@ public abstract class VectorMapJoinFastBytesHashTable
     add(keyBytes, 0, keyLength, currentValue);
   }
 
+  @Override
+  public boolean containsLongKey(long currentKey) {
+    // Only supported for Long-Hash implementations
+    throw new RuntimeException("Not supported yet!");
+  }
+
   public abstract void add(byte[] keyBytes, int keyStart, int keyLength,
       BytesWritable currentValue);
 
@@ -62,8 +68,8 @@ public abstract class VectorMapJoinFastBytesHashTable
     if (logicalHashBucketCount > HIGHEST_INT_POWER_OF_2) {
       throwExpandError(HIGHEST_INT_POWER_OF_2, "Bytes");
     }
-    int newLogicalHashBucketCount = logicalHashBucketCount * 2;
-    int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
+    final int newLogicalHashBucketCount = Math.max(FIRST_SIZE_UP, logicalHashBucketCount * 2);
+    final int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
     int newMetricPutConflict = 0;
     int newLargestNumberOfSteps = 0;
 

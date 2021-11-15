@@ -28,6 +28,15 @@ import java.util.stream.Collectors;
 public class DatasetCollection {
   private Set<Dataset> coll = new HashSet<Dataset>();
 
+  public DatasetCollection() {
+  }
+
+  public DatasetCollection(Set<String> datasets) {
+    for (String datasetName : datasets) {
+      add(datasetName);
+    }
+  }
+
   public void add(Dataset dataset) {
     coll.add(dataset);
   }

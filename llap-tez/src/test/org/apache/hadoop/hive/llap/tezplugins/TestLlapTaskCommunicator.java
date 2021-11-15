@@ -17,9 +17,8 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -67,7 +66,7 @@ import org.mockito.stubbing.Answer;
 
 public class TestLlapTaskCommunicator {
 
-  @Test (timeout = 5000)
+  @Test (timeout = 30000)
   public void testEntityTracker1() {
     LlapTaskCommunicator.EntityTracker entityTracker = new LlapTaskCommunicator.EntityTracker();
 
@@ -122,7 +121,7 @@ public class TestLlapTaskCommunicator {
   }
 
 
-  @Test(timeout = 5000)
+  @Test(timeout = 30000)
   public void testFinishableStateUpdateFailure() throws Exception {
 
     LlapTaskCommunicatorWrapperForTest wrapper = null;

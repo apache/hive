@@ -26,18 +26,18 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * rule.
  *
  */
-public class CompositeProcessor implements NodeProcessor {
+public class CompositeProcessor implements SemanticNodeProcessor {
 
-  NodeProcessor[] procs;
+  SemanticNodeProcessor[] procs;
 
-  public CompositeProcessor(NodeProcessor...nodeProcessors) {
+  public CompositeProcessor(SemanticNodeProcessor...nodeProcessors) {
     procs = nodeProcessors;
   }
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
-    for (NodeProcessor proc: procs) {
+    for (SemanticNodeProcessor proc: procs) {
       proc.process(nd, stack, procCtx, nodeOutputs);
     }
     return null;

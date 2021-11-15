@@ -24,11 +24,14 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class TestUDFDateFormatGranularity extends TestCase {
+/**
+ * TestUDFDateFormatGranularity.
+ */
+public class TestUDFDateFormatGranularity {
 
   // Timestamp values are PST (timezone for tests is set to PST by default)
 

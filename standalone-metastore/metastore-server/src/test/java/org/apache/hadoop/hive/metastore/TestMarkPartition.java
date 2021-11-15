@@ -83,7 +83,7 @@ public class TestMarkPartition {
     kvs.put("b", "'2011'");
     msc.markPartitionForEvent(dbName, tableName, kvs, PartitionEventType.LOAD_DONE);
     Assert.assertTrue(msc.isPartitionMarkedForEvent(dbName, tableName, kvs, PartitionEventType.LOAD_DONE));
-    Thread.sleep(3000);
+    Thread.sleep(10000);
     Assert.assertFalse(msc.isPartitionMarkedForEvent(dbName, tableName, kvs, PartitionEventType.LOAD_DONE));
 
     kvs.put("b", "'2012'");

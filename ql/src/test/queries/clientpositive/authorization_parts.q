@@ -1,8 +1,5 @@
+--! qt:authorizer
 set hive.mapred.mode=nonstrict;
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
-set hive.security.authorization.enabled=true;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/a_uri_add_part1;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/a_uri_add_part2;

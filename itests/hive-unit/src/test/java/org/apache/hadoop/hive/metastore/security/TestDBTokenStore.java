@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.metastore.security;
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.TestCase;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.security.DBTokenStore;
@@ -32,9 +32,20 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import org.junit.Test;
 
-public class TestDBTokenStore extends TestCase{
+/**
+ * TestDBTokenStore.
+ */
+public class TestDBTokenStore {
 
+  @Test
   public void testDBTokenStore() throws TokenStoreException, MetaException, IOException {
 
     DelegationTokenStore ts = new DBTokenStore();

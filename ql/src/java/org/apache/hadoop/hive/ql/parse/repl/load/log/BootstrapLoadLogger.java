@@ -22,7 +22,12 @@ import org.apache.hadoop.hive.ql.parse.repl.load.log.state.*;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
-public class BootstrapLoadLogger extends ReplLogger {
+/**
+ * BootstrapLoadLogger.
+ *
+ * Repllogger for bootstrap Load.
+ **/
+public class BootstrapLoadLogger extends ReplLogger<String> {
   private String dbName;
   private String dumpDir;
   private long numTables;
@@ -62,5 +67,13 @@ public class BootstrapLoadLogger extends ReplLogger {
   public void endLog(String lastReplId) {
     (new BootstrapLoadEnd(dbName, numTables, numFunctions, dumpDir, lastReplId))
             .log(LogTag.END);
+  }
+
+  @Override
+  public void setParams(String dbName, String dumpDirectory, long numTables, long numFunctions) {
+    this.dbName = dbName;
+    this.dumpDir = dumpDirectory;
+    this.numTables = numTables;
+    this.numFunctions = numFunctions;
   }
 }

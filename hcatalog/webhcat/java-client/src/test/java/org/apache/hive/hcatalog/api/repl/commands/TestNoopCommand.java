@@ -18,15 +18,19 @@
  */
 package org.apache.hive.hcatalog.api.repl.commands;
 
-import junit.framework.TestCase;
+
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.CommandTestUtils;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-public class TestNoopCommand extends TestCase {
+/**
+ * TestNoopCommand.
+ */
+public class TestNoopCommand {
 
   @Test
-  public static void testCommand(){
+  public void testCommand(){
     int evid = 999;
     Command testCmd = new NoopCommand(evid);
 

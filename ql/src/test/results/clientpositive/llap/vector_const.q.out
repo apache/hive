@@ -1,0 +1,123 @@
+PREHOOK: query: CREATE TEMPORARY TABLE varchar_const_1 (c1 int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_const_1
+POSTHOOK: query: CREATE TEMPORARY TABLE varchar_const_1 (c1 int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_const_1
+PREHOOK: query: INSERT INTO varchar_const_1 values(42)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@varchar_const_1
+POSTHOOK: query: INSERT INTO varchar_const_1 values(42)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@varchar_const_1
+POSTHOOK: Lineage: varchar_const_1.c1 SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: varchar_const_1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 'FF' (type: varchar(4))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+FF
+PREHOOK: query: EXPLAIN
+SELECT CONCAT(CAST('F' AS CHAR(200)), CAST('F' AS CHAR(200))) FROM VARCHAR_CONST_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT CONCAT(CAST('F' AS CHAR(200)), CAST('F' AS CHAR(200))) FROM VARCHAR_CONST_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: varchar_const_1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 'FF' (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CONCAT(CAST('F' AS CHAR(200)), CAST('F' AS CHAR(200))) FROM VARCHAR_CONST_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CONCAT(CAST('F' AS CHAR(200)), CAST('F' AS CHAR(200))) FROM VARCHAR_CONST_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
+FF

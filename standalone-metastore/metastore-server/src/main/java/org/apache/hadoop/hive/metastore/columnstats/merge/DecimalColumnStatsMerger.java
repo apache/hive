@@ -24,21 +24,27 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 
+import com.google.common.base.MoreObjects;
+
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.decimalInspectorFromStats;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DecimalColumnStatsMerger.class);
+
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    DecimalColumnStatsDataInspector aggregateData =
-        decimalInspectorFromStats(aggregateColStats);
-    DecimalColumnStatsDataInspector newData =
-        decimalInspectorFromStats(newColStats);
+    LOG.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
 
-    Decimal lowValue = getMin(aggregateData.getLowValue(), newData.getLowValue());
-    aggregateData.setLowValue(lowValue);
+    DecimalColumnStatsDataInspector aggregateData = decimalInspectorFromStats(aggregateColStats);
+    DecimalColumnStatsDataInspector newData = decimalInspectorFromStats(newColStats);
 
-    Decimal highValue = getMax(aggregateData.getHighValue(), newData.getHighValue());
-    aggregateData.setHighValue(highValue);
+    setLowValue(aggregateData, newData);
+    setHighValue(aggregateData, newData);
 
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
 
@@ -47,7 +53,7 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
     } else {
       NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
       NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      long ndv = -1;
+      final long ndv;
       if (oldEst.canMerge(newEst)) {
         oldEst.mergeEstimators(newEst);
         ndv = oldEst.estimateNumDistinctValues();
@@ -55,33 +61,43 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
-          + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
+      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
+          aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setDecimalStats(aggregateData);
   }
 
-  Decimal getMax(Decimal firstValue, Decimal secondValue) {
-    if (firstValue == null && secondValue == null) {
-      return null;
+  public void setLowValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+    final Decimal aggregateLowValue = aggregateData.getLowValue();
+    final Decimal newLowValue = newData.getLowValue();
+
+    final Decimal mergedLowValue;
+    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+      return;
+    } else if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      mergedLowValue = ObjectUtils.min(newLowValue, aggregateLowValue);
+    } else {
+      mergedLowValue = MoreObjects.firstNonNull(aggregateLowValue, newLowValue);
     }
 
-    if (firstValue != null && secondValue != null) {
-      return firstValue.compareTo(secondValue) > 0 ? firstValue : secondValue;
-    }
-
-    return firstValue == null ? secondValue : firstValue;
+    aggregateData.setLowValue(mergedLowValue);
   }
 
-  Decimal getMin(Decimal firstValue, Decimal secondValue) {
-    if (firstValue == null && secondValue == null) {
-      return null;
+  public void setHighValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+    final Decimal aggregateHighValue = aggregateData.getHighValue();
+    final Decimal newHighValue = newData.getHighValue();
+
+    final Decimal mergedHighValue;
+    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+      return;
+    } else if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      mergedHighValue = ObjectUtils.max(aggregateHighValue, newHighValue);
+    } else {
+      mergedHighValue = MoreObjects.firstNonNull(aggregateHighValue, newHighValue);
     }
 
-    if (firstValue != null && secondValue != null) {
-      return firstValue.compareTo(secondValue) > 0 ? secondValue : firstValue;
-    }
-
-    return firstValue == null ? secondValue : firstValue;
+    aggregateData.setHighValue(mergedHighValue);
   }
 }

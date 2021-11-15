@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.cte.materialize.threshold=2;
+set hive.optimize.cte.materialize.full.aggregate.only=false;
 set hive.explain.user=true;
 
 create temporary table q1 (a int, b string);

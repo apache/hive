@@ -31,8 +31,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 
 /**
  * Utility functions for working with partition filter expressions
@@ -42,12 +40,13 @@ public class PartFilterExprUtil {
 
 
   public static ExpressionTree makeExpressionTree(PartitionExpressionProxy expressionProxy,
-      byte[] expr, String defaultPartitionName) throws MetaException {
+      byte[] expr, String defaultPartitionName, Configuration conf) throws MetaException {
     // We will try pushdown first, so make the filter. This will also validate the expression,
     // if serialization fails we will throw incompatible metastore error to the client.
     String filter = null;
     try {
-      filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName);
+      filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName,
+          conf.getBoolean(MetastoreConf.ConfVars.DECODE_FILTER_EXPRESSION_TO_STRING.getVarname(), false));
     } catch (MetaException ex) {
       // TODO MS-SPLIT - for now we have construct this by reflection because IMetaStoreClient
       // can't be
@@ -115,32 +114,7 @@ public class PartFilterExprUtil {
       LOG.info("Unable to make the expression tree from expression string ["
           + filter + "]" + ex.getMessage()); // Don't log the stack, this is normal.
     }
-    if (tree == null) {
-      return null;
-    }
-    // We suspect that LIKE pushdown into JDO is invalid; see HIVE-5134. Check for like here.
-    LikeChecker lc = new LikeChecker();
-    tree.accept(lc);
-    return lc.hasLike() ? null : tree;
-  }
-
-
-  private static class LikeChecker extends ExpressionTree.TreeVisitor {
-    private boolean hasLike;
-
-    public boolean hasLike() {
-      return hasLike;
-    }
-
-    @Override
-    protected boolean shouldStop() {
-      return hasLike;
-    }
-
-    @Override
-    protected void visit(LeafNode node) throws MetaException {
-      hasLike = hasLike || (node.operator == Operator.LIKE);
-    }
+    return tree;
   }
 
   public static FilterParser getFilterParser(String filter) throws MetaException {

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -50,9 +50,21 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
-public class TestFunctionRegistry extends TestCase {
+/**
+ * FunctionRegistry Test.
+ */
+public class TestFunctionRegistry {
 
+  /**
+   * Test UDF class.
+   */
   public class TestUDF {
     public void same(DoubleWritable x, DoubleWritable y) {}
     public void same(HiveDecimalWritable x, HiveDecimalWritable y) {}
@@ -76,8 +88,8 @@ public class TestFunctionRegistry extends TestCase {
   TypeInfo char5;
   TypeInfo char10;
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     String maxVarcharTypeName = "varchar(" + HiveVarchar.MAX_VARCHAR_LENGTH + ")";
     maxVarchar = TypeInfoFactory.getPrimitiveTypeInfo(maxVarcharTypeName);
     varchar10 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(10)");
@@ -91,6 +103,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(convertible, TypeInfoUtils.implicitConvertible(a, b));
   }
 
+  @Test
   public void testImplicitConversion() {
     implicit(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
     implicit(TypeInfoFactory.longTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
@@ -142,13 +155,14 @@ public class TestFunctionRegistry extends TestCase {
     inputTypes.add(inputType);
 
     // narrow down the possible choices based on type affinity
-    FunctionRegistry.filterMethodsByTypeAffinity(mlist, inputTypes);
+    MethodUtils.filterMethodsByTypeAffinity(mlist, inputTypes);
     assertEquals(expectedNumFoundMethods, mlist.size());
     if (expectedNumFoundMethods == 1) {
       assertEquals(expectedFoundType, mlist.get(0).getParameterTypes()[0]);
     }
   }
 
+  @Test
   public void testTypeAffinity() {
     // Prefer numeric type arguments over other method signatures
     typeAffinity("typeaffinity1", TypeInfoFactory.shortTypeInfo, 1, DoubleWritable.class);
@@ -180,7 +194,7 @@ public class TestFunctionRegistry extends TestCase {
     Method result = null;
 
     try {
-      result = FunctionRegistry.getMethodInternal(udf, name, false, args);
+      result = MethodUtils.getMethodInternal(udf, name, false, args);
     } catch (UDFArgumentException e) {
       assert(throwException);
       return;
@@ -191,6 +205,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(b, result.getParameterTypes()[1]);
   }
 
+  @Test
   public void testGetMethodInternal() {
 
     verify(TestUDF.class, "same", TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo,
@@ -226,9 +241,10 @@ public class TestFunctionRegistry extends TestCase {
   }
 
   private void common(TypeInfo a, TypeInfo b, TypeInfo result) {
-    assertEquals(result, FunctionRegistry.getCommonClass(a,b));
+    assertEquals(result, FunctionRegistry.getCommonClass(a, b));
   }
 
+  @Test
   public void testCommonClass() {
     common(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
            TypeInfoFactory.decimalTypeInfo);
@@ -248,9 +264,10 @@ public class TestFunctionRegistry extends TestCase {
   }
 
   private void comparison(TypeInfo a, TypeInfo b, TypeInfo result) {
-    assertEquals(result, FunctionRegistry.getCommonClassForComparison(a,b));
+    assertEquals(result, FunctionRegistry.getCommonClassForComparison(a, b));
   }
 
+  @Test
   public void testCommonClassComparison() {
     comparison(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
                TypeInfoFactory.decimalTypeInfo);
@@ -274,7 +291,7 @@ public class TestFunctionRegistry extends TestCase {
         TypeInfoFactory.doubleTypeInfo);
     comparison(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.intTypeInfo,
         TypeInfoFactory.doubleTypeInfo);
-   comparison(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.dateTypeInfo,
+    comparison(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.dateTypeInfo,
         TypeInfoFactory.timestampTypeInfo);
 
     comparison(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
@@ -290,6 +307,7 @@ public class TestFunctionRegistry extends TestCase {
   /**
    * Method to print out the comparison/conversion behavior for data types.
    */
+  @Test
   public void testPrintTypeCompatibility() {
     if (true) {
       return;
@@ -334,9 +352,10 @@ public class TestFunctionRegistry extends TestCase {
   }
 
   private void unionAll(TypeInfo a, TypeInfo b, TypeInfo result) {
-    assertEquals(result, FunctionRegistry.getCommonClassForUnionAll(a,b));
+    assertEquals(result, FunctionRegistry.getCommonClassForUnionAll(a, b));
   }
 
+  @Test
   public void testCommonClassUnionAll() {
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.intTypeInfo,
         TypeInfoFactory.doubleTypeInfo);
@@ -364,6 +383,7 @@ public class TestFunctionRegistry extends TestCase {
 
   }
 
+  @Test
   public void testGetTypeInfoForPrimitiveCategory() {
     // varchar should take string length into account.
     // varchar(5), varchar(10) => varchar(10)
@@ -394,10 +414,11 @@ public class TestFunctionRegistry extends TestCase {
         PrimitiveCategory.DOUBLE));
   }
 
-  @Override
-  protected void tearDown() {
+  @After
+  public void tearDown() {
   }
 
+  @Test
   public void testIsRankingFunction() throws Exception {
     Assert.assertTrue(FunctionRegistry.isRankingFunction("rank"));
     Assert.assertTrue(FunctionRegistry.isRankingFunction("dense_rank"));
@@ -406,11 +427,8 @@ public class TestFunctionRegistry extends TestCase {
     Assert.assertFalse(FunctionRegistry.isRankingFunction("min"));
   }
 
+  @Test
   public void testImpliesOrder() throws Exception {
-    Assert.assertTrue(FunctionRegistry.impliesOrder("rank"));
-    Assert.assertTrue(FunctionRegistry.impliesOrder("dense_rank"));
-    Assert.assertTrue(FunctionRegistry.impliesOrder("percent_rank"));
-    Assert.assertTrue(FunctionRegistry.impliesOrder("cume_dist"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("first_value"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("last_value"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("lead"));
@@ -418,6 +436,7 @@ public class TestFunctionRegistry extends TestCase {
     Assert.assertFalse(FunctionRegistry.impliesOrder("min"));
   }
 
+  @Test
   public void testRegisterTemporaryFunctions() throws Exception {
     FunctionResource[] emptyResources = new FunctionResource[] {};
 
@@ -432,7 +451,7 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(functionInfo.isNative());
 
     // GenericUDAF
-    FunctionRegistry.registerTemporaryUDF("tmp_max",GenericUDAFMax.class, emptyResources);
+    FunctionRegistry.registerTemporaryUDF("tmp_max", GenericUDAFMax.class, emptyResources);
     functionInfo = FunctionRegistry.getFunctionInfo("tmp_max");
     assertFalse(functionInfo.isNative());
     functionInfo = FunctionRegistry.getWindowFunctionInfo("tmp_max");
@@ -444,6 +463,7 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(functionInfo.isNative());
   }
 
+  @Test
   public void testRegisterPermanentFunction() throws Exception {
     FunctionResource[] emptyResources = new FunctionResource[] {};
 
@@ -485,12 +505,14 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(functionInfo.isBuiltIn());
   }
 
+  @Test
   public void testBuiltInFunction() throws Exception {
     FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo("ln");
     assertTrue(functionInfo.isBuiltIn());
     assertTrue(functionInfo.isNative());
   }
 
+  @Test
   public void testIsPermanentFunction() throws Exception {
     // Setup exprNode
     GenericUDF udf = new GenericUDFCurrentTimestamp();
@@ -530,6 +552,7 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(FunctionRegistry.isConsistentWithinQuery(udf));
   }
 
+  @Test
   public void testDeterminism() throws Exception {
     checkDeterministicFn(getUDF("+"));
     checkDeterministicFn(getUDF("ascii"));

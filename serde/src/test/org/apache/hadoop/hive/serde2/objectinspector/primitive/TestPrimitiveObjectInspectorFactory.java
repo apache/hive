@@ -18,13 +18,19 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestPrimitiveObjectInspectorFactory extends TestCase {
+/**
+ * PrimitiveObjectInspectorFactory Test.
+ */
+public class TestPrimitiveObjectInspectorFactory {
 
+  @Test
   public void testGetPrimitiveWritableObjectInspector() {
     // even without type params, return a default OI for varchar
     PrimitiveObjectInspector poi = PrimitiveObjectInspectorFactory
@@ -37,6 +43,7 @@ public class TestPrimitiveObjectInspectorFactory extends TestCase {
     assertEquals(poi, PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
   }
 
+  @Test
   public void testGetPrimitiveJavaObjectInspector() {
     // even without type params, return a default OI for varchar
     PrimitiveObjectInspector poi = PrimitiveObjectInspectorFactory

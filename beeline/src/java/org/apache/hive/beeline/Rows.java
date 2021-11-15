@@ -22,12 +22,15 @@
  */
 package org.apache.hive.beeline;
 
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Iterator;
 
 import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
@@ -41,7 +44,7 @@ abstract class Rows implements Iterator {
   final ResultSetMetaData rsMeta;
   final Boolean[] primaryKeys;
   final NumberFormat numberFormat;
-  private boolean convertBinaryArray;
+  private boolean convertBinaryArrayToString;
   private final String nullStr;
 
   Rows(BeeLine beeLine, ResultSet rs) throws SQLException {
@@ -55,7 +58,7 @@ abstract class Rows implements Iterator {
     } else {
       numberFormat = new DecimalFormat(beeLine.getOpts().getNumberFormat());
     }
-    this.convertBinaryArray = beeLine.getOpts().getConvertBinaryArrayToString();
+    this.convertBinaryArrayToString = beeLine.getOpts().getConvertBinaryArrayToString();
   }
 
   @Override
@@ -79,7 +82,7 @@ abstract class Rows implements Iterator {
     if (primaryKeys[col] == null) {
       try {
         // this doesn't always work, since some JDBC drivers (e.g.,
-        // Oracle's) return a blank string from getTableName.
+        // Oracle's) return a blank string from getDbTableName.
         String table = rsMeta.getTableName(col + 1);
         String column = rsMeta.getColumnName(col + 1);
 
@@ -160,11 +163,12 @@ abstract class Rows implements Iterator {
         if (o == null) {
           value = nullStr;
         } else if (o instanceof Number) {
-          value = numberFormat != null ? numberFormat.format(o) : o.toString();
+          value = numberFormat != null ? numberFormat.format(o) :
+              o instanceof BigDecimal ? ((BigDecimal)o).toPlainString() : o.toString();
         } else if (o instanceof byte[]) {
-          value = convertBinaryArray ? new String((byte[])o) : Arrays.toString((byte[])o);
+          value = convertBinaryArrayToString ? new String((byte[])o, StandardCharsets.UTF_8) : Base64.getEncoder().withoutPadding().encodeToString((byte[])o);
         } else {
-          value = o.toString();
+          value = rs.getString(i + 1);
         }
 
         if (beeLine.getOpts().getEscapeCRLF()) {

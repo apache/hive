@@ -59,17 +59,17 @@ public class VectorMapJoinOptimizedCreateHashTable {
       case HASH_MAP:
         hashTable = new VectorMapJoinOptimizedLongHashMap(
                   minMaxEnabled, isOuterJoin, hashTableKeyType,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_MULTISET:
         hashTable = new VectorMapJoinOptimizedLongHashMultiSet(
                   minMaxEnabled, isOuterJoin, hashTableKeyType,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_SET:
         hashTable = new VectorMapJoinOptimizedLongHashSet(
                   minMaxEnabled, isOuterJoin, hashTableKeyType,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       }
       break;
@@ -79,17 +79,17 @@ public class VectorMapJoinOptimizedCreateHashTable {
       case HASH_MAP:
         hashTable = new VectorMapJoinOptimizedStringHashMap(
                   isOuterJoin,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_MULTISET:
         hashTable = new VectorMapJoinOptimizedStringHashMultiSet(
                   isOuterJoin,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       case HASH_SET:
         hashTable = new VectorMapJoinOptimizedStringHashSet(
                   isOuterJoin,
-                  mapJoinTableContainer, hashMapRowGetter);
+                  mapJoinTableContainer, hashMapRowGetter, desc.getKeyTblDesc());
         break;
       }
       break;

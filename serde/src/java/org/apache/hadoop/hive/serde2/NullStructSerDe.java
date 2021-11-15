@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -69,12 +69,8 @@ public class NullStructSerDe extends AbstractSerDe {
   }
 
   @Override
-  public SerDeStats getSerDeStats() {
-    return null;
-  }
-
-  @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
   }
 
   @Override
@@ -107,7 +103,7 @@ public class NullStructSerDe extends AbstractSerDe {
 
     @Override
     public List<NullStructField> getAllStructFieldRefs() {
-      return new ArrayList<NullStructField>();
+      return Collections.emptyList();
     }
 
     @Override
@@ -117,7 +113,7 @@ public class NullStructSerDe extends AbstractSerDe {
 
     @Override
     public List<Object> getStructFieldsDataAsList(Object data) {
-      return new ArrayList<Object>();
+      return Collections.emptyList();
     }
   }
 

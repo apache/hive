@@ -23,17 +23,23 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -46,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.Files;
 
 /**
  * Processor allows users to build code inside a hive session, then
@@ -100,10 +105,10 @@ public class CompileProcessor implements CommandProcessor {
    * will be added to the session state via the session state's
    * ADD RESOURCE command.
    * @param command a String to be compiled
-   * @return CommandProcessorResponse with 0 for success and 1 for failure
+   * @return CommandProcessorResponse with some message
    */
   @Override
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
     SessionState ss = SessionState.get();
     this.command = command;
 
@@ -116,17 +121,8 @@ public class CompileProcessor implements CommandProcessor {
 
     myId = runCount.getAndIncrement();
 
-    try {
-      parse(ss);
-    } catch (CompileProcessorException e) {
-      return CommandProcessorResponse.create(e);
-    }
-    CommandProcessorResponse result = null;
-    try {
-      result = compile(ss);
-    } catch (CompileProcessorException e) {
-      return CommandProcessorResponse.create(e);
-    }
+    parse(ss);
+    CommandProcessorResponse result = compile(ss);
     return result;
   }
 
@@ -136,7 +132,7 @@ public class CompileProcessor implements CommandProcessor {
    * @throws CompileProcessorException if the code can not be compiled or the jar can not be made
    */
   @VisibleForTesting
-  void parse(SessionState ss) throws CompileProcessorException {
+  void parse(SessionState ss) throws CommandProcessorException {
     if (ss != null){
       command = new VariableSubstitution(new HiveVariableSource() {
         @Override
@@ -146,7 +142,7 @@ public class CompileProcessor implements CommandProcessor {
       }).substitute(ss.getConf(), command);
     }
     if (command == null || command.length() == 0) {
-      throw new CompileProcessorException("Command was empty");
+      throw new CommandProcessorException("Command was empty");
     }
     StringBuilder toCompile = new StringBuilder();
     int startPosition = 0;
@@ -160,7 +156,7 @@ public class CompileProcessor implements CommandProcessor {
 
     }
     if (startPosition == command.length()){
-      throw new CompileProcessorException(SYNTAX);
+      throw new CommandProcessorException(SYNTAX);
     }
     for (int i = startPosition; i < command.length(); i++) {
       if (command.charAt(i) == '\\') {
@@ -175,23 +171,23 @@ public class CompileProcessor implements CommandProcessor {
       }
     }
     if (endPosition == -1){
-      throw new CompileProcessorException(SYNTAX);
+      throw new CommandProcessorException(SYNTAX);
     }
     StringTokenizer st = new StringTokenizer(command.substring(endPosition+1), " ");
     if (st.countTokens() != 4){
-      throw new CompileProcessorException(SYNTAX);
+      throw new CommandProcessorException(SYNTAX);
     }
     String shouldBeAs = st.nextToken();
     if (!shouldBeAs.equalsIgnoreCase(AS)){
-      throw new CompileProcessorException(SYNTAX);
+      throw new CommandProcessorException(SYNTAX);
     }
     setLang(st.nextToken());
     if (!lang.equalsIgnoreCase(GROOVY)){
-      throw new CompileProcessorException("Can not compile " + lang + ". Hive can only compile " + GROOVY);
+      throw new CommandProcessorException("Can not compile " + lang + ". Hive can only compile " + GROOVY);
     }
     String shouldBeNamed = st.nextToken();
     if (!shouldBeNamed.equalsIgnoreCase(NAMED)){
-      throw new CompileProcessorException(SYNTAX);
+      throw new CommandProcessorException(SYNTAX);
     }
     setNamed(st.nextToken());
     setCode(toCompile.toString());
@@ -204,41 +200,48 @@ public class CompileProcessor implements CommandProcessor {
    * @return Response code of 0 for success 1 for failure
    * @throws CompileProcessorException
    */
-  CommandProcessorResponse compile(SessionState ss) throws CompileProcessorException {
+  CommandProcessorResponse compile(SessionState ss) throws CommandProcessorException {
+    String lockout = "rwx------";
     Project proj = new Project();
     String ioTempDir = System.getProperty(IO_TMP_DIR);
     File ioTempFile = new File(ioTempDir);
     if (!ioTempFile.exists()){
-      throw new CompileProcessorException(ioTempDir + " does not exists");
+      throw new CommandProcessorException(ioTempDir + " does not exists");
     }
     if (!ioTempFile.isDirectory() || !ioTempFile.canWrite()){
-      throw new CompileProcessorException(ioTempDir + " is not a writable directory");
+      throw new CommandProcessorException(ioTempDir + " is not a writable directory");
+    }
+    long runStamp = System.currentTimeMillis();
+    String user = (ss != null) ? ss.getUserName() : "anonymous";
+    File sessionTempFile = new File(ioTempDir, user + "_" + runStamp);
+    if (!sessionTempFile.exists()) {
+      sessionTempFile.mkdir();
+      setPosixFilePermissions(sessionTempFile, lockout, true);
     }
     Groovyc g = new Groovyc();
-    long runStamp = System.currentTimeMillis();
     String jarId = myId + "_" + runStamp;
     g.setProject(proj);
     Path sourcePath = new Path(proj);
-    File destination = new File(ioTempFile, jarId + "out");
+    File destination = new File(sessionTempFile, jarId + "out");
     g.setDestdir(destination);
-    File input = new File(ioTempFile, jarId + "in");
+    File input = new File(sessionTempFile, jarId + "in");
     sourcePath.setLocation(input);
     g.setSrcdir(sourcePath);
     input.mkdir();
 
     File fileToWrite = new File(input, this.named);
     try {
-      Files.write(this.code, fileToWrite, Charset.forName("UTF-8"));
+      Files.write(Paths.get(fileToWrite.toURI()), code.getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE_NEW);
     } catch (IOException e1) {
-      throw new CompileProcessorException("writing file", e1);
+      throw new CommandProcessorException("writing file", e1);
     }
     destination.mkdir();
     try {
       g.execute();
     } catch (BuildException ex){
-      throw new CompileProcessorException("Problem compiling", ex);
+      throw new CommandProcessorException("Problem compiling", ex);
     }
-    File testArchive = new File(ioTempFile, jarId + ".jar");
+    File testArchive = new File(sessionTempFile, jarId + ".jar");
     JarArchiveOutputStream out = null;
     try {
       out = new JarArchiveOutputStream(new FileOutputStream(testArchive));
@@ -251,21 +254,33 @@ public class CompileProcessor implements CommandProcessor {
         out.closeArchiveEntry();
       }
       out.finish();
+      setPosixFilePermissions(testArchive, lockout, false);
     } catch (IOException e) {
-      throw new CompileProcessorException("Exception while writing jar", e);
+      throw new CommandProcessorException("Exception while writing jar", e);
     } finally {
       if (out!=null){
         try {
           out.close();
-        } catch (IOException WhatCanYouDo) {
-        }
+        } catch (IOException WhatCanYouDo) { }
+        try {
+          if (input.exists())
+            FileUtils.forceDeleteOnExit(input);
+        } catch (IOException WhatCanYouDo) { /* ignore */ }
+        try {
+          if (destination.exists())
+            FileUtils.forceDeleteOnExit(destination);
+        } catch (IOException WhatCanYouDo) { /* ignore */ }
+        try {
+          if (testArchive != null && testArchive.exists())
+            testArchive.deleteOnExit();
+        } catch (Exception WhatCanYouDo) { /* ignore */ }
       }
     }
 
     if (ss != null){
       ss.add_resource(ResourceType.JAR, testArchive.getAbsolutePath());
     }
-    CommandProcessorResponse good = new CommandProcessorResponse(0, testArchive.getAbsolutePath(), null);
+    CommandProcessorResponse good = new CommandProcessorResponse(null, testArchive.getAbsolutePath());
     return good;
   }
 
@@ -297,20 +312,19 @@ public class CompileProcessor implements CommandProcessor {
     return command;
   }
 
-  class CompileProcessorException extends HiveException {
-
-    private static final long serialVersionUID = 1L;
-
-    CompileProcessorException(String s, Throwable t) {
-      super(s, t);
-    }
-
-    CompileProcessorException(String s) {
-      super(s);
-    }
-  }
-
   @Override
   public void close() throws Exception {
   }
+
+  private static synchronized void setPosixFilePermissions(File file, String permsAsString, boolean warnOnly) {
+      Set<PosixFilePermission> perms = PosixFilePermissions.fromString(permsAsString);
+      try {
+        Files.setPosixFilePermissions(Paths.get(file.toURI()), perms);
+      } catch (IOException ioe) {
+        LOG.warn("Failed to set file permissions on " + file.getAbsolutePath());
+        if (!warnOnly) {
+          throw new RuntimeException("Exception setting file permissions on " + file.getAbsolutePath());
+        }
+      }
+    }
 }

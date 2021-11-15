@@ -20,13 +20,12 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -42,64 +41,36 @@ public class CoreHBaseCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-          new HBaseTestSetup(), initScript, cleanupScript);
-
-      qt.newSession();
-      qt.cleanUp(null);
-      qt.createSources(null);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization: ", e);
-    }
+    qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, new HBaseTestSetup(), initScript,
+        cleanupScript);
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      qt.newSession();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
   @Override
   @After
-  public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-      qt.clearTestSideEffects();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
+    qt.clearTestSideEffects();
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      qt.shutdown();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+  public void shutdown() throws Exception {
+    qt.shutdown();
+  }
+
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
   }
 
   @Override
@@ -108,16 +79,17 @@ public class CoreHBaseCliDriver extends CliAdapter {
     try {
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
+      qt.setInputFile(fpath);
 
-      qt.cliInit(new File(fpath));
+      qt.cliInit();
 
-      CommandProcessorResponse response = qt.executeClient(fname);
-      if (response.getResponseCode() != 0) {
-        qt.failedQuery(response.getException(), response.getResponseCode(), fname, null);
+      try {
+        qt.executeClient();
+      } catch (CommandProcessorException e) {
+        qt.failedQuery(e.getCause(), e.getResponseCode(), fname, null);
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
       }

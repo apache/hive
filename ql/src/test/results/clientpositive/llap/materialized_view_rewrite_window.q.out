@@ -1,0 +1,1078 @@
+PREHOOK: query: drop database if exists arc_view cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists arc_view cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database arc_view
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:arc_view
+POSTHOOK: query: create database arc_view
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:arc_view
+PREHOOK: query: use arc_view
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:arc_view
+POSTHOOK: query: use arc_view
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:arc_view
+PREHOOK: query: create table wealth (name string, net_worth decimal(15,3), watches string) TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: arc_view@wealth
+PREHOOK: Output: database:arc_view
+POSTHOOK: query: create table wealth (name string, net_worth decimal(15,3), watches string) TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: arc_view@wealth
+POSTHOOK: Output: database:arc_view
+PREHOOK: query: insert into wealth values ('solomon', 2000000000.00, 'simpsons'),('midas', 1000000000.00, 'super bowl'),('midas', 1000000000.00, 'scream'),('midas', 1000000000.00, 'scream2'),('midas', 1000000000.00, 'scream3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: arc_view@wealth
+POSTHOOK: query: insert into wealth values ('solomon', 2000000000.00, 'simpsons'),('midas', 1000000000.00, 'super bowl'),('midas', 1000000000.00, 'scream'),('midas', 1000000000.00, 'scream2'),('midas', 1000000000.00, 'scream3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: arc_view@wealth
+POSTHOOK: Lineage: wealth.name SCRIPT []
+POSTHOOK: Lineage: wealth.net_worth SCRIPT []
+POSTHOOK: Lineage: wealth.watches SCRIPT []
+PREHOOK: query: create table tv_view_data (program string, total_views bigint) TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: arc_view@tv_view_data
+PREHOOK: Output: database:arc_view
+POSTHOOK: query: create table tv_view_data (program string, total_views bigint) TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: arc_view@tv_view_data
+POSTHOOK: Output: database:arc_view
+PREHOOK: query: insert into tv_view_data values ('simpsons', 1300000), ('bbt',2700000), ('super bowl',15000000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: arc_view@tv_view_data
+POSTHOOK: query: insert into tv_view_data values ('simpsons', 1300000), ('bbt',2700000), ('super bowl',15000000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: arc_view@tv_view_data
+POSTHOOK: Lineage: tv_view_data.program SCRIPT []
+POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
+PREHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{2}], agg#0=[max($1)])
+  HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(watches=[$2])
+      HiveFilter(condition=[IS NOT NULL($2)])
+        HiveTableScan(table=[[arc_view, wealth]], table:alias=[t2])
+    HiveProject(total_views=[$1], quartile=[$2], program=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject(program=[$0], total_views=[$1], _o__col7=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST)])
+          HiveTableScan(table=[[arc_view, tv_view_data]], table:alias=[tv_view_data])
+
+PREHOOK: query: create materialized view mv_tv_view_data_av1 stored as orc TBLPROPERTIES ('transactional'='true') as
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+PREHOOK: Output: arc_view@mv_tv_view_data_av1
+PREHOOK: Output: database:arc_view
+POSTHOOK: query: create materialized view mv_tv_view_data_av1 stored as orc TBLPROPERTIES ('transactional'='true') as
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+POSTHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: Output: database:arc_view
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+PREHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(quartile=[$0], total=[$1])
+    HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
+
+PREHOOK: query: select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+1.5000	1300000
+4.5000	15000000
+PREHOOK: query: insert into tv_view_data values ('scream', 20000000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: arc_view@tv_view_data
+POSTHOOK: query: insert into tv_view_data values ('scream', 20000000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: arc_view@tv_view_data
+POSTHOOK: Lineage: tv_view_data.program SCRIPT []
+POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
+PREHOOK: query: explain
+alter materialized view mv_tv_view_data_av1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+PREHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: query: explain
+alter materialized view mv_tv_view_data_av1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+POSTHOOK: Output: arc_view@mv_tv_view_data_av1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: watches is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: watches is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: watches (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tv_view_data
+                  Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: 0 (type: int), total_views (type: bigint)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: 0 (type: int)
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: program (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col2 (type: string)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: max(_col1)
+                  keys: _col2 (type: decimal(19,4))
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(19,4))
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: decimal(19,4))
+                    Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                keys: KEY._col0 (type: decimal(19,4))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: arc_view.mv_tv_view_data_av1
+                  Write Type: INSERT
+                Select Operator
+                  expressions: _col0 (type: decimal(19,4)), _col1 (type: bigint)
+                  outputColumnNames: quartile, total
+                  Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(quartile), max(quartile), count(1), count(quartile), compute_bit_vector_hll(quartile), min(total), max(total), count(total), compute_bit_vector_hll(total)
+                    minReductionHashAggr: 0.75
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: decimal(19,4)), _col1 (type: decimal(19,4)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(19,4)), _col1 (type: decimal(19,4)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 739 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 739 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: bigint
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: CAST( 1.5 AS decimal(9,4))
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: _col0 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col1 (type: bigint), sum_window_0 (type: decimal(19,4)), _col0 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 4 Data size: 844 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 4 Data size: 844 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: decimal(19,4))
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: arc_view.mv_tv_view_data_av1
+          Write Type: INSERT
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: quartile, total
+          Column Types: decimal(19,4), bigint
+          Table: arc_view.mv_tv_view_data_av1
+
+  Stage: Stage-4
+    Materialized View Update
+      name: arc_view.mv_tv_view_data_av1
+      update creation metadata: true
+
+PREHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+PREHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+POSTHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+PREHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(quartile=[$0], total=[$1])
+    HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
+
+PREHOOK: query: select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+1.5000	1300000
+4.5000	15000000
+6.0000	20000000
+PREHOOK: query: insert into tv_view_data values ('scream2', 30000000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: arc_view@tv_view_data
+POSTHOOK: query: insert into tv_view_data values ('scream2', 30000000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: arc_view@tv_view_data
+POSTHOOK: Lineage: tv_view_data.program SCRIPT []
+POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
+PREHOOK: query: explain
+alter materialized view mv_tv_view_data_av1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+PREHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: query: explain
+alter materialized view mv_tv_view_data_av1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+POSTHOOK: Output: arc_view@mv_tv_view_data_av1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: watches is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: watches is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: watches (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tv_view_data
+                  Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: 0 (type: int), total_views (type: bigint)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: 0 (type: int)
+                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: program (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col2 (type: string)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: max(_col1)
+                  keys: _col2 (type: decimal(19,4))
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(19,4))
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: decimal(19,4))
+                    Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                keys: KEY._col0 (type: decimal(19,4))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: arc_view.mv_tv_view_data_av1
+                  Write Type: INSERT
+                Select Operator
+                  expressions: _col0 (type: decimal(19,4)), _col1 (type: bigint)
+                  outputColumnNames: quartile, total
+                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(quartile), max(quartile), count(1), count(quartile), compute_bit_vector_hll(quartile), min(total), max(total), count(total), compute_bit_vector_hll(total)
+                    minReductionHashAggr: 0.8
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: decimal(19,4)), _col1 (type: decimal(19,4)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(19,4)), _col1 (type: decimal(19,4)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 739 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 739 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: bigint
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: CAST( 1.5 AS decimal(9,4))
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: _col0 is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col1 (type: bigint), sum_window_0 (type: decimal(19,4)), _col0 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 1055 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 5 Data size: 1055 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: decimal(19,4))
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: arc_view.mv_tv_view_data_av1
+          Write Type: INSERT
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: quartile, total
+          Column Types: decimal(19,4), bigint
+          Table: arc_view.mv_tv_view_data_av1
+
+  Stage: Stage-4
+    Materialized View Update
+      name: arc_view.mv_tv_view_data_av1
+      update creation metadata: true
+
+PREHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+PREHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+POSTHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+PREHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(quartile=[$0], total=[$1])
+    HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
+
+PREHOOK: query: select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  t.quartile,
+  max(t.total_views) total
+from wealth t2,
+(select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data) t
+where t.program=t2.watches
+group by quartile
+order by quartile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Input: arc_view@wealth
+#### A masked pattern was here ####
+1.5000	1300000
+4.5000	15000000
+6.0000	20000000
+7.5000	30000000
+PREHOOK: query: drop materialized view mv_tv_view_data_av1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: arc_view@mv_tv_view_data_av1
+PREHOOK: Output: arc_view@mv_tv_view_data_av1
+POSTHOOK: query: drop materialized view mv_tv_view_data_av1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: arc_view@mv_tv_view_data_av1
+POSTHOOK: Output: arc_view@mv_tv_view_data_av1
+PREHOOK: query: create materialized view mv_tv_view_data_av2 stored as orc TBLPROPERTIES ('transactional'='true') as
+select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Output: arc_view@mv_tv_view_data_av2
+PREHOOK: Output: database:arc_view
+POSTHOOK: query: create materialized view mv_tv_view_data_av2 stored as orc TBLPROPERTIES ('transactional'='true') as
+select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Output: arc_view@mv_tv_view_data_av2
+POSTHOOK: Output: database:arc_view
+POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.total_views SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+PREHOOK: query: insert into tv_view_data values ('scream3', 40000000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: arc_view@tv_view_data
+POSTHOOK: query: insert into tv_view_data values ('scream3', 40000000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: arc_view@tv_view_data
+POSTHOOK: Lineage: tv_view_data.program SCRIPT []
+POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
+PREHOOK: query: select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@tv_view_data
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@tv_view_data
+#### A masked pattern was here ####
+1300000	1.5000	simpsons
+2700000	3.0000	bbt
+15000000	4.5000	super bowl
+20000000	6.0000	scream
+30000000	7.5000	scream2
+40000000	9.0000	scream3
+PREHOOK: query: explain
+alter materialized view mv_tv_view_data_av2 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Output: arc_view@mv_tv_view_data_av2
+POSTHOOK: query: explain
+alter materialized view mv_tv_view_data_av2 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Output: arc_view@mv_tv_view_data_av2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tv_view_data
+                  Statistics: Num rows: 6 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: 0 (type: int), total_views (type: bigint)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: 0 (type: int)
+                    Statistics: Num rows: 6 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: program (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: bigint
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS LAST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: CAST( 1.5 AS decimal(9,4))
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 6 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col1 (type: bigint), sum_window_0 (type: decimal(19,4)), _col0 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 1266 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1266 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: arc_view.mv_tv_view_data_av2
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: bigint), _col1 (type: decimal(19,4)), _col2 (type: string)
+                      outputColumnNames: total_views, quartile, program
+                      Statistics: Num rows: 6 Data size: 1266 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(total_views), max(total_views), count(1), count(total_views), compute_bit_vector_hll(total_views), min(quartile), max(quartile), count(quartile), compute_bit_vector_hll(quartile), max(length(program)), avg(COALESCE(length(program),0)), count(program), compute_bit_vector_hll(program)
+                        minReductionHashAggr: 0.8333333
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 784 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 784 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(19,4)), _col6 (type: decimal(19,4)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 716 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col0 (type: bigint), _col1 (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DECIMAL' (type: string), _col5 (type: decimal(19,4)), _col6 (type: decimal(19,4)), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: arc_view.mv_tv_view_data_av2
+          Write Type: INSERT
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: total_views, quartile, program
+          Column Types: bigint, decimal(19,4), string
+          Table: arc_view.mv_tv_view_data_av2
+
+  Stage: Stage-4
+    Materialized View Update
+      name: arc_view.mv_tv_view_data_av2
+      update creation metadata: true
+
+PREHOOK: query: alter materialized view mv_tv_view_data_av2 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: arc_view@tv_view_data
+PREHOOK: Output: arc_view@mv_tv_view_data_av2
+POSTHOOK: query: alter materialized view mv_tv_view_data_av2 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: arc_view@tv_view_data
+POSTHOOK: Output: arc_view@mv_tv_view_data_av2
+POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.total_views SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+PREHOOK: query: select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data
+PREHOOK: type: QUERY
+PREHOOK: Input: arc_view@tv_view_data
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  total_views `total_views`,
+  sum(cast(1.5 as decimal(9,4))) over (order by total_views) as quartile,
+  program
+from tv_view_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: arc_view@tv_view_data
+#### A masked pattern was here ####
+1300000	1.5000	simpsons
+2700000	3.0000	bbt
+15000000	4.5000	super bowl
+20000000	6.0000	scream
+30000000	7.5000	scream2
+40000000	9.0000	scream3
+PREHOOK: query: drop materialized view mv_tv_view_data_av2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: arc_view@mv_tv_view_data_av2
+PREHOOK: Output: arc_view@mv_tv_view_data_av2
+POSTHOOK: query: drop materialized view mv_tv_view_data_av2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: arc_view@mv_tv_view_data_av2
+POSTHOOK: Output: arc_view@mv_tv_view_data_av2

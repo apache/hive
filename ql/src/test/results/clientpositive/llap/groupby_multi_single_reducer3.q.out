@@ -1,0 +1,1086 @@
+PREHOOK: query: create table e1_n1 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e1_n1
+POSTHOOK: query: create table e1_n1 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e1_n1
+PREHOOK: query: create table e2_n2 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: create table e2_n2 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e2_n2
+PREHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (((value) IN ('val_400', 'val_500') and (key) IN (400, 450)) or ((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200))) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((value) IN ('val_400', 'val_500') and (key) IN (400, 450)) or ((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200))) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: value (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_100', 'val_200', 'val_300') and (KEY._col0) IN (100, 150, 200)) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1_n1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.6666666
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_400', 'val_500') and (KEY._col0) IN (400, 450)) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2_n2
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1_n1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e1_n1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2_n2
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e2_n2
+
+PREHOOK: query: from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+POSTHOOK: Lineage: e1_n1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+100	2
+200	2
+PREHOOK: query: select * from e2_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+400	1
+PREHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or (((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null))) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or (((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null))) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: key (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100) or ((VALUE._col0 = 300) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1_n1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: (((VALUE._col0 + VALUE._col0) = 400) or (((VALUE._col0 - 100) = 500) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2_n2
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1_n1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e1_n1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2_n2
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e2_n2
+
+PREHOOK: query: from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+POSTHOOK: Lineage: e1_n1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1_n1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2_n2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+val_100	2
+val_200	2
+PREHOOK: query: select * from e2_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+val_200	2
+PREHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((value) IN ('val_400', 'val_500') and (key) IN (400, 450)) or ((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200))) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: value (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_100', 'val_200', 'val_300') and (KEY._col0) IN (100, 150, 200)) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1_n1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.6666666
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_400', 'val_500') and (KEY._col0) IN (400, 450)) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2_n2
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1_n1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e1_n1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2_n2
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e2_n2
+
+PREHOOK: query: from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: from src
+insert overwrite table e1_n1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2_n2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+POSTHOOK: Lineage: e1_n1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+100	2
+200	2
+PREHOOK: query: select * from e2_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+400	1
+PREHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: explain
+from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or (((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null))) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: key (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100) or ((VALUE._col0 = 300) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1_n1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+                Filter Operator
+                  predicate: (((VALUE._col0 + VALUE._col0) = 400) or (((VALUE._col0 - 100) = 500) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2_n2
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: int)
+                        outputColumnNames: key, count
+                        Statistics: Num rows: 307 Data size: 29165 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), min(count), max(count), count(count), compute_bit_vector_hll(count)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1_n1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e1_n1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2_n2
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, count
+          Column Types: string, int
+          Table: default.e2_n2
+
+PREHOOK: query: from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
+POSTHOOK: query: from src
+insert overwrite table e1_n1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2_n2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
+POSTHOOK: Lineage: e1_n1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1_n1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2_n2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1_n1
+#### A masked pattern was here ####
+val_100	2
+val_200	2
+PREHOOK: query: select * from e2_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2_n2
+#### A masked pattern was here ####
+val_200	2

@@ -1,0 +1,211 @@
+PREHOOK: query: CREATE TABLE test_tab_n3 (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tab_n3
+POSTHOOK: query: CREATE TABLE test_tab_n3 (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tab_n3
+PREHOOK: query: ALTER TABLE test_tab_n3
+SKEWED BY (key) ON ("484")
+STORED AS DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Output: default@test_tab_n3
+POSTHOOK: query: ALTER TABLE test_tab_n3
+SKEWED BY (key) ON ("484")
+STORED AS DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Output: default@test_tab_n3
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab_n3 PARTITION (part = '1') SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab_n3@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab_n3 PARTITION (part = '1') SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab_n3@part=1
+POSTHOOK: Lineage: test_tab_n3 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_n3 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+0	val_0	1
+0	val_0	1
+0	val_0	1
+PREHOOK: query: TRUNCATE TABLE test_tab_n3 PARTITION (part ='1') COLUMNS (value)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Output: default@test_tab_n3@part=1
+POSTHOOK: query: TRUNCATE TABLE test_tab_n3 PARTITION (part ='1') COLUMNS (value)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Output: default@test_tab_n3@part=1
+PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
+FROM `default`.`test_tab_n3`
+WHERE `key` = '484' AND `part` = '1'
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+            partition values:
+              part 1
+            properties:
+              column.name.delimiter ,
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.test_tab_n3
+              partition_columns part
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+            serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+          
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.test_tab_n3
+                partition_columns part
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: default.test_tab_n3
+            name: default.test_tab_n3
+      Processor Tree:
+        TableScan
+          alias: test_tab_n3
+          filterExpr: ((key = '484') and (part = '1')) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (key = '484') (type: boolean)
+            Select Operator
+              expressions: '484' (type: string), value (type: string), '1' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+484	NULL	1
+PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('0' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
+FROM `default`.`test_tab_n3`
+WHERE `key` = '0' AND `part` = '1'
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+            partition values:
+              part 1
+            properties:
+              column.name.delimiter ,
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.test_tab_n3
+              partition_columns part
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+            serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+          
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.test_tab_n3
+                partition_columns part
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: default.test_tab_n3
+            name: default.test_tab_n3
+      Processor Tree:
+        TableScan
+          alias: test_tab_n3
+          filterExpr: ((key = '0') and (part = '1')) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (key = '0') (type: boolean)
+            Select Operator
+              expressions: '0' (type: string), value (type: string), '1' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
+0	NULL	1
+0	NULL	1
+0	NULL	1

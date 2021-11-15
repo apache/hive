@@ -90,6 +90,66 @@ public class TestEvictingPriorityBlockingQueue {
     assertEquals(7, queue.size());
   }
 
+  /**
+   * Test if we are able to set the WaitQueueSize dynamically.
+   * @throws InterruptedException
+   */
+  @Test (timeout = 10000)
+  public void testSetWaitQueueSize() throws InterruptedException {
+    Element e;
+    EvictingPriorityBlockingQueue<Element> queue = new EvictingPriorityBlockingQueue<>(new ElementComparator(), 5);
+
+    Element[] elements = new Element[10];
+    for (int i = 0; i < elements.length; i++) {
+      elements[i] = new Element(i);
+    }
+
+    assertNull(queue.offer(elements[0], 0));
+    assertNull(queue.offer(elements[1], 0));
+    assertNull(queue.offer(elements[2], 0));
+    assertNull(queue.offer(elements[3], 0));
+    //0,1,2,3
+
+    queue.setWaitQueueSize(3);
+
+    // Not enough space left in the queue
+    e = queue.offer(elements[4], 0);
+    assertEquals(e, elements[0]);
+    assertEquals(4, queue.size());
+    //1,2,3,4
+
+    e = queue.offer(elements[5], 1);
+    assertEquals(e, elements[1]);
+    assertEquals(4, queue.size());
+    //2,3,4,5
+
+    // With 2 more it should be enough space left
+    assertNull(queue.offer(elements[6], 2));
+    assertEquals(5, queue.size());
+    //2,3,4,5,6
+
+    e = queue.take();
+    assertEquals(elements[6], e); //Highest priority at this point should have come out.
+    //2,3,4,5
+
+    e = queue.take();
+    assertEquals(elements[5], e); //Highest priority at this point should have come out.
+    //2,3,4
+
+    e = queue.take();
+    assertEquals(elements[4], e); //Highest priority at this point should have come out.
+    assertEquals(2, queue.size());
+    //2,3
+
+    assertNull(queue.offer(elements[7], 0));
+    assertEquals(3, queue.size());
+    //2,3,7
+
+    e = queue.offer(elements[8], 0);
+    assertEquals(e, elements[2]);
+    //3,7,8
+  }
+
   private static class Element {
     public Element(int x) {
       this.x = x;

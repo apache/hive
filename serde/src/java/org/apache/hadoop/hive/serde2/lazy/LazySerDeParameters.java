@@ -53,7 +53,9 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   	= "hive.serialization.extend.nesting.levels";
   public static final String SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
 	= "hive.serialization.extend.additional.nesting.levels";
-
+  public static final String SERIALIZATION_DECODE_BINARY_AS_BASE64
+  	= "hive.serialization.decode.binary.as.base64";
+  
   private Properties tableProperties;
   private String serdeName;
 
@@ -74,6 +76,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   private boolean[] needsEscape = new boolean[256];  // A flag for each byte to indicate if escape is needed.
 
   private boolean extendedBooleanLiteral;
+  private boolean decodeBinaryAsBase64;
   List<String> timestampFormats;
   
   public LazySerDeParameters(Configuration job, Properties tbl, String serdeName) throws SerDeException {
@@ -88,6 +91,8 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
         .getProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
+
+    decodeBinaryAsBase64 = Boolean.parseBoolean(tableProperties.getProperty(SERIALIZATION_DECODE_BINARY_AS_BASE64, "true"));
 
     extractColumnInfo(job);
 
@@ -218,6 +223,10 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     return extendedBooleanLiteral;
   }
 
+  public boolean isDecodeBinaryAsBase64() {
+    return decodeBinaryAsBase64;
+  }
+  
   public List<String> getTimestampFormats() {
     return timestampFormats;
   }

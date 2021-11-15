@@ -50,6 +50,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
+                        bucketingVersion: 2
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
@@ -60,6 +61,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
+                              bucketing_version -1
                               columns _col0,_col1
                               columns.types string:string
                               serialization.format 1
@@ -138,6 +140,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
+                        bucketingVersion: 2
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
@@ -148,6 +151,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
+                              bucketing_version -1
                               columns _col0,_col1
                               columns.types string:string
                               serialization.format 1
@@ -295,6 +299,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
+                        bucketingVersion: 2
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
@@ -305,6 +310,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
+                              bucketing_version -1
                               columns _col0,_col1
                               columns.types string:string
                               serialization.format 1
@@ -383,6 +389,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
+                        bucketingVersion: 2
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
@@ -393,6 +400,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
+                              bucketing_version -1
                               columns _col0,_col1
                               columns.types string:string
                               serialization.format 1
@@ -481,6 +489,7 @@ STAGE PLANS:
                 TableScan
                   GatherStats: false
                   File Output Operator
+                    bucketingVersion: -1
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
@@ -489,6 +498,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
+                          bucketing_version -1
                           columns _col0,_col1
                           columns.types string:string
                           serialization.format 1
@@ -506,6 +516,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1
                     columns.types string:string
                     serialization.format 1
@@ -515,6 +526,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      bucketing_version -1
                       columns _col0,_col1
                       columns.types string:string
                       serialization.format 1
@@ -532,6 +544,7 @@ STAGE PLANS:
                 TableScan
                   GatherStats: false
                   File Output Operator
+                    bucketingVersion: -1
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
@@ -540,6 +553,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
+                          bucketing_version -1
                           columns _col0,_col1
                           columns.types string:string
                           serialization.format 1
@@ -557,6 +571,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    bucketing_version -1
                     columns _col0,_col1
                     columns.types string:string
                     serialization.format 1
@@ -566,6 +581,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      bucketing_version -1
                       columns _col0,_col1
                       columns.types string:string
                       serialization.format 1

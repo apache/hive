@@ -112,6 +112,7 @@ public class SyslogParser implements Closeable {
 
   private InputStream in;
   private boolean parseTag;
+  private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private Charset charset;
 
@@ -252,7 +253,7 @@ public class SyslogParser implements Closeable {
         }
       }
 
-      cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.getDefault());
+      cal = new GregorianCalendar(UTC, Locale.getDefault());
 
       cal.set(y, m - 1, d, hh, mm, ss);
       cal.set(Calendar.MILLISECOND, (int) (subss * 1000));
@@ -356,10 +357,10 @@ public class SyslogParser implements Closeable {
     row.add(getEventPriorityBySyslog(priority));
     row.add(version == 0 ? "RFC3164" : "RFC5424");
     row.add(Timestamp.ofEpochMilli(cal.getTimeInMillis()));
-    row.add(hostname);
-    row.add(new String(appname));
-    row.add(new String(procId));
-    row.add(new String(msgId));
+    row.add(hostname != null ? hostname : "");
+    row.add(appname != null ? new String(appname) : "");
+    row.add(procId != null ? new String(procId) : "");
+    row.add(msgId != null ? new String(msgId) : "");
     row.add(structuredData);
     row.add(body);
   }

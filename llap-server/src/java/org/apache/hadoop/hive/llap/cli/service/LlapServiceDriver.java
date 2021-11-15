@@ -37,7 +37,6 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.service.client.ServiceClient;
 import org.apache.hadoop.yarn.service.utils.CoreFileSystem;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +58,7 @@ import java.util.concurrent.Executors;
 public class LlapServiceDriver {
   private static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
 
-  private static final String LLAP_PACKAGE_DIR = ".yarn/package/LLAP/";
+  private static final String LLAP_RELATIVE_PACKAGE_DIR = "/package/LLAP/";
   private static final String OUTPUT_DIR_PREFIX = "llap-yarn-";
 
   /**
@@ -297,7 +298,7 @@ public class LlapServiceDriver {
     int rc;
     String version = System.getenv("HIVE_VERSION");
     if (StringUtils.isEmpty(version)) {
-      version = DateTime.now().toString("ddMMMyyyy");
+      version = DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now());
     }
 
     String outputDir = cl.getOutput();
@@ -311,7 +312,7 @@ public class LlapServiceDriver {
 
     rc = runPackagePy(tmpDir, scriptParent, version, outputDir);
     if (rc == 0) {
-      String tarballName = "llap-" + version + ".tar.gz";
+      String tarballName = cl.getName() + "-" + version + ".tar.gz";
       startCluster(conf, cl.getName(), tarballName, packageDir, conf.getVar(ConfVars.LLAP_DAEMON_QUEUE_NAME));
     }
     return rc;
@@ -356,8 +357,10 @@ public class LlapServiceDriver {
       }
       LOG.info("Uploading the app tarball");
       CoreFileSystem fs = new CoreFileSystem(conf);
-      fs.createWithPermissions(new Path(LLAP_PACKAGE_DIR), FsPermission.getDirDefault());
-      fs.copyLocalFileToHdfs(new File(packageDir.toString(), packageName), new Path(LLAP_PACKAGE_DIR),
+      String llapPackageDir = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_HDFS_PACKAGE_DIR)
+              + LLAP_RELATIVE_PACKAGE_DIR;
+      fs.createWithPermissions(new Path(llapPackageDir), FsPermission.getDirDefault());
+      fs.copyLocalFileToHdfs(new File(packageDir.toString(), packageName), new Path(llapPackageDir),
           new FsPermission("755"));
 
       LOG.info("Executing the launch command");

@@ -1,0 +1,585 @@
+PREHOOK: query: CREATE TABLE bucket3_1_n0(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket3_1_n0
+POSTHOOK: query: CREATE TABLE bucket3_1_n0(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucket3_1_n0
+PREHOOK: query: explain
+insert overwrite table bucket3_1_n0 partition (ds='1')
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: query: explain
+insert overwrite table bucket3_1_n0 partition (ds='1')
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(key) (type: int), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.bucket3_1_n0
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), '1' (type: string)
+                  outputColumnNames: key, value, ds
+                  Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                    keys: ds (type: string)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Statistics: Num rows: 1 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: bigint), _col9 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 417 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col6,0)) (type: bigint), COALESCE(_col7,0) (type: double), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 615 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 615 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.bucket3_1_n0
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.bucket3_1_n0
+
+PREHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='2')
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='2')
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from bucket3_1_n0 tablesample (bucket 1 out of 2) s where ds = '1' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket3_1_n0
+PREHOOK: Input: default@bucket3_1_n0@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from bucket3_1_n0 tablesample (bucket 1 out of 2) s where ds = '1' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket3_1_n0
+POSTHOOK: Input: default@bucket3_1_n0@ds=1
+#### A masked pattern was here ####
+2	val_2	1
+10	val_10	1
+17	val_17	1
+19	val_19	1
+20	val_20	1
+27	val_27	1
+30	val_30	1
+41	val_41	1
+43	val_43	1
+51	val_51	1
+51	val_51	1
+54	val_54	1
+57	val_57	1
+58	val_58	1
+58	val_58	1
+64	val_64	1
+65	val_65	1
+67	val_67	1
+67	val_67	1
+69	val_69	1
+70	val_70	1
+70	val_70	1
+70	val_70	1
+77	val_77	1
+80	val_80	1
+83	val_83	1
+83	val_83	1
+84	val_84	1
+84	val_84	1
+85	val_85	1
+86	val_86	1
+90	val_90	1
+90	val_90	1
+90	val_90	1
+96	val_96	1
+97	val_97	1
+97	val_97	1
+98	val_98	1
+98	val_98	1
+105	val_105	1
+113	val_113	1
+113	val_113	1
+116	val_116	1
+119	val_119	1
+119	val_119	1
+119	val_119	1
+126	val_126	1
+133	val_133	1
+134	val_134	1
+134	val_134	1
+137	val_137	1
+137	val_137	1
+146	val_146	1
+146	val_146	1
+149	val_149	1
+149	val_149	1
+153	val_153	1
+156	val_156	1
+157	val_157	1
+158	val_158	1
+162	val_162	1
+163	val_163	1
+164	val_164	1
+164	val_164	1
+165	val_165	1
+165	val_165	1
+169	val_169	1
+169	val_169	1
+169	val_169	1
+169	val_169	1
+177	val_177	1
+178	val_178	1
+181	val_181	1
+187	val_187	1
+187	val_187	1
+187	val_187	1
+190	val_190	1
+191	val_191	1
+191	val_191	1
+195	val_195	1
+195	val_195	1
+197	val_197	1
+197	val_197	1
+199	val_199	1
+199	val_199	1
+199	val_199	1
+201	val_201	1
+202	val_202	1
+208	val_208	1
+208	val_208	1
+208	val_208	1
+214	val_214	1
+216	val_216	1
+216	val_216	1
+221	val_221	1
+221	val_221	1
+226	val_226	1
+229	val_229	1
+229	val_229	1
+233	val_233	1
+233	val_233	1
+237	val_237	1
+237	val_237	1
+238	val_238	1
+238	val_238	1
+239	val_239	1
+239	val_239	1
+244	val_244	1
+248	val_248	1
+249	val_249	1
+252	val_252	1
+255	val_255	1
+255	val_255	1
+256	val_256	1
+256	val_256	1
+260	val_260	1
+266	val_266	1
+272	val_272	1
+272	val_272	1
+284	val_284	1
+286	val_286	1
+287	val_287	1
+289	val_289	1
+291	val_291	1
+292	val_292	1
+307	val_307	1
+307	val_307	1
+308	val_308	1
+310	val_310	1
+311	val_311	1
+311	val_311	1
+311	val_311	1
+315	val_315	1
+316	val_316	1
+316	val_316	1
+316	val_316	1
+317	val_317	1
+317	val_317	1
+325	val_325	1
+325	val_325	1
+327	val_327	1
+327	val_327	1
+327	val_327	1
+332	val_332	1
+336	val_336	1
+338	val_338	1
+339	val_339	1
+341	val_341	1
+342	val_342	1
+342	val_342	1
+344	val_344	1
+344	val_344	1
+348	val_348	1
+348	val_348	1
+348	val_348	1
+348	val_348	1
+348	val_348	1
+351	val_351	1
+353	val_353	1
+353	val_353	1
+360	val_360	1
+362	val_362	1
+364	val_364	1
+365	val_365	1
+368	val_368	1
+369	val_369	1
+369	val_369	1
+369	val_369	1
+377	val_377	1
+378	val_378	1
+384	val_384	1
+384	val_384	1
+384	val_384	1
+386	val_386	1
+392	val_392	1
+393	val_393	1
+394	val_394	1
+396	val_396	1
+396	val_396	1
+396	val_396	1
+397	val_397	1
+397	val_397	1
+399	val_399	1
+399	val_399	1
+402	val_402	1
+404	val_404	1
+404	val_404	1
+407	val_407	1
+409	val_409	1
+409	val_409	1
+409	val_409	1
+411	val_411	1
+414	val_414	1
+414	val_414	1
+417	val_417	1
+417	val_417	1
+417	val_417	1
+419	val_419	1
+421	val_421	1
+427	val_427	1
+430	val_430	1
+430	val_430	1
+430	val_430	1
+432	val_432	1
+435	val_435	1
+437	val_437	1
+443	val_443	1
+444	val_444	1
+446	val_446	1
+449	val_449	1
+452	val_452	1
+453	val_453	1
+454	val_454	1
+454	val_454	1
+454	val_454	1
+458	val_458	1
+458	val_458	1
+459	val_459	1
+459	val_459	1
+463	val_463	1
+463	val_463	1
+466	val_466	1
+466	val_466	1
+466	val_466	1
+467	val_467	1
+472	val_472	1
+478	val_478	1
+478	val_478	1
+479	val_479	1
+480	val_480	1
+480	val_480	1
+480	val_480	1
+482	val_482	1
+483	val_483	1
+484	val_484	1
+485	val_485	1
+490	val_490	1
+491	val_491	1
+495	val_495	1
+497	val_497	1
+498	val_498	1
+498	val_498	1
+498	val_498	1
+PREHOOK: query: explain analyze table bucket3_1_n0 partition (ds) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket3_1_n0
+PREHOOK: Input: default@bucket3_1_n0@ds=1
+PREHOOK: Input: default@bucket3_1_n0@ds=2
+PREHOOK: Output: default@bucket3_1_n0
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+PREHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: query: explain analyze table bucket3_1_n0 partition (ds) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket3_1_n0
+POSTHOOK: Input: default@bucket3_1_n0@ds=1
+POSTHOOK: Input: default@bucket3_1_n0@ds=2
+POSTHOOK: Output: default@bucket3_1_n0
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Output: default@bucket3_1_n0@ds=2
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: bucket3_1_n0
+            Execution mode: llap
+            LLAP IO: all inputs
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: analyze table bucket3_1_n0 partition (ds) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket3_1_n0
+PREHOOK: Input: default@bucket3_1_n0@ds=1
+PREHOOK: Input: default@bucket3_1_n0@ds=2
+PREHOOK: Output: default@bucket3_1_n0
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+PREHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: query: analyze table bucket3_1_n0 partition (ds) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket3_1_n0
+POSTHOOK: Input: default@bucket3_1_n0@ds=1
+POSTHOOK: Input: default@bucket3_1_n0@ds=2
+POSTHOOK: Output: default@bucket3_1_n0
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Output: default@bucket3_1_n0@ds=2
+PREHOOK: query: describe formatted bucket3_1_n0 partition (ds='1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bucket3_1_n0
+POSTHOOK: query: describe formatted bucket3_1_n0 partition (ds='1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bucket3_1_n0
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	bucket3_1_n0        	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted bucket3_1_n0 partition (ds='2')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bucket3_1_n0
+POSTHOOK: query: describe formatted bucket3_1_n0 partition (ds='2')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bucket3_1_n0
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2]                 	 
+Database:           	default             	 
+Table:              	bucket3_1_n0        	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted bucket3_1_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bucket3_1_n0
+POSTHOOK: query: describe formatted bucket3_1_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bucket3_1_n0
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	4                   
+	numPartitions       	2                   
+	numRows             	1000                
+	rawDataSize         	10624               
+	totalSize           	11624               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

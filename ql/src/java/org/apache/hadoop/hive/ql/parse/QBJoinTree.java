@@ -53,22 +53,22 @@ public class QBJoinTree implements Serializable, Cloneable {
 
   // keeps track of the right-hand-side table name of the left-semi-join, and
   // its list of join keys
-  private transient final HashMap<String, ArrayList<ASTNode>> rhsSemijoin;
+  private transient final Map<String, List<ASTNode>> rhsSemijoin;
 
   // join conditions
-  private transient ArrayList<ArrayList<ASTNode>> expressions;
+  private transient List<List<ASTNode>> expressions;
 
   // key index to nullsafe join flag
-  private ArrayList<Boolean> nullsafes;
+  private List<Boolean> nullsafes;
 
   // filters
-  private transient ArrayList<ArrayList<ASTNode>> filters;
+  private transient List<List<ASTNode>> filters;
 
   // outerjoin-pos = other-pos:filter-len, other-pos:filter-len, ...
   private int[][] filterMap;
 
   // filters for pushing
-  private transient ArrayList<ArrayList<ASTNode>> filtersForPushing;
+  private transient List<List<ASTNode>> filtersForPushing;
 
   // user asked for map-side join
   private boolean mapSideJoin;
@@ -85,6 +85,8 @@ public class QBJoinTree implements Serializable, Cloneable {
    */
   private final List<ASTNode> postJoinFilters;
   private Map<String, SemiJoinHint> semiJoinHint;
+  private int fkJoinTableIndex = -1 ;
+  private boolean nonFkSideIsFiltered;
 
   /**
    * constructor.
@@ -93,7 +95,7 @@ public class QBJoinTree implements Serializable, Cloneable {
     nextTag = 0;
     noOuterJoin = true;
     noSemiJoin = true;
-    rhsSemijoin = new HashMap<String, ArrayList<ASTNode>>();
+    rhsSemijoin = new HashMap<String, List<ASTNode>>();
     aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
     postJoinFilters = new ArrayList<ASTNode>();
   }
@@ -137,11 +139,11 @@ public class QBJoinTree implements Serializable, Cloneable {
     this.leftAliases = leftAliases;
   }
 
-  public ArrayList<ArrayList<ASTNode>> getExpressions() {
+  public List<List<ASTNode>> getExpressions() {
     return expressions;
   }
 
-  public void setExpressions(ArrayList<ArrayList<ASTNode>> expressions) {
+  public void setExpressions(List<List<ASTNode>> expressions) {
     this.expressions = expressions;
   }
 
@@ -192,7 +194,7 @@ public class QBJoinTree implements Serializable, Cloneable {
   /**
    * @return the filters
    */
-  public ArrayList<ArrayList<ASTNode>> getFilters() {
+  public List<List<ASTNode>> getFilters() {
     return filters;
   }
 
@@ -200,14 +202,14 @@ public class QBJoinTree implements Serializable, Cloneable {
    * @param filters
    *          the filters to set
    */
-  public void setFilters(ArrayList<ArrayList<ASTNode>> filters) {
+  public void setFilters(List<List<ASTNode>> filters) {
     this.filters = filters;
   }
 
   /**
    * @return the filters for pushing
    */
-  public ArrayList<ArrayList<ASTNode>> getFiltersForPushing() {
+  public List<List<ASTNode>> getFiltersForPushing() {
     return filtersForPushing;
   }
 
@@ -215,7 +217,7 @@ public class QBJoinTree implements Serializable, Cloneable {
    * @param filters for pushing
    *          the filters to set
    */
-  public void setFiltersForPushing(ArrayList<ArrayList<ASTNode>> filters) {
+  public void setFiltersForPushing(List<List<ASTNode>> filters) {
     this.filtersForPushing = filters;
   }
 
@@ -275,8 +277,8 @@ public class QBJoinTree implements Serializable, Cloneable {
    * @param alias
    * @param columns
    */
-  public void addRHSSemijoinColumns(String alias, ArrayList<ASTNode> columns) {
-    ArrayList<ASTNode> cols = rhsSemijoin.get(alias);
+  public void addRHSSemijoinColumns(String alias, List<ASTNode> columns) {
+    List<ASTNode> cols = rhsSemijoin.get(alias);
     if (cols == null) {
       rhsSemijoin.put(alias, columns);
     } else {
@@ -291,7 +293,7 @@ public class QBJoinTree implements Serializable, Cloneable {
    * @param column
    */
   public void addRHSSemijoinColumns(String alias, ASTNode column) {
-    ArrayList<ASTNode> cols = rhsSemijoin.get(alias);
+    List<ASTNode> cols = rhsSemijoin.get(alias);
     if (cols == null) {
       cols = new ArrayList<ASTNode>();
       cols.add(column);
@@ -301,7 +303,7 @@ public class QBJoinTree implements Serializable, Cloneable {
     }
   }
 
-  public ArrayList<ASTNode> getRHSSemijoinColumns(String alias) {
+  public List<ASTNode> getRHSSemijoinColumns(String alias) {
     return rhsSemijoin.get(alias);
   }
 
@@ -312,9 +314,9 @@ public class QBJoinTree implements Serializable, Cloneable {
    *          the source join tree
    */
   public void mergeRHSSemijoin(QBJoinTree src) {
-    for (Entry<String, ArrayList<ASTNode>> e : src.rhsSemijoin.entrySet()) {
+    for (Entry<String, List<ASTNode>> e : src.rhsSemijoin.entrySet()) {
       String key = e.getKey();
-      ArrayList<ASTNode> value = rhsSemijoin.get(key);
+      List<ASTNode> value = rhsSemijoin.get(key);
       if (value == null) {
         rhsSemijoin.put(key, e.getValue());
       } else {
@@ -323,11 +325,11 @@ public class QBJoinTree implements Serializable, Cloneable {
     }
   }
 
-  public ArrayList<Boolean> getNullSafes() {
+  public List<Boolean> getNullSafes() {
     return nullsafes;
   }
 
-  public void setNullSafes(ArrayList<Boolean> nullSafes) {
+  public void setNullSafes(List<Boolean> nullSafes) {
     this.nullsafes = nullSafes;
   }
 
@@ -420,13 +422,15 @@ public class QBJoinTree implements Serializable, Cloneable {
     cloned.setNullSafes(nullsafes == null ? null : new ArrayList<Boolean>(nullsafes));
     cloned.setRightAliases(rightAliases == null ? null : rightAliases.clone());
     cloned.setStreamAliases(streamAliases == null ? null : new ArrayList<String>(streamAliases));
+    cloned.setFkJoinTableIndex(fkJoinTableIndex);
+    cloned.setNonFkSideIsFiltered(nonFkSideIsFiltered);
 
     // clone postJoinFilters
     for (ASTNode filter : postJoinFilters) {
       cloned.addPostJoinFilter(filter);
     }
     // clone rhsSemijoin
-    for (Entry<String, ArrayList<ASTNode>> entry : rhsSemijoin.entrySet()) {
+    for (Entry<String, List<ASTNode>> entry : rhsSemijoin.entrySet()) {
       cloned.addRHSSemijoinColumns(entry.getKey(), entry.getValue());
     }
 
@@ -444,5 +448,21 @@ public class QBJoinTree implements Serializable, Cloneable {
   @Override
   public String toString() {
     return "QBJoinTree [leftAlias=" + leftAlias + ", rightAliases=" + Arrays.toString(rightAliases) + ", leftAliases=" + Arrays.toString(leftAliases) + ", semiJoinHint=" + semiJoinHint + "]";
+  }
+
+  public void setFkJoinTableIndex(int fkJoinTableIndex) {
+    this.fkJoinTableIndex = fkJoinTableIndex;
+  }
+
+  public int getFkJoinTableIndex() {
+    return fkJoinTableIndex;
+  }
+
+  public void setNonFkSideIsFiltered(boolean nonFkSideIsFiltered) {
+    this.nonFkSideIsFiltered = nonFkSideIsFiltered;
+  }
+
+  public boolean isNonFkSideIsFiltered() {
+    return nonFkSideIsFiltered;
   }
 }

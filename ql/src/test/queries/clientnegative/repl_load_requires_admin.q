@@ -1,7 +1,4 @@
-set hive.security.authorization.enabled=true;
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+--! qt:authorizer
 set hive.repl.rootdir=${system:test.tmp.dir}/hrepl;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/hrepl/sentinel;
@@ -32,10 +29,10 @@ show tables test_replload_adminpriv_src;
 repl dump test_replload_adminpriv_src;
 
 -- repl load as admin should succeed
-repl load test_replload_adminpriv_tgt1 from '${system:test.tmp.dir}/hrepl/next/';
+repl load test_replload_adminpriv_src into test_replload_adminpriv_tgt1;
 show tables test_replload_adminpriv_tgt1;
 
 set user.name=ruser1;
 
 -- repl load as non-admin should fail
-repl load test_replload_adminpriv_tgt2 from '${system:test.tmp.dir}/hrepl/next';
+repl load test_replload_adminpriv_src into test_replload_adminpriv_tgt2;

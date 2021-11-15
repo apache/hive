@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -27,9 +27,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestGenericUDFFactorial extends TestCase {
+/**
+ * TestGenericUDFFactorial.
+ */
+public class TestGenericUDFFactorial {
 
+  @Test
   public void testFactorial() throws HiveException {
     GenericUDFFactorial udf = new GenericUDFFactorial();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
@@ -48,6 +57,7 @@ public class TestGenericUDFFactorial extends TestCase {
     runAndVerify(null, null, udf);
   }
 
+  @Test
   public void testWrongInputType() throws HiveException {
     @SuppressWarnings("resource")
     GenericUDFFactorial udf = new GenericUDFFactorial();

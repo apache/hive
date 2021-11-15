@@ -1,0 +1,461 @@
+PREHOOK: query: create table ax(s char(1),t char(10))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ax
+POSTHOOK: query: create table ax(s char(1),t char(10))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ax
+PREHOOK: query: insert into ax values ('a','a'),('a','a '),('b','bb')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ax
+POSTHOOK: query: insert into ax values ('a','a'),('a','a '),('b','bb')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ax
+POSTHOOK: Lineage: ax.s SCRIPT []
+POSTHOOK: Lineage: ax.t SCRIPT []
+PREHOOK: query: explain
+select 'expected 2',count(*) from ax where s = 'a' and t = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 'expected 2',count(*) from ax where s = 'a' and t = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ax
+                  filterExpr: ((s = 'a') and (t = 'a         ')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((s = 'a') and (t = 'a         ')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'expected 2' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 'expected 2',count(*) from ax where s = 'a' and t = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 2',count(*) from ax where s = 'a' and t = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 2	2
+PREHOOK: query: explain
+select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ax
+                  filterExpr: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'expected 3' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 3	3
+PREHOOK: query: select 'expected 2',count(*) from ax where t = 'a         '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 2',count(*) from ax where t = 'a         '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 2	2
+PREHOOK: query: select 'expected 2',count(*) from ax where t = 'a          '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 2',count(*) from ax where t = 'a          '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 2	2
+PREHOOK: query: select 'expected 0',count(*) from ax where t = 'a          d'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 0',count(*) from ax where t = 'a          d'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 0	0
+PREHOOK: query: select 'expected 2',count(*) from ax where (s,t) in (('a','a'),(null, 'bb'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 2',count(*) from ax where (s,t) in (('a','a'),(null, 'bb'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 2	2
+PREHOOK: query: explain select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ax
+                  filterExpr: (((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) or (null and (CAST( t AS STRING) = 'bb'))) is null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) or (null and (CAST( t AS STRING) = 'bb'))) is null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'expected 1' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 1	1
+PREHOOK: query: explain cbo select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveFilter(condition=[IN($1, _UTF-16LE'a         ', _UTF-16LE'bb        ', _UTF-16LE'aa        ', _UTF-16LE'bbb       ', _UTF-16LE'ab        ', _UTF-16LE'ba        ', _UTF-16LE'aaa       ', _UTF-16LE'bbb       ', _UTF-16LE'abc       ', _UTF-16LE'bc        ', _UTF-16LE'ac        ', _UTF-16LE'bca       ', _UTF-16LE'cab       ', _UTF-16LE'cb        ', _UTF-16LE'ca        ', _UTF-16LE'cbc       ', _UTF-16LE'z         ')])
+    HiveTableScan(table=[[default, ax]], table:alias=[ax])
+
+PREHOOK: query: explain select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ax
+                  filterExpr: (t) IN ('a         ', 'bb        ', 'aa        ', 'bbb       ', 'ab        ', 'ba        ', 'aaa       ', 'bbb       ', 'abc       ', 'bc        ', 'ac        ', 'bca       ', 'cab       ', 'cb        ', 'ca        ', 'cbc       ', 'z         ') (type: boolean)
+                  Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (t) IN ('a         ', 'bb        ', 'aa        ', 'bbb       ', 'ab        ', 'ba        ', 'aaa       ', 'bbb       ', 'abc       ', 'bc        ', 'ac        ', 'bca       ', 'cab       ', 'cb        ', 'ca        ', 'cbc       ', 'z         ') (type: boolean)
+                    Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.6666666
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain cbo select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveFilter(condition=[OR(=($1, _UTF-16LE'a         '), =($1, _UTF-16LE'bb        '), =($1, _UTF-16LE'aa        '), =($1, _UTF-16LE'bbb       '), =($1, _UTF-16LE'ab        '), =($1, _UTF-16LE'ba        '), =($1, _UTF-16LE'aaa       '), =($1, _UTF-16LE'abc       '), =($1, _UTF-16LE'bc        '), =($1, _UTF-16LE'ac        '), =($1, _UTF-16LE'bca       '), =($1, _UTF-16LE'cab       '), =($1, _UTF-16LE'cb        '), =($1, _UTF-16LE'ca        '), =($1, _UTF-16LE'cbc       '), =($1, _UTF-16LE'z         '))])
+    HiveTableScan(table=[[default, ax]], table:alias=[ax])
+
+PREHOOK: query: explain select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from ax where t in
+('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ax
+                  filterExpr: ((t = 'a         ') or (t = 'bb        ') or (t = 'aa        ') or (t = 'bbb       ') or (t = 'ab        ') or (t = 'ba        ') or (t = 'aaa       ') or (t = 'abc       ') or (t = 'bc        ') or (t = 'ac        ') or (t = 'bca       ') or (t = 'cab       ') or (t = 'cb        ') or (t = 'ca        ') or (t = 'cbc       ') or (t = 'z         ')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((t = 'a         ') or (t = 'bb        ') or (t = 'aa        ') or (t = 'bbb       ') or (t = 'ab        ') or (t = 'ba        ') or (t = 'aaa       ') or (t = 'abc       ') or (t = 'bc        ') or (t = 'ac        ') or (t = 'bca       ') or (t = 'cab       ') or (t = 'cb        ') or (t = 'ca        ') or (t = 'cbc       ') or (t = 'z         ')) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.6666666
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

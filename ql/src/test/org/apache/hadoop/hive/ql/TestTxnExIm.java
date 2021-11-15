@@ -126,7 +126,6 @@ public class TestTxnExIm extends TxnCommandsBaseForTests {
    */
   @Test
   public void testExportPart() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1}, {3, 4, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -154,7 +153,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1519423568221/
    */
   @Test
   public void testExportPartPartial() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1, 1}, {3, 4, 2, 2}, {5, 6, 1, 2}, {7, 8, 2, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -214,7 +212,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
    */
   @Test
   public void testExportPartPartial2() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1, 1}, {3, 4, 2, 2}, {5, 6, 1, 2}, {7, 8, 2, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -232,7 +229,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
   }
   @Test
   public void testExportPartPartial3() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 1, 1, 2}, {3, 2, 3, 8}, {5, 1, 2, 6}, {7, 2, 2, 8}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -343,18 +339,18 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
             "t/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-            "t/delta_0000002_0000002_0000/bucket_00000"}};
+            "t/delta_0000002_0000002_0000/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "update imported table");
 
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected3 = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-            ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"},
+            ".*t/delta_0000001_0000002_v000002[4-5]/bucket_00000"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-            ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"},
+            ".*t/delta_0000001_0000002_v000002[4-5]/bucket_00000"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-            ".*t/delta_0000001_0000002_v000002[5-6]/bucket_00000"}};
+            ".*t/delta_0000001_0000002_v000002[4-5]/bucket_00000"}};
     checkResult(expected3, testQuery, isVectorized, "minor compact imported table");
 
   }
@@ -383,12 +379,64 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0",
-            "t/p=10/delta_0000001_0000001_0000/bucket_00000"},
+            "t/p=10/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4",
             "t/p=11/delta_0000002_0000002_0000/000000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
             "t/p=12/delta_0000003_0000003_0000/000000_0"}};
     checkResult(expected, testQuery, isVectorized, "import existing table");
+  }
+
+  @Test
+  public void testImportPartitionedOrc() throws Exception {
+    // Clear and drop table T,Tstage
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists Tstage");
+
+    // Create source table - Tstage
+    runStatementOnDriver("create table Tstage (a int, b int) partitioned by (p int) stored"
+        + " as orc tblproperties('transactional'='true')");
+
+    // This creates an ORC data file with correct schema under table root
+    runStatementOnDriver("insert into Tstage values(1,2,10),(3,4,11),(5,6,12)");
+    final int[][] rows = { { 3 } };
+
+    // Check Partitions statistics
+    List<String> rsTstagePartitionsProperties = runStatementOnDriver("show partitions Tstage");
+    for (String rsTstagePartition : rsTstagePartitionsProperties) {
+      List<String> rsPartitionProperties =
+          runStatementOnDriver("describe formatted Tstage partition(" + rsTstagePartition + ")");
+      Assert.assertEquals("COLUMN_STATS_ACCURATE of partition " + rsTstagePartition + " of Tstage table", true,
+          rsPartitionProperties.contains("\tCOLUMN_STATS_ACCURATE\t{\\\"BASIC_STATS\\\":\\\"true\\\"}"));
+      Assert.assertEquals(" of partition " + rsTstagePartition + " of Tstage table", true,
+          rsPartitionProperties.contains("\tnumRows             \t1                   "));
+    }
+
+    // Now we have an archive Tstage with 3 partitions
+    runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
+
+    // Load T
+    runStatementOnDriver("import table T from '" + getWarehouseDir() + "/1'");
+
+    // Check basic stats in tblproperties of T
+    List<String> rsTProperties = runStatementOnDriver("show tblproperties T");
+    Assert.assertEquals("COLUMN_STATS_ACCURATE of T table", false,
+        rsTProperties.contains("COLUMN_STATS_ACCURATE\t{\"BASIC_STATS\":\"true\"}"));
+    Assert.assertEquals("numRows of T table", false, rsTProperties.contains("numRows\t3"));
+
+    // Check Partitions statistics of T
+    List<String> rsTPartitionsProperties = runStatementOnDriver("show partitions T");
+    for (String rsTPartition : rsTPartitionsProperties) {
+      List<String> rsPartitionProperties = runStatementOnDriver("describe formatted T partition(" + rsTPartition + ")");
+      Assert.assertEquals("COLUMN_STATS_ACCURATE of partition " + rsTPartition + " of T table", false,
+          rsPartitionProperties.contains("\tCOLUMN_STATS_ACCURATE\t{\\\"BASIC_STATS\\\":\\\"true\\\"}"));
+      Assert.assertEquals(" of partition " + rsTPartition + " of T table", false,
+          rsPartitionProperties.contains("\tnumRows             \t1                   "));
+    }
+
+    // Verify the count(*) output
+    List<String> rs = runStatementOnDriver("select count(*) from T");
+    Assert.assertEquals("Rowcount of imported table", TestTxnCommands2.stringifyValues(rows), rs);
   }
 
   /**
@@ -548,5 +596,42 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     Assert.assertEquals("reading imported data",
         TestTxnCommands2.stringifyValues(data), rs);
 
+  }
+
+  @Test
+  public void testImportOrc() throws Exception {
+    // Clear and Drop T and Tstage if exist
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists Tstage");
+
+    // Create source table - Tstage
+    runStatementOnDriver("create table Tstage (a int, b int) stored" + " as orc tblproperties('transactional'='true')");
+
+    // This creates an ORC data file with correct schema under table root
+    runStatementOnDriver("insert into Tstage values(1,2),(3,4),(5,6)");
+    final int[][] rows = { { 3 } };
+
+    // Check Tstage statistics
+    List<String> rsTStageProperties = runStatementOnDriver("show tblproperties Tstage");
+    Assert.assertEquals("COLUMN_STATS_ACCURATE of Tstage table", true,
+        rsTStageProperties.contains("COLUMN_STATS_ACCURATE\t{\"BASIC_STATS\":\"true\"}"));
+    Assert.assertEquals("numRows of Tstage table", true, rsTStageProperties.contains("numRows\t3"));
+    Assert.assertEquals("numFiles of Tstage table", true, rsTStageProperties.contains("numFiles\t1"));
+
+    // Now we have an archive Tstage table
+    runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
+
+    // Load T
+    runStatementOnDriver("import table T from '" + getWarehouseDir() + "/1'");
+
+    // Check basic stats in tblproperties T
+    List<String> rsTProperties = runStatementOnDriver("show tblproperties T");
+    Assert.assertEquals("COLUMN_STATS_ACCURATE of T table", false,
+        rsTProperties.contains("COLUMN_STATS_ACCURATE\t{\"BASIC_STATS\":\"true\"}"));
+    Assert.assertEquals("numRows of T table", false, rsTProperties.contains("numRows\t3"));
+
+    // Verify the count(*) output
+    List<String> rs = runStatementOnDriver("select count(*) from T");
+    Assert.assertEquals("Rowcount of imported table", TestTxnCommands2.stringifyValues(rows), rs);
   }
 }

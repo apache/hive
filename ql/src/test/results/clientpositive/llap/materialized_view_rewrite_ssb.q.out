@@ -600,6 +600,24 @@ POSTHOOK: Input: default@ssb_part_n0
 POSTHOOK: Input: default@supplier_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ssb_mv_n0
+POSTHOOK: Lineage: ssb_mv_n0.c_city SIMPLE [(customer_n1)customer_n1.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.c_nation SIMPLE [(customer_n1)customer_n1.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.c_region SIMPLE [(customer_n1)customer_n1.FieldSchema(name:c_region, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_weeknuminyear SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_weeknuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_year SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_year, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_yearmonth SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_yearmonthnum SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.discounted_price EXPRESSION [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_extendedprice, type:double, comment:null), (lineorder_n0)lineorder_n0.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.lo_discount SIMPLE [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.lo_quantity SIMPLE [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.lo_revenue SIMPLE [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_revenue, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.net_revenue EXPRESSION [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_revenue, type:double, comment:null), (lineorder_n0)lineorder_n0.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.p_brand1 SIMPLE [(ssb_part_n0)ssb_part_n0.FieldSchema(name:p_brand1, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.p_category SIMPLE [(ssb_part_n0)ssb_part_n0.FieldSchema(name:p_category, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.p_mfgr SIMPLE [(ssb_part_n0)ssb_part_n0.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.s_city SIMPLE [(supplier_n0)supplier_n0.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.s_nation SIMPLE [(supplier_n0)supplier_n0.FieldSchema(name:s_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.s_region SIMPLE [(supplier_n0)supplier_n0.FieldSchema(name:s_region, type:string, comment:null), ]
 PREHOOK: query: explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
@@ -646,10 +664,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((d_year = 1993) and (lo_quantity < 25.0D) and lo_discount BETWEEN 1.0D AND 3.0D) (type: boolean)
+                  filterExpr: ((lo_quantity < 25.0D) and (d_year = 1993) and lo_discount BETWEEN 1.0D AND 3.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_year = 1993) and (lo_quantity < 25.0D) and lo_discount BETWEEN 1.0D AND 3.0D) (type: boolean)
+                    predicate: ((lo_quantity < 25.0D) and (d_year = 1993) and lo_discount BETWEEN 1.0D AND 3.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -657,11 +675,12 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double)
@@ -735,10 +754,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((d_yearmonthnum = 199401) and lo_discount BETWEEN 4.0D AND 6.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
+                  filterExpr: ((d_yearmonthnum = 199401) and lo_quantity BETWEEN 26.0D AND 35.0D and lo_discount BETWEEN 4.0D AND 6.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_yearmonthnum = 199401) and lo_discount BETWEEN 4.0D AND 6.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
+                    predicate: ((d_yearmonthnum = 199401) and lo_quantity BETWEEN 26.0D AND 35.0D and lo_discount BETWEEN 4.0D AND 6.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -746,11 +765,12 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double)
@@ -826,10 +846,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((d_year = 1994) and (d_weeknuminyear = 6) and lo_discount BETWEEN 5.0D AND 7.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
+                  filterExpr: ((d_year = 1994) and (d_weeknuminyear = 6) and lo_quantity BETWEEN 26.0D AND 35.0D and lo_discount BETWEEN 5.0D AND 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_weeknuminyear = 6) and (d_year = 1994) and lo_discount BETWEEN 5.0D AND 7.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
+                    predicate: ((d_year = 1994) and (d_weeknuminyear = 6) and lo_quantity BETWEEN 26.0D AND 35.0D and lo_discount BETWEEN 5.0D AND 7.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -837,11 +857,12 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double)
@@ -948,6 +969,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string)
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -969,6 +991,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int), _col2 (type: string)
+                    null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
@@ -1072,6 +1095,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string)
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1093,6 +1117,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int), _col2 (type: string)
+                    null sort order: zz
                     sort order: ++
                     Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
@@ -1196,6 +1221,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1217,6 +1243,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
@@ -1324,6 +1351,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1345,6 +1373,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
+                    null sort order: za
                     sort order: +-
                     Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
@@ -1450,6 +1479,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1471,6 +1501,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
+                    null sort order: za
                     sort order: +-
                     Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
@@ -1572,6 +1603,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1593,6 +1625,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
+                    null sort order: za
                     sort order: +-
                     Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
@@ -1680,10 +1713,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and (d_yearmonth = 'Dec1997')) (type: boolean)
+                  filterExpr: ((d_yearmonth = 'Dec1997') and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (d_yearmonth = 'Dec1997') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
+                    predicate: ((d_yearmonth = 'Dec1997') and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_city (type: string), d_year (type: int), s_city (type: string), lo_revenue (type: double)
@@ -1698,6 +1731,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1719,6 +1753,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
+                    null sort order: za
                     sort order: +-
                     Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
@@ -1812,10 +1847,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((p_mfgr) IN ('MFGR#1', 'MFGR#2') and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
+                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (s_region = 'AMERICA')) (type: boolean)
+                    predicate: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_nation (type: string), d_year (type: int), net_revenue (type: double)
@@ -1830,6 +1865,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string)
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1847,6 +1883,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string)
+                  null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: double)
@@ -1942,10 +1979,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((d_year) IN (1997, 1998) and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
+                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and (d_year) IN (1997, 1998) and (p_mfgr) IN ('MFGR#1', 'MFGR#2')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_region = 'AMERICA') and (d_year) IN (1997, 1998) and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (s_region = 'AMERICA')) (type: boolean)
+                    predicate: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and (d_year) IN (1997, 1998) and (p_mfgr) IN ('MFGR#1', 'MFGR#2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_year (type: int), p_category (type: string), s_nation (type: string), net_revenue (type: double)
@@ -1960,6 +1997,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1977,6 +2015,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                  null sort order: zzz
                   sort order: +++
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: double)
@@ -2072,10 +2111,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((d_year) IN (1997, 1998) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
+                  filterExpr: ((c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES') and (d_year) IN (1997, 1998)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_region = 'AMERICA') and (d_year) IN (1997, 1998) and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
+                    predicate: ((c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES') and (d_year) IN (1997, 1998)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_year (type: int), p_brand1 (type: string), s_city (type: string), net_revenue (type: double)
@@ -2090,6 +2129,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2107,6 +2147,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                  null sort order: zzz
                   sort order: +++
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: double)

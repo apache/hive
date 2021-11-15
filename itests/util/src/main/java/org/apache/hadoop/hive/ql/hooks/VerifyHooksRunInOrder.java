@@ -110,7 +110,7 @@ public class VerifyHooksRunInOrder {
 
     @Override
     public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-        List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+        List<Task<?>> rootTasks) throws SemanticException {
       LogHelper console = SessionState.getConsole();
 
       if (console == null) {
@@ -145,7 +145,7 @@ public class VerifyHooksRunInOrder {
 
     @Override
     public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-        List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+        List<Task<?>> rootTasks) throws SemanticException {
       LogHelper console = SessionState.getConsole();
 
       if (console == null) {

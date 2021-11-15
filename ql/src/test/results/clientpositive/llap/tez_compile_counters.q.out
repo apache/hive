@@ -1,0 +1,1542 @@
+PREHOOK: query: create table testpart (k int) partitioned by (v string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testpart
+POSTHOOK: query: create table testpart (k int) partitioned by (v string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testpart
+PREHOOK: query: insert overwrite table testpart partition(v) select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@testpart
+POSTHOOK: query: insert overwrite table testpart partition(v) select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testpart
+POSTHOOK: Output: default@testpart@v=val_0
+POSTHOOK: Output: default@testpart@v=val_10
+POSTHOOK: Output: default@testpart@v=val_100
+POSTHOOK: Output: default@testpart@v=val_103
+POSTHOOK: Output: default@testpart@v=val_104
+POSTHOOK: Output: default@testpart@v=val_105
+POSTHOOK: Output: default@testpart@v=val_11
+POSTHOOK: Output: default@testpart@v=val_111
+POSTHOOK: Output: default@testpart@v=val_113
+POSTHOOK: Output: default@testpart@v=val_114
+POSTHOOK: Output: default@testpart@v=val_116
+POSTHOOK: Output: default@testpart@v=val_118
+POSTHOOK: Output: default@testpart@v=val_119
+POSTHOOK: Output: default@testpart@v=val_12
+POSTHOOK: Output: default@testpart@v=val_120
+POSTHOOK: Output: default@testpart@v=val_125
+POSTHOOK: Output: default@testpart@v=val_126
+POSTHOOK: Output: default@testpart@v=val_128
+POSTHOOK: Output: default@testpart@v=val_129
+POSTHOOK: Output: default@testpart@v=val_131
+POSTHOOK: Output: default@testpart@v=val_133
+POSTHOOK: Output: default@testpart@v=val_134
+POSTHOOK: Output: default@testpart@v=val_136
+POSTHOOK: Output: default@testpart@v=val_137
+POSTHOOK: Output: default@testpart@v=val_138
+POSTHOOK: Output: default@testpart@v=val_143
+POSTHOOK: Output: default@testpart@v=val_145
+POSTHOOK: Output: default@testpart@v=val_146
+POSTHOOK: Output: default@testpart@v=val_149
+POSTHOOK: Output: default@testpart@v=val_15
+POSTHOOK: Output: default@testpart@v=val_150
+POSTHOOK: Output: default@testpart@v=val_152
+POSTHOOK: Output: default@testpart@v=val_153
+POSTHOOK: Output: default@testpart@v=val_155
+POSTHOOK: Output: default@testpart@v=val_156
+POSTHOOK: Output: default@testpart@v=val_157
+POSTHOOK: Output: default@testpart@v=val_158
+POSTHOOK: Output: default@testpart@v=val_160
+POSTHOOK: Output: default@testpart@v=val_162
+POSTHOOK: Output: default@testpart@v=val_163
+POSTHOOK: Output: default@testpart@v=val_164
+POSTHOOK: Output: default@testpart@v=val_165
+POSTHOOK: Output: default@testpart@v=val_166
+POSTHOOK: Output: default@testpart@v=val_167
+POSTHOOK: Output: default@testpart@v=val_168
+POSTHOOK: Output: default@testpart@v=val_169
+POSTHOOK: Output: default@testpart@v=val_17
+POSTHOOK: Output: default@testpart@v=val_170
+POSTHOOK: Output: default@testpart@v=val_172
+POSTHOOK: Output: default@testpart@v=val_174
+POSTHOOK: Output: default@testpart@v=val_175
+POSTHOOK: Output: default@testpart@v=val_176
+POSTHOOK: Output: default@testpart@v=val_177
+POSTHOOK: Output: default@testpart@v=val_178
+POSTHOOK: Output: default@testpart@v=val_179
+POSTHOOK: Output: default@testpart@v=val_18
+POSTHOOK: Output: default@testpart@v=val_180
+POSTHOOK: Output: default@testpart@v=val_181
+POSTHOOK: Output: default@testpart@v=val_183
+POSTHOOK: Output: default@testpart@v=val_186
+POSTHOOK: Output: default@testpart@v=val_187
+POSTHOOK: Output: default@testpart@v=val_189
+POSTHOOK: Output: default@testpart@v=val_19
+POSTHOOK: Output: default@testpart@v=val_190
+POSTHOOK: Output: default@testpart@v=val_191
+POSTHOOK: Output: default@testpart@v=val_192
+POSTHOOK: Output: default@testpart@v=val_193
+POSTHOOK: Output: default@testpart@v=val_194
+POSTHOOK: Output: default@testpart@v=val_195
+POSTHOOK: Output: default@testpart@v=val_196
+POSTHOOK: Output: default@testpart@v=val_197
+POSTHOOK: Output: default@testpart@v=val_199
+POSTHOOK: Output: default@testpart@v=val_2
+POSTHOOK: Output: default@testpart@v=val_20
+POSTHOOK: Output: default@testpart@v=val_200
+POSTHOOK: Output: default@testpart@v=val_201
+POSTHOOK: Output: default@testpart@v=val_202
+POSTHOOK: Output: default@testpart@v=val_203
+POSTHOOK: Output: default@testpart@v=val_205
+POSTHOOK: Output: default@testpart@v=val_207
+POSTHOOK: Output: default@testpart@v=val_208
+POSTHOOK: Output: default@testpart@v=val_209
+POSTHOOK: Output: default@testpart@v=val_213
+POSTHOOK: Output: default@testpart@v=val_214
+POSTHOOK: Output: default@testpart@v=val_216
+POSTHOOK: Output: default@testpart@v=val_217
+POSTHOOK: Output: default@testpart@v=val_218
+POSTHOOK: Output: default@testpart@v=val_219
+POSTHOOK: Output: default@testpart@v=val_221
+POSTHOOK: Output: default@testpart@v=val_222
+POSTHOOK: Output: default@testpart@v=val_223
+POSTHOOK: Output: default@testpart@v=val_224
+POSTHOOK: Output: default@testpart@v=val_226
+POSTHOOK: Output: default@testpart@v=val_228
+POSTHOOK: Output: default@testpart@v=val_229
+POSTHOOK: Output: default@testpart@v=val_230
+POSTHOOK: Output: default@testpart@v=val_233
+POSTHOOK: Output: default@testpart@v=val_235
+POSTHOOK: Output: default@testpart@v=val_237
+POSTHOOK: Output: default@testpart@v=val_238
+POSTHOOK: Output: default@testpart@v=val_239
+POSTHOOK: Output: default@testpart@v=val_24
+POSTHOOK: Output: default@testpart@v=val_241
+POSTHOOK: Output: default@testpart@v=val_242
+POSTHOOK: Output: default@testpart@v=val_244
+POSTHOOK: Output: default@testpart@v=val_247
+POSTHOOK: Output: default@testpart@v=val_248
+POSTHOOK: Output: default@testpart@v=val_249
+POSTHOOK: Output: default@testpart@v=val_252
+POSTHOOK: Output: default@testpart@v=val_255
+POSTHOOK: Output: default@testpart@v=val_256
+POSTHOOK: Output: default@testpart@v=val_257
+POSTHOOK: Output: default@testpart@v=val_258
+POSTHOOK: Output: default@testpart@v=val_26
+POSTHOOK: Output: default@testpart@v=val_260
+POSTHOOK: Output: default@testpart@v=val_262
+POSTHOOK: Output: default@testpart@v=val_263
+POSTHOOK: Output: default@testpart@v=val_265
+POSTHOOK: Output: default@testpart@v=val_266
+POSTHOOK: Output: default@testpart@v=val_27
+POSTHOOK: Output: default@testpart@v=val_272
+POSTHOOK: Output: default@testpart@v=val_273
+POSTHOOK: Output: default@testpart@v=val_274
+POSTHOOK: Output: default@testpart@v=val_275
+POSTHOOK: Output: default@testpart@v=val_277
+POSTHOOK: Output: default@testpart@v=val_278
+POSTHOOK: Output: default@testpart@v=val_28
+POSTHOOK: Output: default@testpart@v=val_280
+POSTHOOK: Output: default@testpart@v=val_281
+POSTHOOK: Output: default@testpart@v=val_282
+POSTHOOK: Output: default@testpart@v=val_283
+POSTHOOK: Output: default@testpart@v=val_284
+POSTHOOK: Output: default@testpart@v=val_285
+POSTHOOK: Output: default@testpart@v=val_286
+POSTHOOK: Output: default@testpart@v=val_287
+POSTHOOK: Output: default@testpart@v=val_288
+POSTHOOK: Output: default@testpart@v=val_289
+POSTHOOK: Output: default@testpart@v=val_291
+POSTHOOK: Output: default@testpart@v=val_292
+POSTHOOK: Output: default@testpart@v=val_296
+POSTHOOK: Output: default@testpart@v=val_298
+POSTHOOK: Output: default@testpart@v=val_30
+POSTHOOK: Output: default@testpart@v=val_302
+POSTHOOK: Output: default@testpart@v=val_305
+POSTHOOK: Output: default@testpart@v=val_306
+POSTHOOK: Output: default@testpart@v=val_307
+POSTHOOK: Output: default@testpart@v=val_308
+POSTHOOK: Output: default@testpart@v=val_309
+POSTHOOK: Output: default@testpart@v=val_310
+POSTHOOK: Output: default@testpart@v=val_311
+POSTHOOK: Output: default@testpart@v=val_315
+POSTHOOK: Output: default@testpart@v=val_316
+POSTHOOK: Output: default@testpart@v=val_317
+POSTHOOK: Output: default@testpart@v=val_318
+POSTHOOK: Output: default@testpart@v=val_321
+POSTHOOK: Output: default@testpart@v=val_322
+POSTHOOK: Output: default@testpart@v=val_323
+POSTHOOK: Output: default@testpart@v=val_325
+POSTHOOK: Output: default@testpart@v=val_327
+POSTHOOK: Output: default@testpart@v=val_33
+POSTHOOK: Output: default@testpart@v=val_331
+POSTHOOK: Output: default@testpart@v=val_332
+POSTHOOK: Output: default@testpart@v=val_333
+POSTHOOK: Output: default@testpart@v=val_335
+POSTHOOK: Output: default@testpart@v=val_336
+POSTHOOK: Output: default@testpart@v=val_338
+POSTHOOK: Output: default@testpart@v=val_339
+POSTHOOK: Output: default@testpart@v=val_34
+POSTHOOK: Output: default@testpart@v=val_341
+POSTHOOK: Output: default@testpart@v=val_342
+POSTHOOK: Output: default@testpart@v=val_344
+POSTHOOK: Output: default@testpart@v=val_345
+POSTHOOK: Output: default@testpart@v=val_348
+POSTHOOK: Output: default@testpart@v=val_35
+POSTHOOK: Output: default@testpart@v=val_351
+POSTHOOK: Output: default@testpart@v=val_353
+POSTHOOK: Output: default@testpart@v=val_356
+POSTHOOK: Output: default@testpart@v=val_360
+POSTHOOK: Output: default@testpart@v=val_362
+POSTHOOK: Output: default@testpart@v=val_364
+POSTHOOK: Output: default@testpart@v=val_365
+POSTHOOK: Output: default@testpart@v=val_366
+POSTHOOK: Output: default@testpart@v=val_367
+POSTHOOK: Output: default@testpart@v=val_368
+POSTHOOK: Output: default@testpart@v=val_369
+POSTHOOK: Output: default@testpart@v=val_37
+POSTHOOK: Output: default@testpart@v=val_373
+POSTHOOK: Output: default@testpart@v=val_374
+POSTHOOK: Output: default@testpart@v=val_375
+POSTHOOK: Output: default@testpart@v=val_377
+POSTHOOK: Output: default@testpart@v=val_378
+POSTHOOK: Output: default@testpart@v=val_379
+POSTHOOK: Output: default@testpart@v=val_382
+POSTHOOK: Output: default@testpart@v=val_384
+POSTHOOK: Output: default@testpart@v=val_386
+POSTHOOK: Output: default@testpart@v=val_389
+POSTHOOK: Output: default@testpart@v=val_392
+POSTHOOK: Output: default@testpart@v=val_393
+POSTHOOK: Output: default@testpart@v=val_394
+POSTHOOK: Output: default@testpart@v=val_395
+POSTHOOK: Output: default@testpart@v=val_396
+POSTHOOK: Output: default@testpart@v=val_397
+POSTHOOK: Output: default@testpart@v=val_399
+POSTHOOK: Output: default@testpart@v=val_4
+POSTHOOK: Output: default@testpart@v=val_400
+POSTHOOK: Output: default@testpart@v=val_401
+POSTHOOK: Output: default@testpart@v=val_402
+POSTHOOK: Output: default@testpart@v=val_403
+POSTHOOK: Output: default@testpart@v=val_404
+POSTHOOK: Output: default@testpart@v=val_406
+POSTHOOK: Output: default@testpart@v=val_407
+POSTHOOK: Output: default@testpart@v=val_409
+POSTHOOK: Output: default@testpart@v=val_41
+POSTHOOK: Output: default@testpart@v=val_411
+POSTHOOK: Output: default@testpart@v=val_413
+POSTHOOK: Output: default@testpart@v=val_414
+POSTHOOK: Output: default@testpart@v=val_417
+POSTHOOK: Output: default@testpart@v=val_418
+POSTHOOK: Output: default@testpart@v=val_419
+POSTHOOK: Output: default@testpart@v=val_42
+POSTHOOK: Output: default@testpart@v=val_421
+POSTHOOK: Output: default@testpart@v=val_424
+POSTHOOK: Output: default@testpart@v=val_427
+POSTHOOK: Output: default@testpart@v=val_429
+POSTHOOK: Output: default@testpart@v=val_43
+POSTHOOK: Output: default@testpart@v=val_430
+POSTHOOK: Output: default@testpart@v=val_431
+POSTHOOK: Output: default@testpart@v=val_432
+POSTHOOK: Output: default@testpart@v=val_435
+POSTHOOK: Output: default@testpart@v=val_436
+POSTHOOK: Output: default@testpart@v=val_437
+POSTHOOK: Output: default@testpart@v=val_438
+POSTHOOK: Output: default@testpart@v=val_439
+POSTHOOK: Output: default@testpart@v=val_44
+POSTHOOK: Output: default@testpart@v=val_443
+POSTHOOK: Output: default@testpart@v=val_444
+POSTHOOK: Output: default@testpart@v=val_446
+POSTHOOK: Output: default@testpart@v=val_448
+POSTHOOK: Output: default@testpart@v=val_449
+POSTHOOK: Output: default@testpart@v=val_452
+POSTHOOK: Output: default@testpart@v=val_453
+POSTHOOK: Output: default@testpart@v=val_454
+POSTHOOK: Output: default@testpart@v=val_455
+POSTHOOK: Output: default@testpart@v=val_457
+POSTHOOK: Output: default@testpart@v=val_458
+POSTHOOK: Output: default@testpart@v=val_459
+POSTHOOK: Output: default@testpart@v=val_460
+POSTHOOK: Output: default@testpart@v=val_462
+POSTHOOK: Output: default@testpart@v=val_463
+POSTHOOK: Output: default@testpart@v=val_466
+POSTHOOK: Output: default@testpart@v=val_467
+POSTHOOK: Output: default@testpart@v=val_468
+POSTHOOK: Output: default@testpart@v=val_469
+POSTHOOK: Output: default@testpart@v=val_47
+POSTHOOK: Output: default@testpart@v=val_470
+POSTHOOK: Output: default@testpart@v=val_472
+POSTHOOK: Output: default@testpart@v=val_475
+POSTHOOK: Output: default@testpart@v=val_477
+POSTHOOK: Output: default@testpart@v=val_478
+POSTHOOK: Output: default@testpart@v=val_479
+POSTHOOK: Output: default@testpart@v=val_480
+POSTHOOK: Output: default@testpart@v=val_481
+POSTHOOK: Output: default@testpart@v=val_482
+POSTHOOK: Output: default@testpart@v=val_483
+POSTHOOK: Output: default@testpart@v=val_484
+POSTHOOK: Output: default@testpart@v=val_485
+POSTHOOK: Output: default@testpart@v=val_487
+POSTHOOK: Output: default@testpart@v=val_489
+POSTHOOK: Output: default@testpart@v=val_490
+POSTHOOK: Output: default@testpart@v=val_491
+POSTHOOK: Output: default@testpart@v=val_492
+POSTHOOK: Output: default@testpart@v=val_493
+POSTHOOK: Output: default@testpart@v=val_494
+POSTHOOK: Output: default@testpart@v=val_495
+POSTHOOK: Output: default@testpart@v=val_496
+POSTHOOK: Output: default@testpart@v=val_497
+POSTHOOK: Output: default@testpart@v=val_498
+POSTHOOK: Output: default@testpart@v=val_5
+POSTHOOK: Output: default@testpart@v=val_51
+POSTHOOK: Output: default@testpart@v=val_53
+POSTHOOK: Output: default@testpart@v=val_54
+POSTHOOK: Output: default@testpart@v=val_57
+POSTHOOK: Output: default@testpart@v=val_58
+POSTHOOK: Output: default@testpart@v=val_64
+POSTHOOK: Output: default@testpart@v=val_65
+POSTHOOK: Output: default@testpart@v=val_66
+POSTHOOK: Output: default@testpart@v=val_67
+POSTHOOK: Output: default@testpart@v=val_69
+POSTHOOK: Output: default@testpart@v=val_70
+POSTHOOK: Output: default@testpart@v=val_72
+POSTHOOK: Output: default@testpart@v=val_74
+POSTHOOK: Output: default@testpart@v=val_76
+POSTHOOK: Output: default@testpart@v=val_77
+POSTHOOK: Output: default@testpart@v=val_78
+POSTHOOK: Output: default@testpart@v=val_8
+POSTHOOK: Output: default@testpart@v=val_80
+POSTHOOK: Output: default@testpart@v=val_82
+POSTHOOK: Output: default@testpart@v=val_83
+POSTHOOK: Output: default@testpart@v=val_84
+POSTHOOK: Output: default@testpart@v=val_85
+POSTHOOK: Output: default@testpart@v=val_86
+POSTHOOK: Output: default@testpart@v=val_87
+POSTHOOK: Output: default@testpart@v=val_9
+POSTHOOK: Output: default@testpart@v=val_90
+POSTHOOK: Output: default@testpart@v=val_92
+POSTHOOK: Output: default@testpart@v=val_95
+POSTHOOK: Output: default@testpart@v=val_96
+POSTHOOK: Output: default@testpart@v=val_97
+POSTHOOK: Output: default@testpart@v=val_98
+POSTHOOK: Lineage: testpart PARTITION(v=val_0).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_100).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_103).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_104).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_105).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_10).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_111).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_113).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_114).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_116).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_118).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_119).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_11).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_120).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_125).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_126).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_128).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_129).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_12).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_131).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_133).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_134).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_136).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_137).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_138).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_143).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_145).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_146).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_149).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_150).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_152).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_153).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_155).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_156).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_157).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_158).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_15).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_160).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_162).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_163).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_164).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_165).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_166).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_167).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_168).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_169).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_170).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_172).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_174).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_175).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_176).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_177).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_178).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_179).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_17).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_180).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_181).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_183).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_186).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_187).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_189).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_18).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_190).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_191).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_192).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_193).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_194).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_195).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_196).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_197).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_199).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_19).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_200).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_201).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_202).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_203).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_205).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_207).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_208).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_209).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_20).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_213).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_214).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_216).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_217).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_218).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_219).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_221).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_222).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_223).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_224).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_226).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_228).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_229).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_230).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_233).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_235).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_237).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_238).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_239).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_241).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_242).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_244).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_247).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_248).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_249).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_24).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_252).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_255).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_256).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_257).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_258).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_260).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_262).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_263).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_265).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_266).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_26).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_272).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_273).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_274).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_275).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_277).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_278).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_27).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_280).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_281).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_282).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_283).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_284).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_285).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_286).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_287).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_288).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_289).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_28).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_291).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_292).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_296).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_298).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_2).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_302).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_305).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_306).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_307).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_308).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_309).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_30).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_310).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_311).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_315).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_316).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_317).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_318).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_321).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_322).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_323).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_325).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_327).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_331).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_332).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_333).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_335).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_336).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_338).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_339).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_33).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_341).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_342).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_344).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_345).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_348).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_34).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_351).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_353).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_356).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_35).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_360).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_362).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_364).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_365).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_366).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_367).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_368).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_369).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_373).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_374).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_375).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_377).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_378).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_379).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_37).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_382).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_384).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_386).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_389).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_392).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_393).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_394).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_395).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_396).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_397).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_399).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_400).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_401).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_402).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_403).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_404).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_406).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_407).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_409).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_411).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_413).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_414).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_417).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_418).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_419).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_41).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_421).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_424).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_427).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_429).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_42).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_430).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_431).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_432).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_435).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_436).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_437).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_438).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_439).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_43).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_443).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_444).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_446).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_448).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_449).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_44).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_452).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_453).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_454).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_455).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_457).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_458).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_459).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_460).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_462).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_463).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_466).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_467).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_468).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_469).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_470).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_472).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_475).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_477).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_478).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_479).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_47).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_480).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_481).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_482).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_483).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_484).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_485).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_487).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_489).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_490).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_491).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_492).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_493).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_494).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_495).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_496).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_497).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_498).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_4).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_51).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_53).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_54).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_57).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_58).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_5).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_64).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_65).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_66).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_67).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_69).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_70).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_72).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_74).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_76).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_77).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_78).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_80).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_82).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_83).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_84).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_85).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_86).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_87).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_8).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_90).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_92).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_95).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_96).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_97).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_98).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_9).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table testpart partition(v) select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@testpart
+POSTHOOK: query: insert into table testpart partition(v) select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testpart
+POSTHOOK: Output: default@testpart@v=val_0
+POSTHOOK: Output: default@testpart@v=val_10
+POSTHOOK: Output: default@testpart@v=val_100
+POSTHOOK: Output: default@testpart@v=val_103
+POSTHOOK: Output: default@testpart@v=val_104
+POSTHOOK: Output: default@testpart@v=val_105
+POSTHOOK: Output: default@testpart@v=val_11
+POSTHOOK: Output: default@testpart@v=val_111
+POSTHOOK: Output: default@testpart@v=val_113
+POSTHOOK: Output: default@testpart@v=val_114
+POSTHOOK: Output: default@testpart@v=val_116
+POSTHOOK: Output: default@testpart@v=val_118
+POSTHOOK: Output: default@testpart@v=val_119
+POSTHOOK: Output: default@testpart@v=val_12
+POSTHOOK: Output: default@testpart@v=val_120
+POSTHOOK: Output: default@testpart@v=val_125
+POSTHOOK: Output: default@testpart@v=val_126
+POSTHOOK: Output: default@testpart@v=val_128
+POSTHOOK: Output: default@testpart@v=val_129
+POSTHOOK: Output: default@testpart@v=val_131
+POSTHOOK: Output: default@testpart@v=val_133
+POSTHOOK: Output: default@testpart@v=val_134
+POSTHOOK: Output: default@testpart@v=val_136
+POSTHOOK: Output: default@testpart@v=val_137
+POSTHOOK: Output: default@testpart@v=val_138
+POSTHOOK: Output: default@testpart@v=val_143
+POSTHOOK: Output: default@testpart@v=val_145
+POSTHOOK: Output: default@testpart@v=val_146
+POSTHOOK: Output: default@testpart@v=val_149
+POSTHOOK: Output: default@testpart@v=val_15
+POSTHOOK: Output: default@testpart@v=val_150
+POSTHOOK: Output: default@testpart@v=val_152
+POSTHOOK: Output: default@testpart@v=val_153
+POSTHOOK: Output: default@testpart@v=val_155
+POSTHOOK: Output: default@testpart@v=val_156
+POSTHOOK: Output: default@testpart@v=val_157
+POSTHOOK: Output: default@testpart@v=val_158
+POSTHOOK: Output: default@testpart@v=val_160
+POSTHOOK: Output: default@testpart@v=val_162
+POSTHOOK: Output: default@testpart@v=val_163
+POSTHOOK: Output: default@testpart@v=val_164
+POSTHOOK: Output: default@testpart@v=val_165
+POSTHOOK: Output: default@testpart@v=val_166
+POSTHOOK: Output: default@testpart@v=val_167
+POSTHOOK: Output: default@testpart@v=val_168
+POSTHOOK: Output: default@testpart@v=val_169
+POSTHOOK: Output: default@testpart@v=val_17
+POSTHOOK: Output: default@testpart@v=val_170
+POSTHOOK: Output: default@testpart@v=val_172
+POSTHOOK: Output: default@testpart@v=val_174
+POSTHOOK: Output: default@testpart@v=val_175
+POSTHOOK: Output: default@testpart@v=val_176
+POSTHOOK: Output: default@testpart@v=val_177
+POSTHOOK: Output: default@testpart@v=val_178
+POSTHOOK: Output: default@testpart@v=val_179
+POSTHOOK: Output: default@testpart@v=val_18
+POSTHOOK: Output: default@testpart@v=val_180
+POSTHOOK: Output: default@testpart@v=val_181
+POSTHOOK: Output: default@testpart@v=val_183
+POSTHOOK: Output: default@testpart@v=val_186
+POSTHOOK: Output: default@testpart@v=val_187
+POSTHOOK: Output: default@testpart@v=val_189
+POSTHOOK: Output: default@testpart@v=val_19
+POSTHOOK: Output: default@testpart@v=val_190
+POSTHOOK: Output: default@testpart@v=val_191
+POSTHOOK: Output: default@testpart@v=val_192
+POSTHOOK: Output: default@testpart@v=val_193
+POSTHOOK: Output: default@testpart@v=val_194
+POSTHOOK: Output: default@testpart@v=val_195
+POSTHOOK: Output: default@testpart@v=val_196
+POSTHOOK: Output: default@testpart@v=val_197
+POSTHOOK: Output: default@testpart@v=val_199
+POSTHOOK: Output: default@testpart@v=val_2
+POSTHOOK: Output: default@testpart@v=val_20
+POSTHOOK: Output: default@testpart@v=val_200
+POSTHOOK: Output: default@testpart@v=val_201
+POSTHOOK: Output: default@testpart@v=val_202
+POSTHOOK: Output: default@testpart@v=val_203
+POSTHOOK: Output: default@testpart@v=val_205
+POSTHOOK: Output: default@testpart@v=val_207
+POSTHOOK: Output: default@testpart@v=val_208
+POSTHOOK: Output: default@testpart@v=val_209
+POSTHOOK: Output: default@testpart@v=val_213
+POSTHOOK: Output: default@testpart@v=val_214
+POSTHOOK: Output: default@testpart@v=val_216
+POSTHOOK: Output: default@testpart@v=val_217
+POSTHOOK: Output: default@testpart@v=val_218
+POSTHOOK: Output: default@testpart@v=val_219
+POSTHOOK: Output: default@testpart@v=val_221
+POSTHOOK: Output: default@testpart@v=val_222
+POSTHOOK: Output: default@testpart@v=val_223
+POSTHOOK: Output: default@testpart@v=val_224
+POSTHOOK: Output: default@testpart@v=val_226
+POSTHOOK: Output: default@testpart@v=val_228
+POSTHOOK: Output: default@testpart@v=val_229
+POSTHOOK: Output: default@testpart@v=val_230
+POSTHOOK: Output: default@testpart@v=val_233
+POSTHOOK: Output: default@testpart@v=val_235
+POSTHOOK: Output: default@testpart@v=val_237
+POSTHOOK: Output: default@testpart@v=val_238
+POSTHOOK: Output: default@testpart@v=val_239
+POSTHOOK: Output: default@testpart@v=val_24
+POSTHOOK: Output: default@testpart@v=val_241
+POSTHOOK: Output: default@testpart@v=val_242
+POSTHOOK: Output: default@testpart@v=val_244
+POSTHOOK: Output: default@testpart@v=val_247
+POSTHOOK: Output: default@testpart@v=val_248
+POSTHOOK: Output: default@testpart@v=val_249
+POSTHOOK: Output: default@testpart@v=val_252
+POSTHOOK: Output: default@testpart@v=val_255
+POSTHOOK: Output: default@testpart@v=val_256
+POSTHOOK: Output: default@testpart@v=val_257
+POSTHOOK: Output: default@testpart@v=val_258
+POSTHOOK: Output: default@testpart@v=val_26
+POSTHOOK: Output: default@testpart@v=val_260
+POSTHOOK: Output: default@testpart@v=val_262
+POSTHOOK: Output: default@testpart@v=val_263
+POSTHOOK: Output: default@testpart@v=val_265
+POSTHOOK: Output: default@testpart@v=val_266
+POSTHOOK: Output: default@testpart@v=val_27
+POSTHOOK: Output: default@testpart@v=val_272
+POSTHOOK: Output: default@testpart@v=val_273
+POSTHOOK: Output: default@testpart@v=val_274
+POSTHOOK: Output: default@testpart@v=val_275
+POSTHOOK: Output: default@testpart@v=val_277
+POSTHOOK: Output: default@testpart@v=val_278
+POSTHOOK: Output: default@testpart@v=val_28
+POSTHOOK: Output: default@testpart@v=val_280
+POSTHOOK: Output: default@testpart@v=val_281
+POSTHOOK: Output: default@testpart@v=val_282
+POSTHOOK: Output: default@testpart@v=val_283
+POSTHOOK: Output: default@testpart@v=val_284
+POSTHOOK: Output: default@testpart@v=val_285
+POSTHOOK: Output: default@testpart@v=val_286
+POSTHOOK: Output: default@testpart@v=val_287
+POSTHOOK: Output: default@testpart@v=val_288
+POSTHOOK: Output: default@testpart@v=val_289
+POSTHOOK: Output: default@testpart@v=val_291
+POSTHOOK: Output: default@testpart@v=val_292
+POSTHOOK: Output: default@testpart@v=val_296
+POSTHOOK: Output: default@testpart@v=val_298
+POSTHOOK: Output: default@testpart@v=val_30
+POSTHOOK: Output: default@testpart@v=val_302
+POSTHOOK: Output: default@testpart@v=val_305
+POSTHOOK: Output: default@testpart@v=val_306
+POSTHOOK: Output: default@testpart@v=val_307
+POSTHOOK: Output: default@testpart@v=val_308
+POSTHOOK: Output: default@testpart@v=val_309
+POSTHOOK: Output: default@testpart@v=val_310
+POSTHOOK: Output: default@testpart@v=val_311
+POSTHOOK: Output: default@testpart@v=val_315
+POSTHOOK: Output: default@testpart@v=val_316
+POSTHOOK: Output: default@testpart@v=val_317
+POSTHOOK: Output: default@testpart@v=val_318
+POSTHOOK: Output: default@testpart@v=val_321
+POSTHOOK: Output: default@testpart@v=val_322
+POSTHOOK: Output: default@testpart@v=val_323
+POSTHOOK: Output: default@testpart@v=val_325
+POSTHOOK: Output: default@testpart@v=val_327
+POSTHOOK: Output: default@testpart@v=val_33
+POSTHOOK: Output: default@testpart@v=val_331
+POSTHOOK: Output: default@testpart@v=val_332
+POSTHOOK: Output: default@testpart@v=val_333
+POSTHOOK: Output: default@testpart@v=val_335
+POSTHOOK: Output: default@testpart@v=val_336
+POSTHOOK: Output: default@testpart@v=val_338
+POSTHOOK: Output: default@testpart@v=val_339
+POSTHOOK: Output: default@testpart@v=val_34
+POSTHOOK: Output: default@testpart@v=val_341
+POSTHOOK: Output: default@testpart@v=val_342
+POSTHOOK: Output: default@testpart@v=val_344
+POSTHOOK: Output: default@testpart@v=val_345
+POSTHOOK: Output: default@testpart@v=val_348
+POSTHOOK: Output: default@testpart@v=val_35
+POSTHOOK: Output: default@testpart@v=val_351
+POSTHOOK: Output: default@testpart@v=val_353
+POSTHOOK: Output: default@testpart@v=val_356
+POSTHOOK: Output: default@testpart@v=val_360
+POSTHOOK: Output: default@testpart@v=val_362
+POSTHOOK: Output: default@testpart@v=val_364
+POSTHOOK: Output: default@testpart@v=val_365
+POSTHOOK: Output: default@testpart@v=val_366
+POSTHOOK: Output: default@testpart@v=val_367
+POSTHOOK: Output: default@testpart@v=val_368
+POSTHOOK: Output: default@testpart@v=val_369
+POSTHOOK: Output: default@testpart@v=val_37
+POSTHOOK: Output: default@testpart@v=val_373
+POSTHOOK: Output: default@testpart@v=val_374
+POSTHOOK: Output: default@testpart@v=val_375
+POSTHOOK: Output: default@testpart@v=val_377
+POSTHOOK: Output: default@testpart@v=val_378
+POSTHOOK: Output: default@testpart@v=val_379
+POSTHOOK: Output: default@testpart@v=val_382
+POSTHOOK: Output: default@testpart@v=val_384
+POSTHOOK: Output: default@testpart@v=val_386
+POSTHOOK: Output: default@testpart@v=val_389
+POSTHOOK: Output: default@testpart@v=val_392
+POSTHOOK: Output: default@testpart@v=val_393
+POSTHOOK: Output: default@testpart@v=val_394
+POSTHOOK: Output: default@testpart@v=val_395
+POSTHOOK: Output: default@testpart@v=val_396
+POSTHOOK: Output: default@testpart@v=val_397
+POSTHOOK: Output: default@testpart@v=val_399
+POSTHOOK: Output: default@testpart@v=val_4
+POSTHOOK: Output: default@testpart@v=val_400
+POSTHOOK: Output: default@testpart@v=val_401
+POSTHOOK: Output: default@testpart@v=val_402
+POSTHOOK: Output: default@testpart@v=val_403
+POSTHOOK: Output: default@testpart@v=val_404
+POSTHOOK: Output: default@testpart@v=val_406
+POSTHOOK: Output: default@testpart@v=val_407
+POSTHOOK: Output: default@testpart@v=val_409
+POSTHOOK: Output: default@testpart@v=val_41
+POSTHOOK: Output: default@testpart@v=val_411
+POSTHOOK: Output: default@testpart@v=val_413
+POSTHOOK: Output: default@testpart@v=val_414
+POSTHOOK: Output: default@testpart@v=val_417
+POSTHOOK: Output: default@testpart@v=val_418
+POSTHOOK: Output: default@testpart@v=val_419
+POSTHOOK: Output: default@testpart@v=val_42
+POSTHOOK: Output: default@testpart@v=val_421
+POSTHOOK: Output: default@testpart@v=val_424
+POSTHOOK: Output: default@testpart@v=val_427
+POSTHOOK: Output: default@testpart@v=val_429
+POSTHOOK: Output: default@testpart@v=val_43
+POSTHOOK: Output: default@testpart@v=val_430
+POSTHOOK: Output: default@testpart@v=val_431
+POSTHOOK: Output: default@testpart@v=val_432
+POSTHOOK: Output: default@testpart@v=val_435
+POSTHOOK: Output: default@testpart@v=val_436
+POSTHOOK: Output: default@testpart@v=val_437
+POSTHOOK: Output: default@testpart@v=val_438
+POSTHOOK: Output: default@testpart@v=val_439
+POSTHOOK: Output: default@testpart@v=val_44
+POSTHOOK: Output: default@testpart@v=val_443
+POSTHOOK: Output: default@testpart@v=val_444
+POSTHOOK: Output: default@testpart@v=val_446
+POSTHOOK: Output: default@testpart@v=val_448
+POSTHOOK: Output: default@testpart@v=val_449
+POSTHOOK: Output: default@testpart@v=val_452
+POSTHOOK: Output: default@testpart@v=val_453
+POSTHOOK: Output: default@testpart@v=val_454
+POSTHOOK: Output: default@testpart@v=val_455
+POSTHOOK: Output: default@testpart@v=val_457
+POSTHOOK: Output: default@testpart@v=val_458
+POSTHOOK: Output: default@testpart@v=val_459
+POSTHOOK: Output: default@testpart@v=val_460
+POSTHOOK: Output: default@testpart@v=val_462
+POSTHOOK: Output: default@testpart@v=val_463
+POSTHOOK: Output: default@testpart@v=val_466
+POSTHOOK: Output: default@testpart@v=val_467
+POSTHOOK: Output: default@testpart@v=val_468
+POSTHOOK: Output: default@testpart@v=val_469
+POSTHOOK: Output: default@testpart@v=val_47
+POSTHOOK: Output: default@testpart@v=val_470
+POSTHOOK: Output: default@testpart@v=val_472
+POSTHOOK: Output: default@testpart@v=val_475
+POSTHOOK: Output: default@testpart@v=val_477
+POSTHOOK: Output: default@testpart@v=val_478
+POSTHOOK: Output: default@testpart@v=val_479
+POSTHOOK: Output: default@testpart@v=val_480
+POSTHOOK: Output: default@testpart@v=val_481
+POSTHOOK: Output: default@testpart@v=val_482
+POSTHOOK: Output: default@testpart@v=val_483
+POSTHOOK: Output: default@testpart@v=val_484
+POSTHOOK: Output: default@testpart@v=val_485
+POSTHOOK: Output: default@testpart@v=val_487
+POSTHOOK: Output: default@testpart@v=val_489
+POSTHOOK: Output: default@testpart@v=val_490
+POSTHOOK: Output: default@testpart@v=val_491
+POSTHOOK: Output: default@testpart@v=val_492
+POSTHOOK: Output: default@testpart@v=val_493
+POSTHOOK: Output: default@testpart@v=val_494
+POSTHOOK: Output: default@testpart@v=val_495
+POSTHOOK: Output: default@testpart@v=val_496
+POSTHOOK: Output: default@testpart@v=val_497
+POSTHOOK: Output: default@testpart@v=val_498
+POSTHOOK: Output: default@testpart@v=val_5
+POSTHOOK: Output: default@testpart@v=val_51
+POSTHOOK: Output: default@testpart@v=val_53
+POSTHOOK: Output: default@testpart@v=val_54
+POSTHOOK: Output: default@testpart@v=val_57
+POSTHOOK: Output: default@testpart@v=val_58
+POSTHOOK: Output: default@testpart@v=val_64
+POSTHOOK: Output: default@testpart@v=val_65
+POSTHOOK: Output: default@testpart@v=val_66
+POSTHOOK: Output: default@testpart@v=val_67
+POSTHOOK: Output: default@testpart@v=val_69
+POSTHOOK: Output: default@testpart@v=val_70
+POSTHOOK: Output: default@testpart@v=val_72
+POSTHOOK: Output: default@testpart@v=val_74
+POSTHOOK: Output: default@testpart@v=val_76
+POSTHOOK: Output: default@testpart@v=val_77
+POSTHOOK: Output: default@testpart@v=val_78
+POSTHOOK: Output: default@testpart@v=val_8
+POSTHOOK: Output: default@testpart@v=val_80
+POSTHOOK: Output: default@testpart@v=val_82
+POSTHOOK: Output: default@testpart@v=val_83
+POSTHOOK: Output: default@testpart@v=val_84
+POSTHOOK: Output: default@testpart@v=val_85
+POSTHOOK: Output: default@testpart@v=val_86
+POSTHOOK: Output: default@testpart@v=val_87
+POSTHOOK: Output: default@testpart@v=val_9
+POSTHOOK: Output: default@testpart@v=val_90
+POSTHOOK: Output: default@testpart@v=val_92
+POSTHOOK: Output: default@testpart@v=val_95
+POSTHOOK: Output: default@testpart@v=val_96
+POSTHOOK: Output: default@testpart@v=val_97
+POSTHOOK: Output: default@testpart@v=val_98
+POSTHOOK: Lineage: testpart PARTITION(v=val_0).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_100).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_103).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_104).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_105).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_10).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_111).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_113).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_114).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_116).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_118).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_119).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_11).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_120).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_125).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_126).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_128).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_129).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_12).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_131).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_133).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_134).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_136).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_137).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_138).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_143).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_145).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_146).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_149).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_150).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_152).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_153).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_155).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_156).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_157).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_158).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_15).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_160).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_162).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_163).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_164).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_165).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_166).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_167).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_168).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_169).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_170).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_172).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_174).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_175).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_176).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_177).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_178).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_179).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_17).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_180).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_181).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_183).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_186).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_187).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_189).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_18).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_190).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_191).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_192).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_193).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_194).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_195).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_196).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_197).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_199).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_19).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_200).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_201).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_202).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_203).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_205).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_207).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_208).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_209).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_20).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_213).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_214).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_216).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_217).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_218).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_219).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_221).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_222).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_223).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_224).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_226).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_228).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_229).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_230).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_233).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_235).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_237).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_238).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_239).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_241).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_242).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_244).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_247).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_248).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_249).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_24).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_252).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_255).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_256).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_257).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_258).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_260).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_262).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_263).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_265).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_266).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_26).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_272).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_273).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_274).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_275).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_277).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_278).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_27).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_280).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_281).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_282).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_283).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_284).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_285).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_286).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_287).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_288).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_289).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_28).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_291).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_292).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_296).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_298).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_2).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_302).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_305).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_306).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_307).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_308).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_309).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_30).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_310).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_311).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_315).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_316).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_317).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_318).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_321).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_322).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_323).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_325).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_327).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_331).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_332).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_333).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_335).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_336).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_338).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_339).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_33).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_341).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_342).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_344).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_345).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_348).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_34).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_351).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_353).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_356).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_35).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_360).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_362).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_364).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_365).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_366).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_367).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_368).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_369).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_373).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_374).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_375).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_377).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_378).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_379).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_37).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_382).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_384).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_386).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_389).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_392).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_393).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_394).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_395).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_396).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_397).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_399).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_400).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_401).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_402).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_403).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_404).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_406).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_407).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_409).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_411).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_413).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_414).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_417).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_418).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_419).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_41).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_421).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_424).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_427).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_429).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_42).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_430).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_431).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_432).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_435).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_436).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_437).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_438).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_439).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_43).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_443).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_444).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_446).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_448).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_449).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_44).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_452).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_453).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_454).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_455).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_457).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_458).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_459).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_460).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_462).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_463).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_466).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_467).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_468).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_469).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_470).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_472).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_475).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_477).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_478).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_479).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_47).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_480).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_481).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_482).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_483).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_484).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_485).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_487).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_489).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_490).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_491).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_492).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_493).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_494).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_495).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_496).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_497).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_498).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_4).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_51).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_53).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_54).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_57).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_58).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_5).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_64).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_65).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_66).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_67).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_69).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_70).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_72).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_74).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_76).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_77).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_78).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_80).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_82).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_83).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_84).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_85).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_86).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_87).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_8).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_90).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_92).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_95).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_96).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_97).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_98).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart PARTITION(v=val_9).k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1000
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_10: 1
+   RECORDS_OUT_OPERATOR_GBY_9: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_8: 1000
+   RECORDS_OUT_OPERATOR_SEL_7: 1000
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_MISS_BYTES: 3812
+   NUM_DECODED_BATCHES: 618
+   NUM_VECTOR_BATCHES: 618
+   ROWS_EMITTED: 1000
+Stage-1 COMPILE TIME COUNTERS:
+   RAW_DATA_SIZE: 4000
+   RAW_DATA_SIZE_Map_1: 4000
+   TOTAL_FILE_SIZE: 3812
+   TOTAL_FILE_SIZE_Map_1: 3812
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 309
+   INPUT_FILES_Map_1: 618
+   RAW_INPUT_SPLITS_Map_1: 618
+260182
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 8
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 8
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 8
+   RECORDS_OUT_OPERATOR_SEL_9: 8
+   RECORDS_OUT_OPERATOR_TS_0: 8
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 18
+   NUM_DECODED_BATCHES: 4
+   NUM_VECTOR_BATCHES: 4
+   ROWS_EMITTED: 8
+Stage-1 COMPILE TIME COUNTERS:
+   RAW_DATA_SIZE: 32
+   RAW_DATA_SIZE_Map_1: 32
+   TOTAL_FILE_SIZE: 18
+   TOTAL_FILE_SIZE_Map_1: 18
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 2
+   INPUT_FILES_Map_1: 4
+   RAW_INPUT_SPLITS_Map_1: 4
+20
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 240
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 240
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 240
+   RECORDS_OUT_OPERATOR_SEL_9: 240
+   RECORDS_OUT_OPERATOR_TS_0: 240
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 922
+   NUM_DECODED_BATCHES: 148
+   NUM_VECTOR_BATCHES: 148
+   ROWS_EMITTED: 240
+Stage-1 COMPILE TIME COUNTERS:
+   RAW_DATA_SIZE: 960
+   RAW_DATA_SIZE_Map_1: 960
+   TOTAL_FILE_SIZE: 922
+   TOTAL_FILE_SIZE_Map_1: 922
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 74
+   INPUT_FILES_Map_1: 148
+   RAW_INPUT_SPLITS_Map_1: 148
+32872
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_DYNAMIC_PARTITIONS: 74
+   CREATED_FILES: 76
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1
+   RECORDS_OUT_0: 74
+   RECORDS_OUT_1_default.testpart1: 240
+   RECORDS_OUT_INTERMEDIATE_Map_1: 240
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 240
+   RECORDS_OUT_OPERATOR_FS_17: 74
+   RECORDS_OUT_OPERATOR_GBY_15: 74
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_14: 240
+   RECORDS_OUT_OPERATOR_SEL_11: 240
+   RECORDS_OUT_OPERATOR_SEL_13: 240
+   RECORDS_OUT_OPERATOR_SEL_16: 74
+   RECORDS_OUT_OPERATOR_TS_0: 240
+   TOTAL_TABLE_ROWS_WRITTEN: 240
+Stage-1 COMPILE TIME COUNTERS:
+   RAW_DATA_SIZE: 45120
+   RAW_DATA_SIZE_Map_1: 45120
+   TOTAL_FILE_SIZE: 922
+   TOTAL_FILE_SIZE_Map_1: 922
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 74
+   INPUT_FILES_Map_1: 148
+   RAW_INPUT_SPLITS_Map_1: 148
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: v is not null (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: k (type: int), v (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 1000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+                    Select Operator
+                      expressions: _col1 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.691
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 309 Data size: 56856 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: v (string)
+                          Target Input: t2
+                          Partition key expr: v
+                          Statistics: Num rows: 309 Data size: 56856 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 4
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: v is not null (type: boolean)
+                  Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: k (type: int), v (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 776 Data size: 6208 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: hash(_col0,_col2) (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 776 Data size: 6208 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 776 Data size: 6208 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: complete
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_IN_Map_4: 240
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1000
+   RECORDS_OUT_INTERMEDIATE_Map_4: 240
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 952
+   RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
+   RECORDS_OUT_OPERATOR_EVENT_30: 1
+   RECORDS_OUT_OPERATOR_FS_34: 1
+   RECORDS_OUT_OPERATOR_GBY_29: 309
+   RECORDS_OUT_OPERATOR_GBY_33: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_MERGEJOIN_25: 952
+   RECORDS_OUT_OPERATOR_RS_11: 952
+   RECORDS_OUT_OPERATOR_RS_27: 1000
+   RECORDS_OUT_OPERATOR_RS_32: 240
+   RECORDS_OUT_OPERATOR_SEL_26: 1000
+   RECORDS_OUT_OPERATOR_SEL_28: 1000
+   RECORDS_OUT_OPERATOR_SEL_31: 240
+   RECORDS_OUT_OPERATOR_SEL_9: 952
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   RECORDS_OUT_OPERATOR_TS_3: 240
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 3812
+   CACHE_MISS_BYTES: 922
+   NUM_DECODED_BATCHES: 692
+   NUM_VECTOR_BATCHES: 692
+   ROWS_EMITTED: 1240
+Stage-1 COMPILE TIME COUNTERS:
+   RAW_DATA_SIZE: 233120
+   RAW_DATA_SIZE_Map_1: 188000
+   RAW_DATA_SIZE_Map_4: 45120
+   TOTAL_FILE_SIZE: 4734
+   TOTAL_FILE_SIZE_Map_1: 3812
+   TOTAL_FILE_SIZE_Map_4: 922
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_4: 1
+   INPUT_DIRECTORIES_Map_1: 309
+   INPUT_DIRECTORIES_Map_4: 74
+   INPUT_FILES_Map_1: 618
+   INPUT_FILES_Map_4: 74
+   RAW_INPUT_SPLITS_Map_1: 618
+   RAW_INPUT_SPLITS_Map_4: 74
+4224512

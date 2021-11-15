@@ -40,8 +40,6 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -95,8 +93,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * BinarySortableSerDe can be used to write data in a way that the data can be
@@ -132,13 +128,8 @@ import org.slf4j.LoggerFactory;
     serdeConstants.SERIALIZATION_SORT_ORDER, serdeConstants.SERIALIZATION_NULL_SORT_ORDER})
 public class BinarySortableSerDe extends AbstractSerDe {
 
-  public static final Logger LOG = LoggerFactory.getLogger(BinarySortableSerDe.class.getName());
-
   public static final byte ZERO = (byte) 0;
   public static final byte ONE = (byte) 1;
-
-  List<String> columnNames;
-  List<TypeInfo> columnTypes;
 
   TypeInfo rowTypeInfo;
   StructObjectInspector rowObjectInspector;
@@ -148,77 +139,24 @@ public class BinarySortableSerDe extends AbstractSerDe {
   byte[] columnNotNullMarker;
 
   public static Charset decimalCharSet = Charset.forName("US-ASCII");
-
+  
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    // Get column names and sort order
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils
-          .getTypeInfosFromTypeString(columnTypeProperty);
-    }
-    assert (columnNames.size() == columnTypes.size());
+    final int columnCount = getColumnNames().size();
 
     // Create row related objects
-    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    rowObjectInspector = (StructObjectInspector) TypeInfoUtils
-        .getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
-    row = new ArrayList<Object>(columnNames.size());
-    for (int i = 0; i < columnNames.size(); i++) {
-      row.add(null);
-    }
+    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
+    rowObjectInspector =
+        (StructObjectInspector) TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
+    row = new ArrayList<>(Arrays.asList(new Object[columnCount]));
 
-    // Get the sort order
-    String columnSortOrder = tbl
-        .getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
-    columnSortOrderIsDesc = new boolean[columnNames.size()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder
-          .charAt(i) == '-');
-    }
-
-    // Null first/last
-    String columnNullOrder = tbl
-        .getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
-    columnNullMarker = new byte[columnNames.size()];
-    columnNotNullMarker = new byte[columnNames.size()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      if (columnSortOrderIsDesc[i]) {
-        // Descending
-        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'a') {
-          // Null first
-          columnNullMarker[i] = ONE;
-          columnNotNullMarker[i] = ZERO;
-        } else {
-          // Null last (default for descending order)
-          columnNullMarker[i] = ZERO;
-          columnNotNullMarker[i] = ONE;
-        }
-      } else {
-        // Ascending
-        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'z') {
-          // Null last
-          columnNullMarker[i] = ONE;
-          columnNotNullMarker[i] = ZERO;
-        } else {
-          // Null first (default for ascending order)
-          columnNullMarker[i] = ZERO;
-          columnNotNullMarker[i] = ONE;
-        }
-      }
-    }
+    columnSortOrderIsDesc = new boolean[columnCount];
+    columnNullMarker = new byte[columnCount];
+    columnNotNullMarker = new byte[columnCount];
+    BinarySortableUtils.fillOrderArrays(properties, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
   }
 
   @Override
@@ -240,8 +178,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
     inputByteBuffer.reset(data.getBytes(), 0, data.getLength());
 
     try {
-      for (int i = 0; i < columnNames.size(); i++) {
-        row.set(i, deserialize(inputByteBuffer, columnTypes.get(i),
+      for (int i = 0; i < getColumnNames().size(); i++) {
+        row.set(i, deserialize(inputByteBuffer, getColumnTypes().get(i),
             columnSortOrderIsDesc[i], columnNullMarker[i], columnNotNullMarker[i], row.get(i)));
       }
     } catch (IOException e) {
@@ -683,7 +621,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     StructObjectInspector soi = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
 
-    for (int i = 0; i < columnNames.size(); i++) {
+    for (int i = 0; i < getColumnNames().size(); i++) {
       serialize(output, soi.getStructFieldData(obj, fields.get(i)),
           fields.get(i).getFieldObjectInspector(), columnSortOrderIsDesc[i],
           columnNullMarker[i], columnNotNullMarker[i]);
@@ -1137,12 +1075,6 @@ public class BinarySortableSerDe extends AbstractSerDe {
           buffer,
           scratchBuffer, index, scratchBuffer.length - index,
           signum == -1 ? !invert : invert);
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
   public static void serializeStruct(Output byteStream, Object[] fieldData,

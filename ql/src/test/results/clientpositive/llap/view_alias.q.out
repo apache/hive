@@ -1,0 +1,446 @@
+PREHOOK: query: drop view v_n6
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v_n6
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v_n6 as select 10 - key, '12' from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select 10 - key, '12' from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n6._c1 SIMPLE []
+PREHOOK: query: desc formatted v_n6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n6
+# col_name            	data_type           	comment             
+_c0                 	double              	                    
+_c1                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select 10 - key, '12' from src	 
+Expanded Query:     	select 10 - `src`.`key`, '12' from `default`.`src`	 
+PREHOOK: query: select * from v_n6 order by `_c0`, `_c1` limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n6 order by `_c0`, `_c1` limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+-488.0	12
+-488.0	12
+-488.0	12
+-487.0	12
+-486.0	12
+PREHOOK: query: drop view v_n6
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select key as `_c1`, '12' from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select key as `_c1`, '12' from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n6
+# col_name            	data_type           	comment             
+key                 	string              	                    
+_c1                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select key as _c1, '12' from src	 
+Expanded Query:     	select `src`.`key` as `_c1`, '12' from `default`.`src`	 
+PREHOOK: query: select * from v_n6 order by `_c1` limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n6 order by `_c1` limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+238	12
+86	12
+311	12
+27	12
+165	12
+PREHOOK: query: drop view v_n6
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select *, '12' from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select *, '12' from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n6
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+_c1                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select *, '12' from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value`, '12' from `default`.`src`	 
+PREHOOK: query: select * from v_n6 order by key, value, `_c2` limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n6 order by key, value, `_c2` limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+0	val_0	12
+0	val_0	12
+0	val_0	12
+10	val_10	12
+100	val_100	12
+PREHOOK: query: drop view v_n6
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select *, '12' as `_c121` from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select *, '12' as `_c121` from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c121 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n6
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+_c121               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select *, '12' as _c121 from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value`, '12' as `_c121` from `default`.`src`	 
+PREHOOK: query: select * from v_n6 order by key, value, `_c121` limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n6 order by key, value, `_c121` limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+0	val_0	12
+0	val_0	12
+0	val_0	12
+10	val_10	12
+100	val_100	12
+PREHOOK: query: drop view v_n6
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select key, count(*) from src group by key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select key, count(*) from src group by key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n6
+# col_name            	data_type           	comment             
+key                 	string              	                    
+_c1                 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select key, count(*) from src group by key	 
+Expanded Query:     	select `src`.`key`, count(*) from `default`.`src` group by `src`.`key`	 
+PREHOOK: query: select * from v_n6 order by key, `_c1` limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n6 order by key, `_c1` limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+0	3
+10	1
+100	2
+103	2
+104	2
+PREHOOK: query: drop view v_n6
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create table a_n9 (ca_n9 string, caa_n9 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a_n9
+POSTHOOK: query: create table a_n9 (ca_n9 string, caa_n9 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a_n9
+PREHOOK: query: create table b_n7 (cb_n7 string, cbb_n7 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b_n7
+POSTHOOK: query: create table b_n7 (cb_n7 string, cbb_n7 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b_n7
+PREHOOK: query: insert into a_n9 select * from src order by key, value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@a_n9
+POSTHOOK: query: insert into a_n9 select * from src order by key, value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@a_n9
+POSTHOOK: Lineage: a_n9.ca_n9 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n9.caa_n9 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into b_n7 select * from src order by key, value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@b_n7
+POSTHOOK: query: insert into b_n7 select * from src order by key, value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@b_n7
+POSTHOOK: Lineage: b_n7.cb_n7 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n7.cbb_n7 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v_n6 as select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@a_n9
+PREHOOK: Input: default@b_n7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@a_n9
+POSTHOOK: Input: default@b_n7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c0 SIMPLE []
+POSTHOOK: Lineage: v_n6._c2 SIMPLE []
+POSTHOOK: Lineage: v_n6._c4 SIMPLE []
+POSTHOOK: Lineage: v_n6.ca_n9 SIMPLE [(a_n9)a_n9.FieldSchema(name:ca_n9, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n6.caa_n9 SIMPLE [(a_n9)a_n9.FieldSchema(name:caa_n9, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n6.cb_n7 SIMPLE [(b_n7)b_n7.FieldSchema(name:cb_n7, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n6.cbb_n7 SIMPLE [(b_n7)b_n7.FieldSchema(name:cbb_n7, type:string, comment:null), ]
+PREHOOK: query: desc formatted v_n6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n6
+# col_name            	data_type           	comment             
+_c0                 	string              	                    
+ca_n9               	string              	                    
+caa_n9              	string              	                    
+_c2                 	int                 	                    
+cb_n7               	string              	                    
+cbb_n7              	string              	                    
+_c4                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7	 
+Expanded Query:     	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on `a_n9`.`ca_n9` = `b_n7`.`cb_n7`	 
+PREHOOK: query: select * from v_n6 order by `_c3`, `_c0`, ca_n9, caa_n9, cb_n7, cbb_n7 limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n9
+PREHOOK: Input: default@b_n7
+PREHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n6 order by `_c3`, `_c0`, ca_n9, caa_n9, cb_n7, cbb_n7 limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n9
+POSTHOOK: Input: default@b_n7
+POSTHOOK: Input: default@v_n6
+#### A masked pattern was here ####
+010	0	val_0	121	0	val_0	234
+010	0	val_0	121	0	val_0	234
+010	0	val_0	121	0	val_0	234
+010	0	val_0	121	0	val_0	234
+010	0	val_0	121	0	val_0	234

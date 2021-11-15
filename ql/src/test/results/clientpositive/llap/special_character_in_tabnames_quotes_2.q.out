@@ -1,0 +1,153 @@
+PREHOOK: query: DROP TABLE IF EXISTS "s/c"
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS "s/c"
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE "s/c" (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s/c
+POSTHOOK: query: CREATE TABLE "s/c" (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s/c
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE "s/c"
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@s/c
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE "s/c"
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@s/c
+PREHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s/c
+PREHOOK: Output: default@s/c
+POSTHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s/c
+POSTHOOK: Output: default@s/c
+PREHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS FOR COLUMNS key,value
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@s/c
+PREHOOK: Output: default@s/c
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE "s/c" COMPUTE STATISTICS FOR COLUMNS key,value
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@s/c
+POSTHOOK: Output: default@s/c
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted "s/c"
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@s/c
+POSTHOOK: query: describe formatted "s/c"
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@s/c
+# col_name            	data_type           	comment             
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT key, value FROM "s/c" WHERE key > 80 AND key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s/c
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM "s/c" WHERE key > 80 AND key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s/c
+#### A masked pattern was here ####
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: EXPLAIN SELECT key, value FROM "s/c" WHERE key > 80 AND key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s/c
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT key, value FROM "s/c" WHERE key > 80 AND key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s/c
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: s/c
+          filterExpr: ((UDFToDouble(key) > 80.0D) and (UDFToDouble(key) < 100.0D)) (type: boolean)
+          Filter Operator
+            predicate: ((UDFToDouble(key) > 80.0D) and (UDFToDouble(key) < 100.0D)) (type: boolean)
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: SELECT key, value FROM "s/c" WHERE key > 80 AND key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s/c
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM "s/c" WHERE key > 80 AND key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s/c
+#### A masked pattern was here ####
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98

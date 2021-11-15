@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
@@ -27,9 +27,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestGenericUDFRegexp extends TestCase {
+/**
+ * TestGenericUDFRegexp.
+ */
+public class TestGenericUDFRegexp {
 
+  @Test
   public void testConstant() throws HiveException {
     GenericUDFRegExp udf = new GenericUDFRegExp();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -48,6 +56,7 @@ public class TestGenericUDFRegexp extends TestCase {
     runAndVerifyConst(null, regexText, null, udf);
   }
 
+  @Test
   public void testEmptyConstant() throws HiveException {
     GenericUDFRegExp udf = new GenericUDFRegExp();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -65,6 +74,7 @@ public class TestGenericUDFRegexp extends TestCase {
     runAndVerifyConst(null, regexText, null, udf);
   }
 
+  @Test
   public void testNullConstant() throws HiveException {
     GenericUDFRegExp udf = new GenericUDFRegExp();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -81,6 +91,7 @@ public class TestGenericUDFRegexp extends TestCase {
     runAndVerifyConst(null, regexText, null, udf);
   }
 
+  @Test
   public void testNonConstant() throws HiveException {
     GenericUDFRegExp udf = new GenericUDFRegExp();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

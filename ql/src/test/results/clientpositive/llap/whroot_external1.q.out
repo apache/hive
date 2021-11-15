@@ -233,7 +233,7 @@ PREHOOK: Input: wre1_db@wre1_ext3
 POSTHOOK: query: show create table wre1_db.wre1_ext3
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: wre1_db@wre1_ext3
-CREATE EXTERNAL TABLE `wre1_db.wre1_ext3`(
+CREATE EXTERNAL TABLE `wre1_db`.`wre1_ext3`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 
@@ -318,7 +318,7 @@ PREHOOK: Input: wre1_db@wre1_ext4
 POSTHOOK: query: show create table wre1_db.wre1_ext4
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: wre1_db@wre1_ext4
-CREATE EXTERNAL TABLE `wre1_db.wre1_ext4`(
+CREATE EXTERNAL TABLE `wre1_db`.`wre1_ext4`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 
@@ -413,6 +413,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_ext5 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -483,7 +484,7 @@ PREHOOK: Input: wre1_db@wre1_ext6
 POSTHOOK: query: show create table wre1_db.wre1_ext6
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: wre1_db@wre1_ext6
-CREATE EXTERNAL TABLE `wre1_db.wre1_ext6`(
+CREATE EXTERNAL TABLE `wre1_db`.`wre1_ext6`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 
@@ -495,6 +496,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_db.wre1_ext6 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -590,3 +592,25 @@ POSTHOOK: Output: wre1_db@wre1_ext3
 POSTHOOK: Output: wre1_db@wre1_ext4
 POSTHOOK: Output: wre1_db@wre1_ext6
 #### A masked pattern was here ####
+PREHOOK: query: create external table test_dec_space (id int, value decimal) ROW FORMAT DELIMITED
+ FIELDS TERMINATED BY ',' location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_dec_space
+POSTHOOK: query: create external table test_dec_space (id int, value decimal) ROW FORMAT DELIMITED
+ FIELDS TERMINATED BY ',' location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_dec_space
+PREHOOK: query: select * from test_dec_space
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dec_space
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_dec_space
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dec_space
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0
+2	1

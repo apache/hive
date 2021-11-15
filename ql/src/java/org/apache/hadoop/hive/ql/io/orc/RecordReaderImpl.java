@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -433,7 +434,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       } else {
         result = (DateWritableV2) previous;
       }
-      int date = (int) ((LongColumnVector) vector).vector[row];
+      int date = (int) ((DateColumnVector) vector).vector[row];
       result.set(date);
       return result;
     } else {

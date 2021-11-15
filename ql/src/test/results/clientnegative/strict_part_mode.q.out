@@ -1,0 +1,9 @@
+PREHOOK: query: create table strict_partition(key string) partitioned by (value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_partition
+POSTHOOK: query: create table strict_partition(key string) partitioned by (value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strict_partition
+FAILED: SemanticException [Error 10096]: Dynamic partition strict mode requires at least one static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict

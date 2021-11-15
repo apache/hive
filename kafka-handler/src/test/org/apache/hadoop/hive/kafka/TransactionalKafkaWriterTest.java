@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -57,6 +58,7 @@ import java.util.stream.IntStream;
 /**
  * Test Transactional Writer.
  */
+@org.junit.Ignore("HIVE-24771")
 public class TransactionalKafkaWriterTest {
 
   private static final String TOPIC = "TOPIC_TEST";
@@ -145,7 +147,7 @@ public class TransactionalKafkaWriterTest {
 
   @After public void tearAfterTest() {
     KAFKA_BROKER_RESOURCE.deleteTopic(TOPIC);
-    consumer.close();
+    consumer.close(Duration.ZERO);
     consumer = null;
   }
 
@@ -202,6 +204,7 @@ public class TransactionalKafkaWriterTest {
     checkData();
   }
 
+  @Ignore("HIVE-23400 flaky")
   @Test(expected = IOException.class) public void writerFencedOut() throws IOException {
     TransactionalKafkaWriter
         writer =
@@ -229,7 +232,7 @@ public class TransactionalKafkaWriterTest {
     long numRecords = 0;
     boolean emptyPoll = false;
     while (numRecords < RECORD_NUMBER && !emptyPoll) {
-      ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(1000));
+      ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(10000));
 
       Assert.assertFalse(records.records(new TopicPartition(TOPIC, 0))
           .stream()

@@ -63,6 +63,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@org.junit.Ignore("HIVE-25323")
 public class TestVectorCastStatement {
 
   @Test
@@ -486,7 +487,7 @@ public class TestVectorCastStatement {
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (castStmtTestMode == CastStmtTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

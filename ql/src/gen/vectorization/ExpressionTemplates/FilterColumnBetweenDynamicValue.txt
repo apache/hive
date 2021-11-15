@@ -60,8 +60,8 @@ public class <ClassName> extends Filter<TypeName>ColumnBetween {
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     initialized = false;
     isLeftOrRightNull = false;

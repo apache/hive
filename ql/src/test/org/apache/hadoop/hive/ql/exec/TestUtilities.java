@@ -26,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -35,12 +35,14 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -48,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -73,6 +76,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -101,10 +105,6 @@ public class TestUtilities {
         getFileExtension(jc, false, new HiveIgnoreKeyTextOutputFormat()));
     assertEquals("Deflate for uncompressed text format", ".deflate",
         getFileExtension(jc, true, new HiveIgnoreKeyTextOutputFormat()));
-    assertEquals("No extension for uncompressed default format", "",
-        getFileExtension(jc, false));
-    assertEquals("Deflate for uncompressed default format", ".deflate",
-        getFileExtension(jc, true));
 
     String extension = ".myext";
     jc.set("hive.output.file.extension", extension);
@@ -149,8 +149,15 @@ public class TestUtilities {
     assertEquals("db name", "dab1", dbtab[0]);
     assertEquals("table name", "tab1", dbtab[1]);
 
+    // test table name with metadata table name
+    tablename = "dab1.tab1.meta1";
+    dbtab = Utilities.getDbTableName(tablename);
+    assertEquals("db name", "dab1", dbtab[0]);
+    assertEquals("table name", "tab1", dbtab[1]);
+    assertEquals("metadata table name", "meta1", dbtab[2]);
+
     //test invalid table name
-    tablename = "dab1.tab1.x1";
+    tablename = "dab1.tab1.x1.y";
     try {
       dbtab = Utilities.getDbTableName(tablename);
       fail("exception was expected for invalid table name");
@@ -194,6 +201,51 @@ public class TestUtilities {
     assertEquals(NUM_BUCKETS, paths.size());
   }
 
+  @Test
+  public void testRenameFilesNotExists() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    Path src = new Path("src");
+    Path dest = new Path("dir");
+    when(fs.exists(dest)).thenReturn(false);
+    when(fs.rename(src, dest)).thenReturn(true);
+    Utilities.renameOrMoveFiles(fs, src, dest);
+    verify(fs, times(1)).rename(src, dest);
+  }
+
+  @Test
+  public void testRenameFileExistsNonHive() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    Path src = new Path("src");
+    Path dest = new Path("dir1");
+    Path finalPath = new Path(dest, "src_2");
+    FileStatus status = new FileStatus();
+    status.setPath(src);
+    when(fs.listStatus(src)).thenReturn(new FileStatus[]{status});
+    when(fs.exists(dest)).thenReturn(true);
+    when(fs.exists(new Path(dest, "src"))).thenReturn(true);
+    when(fs.exists(new Path(dest,"src_1"))).thenReturn(true);
+    when(fs.rename(src, finalPath)).thenReturn(true);
+    Utilities.renameOrMoveFiles(fs, src, dest);
+    verify(fs, times(1)).rename(src, finalPath);
+  }
+
+  @Test
+  public void testRenameFileExistsHivePath() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    Path src = new Path("00001_02");
+    Path dest = new Path("dir1");
+    Path finalPath = new Path(dest, "00001_02_copy_2");
+    FileStatus status = new FileStatus();
+    status.setPath(src);
+    when(fs.listStatus(src)).thenReturn(new FileStatus[]{status});
+    when(fs.exists(dest)).thenReturn(true);
+    when(fs.exists(new Path(dest, "00001_02"))).thenReturn(true);
+    when(fs.exists(new Path(dest,"00001_02_copy_1"))).thenReturn(true);
+    when(fs.rename(src, finalPath)).thenReturn(true);
+    Utilities.renameOrMoveFiles(fs, src, dest);
+    verify(fs, times(1)).rename(src, finalPath);
+  }
+
   private List<Path> runRemoveTempOrDuplicateFilesTestCase(String executionEngine, boolean dPEnabled)
       throws Exception {
     Configuration hconf = new HiveConf(this.getClass());
@@ -204,6 +256,9 @@ public class TestUtilities {
     DynamicPartitionCtx dpCtx = getDynamicPartitionCtx(dPEnabled);
     Path tempDirPath = setupTempDirWithSingleOutputFile(hconf);
     FileSinkDesc conf = getFileSinkDesc(tempDirPath);
+    // HIVE-23354 enforces that MR speculative execution is disabled
+    hconf.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
+    hconf.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
 
     List<Path> paths = Utilities.removeTempOrDuplicateFiles(localFs, tempDirPath, dpCtx, conf, hconf, false);
 
@@ -234,7 +289,8 @@ public class TestUtilities {
   private FileSinkDesc getFileSinkDesc(Path tempDirPath) {
     Table table = mock(Table.class);
     when(table.getNumBuckets()).thenReturn(NUM_BUCKETS);
-    FileSinkDesc conf = new FileSinkDesc(tempDirPath, null, false);
+    TableDesc tInfo = Utilities.getTableDesc("s", "string");
+    FileSinkDesc conf = new FileSinkDesc(tempDirPath, tInfo, false);
     conf.setTable(table);
     return conf;
   }
@@ -349,7 +405,7 @@ public class TestUtilities {
       String testPartitionName = "p=" + i;
       testPartitionsPaths[i] = new Path(testTablePath, "p=" + i);
       mapWork.getPathToAliases().put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
-      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+      mapWork.getAliasToWork().put(testPartitionName, mock(Operator.class));
       mapWork.getPathToPartitionInfo().put(testPartitionsPaths[i], mockPartitionDesc);
 
     }
@@ -370,7 +426,7 @@ public class TestUtilities {
       assertEquals(mapWork.getPathToPartitionInfo().size(), numPartitions);
       assertEquals(mapWork.getAliasToWork().size(), numPartitions);
 
-      for (Map.Entry<Path, ArrayList<String>> entry : mapWork.getPathToAliases().entrySet()) {
+      for (Map.Entry<Path, List<String>> entry : mapWork.getPathToAliases().entrySet()) {
         assertNotNull(entry.getKey());
         assertNotNull(entry.getValue());
         assertEquals(entry.getValue().size(), 1);
@@ -489,7 +545,7 @@ public class TestUtilities {
     MapWork mapWork = new MapWork();
     Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
 
-    LinkedHashMap<Path, ArrayList<String>> pathToAliasTable = new LinkedHashMap<>();
+    Map<Path, List<String>> pathToAliasTable = new LinkedHashMap<>();
 
     String testTableName = "testTable";
 
@@ -501,7 +557,7 @@ public class TestUtilities {
 
       pathToAliasTable.put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
 
-      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+      mapWork.getAliasToWork().put(testPartitionName, mock(Operator.class));
     }
 
     mapWork.setPathToAliases(pathToAliasTable);
@@ -578,7 +634,7 @@ public class TestUtilities {
     verify(pool).shutdownNow();
   }
 
-  private Task<? extends Serializable> getDependencyCollectionTask(){
+  private Task<?> getDependencyCollectionTask(){
     return TaskFactory.get(new DependencyCollectionWork());
   }
 
@@ -591,7 +647,7 @@ public class TestUtilities {
    *      \            /
    *       ---->DTc----
    */
-  private List<Task<? extends Serializable>> getTestDiamondTaskGraph(Task<? extends Serializable> providedTask){
+  private List<Task<?>> getTestDiamondTaskGraph(Task<?> providedTask){
     // Note: never instantiate a task without TaskFactory.get() if you're not
     // okay with .equals() breaking. Doing it via TaskFactory.get makes sure
     // that an id is generated, and two tasks of the same type don't show
@@ -599,12 +655,12 @@ public class TestUtilities {
     // array. Without this, DTa, DTb, and DTc would show up as one item in
     // the list of children. Thus, we're instantiating via a helper method
     // that instantiates via TaskFactory.get()
-    Task<? extends Serializable> root = getDependencyCollectionTask();
-    Task<? extends Serializable> DTa = getDependencyCollectionTask();
-    Task<? extends Serializable> DTb = getDependencyCollectionTask();
-    Task<? extends Serializable> DTc = getDependencyCollectionTask();
-    Task<? extends Serializable> DTd = getDependencyCollectionTask();
-    Task<? extends Serializable> DTe = getDependencyCollectionTask();
+    Task<?> root = getDependencyCollectionTask();
+    Task<?> DTa = getDependencyCollectionTask();
+    Task<?> DTb = getDependencyCollectionTask();
+    Task<?> DTc = getDependencyCollectionTask();
+    Task<?> DTd = getDependencyCollectionTask();
+    Task<?> DTe = getDependencyCollectionTask();
 
     root.addDependentTask(DTa);
     root.addDependentTask(DTb);
@@ -618,7 +674,7 @@ public class TestUtilities {
 
     providedTask.addDependentTask(DTe);
 
-    List<Task<? extends Serializable>> retVals = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> retVals = new ArrayList<Task<?>>();
     retVals.add(root);
     return retVals;
   }
@@ -630,20 +686,21 @@ public class TestUtilities {
    */
   public class CountingWrappingTask extends DependencyCollectionTask {
     int count;
-    Task<? extends Serializable> wrappedDep = null;
+    Task<?> wrappedDep = null;
 
-    public CountingWrappingTask(Task<? extends Serializable> dep) {
+    public CountingWrappingTask(Task<?> dep) {
       count = 0;
       wrappedDep = dep;
       super.addDependentTask(wrappedDep);
     }
 
-    public boolean addDependentTask(Task<? extends Serializable> dependent) {
+    @Override
+    public boolean addDependentTask(Task<?> dependent) {
       return wrappedDep.addDependentTask(dependent);
     }
 
     @Override
-    public List<Task<? extends Serializable>> getDependentTasks() {
+    public List<Task<?>> getDependentTasks() {
       count++;
       System.err.println("YAH:getDepTasks got called!");
       (new Exception()).printStackTrace(System.err);
@@ -717,5 +774,82 @@ public class TestUtilities {
     assertEquals(Lists.newArrayList(rootTask, child1, child2, child11),
         Utilities.getMRTasks(getTestDiamondTaskGraph(rootTask)));
 
+  }
+
+  @Test
+  public void testSelectManifestFilesOnlyOneAttemptId() {
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses("000000_0.manifest", "000001_0.manifest",
+        "000002_0.manifest", "000003_0.manifest");
+    Set<String> expectedPathes =
+        getExpectedPathes("000000_0.manifest", "000001_0.manifest", "000002_0.manifest", "000003_0.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSelectManifestFilesMultipleAttemptIds() {
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses("000000_1.manifest", "000000_0.manifest",
+        "000000_3.manifest", "000000_2.manifest", "000003_0.manifest", "000003_1.manifest", "000003_2.manifest");
+    Set<String> expectedPathes = getExpectedPathes("000000_3.manifest", "000003_2.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSelectManifestFilesWithEmptyManifests() {
+    Set<String> emptyFiles = new HashSet<>();
+    emptyFiles.add("000001_0.manifest");
+    emptyFiles.add("000001_2.manifest");
+    emptyFiles.add("000002_2.manifest");
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses(emptyFiles, "000001_1.manifest", "000001_0.manifest",
+        "000001_3.manifest", "000001_2.manifest", "000002_0.manifest", "000002_1.manifest", "000002_2.manifest");
+    Set<String> expectedPathes = getExpectedPathes("000001_3.manifest", "000002_1.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSelectManifestFilesWithWrongManifestNames() {
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses("000004_0.manifest", "000005.manifest",
+        "000004_1.manifest", "000006.manifest", "000007_0.wrong", "000008_1", "000004_2.manifest");
+    Set<String> expectedPathes = getExpectedPathes("000005.manifest", "000006.manifest", "000004_2.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  private FileStatus[] generateTestNotEmptyFileStatuses(String... fileNames) {
+    return generateTestNotEmptyFileStatuses(null, fileNames);
+  }
+
+  private FileStatus[] generateTestNotEmptyFileStatuses(Set<String> emptyFiles, String... fileNames) {
+    FileStatus[] manifestFiles = new FileStatus[fileNames.length];
+    for (int i = 0; i < fileNames.length; i++) {
+      long len = 10000L;
+      if (emptyFiles != null && emptyFiles.contains(fileNames[i])) {
+        len = 0L;
+      }
+      manifestFiles[i] = new FileStatus(len, false, 0, 250L, 123456L, new Path("/sometestpath/" + fileNames[i]));
+    }
+    return manifestFiles;
+  }
+
+  private Set<String> getExpectedPathes(String... fileNames) {
+    Set<String> expectedPathes = new HashSet<>();
+    for (String fileName : fileNames) {
+      expectedPathes.add("/sometestpath/" + fileName);
+    }
+    return expectedPathes;
+  }
+
+  private Set<String> getResultPathes(List<Path> foundManifestFiles) {
+    Set<String> resultPathes = new HashSet<>();
+    for (Path path : foundManifestFiles) {
+      resultPathes.add(path.toString());
+    }
+    return resultPathes;
   }
 }

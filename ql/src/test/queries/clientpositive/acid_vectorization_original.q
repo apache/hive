@@ -2,7 +2,6 @@ set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
 -- enable ppd
 set hive.optimize.index.filter=true;
@@ -111,6 +110,10 @@ explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID havi
 
 -- this test that there are no duplicate ROW__IDs so should produce no output
 -- on LLAP this produces "NULL, 6"; on tez it produces nothing: HIVE-17921
+-- this makes sure that the same code is running on the Ptest and on localhost. The target is:
+-- Original split count is 11 grouped split count is 1, for bucket: 1
+set tez.grouping.split-count=1;
+
 select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1;
 -- this produces nothing (as it should)
 select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null;
@@ -134,9 +137,17 @@ select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null;
 
 -- select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null;
 
+-- TODO: Remove this line after fixing HIVE-24351
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE over10k_orc STORED AS ORC as select * from over10k_n2 where t between 3 and 4;
+
 -- Make sure there are multiple original files
 INSERT INTO over10k_orc select * from over10k_n2 where t between 3 and 4;
+
+-- TODO: Remove this line after fixing HIVE-24351
+set hive.vectorized.execution.enabled=true;
+
 alter table over10k_orc set TBLPROPERTIES ('transactional'='true');
 
 -- row id is projected but there are no delete deltas
@@ -160,3 +171,5 @@ group by t;
 set hive.exec.orc.split.strategy=BI;
 select t, count(*) from over10k_orc
 group by t;
+
+select oo.ROW__ID.writeId, oo.ROW__IS__DELETED, oo.* from over10k_orc('acid.fetch.deleted.rows'='true') oo order by si;

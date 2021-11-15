@@ -1,6 +1,7 @@
 Commits with the wrong or no JIRA referenced:
 
 git commit                               branch     jira       url
+1d18fd9a27cfbe7f6d735e422d6d9f79f07c3c22 master     HIVE-23848 https://issues.apache.org/jira/browse/HIVE-23848
 1aec6a39424942f5dc7974413ad5ea2829985a73 master     HIVE-19826 https://issues.apache.org/jira/browse/HIVE-19826
 7981d38cbf6ef43384f5fb51b1560d7cf5add729 branch-3   HIVE-19826 https://issues.apache.org/jira/browse/HIVE-19826
 233884620af67e6af72b60629f799a69f5823eb2 master     HIVE-18627 https://issues.apache.org/jira/browse/HIVE-18627
@@ -98,3 +99,7 @@ d16d4f1bcc43d6ebcab0eaf5bc635fb88b60be5f master     HIVE-9423  https://issues.ap
 e7081035bb9768bc014f0aba11417418ececbaf0 master     HIVE-17109 https://issues.apache.org/jira/browse/HIVE-17109
 f33db1f68c68b552b9888988f818c03879749461 master     HIVE-18617 https://issues.apache.org/jira/browse/HIVE-18617
 1eea5a80ded2df33d57b2296b3bed98cb18383fd master     HIVE-19157 https://issues.apache.org/jira/browse/HIVE-19157
+4853a44b2fcfa702d23965ab0d3835b6b57954c4 master     HIVE-21823 https://issues.apache.org/jira/browse/HIVE-21823
+bd432c9203584c531f51559d8c97c398202f0794 master     HIVE-22267 https://issues.apache.org/jira/browse/HIVE-22267
+a0ccbff838afb440461a4d6df335f824c1dccbcc master     HIVE-21327 https://issues.apache.org/jira/browse/HIVE-21327
+23bc5469daad53b6839a86cd2c9db3d1d1c86d2e master     HIVE-24423 https://issues.apache.org/jira/browse/HIVE-24423

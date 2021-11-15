@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -30,36 +33,32 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  */
 public class PrunedPartitionList {
 
-  /** Key to identify this partition list. */
-  private final String ppListKey;
-
   /** Source table. */
   private final Table source;
 
+  /** Key to identify this partition list. */
+  private final Optional<String> ppListKey;
+
   /** Partitions that either satisfy the partition criteria, or may satisfy it. */
-  private Set<Partition> partitions;
+  private final Set<Partition> partitions;
 
   /** partition columns referred by pruner expr */
-  private List<String> referred;
+  private final List<String> referred;
 
   /** Whether there are partitions in the list that may or may not satisfy the criteria. */
-  private boolean hasUnknowns;
+  private final boolean hasUnknowns;
 
   public PrunedPartitionList(Table source, Set<Partition> partitions,
       List<String> referred, boolean hasUnknowns) {
-    this.source = source;
-    this.ppListKey = null;
-    this.referred = referred;
-    this.partitions = partitions;
-    this.hasUnknowns = hasUnknowns;
+    this(source, null, partitions, referred, hasUnknowns);
   }
 
   public PrunedPartitionList(Table source, String key, Set<Partition> partitions,
       List<String> referred, boolean hasUnknowns) {
-    this.source = source;
-    this.ppListKey = key;
-    this.referred = referred;
-    this.partitions = partitions;
+    this.source = Objects.requireNonNull(source);
+    this.ppListKey = Optional.ofNullable(key);
+    this.referred = Objects.requireNonNull(referred);
+    this.partitions = Objects.requireNonNull(partitions);
     this.hasUnknowns = hasUnknowns;
   }
 
@@ -67,7 +66,7 @@ public class PrunedPartitionList {
     return source;
   }
 
-  public String getKey() {
+  public Optional<String> getKey() {
     return ppListKey;
   }
 
@@ -75,7 +74,7 @@ public class PrunedPartitionList {
    * @return partitions
    */
   public Set<Partition> getPartitions() {
-    return partitions;
+    return Collections.unmodifiableSet(partitions);
   }
 
 
@@ -83,7 +82,7 @@ public class PrunedPartitionList {
    * @return all partitions.
    */
   public List<Partition> getNotDeniedPartns() {
-    return new ArrayList<Partition>(partitions);
+    return Collections.unmodifiableList(new ArrayList<>(partitions));
   }
 
   /**
@@ -94,6 +93,6 @@ public class PrunedPartitionList {
   }
 
   public List<String> getReferredPartCols() {
-    return referred;
+    return Collections.unmodifiableList(referred);
   }
 }

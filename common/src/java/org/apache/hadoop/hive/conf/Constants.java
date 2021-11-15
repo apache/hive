@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.conf;
 
 public class Constants {
+  /* Constants for Hive stats */
+  public static final String HIVE_ENGINE = "hive";
+
   /* Constants for LLAP */
   public static final String LLAP_LOGGER_NAME_QUERY_ROUTING = "query-routing";
   public static final String LLAP_LOGGER_NAME_CONSOLE = "console";
@@ -53,6 +56,7 @@ public class Constants {
   public static final String JDBC_DRIVER = JDBC_CONFIG_PREFIX + ".jdbc.driver";
   public static final String JDBC_USERNAME = JDBC_CONFIG_PREFIX + ".dbcp.username";
   public static final String JDBC_PASSWORD = JDBC_CONFIG_PREFIX + ".dbcp.password";
+  public static final String JDBC_PASSWORD_URI = JDBC_CONFIG_PREFIX + ".dbcp.password.uri";
   public static final String JDBC_KEYSTORE = JDBC_CONFIG_PREFIX + ".dbcp.password.keystore";
   public static final String JDBC_KEY = JDBC_CONFIG_PREFIX + ".dbcp.password.key";
   public static final String JDBC_QUERY = JDBC_CONFIG_PREFIX + ".query";
@@ -69,4 +73,22 @@ public class Constants {
   public static final String HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG = "hadoop.security.credential.provider.path";
 
   public static final String MATERIALIZED_VIEW_REWRITING_TIME_WINDOW = "rewriting.time.window";
+  public static final String MATERIALIZED_VIEW_SORT_COLUMNS = "materializedview.sort.columns";
+  public static final String MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS = "materializedview.distribute.columns";
+
+  /**  A named lock is acquired prior to executing the query; enabling to run queries in parallel which might interfere with eachother. */
+  public static final String HIVE_QUERY_EXCLUSIVE_LOCK = "hive.query.exclusive.lock";
+
+  public static final String SCHEDULED_QUERY_NAMESPACE = "scheduled.query.namespace";
+  public static final String SCHEDULED_QUERY_SCHEDULENAME = "scheduled.query.schedulename";
+  public static final String SCHEDULED_QUERY_EXECUTIONID = "scheduled.query.executionid";
+  public static final String SCHEDULED_QUERY_USER = "scheduled.query.user";
+
+  public static final String COMPACTOR_INTIATOR_THREAD_NAME_FORMAT = "Initiator-executor-thread-%d";
+  public static final String COMPACTOR_CLEANER_THREAD_NAME_FORMAT = "Cleaner-executor-thread-%d";
+
+  public static final String MODE = "mode";
+
+  public static final String ACID_FETCH_DELETED_ROWS = "acid.fetch.deleted.rows";
+  public static final String INSERT_ONLY_FETCH_BUCKET_ID = "insertonly.fetch.bucketid";
 }

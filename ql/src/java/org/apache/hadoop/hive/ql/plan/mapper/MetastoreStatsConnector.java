@@ -20,17 +20,18 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsMap;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.thrift.TException;
@@ -89,7 +90,7 @@ class MetastoreStatsConnector implements StatsSource {
             loadedEntries += thriftStat.getWeight();
             lastCreateTime = Math.min(lastCreateTime, thriftStat.getCreateTime() - 1);
             try {
-              ss.putAll(decode(thriftStat));
+              ss.load(decode(thriftStat));
             } catch (IOException e) {
               logException("Exception while loading runtime stats", e);
             }
@@ -112,26 +113,31 @@ class MetastoreStatsConnector implements StatsSource {
   }
 
   @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    if (map.size() == 0) {
+  public Optional<OperatorStats> lookup(RelTreeSignature treeSig) {
+    return ss.lookup(treeSig);
+  }
+
+  @Override
+  public void load(List<PersistedRuntimeStats> statList) {
+    if (statList.size() == 0) {
       return;
     }
-    ss.putAll(map);
-    executor.submit(new RuntimeStatsSubmitter(map));
+    ss.load(statList);
+    executor.submit(new RuntimeStatsSubmitter(statList));
   }
 
   class RuntimeStatsSubmitter implements Runnable {
 
-    private Map<OpTreeSignature, OperatorStats> map;
+    private List<PersistedRuntimeStats> list;
 
-    public RuntimeStatsSubmitter(Map<OpTreeSignature, OperatorStats> map) {
-      this.map = map;
+    public RuntimeStatsSubmitter(List<PersistedRuntimeStats> statList) {
+      this.list = statList;
     }
 
     @Override
     public void run() {
       try {
-        RuntimeStat rec = encode(map);
+        RuntimeStat rec = encode(list);
         Hive.get().getMSC().addRuntimeStat(rec);
       } catch (TException | HiveException | IOException e) {
         logException("Exception while persisting runtime stat", e);
@@ -139,17 +145,17 @@ class MetastoreStatsConnector implements StatsSource {
     }
   }
 
-  private RuntimeStat encode(Map<OpTreeSignature, OperatorStats> map) throws IOException {
-    String payload = RuntimeStatsPersister.INSTANCE.encode(new RuntimeStatsMap(map));
+  private RuntimeStat encode(List<PersistedRuntimeStats> list) throws IOException {
+    String payload = RuntimeStatsPersister.INSTANCE.encode(new ArrayList<PersistedRuntimeStats>(list));
     RuntimeStat rs = new RuntimeStat();
-    rs.setWeight(map.size());
+    rs.setWeight(list.size());
     rs.setPayload(ByteBuffer.wrap(payload.getBytes(Charsets.UTF_8)));
     return rs;
   }
 
-  private Map<OpTreeSignature, OperatorStats> decode(RuntimeStat rs) throws IOException {
-    RuntimeStatsMap rsm = RuntimeStatsPersister.INSTANCE.decode(rs.getPayload(), RuntimeStatsMap.class);
-    return rsm.toMap();
+  private List<PersistedRuntimeStats> decode(RuntimeStat rs) throws IOException {
+    List<PersistedRuntimeStats> rsm = RuntimeStatsPersister.INSTANCE.decode(rs.getPayload(), List.class);
+    return rsm;
   }
 
   public void destroy() {

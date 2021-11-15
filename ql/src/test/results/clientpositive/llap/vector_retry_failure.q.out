@@ -66,12 +66,13 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: a (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
@@ -80,7 +81,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -144,13 +145,29 @@ PREHOOK: Input: default@tx_n0
 Status: Failed
 Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
 DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 PREHOOK: query: select assert_true(2 > a) from tx_n0 group by a

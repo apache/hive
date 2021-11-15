@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -132,9 +133,11 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     String initScriptName = INIT_FILE_PREFIX + toVersion + "." +
         dbType + SQL_FILE_EXTENSION;
     // check if the file exists
-    if (!(new File(getMetaStoreScriptDir() + File.separatorChar +
-          initScriptName).exists())) {
-      throw new HiveMetaException("Unknown version specified for initialization: " + toVersion);
+    File file = new File(getMetaStoreScriptDir() + File.separatorChar +
+          initScriptName);
+    if (!file.exists()) {
+      throw new HiveMetaException("Unknown version specified for initialization: " + toVersion,
+          new NoSuchFileException(file.getAbsolutePath()));
     }
     return initScriptName;
   }
@@ -142,10 +145,10 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   @Override
   public String getCreateUserScript() throws HiveMetaException {
     String createScript = CREATE_USER_PREFIX + "." + dbType + SQL_FILE_EXTENSION;
+    File scriptFile = new File(getMetaStoreScriptDir() + File.separatorChar + createScript);
     // check if the file exists
-    if (!(new File(getMetaStoreScriptDir() + File.separatorChar +
-        createScript).exists())) {
-      throw new HiveMetaException("Unable to find create user file, expected: " + createScript);
+    if (!scriptFile.exists()) {
+      throw new HiveMetaException("Unable to find create user file, expected: " + scriptFile.getAbsolutePath());
     }
     return createScript;
   }

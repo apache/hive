@@ -23,15 +23,15 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -44,11 +44,12 @@ public interface TxnStore extends Configurable {
   /**
    * Prefix for key when committing with a key/value.
    */
-  public static final String TXN_KEY_START = "_meta";
+  String TXN_KEY_START = "_meta";
+
 
   enum MUTEX_KEY {
-    Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler, WriteIdAllocator, MaterializationRebuild
+    Initiator, Cleaner, HouseKeeper, TxnCleaner,
+    CompactionScheduler, MaterializationRebuild
   }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
@@ -56,7 +57,10 @@ public interface TxnStore extends Configurable {
   String CLEANING_RESPONSE = "ready for cleaning";
   String FAILED_RESPONSE = "failed";
   String SUCCEEDED_RESPONSE = "succeeded";
-  String ATTEMPTED_RESPONSE = "attempted";
+  String DID_NOT_INITIATE_RESPONSE = "did not initiate";
+
+  String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
+      SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE };
 
   int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
@@ -77,6 +81,15 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   GetOpenTxnsResponse getOpenTxns() throws MetaException;
+
+  /**
+   * Get list of valid transactions.  This gives just the list of transactions that are open.
+   * @param excludeTxnTypes : excludes this type of txns while getting the open txns
+   * @return list of open transactions, as well as a high water mark.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException;
 
   /**
    * Get the count for open transactions.
@@ -151,6 +164,8 @@ public interface TxnStore extends Configurable {
   long getTxnIdForWriteId(String dbName, String tblName, long writeId)
       throws MetaException;
 
+  long getLatestTxnIdInConflict(long txnid) throws MetaException;
+
   LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
@@ -181,10 +196,25 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
+   * Reads the maximum allocated writeId for the given table
+   * @param rqst table for which the maximum writeId is requested
+   * @return the maximum allocated writeId
+   */
+  MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWrited(MaxAllocatedTableWriteIdRequest rqst)
+      throws MetaException;
+
+  /**
    * Called on conversion of existing table to full acid.  Sets initial write ID to a high
    * enough value so that we can assign unique ROW__IDs to data in existing files.
    */
-  void seedWriteIdOnAcidConversion(InitializeTableWriteIdsRequest rqst) throws MetaException;
+  void seedWriteId(SeedTableWriteIdsRequest rqst) throws MetaException;
+
+  /**
+   * Sets the next txnId to the given value.
+   * If the actual txnId is greater it will throw an exception.
+   * @param rqst
+   */
+  void seedTxnId(SeedTxnIdRequest rqst) throws MetaException;
 
   /**
    * Obtain a lock.
@@ -277,6 +307,21 @@ public interface TxnStore extends Configurable {
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
 
   /**
+   * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
+   * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
+   * Is is assumed to be done by the caller.
+   * Note that partition names should be supplied with the request for a partitioned table; otherwise,
+   * no records will be returned.
+   * @param rqst info on which compaction to retrieve
+   * @return one latest compaction record for a non partitioned table or one latest record for each
+   * partition specified by the request.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException;
+
+  /**
    * Add information on a set of dynamic partitions that participated in a transaction.
    * @param rqst dynamic partition info.
    * @throws NoSuchTxnException
@@ -314,13 +359,18 @@ public interface TxnStore extends Configurable {
    * This will look through the completed_txn_components table and look for partitions or tables
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
    * aborted transactions that we should add to the list.
-   * @param maxAborted Maximum number of aborted queries to allow before marking this as a
-   *                   potential compaction.
+   * @param abortedThreshold  number of aborted queries forming a potential compaction request.
+   * @param abortedTimeThreshold age of an aborted txn in milliseconds that will trigger a
+   *                             potential compaction request.
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
+
+  @RetrySemantics.ReadOnly
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long checkInterval)
+      throws MetaException;
 
   /**
    * This updates COMPACTION_QUEUE.  Set runAs username for the case where the request was
@@ -335,11 +385,22 @@ public interface TxnStore extends Configurable {
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
+   * @deprecated Replaced by
+   *     {@link TxnStore#findNextToCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)}
    * @param workerId id of the worker calling this, will be recorded in the db
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
+  @Deprecated
   @RetrySemantics.ReadOnly
   CompactionInfo findNextToCompact(String workerId) throws MetaException;
+
+  /**
+   * This will grab the next compaction request off of the queue, and assign it to the worker.
+   * @param rqst request to find next compaction to run
+   * @return an info element for next compaction in the queue, or null if there is no work to do now.
+   */
+  @RetrySemantics.ReadOnly
+  CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException;
 
   /**
    * This will mark an entry in the queue as compacted
@@ -352,25 +413,17 @@ public interface TxnStore extends Configurable {
   /**
    * Find entries in the queue that are ready to
    * be cleaned.
+   * @param minOpenTxnWaterMark Minimum open txnId
+   * @param retentionTime Milliseconds to delay the cleaner
    * @return information on the entry in the queue.
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToClean() throws MetaException;
-
-  /**
-   * Returns the smallest txnid that could be seen in open state across all active transactions in
-   * the system or {@code NEXT_TXN_ID.NTXN_NEXT} if there are no active transactions, i.e. the
-   * smallest txnid that can be seen as unresolved in the whole system.  Even if a transaction
-   * is opened concurrently with this call it cannot have an id less than what this method returns.
-   * @return transaction ID
-   */
-  @RetrySemantics.ReadOnly
-  long findMinOpenTxnId() throws MetaException;
+  List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
 
   /**
    * This will remove an entry from the queue after
    * it has been compacted.
-   * 
+   *
    * @param info info on the compaction entry to remove
    */
   @RetrySemantics.CannotRetry
@@ -388,18 +441,25 @@ public interface TxnStore extends Configurable {
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(NEXT_TXN_ID.ntxn_next, min(MIN_HISTORY_LEVEL.mhl_min_open_txnid), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
    */
   @RetrySemantics.SafeToRetry
   void cleanTxnToWriteIdTable() throws MetaException;
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components.  The reson such
-   * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
-   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
+   * De-duplicate entries from COMPLETED_TXN_COMPONENTS table.
    */
   @RetrySemantics.SafeToRetry
-  void cleanEmptyAbortedTxns() throws MetaException;
+  void removeDuplicateCompletedTxnComponents() throws MetaException;
+
+  /**
+   * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
+   * txns exist can be that no work was done in this txn (e.g. Streaming opened TransactionBatch and
+   * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called,
+   * or the delete from the txns was delayed because of TXN_OPENTXN_TIMEOUT window.
+   */
+  @RetrySemantics.SafeToRetry
+  void cleanEmptyAbortedAndCommittedTxns() throws MetaException;
 
   /**
    * This will take all entries assigned to workers
@@ -446,11 +506,11 @@ public interface TxnStore extends Configurable {
   void purgeCompactionHistory() throws MetaException;
 
   /**
-   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the 
-   * transaction metadata once it becomes unnecessary.  
+   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the
+   * transaction metadata once it becomes unnecessary.
    */
   @RetrySemantics.SafeToRetry
-  void performWriteSetGC();
+  void performWriteSetGC() throws MetaException;
 
   /**
    * Determine if there are enough consecutive failures compacting a table or partition that no
@@ -469,25 +529,31 @@ public interface TxnStore extends Configurable {
   @VisibleForTesting
   long setTimeout(long milliseconds);
 
+  @VisibleForTesting
+  long getOpenTxnTimeOutMillis();
+
+  @VisibleForTesting
+  void setOpenTxnTimeOutMillis(long openTxnTimeOutMillis);
+
   @RetrySemantics.Idempotent
   MutexAPI getMutexAPI();
 
   /**
    * This is primarily designed to provide coarse grained mutex support to operations running
-   * inside the Metastore (of which there could be several instances).  The initial goal is to 
+   * inside the Metastore (of which there could be several instances).  The initial goal is to
    * ensure that various sub-processes of the Compactor don't step on each other.
-   * 
+   *
    * In RDMBS world each {@code LockHandle} uses a java.sql.Connection so use it sparingly.
    */
   interface MutexAPI {
     /**
-     * The {@code key} is name of the lock. Will acquire and exclusive lock or block.  It retuns
+     * The {@code key} is name of the lock. Will acquire an exclusive lock or block.  It returns
      * a handle which must be used to release the lock.  Each invocation returns a new handle.
      */
     LockHandle acquireLock(String key) throws MetaException;
 
     /**
-     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This 
+     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This
      * will associate the lock on {@code key} with the same handle.  All locks associated with
      * the same handle will be released together.
      * @param handle not NULL
@@ -514,5 +580,39 @@ public interface TxnStore extends Configurable {
    * @param acidWriteEvent
    */
   @RetrySemantics.Idempotent
-  void addWriteNotificationLog(AcidWriteEvent acidWriteEvent) throws MetaException;
+  void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException;
+
+  /**
+   * Return the currently seen minimum open transaction ID.
+   * @return minimum transaction ID
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  long findMinOpenTxnIdForCleaner() throws MetaException;
+
+  /**
+   * Returns the compaction running in the transaction txnId
+   * @param txnId transaction Id
+   * @return compaction info
+   * @throws MetaException ex
+   */
+  @RetrySemantics.ReadOnly
+  Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException;
+
+  /**
+   * Returns the smallest txnid that could be seen in open state across all active transactions in
+   * the system or -1 if there are no active transactions.
+   * @return transaction ID
+   * @deprecated remove when min_history_level table is dropped
+   */
+  @RetrySemantics.ReadOnly
+  @Deprecated
+  long findMinTxnIdSeenOpen() throws MetaException;
+
+  /**
+   * Returns ACID metadata related metrics info.
+   * @return metrics info object
+   */
+  @RetrySemantics.ReadOnly
+  MetricsInfo getMetricsInfo() throws MetaException;
 }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.io.EOFException;
 import java.io.IOException;
@@ -197,10 +198,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
 
   // UTF-8 byte constants used by string/UTF-8 bytes to decimal and decimal to String/UTF-8 byte
   // conversion.
-
-  // There is only one blank in UTF-8.
-  private static final byte BYTE_BLANK = (byte) ' ';
-
   private static final byte BYTE_DIGIT_ZERO = (byte) '0';
   private static final byte BYTE_DIGIT_NINE = (byte) '9';
 
@@ -229,7 +226,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     final int end = offset + length;
     throw new RuntimeException(
         "Invalid fast decimal \"" +
-            new String(bytes, offset, end) + "\"" +
+            new String(bytes, offset, end, StandardCharsets.UTF_8) + "\"" +
         " fastSignum " + fastResult.fastSignum + " fast0 " + fastResult.fast0 + " fast1 " + fastResult.fast1 + " fast2 " + fastResult.fast2 +
             " fastIntegerDigitCount " + fastResult.fastIntegerDigitCount +" fastScale " + fastResult.fastScale +
         " stack trace: " + getStackTraceAsSingleLine(Thread.currentThread().getStackTrace()));
@@ -272,7 +269,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     int index = offset;
 
     if (trimBlanks) {
-      while (bytes[index] == BYTE_BLANK) {
+      while (isValidSpecialCharacter(bytes[index])) {
         if (++index >= end) {
           return false;
         }
@@ -372,9 +369,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     }
 
     // Try to eat trailing blank padding.
-    if (trimBlanks && index < end && bytes[index] == BYTE_BLANK) {
+    if (trimBlanks && index < end && isValidSpecialCharacter(bytes[index])) {
       index++;
-      while (index < end && bytes[index] == BYTE_BLANK) {
+      while (index < end && isValidSpecialCharacter(bytes[index])) {
         index++;
       }
       if (index < end) {
@@ -554,9 +551,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     if (!haveExponent) {
 
       // Try to eat trailing blank padding.
-      if (trimBlanks && index < end && bytes[index] == BYTE_BLANK) {
+      if (trimBlanks && index < end && isValidSpecialCharacter(bytes[index])) {
         index++;
-        while (index < end && bytes[index] == BYTE_BLANK) {
+        while (index < end && isValidSpecialCharacter(bytes[index])) {
           index++;
         }
       }
@@ -610,9 +607,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     }
 
     // Try to eat trailing blank padding.
-    if (trimBlanks && index < end && bytes[index] == BYTE_BLANK) {
+    if (trimBlanks && index < end && isValidSpecialCharacter(bytes[index])) {
       index++;
-      while (index < end && bytes[index] == BYTE_BLANK) {
+      while (index < end && isValidSpecialCharacter(bytes[index])) {
         index++;
       }
     }
@@ -903,7 +900,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    */
   public static boolean fastSetFromString(
       String string, boolean trimBlanks, FastHiveDecimal result) {
-    byte[] bytes = string.getBytes();
+    byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
     return fastSetFromBytes(bytes, 0, bytes.length, trimBlanks, result);
   }
 
@@ -5140,7 +5137,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       fastResult.fastIntegerDigitCount = 0;
       fastResult.fastScale = 0;
     } else {
-      fastResult.fastSignum = 0;
       fastResult.fastSignum = fastSignum;
       fastResult.fastIntegerDigitCount = fastRawPrecision(fastResult);
       fastResult.fastScale = 0;
@@ -8287,7 +8283,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       long left0, long left1, long left2,
       long right0, long right1, long right2,
       long[] result) {
-    assert (result.length == 5);
     if (result.length != 5) {
       throw new IllegalArgumentException("Expecting result array length = 5");
     }
@@ -8982,7 +8977,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
           formatScale,
           scratchBuffer);
     return
-        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index);
+        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index, StandardCharsets.UTF_8);
   }
 
   //************************************************************************************************
@@ -8998,7 +8993,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             fastSignum, fast0, fast1, fast2,
             fastIntegerDigitCount, fastScale, formatScale,
             scratchBuffer);
-    return new String(scratchBuffer, index, scratchBuffer.length - index);
+    return new String(scratchBuffer, index, scratchBuffer.length - index, StandardCharsets.UTF_8);
   }
 
   public static int fastToFormatBytes(
@@ -9073,7 +9068,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             fastIntegerDigitCount,
             scratchBuffer);
     return
-        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index);
+        new String(scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index, StandardCharsets.UTF_8);
   }
 
   public static int fastToBytes(
@@ -9097,7 +9092,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             scratchBuffer);
     return
         new String(
-            scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index);
+            scratchBuffer, index, FAST_SCRATCH_BUFFER_LEN_TO_BYTES - index, StandardCharsets.UTF_8);
   }
 
   private static String doFastToString(
@@ -9109,7 +9104,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
             fastSignum, fast0, fast1, fast2,
             fastIntegerDigitCount, fastScale, fastTrailingZeroesScale,
             scratchBuffer);
-    return new String(scratchBuffer, index, scratchBuffer.length - index);
+    return new String(scratchBuffer, index, scratchBuffer.length - index, StandardCharsets.UTF_8);
   }
 
   private static int doFastToBytes(
@@ -9428,6 +9423,40 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
         " fastSignum " + fastResult.fastSignum + " fast0 " + fastResult.fast0 + " fast1 " + fastResult.fast1 + " fast2 " + fastResult.fast2 +
             " fastIntegerDigitCount " + fastResult.fastIntegerDigitCount + " fastScale " + fastResult.fastScale +
         " stack trace: " + getStackTraceAsSingleLine(Thread.currentThread().getStackTrace()));
+  }
+
+  /**
+   * Determines if the specified character can be treated as valid while handling decimals
+   *
+   * @param b the character to be tested.
+   * @return returns true if the character is one of the characters listed below
+   * List of characters that are supported in regular RDBMS databases(MySQL, PostgreSQL) while handling decimals
+   * are considered valid in Hive as well. The list include
+   * '\u0009' - HORIZONTAL TABULATION (\t)
+   * '\u000B' - VERTICAL TABULATION
+   * '\u000C' - FORM FEED
+   * '\u0020' - SPACE SEPARATOR
+   */
+  public static boolean isValidSpecialCharacter(byte b) {
+    return Arrays.stream(SpecialCharacters.values()).anyMatch(splCharacters -> splCharacters.getValue() == b);
+  }
+
+  private enum SpecialCharacters {
+
+    HORIZONTAL_TABULATION('\u0009'),
+    VERTICAL_TABULATION('\u000B'),
+    FORM_FEED('\u000C'),
+    SPACE_SEPARATOR('\u0020');
+
+    private char character;
+
+    SpecialCharacters(char c) {
+      this.character = c;
+    }
+
+    public byte getValue() {
+      return (byte) this.character;
+    }
   }
 
   //************************************************************************************************

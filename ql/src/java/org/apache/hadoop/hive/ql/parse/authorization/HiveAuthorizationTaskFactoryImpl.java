@@ -19,30 +19,30 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.privilege.CreateRoleDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.DropRoleDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.GrantDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.GrantRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeObjectDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.RevokeDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.RevokeRoleDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.SetRoleDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowCurrentRoleDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowGrantDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowPrincipalsDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowRoleGrantDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowRolesDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.grant.GrantDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.revoke.RevokeDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.create.CreateRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.drop.DropRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.grant.GrantRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.revoke.RevokeRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.set.SetRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.show.ShowCurrentRoleDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.role.show.ShowRolesDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.show.grant.ShowGrantDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.show.principals.ShowPrincipalsDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.show.rolegrant.ShowRoleGrantDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
@@ -73,22 +72,22 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   }
 
   @Override
-  public Task<? extends Serializable> createCreateRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) {
+  public Task<?> createCreateRoleTask(ASTNode ast, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) {
     String roleName = BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText());
     CreateRoleDesc createRoleDesc = new CreateRoleDesc(roleName);
-    return TaskFactory.get(new DDLWork2(inputs, outputs, createRoleDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, createRoleDesc));
   }
   @Override
-  public Task<? extends Serializable> createDropRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) {
+  public Task<?> createDropRoleTask(ASTNode ast, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) {
     String roleName = BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText());
     DropRoleDesc dropRoleDesc = new DropRoleDesc(roleName);
-    return TaskFactory.get(new DDLWork2(inputs, outputs, dropRoleDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, dropRoleDesc));
   }
   @Override
-  public Task<? extends Serializable> createShowRoleGrantTask(ASTNode ast, Path resultFile,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
+  public Task<?> createShowRoleGrantTask(ASTNode ast, Path resultFile,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
     ASTNode child = (ASTNode) ast.getChild(0);
     PrincipalType principalType = PrincipalType.USER;
     switch (child.getType()) {
@@ -104,11 +103,11 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     }
     String principalName = BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText());
     ShowRoleGrantDesc showRoleGrantDesc = new ShowRoleGrantDesc(principalName, principalType, resultFile.toString());
-    return TaskFactory.get(new DDLWork2(inputs, outputs, showRoleGrantDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, showRoleGrantDesc));
   }
   @Override
-  public Task<? extends Serializable> createGrantTask(ASTNode ast, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException {
+  public Task<?> createGrantTask(ASTNode ast, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
     List<PrivilegeDesc> privilegeDesc = analyzePrivilegeListDef(
         (ASTNode) ast.getChild(0));
     List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef(
@@ -131,12 +130,12 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
 
     GrantDesc grantDesc = new GrantDesc(privilegeObj, privilegeDesc,
         principalDesc, userName, PrincipalType.USER, grantOption);
-    return TaskFactory.get(new DDLWork2(inputs, outputs, grantDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, grantDesc));
   }
 
   @Override
-  public Task<? extends Serializable> createRevokeTask(ASTNode ast, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException {
+  public Task<?> createRevokeTask(ASTNode ast, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
     List<PrivilegeDesc> privilegeDesc = analyzePrivilegeListDef((ASTNode) ast.getChild(0));
     List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef((ASTNode) ast.getChild(1));
     PrivilegeObjectDesc hiveObj = null;
@@ -150,11 +149,11 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       }
     }
     RevokeDesc revokeDesc = new RevokeDesc(privilegeDesc, principalDesc, hiveObj, grantOption);
-    return TaskFactory.get(new DDLWork2(inputs, outputs, revokeDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, revokeDesc));
   }
   @Override
-  public Task<? extends Serializable> createShowGrantTask(ASTNode ast, Path resultFile, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) throws SemanticException {
+  public Task<?> createShowGrantTask(ASTNode ast, Path resultFile, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
 
     PrincipalDesc principalDesc = null;
     PrivilegeObjectDesc privHiveObj = null;
@@ -177,20 +176,20 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     }
 
     ShowGrantDesc showGrant = new ShowGrantDesc(resultFile.toString(), principalDesc, privHiveObj);
-    return TaskFactory.get(new DDLWork2(inputs, outputs, showGrant));
+    return TaskFactory.get(new DDLWork(inputs, outputs, showGrant));
   }
   @Override
-  public Task<? extends Serializable> createGrantRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) {
+  public Task<?> createGrantRoleTask(ASTNode ast, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) {
     return analyzeGrantRevokeRole(true, ast, inputs, outputs);
   }
   @Override
-  public Task<? extends Serializable> createRevokeRoleTask(ASTNode ast, HashSet<ReadEntity> inputs,
-      HashSet<WriteEntity> outputs) {
+  public Task<?> createRevokeRoleTask(ASTNode ast, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) {
     return analyzeGrantRevokeRole(false, ast, inputs, outputs);
   }
-  private Task<? extends Serializable> analyzeGrantRevokeRole(boolean isGrant, ASTNode ast,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
+  private Task<?> analyzeGrantRevokeRole(boolean isGrant, ASTNode ast,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
     List<PrincipalDesc> principalDesc = AuthorizationParseUtils.analyzePrincipalListDef(
         (ASTNode) ast.getChild(0));
 
@@ -215,15 +214,15 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
 
     if (isGrant) {
       GrantRoleDesc grantRoleDesc = new GrantRoleDesc(roles, principalDesc, roleOwnerName, isAdmin);
-      return TaskFactory.get(new DDLWork2(inputs, outputs, grantRoleDesc));
+      return TaskFactory.get(new DDLWork(inputs, outputs, grantRoleDesc));
     } else {
       RevokeRoleDesc revokeRoleDesc = new RevokeRoleDesc(roles, principalDesc, roleOwnerName, isAdmin);
-      return TaskFactory.get(new DDLWork2(inputs, outputs, revokeRoleDesc));
+      return TaskFactory.get(new DDLWork(inputs, outputs, revokeRoleDesc));
     }
   }
 
   private PrivilegeObjectDesc analyzePrivilegeObject(ASTNode ast,
-      HashSet<WriteEntity> outputs)
+      Set<WriteEntity> outputs)
       throws SemanticException {
 
     PrivilegeObjectDesc subject = parsePrivObject(ast);
@@ -251,8 +250,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     ASTNode gchild = (ASTNode)child.getChild(0);
     if (child.getType() == HiveParser.TOK_TABLE_TYPE) {
       isTable = true;
-      String[] qualified = BaseSemanticAnalyzer.getQualifiedTableName(gchild);
-      object = BaseSemanticAnalyzer.getDotName(qualified);
+      object = BaseSemanticAnalyzer.getQualifiedTableName(gchild).getNotEmptyDbTable();
     } else if (child.getType() == HiveParser.TOK_URI_TYPE || child.getType() == HiveParser.TOK_SERVER_TYPE) {
       throw new SemanticException("Hive authorization does not support the URI or SERVER objects");
     } else {
@@ -263,7 +261,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     for (int i = 1; i < child.getChildCount(); i++) {
       gchild = (ASTNode) child.getChild(i);
       if (gchild.getType() == HiveParser.TOK_PARTSPEC) {
-        partSpec = DDLSemanticAnalyzer.getPartSpec(gchild);
+        partSpec = BaseSemanticAnalyzer.getPartSpec(gchild);
       } else if (gchild.getType() == HiveParser.TOK_TABCOLNAME) {
         columns = BaseSemanticAnalyzer.getColumnNames(gchild);
       }
@@ -335,24 +333,22 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
   }
 
   @Override
-  public Task<? extends Serializable> createSetRoleTask(String roleName,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs)
-      throws SemanticException {
+  public Task<?> createSetRoleTask(String roleName, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
     SetRoleDesc setRoleDesc = new SetRoleDesc(roleName);
-    return TaskFactory.get(new DDLWork2(inputs, outputs, setRoleDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, setRoleDesc));
   }
 
   @Override
-  public Task<? extends Serializable> createShowCurrentRoleTask(
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs, Path resFile)
-      throws SemanticException {
+  public Task<?> createShowCurrentRoleTask( Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+      Path resFile) throws SemanticException {
     ShowCurrentRoleDesc showCurrentRoleDesc = new ShowCurrentRoleDesc(resFile.toString());
-    return TaskFactory.get(new DDLWork2(inputs, outputs, showCurrentRoleDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, showCurrentRoleDesc));
   }
 
   @Override
-  public Task<? extends Serializable> createShowRolePrincipalsTask(ASTNode ast, Path resFile,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException {
+  public Task<?> createShowRolePrincipalsTask(ASTNode ast, Path resFile, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
     String roleName;
 
     if (ast.getChildCount() == 1) {
@@ -363,14 +359,14 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     }
 
     ShowPrincipalsDesc showPrincipalsDesc = new ShowPrincipalsDesc(roleName, resFile.toString());
-    return TaskFactory.get(new DDLWork2(inputs, outputs, showPrincipalsDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, showPrincipalsDesc));
   }
 
   @Override
-  public Task<? extends Serializable> createShowRolesTask(ASTNode ast, Path resFile,
-      HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) throws SemanticException {
+  public Task<?> createShowRolesTask(ASTNode ast, Path resFile, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
     ShowRolesDesc showRolesDesc = new ShowRolesDesc(resFile.toString());
-    return TaskFactory.get(new DDLWork2(inputs, outputs, showRolesDesc));
+    return TaskFactory.get(new DDLWork(inputs, outputs, showRolesDesc));
   }
 
 }

@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.serde2.teradata;
 
 import com.google.common.io.BaseEncoding;
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -29,23 +29,27 @@ import org.junit.Assert;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the data type TIMESTAMP for Teradata binary format.
  */
-public class TestTeradataBinarySerdeForTimeStamp extends TestCase {
+public class TestTeradataBinarySerdeForTimeStamp {
 
   private final TeradataBinarySerde serde = new TeradataBinarySerde();
   private final Properties props = new Properties();
 
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     props.setProperty(serdeConstants.LIST_COLUMNS, "TD_TIMESTAMP");
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "timestamp");
   }
 
+  @Test
   public void testTimestampPrecision6() throws Exception {
     props.setProperty(TeradataBinarySerde.TD_TIMESTAMP_PRECISION, "6");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
 
     //2012-10-01 12:00:00.110000
     BytesWritable in = new BytesWritable(
@@ -65,9 +69,10 @@ public class TestTeradataBinarySerdeForTimeStamp extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testTimestampPrecision0() throws Exception {
     props.setProperty(TeradataBinarySerde.TD_TIMESTAMP_PRECISION, "0");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
 
     //2012-10-01 12:00:00
     BytesWritable in =
@@ -87,9 +92,10 @@ public class TestTeradataBinarySerdeForTimeStamp extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testTimestampPrecision3() throws Exception {
     props.setProperty(TeradataBinarySerde.TD_TIMESTAMP_PRECISION, "3");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
 
     //2012-10-01 12:00:00.345
     BytesWritable in =

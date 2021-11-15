@@ -37,13 +37,12 @@ POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
 OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`
 FROM (SELECT `value`
 FROM `default`.`filter_join_breaktask`
-WHERE `ds` = '2008-04-08' AND `value` <> '') AS `t0`
+WHERE `value` <> '' AND `ds` = '2008-04-08') AS `t0`
 INNER JOIN ((SELECT `key`
 FROM `default`.`filter_join_breaktask`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2`
-INNER JOIN (SELECT `key`, `value`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t2` INNER JOIN (SELECT `key`, `value`
 FROM `default`.`filter_join_breaktask`
-WHERE `ds` = '2008-04-08' AND `value` <> '' AND `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
+WHERE `key` IS NOT NULL AND (`value` <> '' AND `ds` = '2008-04-08')) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -54,7 +53,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -73,15 +72,17 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 15 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -93,30 +94,20 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.filter_join_breaktask
-                    numFiles 1
-                    numRows 25
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 211
-                    serialization.ddl struct filter_join_breaktask { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 236
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -126,10 +117,8 @@ STAGE PLANS:
                       name default.filter_join_breaktask
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct filter_join_breaktask { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.filter_join_breaktask
                   name: default.filter_join_breaktask
@@ -139,88 +128,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: m
-                  filterExpr: ((value <> '') and key is not null) (type: boolean)
+                  filterExpr: ((key is not null and (value <> '')) or (value <> '')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2289 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((value <> '') and key is not null) (type: boolean)
+                    predicate: (key is not null and (value <> '')) (type: boolean)
                     Statistics: Num rows: 15 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 15 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 15 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: ds=2008-04-08
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-08
-                  properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types int:string
-#### A masked pattern was here ####
-                    name default.filter_join_breaktask
-                    numFiles 1
-                    numRows 25
-                    partition_columns ds
-                    partition_columns.types string
-                    rawDataSize 211
-                    serialization.ddl struct filter_join_breaktask { i32 key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 236
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types int:string
-#### A masked pattern was here ####
-                      name default.filter_join_breaktask
-                      partition_columns ds
-                      partition_columns.types string
-                      serialization.ddl struct filter_join_breaktask { i32 key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.filter_join_breaktask
-                  name: default.filter_join_breaktask
-            Truncated Path -> Alias:
-              /filter_join_breaktask/ds=2008-04-08 [m]
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: g
-                  filterExpr: (value <> '') (type: boolean)
-                  Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
-                  GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (value <> '') (type: boolean)
@@ -230,15 +159,17 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -250,30 +181,20 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.filter_join_breaktask
-                    numFiles 1
-                    numRows 25
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 211
-                    serialization.ddl struct filter_join_breaktask { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 236
-#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -283,15 +204,13 @@ STAGE PLANS:
                       name default.filter_join_breaktask
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct filter_join_breaktask { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.filter_join_breaktask
                   name: default.filter_join_breaktask
             Truncated Path -> Alias:
-              /filter_join_breaktask/ds=2008-04-08 [g]
+              /filter_join_breaktask/ds=2008-04-08 [m]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -306,8 +225,10 @@ STAGE PLANS:
                 Position of Big Table: 1
                 Statistics: Num rows: 15 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  bucketingVersion: 2
                   key expressions: _col2 (type: string)
-                  null sort order: a
+                  null sort order: z
+                  numBuckets: -1
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 15 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
@@ -332,6 +253,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 19 Data size: 1747 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
@@ -342,6 +264,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         properties:
+                          bucketing_version -1
                           columns _col0,_col1
                           columns.types int:string
                           escape.delim \

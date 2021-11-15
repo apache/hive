@@ -45,6 +45,7 @@ public class TestGenericUDTFGetSQLSchema {
     conf.set("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     sessionState = SessionState.start(conf);
+    sessionState.initTxnMgr(conf);
   }
 
   @AfterClass

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenSelector;
 import org.apache.hadoop.io.Text;
@@ -35,15 +36,19 @@ import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManagerFactory;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -211,11 +216,14 @@ public class SecurityUtils {
   }
 
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-                                                 String keyStorePassWord, List<String> sslVersionBlacklist) throws TTransportException,
-      UnknownHostException {
+      String keyStorePassWord, String keyStoreType, String keyStoreAlgorithm, List<String> sslVersionBlacklist)
+      throws TTransportException, UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
         new TSSLTransportFactory.TSSLTransportParameters();
-    params.setKeyStore(keyStorePath, keyStorePassWord);
+    String kStoreType = keyStoreType.isEmpty()? KeyStore.getDefaultType() : keyStoreType;
+    String kStoreAlgorithm = keyStoreAlgorithm.isEmpty()?
+            KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm;
+    params.setKeyStore(keyStorePath, keyStorePassWord, kStoreAlgorithm, kStoreType);
     InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
       // Wildcard bind
@@ -247,10 +255,15 @@ public class SecurityUtils {
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout,
-                                        String trustStorePath, String trustStorePassWord) throws TTransportException {
+      String trustStorePath, String trustStorePassWord, String trustStoreType,
+      String trustStoreAlgorithm) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
         new TSSLTransportFactory.TSSLTransportParameters();
-    params.setTrustStore(trustStorePath, trustStorePassWord);
+    String tStoreType = trustStoreType.isEmpty()? KeyStore.getDefaultType() : trustStoreType;
+    String tStoreAlgorithm = trustStoreAlgorithm.isEmpty()?
+        TrustManagerFactory.getDefaultAlgorithm() : trustStoreAlgorithm;
+    params.setTrustStore(trustStorePath, trustStorePassWord,
+        tStoreAlgorithm, tStoreType);
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // SSLContext created with the given params
@@ -266,5 +279,29 @@ public class SecurityUtils {
     sslParams.setEndpointIdentificationAlgorithm("HTTPS");
     sslSocket.setSSLParameters(sslParams);
     return new TSocket(sslSocket);
+  }
+
+  /**
+   * Relogin if login user is logged in using keytab
+   * Relogin is actually done by ugi code only if sufficient time has passed
+   * A no-op if kerberos security is not enabled
+   * @throws MetaException
+   */
+  public static void reloginExpiringKeytabUser() throws MetaException {
+    if(!UserGroupInformation.isSecurityEnabled()){
+      return;
+    }
+    try {
+      UserGroupInformation ugi = UserGroupInformation.getLoginUser();
+      //checkTGT calls ugi.relogin only after checking if it is close to tgt expiry
+      //hadoop relogin is actually done only every x minutes (x=10 in hadoop 1.x)
+      if(ugi.isFromKeytab()){
+        ugi.checkTGTAndReloginFromKeytab();
+      }
+    } catch (IOException e) {
+      String msg = "Error doing relogin using keytab " + e.getMessage();
+      LOG.error(msg, e);
+      throw new MetaException(msg);
+    }
   }
 }

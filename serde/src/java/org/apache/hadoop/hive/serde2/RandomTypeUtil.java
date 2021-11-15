@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hive.common.util.DateParser;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -121,8 +122,7 @@ public class RandomTypeUtil {
         Integer.valueOf(1800 + r.nextInt(500)),  // year
         Integer.valueOf(1 + r.nextInt(12)),      // month
         Integer.valueOf(1 + r.nextInt(28)));     // day
-    Date dateVal = Date.valueOf(dateStr);
-    return dateVal;
+    return DateParser.parseDate(dateStr);
   }
 
   /**

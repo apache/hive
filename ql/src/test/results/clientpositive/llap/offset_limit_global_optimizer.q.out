@@ -1,0 +1,3444 @@
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 10
+OFFSET 400
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 410
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Offset of rows: 400
+                  Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+189	189	2008-04-08	11
+189	189	2008-04-08	12
+189	189	2008-04-09	11
+189	189	2008-04-09	12
+19	19	2008-04-08	11
+19	19	2008-04-08	12
+19	19	2008-04-09	11
+19	19	2008-04-09	12
+190	190	2008-04-08	11
+190	190	2008-04-08	12
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 10
+OFFSET 490
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 500
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Offset of rows: 490
+                  Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+201	201	2008-04-09	11
+201	201	2008-04-09	12
+202	202	2008-04-08	11
+202	202	2008-04-08	12
+202	202	2008-04-09	11
+202	202	2008-04-09	12
+203	203	2008-04-08	11
+203	203	2008-04-08	11
+203	203	2008-04-08	12
+203	203	2008-04-08	12
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 20
+OFFSET 490
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 510
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 20
+                  Offset of rows: 490
+                  Statistics: Num rows: 20 Data size: 10820 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 20 Data size: 10820 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+201	201	2008-04-09	11
+201	201	2008-04-09	12
+202	202	2008-04-08	11
+202	202	2008-04-08	12
+202	202	2008-04-09	11
+202	202	2008-04-09	12
+203	203	2008-04-08	11
+203	203	2008-04-08	11
+203	203	2008-04-08	12
+203	203	2008-04-08	12
+203	203	2008-04-09	11
+203	203	2008-04-09	11
+203	203	2008-04-09	12
+203	203	2008-04-09	12
+205	205	2008-04-08	11
+205	205	2008-04-08	11
+205	205	2008-04-08	12
+205	205	2008-04-08	12
+205	205	2008-04-09	11
+205	205	2008-04-09	11
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+FROM `default`.`srcpart`
+ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+LIMIT 600
+OFFSET 490
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 1090
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 600
+                  Offset of rows: 490
+                  Statistics: Num rows: 600 Data size: 324600 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 600 Data size: 324600 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 600
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+201	201	2008-04-09	11
+201	201	2008-04-09	12
+202	202	2008-04-08	11
+202	202	2008-04-08	12
+202	202	2008-04-09	11
+202	202	2008-04-09	12
+203	203	2008-04-08	11
+203	203	2008-04-08	11
+203	203	2008-04-08	12
+203	203	2008-04-08	12
+203	203	2008-04-09	11
+203	203	2008-04-09	11
+203	203	2008-04-09	12
+203	203	2008-04-09	12
+205	205	2008-04-08	11
+205	205	2008-04-08	11
+205	205	2008-04-08	12
+205	205	2008-04-08	12
+205	205	2008-04-09	11
+205	205	2008-04-09	11
+205	205	2008-04-09	12
+205	205	2008-04-09	12
+207	207	2008-04-08	11
+207	207	2008-04-08	11
+207	207	2008-04-08	12
+207	207	2008-04-08	12
+207	207	2008-04-09	11
+207	207	2008-04-09	11
+207	207	2008-04-09	12
+207	207	2008-04-09	12
+208	208	2008-04-08	11
+208	208	2008-04-08	11
+208	208	2008-04-08	11
+208	208	2008-04-08	12
+208	208	2008-04-08	12
+208	208	2008-04-08	12
+208	208	2008-04-09	11
+208	208	2008-04-09	11
+208	208	2008-04-09	11
+208	208	2008-04-09	12
+208	208	2008-04-09	12
+208	208	2008-04-09	12
+209	209	2008-04-08	11
+209	209	2008-04-08	11
+209	209	2008-04-08	12
+209	209	2008-04-08	12
+209	209	2008-04-09	11
+209	209	2008-04-09	11
+209	209	2008-04-09	12
+209	209	2008-04-09	12
+213	213	2008-04-08	11
+213	213	2008-04-08	11
+213	213	2008-04-08	12
+213	213	2008-04-08	12
+213	213	2008-04-09	11
+213	213	2008-04-09	11
+213	213	2008-04-09	12
+213	213	2008-04-09	12
+214	214	2008-04-08	11
+214	214	2008-04-08	12
+214	214	2008-04-09	11
+214	214	2008-04-09	12
+216	216	2008-04-08	11
+216	216	2008-04-08	11
+216	216	2008-04-08	12
+216	216	2008-04-08	12
+216	216	2008-04-09	11
+216	216	2008-04-09	11
+216	216	2008-04-09	12
+216	216	2008-04-09	12
+217	217	2008-04-08	11
+217	217	2008-04-08	11
+217	217	2008-04-08	12
+217	217	2008-04-08	12
+217	217	2008-04-09	11
+217	217	2008-04-09	11
+217	217	2008-04-09	12
+217	217	2008-04-09	12
+218	218	2008-04-08	11
+218	218	2008-04-08	12
+218	218	2008-04-09	11
+218	218	2008-04-09	12
+219	219	2008-04-08	11
+219	219	2008-04-08	11
+219	219	2008-04-08	12
+219	219	2008-04-08	12
+219	219	2008-04-09	11
+219	219	2008-04-09	11
+219	219	2008-04-09	12
+219	219	2008-04-09	12
+221	221	2008-04-08	11
+221	221	2008-04-08	11
+221	221	2008-04-08	12
+221	221	2008-04-08	12
+221	221	2008-04-09	11
+221	221	2008-04-09	11
+221	221	2008-04-09	12
+221	221	2008-04-09	12
+222	222	2008-04-08	11
+222	222	2008-04-08	12
+222	222	2008-04-09	11
+222	222	2008-04-09	12
+223	223	2008-04-08	11
+223	223	2008-04-08	11
+223	223	2008-04-08	12
+223	223	2008-04-08	12
+223	223	2008-04-09	11
+223	223	2008-04-09	11
+223	223	2008-04-09	12
+223	223	2008-04-09	12
+224	224	2008-04-08	11
+224	224	2008-04-08	11
+224	224	2008-04-08	12
+224	224	2008-04-08	12
+224	224	2008-04-09	11
+224	224	2008-04-09	11
+224	224	2008-04-09	12
+224	224	2008-04-09	12
+226	226	2008-04-08	11
+226	226	2008-04-08	12
+226	226	2008-04-09	11
+226	226	2008-04-09	12
+228	228	2008-04-08	11
+228	228	2008-04-08	12
+228	228	2008-04-09	11
+228	228	2008-04-09	12
+229	229	2008-04-08	11
+229	229	2008-04-08	11
+229	229	2008-04-08	12
+229	229	2008-04-08	12
+229	229	2008-04-09	11
+229	229	2008-04-09	11
+229	229	2008-04-09	12
+229	229	2008-04-09	12
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+233	233	2008-04-08	11
+233	233	2008-04-08	11
+233	233	2008-04-08	12
+233	233	2008-04-08	12
+233	233	2008-04-09	11
+233	233	2008-04-09	11
+233	233	2008-04-09	12
+233	233	2008-04-09	12
+235	235	2008-04-08	11
+235	235	2008-04-08	12
+235	235	2008-04-09	11
+235	235	2008-04-09	12
+237	237	2008-04-08	11
+237	237	2008-04-08	11
+237	237	2008-04-08	12
+237	237	2008-04-08	12
+237	237	2008-04-09	11
+237	237	2008-04-09	11
+237	237	2008-04-09	12
+237	237	2008-04-09	12
+238	238	2008-04-08	11
+238	238	2008-04-08	11
+238	238	2008-04-08	12
+238	238	2008-04-08	12
+238	238	2008-04-09	11
+238	238	2008-04-09	11
+238	238	2008-04-09	12
+238	238	2008-04-09	12
+239	239	2008-04-08	11
+239	239	2008-04-08	11
+239	239	2008-04-08	12
+239	239	2008-04-08	12
+239	239	2008-04-09	11
+239	239	2008-04-09	11
+239	239	2008-04-09	12
+239	239	2008-04-09	12
+24	24	2008-04-08	11
+24	24	2008-04-08	11
+24	24	2008-04-08	12
+24	24	2008-04-08	12
+24	24	2008-04-09	11
+24	24	2008-04-09	11
+24	24	2008-04-09	12
+24	24	2008-04-09	12
+241	241	2008-04-08	11
+241	241	2008-04-08	12
+241	241	2008-04-09	11
+241	241	2008-04-09	12
+242	242	2008-04-08	11
+242	242	2008-04-08	11
+242	242	2008-04-08	12
+242	242	2008-04-08	12
+242	242	2008-04-09	11
+242	242	2008-04-09	11
+242	242	2008-04-09	12
+242	242	2008-04-09	12
+244	244	2008-04-08	11
+244	244	2008-04-08	12
+244	244	2008-04-09	11
+244	244	2008-04-09	12
+247	247	2008-04-08	11
+247	247	2008-04-08	12
+247	247	2008-04-09	11
+247	247	2008-04-09	12
+248	248	2008-04-08	11
+248	248	2008-04-08	12
+248	248	2008-04-09	11
+248	248	2008-04-09	12
+249	249	2008-04-08	11
+249	249	2008-04-08	12
+249	249	2008-04-09	11
+249	249	2008-04-09	12
+252	252	2008-04-08	11
+252	252	2008-04-08	12
+252	252	2008-04-09	11
+252	252	2008-04-09	12
+255	255	2008-04-08	11
+255	255	2008-04-08	11
+255	255	2008-04-08	12
+255	255	2008-04-08	12
+255	255	2008-04-09	11
+255	255	2008-04-09	11
+255	255	2008-04-09	12
+255	255	2008-04-09	12
+256	256	2008-04-08	11
+256	256	2008-04-08	11
+256	256	2008-04-08	12
+256	256	2008-04-08	12
+256	256	2008-04-09	11
+256	256	2008-04-09	11
+256	256	2008-04-09	12
+256	256	2008-04-09	12
+257	257	2008-04-08	11
+257	257	2008-04-08	12
+257	257	2008-04-09	11
+257	257	2008-04-09	12
+258	258	2008-04-08	11
+258	258	2008-04-08	12
+258	258	2008-04-09	11
+258	258	2008-04-09	12
+26	26	2008-04-08	11
+26	26	2008-04-08	11
+26	26	2008-04-08	12
+26	26	2008-04-08	12
+26	26	2008-04-09	11
+26	26	2008-04-09	11
+26	26	2008-04-09	12
+26	26	2008-04-09	12
+260	260	2008-04-08	11
+260	260	2008-04-08	12
+260	260	2008-04-09	11
+260	260	2008-04-09	12
+262	262	2008-04-08	11
+262	262	2008-04-08	12
+262	262	2008-04-09	11
+262	262	2008-04-09	12
+263	263	2008-04-08	11
+263	263	2008-04-08	12
+263	263	2008-04-09	11
+263	263	2008-04-09	12
+265	265	2008-04-08	11
+265	265	2008-04-08	11
+265	265	2008-04-08	12
+265	265	2008-04-08	12
+265	265	2008-04-09	11
+265	265	2008-04-09	11
+265	265	2008-04-09	12
+265	265	2008-04-09	12
+266	266	2008-04-08	11
+266	266	2008-04-08	12
+266	266	2008-04-09	11
+266	266	2008-04-09	12
+27	27	2008-04-08	11
+27	27	2008-04-08	12
+27	27	2008-04-09	11
+27	27	2008-04-09	12
+272	272	2008-04-08	11
+272	272	2008-04-08	11
+272	272	2008-04-08	12
+272	272	2008-04-08	12
+272	272	2008-04-09	11
+272	272	2008-04-09	11
+272	272	2008-04-09	12
+272	272	2008-04-09	12
+273	273	2008-04-08	11
+273	273	2008-04-08	11
+273	273	2008-04-08	11
+273	273	2008-04-08	12
+273	273	2008-04-08	12
+273	273	2008-04-08	12
+273	273	2008-04-09	11
+273	273	2008-04-09	11
+273	273	2008-04-09	11
+273	273	2008-04-09	12
+273	273	2008-04-09	12
+273	273	2008-04-09	12
+274	274	2008-04-08	11
+274	274	2008-04-08	12
+274	274	2008-04-09	11
+274	274	2008-04-09	12
+275	275	2008-04-08	11
+275	275	2008-04-08	12
+275	275	2008-04-09	11
+275	275	2008-04-09	12
+277	277	2008-04-08	11
+277	277	2008-04-08	11
+277	277	2008-04-08	11
+277	277	2008-04-08	11
+277	277	2008-04-08	12
+277	277	2008-04-08	12
+277	277	2008-04-08	12
+277	277	2008-04-08	12
+277	277	2008-04-09	11
+277	277	2008-04-09	11
+277	277	2008-04-09	11
+277	277	2008-04-09	11
+277	277	2008-04-09	12
+277	277	2008-04-09	12
+277	277	2008-04-09	12
+277	277	2008-04-09	12
+278	278	2008-04-08	11
+278	278	2008-04-08	11
+278	278	2008-04-08	12
+278	278	2008-04-08	12
+278	278	2008-04-09	11
+278	278	2008-04-09	11
+278	278	2008-04-09	12
+278	278	2008-04-09	12
+28	28	2008-04-08	11
+28	28	2008-04-08	12
+28	28	2008-04-09	11
+28	28	2008-04-09	12
+280	280	2008-04-08	11
+280	280	2008-04-08	11
+280	280	2008-04-08	12
+280	280	2008-04-08	12
+280	280	2008-04-09	11
+280	280	2008-04-09	11
+280	280	2008-04-09	12
+280	280	2008-04-09	12
+281	281	2008-04-08	11
+281	281	2008-04-08	11
+281	281	2008-04-08	12
+281	281	2008-04-08	12
+281	281	2008-04-09	11
+281	281	2008-04-09	11
+281	281	2008-04-09	12
+281	281	2008-04-09	12
+282	282	2008-04-08	11
+282	282	2008-04-08	11
+282	282	2008-04-08	12
+282	282	2008-04-08	12
+282	282	2008-04-09	11
+282	282	2008-04-09	11
+282	282	2008-04-09	12
+282	282	2008-04-09	12
+283	283	2008-04-08	11
+283	283	2008-04-08	12
+283	283	2008-04-09	11
+283	283	2008-04-09	12
+284	284	2008-04-08	11
+284	284	2008-04-08	12
+284	284	2008-04-09	11
+284	284	2008-04-09	12
+285	285	2008-04-08	11
+285	285	2008-04-08	12
+285	285	2008-04-09	11
+285	285	2008-04-09	12
+286	286	2008-04-08	11
+286	286	2008-04-08	12
+286	286	2008-04-09	11
+286	286	2008-04-09	12
+287	287	2008-04-08	11
+287	287	2008-04-08	12
+287	287	2008-04-09	11
+287	287	2008-04-09	12
+288	288	2008-04-08	11
+288	288	2008-04-08	11
+288	288	2008-04-08	12
+288	288	2008-04-08	12
+288	288	2008-04-09	11
+288	288	2008-04-09	11
+288	288	2008-04-09	12
+288	288	2008-04-09	12
+289	289	2008-04-08	11
+289	289	2008-04-08	12
+289	289	2008-04-09	11
+289	289	2008-04-09	12
+291	291	2008-04-08	11
+291	291	2008-04-08	12
+291	291	2008-04-09	11
+291	291	2008-04-09	12
+292	292	2008-04-08	11
+292	292	2008-04-08	12
+292	292	2008-04-09	11
+292	292	2008-04-09	12
+296	296	2008-04-08	11
+296	296	2008-04-08	12
+296	296	2008-04-09	11
+296	296	2008-04-09	12
+298	298	2008-04-08	11
+298	298	2008-04-08	11
+298	298	2008-04-08	11
+298	298	2008-04-08	12
+298	298	2008-04-08	12
+298	298	2008-04-08	12
+298	298	2008-04-09	11
+298	298	2008-04-09	11
+298	298	2008-04-09	11
+298	298	2008-04-09	12
+298	298	2008-04-09	12
+298	298	2008-04-09	12
+30	30	2008-04-08	11
+30	30	2008-04-08	12
+30	30	2008-04-09	11
+30	30	2008-04-09	12
+302	302	2008-04-08	11
+302	302	2008-04-08	12
+302	302	2008-04-09	11
+302	302	2008-04-09	12
+305	305	2008-04-08	11
+305	305	2008-04-08	12
+305	305	2008-04-09	11
+305	305	2008-04-09	12
+306	306	2008-04-08	11
+306	306	2008-04-08	12
+306	306	2008-04-09	11
+306	306	2008-04-09	12
+307	307	2008-04-08	11
+307	307	2008-04-08	11
+307	307	2008-04-08	12
+307	307	2008-04-08	12
+307	307	2008-04-09	11
+307	307	2008-04-09	11
+307	307	2008-04-09	12
+307	307	2008-04-09	12
+308	308	2008-04-08	11
+308	308	2008-04-08	12
+308	308	2008-04-09	11
+308	308	2008-04-09	12
+309	309	2008-04-08	11
+309	309	2008-04-08	11
+309	309	2008-04-08	12
+309	309	2008-04-08	12
+309	309	2008-04-09	11
+309	309	2008-04-09	11
+309	309	2008-04-09	12
+309	309	2008-04-09	12
+310	310	2008-04-08	11
+310	310	2008-04-08	12
+310	310	2008-04-09	11
+310	310	2008-04-09	12
+311	311	2008-04-08	11
+311	311	2008-04-08	11
+311	311	2008-04-08	11
+311	311	2008-04-08	12
+311	311	2008-04-08	12
+311	311	2008-04-08	12
+311	311	2008-04-09	11
+311	311	2008-04-09	11
+311	311	2008-04-09	11
+311	311	2008-04-09	12
+311	311	2008-04-09	12
+311	311	2008-04-09	12
+315	315	2008-04-08	11
+315	315	2008-04-08	12
+315	315	2008-04-09	11
+315	315	2008-04-09	12
+316	316	2008-04-08	11
+316	316	2008-04-08	11
+316	316	2008-04-08	11
+316	316	2008-04-08	12
+316	316	2008-04-08	12
+316	316	2008-04-08	12
+316	316	2008-04-09	11
+316	316	2008-04-09	11
+316	316	2008-04-09	11
+316	316	2008-04-09	12
+316	316	2008-04-09	12
+316	316	2008-04-09	12
+317	317	2008-04-08	11
+317	317	2008-04-08	11
+317	317	2008-04-08	12
+317	317	2008-04-08	12
+317	317	2008-04-09	11
+317	317	2008-04-09	11
+317	317	2008-04-09	12
+317	317	2008-04-09	12
+318	318	2008-04-08	11
+318	318	2008-04-08	11
+318	318	2008-04-08	11
+318	318	2008-04-08	12
+318	318	2008-04-08	12
+318	318	2008-04-08	12
+318	318	2008-04-09	11
+318	318	2008-04-09	11
+318	318	2008-04-09	11
+318	318	2008-04-09	12
+318	318	2008-04-09	12
+318	318	2008-04-09	12
+321	321	2008-04-08	11
+321	321	2008-04-08	11
+321	321	2008-04-08	12
+321	321	2008-04-08	12
+321	321	2008-04-09	11
+321	321	2008-04-09	11
+321	321	2008-04-09	12
+321	321	2008-04-09	12
+322	322	2008-04-08	11
+322	322	2008-04-08	11
+322	322	2008-04-08	12
+322	322	2008-04-08	12
+322	322	2008-04-09	11
+322	322	2008-04-09	11
+322	322	2008-04-09	12
+322	322	2008-04-09	12
+323	323	2008-04-08	11
+323	323	2008-04-08	12
+323	323	2008-04-09	11
+323	323	2008-04-09	12
+325	325	2008-04-08	11
+325	325	2008-04-08	11
+325	325	2008-04-08	12
+325	325	2008-04-08	12
+325	325	2008-04-09	11
+325	325	2008-04-09	11
+325	325	2008-04-09	12
+325	325	2008-04-09	12
+327	327	2008-04-08	11
+327	327	2008-04-08	11
+327	327	2008-04-08	11
+327	327	2008-04-08	12
+327	327	2008-04-08	12
+327	327	2008-04-08	12
+327	327	2008-04-09	11
+327	327	2008-04-09	11
+327	327	2008-04-09	11
+327	327	2008-04-09	12
+327	327	2008-04-09	12
+327	327	2008-04-09	12
+33	33	2008-04-08	11
+33	33	2008-04-08	12
+33	33	2008-04-09	11
+33	33	2008-04-09	12
+331	331	2008-04-08	11
+331	331	2008-04-08	11
+331	331	2008-04-08	12
+331	331	2008-04-08	12
+331	331	2008-04-09	11
+331	331	2008-04-09	11
+331	331	2008-04-09	12
+331	331	2008-04-09	12
+332	332	2008-04-08	11
+332	332	2008-04-08	12
+332	332	2008-04-09	11
+332	332	2008-04-09	12
+333	333	2008-04-08	11
+333	333	2008-04-08	11
+333	333	2008-04-08	12
+333	333	2008-04-08	12
+333	333	2008-04-09	11
+333	333	2008-04-09	11
+333	333	2008-04-09	12
+333	333	2008-04-09	12
+335	335	2008-04-08	11
+335	335	2008-04-08	12
+335	335	2008-04-09	11
+335	335	2008-04-09	12
+336	336	2008-04-08	11
+336	336	2008-04-08	12
+336	336	2008-04-09	11
+336	336	2008-04-09	12
+338	338	2008-04-08	11
+338	338	2008-04-08	12
+338	338	2008-04-09	11
+338	338	2008-04-09	12
+339	339	2008-04-08	11
+339	339	2008-04-08	12
+339	339	2008-04-09	11
+339	339	2008-04-09	12
+34	34	2008-04-08	11
+34	34	2008-04-08	12
+34	34	2008-04-09	11
+34	34	2008-04-09	12
+341	341	2008-04-08	11
+341	341	2008-04-08	12
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 410
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Offset of rows: 400
+                  Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+189	189	2008-04-08	11
+189	189	2008-04-08	12
+189	189	2008-04-09	11
+189	189	2008-04-09	12
+19	19	2008-04-08	11
+19	19	2008-04-08	12
+19	19	2008-04-09	11
+19	19	2008-04-09	12
+190	190	2008-04-08	11
+190	190	2008-04-08	12
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 500
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Offset of rows: 490
+                  Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 10 Data size: 5410 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+201	201	2008-04-09	11
+201	201	2008-04-09	12
+202	202	2008-04-08	11
+202	202	2008-04-08	12
+202	202	2008-04-09	11
+202	202	2008-04-09	12
+203	203	2008-04-08	11
+203	203	2008-04-08	11
+203	203	2008-04-08	12
+203	203	2008-04-08	12
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 510
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 20
+                  Offset of rows: 490
+                  Statistics: Num rows: 20 Data size: 10820 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 20 Data size: 10820 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+201	201	2008-04-09	11
+201	201	2008-04-09	12
+202	202	2008-04-08	11
+202	202	2008-04-08	12
+202	202	2008-04-09	11
+202	202	2008-04-09	12
+203	203	2008-04-08	11
+203	203	2008-04-08	11
+203	203	2008-04-08	12
+203	203	2008-04-08	12
+203	203	2008-04-09	11
+203	203	2008-04-09	11
+203	203	2008-04-09	12
+203	203	2008-04-09	12
+205	205	2008-04-08	11
+205	205	2008-04-08	11
+205	205	2008-04-08	12
+205	205	2008-04-08	12
+205	205	2008-04-09	11
+205	205	2008-04-09	11
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), substr(value, 5) (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      null sort order: zzzz
+                      numBuckets: -1
+                      sort order: ++++
+                      Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      TopN: 1090
+                      TopN Hash Memory Usage: 0.1
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2000 Data size: 1082000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 600
+                  Offset of rows: 490
+                  Statistics: Num rows: 600 Data size: 324600 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 600 Data size: 324600 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 600
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+201	201	2008-04-09	11
+201	201	2008-04-09	12
+202	202	2008-04-08	11
+202	202	2008-04-08	12
+202	202	2008-04-09	11
+202	202	2008-04-09	12
+203	203	2008-04-08	11
+203	203	2008-04-08	11
+203	203	2008-04-08	12
+203	203	2008-04-08	12
+203	203	2008-04-09	11
+203	203	2008-04-09	11
+203	203	2008-04-09	12
+203	203	2008-04-09	12
+205	205	2008-04-08	11
+205	205	2008-04-08	11
+205	205	2008-04-08	12
+205	205	2008-04-08	12
+205	205	2008-04-09	11
+205	205	2008-04-09	11
+205	205	2008-04-09	12
+205	205	2008-04-09	12
+207	207	2008-04-08	11
+207	207	2008-04-08	11
+207	207	2008-04-08	12
+207	207	2008-04-08	12
+207	207	2008-04-09	11
+207	207	2008-04-09	11
+207	207	2008-04-09	12
+207	207	2008-04-09	12
+208	208	2008-04-08	11
+208	208	2008-04-08	11
+208	208	2008-04-08	11
+208	208	2008-04-08	12
+208	208	2008-04-08	12
+208	208	2008-04-08	12
+208	208	2008-04-09	11
+208	208	2008-04-09	11
+208	208	2008-04-09	11
+208	208	2008-04-09	12
+208	208	2008-04-09	12
+208	208	2008-04-09	12
+209	209	2008-04-08	11
+209	209	2008-04-08	11
+209	209	2008-04-08	12
+209	209	2008-04-08	12
+209	209	2008-04-09	11
+209	209	2008-04-09	11
+209	209	2008-04-09	12
+209	209	2008-04-09	12
+213	213	2008-04-08	11
+213	213	2008-04-08	11
+213	213	2008-04-08	12
+213	213	2008-04-08	12
+213	213	2008-04-09	11
+213	213	2008-04-09	11
+213	213	2008-04-09	12
+213	213	2008-04-09	12
+214	214	2008-04-08	11
+214	214	2008-04-08	12
+214	214	2008-04-09	11
+214	214	2008-04-09	12
+216	216	2008-04-08	11
+216	216	2008-04-08	11
+216	216	2008-04-08	12
+216	216	2008-04-08	12
+216	216	2008-04-09	11
+216	216	2008-04-09	11
+216	216	2008-04-09	12
+216	216	2008-04-09	12
+217	217	2008-04-08	11
+217	217	2008-04-08	11
+217	217	2008-04-08	12
+217	217	2008-04-08	12
+217	217	2008-04-09	11
+217	217	2008-04-09	11
+217	217	2008-04-09	12
+217	217	2008-04-09	12
+218	218	2008-04-08	11
+218	218	2008-04-08	12
+218	218	2008-04-09	11
+218	218	2008-04-09	12
+219	219	2008-04-08	11
+219	219	2008-04-08	11
+219	219	2008-04-08	12
+219	219	2008-04-08	12
+219	219	2008-04-09	11
+219	219	2008-04-09	11
+219	219	2008-04-09	12
+219	219	2008-04-09	12
+221	221	2008-04-08	11
+221	221	2008-04-08	11
+221	221	2008-04-08	12
+221	221	2008-04-08	12
+221	221	2008-04-09	11
+221	221	2008-04-09	11
+221	221	2008-04-09	12
+221	221	2008-04-09	12
+222	222	2008-04-08	11
+222	222	2008-04-08	12
+222	222	2008-04-09	11
+222	222	2008-04-09	12
+223	223	2008-04-08	11
+223	223	2008-04-08	11
+223	223	2008-04-08	12
+223	223	2008-04-08	12
+223	223	2008-04-09	11
+223	223	2008-04-09	11
+223	223	2008-04-09	12
+223	223	2008-04-09	12
+224	224	2008-04-08	11
+224	224	2008-04-08	11
+224	224	2008-04-08	12
+224	224	2008-04-08	12
+224	224	2008-04-09	11
+224	224	2008-04-09	11
+224	224	2008-04-09	12
+224	224	2008-04-09	12
+226	226	2008-04-08	11
+226	226	2008-04-08	12
+226	226	2008-04-09	11
+226	226	2008-04-09	12
+228	228	2008-04-08	11
+228	228	2008-04-08	12
+228	228	2008-04-09	11
+228	228	2008-04-09	12
+229	229	2008-04-08	11
+229	229	2008-04-08	11
+229	229	2008-04-08	12
+229	229	2008-04-08	12
+229	229	2008-04-09	11
+229	229	2008-04-09	11
+229	229	2008-04-09	12
+229	229	2008-04-09	12
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	11
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-08	12
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	11
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+230	230	2008-04-09	12
+233	233	2008-04-08	11
+233	233	2008-04-08	11
+233	233	2008-04-08	12
+233	233	2008-04-08	12
+233	233	2008-04-09	11
+233	233	2008-04-09	11
+233	233	2008-04-09	12
+233	233	2008-04-09	12
+235	235	2008-04-08	11
+235	235	2008-04-08	12
+235	235	2008-04-09	11
+235	235	2008-04-09	12
+237	237	2008-04-08	11
+237	237	2008-04-08	11
+237	237	2008-04-08	12
+237	237	2008-04-08	12
+237	237	2008-04-09	11
+237	237	2008-04-09	11
+237	237	2008-04-09	12
+237	237	2008-04-09	12
+238	238	2008-04-08	11
+238	238	2008-04-08	11
+238	238	2008-04-08	12
+238	238	2008-04-08	12
+238	238	2008-04-09	11
+238	238	2008-04-09	11
+238	238	2008-04-09	12
+238	238	2008-04-09	12
+239	239	2008-04-08	11
+239	239	2008-04-08	11
+239	239	2008-04-08	12
+239	239	2008-04-08	12
+239	239	2008-04-09	11
+239	239	2008-04-09	11
+239	239	2008-04-09	12
+239	239	2008-04-09	12
+24	24	2008-04-08	11
+24	24	2008-04-08	11
+24	24	2008-04-08	12
+24	24	2008-04-08	12
+24	24	2008-04-09	11
+24	24	2008-04-09	11
+24	24	2008-04-09	12
+24	24	2008-04-09	12
+241	241	2008-04-08	11
+241	241	2008-04-08	12
+241	241	2008-04-09	11
+241	241	2008-04-09	12
+242	242	2008-04-08	11
+242	242	2008-04-08	11
+242	242	2008-04-08	12
+242	242	2008-04-08	12
+242	242	2008-04-09	11
+242	242	2008-04-09	11
+242	242	2008-04-09	12
+242	242	2008-04-09	12
+244	244	2008-04-08	11
+244	244	2008-04-08	12
+244	244	2008-04-09	11
+244	244	2008-04-09	12
+247	247	2008-04-08	11
+247	247	2008-04-08	12
+247	247	2008-04-09	11
+247	247	2008-04-09	12
+248	248	2008-04-08	11
+248	248	2008-04-08	12
+248	248	2008-04-09	11
+248	248	2008-04-09	12
+249	249	2008-04-08	11
+249	249	2008-04-08	12
+249	249	2008-04-09	11
+249	249	2008-04-09	12
+252	252	2008-04-08	11
+252	252	2008-04-08	12
+252	252	2008-04-09	11
+252	252	2008-04-09	12
+255	255	2008-04-08	11
+255	255	2008-04-08	11
+255	255	2008-04-08	12
+255	255	2008-04-08	12
+255	255	2008-04-09	11
+255	255	2008-04-09	11
+255	255	2008-04-09	12
+255	255	2008-04-09	12
+256	256	2008-04-08	11
+256	256	2008-04-08	11
+256	256	2008-04-08	12
+256	256	2008-04-08	12
+256	256	2008-04-09	11
+256	256	2008-04-09	11
+256	256	2008-04-09	12
+256	256	2008-04-09	12
+257	257	2008-04-08	11
+257	257	2008-04-08	12
+257	257	2008-04-09	11
+257	257	2008-04-09	12
+258	258	2008-04-08	11
+258	258	2008-04-08	12
+258	258	2008-04-09	11
+258	258	2008-04-09	12
+26	26	2008-04-08	11
+26	26	2008-04-08	11
+26	26	2008-04-08	12
+26	26	2008-04-08	12
+26	26	2008-04-09	11
+26	26	2008-04-09	11
+26	26	2008-04-09	12
+26	26	2008-04-09	12
+260	260	2008-04-08	11
+260	260	2008-04-08	12
+260	260	2008-04-09	11
+260	260	2008-04-09	12
+262	262	2008-04-08	11
+262	262	2008-04-08	12
+262	262	2008-04-09	11
+262	262	2008-04-09	12
+263	263	2008-04-08	11
+263	263	2008-04-08	12
+263	263	2008-04-09	11
+263	263	2008-04-09	12
+265	265	2008-04-08	11
+265	265	2008-04-08	11
+265	265	2008-04-08	12
+265	265	2008-04-08	12
+265	265	2008-04-09	11
+265	265	2008-04-09	11
+265	265	2008-04-09	12
+265	265	2008-04-09	12
+266	266	2008-04-08	11
+266	266	2008-04-08	12
+266	266	2008-04-09	11
+266	266	2008-04-09	12
+27	27	2008-04-08	11
+27	27	2008-04-08	12
+27	27	2008-04-09	11
+27	27	2008-04-09	12
+272	272	2008-04-08	11
+272	272	2008-04-08	11
+272	272	2008-04-08	12
+272	272	2008-04-08	12
+272	272	2008-04-09	11
+272	272	2008-04-09	11
+272	272	2008-04-09	12
+272	272	2008-04-09	12
+273	273	2008-04-08	11
+273	273	2008-04-08	11
+273	273	2008-04-08	11
+273	273	2008-04-08	12
+273	273	2008-04-08	12
+273	273	2008-04-08	12
+273	273	2008-04-09	11
+273	273	2008-04-09	11
+273	273	2008-04-09	11
+273	273	2008-04-09	12
+273	273	2008-04-09	12
+273	273	2008-04-09	12
+274	274	2008-04-08	11
+274	274	2008-04-08	12
+274	274	2008-04-09	11
+274	274	2008-04-09	12
+275	275	2008-04-08	11
+275	275	2008-04-08	12
+275	275	2008-04-09	11
+275	275	2008-04-09	12
+277	277	2008-04-08	11
+277	277	2008-04-08	11
+277	277	2008-04-08	11
+277	277	2008-04-08	11
+277	277	2008-04-08	12
+277	277	2008-04-08	12
+277	277	2008-04-08	12
+277	277	2008-04-08	12
+277	277	2008-04-09	11
+277	277	2008-04-09	11
+277	277	2008-04-09	11
+277	277	2008-04-09	11
+277	277	2008-04-09	12
+277	277	2008-04-09	12
+277	277	2008-04-09	12
+277	277	2008-04-09	12
+278	278	2008-04-08	11
+278	278	2008-04-08	11
+278	278	2008-04-08	12
+278	278	2008-04-08	12
+278	278	2008-04-09	11
+278	278	2008-04-09	11
+278	278	2008-04-09	12
+278	278	2008-04-09	12
+28	28	2008-04-08	11
+28	28	2008-04-08	12
+28	28	2008-04-09	11
+28	28	2008-04-09	12
+280	280	2008-04-08	11
+280	280	2008-04-08	11
+280	280	2008-04-08	12
+280	280	2008-04-08	12
+280	280	2008-04-09	11
+280	280	2008-04-09	11
+280	280	2008-04-09	12
+280	280	2008-04-09	12
+281	281	2008-04-08	11
+281	281	2008-04-08	11
+281	281	2008-04-08	12
+281	281	2008-04-08	12
+281	281	2008-04-09	11
+281	281	2008-04-09	11
+281	281	2008-04-09	12
+281	281	2008-04-09	12
+282	282	2008-04-08	11
+282	282	2008-04-08	11
+282	282	2008-04-08	12
+282	282	2008-04-08	12
+282	282	2008-04-09	11
+282	282	2008-04-09	11
+282	282	2008-04-09	12
+282	282	2008-04-09	12
+283	283	2008-04-08	11
+283	283	2008-04-08	12
+283	283	2008-04-09	11
+283	283	2008-04-09	12
+284	284	2008-04-08	11
+284	284	2008-04-08	12
+284	284	2008-04-09	11
+284	284	2008-04-09	12
+285	285	2008-04-08	11
+285	285	2008-04-08	12
+285	285	2008-04-09	11
+285	285	2008-04-09	12
+286	286	2008-04-08	11
+286	286	2008-04-08	12
+286	286	2008-04-09	11
+286	286	2008-04-09	12
+287	287	2008-04-08	11
+287	287	2008-04-08	12
+287	287	2008-04-09	11
+287	287	2008-04-09	12
+288	288	2008-04-08	11
+288	288	2008-04-08	11
+288	288	2008-04-08	12
+288	288	2008-04-08	12
+288	288	2008-04-09	11
+288	288	2008-04-09	11
+288	288	2008-04-09	12
+288	288	2008-04-09	12
+289	289	2008-04-08	11
+289	289	2008-04-08	12
+289	289	2008-04-09	11
+289	289	2008-04-09	12
+291	291	2008-04-08	11
+291	291	2008-04-08	12
+291	291	2008-04-09	11
+291	291	2008-04-09	12
+292	292	2008-04-08	11
+292	292	2008-04-08	12
+292	292	2008-04-09	11
+292	292	2008-04-09	12
+296	296	2008-04-08	11
+296	296	2008-04-08	12
+296	296	2008-04-09	11
+296	296	2008-04-09	12
+298	298	2008-04-08	11
+298	298	2008-04-08	11
+298	298	2008-04-08	11
+298	298	2008-04-08	12
+298	298	2008-04-08	12
+298	298	2008-04-08	12
+298	298	2008-04-09	11
+298	298	2008-04-09	11
+298	298	2008-04-09	11
+298	298	2008-04-09	12
+298	298	2008-04-09	12
+298	298	2008-04-09	12
+30	30	2008-04-08	11
+30	30	2008-04-08	12
+30	30	2008-04-09	11
+30	30	2008-04-09	12
+302	302	2008-04-08	11
+302	302	2008-04-08	12
+302	302	2008-04-09	11
+302	302	2008-04-09	12
+305	305	2008-04-08	11
+305	305	2008-04-08	12
+305	305	2008-04-09	11
+305	305	2008-04-09	12
+306	306	2008-04-08	11
+306	306	2008-04-08	12
+306	306	2008-04-09	11
+306	306	2008-04-09	12
+307	307	2008-04-08	11
+307	307	2008-04-08	11
+307	307	2008-04-08	12
+307	307	2008-04-08	12
+307	307	2008-04-09	11
+307	307	2008-04-09	11
+307	307	2008-04-09	12
+307	307	2008-04-09	12
+308	308	2008-04-08	11
+308	308	2008-04-08	12
+308	308	2008-04-09	11
+308	308	2008-04-09	12
+309	309	2008-04-08	11
+309	309	2008-04-08	11
+309	309	2008-04-08	12
+309	309	2008-04-08	12
+309	309	2008-04-09	11
+309	309	2008-04-09	11
+309	309	2008-04-09	12
+309	309	2008-04-09	12
+310	310	2008-04-08	11
+310	310	2008-04-08	12
+310	310	2008-04-09	11
+310	310	2008-04-09	12
+311	311	2008-04-08	11
+311	311	2008-04-08	11
+311	311	2008-04-08	11
+311	311	2008-04-08	12
+311	311	2008-04-08	12
+311	311	2008-04-08	12
+311	311	2008-04-09	11
+311	311	2008-04-09	11
+311	311	2008-04-09	11
+311	311	2008-04-09	12
+311	311	2008-04-09	12
+311	311	2008-04-09	12
+315	315	2008-04-08	11
+315	315	2008-04-08	12
+315	315	2008-04-09	11
+315	315	2008-04-09	12
+316	316	2008-04-08	11
+316	316	2008-04-08	11
+316	316	2008-04-08	11
+316	316	2008-04-08	12
+316	316	2008-04-08	12
+316	316	2008-04-08	12
+316	316	2008-04-09	11
+316	316	2008-04-09	11
+316	316	2008-04-09	11
+316	316	2008-04-09	12
+316	316	2008-04-09	12
+316	316	2008-04-09	12
+317	317	2008-04-08	11
+317	317	2008-04-08	11
+317	317	2008-04-08	12
+317	317	2008-04-08	12
+317	317	2008-04-09	11
+317	317	2008-04-09	11
+317	317	2008-04-09	12
+317	317	2008-04-09	12
+318	318	2008-04-08	11
+318	318	2008-04-08	11
+318	318	2008-04-08	11
+318	318	2008-04-08	12
+318	318	2008-04-08	12
+318	318	2008-04-08	12
+318	318	2008-04-09	11
+318	318	2008-04-09	11
+318	318	2008-04-09	11
+318	318	2008-04-09	12
+318	318	2008-04-09	12
+318	318	2008-04-09	12
+321	321	2008-04-08	11
+321	321	2008-04-08	11
+321	321	2008-04-08	12
+321	321	2008-04-08	12
+321	321	2008-04-09	11
+321	321	2008-04-09	11
+321	321	2008-04-09	12
+321	321	2008-04-09	12
+322	322	2008-04-08	11
+322	322	2008-04-08	11
+322	322	2008-04-08	12
+322	322	2008-04-08	12
+322	322	2008-04-09	11
+322	322	2008-04-09	11
+322	322	2008-04-09	12
+322	322	2008-04-09	12
+323	323	2008-04-08	11
+323	323	2008-04-08	12
+323	323	2008-04-09	11
+323	323	2008-04-09	12
+325	325	2008-04-08	11
+325	325	2008-04-08	11
+325	325	2008-04-08	12
+325	325	2008-04-08	12
+325	325	2008-04-09	11
+325	325	2008-04-09	11
+325	325	2008-04-09	12
+325	325	2008-04-09	12
+327	327	2008-04-08	11
+327	327	2008-04-08	11
+327	327	2008-04-08	11
+327	327	2008-04-08	12
+327	327	2008-04-08	12
+327	327	2008-04-08	12
+327	327	2008-04-09	11
+327	327	2008-04-09	11
+327	327	2008-04-09	11
+327	327	2008-04-09	12
+327	327	2008-04-09	12
+327	327	2008-04-09	12
+33	33	2008-04-08	11
+33	33	2008-04-08	12
+33	33	2008-04-09	11
+33	33	2008-04-09	12
+331	331	2008-04-08	11
+331	331	2008-04-08	11
+331	331	2008-04-08	12
+331	331	2008-04-08	12
+331	331	2008-04-09	11
+331	331	2008-04-09	11
+331	331	2008-04-09	12
+331	331	2008-04-09	12
+332	332	2008-04-08	11
+332	332	2008-04-08	12
+332	332	2008-04-09	11
+332	332	2008-04-09	12
+333	333	2008-04-08	11
+333	333	2008-04-08	11
+333	333	2008-04-08	12
+333	333	2008-04-08	12
+333	333	2008-04-09	11
+333	333	2008-04-09	11
+333	333	2008-04-09	12
+333	333	2008-04-09	12
+335	335	2008-04-08	11
+335	335	2008-04-08	12
+335	335	2008-04-09	11
+335	335	2008-04-09	12
+336	336	2008-04-08	11
+336	336	2008-04-08	12
+336	336	2008-04-09	11
+336	336	2008-04-09	12
+338	338	2008-04-08	11
+338	338	2008-04-08	12
+338	338	2008-04-09	11
+338	338	2008-04-09	12
+339	339	2008-04-08	11
+339	339	2008-04-08	12
+339	339	2008-04-09	11
+339	339	2008-04-09	12
+34	34	2008-04-08	11
+34	34	2008-04-08	12
+34	34	2008-04-09	11
+34	34	2008-04-09	12
+341	341	2008-04-08	11
+341	341	2008-04-08	12

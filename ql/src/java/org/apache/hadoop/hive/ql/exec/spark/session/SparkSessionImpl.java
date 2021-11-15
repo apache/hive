@@ -32,18 +32,19 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
@@ -142,25 +143,25 @@ public class SparkSessionImpl implements SparkSession {
   }
 
   @Override
-  public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
+  public SparkJobRef submit(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception {
     closeLock.readLock().lock();
     try {
       Preconditions.checkState(isOpen, "Hive on Spark session is not open. Can't submit jobs.");
-      return hiveSparkClient.execute(driverContext, sparkWork);
+      return hiveSparkClient.execute(taskQueue, context, sparkWork);
     } finally {
       closeLock.readLock().unlock();
     }
   }
 
   @Override
-  public ObjectPair<Long, Integer> getMemoryAndCores() throws Exception {
+  public Pair<Long, Integer> getMemoryAndCores() throws Exception {
     closeLock.readLock().lock();
     try {
       SparkConf sparkConf = hiveSparkClient.getSparkConf();
       int numExecutors = hiveSparkClient.getExecutorCount();
       // at start-up, we may be unable to get number of executors
       if (numExecutors <= 0) {
-        return new ObjectPair<Long, Integer>(-1L, -1);
+        return Pair.of(-1L, -1);
       }
       int executorMemoryInMB = Utils.memoryStringToMb(
               sparkConf.get("spark.executor.memory", "512m"));
@@ -183,8 +184,7 @@ public class SparkSessionImpl implements SparkSession {
       LOG.info("Hive on Spark application currently has number of executors: " + numExecutors
               + ", total cores: " + totalCores + ", memory per executor: "
               + executorMemoryInMB + " mb, memoryFraction: " + memoryFraction);
-      return new ObjectPair<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
-              Integer.valueOf(totalCores));
+      return Pair.of(Long.valueOf(memoryPerTaskInBytes), Integer.valueOf(totalCores));
     } finally {
       closeLock.readLock().unlock();
     }

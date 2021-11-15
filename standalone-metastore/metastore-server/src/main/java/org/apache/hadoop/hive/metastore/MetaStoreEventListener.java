@@ -23,6 +23,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
@@ -30,19 +32,24 @@ import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
+import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.DropDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
@@ -56,6 +63,7 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
@@ -143,6 +151,27 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * @param connectorEvent  dataconnector event
+   * @throws MetaException
+   */
+  public void onCreateDataConnector (CreateDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  /**
+   * @param connectorEvent dataconnector event
+   * @throws MetaException
+   */
+  public void onDropDataConnector (DropDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  /**
+   * @param dcEvent alter data connector event
+   * @throws MetaException
+   */
+  public void onAlterDataConnector(AlterDataConnectorEvent dcEvent) throws MetaException {
+  }
+
+  /**
    * @param dbEvent alter database event
    * @throws MetaException
    */
@@ -206,6 +235,20 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onAddNotNullConstraint(AddNotNullConstraintEvent addNotNullConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param addDefaultConstraintEvent add default constraint event
+   * @throws MetaException
+   */
+  public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param addCheckConstraintEvent add check constraint event
+   * @throws MetaException
+   */
+  public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
   }
 
   /**
@@ -299,6 +342,17 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * This will be called to perform acid write operation in a batch.
+   * @param acidWriteEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onBatchAcidWrite(BatchAcidWriteEvent batchAcidWriteEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
+  /**
    * This will be called to update table column stats
    * @param updateTableColumnStatEvent event to be processed
    * @throws MetaException
@@ -326,12 +380,34 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * This will be called to update batch of partition column stats.The backend RDBMS operations are done using
+   * direct sql mode.
+   * @param updatePartColStatEvent event to be processed
+   * @throws MetaException
+   */
+  public void onUpdatePartitionColumnStatInBatch(UpdatePartitionColumnStatEventBatch updatePartColStatEvent,
+                                                 Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
+  /**
    * This will be called to delete partition column stats
    * @param deletePartColStatEvent event to be processed
    * @throws MetaException
    */
   public void onDeletePartitionColumnStat(DeletePartitionColumnStatEvent deletePartColStatEvent)
           throws MetaException {
+  }
+
+  /**
+   * This will be called to commit a compaction transaction.
+   * @param commitCompactionEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException ex
+   */
+  public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn,
+      SQLGenerator sqlGenerator) throws MetaException {
   }
 
   /**

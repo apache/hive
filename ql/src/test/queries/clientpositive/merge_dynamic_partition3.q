@@ -3,7 +3,6 @@ SET hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
 
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 

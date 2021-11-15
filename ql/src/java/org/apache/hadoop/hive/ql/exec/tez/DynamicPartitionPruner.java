@@ -23,31 +23,44 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -76,18 +89,18 @@ public class DynamicPartitionPruner {
 
   private static final Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruner.class);
 
-  private final InputInitializerContext context;
-  private final MapWork work;
-  private final JobConf jobConf;
+  private InputInitializerContext context;
+  private MapWork work;
+  private JobConf jobConf;
 
-
-  private final Map<String, List<SourceInfo>> sourceInfoMap =
-      new HashMap<String, List<SourceInfo>>();
+  private final Map<String, List<SourceInfo>> sourceInfoMap = new HashMap<>();
 
   private final BytesWritable writable = new BytesWritable();
 
   /* Keeps track of all events that need to be processed - irrespective of the source */
-  private final BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
+  private final BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<String> finishedVertices = new LinkedBlockingQueue<>();
+  private static final Object VERTEX_FINISH_TOKEN = new Object();
 
   /* Keeps track of vertices from which events are expected */
   private final Set<String> sourcesWaitingForEvents = new HashSet<String>();
@@ -98,37 +111,19 @@ public class DynamicPartitionPruner {
 
   private int sourceInfoCount = 0;
 
-  private final Object endOfEvents = new Object();
-
   private int totalEventCount = 0;
 
-  public DynamicPartitionPruner(InputInitializerContext context, MapWork work, JobConf jobConf) throws
-      SerDeException {
-    this.context = context;
-    this.work = work;
-    this.jobConf = jobConf;
-    synchronized (this) {
-      initialize();
+  public void prune() throws SerDeException, IOException, InterruptedException, HiveException {
+    if (sourcesWaitingForEvents.isEmpty()) {
+      return;
     }
-  }
 
-  public void prune()
-      throws SerDeException, IOException,
-      InterruptedException, HiveException {
-
-    synchronized(sourcesWaitingForEvents) {
-
-      if (sourcesWaitingForEvents.isEmpty()) {
-        return;
-      }
-
-      Set<VertexState> states = Collections.singleton(VertexState.SUCCEEDED);
-      for (String source : sourcesWaitingForEvents) {
-        // we need to get state transition updates for the vertices that will send
-        // events to us. once we have received all events and a vertex has succeeded,
-        // we can move to do the pruning.
-        context.registerForVertexStateUpdates(source, states);
-      }
+    Set<VertexState> states = Collections.singleton(VertexState.SUCCEEDED);
+    for (String source : sourcesWaitingForEvents) {
+      // we need to get state transition updates for the vertices that will send
+      // events to us. once we have received all events and a vertex has succeeded,
+      // we can move to do the pruning.
+      context.registerForVertexStateUpdates(source, states);
     }
 
     LOG.info("Waiting for events (" + sourceInfoCount + " sources) ...");
@@ -139,17 +134,17 @@ public class DynamicPartitionPruner {
     LOG.info("Ok to proceed.");
   }
 
-  public BlockingQueue<Object> getQueue() {
-    return queue;
-  }
-
   private void clear() {
     sourceInfoMap.clear();
     sourceInfoCount = 0;
   }
 
-  private void initialize() throws SerDeException {
+  public void initialize(InputInitializerContext context, MapWork work, JobConf jobConf) throws SerDeException {
     this.clear();
+    this.context = context;
+    this.work = work;
+    this.jobConf = jobConf;
+
     Map<String, SourceInfo> columnMap = new HashMap<String, SourceInfo>();
     // sources represent vertex names
     Set<String> sources = work.getEventSourceTableDescMap().keySet();
@@ -170,12 +165,16 @@ public class DynamicPartitionPruner {
       List<String> columnTypes = work.getEventSourceColumnTypeMap().get(s);
       // Expression for the operation. e.g. N^2 > 10
       List<ExprNodeDesc> partKeyExprs = work.getEventSourcePartKeyExprMap().get(s);
+      // Expression for pruning
+      List<ExprNodeDesc> predicates = work.getEventSourcePredicateExprMap().get(s);
+
       // eventSourceTableDesc, eventSourceColumnName, evenSourcePartKeyExpr move in lock-step.
       // One entry is added to each at the same time
 
       Iterator<String> cit = columnNames.iterator();
       Iterator<String> typit = columnTypes.iterator();
       Iterator<ExprNodeDesc> pit = partKeyExprs.iterator();
+      Iterator<ExprNodeDesc> predit = predicates.iterator();
       // A single source can process multiple columns, and will send an event for each of them.
       for (TableDesc t : tables) {
         numExpectedEventsPerSource.get(s).decrement();
@@ -183,7 +182,8 @@ public class DynamicPartitionPruner {
         String columnName = cit.next();
         String columnType = typit.next();
         ExprNodeDesc partKeyExpr = pit.next();
-        SourceInfo si = createSourceInfo(t, partKeyExpr, columnName, columnType, jobConf);
+        ExprNodeDesc predicate = predit.next();
+        SourceInfo si = createSourceInfo(t, partKeyExpr, predicate, columnName, columnType, jobConf);
         if (!sourceInfoMap.containsKey(s)) {
           sourceInfoMap.put(s, new ArrayList<SourceInfo>());
         }
@@ -205,14 +205,32 @@ public class DynamicPartitionPruner {
 
   private void prunePartitions() throws HiveException {
     int expectedEvents = 0;
+    List<ExprNodeDesc> prunerExprs = new LinkedList<>();
     for (Map.Entry<String, List<SourceInfo>> entry : this.sourceInfoMap.entrySet()) {
       String source = entry.getKey();
       for (SourceInfo si : entry.getValue()) {
         int taskNum = context.getVertexNumTasks(source);
         LOG.info("Expecting " + taskNum + " events for vertex " + source + ", for column " + si.columnName);
         expectedEvents += taskNum;
-        prunePartitionSingleSource(source, si);
+        ExprNodeDesc prunerExpr = prunePartitionSingleSource(jobConf, source, si);
+        if (prunerExpr != null) {
+          prunerExprs.add(prunerExpr);
+        }
       }
+    }
+
+    // If we have partition pruner expressions to push down then create the appropriate predicate
+    if (prunerExprs.size() != 0) {
+      ExprNodeGenericFuncDesc prunerExpr;
+      if (prunerExprs.size() == 1) {
+        prunerExpr = (ExprNodeGenericFuncDesc)prunerExprs.iterator().next();
+      } else {
+        // If we have multiple pruner expressions wrap them into an AND
+        prunerExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", prunerExprs);
+      }
+
+      // Push the predicate to the config for further use in HiveInputFormat
+      jobConf.set(TableScanDesc.PARTITION_PRUNING_FILTER, SerializationUtilities.serializeExpression(prunerExpr));
     }
 
     // sanity check. all tasks must submit events for us to succeed.
@@ -223,14 +241,14 @@ public class DynamicPartitionPruner {
   }
 
   @VisibleForTesting
-  protected void prunePartitionSingleSource(String source, SourceInfo si)
+  protected ExprNodeDesc prunePartitionSingleSource(JobConf jobConf, String source, SourceInfo si)
       throws HiveException {
 
     if (si.skipPruning.get()) {
       // in this case we've determined that there's too much data
       // to prune dynamically.
       LOG.info("Skip pruning on " + source + ", column " + si.columnName);
-      return;
+      return null;
     }
 
     Set<Object> values = si.values;
@@ -247,28 +265,43 @@ public class DynamicPartitionPruner {
       LOG.debug(sb.toString());
     }
 
-    ObjectInspector oi =
+    PrimitiveObjectInspector oi =
         PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory
             .getPrimitiveTypeInfo(si.columnType));
 
-    Converter converter =
-        ObjectInspectorConverters.getConverter(
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
+    if (si.predicate != null) {
+      // If we have a predicate defined then use that for pruning in the TableScan filter
+      // Works for StorageHandlers where addDynamicSplitPruningEdge is defined
+      List<ExprNodeConstantDesc> dynArgs = values.stream()
+          .map(v -> new ExprNodeConstantDesc(oi.getPrimitiveJavaObject(v)))
+          .collect(Collectors.toList());
 
-    StructObjectInspector soi =
-        ObjectInspectorFactory.getStandardStructObjectInspector(
-            Collections.singletonList(columnName), Collections.singletonList(oi));
+      ExprNodeDesc clone = si.predicate.clone();
 
-    @SuppressWarnings("rawtypes")
-    ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(si.partKey);
-    eval.initialize(soi);
+      replaceDynamicLists(clone, dynArgs);
+      return clone;
+    } else {
+      // If we have to prune the path list for split generation
+      Converter converter =
+          ObjectInspectorConverters.getConverter(
+              PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
 
-    applyFilterToPartitions(converter, eval, columnName, values);
+      StructObjectInspector soi =
+          ObjectInspectorFactory.getStandardStructObjectInspector(
+              Collections.singletonList(columnName), Collections.singletonList(oi));
+
+      @SuppressWarnings("rawtypes")
+      ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(si.partKey);
+      eval.initialize(soi);
+
+      applyFilterToPartitions(converter, eval, columnName, values, si.mustKeepOnePartition);
+      return null;
+    }
   }
 
   @SuppressWarnings("rawtypes")
   private void applyFilterToPartitions(Converter converter, ExprNodeEvaluator eval,
-      String columnName, Set<Object> values) throws HiveException {
+      String columnName, Set<Object> values, boolean mustKeepOnePartition) throws HiveException {
 
     Object[] row = new Object[1];
 
@@ -287,17 +320,13 @@ public class DynamicPartitionPruner {
       }
 
       Object partValue = converter.convert(partValueString);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Converted partition value: " + partValue + " original (" + partValueString + ")");
-      }
+      LOG.debug("Converted partition value: {} original ({})", partValue, partValueString);
 
       row[0] = partValue;
       partValue = eval.evaluate(row);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("part key expr applied: " + partValue);
-      }
+      LOG.debug("part key expr applied: {}", partValue);
 
-      if (!values.contains(partValue)) {
+      if (!values.contains(partValue) && (!mustKeepOnePartition || work.getPathToPartitionInfo().size() > 1)) {
         LOG.info("Pruning path: " + p);
         it.remove();
         // work.removePathToPartitionInfo(p);
@@ -307,10 +336,10 @@ public class DynamicPartitionPruner {
   }
 
   @VisibleForTesting
-  protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, String columnName,
+  protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, ExprNodeDesc predicate, String columnName,
                                         String columnType, JobConf jobConf) throws
       SerDeException {
-    return new SourceInfo(t, partKeyExpr, columnName, columnType, jobConf);
+    return new SourceInfo(t, partKeyExpr, predicate, columnName, columnType, jobConf);
 
   }
 
@@ -318,6 +347,7 @@ public class DynamicPartitionPruner {
   @VisibleForTesting
   static class SourceInfo {
     public final ExprNodeDesc partKey;
+    public final ExprNodeDesc predicate;
     public final Deserializer deserializer;
     public final StructObjectInspector soi;
     public final StructField field;
@@ -328,10 +358,12 @@ public class DynamicPartitionPruner {
     public AtomicBoolean skipPruning = new AtomicBoolean();
     public final String columnName;
     public final String columnType;
+    private boolean mustKeepOnePartition;
 
     @VisibleForTesting // Only used for testing.
-    SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, String columnType, JobConf jobConf, Object forTesting) {
+    SourceInfo(TableDesc table, ExprNodeDesc partKey, ExprNodeDesc predicate, String columnName, String columnType, JobConf jobConf, Object forTesting) {
       this.partKey = partKey;
+      this.predicate = predicate;
       this.columnName = columnName;
       this.columnType = columnType;
       this.deserializer = null;
@@ -340,18 +372,22 @@ public class DynamicPartitionPruner {
       this.fieldInspector = null;
     }
 
-    public SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, String columnType, JobConf jobConf)
+    public SourceInfo(TableDesc table, ExprNodeDesc partKey, ExprNodeDesc predicate, String columnName, String columnType, JobConf jobConf)
         throws SerDeException {
 
       this.skipPruning.set(false);
 
       this.partKey = partKey;
+      this.predicate = predicate;
 
       this.columnName = columnName;
       this.columnType = columnType;
+      this.mustKeepOnePartition = jobConf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false);
 
-      deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
-      deserializer.initialize(jobConf, table.getProperties());
+      AbstractSerDe serDe = ReflectionUtils.newInstance(table.getSerDeClass(), null);
+      serDe.initialize(jobConf, table.getProperties(), null);
+
+      this.deserializer = serDe;
 
       ObjectInspector inspector = deserializer.getObjectInspector();
       LOG.debug("Type of obj insp: " + inspector.getTypeName());
@@ -375,17 +411,26 @@ public class DynamicPartitionPruner {
     while (true) {
       Object element = queue.take();
 
-      if (element == endOfEvents) {
-        // we're done processing events
-        break;
+      if (element == VERTEX_FINISH_TOKEN) {
+        String updatedSource = finishedVertices.poll();
+        calculateFinishCondition(updatedSource);
+        if (checkForSourceCompletion(updatedSource)) {
+          break;
+        }
+      } else {
+        InputInitializerEvent event = (InputInitializerEvent) element;
+        numEventsSeenPerSource.computeIfAbsent(event.getSourceVertexName(), vn -> new MutableInt(0))
+            .increment();
+
+        totalEventCount++;
+        LOG.info("Input event: " + event.getTargetInputName() + ", " + event.getTargetVertexName()
+            + ", " + (event.getUserPayload().limit() - event.getUserPayload().position()));
+        processPayload(event.getUserPayload(), event.getSourceVertexName());
+        eventCount += 1;
+        if (checkForSourceCompletion(event.getSourceVertexName())) {
+          break;
+        }
       }
-
-      InputInitializerEvent event = (InputInitializerEvent) element;
-
-      LOG.info("Input event: " + event.getTargetInputName() + ", " + event.getTargetVertexName()
-          + ", " + (event.getUserPayload().limit() - event.getUserPayload().position()));
-      processPayload(event.getUserPayload(), event.getSourceVertexName());
-      eventCount += 1;
     }
     LOG.info("Received events: " + eventCount);
   }
@@ -433,9 +478,8 @@ public class DynamicPartitionPruner {
             Object value = info.soi.getStructFieldData(row, info.field);
             value = ObjectInspectorUtils.copyToStandardObject(value, info.fieldInspector);
 
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Adding: " + value + " to list of required partitions");
-            }
+            LOG.debug("Adding: {} to list of required partitions", value);
+
             info.values.add(value);
           }
         }
@@ -477,54 +521,72 @@ public class DynamicPartitionPruner {
   }
 
   public void addEvent(InputInitializerEvent event) {
-    synchronized(sourcesWaitingForEvents) {
-      if (sourcesWaitingForEvents.contains(event.getSourceVertexName())) {
-        ++totalEventCount;
-        numEventsSeenPerSource.get(event.getSourceVertexName()).increment();
-        if(!queue.offer(event)) {
-          throw new IllegalStateException("Queue full");
-        }
-        checkForSourceCompletion(event.getSourceVertexName());
-      }
+    if(!queue.offer(event)) {
+      throw new IllegalStateException("Queue full");
     }
+  }
+
+  private void calculateFinishCondition(String sourceName) {
+    // Get a deterministic count of number of tasks for the vertex.
+    MutableInt prevVal = numExpectedEventsPerSource.get(sourceName);
+    int prevValInt = prevVal.intValue();
+    Preconditions.checkState(prevValInt < 0,
+        "Invalid value for numExpectedEvents for source: " + sourceName + ", oldVal=" + prevValInt);
+    prevVal.setValue((-1) * prevValInt * context.getVertexNumTasks(sourceName));
   }
 
   public void processVertex(String name) {
     LOG.info("Vertex succeeded: " + name);
-    synchronized(sourcesWaitingForEvents) {
-      // Get a deterministic count of number of tasks for the vertex.
-      MutableInt prevVal = numExpectedEventsPerSource.get(name);
-      int prevValInt = prevVal.intValue();
-      Preconditions.checkState(prevValInt < 0,
-          "Invalid value for numExpectedEvents for source: " + name + ", oldVal=" + prevValInt);
-      prevVal.setValue((-1) * prevValInt * context.getVertexNumTasks(name));
-      checkForSourceCompletion(name);
-    }
+    finishedVertices.add(name);
+    queue.offer(VERTEX_FINISH_TOKEN);
   }
 
-  private void checkForSourceCompletion(String name) {
+  private boolean checkForSourceCompletion(String name) {
     int expectedEvents = numExpectedEventsPerSource.get(name).getValue();
     if (expectedEvents < 0) {
       // Expected events not updated yet - vertex SUCCESS notification not received.
-      return;
-    } else {
-      int processedEvents = numEventsSeenPerSource.get(name).getValue();
-      if (processedEvents == expectedEvents) {
-        sourcesWaitingForEvents.remove(name);
-        if (sourcesWaitingForEvents.isEmpty()) {
-          // we've got what we need; mark the queue
-          if(!queue.offer(endOfEvents)) {
-            throw new IllegalStateException("Queue full");
-          }
-        } else {
-          LOG.info("Waiting for " + sourcesWaitingForEvents.size() + " sources.");
-        }
-      } else if (processedEvents > expectedEvents) {
-        throw new IllegalStateException(
-            "Received too many events for " + name + ", Expected=" + expectedEvents +
-                ", Received=" + processedEvents);
+      return false;
+    }
+
+    int processedEvents = numEventsSeenPerSource.get(name).getValue();
+    if (processedEvents == expectedEvents) {
+      sourcesWaitingForEvents.remove(name);
+      if (sourcesWaitingForEvents.isEmpty()) {
+        return true;
+      } else {
+        LOG.info("Waiting for " + sourcesWaitingForEvents.size() + " sources.");
+        return false;
       }
-      return;
+    } else if (processedEvents > expectedEvents) {
+      throw new IllegalStateException(
+          "Received too many events for " + name + ", Expected=" + expectedEvents +
+              ", Received=" + processedEvents);
+    }
+    return false;
+  }
+
+  /**
+   * Recursively replaces the ExprNodeDynamicListDesc to the list of the actual values. As a result of this call the
+   * original expression is modified so it can be used for pushing down to the TableScan for filtering the data at the
+   * source.
+   * <p>
+   * Please make sure to clone the predicate if needed since the original node will be modified.
+   * @param node The node we are traversing
+   * @param dynArgs The constant values we are substituting
+   */
+  private void replaceDynamicLists(ExprNodeDesc node, Collection<ExprNodeConstantDesc> dynArgs) {
+    List<ExprNodeDesc> children = node.getChildren();
+    if (children != null && !children.isEmpty()) {
+      ListIterator<ExprNodeDesc> iterator = node.getChildren().listIterator();
+      while (iterator.hasNext()) {
+        ExprNodeDesc child = iterator.next();
+        if (child instanceof ExprNodeDynamicListDesc) {
+          iterator.remove();
+          dynArgs.forEach(iterator::add);
+        } else {
+          replaceDynamicLists(child, dynArgs);
+        }
+      }
     }
   }
 }

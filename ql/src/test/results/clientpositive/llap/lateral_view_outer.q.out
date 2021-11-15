@@ -1,0 +1,207 @@
+PREHOOK: query: explain
+select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        TableScan
+          alias: src
+          Lateral View Forward
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: key, value
+              Lateral View Join Operator
+                outputColumnNames: _col0, _col1, _col6
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col6 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    ListSink
+            Select Operator
+              expressions: array() (type: array<string>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                outer lateral view: true
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col1, _col6
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col6 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      ListSink
+
+PREHOOK: query: select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238	NULL
+86	val_86	NULL
+311	val_311	NULL
+27	val_27	NULL
+165	val_165	NULL
+409	val_409	NULL
+255	val_255	NULL
+278	val_278	NULL
+98	val_98	NULL
+484	val_484	NULL
+PREHOOK: query: explain
+select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        TableScan
+          alias: src
+          Lateral View Forward
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: key, value
+              Lateral View Join Operator
+                outputColumnNames: _col0, _col1, _col6
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    ListSink
+            Select Operator
+              expressions: array(4,5) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                outer lateral view: true
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col1, _col6
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      ListSink
+
+PREHOOK: query: select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238	4
+238	val_238	5
+86	val_86	4
+86	val_86	5
+311	val_311	4
+311	val_311	5
+27	val_27	4
+27	val_27	5
+165	val_165	4
+165	val_165	5
+PREHOOK: query: create table array_valued as select key, if (key > 300, array(value, value), null) as value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@array_valued
+POSTHOOK: query: create table array_valued as select key, if (key > 300, array(value, value), null) as value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@array_valued
+POSTHOOK: Lineage: array_valued.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: array_valued.value EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        TableScan
+          alias: array_valued
+          Lateral View Forward
+            Select Operator
+              expressions: key (type: string), value (type: array<string>)
+              outputColumnNames: key, value
+              Lateral View Join Operator
+                outputColumnNames: _col0, _col1, _col6
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: array<string>), _col6 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    ListSink
+            Select Operator
+              expressions: value (type: array<string>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                outer lateral view: true
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col1, _col6
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: array<string>), _col6 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      ListSink
+
+PREHOOK: query: select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+POSTHOOK: query: select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+238	NULL	NULL
+86	NULL	NULL
+311	["val_311","val_311"]	val_311
+311	["val_311","val_311"]	val_311
+27	NULL	NULL
+165	NULL	NULL
+409	["val_409","val_409"]	val_409
+409	["val_409","val_409"]	val_409
+255	NULL	NULL
+278	NULL	NULL

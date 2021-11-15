@@ -47,7 +47,7 @@ public class IfExprDecimal64ColumnDecimal64Scalar extends IfExprLongColumnLongSc
     DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) inputTypeInfos[2];
     HiveDecimalWritable writable = new HiveDecimalWritable();
     writable.deserialize64(arg3Scalar, decimalTypeInfo.scale());
-    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]) +
         ", decimal64Val " + arg3Scalar +
         ", decimalVal " + writable.toString();
   }

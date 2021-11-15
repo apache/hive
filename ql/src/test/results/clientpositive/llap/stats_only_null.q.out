@@ -104,11 +104,12 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -161,11 +162,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: stats_null_part
-                  Statistics: Num rows: 10 Data size: 2120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: double), b (type: int), c (type: string), d (type: smallint)
                     outputColumnNames: a, b, c, d
-                    Statistics: Num rows: 10 Data size: 2120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(), count(a), count(b), count(c), count(d)
                       minReductionHashAggr: 0.99
@@ -173,11 +174,12 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -397,6 +399,7 @@ PREHOOK: Output: default@stats_null_part
 POSTHOOK: query: insert into table stats_null_part partition(dt) select a,b,c,d,b from temps_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temps_null
+POSTHOOK: Output: default@stats_null_part
 POSTHOOK: Output: default@stats_null_part@dt=1
 POSTHOOK: Output: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=1).a SIMPLE [(temps_null)temps_null.FieldSchema(name:a, type:double, comment:null), ]
@@ -431,18 +434,18 @@ PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition(dt = 1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_null_part
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	double              	 	 	 	 	 	 	 	 	 	 
-min                 	1.0                 	 	 	 	 	 	 	 	 	 	 
-max                 	1.0                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	a                   
+data_type           	double              
+min                 	1.0                 
+max                 	1.0                 
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_null

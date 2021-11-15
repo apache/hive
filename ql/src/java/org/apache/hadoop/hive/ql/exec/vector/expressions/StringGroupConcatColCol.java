@@ -33,21 +33,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class StringGroupConcatColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
-  private final int colNum2;
-
   public StringGroupConcatColCol(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
-    this.colNum2 = colNum2;
+    super(colNum1, colNum2, outputColumnNum);
   }
 
   public StringGroupConcatColCol() {
     super();
-
-    // Dummy final assignments.
-    colNum1 = -1;
-    colNum2 = -1;
   }
 
   @Override
@@ -57,8 +48,8 @@ public class StringGroupConcatColCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inV1 = (BytesColumnVector) batch.cols[colNum1];
-    BytesColumnVector inV2 = (BytesColumnVector) batch.cols[colNum2];
+    BytesColumnVector inV1 = (BytesColumnVector) batch.cols[inputColumnNum[0]];
+    BytesColumnVector inV2 = (BytesColumnVector) batch.cols[inputColumnNum[1]];
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     boolean[] outputIsNull = outV.isNull;
     int[] sel = batch.selected;
@@ -427,7 +418,7 @@ public class StringGroupConcatColCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

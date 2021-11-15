@@ -22,7 +22,7 @@ CREATE TABLE "APP"."DBS" (
   "NAME" VARCHAR(128),
   "OWNER_NAME" VARCHAR(128),
   "OWNER_TYPE" VARCHAR(10),
-  "CTLG_NAME" VARCHAR(256) NOT NULL,
+  "CTLG_NAME" VARCHAR(256) NOT NULL DEFAULT 'hive',
   "CREATE_TIME" INTEGER
 );
 
@@ -213,6 +213,9 @@ CREATE TABLE "APP"."CTLGS" (
     "DESC" VARCHAR(4000),
     "LOCATION_URI" VARCHAR(4000) NOT NULL,
     "CREATE_TIME" INTEGER);
+
+-- Insert a default value.  The location is TBD.  Hive will fix this when it starts
+INSERT INTO "APP"."CTLGS" VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
 -- ----------------------------------------------
 -- DML Statements

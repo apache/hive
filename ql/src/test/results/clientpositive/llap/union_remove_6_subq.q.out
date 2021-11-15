@@ -1,0 +1,1243 @@
+PREHOOK: query: create table inputTbl1_n0(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inputTbl1_n0
+POSTHOOK: query: create table inputTbl1_n0(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inputTbl1_n0
+PREHOOK: query: create table outputTbl1_n0(key string, `values` bigint) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1_n0
+POSTHOOK: query: create table outputTbl1_n0(key string, `values` bigint) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl1_n0
+PREHOOK: query: create table outputTbl2(key string, `values` bigint) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl2
+POSTHOOK: query: create table outputTbl2(key string, `values` bigint) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl2
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@inputtbl1_n0
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@inputtbl1_n0
+PREHOOK: query: explain
+FROM (
+  select * from(
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  )subq
+) a
+insert overwrite table outputTbl1_n0 select *
+insert overwrite table outputTbl2 select *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n0
+PREHOOK: Output: default@outputtbl1_n0
+PREHOOK: Output: default@outputtbl2
+POSTHOOK: query: explain
+FROM (
+  select * from(
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  )subq
+) a
+insert overwrite table outputTbl1_n0 select *
+insert overwrite table outputTbl2 select *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n0
+POSTHOOK: Output: default@outputtbl1_n0
+POSTHOOK: Output: default@outputtbl2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1_n0
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1_n0
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1_n0
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl2
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1_n0
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl2
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl1_n0
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl2
+
+PREHOOK: query: FROM (
+  select * from(
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  )subq
+) a
+insert overwrite table outputTbl1_n0 select *
+insert overwrite table outputTbl2 select *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n0
+PREHOOK: Output: default@outputtbl1_n0
+PREHOOK: Output: default@outputtbl2
+POSTHOOK: query: FROM (
+  select * from(
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
+  )subq
+) a
+insert overwrite table outputTbl1_n0 select *
+insert overwrite table outputTbl2 select *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n0
+POSTHOOK: Output: default@outputtbl1_n0
+POSTHOOK: Output: default@outputtbl2
+POSTHOOK: Lineage: outputtbl1_n0.key EXPRESSION [(inputtbl1_n0)inputtbl1_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n0.values EXPRESSION [(inputtbl1_n0)inputtbl1_n0.null, ]
+POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(inputtbl1_n0)inputtbl1_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(inputtbl1_n0)inputtbl1_n0.null, ]
+PREHOOK: query: select * from outputTbl1_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from outputTbl1_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1_n0
+#### A masked pattern was here ####
+1	1
+1	1
+2	1
+2	1
+3	1
+3	1
+7	1
+7	1
+8	2
+8	2
+PREHOOK: query: select * from outputTbl2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from outputTbl2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl2
+#### A masked pattern was here ####
+1	1
+1	1
+2	1
+2	1
+3	1
+3	1
+7	1
+7	1
+8	2
+8	2
+PREHOOK: query: explain
+select avg(c) from(
+  SELECT count(1)-200 as c from src
+  UNION ALL
+  SELECT count(1) as c from src
+)subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select avg(c) from(
+  SELECT count(1)-200 as c from src
+  UNION ALL
+  SELECT count(1) as c from src
+)subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: (_col0 - 200L) (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: sum(_col0), count(_col0)
+                    minReductionHashAggr: 0.5
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: bigint), _col1 (type: bigint)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col0), count(_col0)
+                  minReductionHashAggr: 0.5
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint), _col1 (type: bigint)
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select avg(c) from(
+  SELECT count(1)-200 as c from src
+  UNION ALL
+  SELECT count(1) as c from src
+)subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select avg(c) from(
+  SELECT count(1)-200 as c from src
+  UNION ALL
+  SELECT count(1) as c from src
+)subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+400.0
+PREHOOK: query: explain
+select key, avg(c) over w from(
+  SELECT key, count(1)*2 as c from src group by key
+  UNION ALL
+  SELECT key, count(1) as c from src group by key
+)subq group by key, c
+WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select key, avg(c) over w from(
+  SELECT key, count(1)*2 as c from src group by key
+  UNION ALL
+  SELECT key, count(1) as c from src group by key
+)subq group by key, c
+WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), (_col1 * 2L) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    keys: _col0 (type: string), _col1 (type: bigint)
+                    minReductionHashAggr: 0.4
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: bigint)
+                      null sort order: az
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col0: string, _col1: bigint
+                          type: WINDOWING
+                        Windowing table definition
+                          input alias: ptf_1
+                          name: windowingtablefunction
+                          order by: _col1 ASC NULLS LAST
+                          partition by: _col0
+                          raw input shape:
+                          window functions:
+                              window function definition
+                                alias: avg_window_0
+                                arguments: _col1
+                                name: avg
+                                window function: GenericUDAFAverageEvaluatorDouble
+                                window frame: ROWS PRECEDING(MAX)~CURRENT
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), avg_window_0 (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: string), _col1 (type: bigint)
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: bigint)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, avg(c) over w from(
+  SELECT key, count(1)*2 as c from src group by key
+  UNION ALL
+  SELECT key, count(1) as c from src group by key
+)subq group by key, c
+WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key, avg(c) over w from(
+  SELECT key, count(1)*2 as c from src group by key
+  UNION ALL
+  SELECT key, count(1) as c from src group by key
+)subq group by key, c
+WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	3.0
+0	4.5
+10	1.0
+10	1.5
+100	2.0
+100	3.0
+103	2.0
+103	3.0
+104	2.0
+104	3.0
+105	1.0
+105	1.5
+11	1.0
+11	1.5
+111	1.0
+111	1.5
+113	2.0
+113	3.0
+114	1.0
+114	1.5
+116	1.0
+116	1.5
+118	2.0
+118	3.0
+119	3.0
+119	4.5
+12	2.0
+12	3.0
+120	2.0
+120	3.0
+125	2.0
+125	3.0
+126	1.0
+126	1.5
+128	3.0
+128	4.5
+129	2.0
+129	3.0
+131	1.0
+131	1.5
+133	1.0
+133	1.5
+134	2.0
+134	3.0
+136	1.0
+136	1.5
+137	2.0
+137	3.0
+138	4.0
+138	6.0
+143	1.0
+143	1.5
+145	1.0
+145	1.5
+146	2.0
+146	3.0
+149	2.0
+149	3.0
+15	2.0
+15	3.0
+150	1.0
+150	1.5
+152	2.0
+152	3.0
+153	1.0
+153	1.5
+155	1.0
+155	1.5
+156	1.0
+156	1.5
+157	1.0
+157	1.5
+158	1.0
+158	1.5
+160	1.0
+160	1.5
+162	1.0
+162	1.5
+163	1.0
+163	1.5
+164	2.0
+164	3.0
+165	2.0
+165	3.0
+166	1.0
+166	1.5
+167	3.0
+167	4.5
+168	1.0
+168	1.5
+169	4.0
+169	6.0
+17	1.0
+17	1.5
+170	1.0
+170	1.5
+172	2.0
+172	3.0
+174	2.0
+174	3.0
+175	2.0
+175	3.0
+176	2.0
+176	3.0
+177	1.0
+177	1.5
+178	1.0
+178	1.5
+179	2.0
+179	3.0
+18	2.0
+18	3.0
+180	1.0
+180	1.5
+181	1.0
+181	1.5
+183	1.0
+183	1.5
+186	1.0
+186	1.5
+187	3.0
+187	4.5
+189	1.0
+189	1.5
+19	1.0
+19	1.5
+190	1.0
+190	1.5
+191	2.0
+191	3.0
+192	1.0
+192	1.5
+193	3.0
+193	4.5
+194	1.0
+194	1.5
+195	2.0
+195	3.0
+196	1.0
+196	1.5
+197	2.0
+197	3.0
+199	3.0
+199	4.5
+2	1.0
+2	1.5
+20	1.0
+20	1.5
+200	2.0
+200	3.0
+201	1.0
+201	1.5
+202	1.0
+202	1.5
+203	2.0
+203	3.0
+205	2.0
+205	3.0
+207	2.0
+207	3.0
+208	3.0
+208	4.5
+209	2.0
+209	3.0
+213	2.0
+213	3.0
+214	1.0
+214	1.5
+216	2.0
+216	3.0
+217	2.0
+217	3.0
+218	1.0
+218	1.5
+219	2.0
+219	3.0
+221	2.0
+221	3.0
+222	1.0
+222	1.5
+223	2.0
+223	3.0
+224	2.0
+224	3.0
+226	1.0
+226	1.5
+228	1.0
+228	1.5
+229	2.0
+229	3.0
+230	5.0
+230	7.5
+233	2.0
+233	3.0
+235	1.0
+235	1.5
+237	2.0
+237	3.0
+238	2.0
+238	3.0
+239	2.0
+239	3.0
+24	2.0
+24	3.0
+241	1.0
+241	1.5
+242	2.0
+242	3.0
+244	1.0
+244	1.5
+247	1.0
+247	1.5
+248	1.0
+248	1.5
+249	1.0
+249	1.5
+252	1.0
+252	1.5
+255	2.0
+255	3.0
+256	2.0
+256	3.0
+257	1.0
+257	1.5
+258	1.0
+258	1.5
+26	2.0
+26	3.0
+260	1.0
+260	1.5
+262	1.0
+262	1.5
+263	1.0
+263	1.5
+265	2.0
+265	3.0
+266	1.0
+266	1.5
+27	1.0
+27	1.5
+272	2.0
+272	3.0
+273	3.0
+273	4.5
+274	1.0
+274	1.5
+275	1.0
+275	1.5
+277	4.0
+277	6.0
+278	2.0
+278	3.0
+28	1.0
+28	1.5
+280	2.0
+280	3.0
+281	2.0
+281	3.0
+282	2.0
+282	3.0
+283	1.0
+283	1.5
+284	1.0
+284	1.5
+285	1.0
+285	1.5
+286	1.0
+286	1.5
+287	1.0
+287	1.5
+288	2.0
+288	3.0
+289	1.0
+289	1.5
+291	1.0
+291	1.5
+292	1.0
+292	1.5
+296	1.0
+296	1.5
+298	3.0
+298	4.5
+30	1.0
+30	1.5
+302	1.0
+302	1.5
+305	1.0
+305	1.5
+306	1.0
+306	1.5
+307	2.0
+307	3.0
+308	1.0
+308	1.5
+309	2.0
+309	3.0
+310	1.0
+310	1.5
+311	3.0
+311	4.5
+315	1.0
+315	1.5
+316	3.0
+316	4.5
+317	2.0
+317	3.0
+318	3.0
+318	4.5
+321	2.0
+321	3.0
+322	2.0
+322	3.0
+323	1.0
+323	1.5
+325	2.0
+325	3.0
+327	3.0
+327	4.5
+33	1.0
+33	1.5
+331	2.0
+331	3.0
+332	1.0
+332	1.5
+333	2.0
+333	3.0
+335	1.0
+335	1.5
+336	1.0
+336	1.5
+338	1.0
+338	1.5
+339	1.0
+339	1.5
+34	1.0
+34	1.5
+341	1.0
+341	1.5
+342	2.0
+342	3.0
+344	2.0
+344	3.0
+345	1.0
+345	1.5
+348	5.0
+348	7.5
+35	3.0
+35	4.5
+351	1.0
+351	1.5
+353	2.0
+353	3.0
+356	1.0
+356	1.5
+360	1.0
+360	1.5
+362	1.0
+362	1.5
+364	1.0
+364	1.5
+365	1.0
+365	1.5
+366	1.0
+366	1.5
+367	2.0
+367	3.0
+368	1.0
+368	1.5
+369	3.0
+369	4.5
+37	2.0
+37	3.0
+373	1.0
+373	1.5
+374	1.0
+374	1.5
+375	1.0
+375	1.5
+377	1.0
+377	1.5
+378	1.0
+378	1.5
+379	1.0
+379	1.5
+382	2.0
+382	3.0
+384	3.0
+384	4.5
+386	1.0
+386	1.5
+389	1.0
+389	1.5
+392	1.0
+392	1.5
+393	1.0
+393	1.5
+394	1.0
+394	1.5
+395	2.0
+395	3.0
+396	3.0
+396	4.5
+397	2.0
+397	3.0
+399	2.0
+399	3.0
+4	1.0
+4	1.5
+400	1.0
+400	1.5
+401	5.0
+401	7.5
+402	1.0
+402	1.5
+403	3.0
+403	4.5
+404	2.0
+404	3.0
+406	4.0
+406	6.0
+407	1.0
+407	1.5
+409	3.0
+409	4.5
+41	1.0
+41	1.5
+411	1.0
+411	1.5
+413	2.0
+413	3.0
+414	2.0
+414	3.0
+417	3.0
+417	4.5
+418	1.0
+418	1.5
+419	1.0
+419	1.5
+42	2.0
+42	3.0
+421	1.0
+421	1.5
+424	2.0
+424	3.0
+427	1.0
+427	1.5
+429	2.0
+429	3.0
+43	1.0
+43	1.5
+430	3.0
+430	4.5
+431	3.0
+431	4.5
+432	1.0
+432	1.5
+435	1.0
+435	1.5
+436	1.0
+436	1.5
+437	1.0
+437	1.5
+438	3.0
+438	4.5
+439	2.0
+439	3.0
+44	1.0
+44	1.5
+443	1.0
+443	1.5
+444	1.0
+444	1.5
+446	1.0
+446	1.5
+448	1.0
+448	1.5
+449	1.0
+449	1.5
+452	1.0
+452	1.5
+453	1.0
+453	1.5
+454	3.0
+454	4.5
+455	1.0
+455	1.5
+457	1.0
+457	1.5
+458	2.0
+458	3.0
+459	2.0
+459	3.0
+460	1.0
+460	1.5
+462	2.0
+462	3.0
+463	2.0
+463	3.0
+466	3.0
+466	4.5
+467	1.0
+467	1.5
+468	4.0
+468	6.0
+469	5.0
+469	7.5
+47	1.0
+47	1.5
+470	1.0
+470	1.5
+472	1.0
+472	1.5
+475	1.0
+475	1.5
+477	1.0
+477	1.5
+478	2.0
+478	3.0
+479	1.0
+479	1.5
+480	3.0
+480	4.5
+481	1.0
+481	1.5
+482	1.0
+482	1.5
+483	1.0
+483	1.5
+484	1.0
+484	1.5
+485	1.0
+485	1.5
+487	1.0
+487	1.5
+489	4.0
+489	6.0
+490	1.0
+490	1.5
+491	1.0
+491	1.5
+492	2.0
+492	3.0
+493	1.0
+493	1.5
+494	1.0
+494	1.5
+495	1.0
+495	1.5
+496	1.0
+496	1.5
+497	1.0
+497	1.5
+498	3.0
+498	4.5
+5	3.0
+5	4.5
+51	2.0
+51	3.0
+53	1.0
+53	1.5
+54	1.0
+54	1.5
+57	1.0
+57	1.5
+58	2.0
+58	3.0
+64	1.0
+64	1.5
+65	1.0
+65	1.5
+66	1.0
+66	1.5
+67	2.0
+67	3.0
+69	1.0
+69	1.5
+70	3.0
+70	4.5
+72	2.0
+72	3.0
+74	1.0
+74	1.5
+76	2.0
+76	3.0
+77	1.0
+77	1.5
+78	1.0
+78	1.5
+8	1.0
+8	1.5
+80	1.0
+80	1.5
+82	1.0
+82	1.5
+83	2.0
+83	3.0
+84	2.0
+84	3.0
+85	1.0
+85	1.5
+86	1.0
+86	1.5
+87	1.0
+87	1.5
+9	1.0
+9	1.5
+90	3.0
+90	4.5
+92	1.0
+92	1.5
+95	2.0
+95	3.0
+96	1.0
+96	1.5
+97	2.0
+97	3.0
+98	2.0
+98	3.0

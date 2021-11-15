@@ -80,6 +80,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -283,8 +284,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
+                        numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -364,6 +367,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
@@ -504,6 +508,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -700,6 +705,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -904,6 +910,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -1108,8 +1115,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
+                        numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -1189,6 +1198,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
@@ -1329,8 +1339,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string), _col1 (type: double)
-                        null sort order: aa
+                        null sort order: zz
+                        numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: double)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -1410,6 +1422,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
@@ -1562,8 +1575,10 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            bucketingVersion: 2
                             key expressions: _col0 (type: double)
-                            null sort order: a
+                            null sort order: z
+                            numBuckets: -1
                             sort order: +
                             Map-reduce partition columns: _col0 (type: double)
                             Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1643,6 +1658,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
@@ -1797,6 +1813,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -1908,6 +1925,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -2131,6 +2149,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -2239,8 +2258,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: double)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -2324,6 +2345,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
+                      bucketingVersion: 2
                       compressed: false
                       GlobalTableId: 1
 #### A masked pattern was here ####
@@ -2488,8 +2510,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2572,8 +2596,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2654,6 +2680,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
@@ -2811,8 +2838,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2896,8 +2925,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
+                        numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -2974,6 +3005,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 3 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
+                  bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
@@ -2984,6 +3016,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       properties:
+                        bucketing_version -1
                         columns _col0,_col1,_col2,_col3,_col4
                         columns.types string:bigint:string:string:bigint
                         escape.delim \
@@ -3006,8 +3039,10 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  bucketingVersion: 2
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
+                  numBuckets: -1
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -3087,8 +3122,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -3168,6 +3205,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
+                    bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
@@ -3306,6 +3344,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -3513,6 +3552,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -3719,6 +3759,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -3932,6 +3973,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
+                          bucketingVersion: 2
                           compressed: false
                           GlobalTableId: 1
 #### A masked pattern was here ####
@@ -4160,6 +4202,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -4340,6 +4383,7 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
+                            null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE

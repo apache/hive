@@ -292,7 +292,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final RelDataType sum0InputType = typeFactory.createTypeWithNullability(
         getFieldType(oldAggRel.getInput(), iAvgInput), true);
     final RelDataType sumReturnType = getSumReturnType(
-        rexBuilder.getTypeFactory(), sum0InputType, oldCall.getType());
+        rexBuilder.getTypeFactory(), sum0InputType);
     final AggregateCall sumCall =
         AggregateCall.create(
             new HiveSqlSumAggFunction(
@@ -336,7 +336,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final RelDataType avgInputType = typeFactory.createTypeWithNullability(
         getFieldType(oldAggRel.getInput(), iAvgInput), true);
     final RelDataType sumReturnType = getSumReturnType(
-        rexBuilder.getTypeFactory(), avgInputType, oldCall.getType());
+        rexBuilder.getTypeFactory(), avgInputType);
     final AggregateCall sumCall =
         AggregateCall.create(
             new HiveSqlSumAggFunction(
@@ -387,7 +387,11 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
             aggCallMapping,
             ImmutableList.of(avgInputType));
 
-    numeratorRef = rexBuilder.ensureType(oldCall.getType(), numeratorRef, true);
+    if (numeratorRef.getType().getSqlTypeName() != SqlTypeName.DECIMAL) {
+      // If type is not decimal, we enforce the same type as the avg to comply with
+      // Hive semantics
+      numeratorRef = rexBuilder.ensureType(oldCall.getType(), numeratorRef, true);
+    }
     final RexNode divideRef =
         rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE, numeratorRef, denominatorRef);
     return rexBuilder.makeCast(oldCall.getType(), divideRef);
@@ -427,13 +431,13 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         rexBuilder.ensureType(oldCallType, inputExprs.get(argOrdinal), false);
     final int argRefOrdinal = lookupOrAdd(inputExprs, argRef);
     final RelDataType sumReturnType = getSumReturnType(
-        rexBuilder.getTypeFactory(), argRef.getType(), oldCall.getType());
+        rexBuilder.getTypeFactory(), argRef.getType());
 
     final RexNode argSquared = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY,
         argRef, argRef);
     final int argSquaredOrdinal = lookupOrAdd(inputExprs, argSquared);
     final RelDataType sumSquaredReturnType = getSumReturnType(
-        rexBuilder.getTypeFactory(), argSquared.getType(), oldCall.getType());
+        rexBuilder.getTypeFactory(), argSquared.getType());
 
     final AggregateCall sumArgSquaredAggCall =
         createAggregateCallWithBinding(typeFactory,
@@ -593,7 +597,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
   }
 
   private RelDataType getSumReturnType(RelDataTypeFactory typeFactory,
-      RelDataType inputType, RelDataType originalReturnType) {
+      RelDataType inputType) {
     switch (inputType.getSqlTypeName()) {
       case TINYINT:
       case SMALLINT:
@@ -607,8 +611,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       case CHAR:
         return TypeConverter.convert(TypeInfoFactory.doubleTypeInfo, typeFactory);
       case DECIMAL:
-        // We keep precision and scale
-        return originalReturnType;
+        return typeFactory.getTypeSystem().deriveSumType(typeFactory, inputType);
     }
     return null;
   }

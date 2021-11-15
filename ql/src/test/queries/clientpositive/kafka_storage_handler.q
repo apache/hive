@@ -1,3 +1,5 @@
+--! qt:disabled:HIVE-23985
+
 SET hive.vectorized.execution.enabled=true;
 
 CREATE EXTERNAL TABLE kafka_table
@@ -140,6 +142,7 @@ CREATE EXTERNAL TABLE kafka_table_2
 `country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
 `anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint)
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
 "kafka.bootstrap.servers"="localhost:9093");

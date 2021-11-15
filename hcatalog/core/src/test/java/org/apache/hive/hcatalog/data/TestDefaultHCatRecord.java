@@ -47,13 +47,18 @@ import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.junit.Assert;
 import junit.framework.TestCase;
 import org.apache.pig.parser.AliasMasker;
+import org.junit.Test;
 
-public class TestDefaultHCatRecord extends TestCase {
+/**
+ * TestDefaultHCatRecord.
+ */
+public class TestDefaultHCatRecord {
 
   /**
    * test that we properly serialize/deserialize HCatRecordS
    * @throws IOException
    */
+  @Test
   public void testRYW() throws IOException {
 
     File f = new File("binary.dat");
@@ -87,12 +92,14 @@ public class TestDefaultHCatRecord extends TestCase {
 
   }
 
+  @Test
   public void testCompareTo() {
     HCatRecord[] recs = getHCatRecords();
     Assert.assertTrue(HCatDataCheckUtil.compareRecords(recs[0], recs[1]) == 0);
     Assert.assertTrue(HCatDataCheckUtil.compareRecords(recs[4], recs[5]) == 0);
   }
 
+  @Test
   public void testEqualsObject() {
 
     HCatRecord[] recs = getHCatRecords();
@@ -104,6 +111,7 @@ public class TestDefaultHCatRecord extends TestCase {
    * Test get and set calls with type
    * @throws HCatException
    */
+  @Test
   public void testGetSetByType1() throws HCatException {
     HCatRecord inpRec = getHCatRecords()[0];
     HCatRecord newRec = new DefaultHCatRecord(inpRec.size());
@@ -132,6 +140,7 @@ public class TestDefaultHCatRecord extends TestCase {
    * Test get and set calls with type
    * @throws HCatException
    */
+  @Test
   public void testGetSetByType2() throws HCatException {
     HCatRecord inpRec = getGetSet2InpRec();
 
@@ -152,6 +161,7 @@ public class TestDefaultHCatRecord extends TestCase {
    * Test type specific get/set methods on HCatRecord types added in Hive 13
    * @throws HCatException
    */
+  @Test
   public void testGetSetByType3() throws HCatException {
     HCatRecord inpRec = getHCat13TypesRecord();
     HCatRecord newRec = new DefaultHCatRecord(inpRec.size());
@@ -267,7 +277,7 @@ public class TestDefaultHCatRecord extends TestCase {
     rec_6.add(getList());
     HCatRecord tup_6 = new DefaultHCatRecord(rec_6);
 
-    return new HCatRecord[]{tup_1, tup_2, tup_3, tup_4, tup_5, tup_6, getHCat13TypesRecord(), 
+    return new HCatRecord[]{tup_1, tup_2, tup_3, tup_4, tup_5, tup_6, getHCat13TypesRecord(),
             getHCat13TypesComplexRecord()};
   }
   private static HCatRecord getHCat13TypesRecord() {

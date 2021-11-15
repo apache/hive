@@ -21,8 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +97,7 @@ public final class SQLGenerator {
   }
 
   /**
-   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB
+   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB.
    *
    * @param tblColumns e.g. "T(a,b,c)"
    * @param rows       e.g. list of Strings like 3,4,'d'
@@ -110,7 +108,7 @@ public final class SQLGenerator {
   }
 
   /**
-   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB
+   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB.
    *
    * @param tblColumns e.g. "T(a,b,c)"
    * @param rows       e.g. list of Strings like 3,4,'d'
@@ -121,68 +119,7 @@ public final class SQLGenerator {
     if (rows == null || rows.size() == 0) {
       return Collections.emptyList();
     }
-    List<String> insertStmts = new ArrayList<>();
-    StringBuilder sb = new StringBuilder();
-    int numRowsInCurrentStmt = 0;
-    switch (dbProduct) {
-    case ORACLE:
-      if (rows.size() > 1) {
-        //http://www.oratable.com/oracle-insert-all/
-        //https://livesql.oracle.com/apex/livesql/file/content_BM1LJQ87M5CNIOKPOWPV6ZGR3.html
-        for (int numRows = 0; numRows < rows.size(); numRows++) {
-          if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
-            if (numRows > 0) {
-              sb.append(" select * from dual");
-              insertStmts.add(sb.toString());
-              if (rowsCountInStmts != null) {
-                rowsCountInStmts.add(numRowsInCurrentStmt);
-              }
-              numRowsInCurrentStmt = 0;
-            }
-            sb.setLength(0);
-            sb.append("insert all ");
-          }
-          sb.append("into ").append(tblColumns).append(" values(").append(rows.get(numRows))
-              .append(") ");
-          numRowsInCurrentStmt++;
-        }
-        sb.append("select * from dual");
-        insertStmts.add(sb.toString());
-        if (rowsCountInStmts != null) {
-          rowsCountInStmts.add(numRowsInCurrentStmt);
-        }
-        return insertStmts;
-      }
-      //fall through
-    case DERBY:
-    case MYSQL:
-    case POSTGRES:
-    case SQLSERVER:
-      for (int numRows = 0; numRows < rows.size(); numRows++) {
-        if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
-          if (numRows > 0) {
-            insertStmts.add(sb.substring(0, sb.length() - 1));//exclude trailing comma
-            if (rowsCountInStmts != null) {
-              rowsCountInStmts.add(numRowsInCurrentStmt);
-            }
-            numRowsInCurrentStmt = 0;
-          }
-          sb.setLength(0);
-          sb.append("insert into ").append(tblColumns).append(" values");
-        }
-        sb.append('(').append(rows.get(numRows)).append("),");
-        numRowsInCurrentStmt++;
-      }
-      insertStmts.add(sb.substring(0, sb.length() - 1));//exclude trailing comma
-      if (rowsCountInStmts != null) {
-        rowsCountInStmts.add(numRowsInCurrentStmt);
-      }
-      return insertStmts;
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new IllegalStateException(msg);
-    }
+    return dbProduct.createInsertValuesStmt(tblColumns, rows, rowsCountInStmts, conf);
   }
 
   /**
@@ -190,33 +127,7 @@ public final class SQLGenerator {
    * construct.  If the DB doesn't support, return original select.
    */
   public String addForUpdateClause(String selectStatement) throws MetaException {
-    switch (dbProduct) {
-    case DERBY:
-      //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
-      //sadly in Derby, FOR UPDATE doesn't meant what it should
-      return selectStatement;
-    case MYSQL:
-      //http://dev.mysql.com/doc/refman/5.7/en/select.html
-    case ORACLE:
-      //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
-    case POSTGRES:
-      //http://www.postgresql.org/docs/9.0/static/sql-select.html
-      return selectStatement + " for update";
-    case SQLSERVER:
-      //https://msdn.microsoft.com/en-us/library/ms189499.aspx
-      //https://msdn.microsoft.com/en-us/library/ms187373.aspx
-      String modifier = " with (updlock)";
-      int wherePos = selectStatement.toUpperCase().indexOf(" WHERE ");
-      if (wherePos < 0) {
-        return selectStatement + modifier;
-      }
-      return selectStatement.substring(0, wherePos) + modifier +
-          selectStatement.substring(wherePos, selectStatement.length());
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
+    return dbProduct.addForUpdateClause(selectStatement);
   }
 
   /**
@@ -229,27 +140,18 @@ public final class SQLGenerator {
    * all columns are unique for Oracle.
    */
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
-    switch (dbProduct) {
-    case DERBY:
-      //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
-      return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
-    case MYSQL:
-      //http://www.postgresql.org/docs/7.3/static/queries-limit.html
-    case POSTGRES:
-      //https://dev.mysql.com/doc/refman/5.0/en/select.html
-      return "select " + noSelectsqlQuery + " limit " + numRows;
-    case ORACLE:
-      //newer versions (12c and later) support OFFSET/FETCH
-      return "select * from (select " + noSelectsqlQuery + ") where rownum <= " + numRows;
-    case SQLSERVER:
-      //newer versions (2012 and later) support OFFSET/FETCH
-      //https://msdn.microsoft.com/en-us/library/ms189463.aspx
-      return "select TOP(" + numRows + ") " + noSelectsqlQuery;
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
+    return dbProduct.addLimitClause(numRows, noSelectsqlQuery);
+  }
+
+  /**
+   * Returns the SQL query to lock the given table name in either shared/exclusive mode
+   * @param txnLockTable
+   * @param shared
+   * @return
+   * @throws MetaException
+   */
+  public String lockTable(String txnLockTable, boolean shared) throws MetaException {
+    return dbProduct.lockTable(txnLockTable, shared);
   }
 
   /**
@@ -263,7 +165,7 @@ public final class SQLGenerator {
    * @throws SQLException
    */
   public PreparedStatement prepareStmtWithParameters(Connection dbConn, String sql, List<String> parameters)
-          throws SQLException {
+      throws SQLException {
     PreparedStatement pst = dbConn.prepareStatement(addEscapeCharacters(sql));
     if ((parameters == null) || parameters.isEmpty()) {
       return pst;
@@ -286,10 +188,17 @@ public final class SQLGenerator {
   // This is required for SQL executed directly. If the SQL has double quotes then some dbs tend to
   // remove the escape characters and store the variable without double quote.
   public String addEscapeCharacters(String s) {
-    if (dbProduct ==  DatabaseProduct.MYSQL) {
-      return s.replaceAll("\\\\", "\\\\\\\\");
-    }
-    return s;
+    return dbProduct.addEscapeCharacters(s);
   }
 
+  /**
+   * Creates a lock statement for open/commit transaction based on the dbProduct in shared read / exclusive mode.
+   * @param shared shared or exclusive lock
+   * @return sql statement to execute
+   * @throws MetaException if the dbProduct is unknown
+   */
+  public String createTxnLockStatement(boolean shared) throws MetaException{
+    String txnLockTable = "TXN_LOCK_TBL";
+    return dbProduct.lockTable(txnLockTable, shared);
+  }
 }

@@ -52,8 +52,10 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col5 (type: double)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col5 (type: double)
+                      Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(38,0)), _col4 (type: timestamp)
         Reducer 2 
             Reduce Operator Tree:
@@ -233,13 +235,13 @@ POSTHOOK: Output: default@orc_merge5a@st=0.8
 Found 4 items
 -rw-r--r--   3 ### USER ### ### GROUP ###        602 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###        602 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        602 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        602 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 4 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: show partitions orc_merge5a
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a
@@ -293,6 +295,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
+    Concatenate
+      partition spec:
+        st 80.0
+      table name: default.orc_merge5a
 
   Stage: Stage-1
     Move Operator
@@ -347,13 +353,13 @@ POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###        898 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        602 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        602 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        900 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        604 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###        956 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        958 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        647 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: show partitions orc_merge5a
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a

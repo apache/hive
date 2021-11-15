@@ -92,7 +92,7 @@ public class StrictRegexWriter extends AbstractRecordWriter {
         tableProps.setProperty("columns.comments", Joiner.on('\0').join(comments));
       }
       RegexSerDe serde = new RegexSerDe();
-      SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
+      serde.initialize(conf, tableProps, null);
       this.serde = serde;
       return serde;
     } catch (SerDeException e) {

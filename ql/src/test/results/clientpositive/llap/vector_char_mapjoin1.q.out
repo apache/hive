@@ -154,6 +154,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: c2 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:c2, smallTablePos:1, keyRatio:0.6666666666666666
                   Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -189,6 +190,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -232,6 +234,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: char(10))
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: char(10))
                         Reduce Sink Vectorization:
@@ -330,6 +333,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: c2 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:c2, smallTablePos:1, keyRatio:0.6666666666666666
                   Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -365,6 +369,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -408,6 +413,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: char(20))
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: char(20))
                         Reduce Sink Vectorization:
@@ -547,10 +553,11 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [0, 1, 3, 1]
+                              projectedOutputColumnNums: [0, 1, 4, 1]
                           Statistics: Num rows: 3 Data size: 549 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: z
                             sort order: +
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkObjectHashOperator
@@ -594,6 +601,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Reduce Sink Vectorization:

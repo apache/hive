@@ -1,3 +1,5 @@
+--! qt:disabled:falky HIVE-23566
+
 set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled=true;
 set parquet.enable.dictionary=true;

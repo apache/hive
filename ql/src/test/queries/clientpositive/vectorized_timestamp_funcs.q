@@ -156,7 +156,7 @@ FROM alltypesorc_wrong
 ORDER BY c1;
 
 SELECT
-  to_unix_timestamp(stimestamp1) AS c1,
+  stimestamp1, to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),

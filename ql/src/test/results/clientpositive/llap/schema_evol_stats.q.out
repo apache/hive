@@ -293,8 +293,8 @@ Table Parameters:
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	8                   
-	rawDataSize         	1116                
-	totalSize           	848                 
+	rawDataSize         	1148                
+	totalSize           	852                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -330,8 +330,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
 	numFiles            	1                   
 	numRows             	4                   
-	rawDataSize         	384                 
-	totalSize           	323                 
+	rawDataSize         	400                 
+	totalSize           	325                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -369,8 +369,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
 	numFiles            	1                   
 	numRows             	4                   
-	rawDataSize         	732                 
-	totalSize           	525                 
+	rawDataSize         	748                 
+	totalSize           	527                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

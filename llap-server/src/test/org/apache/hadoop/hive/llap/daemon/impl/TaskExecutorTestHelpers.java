@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.base.Supplier;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -55,6 +56,13 @@ public class TaskExecutorTestHelpers {
     long currentAttemptStartTime, boolean canFinish, long workTime, boolean isGuaranteed) {
     SubmitWorkRequestProto request = createSubmitWorkRequestProto(
         fragmentNum, parallelism, firstAttemptStartTime, currentAttemptStartTime, isGuaranteed);
+    return createMockRequest(canFinish, canFinish, workTime, request, isGuaranteed);
+  }
+
+  public static MockRequest createMockRequest(int fragmentNum, int parallelism, long firstAttemptStartTime,
+      long currentAttemptStartTime, boolean canFinish, long workTime, boolean isGuaranteed, int dagId) {
+    SubmitWorkRequestProto request = createSubmitWorkRequestProto(fragmentNum, parallelism, 0,
+        firstAttemptStartTime, currentAttemptStartTime, 1, "MockDag", dagId, isGuaranteed);
     return createMockRequest(canFinish, canFinish, workTime, request, isGuaranteed);
   }
 
@@ -102,7 +110,7 @@ public class TaskExecutorTestHelpers {
         new QueryInfo(queryIdentifier, "fake_app_id_string", "fake_dag_id_string", "fake_dag_name",
             "fakeHiveQueryId", 1, "fakeUser",
             new ConcurrentHashMap<String, LlapDaemonProtocolProtos.SourceStateProto>(),
-            new String[0], null, "fakeUser", null, nodeId, null, null, false);
+            new String[0], null, "fakeUser", null, nodeId, null, null, false, null);
     return queryInfo;
   }
 
@@ -131,7 +139,7 @@ public class TaskExecutorTestHelpers {
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
       long currentAttemptStartTime, int withinDagPriority) {
-    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, selfAndUpstreamComplete, firstAttemptStartTime,
         currentAttemptStartTime, withinDagPriority, "MockDag", false);
   }
 
@@ -143,14 +151,21 @@ public class TaskExecutorTestHelpers {
         currentAttemptStartTime, withinDagPriority, "MockDag", isGuaranteed);
   }
 
+  private static SubmitWorkRequestProto createSubmitWorkRequestProto(
+      int fragmentNumber, int selfAndUpstreamParallelism, int selfAndUpstreamComplete, long firstAttemptStartTime,
+      long currentAttemptStartTime, int withinDagPriority, String mockDag, boolean isGuaranteed) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, selfAndUpstreamComplete, firstAttemptStartTime,
+        currentAttemptStartTime, withinDagPriority, mockDag, 35, isGuaranteed);
+  }
+
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
-      long currentAttemptStartTime, int withinDagPriority, String dagName,
+      long currentAttemptStartTime, int withinDagPriority, String dagName, int dagId,
       boolean isGuaranteed) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
-    TezDAGID dagId = TezDAGID.getInstance(appId, 1);
-    TezVertexID vId = TezVertexID.getInstance(dagId, 35);
+    TezDAGID dag = TezDAGID.getInstance(appId, 1);
+    TezVertexID vId = TezVertexID.getInstance(dag, dagId);
     return SubmitWorkRequestProto
         .newBuilder()
         .setAttemptNumber(0)
@@ -166,7 +181,7 @@ public class TaskExecutorTestHelpers {
                     QueryIdentifierProto.newBuilder()
                         .setApplicationIdString(appId.toString())
                         .setAppAttemptNumber(0)
-                        .setDagIndex(dagId.getId())
+                        .setDagIndex(dag.getId())
                         .build())
                 .setVertexIndex(vId.getId())
                 .setVertexName("MockVertex")
@@ -212,7 +227,7 @@ public class TaskExecutorTestHelpers {
     public MockRequest(SubmitWorkRequestProto requestProto, QueryFragmentInfo fragmentInfo,
                        boolean canFinish, boolean canFinishQueue, long workTime,
                        TezEvent initialEvent, boolean isGuaranteed) {
-      super(requestProto, fragmentInfo, new Configuration(), new ExecutionContextImpl("localhost"),
+      super(requestProto, fragmentInfo, Configuration::new, new ExecutionContextImpl("localhost"),
           null, new Credentials(), 0, mock(AMReporter.class), null, mock(
           LlapDaemonExecutorMetrics.class), mock(KilledTaskHandler.class), mock(
           FragmentCompletionHandler.class), new DefaultHadoopShim(), null,

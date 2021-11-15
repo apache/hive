@@ -76,8 +76,7 @@ set hive.llap.memory.oversubscription.max.executors.per.query=3;
 
 CREATE TABLE tab2_n6 (key int, value string, ds string);
 
-set hive.exec.dynamic.partition.mode=nonstrict
-insert into tab2select key, value, ds from tab_n12;
+insert into tab2_n6 select key, value, ds from tab_n12;
 analyze table tab2_n6 compute statistics;
 analyze table tab2_n6 compute statistics for columns;
 

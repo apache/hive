@@ -25,6 +25,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -101,11 +104,43 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.rootDir = rootDir;
-    this.deltas.addAll(deltas);
+    this.deltas.addAll(filterDeltasByBucketId(deltas, AcidUtils.parseBucketId(path)));
     this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
     // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
     this.fileLen = fileLen <= 0 ? Long.MAX_VALUE : fileLen;
     this.syntheticAcidProps = syntheticAcidProps;
+  }
+
+  /**
+   * For every split we only want to keep the delete deltas, that contains files for that bucket.
+   * If we filter out files, we might need to filter out statementIds from multistatement transactions.
+   * @param deltas
+   * @param bucketId
+   * @return
+   */
+  private List<AcidInputFormat.DeltaMetaData> filterDeltasByBucketId(List<AcidInputFormat.DeltaMetaData> deltas, int bucketId) {
+    List<AcidInputFormat.DeltaMetaData> results = new ArrayList<>();
+    for (AcidInputFormat.DeltaMetaData dmd : deltas) {
+      Map<Integer, AcidInputFormat.DeltaFileMetaData> bucketFilesbyStmtId =
+          dmd.getDeltaFiles().stream().filter(deltaFileMetaData -> deltaFileMetaData.getBucketId() == bucketId)
+              .collect(Collectors.toMap(AcidInputFormat.DeltaFileMetaData::getStmtId, Function.identity()));
+      if (bucketFilesbyStmtId.isEmpty()) {
+        continue;
+      }
+      // Keep only the relevant stmtIds
+      List<Integer> stmtIds = dmd.getStmtIds().stream()
+          .filter(stmtId -> bucketFilesbyStmtId.containsKey(stmtId))
+          .collect(Collectors.toList());
+      // For a small optimization clear the stmtIds from the files, if the delta is single statement delta
+      List<AcidInputFormat.DeltaFileMetaData> bucketFiles = bucketFilesbyStmtId.values().stream()
+          .map(file -> new AcidInputFormat.DeltaFileMetaData(file.getModTime(), file.getLength(), file.getAttemptId(),
+              file.getFileId(), stmtIds.size() > 1 ? file.getStmtId() : null, bucketId))
+          .collect(Collectors.toList());
+
+      results.add(new AcidInputFormat.DeltaMetaData(dmd.getMinWriteId(), dmd.getMaxWriteId(), stmtIds,
+          dmd.getVisibilityTxnId(), bucketFiles));
+    }
+    return results;
   }
 
   @Override
@@ -273,38 +308,19 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
 
   @Override
   public boolean canUseLlapIo(Configuration conf) {
-    final boolean hasDelta = deltas != null && !deltas.isEmpty();
-    final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
-    final boolean isVectorized = Utilities.getIsVectorized(conf);
-    Boolean isSplitUpdate = null;
-    if (isAcidRead) {
-      final AcidUtils.AcidOperationalProperties acidOperationalProperties
-          = AcidUtils.getAcidOperationalProperties(conf);
-      isSplitUpdate = acidOperationalProperties.isSplitUpdate();
-      // TODO: this is brittle. Who said everyone has to upgrade using upgrade process?
-      assert isSplitUpdate : "should be true in Hive 3.0";
-    }
-
-    if (isOriginal) {
-      if (!isAcidRead && !hasDelta) {
-        // Original scan only
-        return true;
+    if (AcidUtils.isFullAcidScan(conf)) {
+      if (HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED)
+              && Utilities.getIsVectorized(conf)) {
+        boolean hasDeleteDelta = deltas != null && !deltas.isEmpty();
+        return VectorizedOrcAcidRowBatchReader.canUseLlapIoForAcid(this, hasDeleteDelta, conf);
+      } else {
+        LOG.info("Skipping Llap IO based on the following: [vectorized={}, hive.llap.io.acid={}] for {}",
+            Utilities.getIsVectorized(conf), HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED), this);
+        return false;
       }
     } else {
-      boolean isAcidEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED);
-      if (isAcidEnabled && isAcidRead && hasBase && isVectorized) {
-        if (hasDelta) {
-          if (isSplitUpdate) {
-            // Base with delete deltas
-            return true;
-          }
-        } else {
-          // Base scan only
-          return true;
-        }
-      }
+      return true;
     }
-    return false;
   }
 
   /**
@@ -357,12 +373,15 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   }
 
   public void parse(Configuration conf) throws IOException {
+    parse(conf, rootDir);
+  }
+
+  public void parse(Configuration conf, Path rootPath) throws IOException {
     OrcRawRecordMerger.TransactionMetaData tmd =
-        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootDir, conf);
+        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootPath, conf);
     writeId = tmd.syntheticWriteId;
     stmtId = tmd.statementId;
-    AcidOutputFormat.Options opt = AcidUtils.parseBaseOrDeltaBucketFilename(getPath(), conf);
-    bucketId = opt.getBucketId();
+    bucketId = AcidUtils.parseBucketId(getPath());
   }
 
   @Override

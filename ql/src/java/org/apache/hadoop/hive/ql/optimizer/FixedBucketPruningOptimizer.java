@@ -35,18 +35,17 @@ import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree.Operator;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.PrunerOperatorFactory.FilterPruner;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -69,7 +68,7 @@ public class FixedBucketPruningOptimizer extends Transform {
     this.compat = compat;
   }
 
-  public class NoopWalker implements NodeProcessor {
+  public class NoopWalker implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -82,7 +81,7 @@ public class FixedBucketPruningOptimizer extends Transform {
 
     @Override
     protected void generatePredicate(NodeProcessorCtx procCtx,
-        FilterOperator fop, TableScanOperator top) throws SemanticException{
+                                     FilterOperator fop, TableScanOperator top) throws SemanticException{
       FixedBucketPruningOptimizerCtxt ctxt = ((FixedBucketPruningOptimizerCtxt) procCtx);
       Table tbl = top.getConf().getTableMetadata();
       int numBuckets = tbl.getNumBuckets();
@@ -120,6 +119,7 @@ public class FixedBucketPruningOptimizer extends Transform {
       for (StructField fs : tbl.getFields()) {
         if(fs.getFieldName().equals(bucketCol)) {
           bucketField = fs;
+          break;
         }
       }
       Preconditions.checkArgument(bucketField != null);
@@ -195,6 +195,9 @@ public class FixedBucketPruningOptimizer extends Transform {
             return;
           }
         }
+      } else if (expr.getOperator() == Operator.NOT) {
+        // TODO: think we can handle NOT IS_NULL?
+        return;
       }
       // invariant: bucket-col IN literals of type bucketField
       BitSet bs = new BitSet(numBuckets);
@@ -249,9 +252,12 @@ public class FixedBucketPruningOptimizer extends Transform {
       // This is a bit hackish to fix mismatch between SARG and Hive types
       // for Timestamp and Date. TODO: Move those types to storage-api.
       if (o instanceof java.sql.Date) {
-        return Date.valueOf(o.toString());
+        java.sql.Date sqlDate = (java.sql.Date)o;
+        return Date.ofEpochDay(
+            DateWritable.millisToDays(sqlDate.getTime()));
       } else if (o instanceof java.sql.Timestamp) {
-        return Timestamp.valueOf(o.toString());
+        java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp)o;
+        return Timestamp.ofEpochMilli(sqlTimestamp.getTime(), sqlTimestamp.getNanos());
       }
       return o;
     }

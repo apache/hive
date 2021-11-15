@@ -33,7 +33,7 @@ import org.apache.druid.segment.indexing.RealtimeTuningConfig;
 import org.apache.druid.segment.indexing.granularity.GranularitySpec;
 import org.apache.druid.segment.realtime.plumber.CustomVersioningPolicy;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -152,25 +152,9 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
     Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
 
     IndexSpec indexSpec = DruidStorageHandlerUtils.getIndexSpec(jc);
-    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
-            null,
-            null,
-            null,
-            new File(basePersistDirectory, dataSource),
-            new CustomVersioningPolicy(version),
-            null,
-            null,
-            null,
-            indexSpec,
-            true,
-            0,
-            0,
-            true,
-            null,
-            0L,
-        null,
-            null
-    );
+    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory, null, null, null,
+        new File(basePersistDirectory, dataSource), new CustomVersioningPolicy(version), null, null, null, indexSpec,
+        null, true, 0, 0, true, null, 0L, null, null);
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
     return new DruidRecordWriter(dataSchema, realtimeTuningConfig,

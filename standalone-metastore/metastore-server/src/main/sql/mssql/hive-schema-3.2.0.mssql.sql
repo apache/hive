@@ -285,7 +285,7 @@ CREATE TABLE DBS
     "NAME" nvarchar(128) NULL,
     OWNER_NAME nvarchar(128) NULL,
     OWNER_TYPE nvarchar(10) NULL,
-    CTLG_NAME nvarchar(256),
+    CTLG_NAME nvarchar(256) DEFAULT 'hive',
     CREATE_TIME INT
 );
 
@@ -701,6 +701,9 @@ CREATE TABLE CTLGS (
       LOCATION_URI nvarchar(4000) not null,
       CREATE_TIME INT
 );
+
+-- Insert a default value.  The location is TBD.  Hive will fix this when it starts
+INSERT INTO CTLGS VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
 CREATE UNIQUE INDEX UNIQUE_CTLG ON CTLGS ("NAME");
 

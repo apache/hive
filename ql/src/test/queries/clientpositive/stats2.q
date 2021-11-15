@@ -2,7 +2,6 @@
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=false;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.merge.mapfiles=false;
 
 create table analyze_t1 like srcpart;

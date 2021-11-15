@@ -83,7 +83,7 @@ public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
     Configuration conf = jobConf;
     if (skipTimestampConversion ^ HiveConf.getBoolVar(
         conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
-      conf = new JobConf(oldJobConf);
+      conf = new JobConf(jobConf);
       HiveConf.setBoolVar(conf,
         HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
     }

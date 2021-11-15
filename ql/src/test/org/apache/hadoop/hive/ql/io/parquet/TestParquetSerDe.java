@@ -15,14 +15,13 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
@@ -35,9 +34,16 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-public class TestParquetSerDe extends TestCase {
+/**
+ * TestParquetSerDe.
+ */
+public class TestParquetSerDe {
 
+  @Test
   public void testParquetHiveSerDe() throws Throwable {
     try {
       // Create the SerDe
@@ -46,7 +52,7 @@ public class TestParquetSerDe extends TestCase {
       final ParquetHiveSerDe serDe = new ParquetHiveSerDe();
       final Configuration conf = new Configuration();
       final Properties tbl = createProperties();
-      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+      serDe.initialize(conf, tbl, null);
 
       // Data
       final Writable[] arr = new Writable[9];
@@ -85,6 +91,7 @@ public class TestParquetSerDe extends TestCase {
     }
   }
 
+  @Test
   public void testParquetHiveSerDeComplexTypes() throws Throwable {
     // Initialize
     ParquetHiveSerDe serDe = new ParquetHiveSerDe();
@@ -95,7 +102,7 @@ public class TestParquetSerDe extends TestCase {
     tblProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int,struct<a:int,b:string>");
     conf.set(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR, "s.b");
 
-    serDe.initialize(conf, tblProperties);
+    serDe.initialize(conf, tblProperties, null);
 
     // Generate test data
     Writable[] wb = new Writable[1];

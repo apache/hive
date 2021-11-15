@@ -21,15 +21,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
-import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
+import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 
 public class Utils {
@@ -47,24 +50,31 @@ public class Utils {
         && HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS) 
         && useCacheAffinity;
     SplitLocationProvider splitLocationProvider;
-    LOG.info("SplitGenerator using llap affinitized locations: " + useCustomLocations);
-    if (useCustomLocations) {
-      LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
-      LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
-
-      Collection<LlapServiceInstance> serviceInstances =
-        serviceRegistry.getInstances().getAllInstancesOrdered(true);
-      Preconditions.checkArgument(!serviceInstances.isEmpty(),
-          "No running LLAP daemons! Please check LLAP service status and zookeeper configuration");
-      ArrayList<String> locations = new ArrayList<>(serviceInstances.size());
-      for (LlapServiceInstance serviceInstance : serviceInstances) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding " + serviceInstance.getWorkerIdentity() + " with hostname=" +
-              serviceInstance.getHost() + " to list for split locations");
+    final String locationProviderClass = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_SPLIT_LOCATION_PROVIDER_CLASS);
+    final boolean customLocationProvider =
+      !HostAffinitySplitLocationProvider.class.getName().equals(locationProviderClass);
+    LOG.info("SplitGenerator using llap affinitized locations: {} locationProviderClass: {}", useCustomLocations, locationProviderClass);
+    if (customLocationProvider) {
+      SplitLocationProvider locationProviderImpl;
+      try {
+        // the implementation of SplitLocationProvider may have Configuration as a single arg constructor, so we try
+        // invoking that constructor first. If that does not exist, the fallback will use no-arg constructor.
+        locationProviderImpl = JavaUtils
+          .newInstance(JavaUtils.getClass(locationProviderClass, SplitLocationProvider.class),
+            new Class<?>[]{Configuration.class}, new Object[]{conf});
+      } catch (Exception e) {
+        LOG.warn("Unable to instantiate {} class. Will try no-arg constructor invocation..", locationProviderClass, e);
+        try {
+          locationProviderImpl = JavaUtils.newInstance(JavaUtils.getClass(locationProviderClass,
+            SplitLocationProvider.class));
+        } catch (Exception ex) {
+          throw new IOException(ex);
         }
-        locations.add(serviceInstance.getHost());
       }
-      splitLocationProvider = new HostAffinitySplitLocationProvider(locations);
+      return locationProviderImpl;
+    } else if (useCustomLocations) {
+      LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
+      return getCustomSplitLocationProvider(serviceRegistry, LOG);
     } else {
       splitLocationProvider = new SplitLocationProvider() {
         @Override
@@ -83,5 +93,61 @@ public class Utils {
       };
     }
     return splitLocationProvider;
+  }
+
+  @VisibleForTesting
+  static SplitLocationProvider getCustomSplitLocationProvider(LlapRegistryService serviceRegistry, Logger LOG) throws
+      IOException {
+    LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
+
+    Collection<LlapServiceInstance> serviceInstances =
+        serviceRegistry.getInstances().getAllInstancesOrdered(true);
+    Preconditions.checkArgument(!serviceInstances.isEmpty(),
+        "No running LLAP daemons! Please check LLAP service status and zookeeper configuration");
+    ArrayList<String> locations = new ArrayList<>(serviceInstances.size());
+    for (LlapServiceInstance serviceInstance : serviceInstances) {
+      String executors =
+          serviceInstance.getProperties().get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS);
+      if (executors != null && Integer.parseInt(executors) == 0) {
+        // If the executors set to 0 we should not consider this location for affinity
+        locations.add(null);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Not adding " + serviceInstance.getWorkerIdentity() + " with hostname=" +
+                        serviceInstance.getHost() + " since executor number is 0");
+        }
+      } else {
+        locations.add(serviceInstance.getHost());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Adding " + serviceInstance.getWorkerIdentity() + " with hostname=" +
+                        serviceInstance.getHost() + " to list for split locations");
+        }
+      }
+    }
+    return new HostAffinitySplitLocationProvider(locations);
+  }
+
+
+  /**
+   * Merges two different tez counters into one
+   *
+   * @param counter1 - tez counter 1
+   * @param counter2 - tez counter 2
+   * @return - merged tez counter
+   */
+  public static TezCounters mergeTezCounters(final TezCounters counter1, final TezCounters counter2) {
+    TezCounters merged = new TezCounters();
+    if (counter1 != null) {
+      for (String counterGroup : counter1.getGroupNames()) {
+        merged.addGroup(counter1.getGroup(counterGroup));
+      }
+    }
+
+    if (counter2 != null) {
+      for (String counterGroup : counter2.getGroupNames()) {
+        merged.addGroup(counter2.getGroup(counterGroup));
+      }
+    }
+
+    return merged;
   }
 }

@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -36,7 +38,7 @@ public class JsonWriter implements Closeable {
 
   public JsonWriter(FileSystem fs, Path writePath) throws IOException {
     OutputStream out = fs.create(writePath);
-    jsonGenerator = new JsonFactory().createJsonGenerator(out);
+    jsonGenerator = new JsonFactory().createGenerator(out);
     jsonGenerator.writeStartObject();
     jsonGenerator.writeStringField("version", METADATA_FORMAT_VERSION);
   }
@@ -50,6 +52,6 @@ public class JsonWriter implements Closeable {
   public interface Serializer {
     String UTF_8 = "UTF-8";
     void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider) throws
-        SemanticException, IOException;
+        SemanticException, IOException, MetaException;
   }
 }

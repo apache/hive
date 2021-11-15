@@ -26,9 +26,12 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
@@ -68,6 +71,12 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private static final String NONVECTOR_SETTING_MESSAGE = "disable "
       + ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED.varname + " to work around this error";
 
+  private static final Map<String, VirtualColumn> ALLOWED_VIRTUAL_COLUMNS = Collections.unmodifiableMap(
+          new HashMap<String, VirtualColumn>() {{
+    put(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID);
+    put(VirtualColumn.ROWISDELETED.getName(), VirtualColumn.ROWISDELETED);
+  }});
+
   private final InputFormat<NullWritable, VectorizedRowBatch> sourceInputFormat;
   private final AvoidSplitCombination sourceASC;
   private final Deserializer sourceSerDe;
@@ -100,6 +109,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     FileSplit fileSplit = (FileSplit) split;
     reporter.setStatus(fileSplit.toString());
+
     try {
       // At this entry point, we are going to assume that these are logical table columns.
       // Perhaps we should go thru the code and clean this up to be more explicit; for now, we
@@ -180,13 +190,13 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     RowSchema rowSchema = findTsOp(mapWork).getSchema();
     final List<String> colNames = new ArrayList<String>(rowSchema.getSignature().size());
     final List<TypeInfo> colTypes = new ArrayList<TypeInfo>(rowSchema.getSignature().size());
-    boolean hasRowId = false;
+    ArrayList<VirtualColumn> virtualColumnList = new ArrayList<>(2);
     for (ColumnInfo c : rowSchema.getSignature()) {
       String columnName = c.getInternalName();
-      if (VirtualColumn.ROWID.getName().equals(columnName)) {
-        hasRowId = true;
-      } else {
-        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      if (ALLOWED_VIRTUAL_COLUMNS.containsKey(columnName)) {
+        virtualColumnList.add(ALLOWED_VIRTUAL_COLUMNS.get(columnName));
+      } else if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) {
+        continue;
       }
       colNames.add(columnName);
       colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(c.getTypeName()));
@@ -205,12 +215,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         }
       }
     }
-    final VirtualColumn[] virtualColumns;
-    if (hasRowId) {
-      virtualColumns = new VirtualColumn[] {VirtualColumn.ROWID};
-    } else {
-      virtualColumns = new VirtualColumn[0];
-    }
+    final VirtualColumn[] virtualColumns = virtualColumnList.toArray(new VirtualColumn[0]);
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
         colTypes.toArray(new TypeInfo[colTypes.size()]), null, null, partitionColumnCount,
         virtualColumns.length, virtualColumns, new String[0], null);

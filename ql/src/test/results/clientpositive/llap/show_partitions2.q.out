@@ -1,0 +1,418 @@
+PREHOOK: query: CREATE TABLE mpart1 (key1 INT, value1 STRING) PARTITIONED BY (ds DATE, hr INT, rs STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: CREATE TABLE mpart1 (key1 INT, value1 STRING) PARTITIONED BY (ds DATE, hr INT, rs STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mpart1
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-09', hr=17, rs='EU')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-09', hr=17, rs='EU')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-09/hr=17/rs=EU
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-09', hr=19, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-09', hr=19, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-09/hr=19/rs=AS
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-09', hr=22, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-09', hr=22, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-09/hr=22/rs=AS
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=12, rs='EU')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=12, rs='EU')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=12/rs=EU
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=10, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=10, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=10/rs=AS
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=15, rs='EU')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=15, rs='EU')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=15/rs=EU
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=16, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=16, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=16/rs=AS
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=20, rs='AF')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=20, rs='AF')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=20/rs=AF
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=21, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-10', hr=21, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=21/rs=AS
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-11', hr=16, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-11', hr=16, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-11/hr=16/rs=AS
+PREHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-11', hr=22, rs='AS')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-11', hr=22, rs='AS')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-11/hr=22/rs=AS
+PREHOOK: query: CREATE TABLE srcpart1 (key1 INT, value1 STRING, ds DATE, hr INT, rs STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart1
+POSTHOOK: query: CREATE TABLE srcpart1 (key1 INT, value1 STRING, ds DATE, hr INT, rs STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart1
+PREHOOK: query: INSERT INTO TABLE srcpart1 VALUES (1, 'val1', 'null', 'null', 'AS'), (2, 'val2', '1980-11-11', '12', 'AS'),
+    (3, 'val3', '1980-11-10', '21', 'NA'), (4, 'val4', '1980-11-11', 'null', 'NA'), (5, 'val5', '1980-11-10', 'null', 'NA')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@srcpart1
+POSTHOOK: query: INSERT INTO TABLE srcpart1 VALUES (1, 'val1', 'null', 'null', 'AS'), (2, 'val2', '1980-11-11', '12', 'AS'),
+    (3, 'val3', '1980-11-10', '21', 'NA'), (4, 'val4', '1980-11-11', 'null', 'NA'), (5, 'val5', '1980-11-10', 'null', 'NA')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@srcpart1
+POSTHOOK: Lineage: srcpart1.ds SCRIPT []
+POSTHOOK: Lineage: srcpart1.hr SCRIPT []
+POSTHOOK: Lineage: srcpart1.key1 SCRIPT []
+POSTHOOK: Lineage: srcpart1.rs SCRIPT []
+POSTHOOK: Lineage: srcpart1.value1 SCRIPT []
+PREHOOK: query: INSERT INTO TABLE mpart1 PARTITION(ds, hr, rs) SELECT * FROM srcpart1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart1
+PREHOOK: Output: default@mpart1
+POSTHOOK: query: INSERT INTO TABLE mpart1 PARTITION(ds, hr, rs) SELECT * FROM srcpart1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart1
+POSTHOOK: Output: default@mpart1
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=21/rs=NA
+POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+POSTHOOK: Output: default@mpart1@ds=1980-11-11/hr=12/rs=AS
+POSTHOOK: Output: default@mpart1@ds=1980-11-11/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+POSTHOOK: Output: default@mpart1@ds=__HIVE_DEFAULT_PARTITION__/hr=__HIVE_DEFAULT_PARTITION__/rs=AS
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-10,hr=21,rs=NA).key1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:key1, type:int, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-10,hr=21,rs=NA).value1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-10,hr=__HIVE_DEFAULT_PARTITION__,rs=NA).key1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:key1, type:int, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-10,hr=__HIVE_DEFAULT_PARTITION__,rs=NA).value1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-11,hr=12,rs=AS).key1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:key1, type:int, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-11,hr=12,rs=AS).value1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-11,hr=__HIVE_DEFAULT_PARTITION__,rs=NA).key1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:key1, type:int, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=1980-11-11,hr=__HIVE_DEFAULT_PARTITION__,rs=NA).value1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=__HIVE_DEFAULT_PARTITION__,hr=__HIVE_DEFAULT_PARTITION__,rs=AS).key1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:key1, type:int, comment:null), ]
+POSTHOOK: Lineage: mpart1 PARTITION(ds=__HIVE_DEFAULT_PARTITION__,hr=__HIVE_DEFAULT_PARTITION__,rs=AS).value1 SIMPLE [(srcpart1)srcpart1.FieldSchema(name:value1, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' ORDER BY rs DESC, hr LIMIT 4
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' ORDER BY rs DESC, hr LIMIT 4
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-10/hr=21/rs=NA
+ds=1980-11-10/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+ds=1980-11-10/hr=12/rs=EU
+ds=1980-11-10/hr=15/rs=EU
+PREHOOK: query: SHOW PARTITIONS mpart1 PARTITION (rs = 'AS') WHERE ds = '1980-11-10' AND hr >= 20
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 PARTITION (rs = 'AS') WHERE ds = '1980-11-10' AND hr >= 20
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-10/hr=21/rs=AS
+PREHOOK: query: SHOW PARTITIONS mpart1 WHERE hr > 9 AND hr < 19 ORDER BY hr DESC, ds
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 WHERE hr > 9 AND hr < 19 ORDER BY hr DESC, ds
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-09/hr=17/rs=EU
+ds=1980-11-10/hr=16/rs=AS
+ds=1980-11-11/hr=16/rs=AS
+ds=1980-11-10/hr=15/rs=EU
+ds=1980-11-10/hr=12/rs=EU
+ds=1980-11-11/hr=12/rs=AS
+ds=1980-11-10/hr=10/rs=AS
+PREHOOK: query: SHOW PARTITIONS mpart1 ORDER BY hr ASC,  ds DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 ORDER BY hr ASC,  ds DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-10/hr=10/rs=AS
+ds=1980-11-11/hr=12/rs=AS
+ds=1980-11-10/hr=12/rs=EU
+ds=1980-11-10/hr=15/rs=EU
+ds=1980-11-11/hr=16/rs=AS
+ds=1980-11-10/hr=16/rs=AS
+ds=1980-11-09/hr=17/rs=EU
+ds=1980-11-09/hr=19/rs=AS
+ds=1980-11-10/hr=20/rs=AF
+ds=1980-11-10/hr=21/rs=NA
+ds=1980-11-10/hr=21/rs=AS
+ds=1980-11-11/hr=22/rs=AS
+ds=1980-11-09/hr=22/rs=AS
+ds=__HIVE_DEFAULT_PARTITION__/hr=__HIVE_DEFAULT_PARTITION__/rs=AS
+ds=1980-11-11/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+ds=1980-11-10/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+PREHOOK: query: SHOW PARTITIONS mpart1 PARTITION (rs='AS') ORDER BY ds DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 PARTITION (rs='AS') ORDER BY ds DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=__HIVE_DEFAULT_PARTITION__/hr=__HIVE_DEFAULT_PARTITION__/rs=AS
+ds=1980-11-11/hr=12/rs=AS
+ds=1980-11-11/hr=22/rs=AS
+ds=1980-11-11/hr=16/rs=AS
+ds=1980-11-10/hr=21/rs=AS
+ds=1980-11-10/hr=16/rs=AS
+ds=1980-11-10/hr=10/rs=AS
+ds=1980-11-09/hr=22/rs=AS
+ds=1980-11-09/hr=19/rs=AS
+PREHOOK: query: SHOW PARTITIONS mpart1 LIMIT 3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 LIMIT 3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-09/hr=17/rs=EU
+ds=1980-11-09/hr=19/rs=AS
+ds=1980-11-09/hr=22/rs=AS
+PREHOOK: query: SHOW PARTITIONS mpart1 PARTITION(ds = '1980-11-10') LIMIT 3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 PARTITION(ds = '1980-11-10') LIMIT 3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-10/hr=12/rs=EU
+ds=1980-11-10/hr=10/rs=AS
+ds=1980-11-10/hr=15/rs=EU
+PREHOOK: query: SHOW PARTITIONS mpart1 where ds = '__HIVE_DEFAULT_PARTITION__' AND hr = '__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 where ds = '__HIVE_DEFAULT_PARTITION__' AND hr = '__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=__HIVE_DEFAULT_PARTITION__/hr=__HIVE_DEFAULT_PARTITION__/rs=AS
+PREHOOK: query: SHOW PARTITIONS mpart1 where (ds = '__HIVE_DEFAULT_PARTITION__' OR hr = '__HIVE_DEFAULT_PARTITION__') AND rs = 'NA'
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 where (ds = '__HIVE_DEFAULT_PARTITION__' OR hr = '__HIVE_DEFAULT_PARTITION__') AND rs = 'NA'
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-10/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+ds=1980-11-11/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+PREHOOK: query: SHOW PARTITIONS mpart1 where ds >= '1980-11-10' AND hr = '__HIVE_DEFAULT_PARTITION__' ORDER BY ds DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 where ds >= '1980-11-10' AND hr = '__HIVE_DEFAULT_PARTITION__' ORDER BY ds DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-11/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+ds=1980-11-10/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
+PREHOOK: query: SHOW PARTITIONS mpart1 where ds = '1980-11-10' AND hr != '__HIVE_DEFAULT_PARTITION__' ORDER BY hr DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: SHOW PARTITIONS mpart1 where ds = '1980-11-10' AND hr != '__HIVE_DEFAULT_PARTITION__' ORDER BY hr DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+ds=1980-11-10/hr=21/rs=NA
+ds=1980-11-10/hr=21/rs=AS
+ds=1980-11-10/hr=20/rs=AF
+ds=1980-11-10/hr=16/rs=AS
+ds=1980-11-10/hr=15/rs=EU
+ds=1980-11-10/hr=12/rs=EU
+ds=1980-11-10/hr=10/rs=AS
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' AND hr >= 20
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' AND hr >= 20
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      condition: ((ds = DATE'1980-11-10') and (hr >= 20))
+      limit: -1
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' ORDER BY rs DESC, hr LIMIT 4
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' ORDER BY rs DESC, hr LIMIT 4
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      condition: (ds = DATE'1980-11-10')
+      limit: 4
+      order: 2,1:-+
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 PARTITION (rs = 'AS') WHERE ds = '1980-11-10' AND hr >= 20
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 PARTITION (rs = 'AS') WHERE ds = '1980-11-10' AND hr >= 20
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      condition: ((ds = DATE'1980-11-10') and (hr >= 20))
+      limit: -1
+      partSpec:
+        rs AS
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 ORDER BY hr DESC, ds DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 ORDER BY hr DESC, ds DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      limit: -1
+      order: 1,0:--
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 PARTITION(ds = '1980-11-10') LIMIT 3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 PARTITION(ds = '1980-11-10') LIMIT 3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      limit: 3
+      partSpec:
+        ds 1980-11-10
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 where (ds = '__HIVE_DEFAULT_PARTITION__' OR hr = '__HIVE_DEFAULT_PARTITION__') AND rs = 'NA'
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 where (ds = '__HIVE_DEFAULT_PARTITION__' OR hr = '__HIVE_DEFAULT_PARTITION__') AND rs = 'NA'
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      condition: ((ds is null or hr is null) and (rs = 'NA'))
+      limit: -1
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 where ds >= '1980-11-10' AND hr = '__HIVE_DEFAULT_PARTITION__' ORDER BY ds DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mpart1
+POSTHOOK: query: EXPLAIN SHOW PARTITIONS mpart1 where ds >= '1980-11-10' AND hr = '__HIVE_DEFAULT_PARTITION__' ORDER BY ds DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mpart1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      condition: ((ds >= DATE'1980-11-10') and hr is null)
+      limit: -1
+      order: 0:-
+      table: mpart1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

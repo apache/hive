@@ -18,11 +18,16 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -31,11 +36,11 @@ public class TestMapWork {
   @Test
   public void testGetAndSetConsistency() {
     MapWork mw = new MapWork();
-    LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+    Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
     pathToAliases.put(new Path("p0"), Lists.newArrayList("a1", "a2"));
     mw.setPathToAliases(pathToAliases);
 
-    LinkedHashMap<Path, ArrayList<String>> pta = mw.getPathToAliases();
+    Map<Path, List<String>> pta = mw.getPathToAliases();
     assertEquals(pathToAliases, pta);
 
   }
@@ -46,6 +51,22 @@ public class TestMapWork {
     Path p2 = new Path("hdfs://asd/asd/");
 
     assertEquals(p1, p2);
+  }
+
+  @Test
+  public void testDeriveLlapSetsCacheAffinityForTextInputFormat() {
+    MapWork mapWork = new MapWork();
+    PartitionDesc partitionDesc = new PartitionDesc();
+    partitionDesc.setInputFileFormatClass(org.apache.hadoop.mapred.TextInputFormat.class);
+    mapWork.addPathToPartitionInfo(new Path("/tmp"), partitionDesc);
+    Configuration conf = new Configuration(false);
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, "true");
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED, true);
+
+    mapWork.deriveLlap(conf, false);
+
+    assertTrue("Cache affinity should be set for TextInputFormat, as LLAP serde cache would use it",
+        mapWork.getCacheAffinity());
   }
 
 }

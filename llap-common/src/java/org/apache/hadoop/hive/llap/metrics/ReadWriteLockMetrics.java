@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.llap.metrics;
 
-import avro.shaded.com.google.common.annotations.VisibleForTesting;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import java.io.Serializable;

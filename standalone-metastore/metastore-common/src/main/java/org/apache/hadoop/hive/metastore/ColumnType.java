@@ -21,6 +21,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -133,16 +134,18 @@ public class ColumnType {
   );
 
   // This map defines the progression of up casts in numeric types.
-  public static final Map<String, Integer> NumericCastOrder = new HashMap<>();
+  public static final Map<String, Integer> NumericCastOrder;
 
   static {
-    NumericCastOrder.put(TINYINT_TYPE_NAME, 1);
-    NumericCastOrder.put(SMALLINT_TYPE_NAME, 2);
-    NumericCastOrder.put(INT_TYPE_NAME, 3);
-    NumericCastOrder.put(BIGINT_TYPE_NAME, 4);
-    NumericCastOrder.put(DECIMAL_TYPE_NAME, 5);
-    NumericCastOrder.put(FLOAT_TYPE_NAME, 6);
-    NumericCastOrder.put(DOUBLE_TYPE_NAME, 7);
+    Map<String, Integer> map = new HashMap<>();
+    map.put(TINYINT_TYPE_NAME, 1);
+    map.put(SMALLINT_TYPE_NAME, 2);
+    map.put(INT_TYPE_NAME, 3);
+    map.put(BIGINT_TYPE_NAME, 4);
+    map.put(DECIMAL_TYPE_NAME, 5);
+    map.put(FLOAT_TYPE_NAME, 6);
+    map.put(DOUBLE_TYPE_NAME, 7);
+    NumericCastOrder = Collections.unmodifiableMap(map);
   }
 
   private static final Set<String> decoratedTypeNames = new HashSet<>();
@@ -229,10 +232,6 @@ public class ColumnType {
         return NumericCastOrder.get(from) < NumericCastOrder.get(to);
       }
 
-      // Allow string to double/decimal conversion
-      if (StringTypes.contains(from) &&
-          (to.equals(DOUBLE_TYPE_NAME) || to.equals(DECIMAL_TYPE_NAME))) return true;
-
       // Void can go to anything
       if (from.equals(VOID_TYPE_NAME)) return true;
 
@@ -278,7 +277,7 @@ public class ColumnType {
     // These 4 types are not supported yet.
     // We should define a complex type date in thrift that contains a single int
     // member, and DynamicSerDe
-    // should convert it to date type at runtime.
+    // should convert it to date type at runtime. (note: DynamicSerDe has been removed)
     typeToThriftTypeMap.put(DATE_TYPE_NAME, "date");
     typeToThriftTypeMap.put(DATETIME_TYPE_NAME, "datetime");
     typeToThriftTypeMap.put(TIMESTAMP_TYPE_NAME, "timestamp");

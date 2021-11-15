@@ -1,0 +1,50 @@
+PREHOOK: query: CREATE TABLE complex1 (
+    c0 int,
+    c1 array<int>,
+    c2 map<int, string>,
+    c3 struct<f1:int,f2:string,f3:array<int>>,
+    c4 array<struct<f1:int,f2:string,f3:array<int>>>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex1
+POSTHOOK: query: CREATE TABLE complex1 (
+    c0 int,
+    c1 array<int>,
+    c2 map<int, string>,
+    c3 struct<f1:int,f2:string,f3:array<int>>,
+    c4 array<struct<f1:int,f2:string,f3:array<int>>>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex1
+PREHOOK: query: INSERT INTO complex1
+    SELECT 3,
+       array(1, 2, null),
+       map(1, 'one', 2, null),
+       named_struct('f1', cast(null as int), 'f2', cast(null as string), 'f3', array(1, 2, null)),
+       array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2, 3, 4)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@complex1
+POSTHOOK: query: INSERT INTO complex1
+    SELECT 3,
+       array(1, 2, null),
+       map(1, 'one', 2, null),
+       named_struct('f1', cast(null as int), 'f2', cast(null as string), 'f3', array(1, 2, null)),
+       array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2, 3, 4)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@complex1
+POSTHOOK: Lineage: complex1.c0 SIMPLE []
+POSTHOOK: Lineage: complex1.c1 EXPRESSION []
+POSTHOOK: Lineage: complex1.c2 EXPRESSION []
+POSTHOOK: Lineage: complex1.c3 EXPRESSION []
+POSTHOOK: Lineage: complex1.c4 EXPRESSION []
+PREHOOK: query: select * from complex1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	[1,2,null]	{1:"one",2:null}	{"f1":null,"f2":null,"f3":[1,2,null]}	[{"f1":11,"f2":"two","f3":[2,3,4]}]

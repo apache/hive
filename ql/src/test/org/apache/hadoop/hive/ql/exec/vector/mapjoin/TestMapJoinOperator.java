@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -160,6 +160,7 @@ public class TestMapJoinOperator {
       return (smallTableValueSize > 0);
     case INNER_BIG_ONLY:
     case LEFT_SEMI:
+    case LEFT_ANTI:
       return (smallTableValueSize == 0);
     case OUTER:
       return true;
@@ -1590,6 +1591,7 @@ public class TestMapJoinOperator {
             break;
           case INNER_BIG_ONLY:
           case LEFT_SEMI:
+          case LEFT_ANTI:
             {
               Object[] outputObjects = new Object[testDesc.outputColumnNames.length];
 
@@ -1791,6 +1793,8 @@ public class TestMapJoinOperator {
       break;
     case FULL_OUTER:
       executeTestFullOuter(testDesc, testData, title);
+      break;
+    case LEFT_ANTI: //TODO
       break;
     default:
       throw new RuntimeException("Unexpected Vector MapJoin variation " +

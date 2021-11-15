@@ -23,7 +23,6 @@ insert into student_acid(age) values(22);
 
 select * from student_acid;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 drop table if exists acid_partitioned;
 create table acid_partitioned (a int, c string)

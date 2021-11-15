@@ -27,18 +27,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 /**
- * Hive query executer driver
+ * Hive query executer driver.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public interface IDriver extends CommandProcessor {
 
-  int compile(String string);
-
-  CommandProcessorResponse compileAndRespond(String statement);
+  CommandProcessorResponse compileAndRespond(String statement) throws CommandProcessorException;
 
   QueryPlan getPlan();
 
@@ -46,14 +45,15 @@ public interface IDriver extends CommandProcessor {
 
   QueryDisplay getQueryDisplay();
 
-  void setOperationId(String guid64);
+  void setOperationId(String operationId);
 
-  CommandProcessorResponse run();
+  CommandProcessorResponse run() throws CommandProcessorException;
+
   @Override
-  CommandProcessorResponse run(String command);
-
+  CommandProcessorResponse run(String command) throws CommandProcessorException;
 
   // create some "cover" to the result?
+  @SuppressWarnings("rawtypes")
   boolean getResults(List res) throws IOException;
 
   void setMaxRows(int maxRows);
@@ -66,7 +66,8 @@ public interface IDriver extends CommandProcessor {
 
   void resetFetch() throws IOException;
 
-  // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
+  // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant
+  // remove?
   @Override
   void close();
   void destroy();

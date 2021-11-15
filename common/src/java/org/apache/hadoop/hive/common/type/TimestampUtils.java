@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.common.type;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hive.common.util.DateParser;
 
 import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 /**
  * Utilities for Timestamps and the relevant conversions.
@@ -171,12 +173,23 @@ public class TimestampUtils {
 
   private static final int DATE_LENGTH = "YYYY-MM-DD".length();
 
-  public static Timestamp stringToTimestamp(String s) {
-    s = s.trim();
+  /**
+   * Convert (parse) a String into a Timestamp.
+   *
+   * @param text The text to parse
+   * @return The Timestamp parsed from the string
+   * @throws IllegalArgumentException if {@code text} cannot be parsed
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Timestamp stringToTimestamp(final String text) {
+    final String s = Objects.requireNonNull(text).trim();
     // Handle simpler cases directly avoiding exceptions
     if (s.length() == DATE_LENGTH) {
-      // Its a date!
-      return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+      Date d = DateParser.parseDate(s);
+      if (d == null) {
+        throw new IllegalArgumentException("Cannot parse date: " + text);
+      }
+      return Timestamp.ofEpochMilli(d.toEpochMilli());
     }
     try {
       return Timestamp.valueOf(s);
@@ -185,9 +198,14 @@ public class TimestampUtils {
       try {
         return Timestamp.valueOf(
             TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
-      } catch (IllegalArgumentException | DateTimeParseException eTZ) {
-        // Last attempt
-        return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+      } catch (IllegalArgumentException | DateTimeException eTZ) {
+        try {
+          // Try HH:mm:ss format (For Hour, Minute & Second UDF).
+          return Timestamp.getTimestampFromTime(s);
+        } catch(DateTimeException e) {
+          // Last attempt
+          return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+        }
       }
     }
   }

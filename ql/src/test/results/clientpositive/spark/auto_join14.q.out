@@ -64,7 +64,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) > 100.0D)) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) > 100.0D) and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -139,4 +139,4 @@ POSTHOOK: query: SELECT sum(hash(dest1_n83.c1,dest1_n83.c2)) FROM dest1_n83
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n83
 #### A masked pattern was here ####
-404540072956
+404554174174

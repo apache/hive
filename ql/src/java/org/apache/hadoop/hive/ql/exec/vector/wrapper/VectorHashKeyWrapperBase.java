@@ -220,4 +220,9 @@ public abstract class VectorHashKeyWrapperBase extends KeyWrapper {
   public boolean isNull(int keyIndex) {
     throw new RuntimeException("Not implemented");
   }
+
+  @Override
+  public boolean isCopy() {
+    throw new RuntimeException("Not implemented");
+  }
 }

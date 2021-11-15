@@ -17,4 +17,4 @@ PREHOOK: type: LOCKDATABASE
 PREHOOK: Input: database:lockneg4
 PREHOOK: Output: database:lockneg4
 Unable to acquire EXPLICIT, SHARED lock lockneg4 after 1 attempts.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

@@ -34,7 +34,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -73,7 +73,6 @@ public class TestMetaStoreLimitPartitionRequest {
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_INTEGER_JDO_PUSHDOWN, true);
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL, true);
     conf.setBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING, true);
-    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
 
     miniHS2 = new MiniHS2.Builder().withConf(conf).build();
@@ -290,7 +289,7 @@ public class TestMetaStoreLimitPartitionRequest {
       fail("The query should have failed, because the number of requested partitions are bigger than "
               + PARTITION_REQUEST_LIMIT);
     } catch (HiveSQLException e) {
-      String exceedLimitMsg = String.format(HiveMetaStore.PARTITION_NUMBER_EXCEED_LIMIT_MSG, expectedPartitionNumber,
+      String exceedLimitMsg = String.format(HMSHandler.PARTITION_NUMBER_EXCEED_LIMIT_MSG, expectedPartitionNumber,
           TABLE_NAME, PARTITION_REQUEST_LIMIT, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST.toString());
       assertTrue(getWrongExceptionMessage(exceedLimitMsg, e.getMessage()),
           e.getMessage().contains(exceedLimitMsg.toString()));

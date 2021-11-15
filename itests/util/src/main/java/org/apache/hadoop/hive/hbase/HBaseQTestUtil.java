@@ -21,6 +21,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hive.ql.QTestArguments;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
@@ -58,11 +59,11 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void createSources(String tname) throws Exception {
-    super.createSources(tname);
+  public void createSources() throws Exception {
+    super.createSources();
 
     conf.setBoolean("hive.test.init.phase", true);
-    initDataset(HBASE_SRC_NAME);
+    datasetHandler.initDataset(HBASE_SRC_NAME, getCliDriver());
 
     // create a snapshot
     Admin admin = null;
@@ -78,8 +79,8 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void cleanUp(String tname) throws Exception {
-    super.cleanUp(tname);
+  public void cleanUp() throws Exception {
+    super.cleanUp();
 
     Admin admin = null;
     try {

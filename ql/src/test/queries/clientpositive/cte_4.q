@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.cte.materialize.threshold=1;
+set hive.optimize.cte.materialize.full.aggregate.only=false;
 
 -- union test
 with q1 as (select * from src where key= '5'),

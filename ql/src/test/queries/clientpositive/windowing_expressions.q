@@ -31,10 +31,10 @@ sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between
 from part
 ;
 
-select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n22 limit 100;
-select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n22 limit 100;
-select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n22 limit 100;
-select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n22 limit 100;
+select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n22 order by s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) limit 100;
+select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n22 order by s, i, i - lead(i, 3, 0) over (partition by si order by i,s)limit 100;
+select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n22 order by s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) limit 100;
+select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n22 order by s, lag(s, 3, 'fred') over (partition by f order by b) limit 100;
 
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part;
 
@@ -44,11 +44,12 @@ select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfg
 create table t1_n142 (a1 int, b1 string); 
 create table t2_n83 (a1 int, b1 string);
 from (select sum(i) over (partition by ts order by i), s from over10k_n22) tt insert overwrite table t1_n142 select * insert overwrite table t2_n83 select * ;
-select * from t1_n142 limit 3;
-select * from t2_n83 limit 3;
+select * from t1_n142 order by a1, b1 limit 3;
+select * from t2_n83 order by a1, b1 limit 3;
 
 select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)
 from part
 window w1 as (distribute by p_mfgr sort by p_retailprice)
+order by p_mfgr, p_retailprice, p_size
 limit 11;

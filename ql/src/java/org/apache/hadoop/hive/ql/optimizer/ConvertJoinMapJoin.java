@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
@@ -58,9 +58,11 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -88,7 +90,7 @@ import com.google.common.math.DoubleMath;
  * converted (e.g.: full outer joins cannot be handled as map joins) as well
  * as memory restrictions (one side of the join has to fit into memory).
  */
-public class ConvertJoinMapJoin implements NodeProcessor {
+public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
   private static final int DEFAULT_MAX_EXECUTORS_PER_QUERY_CONTAINER_MODE = 3;
@@ -207,7 +209,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
-        joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion()));
+        joinOp.getOpTraits().getNumReduceSinks()));
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
@@ -436,9 +438,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       memoryMonitorInfo = new MemoryMonitorInfo(false, 1, maxSlotsPerQuery, overSubscriptionFactor, maxSize, maxSize,
         memoryCheckInterval, inflationFactor);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
-    }
+    LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
     return memoryMonitorInfo;
   }
 
@@ -522,7 +522,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       mapJoinDesc =
           new MapJoinDesc(
                   MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
-                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
+                  joinOp.getConf().getBaseSrc(), joinOp).getRight(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
                   joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
@@ -543,9 +543,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
-      joinOp.getOpTraits().getSortCols(), numReduceSinks,
-      joinOp.getOpTraits().getBucketingVersion());
+        joinOp.getOpTraits().getSortCols(), numReduceSinks);
     mergeJoinOp.setOpTraits(opTraits);
+    mergeJoinOp.getConf().setBucketingVersion(joinOp.getConf().getBucketingVersion());
     preserveOperatorInfos(mergeJoinOp, joinOp, context);
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
@@ -589,9 +589,21 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           continue;
         }
 
+        // In case of SMB join, the parent group by has to be FINAL where it streams the
+        // aggregate as and when its calculated. This is required, as the sort merge join
+        // pulls the data from the parent operators and expect it to get the records
+        // during join processing, not at the time of close.
+        if (parentOp instanceof GroupByOperator) {
+          GroupByOperator gpbyOp = (GroupByOperator )parentOp;
+          if (gpbyOp.getConf().getMode() == GroupByDesc.Mode.HASH) {
+            // No need to change for MERGE_PARTIAL etc.
+            gpbyOp.getConf().setMode(GroupByDesc.Mode.FINAL);
+          }
+        }
+
         // insert the dummy store operator here
-        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(
-            mergeJoinOp.getCompilationOpContext());
+        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(mergeJoinOp.getCompilationOpContext());
+        dummyStoreOp.setConf(new DummyStoreDesc());
         dummyStoreOp.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.getChildOperators().add(mergeJoinOp);
@@ -611,8 +623,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       return;
     }
     currentOp.setOpTraits(new OpTraits(opTraits.getBucketColNames(),
-      opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks(),
-            opTraits.getBucketingVersion()));
+        opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks()));
     for (Operator<? extends OperatorDesc> childOp : currentOp.getChildOperators()) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof GroupByOperator)) {
         break;
@@ -639,7 +650,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ReduceSinkOperator bigTableRS = (ReduceSinkOperator)joinOp.getParentOperators().get(bigTablePosition);
     OpTraits opTraits = bigTableRS.getOpTraits();
     List<List<String>> listBucketCols = opTraits.getBucketColNames();
-    ArrayList<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
+    List<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
     boolean updatePartitionCols = false;
     List<Integer> positions = new ArrayList<>();
 
@@ -670,8 +681,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // we can set the traits for this join operator
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
-        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks(),
-        joinOp.getOpTraits().getBucketingVersion());
+        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -691,8 +701,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
 
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-        ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();
-        ArrayList<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
+        List<ExprNodeDesc> newPartitionCols = new ArrayList<>();
+        List<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
         for (Integer position : positions) {
           newPartitionCols.add(partitionCols.get(position));
         }
@@ -767,7 +777,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       if (!(parentOp instanceof ReduceSinkOperator)) {
         // could be mux/demux operators. Currently not supported
-        LOG.info("Found correlation optimizer operators. Cannot convert to SMB at this time.");
+        LOG.debug("Found correlation optimizer operators. Cannot convert to SMB at this time.");
         return false;
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
@@ -788,14 +798,20 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           return false;
         }
       }
+      // check Parent's traits are same as rs
+      OpTraits parentTraits = rsOp.getParentOperators().get(0).getOpTraits();
+      if (null == parentTraits) {
+        // programming error - shouldn't be null
+        return false;
+      }
 
-      if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
+      if (!checkColEquality(parentTraits.getSortCols(), rsOp
           .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), false)) {
         LOG.info("We cannot convert to SMB because the sort column names do not match.");
         return false;
       }
 
-      if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getBucketColNames(), rsOp
+      if (!checkColEquality(parentTraits.getBucketColNames(), rsOp
           .getOpTraits().getBucketColNames(), rsOp.getColumnExprMap(), true)) {
         LOG.info("We cannot convert to SMB because bucket column names do not match.");
         return false;
@@ -815,10 +831,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       // Check if the parent is coming from a table scan, if so, what is the version of it.
       assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
-      Operator<?> op = parentOp.getParentOperators().get(0);
-      while(op != null && !(op instanceof TableScanOperator
-              || op instanceof ReduceSinkOperator
-              || op instanceof CommonJoinOperator)) {
+      Operator<?> op = parentOp;
+      while (op != null && !(op instanceof TableScanOperator || op instanceof ReduceSinkOperator
+          || op instanceof CommonJoinOperator)) {
         // If op has parents it is guaranteed to be 1.
         List<Operator<?>> parents = op.getParentOperators();
         Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
@@ -826,8 +841,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
       if (op instanceof TableScanOperator) {
-        int localVersion = ((TableScanOperator)op).getConf().
-                getTableMetadata().getBucketingVersion();
+        int localVersion = ((TableScanOperator) op).getConf().getTableMetadata().getBucketingVersion();
         if (bucketingVersion == -1) {
           bucketingVersion = localVersion;
         } else if (bucketingVersion != localVersion) {
@@ -951,6 +965,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       switch (joinCondDesc.getType()) {
         case JoinDesc.INNER_JOIN:
         case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.ANTI_JOIN:
         case JoinDesc.UNIQUE_JOIN:
           hasOuter = false;
           break;
@@ -1073,6 +1088,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     Set<Integer> bigTableCandidateSet =
         MapJoinProcessor.getBigTableCandidates(conds, /* isSupportFullOuter */ true);
+
+    if (bigTableCandidateSet.isEmpty()) {
+      return null;
+    }
+
     int bigTablePosition = -1;
     // big input cumulative row count
     long bigInputCumulativeCardinality = -1L;
@@ -1178,6 +1198,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         bigInputStat = currInputStat;
       }
 
+    }
+
+    if (bigTablePosition == -1) {
+      LOG.debug("No big table selected, no MapJoin");
+      return null;
     }
 
     // Check if size of data to shuffle (larger table) is less than given max size
@@ -1527,8 +1552,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             joinOp.getOpTraits().getBucketColNames(),
             numReducers,
             null,
-            joinOp.getOpTraits().getNumReduceSinks(),
-            joinOp.getOpTraits().getBucketingVersion());
+            joinOp.getOpTraits().getNumReduceSinks());
         mapJoinOp.setOpTraits(opTraits);
         preserveOperatorInfos(mapJoinOp, joinOp, context);
         // propagate this change till the next RS

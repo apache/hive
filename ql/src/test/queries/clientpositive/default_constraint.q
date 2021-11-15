@@ -137,7 +137,6 @@ select * from t;
 drop table t;
 
 -- partitioned table
-set hive.exec.dynamic.partition.mode=nonstrict;
 -- Table with partition
 CREATE TABLE tablePartitioned_n0 (a STRING NOT NULL ENFORCED, url STRING constraint bdc1 default 'http://localhost',
     c STRING NOT NULL ENFORCED)

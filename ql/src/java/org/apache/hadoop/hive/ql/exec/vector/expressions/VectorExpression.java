@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -59,10 +61,20 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  * A vector expression has optional children vector expressions when 1 or more parameters need
  * to be calculated into vector scratch columns.  Columns and constants do not need children
  * expressions.
+ *
+ * HOW TO to extend VectorExpression (some basic steps and hints):
+ * 1. Create a subclass, and write a proper getDescriptor() (column/scalar?, number for args?, etc.)
+ * 2. Define an explicit parameterless constructor
+ * 3. Define a proper parameterized constructor (according to descriptor)
+ * 4. In case of UDF, add non-vectorized UDF class to Vectorizer.supported*UDFs
+ * 5. Add the new vectorized expression class to VectorizedExpressions annotation of the original UDF
+ * 6. If you subclass an expression, do the same steps (2,3,5) for subclasses as well (ctors)
+ * 7. If your base expression class is abstract, don't add it to VectorizedExpressions annotation
  */
 public abstract class VectorExpression implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  protected transient final Logger LOG = LoggerFactory.getLogger(getClass().getName());
 
   /**
    * Child expressions for parameters -- but only those that need to be computed.
@@ -86,16 +98,20 @@ public abstract class VectorExpression implements Serializable {
   /**
    * Output column number and type information of the vector expression.
    */
-  protected final int outputColumnNum;
+  public int outputColumnNum;
 
   protected TypeInfo outputTypeInfo;
   protected DataTypePhysicalVariation outputDataTypePhysicalVariation;
+
+  /**
+   * Input column numbers of the vector expression, which should be reused by vector expressions.
+   */
+  public int inputColumnNum[] = {-1, -1, -1};
 
   /*
    * Use this constructor when there is NO output column.
    */
   public VectorExpression() {
-
     // Initially, no children or inputs; set later with setInput* methods.
     childExpressions = null;
     inputTypeInfos = null;
@@ -107,16 +123,46 @@ public abstract class VectorExpression implements Serializable {
     outputDataTypePhysicalVariation = null;
   }
 
-  /*
-   * Use this constructor when there is an output column.
+  /**
+   * Constructor for 1 input column and 1 output column.
+   *
+   * @param inputColumnNum
+   * @param outputColumnNum
    */
-  public VectorExpression(int outputColumnNum) {
+  public VectorExpression(int inputColumnNum, int outputColumnNum) {
+    this(inputColumnNum, -1, -1, outputColumnNum);
+  }
 
+  /**
+   * Constructor for 2 input columns and 1 output column.
+   *
+   * @param inputColumnNum
+   * @param inputColumnNum2
+   * @param outputColumnNum
+   */
+  public VectorExpression(int inputColumnNum, int inputColumnNum2, int outputColumnNum) {
+    this(inputColumnNum, inputColumnNum2, -1, outputColumnNum);
+  }
+
+  /**
+   * Constructor for 3 input columns and 1 output column. Currently, VectorExpression is initialized
+   * for a maximum of 3 input columns. In case an expression with more than 3 columns wants to reuse
+   * logic here, inputColumnNum* fields should be extended.
+   *
+   * @param inputColumnNum
+   * @param inputColumnNum2
+   * @param inputColumnNum3
+   * @param outputColumnNum
+   */
+  public VectorExpression(int inputColumnNum, int inputColumnNum2, int inputColumnNum3, int outputColumnNum) {
     // By default, no children or inputs.
     childExpressions = null;
     inputTypeInfos = null;
     inputDataTypePhysicalVariations = null;
 
+    this.inputColumnNum[0] = inputColumnNum;
+    this.inputColumnNum[1] = inputColumnNum2;
+    this.inputColumnNum[2] = inputColumnNum3;
     this.outputColumnNum = outputColumnNum;
 
     // Set later with setOutput* methods.
@@ -124,7 +170,24 @@ public abstract class VectorExpression implements Serializable {
     outputDataTypePhysicalVariation = null;
   }
 
-  //------------------------------------------------------------------------------------------------
+  /**
+   * Convenience method for expressions that uses arbitrary number of input columns in an array.
+   * @param inputColumnNum
+   * @param outputColumnNum
+   */
+  public VectorExpression(int inputColumnNum[], int outputColumnNum) {
+    // By default, no children or inputs.
+    childExpressions = null;
+    inputTypeInfos = null;
+    inputDataTypePhysicalVariations = null;
+
+    this.inputColumnNum = inputColumnNum;
+    this.outputColumnNum = outputColumnNum;
+
+    // Set later with setOutput* methods.
+    outputTypeInfo = null;
+    outputDataTypePhysicalVariation = null;
+  }
 
   /**
    * Initialize the child expressions.
@@ -164,30 +227,30 @@ public abstract class VectorExpression implements Serializable {
 
   //------------------------------------------------------------------------------------------------
 
-  public void transientInit() throws HiveException {
+  public void transientInit(Configuration conf) throws HiveException {
     // Do nothing by default.
   }
 
-  public static void doTransientInit(VectorExpression vecExpr) throws HiveException {
+  public static void doTransientInit(VectorExpression vecExpr, Configuration conf) throws HiveException {
     if (vecExpr == null) {
       return;
     }
-    doTransientInitRecurse(vecExpr);
+    doTransientInitRecurse(vecExpr, conf);
   }
 
-  public static void doTransientInit(VectorExpression[] vecExprs) throws HiveException {
+  public static void doTransientInit(VectorExpression[] vecExprs, Configuration conf) throws HiveException {
     if (vecExprs == null) {
       return;
     }
     for (VectorExpression vecExpr : vecExprs) {
-      doTransientInitRecurse(vecExpr);
+      doTransientInitRecurse(vecExpr, conf);
     }
   }
 
-  private static void doTransientInitRecurse(VectorExpression vecExpr) throws HiveException {
+  private static void doTransientInitRecurse(VectorExpression vecExpr, Configuration conf) throws HiveException {
 
     // Well, don't recurse but make sure all children are initialized.
-    vecExpr.transientInit();
+    vecExpr.transientInit(conf);
     List<VectorExpression> newChildren = new ArrayList<VectorExpression>();
     VectorExpression[] children = vecExpr.getChildExpressions();
     if (children != null) {
@@ -199,7 +262,7 @@ public abstract class VectorExpression implements Serializable {
       if (children != null) {
         Collections.addAll(newChildren, children);
       }
-      childVecExpr.transientInit();
+      childVecExpr.transientInit(conf);
     }
   }
 

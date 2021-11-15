@@ -27,7 +27,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -59,14 +59,14 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFOR
  * SetSparkReducerParallelism determines how many reducers should
  * be run for a given reduce sink, clone from SetReducerParallelism.
  */
-public class SetSparkReducerParallelism implements NodeProcessor {
+public class SetSparkReducerParallelism implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(SetSparkReducerParallelism.class.getName());
 
   private static final String SPARK_DYNAMIC_ALLOCATION_ENABLED = "spark.dynamicAllocation.enabled";
 
   // Spark memory per task, and total number of cores
-  private ObjectPair<Long, Integer> sparkMemoryAndCores;
+  private Pair<Long, Integer> sparkMemoryAndCores;
   private final boolean useOpStats;
 
   public SetSparkReducerParallelism(HiveConf conf) {
@@ -76,7 +76,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procContext, Object... nodeOutputs)
+                        NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
 
     OptimizeSparkProcContext context = (OptimizeSparkProcContext) procContext;
@@ -169,15 +169,15 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
           getSparkMemoryAndCores(context);
           if (sparkMemoryAndCores != null &&
-              sparkMemoryAndCores.getFirst() > 0 && sparkMemoryAndCores.getSecond() > 0) {
+              sparkMemoryAndCores.getLeft() > 0 && sparkMemoryAndCores.getRight() > 0) {
             // warn the user if bytes per reducer is much larger than memory per task
-            if ((double) sparkMemoryAndCores.getFirst() / bytesPerReducer < 0.5) {
+            if ((double) sparkMemoryAndCores.getLeft() / bytesPerReducer < 0.5) {
               LOG.warn("Average load of a reducer is much larger than its available memory. " +
                   "Consider decreasing hive.exec.reducers.bytes.per.reducer");
             }
 
             // If there are more cores, use the number of cores
-            numReducers = Math.max(numReducers, sparkMemoryAndCores.getSecond());
+            numReducers = Math.max(numReducers, sparkMemoryAndCores.getRight());
           }
           numReducers = Math.min(numReducers, maxReducers);
           LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers +

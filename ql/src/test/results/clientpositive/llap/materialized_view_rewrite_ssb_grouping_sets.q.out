@@ -1,0 +1,1330 @@
+PREHOOK: query: CREATE TABLE `customer_ext_n3`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_ext_n3
+POSTHOOK: query: CREATE TABLE `customer_ext_n3`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_ext_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext_n3`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@customer_ext_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext_n3`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@customer_ext_n3
+PREHOOK: query: CREATE TABLE `customer_n3`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string,
+  primary key (`c_custkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_n3
+POSTHOOK: query: CREATE TABLE `customer_n3`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string,
+  primary key (`c_custkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_n3
+PREHOOK: query: INSERT INTO `customer_n3`
+SELECT * FROM `customer_ext_n3`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_ext_n3
+PREHOOK: Output: default@customer_n3
+POSTHOOK: query: INSERT INTO `customer_n3`
+SELECT * FROM `customer_ext_n3`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_ext_n3
+POSTHOOK: Output: default@customer_n3
+POSTHOOK: Lineage: customer_n3.c_address SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_address, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_city SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_custkey SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_mktsegment SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_mktsegment, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_name SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_name, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_nation SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_phone SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_phone, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n3.c_region SIMPLE [(customer_ext_n3)customer_ext_n3.FieldSchema(name:c_region, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE `dates_ext_n3`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dates_ext_n3
+POSTHOOK: query: CREATE TABLE `dates_ext_n3`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dates_ext_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext_n3`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dates_ext_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext_n3`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dates_ext_n3
+PREHOOK: query: CREATE TABLE `dates_n3`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int,
+  primary key (`d_datekey`) disable rely
+)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dates_n3
+POSTHOOK: query: CREATE TABLE `dates_n3`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int,
+  primary key (`d_datekey`) disable rely
+)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dates_n3
+PREHOOK: query: INSERT INTO `dates_n3`
+SELECT * FROM `dates_ext_n3`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_ext_n3
+PREHOOK: Output: default@dates_n3
+POSTHOOK: query: INSERT INTO `dates_n3`
+SELECT * FROM `dates_ext_n3`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_ext_n3
+POSTHOOK: Output: default@dates_n3
+POSTHOOK: Lineage: dates_n3.d_date SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_date, type:string, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_datekey SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_datekey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_daynuminmonth SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_daynuminmonth, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_daynuminweek SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_daynuminweek, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_daynuminyear SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_daynuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_dayofweek SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_dayofweek, type:string, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_holidayfl SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_holidayfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_lastdayinmonthfl SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_lastdayinmonthfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_lastdayinweekfl SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_lastdayinweekfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_month SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_month, type:string, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_monthnuminyear SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_monthnuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_sellingseason SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_sellingseason, type:string, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_weekdayfl SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_weekdayfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_weeknuminyear SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_weeknuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_year SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_year, type:int, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_yearmonth SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
+POSTHOOK: Lineage: dates_n3.d_yearmonthnum SIMPLE [(dates_ext_n3)dates_ext_n3.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
+PREHOOK: query: CREATE TABLE `ssb_part_ext_n3`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ssb_part_ext_n3
+POSTHOOK: query: CREATE TABLE `ssb_part_ext_n3`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ssb_part_ext_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext_n3`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ssb_part_ext_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext_n3`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ssb_part_ext_n3
+PREHOOK: query: CREATE TABLE `ssb_part_n3`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string,
+  primary key (`p_partkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ssb_part_n3
+POSTHOOK: query: CREATE TABLE `ssb_part_n3`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string,
+  primary key (`p_partkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ssb_part_n3
+PREHOOK: query: INSERT INTO `ssb_part_n3`
+SELECT * FROM `ssb_part_ext_n3`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ssb_part_ext_n3
+PREHOOK: Output: default@ssb_part_n3
+POSTHOOK: query: INSERT INTO `ssb_part_n3`
+SELECT * FROM `ssb_part_ext_n3`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ssb_part_ext_n3
+POSTHOOK: Output: default@ssb_part_n3
+POSTHOOK: Lineage: ssb_part_n3.p_brand1 SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_brand1, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_category SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_category, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_color SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_color, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_container SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_mfgr SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_name SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_partkey SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_partkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_size SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_part_n3.p_type SIMPLE [(ssb_part_ext_n3)ssb_part_ext_n3.FieldSchema(name:p_type, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE `supplier_ext_n3`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@supplier_ext_n3
+POSTHOOK: query: CREATE TABLE `supplier_ext_n3`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@supplier_ext_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext_n3`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@supplier_ext_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext_n3`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@supplier_ext_n3
+PREHOOK: query: CREATE TABLE `supplier_n3`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string,
+  primary key (`s_suppkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@supplier_n3
+POSTHOOK: query: CREATE TABLE `supplier_n3`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string,
+  primary key (`s_suppkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@supplier_n3
+PREHOOK: query: INSERT INTO `supplier_n3`
+SELECT * FROM `supplier_ext_n3`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@supplier_ext_n3
+PREHOOK: Output: default@supplier_n3
+POSTHOOK: query: INSERT INTO `supplier_n3`
+SELECT * FROM `supplier_ext_n3`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@supplier_ext_n3
+POSTHOOK: Output: default@supplier_n3
+POSTHOOK: Lineage: supplier_n3.s_address SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_address, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier_n3.s_city SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier_n3.s_name SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_name, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier_n3.s_nation SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier_n3.s_phone SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_phone, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier_n3.s_region SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_region, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier_n3.s_suppkey SIMPLE [(supplier_ext_n3)supplier_ext_n3.FieldSchema(name:s_suppkey, type:bigint, comment:null), ]
+PREHOOK: query: CREATE TABLE `lineorder_ext_n3`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineorder_ext_n3
+POSTHOOK: query: CREATE TABLE `lineorder_ext_n3`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineorder_ext_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext_n3`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lineorder_ext_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext_n3`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lineorder_ext_n3
+PREHOOK: query: CREATE TABLE `lineorder_n3`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string,
+  primary key (`lo_orderkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n3`(`c_custkey`) disable rely,
+  constraint fk2 foreign key (`lo_orderdate`) references `dates_n3`(`d_datekey`) disable rely,
+  constraint fk3 foreign key (`lo_partkey`) references `ssb_part_n3`(`p_partkey`) disable rely,
+  constraint fk4 foreign key (`lo_suppkey`) references `supplier_n3`(`s_suppkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineorder_n3
+POSTHOOK: query: CREATE TABLE `lineorder_n3`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string,
+  primary key (`lo_orderkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n3`(`c_custkey`) disable rely,
+  constraint fk2 foreign key (`lo_orderdate`) references `dates_n3`(`d_datekey`) disable rely,
+  constraint fk3 foreign key (`lo_partkey`) references `ssb_part_n3`(`p_partkey`) disable rely,
+  constraint fk4 foreign key (`lo_suppkey`) references `supplier_n3`(`s_suppkey`) disable rely)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineorder_n3
+PREHOOK: query: INSERT INTO `lineorder_n3`
+SELECT * FROM `lineorder_ext_n3`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineorder_ext_n3
+PREHOOK: Output: default@lineorder_n3
+POSTHOOK: query: INSERT INTO `lineorder_n3`
+SELECT * FROM `lineorder_ext_n3`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineorder_ext_n3
+POSTHOOK: Output: default@lineorder_n3
+POSTHOOK: Lineage: lineorder_n3.lo_commitdate SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_commitdate, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_custkey SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_discount SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_extendedprice SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_extendedprice, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_linenumber SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_linenumber, type:int, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_orderdate SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_orderdate, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_orderkey SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_orderkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_ordpriority SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_ordpriority, type:string, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_ordtotalprice SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_ordtotalprice, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_partkey SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_partkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_quantity SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_revenue SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_revenue, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_shipmode SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_shipmode, type:string, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_shippriority SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_shippriority, type:string, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_suppkey SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_suppkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_supplycost SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder_n3.lo_tax SIMPLE [(lineorder_ext_n3)lineorder_ext_n3.FieldSchema(name:lo_tax, type:double, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n3`
+PARTITIONED ON (GROUPING__ID)
+AS
+SELECT
+  c_city,
+  c_nation,
+  c_region,
+  d_weeknuminyear,
+  d_year,
+  d_yearmonth,
+  d_yearmonthnum,
+  lo_discount,
+  lo_quantity,
+  p_brand1,
+  p_category,
+  p_mfgr,
+  s_city,
+  s_nation,
+  s_region,
+  GROUPING__ID,
+  sum(lo_revenue),
+  sum(lo_extendedprice * lo_discount) discounted_price,
+  sum(lo_revenue - lo_supplycost) net_revenue
+FROM
+  customer_n3, dates_n3, lineorder_n3, ssb_part_n3, supplier_n3
+WHERE
+  lo_orderdate = d_datekey
+  and lo_partkey = p_partkey
+  and lo_suppkey = s_suppkey
+  and lo_custkey = c_custkey
+GROUP BY
+  c_city,
+  c_nation,
+  c_region,
+  d_weeknuminyear,
+  d_year,
+  d_yearmonth,
+  d_yearmonthnum,
+  lo_discount,
+  lo_quantity,
+  p_brand1,
+  p_category,
+  p_mfgr,
+  s_city,
+  s_nation,
+  s_region
+GROUPING SETS (
+  (d_year, d_yearmonthnum, d_weeknuminyear, lo_discount, lo_quantity),
+  (d_year, d_yearmonth, c_city, c_nation, c_region, s_city, s_nation, s_region, p_brand1, p_category, p_mfgr)
+)
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ssb_mv_n3
+PREHOOK: Output: default@ssb_mv_n3
+POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n3`
+PARTITIONED ON (GROUPING__ID)
+AS
+SELECT
+  c_city,
+  c_nation,
+  c_region,
+  d_weeknuminyear,
+  d_year,
+  d_yearmonth,
+  d_yearmonthnum,
+  lo_discount,
+  lo_quantity,
+  p_brand1,
+  p_category,
+  p_mfgr,
+  s_city,
+  s_nation,
+  s_region,
+  GROUPING__ID,
+  sum(lo_revenue),
+  sum(lo_extendedprice * lo_discount) discounted_price,
+  sum(lo_revenue - lo_supplycost) net_revenue
+FROM
+  customer_n3, dates_n3, lineorder_n3, ssb_part_n3, supplier_n3
+WHERE
+  lo_orderdate = d_datekey
+  and lo_partkey = p_partkey
+  and lo_suppkey = s_suppkey
+  and lo_custkey = c_custkey
+GROUP BY
+  c_city,
+  c_nation,
+  c_region,
+  d_weeknuminyear,
+  d_year,
+  d_yearmonth,
+  d_yearmonthnum,
+  lo_discount,
+  lo_quantity,
+  p_brand1,
+  p_category,
+  p_mfgr,
+  s_city,
+  s_nation,
+  s_region
+GROUPING SETS (
+  (d_year, d_yearmonthnum, d_weeknuminyear, lo_discount, lo_quantity),
+  (d_year, d_yearmonth, c_city, c_nation, c_region, s_city, s_nation, s_region, p_brand1, p_category, p_mfgr)
+)
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ssb_mv_n3
+POSTHOOK: Output: default@ssb_mv_n3
+POSTHOOK: Lineage: ssb_mv_n3._c16 EXPRESSION [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_revenue, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.c_city SIMPLE [(customer_n3)customer_n3.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.c_nation SIMPLE [(customer_n3)customer_n3.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.c_region SIMPLE [(customer_n3)customer_n3.FieldSchema(name:c_region, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_weeknuminyear SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_weeknuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_year SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_year, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_yearmonth SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_yearmonthnum SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.discounted_price EXPRESSION [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_extendedprice, type:double, comment:null), (lineorder_n3)lineorder_n3.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.lo_discount SIMPLE [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.lo_quantity SIMPLE [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.net_revenue EXPRESSION [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_revenue, type:double, comment:null), (lineorder_n3)lineorder_n3.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.p_brand1 SIMPLE [(ssb_part_n3)ssb_part_n3.FieldSchema(name:p_brand1, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.p_category SIMPLE [(ssb_part_n3)ssb_part_n3.FieldSchema(name:p_category, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.p_mfgr SIMPLE [(ssb_part_n3)ssb_part_n3.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.s_city SIMPLE [(supplier_n3)supplier_n3.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.s_nation SIMPLE [(supplier_n3)supplier_n3.FieldSchema(name:s_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.s_region SIMPLE [(supplier_n3)supplier_n3.FieldSchema(name:s_region, type:string, comment:null), ]
+PREHOOK: query: explain cbo
+select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder_n3, dates_n3
+where 
+    lo_orderdate = d_datekey
+    and d_year = 1993
+    and lo_discount between 1 and 3
+    and lo_quantity < 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder_n3, dates_n3
+where 
+    lo_orderdate = d_datekey
+    and d_year = 1993
+    and lo_discount between 1 and 3
+    and lo_quantity < 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[sum($16)])
+  HiveFilter(condition=[AND(>(2.5E1, $8), =(CAST($18):BIGINT NOT NULL, 29247), =($4, 1993), BETWEEN(false, $7, 1:DOUBLE, 3:DOUBLE))])
+    HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder_n3, dates_n3
+where 
+    lo_orderdate = d_datekey
+    and d_yearmonthnum = 199401
+    and lo_discount between 4 and 6
+    and lo_quantity between 26 and 35
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder_n3, dates_n3
+where 
+    lo_orderdate = d_datekey
+    and d_yearmonthnum = 199401
+    and lo_discount between 4 and 6
+    and lo_quantity between 26 and 35
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[sum($16)])
+  HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($6, 199401), BETWEEN(false, $8, 26:DOUBLE, 35:DOUBLE), BETWEEN(false, $7, 4:DOUBLE, 6:DOUBLE))])
+    HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder_n3, dates_n3
+where 
+    lo_orderdate = d_datekey
+    and d_weeknuminyear = 6
+    and d_year = 1994
+    and lo_discount between 5 and 7
+    and lo_quantity between 26 and 35
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder_n3, dates_n3
+where 
+    lo_orderdate = d_datekey
+    and d_weeknuminyear = 6
+    and d_year = 1994
+    and lo_discount between 5 and 7
+    and lo_quantity between 26 and 35
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[sum($16)])
+  HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($4, 1994), =($3, 6), BETWEEN(false, $8, 26:DOUBLE, 35:DOUBLE), BETWEEN(false, $7, 5:DOUBLE, 7:DOUBLE))])
+    HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    sum(lo_revenue) as lo_revenue, d_year, p_brand1
+from 
+    lineorder_n3, dates_n3, ssb_part_n3, supplier_n3
+where 
+    lo_orderdate = d_datekey
+    and lo_partkey = p_partkey
+    and lo_suppkey = s_suppkey
+    and p_category = 'MFGR#12'
+    and s_region = 'AMERICA'
+group by 
+    d_year, p_brand1
+order by 
+    d_year, p_brand1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    sum(lo_revenue) as lo_revenue, d_year, p_brand1
+from 
+    lineorder_n3, dates_n3, ssb_part_n3, supplier_n3
+where 
+    lo_orderdate = d_datekey
+    and lo_partkey = p_partkey
+    and lo_suppkey = s_suppkey
+    and p_category = 'MFGR#12'
+    and s_region = 'AMERICA'
+group by 
+    d_year, p_brand1
+order by 
+    d_year, p_brand1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
+  HiveProject(lo_revenue=[$2], d_year=[$0], p_brand1=[$1])
+    HiveAggregate(group=[{4, 9}], agg#0=[sum($15)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($10, _UTF-16LE'MFGR#12'), =($14, _UTF-16LE'AMERICA'))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    sum(lo_revenue) as lo_revenue, d_year, p_brand1
+from 
+    lineorder_n3, dates_n3, ssb_part_n3, supplier_n3
+where 
+    lo_orderdate = d_datekey
+    and lo_partkey = p_partkey
+    and lo_suppkey = s_suppkey
+    and p_brand1 between 'MFGR#2221' and 'MFGR#2228'
+    and s_region = 'ASIA'
+group by 
+    d_year, p_brand1
+order by 
+    d_year, p_brand1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    sum(lo_revenue) as lo_revenue, d_year, p_brand1
+from 
+    lineorder_n3, dates_n3, ssb_part_n3, supplier_n3
+where 
+    lo_orderdate = d_datekey
+    and lo_partkey = p_partkey
+    and lo_suppkey = s_suppkey
+    and p_brand1 between 'MFGR#2221' and 'MFGR#2228'
+    and s_region = 'ASIA'
+group by 
+    d_year, p_brand1
+order by 
+    d_year, p_brand1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
+  HiveProject(lo_revenue=[$2], d_year=[$0], p_brand1=[$1])
+    HiveAggregate(group=[{4, 9}], agg#0=[sum($15)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($14, _UTF-16LE'ASIA'), BETWEEN(false, $9, _UTF-16LE'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    sum(lo_revenue) as lo_revenue, d_year, p_brand1
+from 
+    lineorder_n3, dates_n3, ssb_part_n3, supplier_n3
+where 
+    lo_orderdate = d_datekey
+    and lo_partkey = p_partkey
+    and lo_suppkey = s_suppkey
+    and p_brand1 = 'MFGR#2239'
+    and s_region = 'EUROPE'
+group by 
+    d_year, p_brand1
+order by 
+    d_year, p_brand1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    sum(lo_revenue) as lo_revenue, d_year, p_brand1
+from 
+    lineorder_n3, dates_n3, ssb_part_n3, supplier_n3
+where 
+    lo_orderdate = d_datekey
+    and lo_partkey = p_partkey
+    and lo_suppkey = s_suppkey
+    and p_brand1 = 'MFGR#2239'
+    and s_region = 'EUROPE'
+group by 
+    d_year, p_brand1
+order by 
+    d_year, p_brand1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(lo_revenue=[$0], d_year=[$1], p_brand1=[CAST(_UTF-16LE'MFGR#2239':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveSortLimit(sort0=[$1], dir0=[ASC])
+    HiveProject(lo_revenue=[$1], d_year=[$0])
+      HiveAggregate(group=[{4}], agg#0=[sum($15)])
+        HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($9, _UTF-16LE'MFGR#2239'), =($14, _UTF-16LE'EUROPE'))])
+          HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    c_nation, s_nation, d_year,
+    sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and c_region = 'ASIA'
+    and s_region = 'ASIA'
+    and d_year >= 1992 and d_year <= 1997
+group by 
+    c_nation, s_nation, d_year
+order by 
+    d_year asc, lo_revenue desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    c_nation, s_nation, d_year,
+    sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and c_region = 'ASIA'
+    and s_region = 'ASIA'
+    and d_year >= 1992 and d_year <= 1997
+group by 
+    c_nation, s_nation, d_year
+order by 
+    d_year asc, lo_revenue desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$2], sort1=[$3], dir0=[ASC], dir1=[DESC])
+  HiveProject(c_nation=[$0], s_nation=[$2], d_year=[$1], $f3=[$3])
+    HiveAggregate(group=[{1, 4, 13}], agg#0=[sum($15)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($2, _UTF-16LE'ASIA'), =($14, _UTF-16LE'ASIA'), BETWEEN(false, $4, 1992, 1997))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and c_nation = 'UNITED STATES'
+    and s_nation = 'UNITED STATES'
+    and d_year >= 1992 and d_year <= 1997
+group by 
+    c_city, s_city, d_year
+order by 
+    d_year asc, lo_revenue desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and c_nation = 'UNITED STATES'
+    and s_nation = 'UNITED STATES'
+    and d_year >= 1992 and d_year <= 1997
+group by 
+    c_city, s_city, d_year
+order by 
+    d_year asc, lo_revenue desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$2], sort1=[$3], dir0=[ASC], dir1=[DESC])
+  HiveProject(c_city=[$0], s_city=[$2], d_year=[$1], $f3=[$3])
+    HiveAggregate(group=[{0, 4, 12}], agg#0=[sum($15)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($1, _UTF-16LE'UNITED STATES'), =($13, _UTF-16LE'UNITED STATES'), BETWEEN(false, $4, 1992, 1997))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and (c_city='UNITED KI1' or c_city='UNITED KI5')
+    and (s_city='UNITED KI1' or s_city='UNITED KI5')
+    and d_year >= 1992 and d_year <= 1997
+group by 
+    c_city, s_city, d_year
+order by 
+    d_year asc, lo_revenue desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and (c_city='UNITED KI1' or c_city='UNITED KI5')
+    and (s_city='UNITED KI1' or s_city='UNITED KI5')
+    and d_year >= 1992 and d_year <= 1997
+group by 
+    c_city, s_city, d_year
+order by 
+    d_year asc, lo_revenue desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$2], sort1=[$3], dir0=[ASC], dir1=[DESC])
+  HiveProject(c_city=[$0], s_city=[$2], d_year=[$1], $f3=[$3])
+    HiveAggregate(group=[{0, 4, 12}], agg#0=[sum($15)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), IN($0, _UTF-16LE'UNITED KI1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'UNITED KI5':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($12, _UTF-16LE'UNITED KI1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'UNITED KI5':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), BETWEEN(false, $4, 1992, 1997))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and (c_city='UNITED KI1' or c_city='UNITED KI5')
+    and (s_city='UNITED KI1' or s_city='UNITED KI5')
+    and d_yearmonth = 'Dec1997'
+group by 
+    c_city, s_city, d_year
+order by 
+    d_year asc, lo_revenue desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
+from 
+    customer_n3, lineorder_n3, supplier_n3, dates_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_orderdate = d_datekey
+    and (c_city='UNITED KI1' or c_city='UNITED KI5')
+    and (s_city='UNITED KI1' or s_city='UNITED KI5')
+    and d_yearmonth = 'Dec1997'
+group by 
+    c_city, s_city, d_year
+order by 
+    d_year asc, lo_revenue desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$2], sort1=[$3], dir0=[ASC], dir1=[DESC])
+  HiveProject(c_city=[$0], s_city=[$2], d_year=[$1], $f3=[$3])
+    HiveAggregate(group=[{0, 4, 12}], agg#0=[sum($15)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), IN($0, _UTF-16LE'UNITED KI1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'UNITED KI5':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($12, _UTF-16LE'UNITED KI1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'UNITED KI5':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($5, _UTF-16LE'Dec1997'))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    d_year, c_nation,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    dates_n3, customer_n3, supplier_n3, ssb_part_n3, lineorder_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and c_region = 'AMERICA'
+    and s_region = 'AMERICA'
+    and (p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2')
+group by 
+    d_year, c_nation
+order by 
+    d_year, c_nation
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    d_year, c_nation,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    dates_n3, customer_n3, supplier_n3, ssb_part_n3, lineorder_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and c_region = 'AMERICA'
+    and s_region = 'AMERICA'
+    and (p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2')
+group by 
+    d_year, c_nation
+order by 
+    d_year, c_nation
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
+  HiveProject(d_year=[$1], c_nation=[$0], $f2=[$2])
+    HiveAggregate(group=[{1, 4}], agg#0=[sum($17)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), IN($11, _UTF-16LE'MFGR#1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($2, _UTF-16LE'AMERICA'), =($14, _UTF-16LE'AMERICA'))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    d_year, s_nation, p_category,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    dates_n3, customer_n3, supplier_n3, ssb_part_n3, lineorder_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and c_region = 'AMERICA'
+    and s_region = 'AMERICA'
+    and (d_year = 1997 or d_year = 1998)
+    and (p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2')
+group by 
+    d_year, s_nation, p_category
+order by 
+    d_year, s_nation, p_category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    d_year, s_nation, p_category,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    dates_n3, customer_n3, supplier_n3, ssb_part_n3, lineorder_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and c_region = 'AMERICA'
+    and s_region = 'AMERICA'
+    and (d_year = 1997 or d_year = 1998)
+    and (p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2')
+group by 
+    d_year, s_nation, p_category
+order by 
+    d_year, s_nation, p_category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC])
+  HiveProject(d_year=[$0], s_nation=[$2], p_category=[$1], $f3=[$3])
+    HiveAggregate(group=[{4, 10, 13}], agg#0=[sum($17)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), IN($4, 1997, 1998), IN($11, _UTF-16LE'MFGR#1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($2, _UTF-16LE'AMERICA'), =($14, _UTF-16LE'AMERICA'))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: explain cbo
+select 
+    d_year, s_city, p_brand1,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    dates_n3, customer_n3, supplier_n3, ssb_part_n3, lineorder_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and c_region = 'AMERICA'
+    and s_nation = 'UNITED STATES'
+    and (d_year = 1997 or d_year = 1998)
+    and p_category = 'MFGR#14'
+group by 
+    d_year, s_city, p_brand1
+order by 
+    d_year, s_city, p_brand1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n3
+PREHOOK: Input: default@dates_n3
+PREHOOK: Input: default@lineorder_n3
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Input: default@ssb_part_n3
+PREHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+    d_year, s_city, p_brand1,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    dates_n3, customer_n3, supplier_n3, ssb_part_n3, lineorder_n3
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and c_region = 'AMERICA'
+    and s_nation = 'UNITED STATES'
+    and (d_year = 1997 or d_year = 1998)
+    and p_category = 'MFGR#14'
+group by 
+    d_year, s_city, p_brand1
+order by 
+    d_year, s_city, p_brand1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n3
+POSTHOOK: Input: default@dates_n3
+POSTHOOK: Input: default@lineorder_n3
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Input: default@ssb_part_n3
+POSTHOOK: Input: default@supplier_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC])
+  HiveProject(d_year=[$0], s_city=[$2], p_brand1=[$1], $f3=[$3])
+    HiveAggregate(group=[{4, 9, 12}], agg#0=[sum($17)])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), IN($4, 1997, 1998), =($2, _UTF-16LE'AMERICA'), =($10, _UTF-16LE'MFGR#14'), =($13, _UTF-16LE'UNITED STATES'))])
+        HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
+
+PREHOOK: query: DROP MATERIALIZED VIEW `ssb_mv_n3`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@ssb_mv_n3
+PREHOOK: Output: default@ssb_mv_n3
+POSTHOOK: query: DROP MATERIALIZED VIEW `ssb_mv_n3`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@ssb_mv_n3
+POSTHOOK: Output: default@ssb_mv_n3

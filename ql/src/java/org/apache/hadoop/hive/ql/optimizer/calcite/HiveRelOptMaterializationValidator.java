@@ -40,12 +40,14 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
@@ -74,22 +76,22 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(TableScan scan) {
-    if (scan instanceof HiveTableScan) {
-      HiveTableScan hiveScan = (HiveTableScan) scan;
-      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) hiveScan.getTable();
-      Table tab = relOptHiveTable.getHiveTableMD();
-      if (tab.isTemporary()) {
-        fail(tab.getTableName() + " is a temporary table");
-      }
-      if (tab.getTableType() == TableType.EXTERNAL_TABLE) {
-        fail(tab.getFullyQualifiedName() + " is an external table");
-      }
-      return scan;
-    }
-
     // TableScan of a non-Hive table - don't support for materializations.
     fail(scan.getTable().getQualifiedName() + " is a table scan of a non-Hive table.");
     return scan;
+  }
+
+  @Override
+  public RelNode visit(HiveTableScan hiveScan) {
+    RelOptHiveTable relOptHiveTable = (RelOptHiveTable) hiveScan.getTable();
+    Table tab = relOptHiveTable.getHiveTableMD();
+    if (tab.isTemporary()) {
+      fail(tab.getTableName() + " is a temporary table");
+    }
+    if (tab.getTableType() == TableType.EXTERNAL_TABLE) {
+      fail(tab.getFullyQualifiedName() + " is an external table");
+    }
+    return hiveScan;
   }
 
   @Override
@@ -117,13 +119,11 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(HiveAggregate aggregate) {
-    // Is there anything to check here?
     return super.visit(aggregate);
   }
 
   @Override
   public RelNode visit(RelNode node) {
-    setAutomaticRewritingInvalidReason(node);
     // There are several Hive RelNode types which do not have their own visit() method
     // defined in the HiveRelShuttle interface, which need to be handled appropriately here.
     // Per jcamachorodriguez we should not encounter HiveMultiJoin/HiveSortExchange
@@ -132,10 +132,14 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
       return visit((HiveUnion) node);
     } else if (node instanceof HiveSortLimit) {
       return visit((HiveSortLimit) node);
+    } else if (node instanceof HiveSortExchange) {
+      return visit((HiveSortExchange) node);
     } else if (node instanceof HiveSemiJoin) {
       return visit((HiveSemiJoin) node);
     } else if (node instanceof HiveExcept) {
       return visit((HiveExcept) node);
+    } else if (node instanceof HiveAntiJoin) {
+      return visit((HiveAntiJoin) node);
     } else if (node instanceof HiveIntersect) {
       return visit((HiveIntersect) node);
     }
@@ -225,30 +229,48 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveUnion union) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported operator: union.");
     return visitChildren(union);
   }
 
-  // Note: Not currently part of the HiveRelNode interface
-  private RelNode visit(HiveSortLimit sort) {
+  @Override
+  public RelNode visit(HiveSortLimit sort) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported clause: order by.");
     checkExpr(sort.getFetchExpr());
     checkExpr(sort.getOffsetExpr());
     return visitChildren(sort);
   }
 
   // Note: Not currently part of the HiveRelNode interface
+  private RelNode visit(HiveSortExchange sort) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported clause: sort by.");
+    return visitChildren(sort);
+  }
+
+  // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveSemiJoin semiJoin) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported join type: semi join.");
     checkExpr(semiJoin.getCondition());
     checkExpr(semiJoin.getJoinFilter());
     return visitChildren(semiJoin);
   }
 
+  private RelNode visit(HiveAntiJoin antiJoin) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported join type: anti join.");
+    checkExpr(antiJoin.getCondition());
+    checkExpr(antiJoin.getJoinFilter());
+    return visitChildren(antiJoin);
+  }
+
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveExcept except) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported operator: except.");
     return visitChildren(except);
   }
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveIntersect intersect) {
+    setAutomaticRewritingInvalidReason("Statement has unsupported operator: intersect.");
     return visitChildren(intersect);
   }
 

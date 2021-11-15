@@ -1,0 +1,49 @@
+PREHOOK: query: create table acid_dynamic(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_dynamic
+POSTHOOK: query: create table acid_dynamic(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_dynamic
+PREHOOK: query: insert into table acid_dynamic partition (ds) select cint, cast(cstring1 as varchar(128)), cstring2 from alltypesorc where cint is not null and cint < 0 order by cint limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_dynamic
+POSTHOOK: query: insert into table acid_dynamic partition (ds) select cint, cast(cstring1 as varchar(128)), cstring2 from alltypesorc where cint is not null and cint < 0 order by cint limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_dynamic
+POSTHOOK: Output: default@acid_dynamic@ds=4KWs6gw7lv2WYd66P
+POSTHOOK: Output: default@acid_dynamic@ds=4hA4KQj2vD3fI6gX82220d
+POSTHOOK: Output: default@acid_dynamic@ds=KbaDXiN85adbHRx58v
+POSTHOOK: Output: default@acid_dynamic@ds=P76636jJ6qM17d7DIy
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=4KWs6gw7lv2WYd66P).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=4KWs6gw7lv2WYd66P).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=4hA4KQj2vD3fI6gX82220d).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=4hA4KQj2vD3fI6gX82220d).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=KbaDXiN85adbHRx58v).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=KbaDXiN85adbHRx58v).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=P76636jJ6qM17d7DIy).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_dynamic PARTITION(ds=P76636jJ6qM17d7DIy).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select * from acid_dynamic order by a,b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dynamic
+PREHOOK: Input: default@acid_dynamic@ds=4KWs6gw7lv2WYd66P
+PREHOOK: Input: default@acid_dynamic@ds=4hA4KQj2vD3fI6gX82220d
+PREHOOK: Input: default@acid_dynamic@ds=KbaDXiN85adbHRx58v
+PREHOOK: Input: default@acid_dynamic@ds=P76636jJ6qM17d7DIy
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_dynamic order by a,b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dynamic
+POSTHOOK: Input: default@acid_dynamic@ds=4KWs6gw7lv2WYd66P
+POSTHOOK: Input: default@acid_dynamic@ds=4hA4KQj2vD3fI6gX82220d
+POSTHOOK: Input: default@acid_dynamic@ds=KbaDXiN85adbHRx58v
+POSTHOOK: Input: default@acid_dynamic@ds=P76636jJ6qM17d7DIy
+#### A masked pattern was here ####
+-1073279343	oj1YrV5Wa	P76636jJ6qM17d7DIy
+-1073051226	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d
+-1072910839	0iqrc5	KbaDXiN85adbHRx58v
+-1072081801	dPkN74F7	4KWs6gw7lv2WYd66P
+-1072076362	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P

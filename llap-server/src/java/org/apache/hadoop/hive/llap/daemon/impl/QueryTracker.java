@@ -143,11 +143,8 @@ public class QueryTracker extends AbstractService {
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryCompletionThread %d").build());
 
     String logger = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_LOGGER);
-    if (logger != null && (logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING))) {
-      routeBasedLoggingEnabled = true;
-    } else {
-      routeBasedLoggingEnabled = false;
-    }
+    routeBasedLoggingEnabled =
+        logger != null && (logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING));
     LOG.info(
         "QueryTracker setup with numCleanerThreads={}, defaultCleanupDelay(s)={}, routeBasedLogging={}",
         numCleanerThreads, defaultDeleteDelaySeconds, routeBasedLoggingEnabled);
@@ -160,7 +157,8 @@ public class QueryTracker extends AbstractService {
     String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber,
     int attemptNumber,
     String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-    String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId) throws IOException {
+      String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId,
+      ContainerRunnerImpl.UgiPool ugiPool) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     // Note: This is a readLock to prevent a race with queryComplete. Operations
@@ -191,7 +189,7 @@ public class QueryTracker extends AbstractService {
                 dagIdentifier, user,
                 getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
                 tokenInfo.userName, tokenInfo.appId, amNodeId, vertex.getTokenIdentifier(), appToken,
-                vertex.getIsExternalSubmission());
+                vertex.getIsExternalSubmission(), ugiPool);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
@@ -207,13 +205,11 @@ public class QueryTracker extends AbstractService {
 
       queryIdentifierToHiveQueryId.putIfAbsent(queryIdentifier, hiveQueryIdString);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
-      }
+      LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
       if (!vertex.getIsExternalSubmission()) {
+        String[] localDirs = (ShuffleHandler.get().isDirWatcherEnabled()) ? queryInfo.getLocalDirs() : null;
         ShuffleHandler.get()
-            .registerDag(appIdString, dagIdentifier, appToken,
-                user, queryInfo.getLocalDirs());
+            .registerDag(appIdString, dagIdentifier, appToken, user, localDirs);
       }
 
       return queryInfo.registerFragment(
@@ -437,7 +433,12 @@ public class QueryTracker extends AbstractService {
 
   @Override
   public void serviceStop() {
-    executorService.shutdownNow();
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(10000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      LOG.warn("cannot finish QueryTracker cleanup because of InterruptedException", e);
+    }
     LOG.info(getName() + " stopped");
   }
 
@@ -456,9 +457,7 @@ public class QueryTracker extends AbstractService {
     @Override
     protected Void callInternal() {
       Path pathToDelete = new Path(dirToDelete);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Deleting path: " + pathToDelete);
-      }
+      LOG.debug("Deleting path: {}", pathToDelete);
       try {
         localFs.delete(new Path(dirToDelete), true);
       } catch (IOException e) {
@@ -500,17 +499,13 @@ public class QueryTracker extends AbstractService {
       LOG.info("External cleanup callable for {}", queryIdentifier);
       ReadWriteLock dagLock = getDagLockNoCreate(queryIdentifier);
       if (dagLock == null) {
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("null dagLock. No cleanup required at the moment for {}", queryIdString);
-        }
+        LOG.trace("null dagLock. No cleanup required at the moment for {}", queryIdString);
         return null;
       }
       boolean locked = dagLock.writeLock().tryLock();
       if (!locked) {
         // Something else holds the lock at the moment. Don't bother cleaning up.
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("Lock not obtained. Skipping cleanup for {}", queryIdString);
-        }
+        LOG.trace("Lock not obtained. Skipping cleanup for {}", queryIdString);
         return null;
       }
       try {
@@ -519,9 +514,7 @@ public class QueryTracker extends AbstractService {
         QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
         if (queryInfo != null) {
           // QueryInfo will only exist if more work came in, after this was scheduled.
-          if (LOG.isTraceEnabled()) {
-            LOG.info("QueryInfo found for {}. Expecting future cleanup", queryIdString);
-          }
+          LOG.trace("QueryInfo found for {}. Expecting future cleanup", queryIdString);
           return null;
         }
         LOG.info("Processing cleanup for {}", queryIdString);

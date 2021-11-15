@@ -61,6 +61,7 @@ STAGE PLANS:
                         Number of rows: 10
                         Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -82,6 +83,7 @@ STAGE PLANS:
                         Number of rows: 5
                         Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1

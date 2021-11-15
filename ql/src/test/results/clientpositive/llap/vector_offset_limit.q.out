@@ -1,0 +1,95 @@
+PREHOOK: query: drop table if exists TLIMITOFFSET
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists TLIMITOFFSET
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table if not exists TLIMITOFFSET (name string, id int, flag string) STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TLIMITOFFSET
+POSTHOOK: query: create table if not exists TLIMITOFFSET (name string, id int, flag string) STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TLIMITOFFSET
+PREHOOK: query: create table if not exists TLIMITOFFSETSTAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TLIMITOFFSETSTAGE
+POSTHOOK: query: create table if not exists TLIMITOFFSETSTAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TLIMITOFFSETSTAGE
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin3.txt' OVERWRITE INTO TABLE TLIMITOFFSETSTAGE
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tlimitoffsetstage
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin3.txt' OVERWRITE INTO TABLE TLIMITOFFSETSTAGE
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tlimitoffsetstage
+PREHOOK: query: INSERT INTO TABLE TLIMITOFFSET SELECT * from TLIMITOFFSETSTAGE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlimitoffsetstage
+PREHOOK: Output: default@tlimitoffset
+POSTHOOK: query: INSERT INTO TABLE TLIMITOFFSET SELECT * from TLIMITOFFSETSTAGE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlimitoffsetstage
+POSTHOOK: Output: default@tlimitoffset
+POSTHOOK: Lineage: tlimitoffset.flag SIMPLE [(tlimitoffsetstage)tlimitoffsetstage.FieldSchema(name:flag, type:string, comment:null), ]
+POSTHOOK: Lineage: tlimitoffset.id SIMPLE [(tlimitoffsetstage)tlimitoffsetstage.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: tlimitoffset.name SIMPLE [(tlimitoffsetstage)tlimitoffsetstage.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SELECT name,id FROM TLIMITOFFSET where name='testname' ORDER BY id LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlimitoffset
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT name,id FROM TLIMITOFFSET where name='testname' ORDER BY id LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlimitoffset
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+testname1
+testname2
+testname3
+testname4
+testname5
+testname6
+testname7
+testname8
+testname9
+testname10
+testname11
+testname12
+testname13
+testname14
+testname15
+testname16
+testname17
+testname18
+testname19
+testname20
+PREHOOK: query: SELECT name,id FROM TLIMITOFFSET where name='testname' ORDER BY id LIMIT 20 OFFSET 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlimitoffset
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT name,id FROM TLIMITOFFSET where name='testname' ORDER BY id LIMIT 20 OFFSET 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlimitoffset
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+testname11
+testname12
+testname13
+testname14
+testname15
+testname16
+testname17
+testname18
+testname19
+testname20
+testname21
+testname22
+testname23
+testname24
+testname25
+testname26
+testname27
+testname28
+testname29
+testname30

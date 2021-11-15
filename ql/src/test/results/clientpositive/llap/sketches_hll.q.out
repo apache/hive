@@ -1,0 +1,59 @@
+PREHOOK: query: create temporary table sketch_input (id int, category char(1))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: create temporary table sketch_input (id int, category char(1))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sketch_input
+PREHOOK: query: insert into table sketch_input values
+  (1, 'a'), (2, 'a'), (3, 'a'), (4, 'a'), (5, 'a'), (6, 'a'), (7, 'a'), (8, 'a'), (9, 'a'), (10, 'a'),
+  (6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: insert into table sketch_input values
+  (1, 'a'), (2, 'a'), (3, 'a'), (4, 'a'), (5, 'a'), (6, 'a'), (7, 'a'), (8, 'a'), (9, 'a'), (10, 'a'),
+  (6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sketch_input
+POSTHOOK: Lineage: sketch_input.category SCRIPT []
+POSTHOOK: Lineage: sketch_input.id SCRIPT []
+PREHOOK: query: create temporary table sketch_intermediate (category char(1), sketch binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sketch_intermediate
+POSTHOOK: query: create temporary table sketch_intermediate (category char(1), sketch binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sketch_intermediate
+PREHOOK: query: insert into sketch_intermediate select category, ds_hll_sketch(id) from sketch_input group by category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: default@sketch_intermediate
+POSTHOOK: query: insert into sketch_intermediate select category, ds_hll_sketch(id) from sketch_input group by category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+POSTHOOK: Output: default@sketch_intermediate
+POSTHOOK: Lineage: sketch_intermediate.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
+POSTHOOK: Lineage: sketch_intermediate.sketch EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: select category, ds_hll_estimate(sketch) from sketch_intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_intermediate
+#### A masked pattern was here ####
+POSTHOOK: query: select category, ds_hll_estimate(sketch) from sketch_intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_intermediate
+#### A masked pattern was here ####
+a	10.000000223517425
+b	10.000000223517425
+PREHOOK: query: select ds_hll_estimate(ds_hll_union(sketch)) from sketch_intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_intermediate
+#### A masked pattern was here ####
+POSTHOOK: query: select ds_hll_estimate(ds_hll_union(sketch)) from sketch_intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_intermediate
+#### A masked pattern was here ####
+15.000000521540663

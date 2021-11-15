@@ -47,20 +47,20 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.GlobFilter;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +70,6 @@ import org.slf4j.LoggerFactory;
 public final class FileUtils {
   private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class.getName());
   private static final Random random = new Random();
-  public static final int MAX_IO_ERROR_RETRY = 5;
   public static final int IO_ERROR_SLEEP_TIME = 100;
 
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
@@ -254,7 +253,7 @@ public final class FileUtils {
   }
 
   static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+    return c < charToEscape.size() && charToEscape.get(c);
   }
 
   public static String escapePathName(String path) {
@@ -332,17 +331,45 @@ public final class FileUtils {
    */
   public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
       List<FileStatus> results) throws IOException {
-    listStatusRecursively(fs, fileStatus, HIDDEN_FILES_PATH_FILTER, results);
+    if (isS3a(fs)) {
+      // S3A file system has an optimized recursive directory listing implementation however it doesn't support filtering.
+      // Therefore we filter the result set afterwards. This might be not so optimal in HDFS case (which does a tree walking) where a filter could have been used.
+      listS3FilesRecursive(fileStatus, fs, results);
+    } else {
+      generalListStatusRecursively(fs, fileStatus, results);
+    }
   }
 
-  public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
-      PathFilter filter, List<FileStatus> results) throws IOException {
-    if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), filter)) {
-        listStatusRecursively(fs, stat, results);
+  private static void generalListStatusRecursively(FileSystem fs, FileStatus fileStatus, List<FileStatus> results) throws IOException {
+    if (fileStatus.isDirectory()) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
+        generalListStatusRecursively(fs, stat, results);
       }
     } else {
       results.add(fileStatus);
+    }
+  }
+
+  private static void listS3FilesRecursive(FileStatus base, FileSystem fs, List<FileStatus> results) throws IOException {
+    if (!base.isDirectory()) {
+      results.add(base);
+      return;
+    }
+    RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base.getPath(), true);
+    while (remoteIterator.hasNext()) {
+      LocatedFileStatus each = remoteIterator.next();
+      Path relativePath = new Path(each.getPath().toString().replace(base.toString(), ""));
+      if (org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
+        results.add(each);
+      }
+    }
+  }
+
+  public static boolean isS3a(FileSystem fs) {
+    try {
+      return "s3a".equalsIgnoreCase(fs.getScheme());
+    } catch (UnsupportedOperationException ex) {
+      return false;
     }
   }
 
@@ -452,15 +479,13 @@ public final class FileUtils {
     return isActionPermittedForFileHierarchy(fs,fileStatus,userName, action, true);
   }
 
+  @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "Intended, dir privilege all-around bug")
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
       String userName, FsAction action, boolean recurse) throws Exception {
-    boolean isDir = fileStatus.isDir();
+    boolean isDir = fileStatus.isDirectory();
 
-    FsAction dirActionNeeded = action;
-    if (isDir) {
-      // for dirs user needs execute privileges as well
-      dirActionNeeded.and(FsAction.EXECUTE);
-    }
+    // for dirs user needs execute privileges as well
+    FsAction dirActionNeeded = (isDir) ? action.and(FsAction.EXECUTE) : action;
 
     List<FileStatus> subDirsToCheck = null;
     if (isDir && recurse) {
@@ -553,12 +578,18 @@ public final class FileUtils {
       return false;
     }
 
-    if ((!fileStatus.isDir()) || (!recurse)) {
+    if ((!fileStatus.isDirectory()) || (!recurse)) {
       // no sub dirs to be checked
       return true;
     }
     // check all children
-    FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
+    FileStatus[] childStatuses = null;
+    try {
+      childStatuses = fs.listStatus(fileStatus.getPath());
+    } catch (FileNotFoundException fe) {
+      LOG.debug("Skipping child access check since the directory is already removed");
+      return true;
+    }
     for (FileStatus childStatus : childStatuses) {
       // check children recursively - recurse is true if we're here.
       if (!checkIsOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
@@ -655,6 +686,25 @@ public final class FileUtils {
       for (Path path : srcPaths) {
         srcFS.delete(path, true);
       }
+    }
+    return copied;
+  }
+
+  public static boolean distCpWithSnapshot(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, HiveConf conf, HadoopShims shims, UserGroupInformation proxyUser) {
+    boolean copied = false;
+    try {
+      if (proxyUser == null) {
+        copied = shims.runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, conf);
+      } else {
+        copied =
+            shims.runDistCpWithSnapshotsAs(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, proxyUser, conf);
+      }
+      if (copied)
+        LOG.info("Successfully copied using snapshots source {} and dest {} using snapshots {} and {}", srcPaths, dst,
+            oldSnapshot, newSnapshot);
+    } catch (IOException e) {
+      LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
     }
     return copied;
   }
@@ -892,6 +942,7 @@ public final class FileUtils {
   /**
    * delete a temporary file and remove it from delete-on-exit hook.
    */
+  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Intended")
   public static boolean deleteTmpFile(File tempFile) {
     if (tempFile != null) {
       tempFile.delete();
@@ -1001,7 +1052,7 @@ public final class FileUtils {
    * @return            the list of the file names in the format of URI formats.
    */
   public static Set<String> getJarFilesByPath(String pathString, Configuration conf) {
-    if (org.apache.commons.lang.StringUtils.isBlank(pathString)) {
+    if (org.apache.commons.lang3.StringUtils.isBlank(pathString)) {
       return Collections.emptySet();
     }
     Set<String> result = new HashSet<>();
@@ -1070,4 +1121,16 @@ public final class FileUtils {
     return IO_ERROR_SLEEP_TIME * (int)(Math.pow(2.0, repeatNum));
   }
 
+  /**
+   * Attempts to delete a file if it exists.
+   * @param fs FileSystem
+   * @param path Path to be deleted.
+   */
+  public static void deleteIfExists(FileSystem fs, Path path) {
+    try {
+      fs.delete(path, true);
+    } catch (IOException e) {
+      LOG.debug("Unable to delete {}", path, e);
+    }
+  }
 }

@@ -1,0 +1,141 @@
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
+POSTHOOK: type: CREATE SCHEDULED QUERY
+PREHOOK: query: use sys
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: use sys
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: desc formatted scheduled_queries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: sys@scheduled_queries
+POSTHOOK: query: desc formatted scheduled_queries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: sys@scheduled_queries
+# col_name            	data_type           	comment             
+scheduled_query_id  	bigint              	from deserializer   
+schedule_name       	string              	from deserializer   
+enabled             	boolean             	from deserializer   
+cluster_namespace   	string              	from deserializer   
+schedule            	string              	from deserializer   
+user                	string              	from deserializer   
+query               	string              	from deserializer   
+next_execution      	bigint              	from deserializer   
+active_execution_id 	bigint              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	sys                 	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"active_execution_id\":\"true\",\"cluster_namespace\":\"true\",\"enabled\":\"true\",\"next_execution\":\"true\",\"query\":\"true\",\"schedule\":\"true\",\"schedule_name\":\"true\",\"scheduled_query_id\":\"true\",\"user\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	hive.sql.database.type	METASTORE           
+	hive.sql.query      	SELECT              
+	                    	  \"SCHEDULED_QUERY_ID\",
+	                    	  \"SCHEDULE_NAME\",
+	                    	  \"ENABLED\",      
+	                    	  \"CLUSTER_NAMESPACE\",
+	                    	  \"SCHEDULE\",     
+	                    	  \"USER\",         
+	                    	  \"QUERY\",        
+	                    	  \"NEXT_EXECUTION\",
+	                    	  \"ACTIVE_EXECUTION_ID\"
+	                    	FROM                
+	                    	  \"SCHEDULED_QUERIES\"
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hive.storage.jdbc.JdbcStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hive.storage.jdbc.JdbcSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	sys.scheduled_queries	 
+Constraint Name:    	sys_pk_scheduled_queries	 
+Column Name:        	scheduled_query_id  	 
+PREHOOK: query: select 
+	scheduled_query_id,
+	schedule_name,
+	enabled,
+	cluster_namespace,
+	`schedule`,
+	`user`,
+	query,
+	next_execution>0
+ from scheduled_queries
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+	scheduled_query_id,
+	schedule_name,
+	enabled,
+	cluster_namespace,
+	`schedule`,
+	`user`,
+	query,
+	next_execution>0
+ from scheduled_queries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+1	asd	true	hive	* * * * * ? *	hive_admin_user	select 1	true
+PREHOOK: query: select	scheduled_execution_id,
+	scheduled_query_id,
+	state,
+	start_time>0,
+	end_time>=start_time,
+	error_message,
+	last_update_time>=start_time
+		from scheduled_executions order by SCHEDULED_EXECUTION_ID limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_executions
+#### A masked pattern was here ####
+POSTHOOK: query: select	scheduled_execution_id,
+	scheduled_query_id,
+	state,
+	start_time>0,
+	end_time>=start_time,
+	error_message,
+	last_update_time>=start_time
+		from scheduled_executions order by SCHEDULED_EXECUTION_ID limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_executions
+#### A masked pattern was here ####
+1	1	FINISHED	true	true	NULL	NULL
+PREHOOK: query: alter scheduled query asd disable
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query asd disable
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: select schedule_name,enabled from scheduled_queries
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+POSTHOOK: query: select schedule_name,enabled from scheduled_queries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+asd	false

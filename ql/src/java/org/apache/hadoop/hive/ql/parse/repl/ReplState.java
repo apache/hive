@@ -17,23 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * ReplState.
+ *
+ * Logger class for Repl Events.
+ **/
 public abstract class ReplState {
-  @JsonIgnoreProperties
   private static final Logger REPL_LOG = LoggerFactory.getLogger("ReplState");
 
-  @JsonIgnoreProperties
   private static final ObjectMapper mapper = new ObjectMapper(); // Thread-safe.
 
   static {
-    mapper.configure(SerializationConfig.Feature.AUTO_DETECT_GETTERS, false);
-    mapper.configure(SerializationConfig.Feature.AUTO_DETECT_IS_GETTERS, false);
-    mapper.configure(SerializationConfig.Feature.AUTO_DETECT_FIELDS, false);
+    mapper.configure(MapperFeature.AUTO_DETECT_GETTERS, false);
+    mapper.configure(MapperFeature.AUTO_DETECT_IS_GETTERS, false);
+    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, false);
   }
 
   public enum LogTag {
@@ -41,10 +44,19 @@ public abstract class ReplState {
     TABLE_DUMP,
     FUNCTION_DUMP,
     EVENT_DUMP,
+    ATLAS_DUMP_START,
+    ATLAS_DUMP_END,
+    RANGER_DUMP_START,
+    RANGER_DUMP_END,
     TABLE_LOAD,
     FUNCTION_LOAD,
     EVENT_LOAD,
-    END
+    ATLAS_LOAD_START,
+    ATLAS_LOAD_END,
+    RANGER_LOAD_START,
+    RANGER_LOAD_END,
+    END,
+    DATA_COPY_END
   }
 
   public void log(LogTag tag) {

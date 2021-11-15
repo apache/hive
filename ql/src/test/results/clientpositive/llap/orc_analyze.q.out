@@ -101,8 +101,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
-	rawDataSize         	52600               
-	totalSize           	3222                
+	rawDataSize         	53000               
+	totalSize           	3231                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -149,8 +149,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
-	rawDataSize         	52600               
-	totalSize           	3222                
+	rawDataSize         	53000               
+	totalSize           	3231                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -237,7 +237,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3222                
+	totalSize           	3231                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -291,6 +291,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -344,8 +345,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2123                
+	rawDataSize         	22150               
+	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -385,8 +386,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2134                
+	rawDataSize         	22250               
+	totalSize           	2143                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -438,8 +439,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2123                
+	rawDataSize         	22150               
+	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -479,8 +480,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2134                
+	rawDataSize         	22250               
+	totalSize           	2143                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -534,6 +535,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -576,7 +578,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2123                
+	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -617,7 +619,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2134                
+	totalSize           	2143                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -677,6 +679,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -730,8 +733,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21955               
-	totalSize           	5341                
+	rawDataSize         	22155               
+	totalSize           	5396                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -771,8 +774,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22043               
-	totalSize           	5336                
+	rawDataSize         	22243               
+	totalSize           	5378                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -824,8 +827,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21955               
-	totalSize           	5341                
+	rawDataSize         	22155               
+	totalSize           	5396                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -865,8 +868,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22043               
-	totalSize           	5336                
+	rawDataSize         	22243               
+	totalSize           	5378                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -926,6 +929,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -968,7 +972,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21955               
-	totalSize           	5341                
+	totalSize           	5396                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1009,7 +1013,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5336                
+	totalSize           	5378                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1063,6 +1067,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people_n0 PARTITION (state)
   SELECT * FROM orc_create_people_staging_n0 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging_n0
+POSTHOOK: Output: default@orc_create_people_n0
 POSTHOOK: Output: default@orc_create_people_n0@state=Ca
 POSTHOOK: Output: default@orc_create_people_n0@state=Or
 POSTHOOK: Lineage: orc_create_people_n0 PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging_n0)orc_create_people_staging_n0.FieldSchema(name:address, type:string, comment:null), ]
@@ -1116,8 +1121,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2123                
+	rawDataSize         	22150               
+	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1169,8 +1174,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
-	totalSize           	2123                
+	rawDataSize         	22150               
+	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

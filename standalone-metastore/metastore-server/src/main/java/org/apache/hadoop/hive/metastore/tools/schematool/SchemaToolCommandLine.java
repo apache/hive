@@ -59,6 +59,11 @@ public class SchemaToolCommandLine {
         .hasArg()
         .withDescription("Alter a catalog, requires --catalogLocation and/or --catalogDescription parameter as well")
         .create("alterCatalog");
+    Option mergeCatalog = OptionBuilder
+        .hasArg()
+        .withDescription("Merge databases from a catalog into other, Argument is the source catalog name " +
+            "Requires --toCatalog to indicate the destination catalog")
+        .create("mergeCatalog");
     Option moveDatabase = OptionBuilder
         .hasArg()
         .withDescription("Move a database between catalogs.  Argument is the database name. " +
@@ -90,6 +95,7 @@ public class SchemaToolCommandLine {
       .addOption(validateOpt)
       .addOption(createCatalog)
       .addOption(alterCatalog)
+      .addOption(mergeCatalog)
       .addOption(moveDatabase)
       .addOption(moveTable)
       .addOption(createUserOpt)
@@ -270,6 +276,11 @@ public class SchemaToolCommandLine {
       printAndExit("ifNotExists may be set only for createCatalog");
     }
 
+    if (cl.hasOption("mergeCatalog") &&
+        (!cl.hasOption("toCatalog"))) {
+      printAndExit("mergeCatalog and toCatalog must be set for mergeCatalog");
+    }
+
     if (cl.hasOption("moveDatabase") &&
         (!cl.hasOption("fromCatalog") || !cl.hasOption("toCatalog"))) {
       printAndExit("fromCatalog and toCatalog must be set for moveDatabase");
@@ -281,7 +292,7 @@ public class SchemaToolCommandLine {
       printAndExit("fromCatalog, toCatalog, fromDatabase and toDatabase must be set for moveTable");
     }
 
-    if ((!cl.hasOption("moveDatabase") && !cl.hasOption("moveTable")) &&
+    if ((!cl.hasOption("moveDatabase") && !cl.hasOption("moveTable") && !cl.hasOption("mergeCatalog")) &&
         (cl.hasOption("fromCatalog") || cl.hasOption("toCatalog"))) {
       printAndExit("fromCatalog and toCatalog may be set only for moveDatabase and moveTable");
     }

@@ -6,7 +6,6 @@ set hive.strict.checks.bucketing=false;
 set hive.stats.column.autogather=true;
 set hive.stats.fetch.column.stats=true;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.auto.convert.join=true;
 set hive.join.emit.interval=2;
 set hive.auto.convert.join.noconditionaltask=true;
@@ -216,4 +215,7 @@ explain select value from b_n3;
 explain select key from b_n3;
 explain select value from c_n1;
 explain select key from c_n1;
+
+describe formatted a_n3 PARTITION (ds='2010-03-11', hr) key;
+describe formatted a_n3 PARTITION (ds='2010-03-11', hr) value;
 

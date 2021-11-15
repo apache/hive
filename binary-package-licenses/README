@@ -19,7 +19,6 @@ ant*
 apache-curator
 avatica*
 avro
-bonecp
 calcite*
 classmate
 commons*

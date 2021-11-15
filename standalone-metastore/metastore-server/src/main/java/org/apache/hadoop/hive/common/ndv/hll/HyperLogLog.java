@@ -246,6 +246,10 @@ public class HyperLogLog implements NumDistinctValueEstimator {
     add(Murmur3.hash64(val.getBytes()));
   }
 
+  public void addBytes(byte[] value, int offset, int length) {
+    add(Murmur3.hash64(value, offset, length));
+  }
+
   public void addString(String val, Charset charset) {
     add(Murmur3.hash64(val.getBytes(charset)));
   }
@@ -638,6 +642,11 @@ public class HyperLogLog implements NumDistinctValueEstimator {
   @Override
   public void addToEstimator(double d) {
     addDouble(d);
+  }
+
+  @Override
+  public void addToEstimator(byte[] value, int offset, int length) {
+    addBytes(value, offset, length);
   }
 
   @Override

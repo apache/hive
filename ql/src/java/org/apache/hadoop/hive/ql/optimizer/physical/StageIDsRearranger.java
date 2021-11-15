@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -53,7 +52,7 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
   }
 
   private static List<Task> getExplainOrder(PhysicalContext pctx) {
-    List<Task> tasks = getExplainOrder(pctx.getConf(), pctx.getRootTasks());
+    List<Task> tasks = getExplainOrder(pctx.getRootTasks(), pctx.getConf().getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE));
     if (pctx.getFetchTask() != null) {
       tasks.add(pctx.getFetchTask());
     }
@@ -70,18 +69,17 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
         }
       }
     };
-    for (Task<? extends Serializable> task : tasks) {
+    for (Task<?> task : tasks) {
       traverse.traverse(task);
     }
     return sources;
   }
 
-  public static List<Task> getExplainOrder(HiveConf conf, List<Task<?>> tasks) {
-    for (Task<? extends Serializable> task : tasks) {
+  public static List<Task> getExplainOrder(List<Task<?>> tasks, String stageIdRearrange) {
+    for (Task<?> task : tasks) {
       task.setRootTask(true);
     }
-    String var = conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE);
-    ArrangeType type = ArrangeType.valueOf(var.toUpperCase());
+    ArrangeType type = ArrangeType.valueOf(stageIdRearrange.toUpperCase());
     if (type == ArrangeType.EXECUTION) {
       return executionOrder(tasks);
     }
@@ -122,7 +120,7 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
         return type == ArrangeType.NONE || type == ArrangeType.IDONLY || super.isReady(task);
       }
     };
-    for (Task<? extends Serializable> task : tasks) {
+    for (Task<?> task : tasks) {
       traverse.traverse(task);
     }
     return new ArrayList<Task>(traverse.traversed);

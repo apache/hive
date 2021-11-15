@@ -1,6 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
--- SORT_BEFORE_DIFF
+-- SORT_QUERY_RESULTS
 -- union case: both subqueries are a map-only jobs, same input, followed by filesink
 
 explain 

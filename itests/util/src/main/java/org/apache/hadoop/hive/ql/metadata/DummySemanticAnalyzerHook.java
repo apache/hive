@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
@@ -61,7 +61,7 @@ public class DummySemanticAnalyzerHook extends AbstractSemanticAnalyzerHook{
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+      List<Task<?>> rootTasks) throws SemanticException {
 
     if(hook != null) {
       hook.postAnalyze(context, rootTasks);
@@ -91,8 +91,8 @@ class DummyCreateTableHook extends AbstractSemanticAnalyzerHook{
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
-    CreateTableDesc desc = (CreateTableDesc) ((DDLTask2)rootTasks.get(rootTasks.size()-1)).getWork().getDDLDesc();
+      List<Task<?>> rootTasks) throws SemanticException {
+    CreateTableDesc desc = (CreateTableDesc) ((DDLTask)rootTasks.get(rootTasks.size()-1)).getWork().getDDLDesc();
     Map<String,String> tblProps = desc.getTblProps();
     if(tblProps == null) {
       tblProps = new HashMap<String, String>();

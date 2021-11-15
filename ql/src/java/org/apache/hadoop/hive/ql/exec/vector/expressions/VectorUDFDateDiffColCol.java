@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -29,19 +30,16 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hive.common.util.DateParser;
 
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class VectorUDFDateDiffColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
   private final int colNum2;
 
-  private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Date date = new Date(0);
 
   // Transient members initialized by transientInit method.
@@ -49,8 +47,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   private transient LongColumnVector dateVector2;
 
   public VectorUDFDateDiffColCol(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
+    super(colNum1, outputColumnNum);
     this.colNum2 = colNum2;
   }
 
@@ -58,13 +55,12 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum1 = -1;
     colNum2 = -1;
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     dateVector1 = new LongColumnVector();
     dateVector2 = new LongColumnVector();
@@ -77,7 +73,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector1 = batch.cols[colNum1];
+    ColumnVector inputColVector1 = batch.cols[inputColumnNum[0]];
     ColumnVector inputColVector2 = batch.cols[colNum2];
     int[] sel = batch.selected;
     int n = batch.size;
@@ -214,11 +210,11 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     if (input.isRepeating) {
       if (input.noNulls || !input.isNull[0]) {
         String string = new String(input.vector[0], input.start[0], input.length[0]);
-        try {
-          date.setTime(formatter.parse(string).getTime());
-          output.vector[0] = DateWritableV2.dateToDays(date);
+        org.apache.hadoop.hive.common.type.Date hiveDate = DateParser.parseDate(string);
+        if (hiveDate != null) {
+          output.vector[0] = hiveDate.toEpochDay();
           output.isNull[0] = false;
-        } catch (ParseException e) {
+        } else {
           output.isNull[0] = true;
           output.noNulls = false;
         }
@@ -293,10 +289,10 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
 
   private void setDays(BytesColumnVector input, LongColumnVector output, int i) {
     String string = new String(input.vector[i], input.start[i], input.length[i]);
-    try {
-      date.setTime(formatter.parse(string).getTime());
-      output.vector[i] = DateWritableV2.dateToDays(date);
-    } catch (ParseException e) {
+    org.apache.hadoop.hive.common.type.Date hiveDate = DateParser.parseDate(string);
+    if (hiveDate != null) {
+      output.vector[i] = hiveDate.toEpochDay();
+    } else {
       output.isNull[i] = true;
       output.noNulls = false;
     }
@@ -388,7 +384,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

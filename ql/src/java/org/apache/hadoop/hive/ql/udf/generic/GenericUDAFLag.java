@@ -32,16 +32,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEval
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.LeadBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLeadLag.GenericUDAFLeadLagEvaluator;
 
-@WindowFunctionDescription
-(
-    description = @Description(
-                name = "lag",
-                value = "_FUNC_(expr, amt, default)"
-                ),
-    supportsWindow = false,
-    pivotResult = true,
-    impliesOrder = true
-)
+@Description(
+        name = "lag",
+        value = "_FUNC_(expr, amt, default)")
+@WindowFunctionDescription(
+        supportsWindow = false,
+        pivotResult = true,
+        impliesOrder = true)
 public class GenericUDAFLag extends GenericUDAFLeadLag {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFLag.class.getName());

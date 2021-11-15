@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
@@ -77,6 +77,7 @@ public class TestCommands {
     TestHCatClient.startMetaStoreServer();
     hconf = TestHCatClient.getConf();
     hconf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,"");
+    hconf.set(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
     hconf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -97,7 +98,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropDatabaseCommand() throws HCatException {
+  public void testDropDatabaseCommand() throws HCatException, CommandProcessorException {
     String dbName = "cmd_testdb";
     int evid = 999;
     Command testCmd = new DropDatabaseCommand(dbName, evid);
@@ -129,250 +130,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropTableCommand() throws HCatException {
-    String dbName = "cmd_testdb";
-    String tableName = "cmd_testtable";
-    int evid = 789;
-    List<HCatFieldSchema> cols = HCatSchemaUtils.getHCatSchema("a:int,b:string").getFields();
-
-    Command testReplicatedDropCmd = new DropTableCommand(dbName,tableName,true,evid);
-
-    assertEquals(evid,testReplicatedDropCmd.getEventId());
-    assertEquals(1, testReplicatedDropCmd.get().size());
-    assertEquals(true, testReplicatedDropCmd.isRetriable());
-    assertEquals(false, testReplicatedDropCmd.isUndoable());
-
-    CommandTestUtils.testCommandSerialization(testReplicatedDropCmd);
-
-    Command testNormalDropCmd = new DropTableCommand(dbName,tableName,false,evid);
-
-    assertEquals(evid,testNormalDropCmd.getEventId());
-    assertEquals(1, testNormalDropCmd.get().size());
-    assertEquals(true,testNormalDropCmd.isRetriable());
-    assertEquals(false,testNormalDropCmd.isUndoable());
-
-    CommandTestUtils.testCommandSerialization(testNormalDropCmd);
-
-    client.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
-    client.createDatabase(HCatCreateDBDesc.create(dbName).ifNotExists(false).build());
-
-    Map<String, String> tprops = new HashMap<String,String>();
-    tprops.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid + 5));
-    HCatTable tableToCreate = (new HCatTable(dbName, tableName)).tblProps(tprops).cols(cols);
-
-    client.createTable(HCatCreateTableDesc.create(tableToCreate).build());
-    HCatTable t1 = client.getTable(dbName, tableName);
-    assertNotNull(t1);
-
-    // Test replicated drop, should not drop, because evid < repl.state.id
-    LOG.info("About to run :"+testReplicatedDropCmd.get().get(0));
-    driver.run(testReplicatedDropCmd.get().get(0));
-    HCatTable t2 = client.getTable(dbName,tableName);
-    assertNotNull(t2);
-
-    // Test normal drop, should drop unconditionally.
-    LOG.info("About to run :"+testNormalDropCmd.get().get(0));
-    driver.run(testNormalDropCmd.get().get(0));
-
-    Exception onfe = null;
-    try {
-      HCatTable t_del = client.getTable(dbName, tableName);
-    } catch (Exception e) {
-      onfe = e;
-    }
-
-    assertNotNull(onfe);
-    assertTrue(onfe instanceof ObjectNotFoundException);
-
-    Map<String, String> tprops2 = new HashMap<String,String>();
-    tprops2.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid - 5));
-    HCatTable tableToCreate2 = (new HCatTable(dbName, tableName)).tblProps(tprops2).cols(cols);
-
-    client.createTable(HCatCreateTableDesc.create(tableToCreate2).build());
-    HCatTable t3 = client.getTable(dbName, tableName);
-    assertNotNull(t3);
-
-    // Test replicated drop, should drop this time, since repl.state.id < evid.
-    LOG.info("About to run :"+testReplicatedDropCmd.get().get(0));
-    driver.run(testReplicatedDropCmd.get().get(0));
-
-    Exception onfe2 = null;
-    try {
-      HCatTable t_del = client.getTable(dbName, tableName);
-    } catch (Exception e) {
-      onfe2 = e;
-    }
-
-    assertNotNull(onfe2);
-    assertTrue(onfe2 instanceof ObjectNotFoundException);
-
-  }
-
-  @Test
-  public void testDropPartitionCommand() throws HCatException, MetaException {
-    String dbName = "cmd_testdb";
-    String tableName = "cmd_testtable";
-    int evid = 789;
-
-    List<HCatFieldSchema> pcols = HCatSchemaUtils.getHCatSchema("b:string").getFields();
-    List<HCatFieldSchema> cols = HCatSchemaUtils.getHCatSchema("a:int").getFields();
-    Map<String, String> ptnDesc = new HashMap<String,String>();
-    ptnDesc.put("b","test");
-
-    Command testReplicatedDropPtnCmd = new DropPartitionCommand(dbName, tableName, ptnDesc, true, evid);
-
-    assertEquals(evid,testReplicatedDropPtnCmd.getEventId());
-    assertEquals(1, testReplicatedDropPtnCmd.get().size());
-    assertEquals(true, testReplicatedDropPtnCmd.isRetriable());
-    assertEquals(false, testReplicatedDropPtnCmd.isUndoable());
-
-    CommandTestUtils.testCommandSerialization(testReplicatedDropPtnCmd);
-
-    Command testNormalDropPtnCmd = new DropPartitionCommand(dbName,tableName, ptnDesc, false, evid);
-
-    assertEquals(evid,testNormalDropPtnCmd.getEventId());
-    assertEquals(1, testNormalDropPtnCmd.get().size());
-    assertEquals(true,testNormalDropPtnCmd.isRetriable());
-    assertEquals(false,testNormalDropPtnCmd.isUndoable());
-
-    CommandTestUtils.testCommandSerialization(testNormalDropPtnCmd);
-
-    client.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
-    client.createDatabase(HCatCreateDBDesc.create(dbName).ifNotExists(false).build());
-
-    Map<String, String> props = new HashMap<String,String>();
-    props.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid + 5));
-    HCatTable table = (new HCatTable(dbName, tableName)).tblProps(props).cols(cols).partCols(pcols);
-
-    client.createTable(HCatCreateTableDesc.create(table).build());
-    HCatTable tableCreated = client.getTable(dbName, tableName);
-    assertNotNull(tableCreated);
-
-    HCatPartition ptnToAdd = (new HCatPartition(tableCreated, ptnDesc,
-        TestHCatClient.makePartLocation(tableCreated,ptnDesc))).parameters(props);
-    client.addPartition(HCatAddPartitionDesc.create(ptnToAdd).build());
-
-    HCatPartition p1 = client.getPartition(dbName,tableName,ptnDesc);
-    assertNotNull(p1);
-
-    // Test replicated drop, should not drop, because evid < repl.state.id
-    LOG.info("About to run :"+testReplicatedDropPtnCmd.get().get(0));
-    driver.run(testReplicatedDropPtnCmd.get().get(0));
-    HCatPartition p2 = client.getPartition(dbName,tableName,ptnDesc);
-    assertNotNull(p2);
-
-    // Test normal drop, should drop unconditionally.
-    LOG.info("About to run :"+testNormalDropPtnCmd.get().get(0));
-    driver.run(testNormalDropPtnCmd.get().get(0));
-
-    Exception onfe = null;
-    try {
-      HCatPartition p_del = client.getPartition(dbName,tableName,ptnDesc);
-    } catch (Exception e) {
-      onfe = e;
-    }
-
-    assertNotNull(onfe);
-    assertTrue(onfe instanceof ObjectNotFoundException);
-
-    Map<String, String> props2 = new HashMap<String,String>();
-    props2.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid - 5));
-
-    HCatPartition ptnToAdd2 = (new HCatPartition(tableCreated, ptnDesc,
-        TestHCatClient.makePartLocation(tableCreated,ptnDesc))).parameters(props2);
-    client.addPartition(HCatAddPartitionDesc.create(ptnToAdd2).build());
-
-    HCatPartition p3 = client.getPartition(dbName,tableName,ptnDesc);
-    assertNotNull(p3);
-
-    // Test replicated drop, should drop this time, since repl.state.id < evid.
-    LOG.info("About to run :"+testReplicatedDropPtnCmd.get().get(0));
-    driver.run(testReplicatedDropPtnCmd.get().get(0));
-
-    Exception onfe2 = null;
-    try {
-      HCatPartition p_del = client.getPartition(dbName,tableName,ptnDesc);
-    } catch (Exception e) {
-      onfe2 = e;
-    }
-
-    assertNotNull(onfe2);
-    assertTrue(onfe2 instanceof ObjectNotFoundException);
-  }
-
-  @Test
-  public void testDropTableCommand2() throws HCatException, MetaException {
-    // Secondary DropTableCommand test for testing repl-drop-tables' effect on partitions inside a partitioned table
-    // when there exist partitions inside the table which are older than the drop event.
-    // Our goal is this : Create a table t, with repl.last.id=157, say.
-    // Create 2 partitions inside it, with repl.last.id=150 and 160, say.
-    // Now, process a drop table command with eventid=155.
-    // It should result in the table and the partition with repl.last.id=160 continuing to exist,
-    // but dropping the partition with repl.last.id=150.
-
-    String dbName = "cmd_testdb";
-    String tableName = "cmd_testtable";
-    int evid = 157;
-
-    List<HCatFieldSchema> pcols = HCatSchemaUtils.getHCatSchema("b:string").getFields();
-    List<HCatFieldSchema> cols = HCatSchemaUtils.getHCatSchema("a:int").getFields();
-
-    Command testReplicatedDropCmd = new DropTableCommand(dbName,tableName,true,evid);
-
-    client.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
-    client.createDatabase(HCatCreateDBDesc.create(dbName).ifNotExists(false).build());
-
-    Map<String, String> tprops = new HashMap<String,String>();
-    tprops.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid + 2));
-    HCatTable table = (new HCatTable(dbName, tableName)).tblProps(tprops).cols(cols).partCols(pcols);
-
-    client.createTable(HCatCreateTableDesc.create(table).build());
-    HCatTable tableCreated = client.getTable(dbName, tableName);
-    assertNotNull(tableCreated);
-
-    Map<String, String> ptnDesc1 = new HashMap<String,String>();
-    ptnDesc1.put("b","test-older");
-    Map<String, String> props1 = new HashMap<String,String>();
-    props1.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid - 5));
-    HCatPartition ptnToAdd1 = (new HCatPartition(tableCreated, ptnDesc1,
-        TestHCatClient.makePartLocation(tableCreated,ptnDesc1))).parameters(props1);
-    client.addPartition(HCatAddPartitionDesc.create(ptnToAdd1).build());
-
-    Map<String, String> ptnDesc2 = new HashMap<String,String>();
-    ptnDesc2.put("b","test-newer");
-    Map<String, String> props2 = new HashMap<String,String>();
-    props2.put(ReplicationUtils.REPL_STATE_ID, String.valueOf(evid + 5));
-    HCatPartition ptnToAdd2 = (new HCatPartition(tableCreated, ptnDesc2,
-        TestHCatClient.makePartLocation(tableCreated,ptnDesc2))).parameters(props2);
-    client.addPartition(HCatAddPartitionDesc.create(ptnToAdd2).build());
-
-    HCatPartition p1 = client.getPartition(dbName,tableName,ptnDesc1);
-    assertNotNull(p1);
-    HCatPartition p2 = client.getPartition(dbName,tableName,ptnDesc2);
-    assertNotNull(p2);
-
-    LOG.info("About to run :"+testReplicatedDropCmd.get().get(0));
-    driver.run(testReplicatedDropCmd.get().get(0));
-
-    HCatTable t_stillExists = client.getTable(dbName,tableName);
-    assertNotNull(t_stillExists);
-
-    HCatPartition p2_stillExists = client.getPartition(dbName,tableName,ptnDesc2);
-
-    Exception onfe = null;
-    try {
-      HCatPartition p1_del = client.getPartition(dbName,tableName,ptnDesc1);
-    } catch (Exception e) {
-      onfe = e;
-    }
-
-    assertNotNull(onfe);
-    assertTrue(onfe instanceof ObjectNotFoundException);
-  }
-
-
-  @Test
-  public void testBasicReplEximCommands() throws IOException {
+  public void testBasicReplEximCommands() throws IOException, CommandProcessorException {
     // repl export, has repl.last.id and repl.scope=all in it
     // import repl dump, table has repl.last.id on it (will likely be 0)
     int evid = 111;
@@ -398,14 +156,9 @@ public class TestCommands {
 
     HcatTestUtils.createTestDataFile(tempLocation,data);
 
-    CommandProcessorResponse ret = driver.run(
-        "LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName
-    );
-    assertEquals(ret.getResponseCode() + ":" + ret.getErrorMessage(), null, ret.getException());
+    driver.run("LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName);
 
-    CommandProcessorResponse selectRet = driver.run("SELECT * from " + dbName + "." + tableName);
-    assertEquals(selectRet.getResponseCode() + ":" + selectRet.getErrorMessage(),
-        null, selectRet.getException());
+    driver.run("SELECT * from " + dbName + "." + tableName);
 
     List<String> values = new ArrayList<String>();
     driver.getResults(values);
@@ -418,8 +171,7 @@ public class TestCommands {
         exportLocation, false, evid);
 
     LOG.info("About to run :" + exportCmd.get().get(0));
-    CommandProcessorResponse ret2 = driver.run(exportCmd.get().get(0));
-    assertEquals(ret2.getResponseCode() + ":" + ret2.getErrorMessage(), null, ret2.getException());
+    driver.run(exportCmd.get().get(0));
 
     List<String> exportPaths = exportCmd.cleanupLocationsAfterEvent();
     assertEquals(1,exportPaths.size());
@@ -432,12 +184,9 @@ public class TestCommands {
     ImportCommand importCmd = new ImportCommand(dbName, importedTableName, null, exportLocation, false, evid);
 
     LOG.info("About to run :" + importCmd.get().get(0));
-    CommandProcessorResponse ret3 = driver.run(importCmd.get().get(0));
-    assertEquals(ret3.getResponseCode() + ":" + ret3.getErrorMessage(), null, ret3.getException());
+    driver.run(importCmd.get().get(0));
 
-    CommandProcessorResponse selectRet2 = driver.run("SELECT * from " + dbName + "." + importedTableName);
-    assertEquals(selectRet2.getResponseCode() + ":" + selectRet2.getErrorMessage(),
-        null, selectRet2.getException());
+    driver.run("SELECT * from " + dbName + "." + importedTableName);
 
     List<String> values2 = new ArrayList<String>();
     driver.getResults(values2);
@@ -453,7 +202,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testMetadataReplEximCommands() throws IOException {
+  public void testMetadataReplEximCommands() throws IOException, CommandProcessorException {
     // repl metadata export, has repl.last.id and repl.scope=metadata
     // import repl metadata dump, table metadata changed, allows override, has repl.last.id
     int evid = 222;
@@ -479,14 +228,9 @@ public class TestCommands {
 
     HcatTestUtils.createTestDataFile(tempLocation,data);
 
-    CommandProcessorResponse ret = driver.run(
-        "LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName
-    );
-    assertEquals(ret.getResponseCode() + ":" + ret.getErrorMessage(), null, ret.getException());
+    driver.run("LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName);
 
-    CommandProcessorResponse selectRet = driver.run("SELECT * from " + dbName + "." + tableName);
-    assertEquals(selectRet.getResponseCode() + ":" + selectRet.getErrorMessage(),
-        null, selectRet.getException());
+    driver.run("SELECT * from " + dbName + "." + tableName);
 
     List<String> values = new ArrayList<String>();
     driver.getResults(values);
@@ -499,8 +243,7 @@ public class TestCommands {
         exportLocation, true, evid);
 
     LOG.info("About to run :" + exportMdCmd.get().get(0));
-    CommandProcessorResponse ret2 = driver.run(exportMdCmd.get().get(0));
-    assertEquals(ret2.getResponseCode() + ":" + ret2.getErrorMessage(), null, ret2.getException());
+    driver.run(exportMdCmd.get().get(0));
 
     List<String> exportPaths = exportMdCmd.cleanupLocationsAfterEvent();
     assertEquals(1,exportPaths.size());
@@ -513,12 +256,9 @@ public class TestCommands {
     ImportCommand importMdCmd = new ImportCommand(dbName, importedTableName, null, exportLocation, true, evid);
 
     LOG.info("About to run :" + importMdCmd.get().get(0));
-    CommandProcessorResponse ret3 = driver.run(importMdCmd.get().get(0));
-    assertEquals(ret3.getResponseCode() + ":" + ret3.getErrorMessage(), null, ret3.getException());
+    driver.run(importMdCmd.get().get(0));
 
-    CommandProcessorResponse selectRet2 = driver.run("SELECT * from " + dbName + "." + importedTableName);
-    assertEquals(selectRet2.getResponseCode() + ":" + selectRet2.getErrorMessage(),
-        null, selectRet2.getException());
+    driver.run("SELECT * from " + dbName + "." + importedTableName);
 
     List<String> values2 = new ArrayList<String>();
     driver.getResults(values2);
@@ -530,7 +270,6 @@ public class TestCommands {
 
     assertTrue(importedTable.getTblProps().containsKey("repl.last.id"));
   }
-
 
   @Test
   public void testNoopReplEximCommands() throws Exception {
@@ -546,8 +285,7 @@ public class TestCommands {
         exportLocation, false, evid);
 
     LOG.info("About to run :" + noopExportCmd.get().get(0));
-    CommandProcessorResponse ret = driver.run(noopExportCmd.get().get(0));
-    assertEquals(ret.getResponseCode() + ":" + ret.getErrorMessage(), null, ret.getException());
+    driver.run(noopExportCmd.get().get(0));
 
     List<String> exportPaths = noopExportCmd.cleanupLocationsAfterEvent();
     assertEquals(1,exportPaths.size());
@@ -559,8 +297,7 @@ public class TestCommands {
     ImportCommand noopImportCmd = new ImportCommand(dbName, tableName, null, exportLocation, false, evid);
 
     LOG.info("About to run :" + noopImportCmd.get().get(0));
-    CommandProcessorResponse ret2 = driver.run(noopImportCmd.get().get(0));
-    assertEquals(ret2.getResponseCode() + ":" + ret2.getErrorMessage(), null, ret2.getException());
+    driver.run(noopImportCmd.get().get(0));
 
     Exception onfe = null;
     try {

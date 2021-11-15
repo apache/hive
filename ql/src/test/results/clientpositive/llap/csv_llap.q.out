@@ -1,0 +1,75 @@
+PREHOOK: query: CREATE EXTERNAL TABLE csv_llap_test (ts int, id string, b1 boolean, b2 boolean, b3 boolean, b4 boolean)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@csv_llap_test
+POSTHOOK: query: CREATE EXTERNAL TABLE csv_llap_test (ts int, id string, b1 boolean, b2 boolean, b3 boolean, b4 boolean)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@csv_llap_test
+PREHOOK: query: CREATE EXTERNAL TABLE csv_llap_test_differentschema (ts int, id string, b1 boolean)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@csv_llap_test_differentschema
+POSTHOOK: query: CREATE EXTERNAL TABLE csv_llap_test_differentschema (ts int, id string, b1 boolean)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@csv_llap_test_differentschema
+PREHOOK: query: SELECT MIN(ts) FROM csv_llap_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@csv_llap_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(ts) FROM csv_llap_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@csv_llap_test
+#### A masked pattern was here ####
+00117
+PREHOOK: query: SELECT MIN(ts) FROM csv_llap_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@csv_llap_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(ts) FROM csv_llap_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@csv_llap_test
+#### A masked pattern was here ####
+00117
+PREHOOK: query: SELECT MIN(ts) FROM csv_llap_test_differentschema
+PREHOOK: type: QUERY
+PREHOOK: Input: default@csv_llap_test_differentschema
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(ts) FROM csv_llap_test_differentschema
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@csv_llap_test_differentschema
+#### A masked pattern was here ####
+00117

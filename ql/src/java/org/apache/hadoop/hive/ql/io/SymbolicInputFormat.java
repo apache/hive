@@ -43,7 +43,7 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
     Map<Path, PartitionDesc> pathToParts = work.getMapWork().getPathToPartitionInfo();
     List<Path> toRemovePaths = new ArrayList<>();
     Map<Path, PartitionDesc> toAddPathToPart = new HashMap<>();
-    Map<Path, ArrayList<String>> pathToAliases = work.getMapWork().getPathToAliases();
+    Map<Path, List<String>> pathToAliases = work.getMapWork().getPathToAliases();
 
     for (Map.Entry<Path, PartitionDesc> pathPartEntry : pathToParts.entrySet()) {
       Path path = pathPartEntry.getKey();
@@ -62,7 +62,7 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
           symlinks = fileSystem.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
         }
         toRemovePaths.add(path);
-        ArrayList<String> aliases = pathToAliases.remove(path);
+        List<String> aliases = pathToAliases.remove(path);
         for (FileStatus symlink : symlinks) {
           BufferedReader reader = null;
           try {

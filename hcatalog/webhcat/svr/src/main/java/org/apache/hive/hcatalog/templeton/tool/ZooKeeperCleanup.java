@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Date;
@@ -138,7 +137,7 @@ public class ZooKeeperCleanup extends Thread {
     } catch (IOException e) {
       LOG.info("No jobs to check.");
     }
-    return new ArrayList<String>();
+    return Collections.emptyList();
   }
 
   /**

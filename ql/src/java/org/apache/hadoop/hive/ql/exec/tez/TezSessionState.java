@@ -85,12 +85,12 @@ import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -321,7 +321,7 @@ public class TezSessionState {
 
     Credentials llapCredentials = null;
     if (llapMode) {
-      if (UserGroupInformation.isSecurityEnabled()) {
+      if (isKerberosEnabled(tezConfig)) {
         llapCredentials = new Credentials();
         llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
       }
@@ -350,7 +350,8 @@ public class TezSessionState {
 
     setupSessionAcls(tezConfig, conf);
 
-    final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
+    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
+    final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
         .build();
@@ -392,6 +393,23 @@ public class TezSessionState {
     }
   }
 
+  /**
+   * Check if Kerberos authentication is enabled.
+   * This is used by:
+   * - HS2 (upon Tez session creation)
+   * In secure scenarios HS2 might either be logged on (by Kerberos) by itself or by a launcher
+   * script it was forked from. In the latter case UGI.getLoginUser().isFromKeytab() returns false,
+   * hence UGI.getLoginUser().hasKerberosCredentials() is a tightest setting we can check against.
+   */
+  private boolean isKerberosEnabled(Configuration conf) {
+    try {
+      return UserGroupInformation.getLoginUser().hasKerberosCredentials() &&
+          HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
   private static Token<LlapTokenIdentifier> getLlapToken(
       String user, final Configuration conf) throws IOException {
     // TODO: parts of this should be moved out of TezSession to reuse the clients, but there's
@@ -416,18 +434,16 @@ public class TezSessionState {
       // We are not in HS2; always create a new client for now.
       token = new LlapTokenClient(conf).getDelegationToken(null);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Obtained a LLAP token: " + token);
-    }
+    LOG.info("Obtained a LLAP token: " + token);
     return token;
   }
 
   private TezClient startSessionAndContainers(TezClient session, HiveConf conf,
       Map<String, LocalResource> commonLocalResources, TezConfiguration tezConfig,
       boolean isOnThread) throws TezException, IOException {
-    session.start();
     boolean isSuccessful = false;
     try {
+      session.start();
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
         int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
         LOG.info("Prewarming " + n + " containers  (id: " + sessionId
@@ -466,6 +482,10 @@ public class TezSessionState {
     } finally {
       if (isOnThread && !isSuccessful) {
         closeAndIgnoreExceptions(session);
+      }
+      if (!isSuccessful) {
+        cleanupScratchDir();
+        cleanupDagResources();
       }
     }
   }
@@ -608,7 +628,7 @@ public class TezSessionState {
     }
 
     // Localize the non-conf resources that are missing from the current list.
-    List<LocalResource> newResources = null;
+    Map<String, LocalResource> newResources = null;
     if (newFilesNotFromConf != null && newFilesNotFromConf.length > 0) {
       boolean hasResources = !resources.additionalFilesNotFromConf.isEmpty();
       if (hasResources) {
@@ -623,10 +643,8 @@ public class TezSessionState {
         String[] skipFilesFromConf = DagUtils.getTempFilesFromConf(conf);
         newResources = utils.localizeTempFiles(dir, conf, newFilesNotFromConf, skipFilesFromConf);
         if (newResources != null) {
-          resources.localizedResources.addAll(newResources);
-        }
-        for (int i=0;i<newFilesNotFromConf.length;i++) {
-          resources.additionalFilesNotFromConf.put(newFilesNotFromConf[i], newResources.get(i));
+          resources.localizedResources.addAll(newResources.values());
+          resources.additionalFilesNotFromConf.putAll(newResources);
         }
       } else {
         resources.localizedResources.addAll(resources.additionalFilesNotFromConf.values());
@@ -640,7 +658,7 @@ public class TezSessionState {
     // TODO: Do we really need all this nonsense?
     if (session != null) {
       if (newResources != null && !newResources.isEmpty()) {
-        session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources));
+        session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources.values()));
       }
       if (!resources.localizedResources.isEmpty()) {
         session.addAppMasterLocalFiles(
@@ -705,6 +723,7 @@ public class TezSessionState {
   }
 
   protected final void cleanupScratchDir() throws IOException {
+    LOG.info("Attempting to clean up scratchDir for {} : {}", sessionId, tezScratchDir);
     if (tezScratchDir != null) {
       FileSystem fs = tezScratchDir.getFileSystem(conf);
       fs.delete(tezScratchDir, true);
@@ -713,7 +732,7 @@ public class TezSessionState {
   }
 
   protected final void cleanupDagResources() throws IOException {
-    LOG.info("Attemting to clean up resources for " + sessionId + ": " + resources);
+    LOG.info("Attempting to clean up resources for {} : {}", sessionId, resources);
     if (resources != null) {
       FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
       fs.delete(resources.dagResourcesDir, true);
@@ -800,9 +819,7 @@ public class TezSessionState {
     destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
         + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("The destination file name for [" + localJarPath + "] is " + destFileName);
-    }
+    LOG.debug("The destination file name for [{}] is {}", localJarPath, destFileName);
 
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.
@@ -827,8 +844,11 @@ public class TezSessionState {
 
   private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException,
       LoginException {
-    final File jar =
-        new File(Utilities.jarFinderGetJar(clazz));
+    String jarPath = Utilities.jarFinderGetJar(clazz);
+    if (jarPath == null) {
+      throw new IOException("Can't find jar for: " + clazz);
+    }
+    final File jar = new File(jarPath);
     final String localJarPath = jar.toURI().toURL().toExternalForm();
     final LocalResource jarLr = createJarLocalResource(localJarPath);
     lrMap.put(DagUtils.getBaseName(jarLr), jarLr);

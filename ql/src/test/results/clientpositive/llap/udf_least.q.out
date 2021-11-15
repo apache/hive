@@ -1,0 +1,216 @@
+PREHOOK: query: DESCRIBE FUNCTION least
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION least
+POSTHOOK: type: DESCFUNCTION
+least(v1, v2, ...) - Returns the least value in a list of values
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED least
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED least
+POSTHOOK: type: DESCFUNCTION
+least(v1, v2, ...) - Returns the least value in a list of values
+Example:
+  > SELECT least(2, 3, 1) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeast
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT LEAST('a', 'b', 'c'),
+       LEAST('C', 'a', 'B'),
+       LEAST('AAA', 'AaA', 'AAa'),
+       LEAST('A', 'AA', 'AAA'),
+       LEAST('11', '13', '12'),
+       LEAST('11', '2', '12'),
+       LEAST('01', '03', '02'),
+       LEAST('01', '1', '02'),
+       LEAST(null, 'b', 'c' ),
+       LEAST('a', null, 'c'),
+       LEAST('a', 'b', null ),
+       LEAST('a', null, null),
+       LEAST(null, 'b', null),
+       LEAST(cast(null as string), null, null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT LEAST('a', 'b', 'c'),
+       LEAST('C', 'a', 'B'),
+       LEAST('AAA', 'AaA', 'AAa'),
+       LEAST('A', 'AA', 'AAA'),
+       LEAST('11', '13', '12'),
+       LEAST('11', '2', '12'),
+       LEAST('01', '03', '02'),
+       LEAST('01', '1', '02'),
+       LEAST(null, 'b', 'c' ),
+       LEAST('a', null, 'c'),
+       LEAST('a', 'b', null ),
+       LEAST('a', null, null),
+       LEAST(null, 'b', null),
+       LEAST(cast(null as string), null, null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'a' (type: string), 'B' (type: string), 'AAA' (type: string), 'A' (type: string), '11' (type: string), '11' (type: string), '01' (type: string), '01' (type: string), null (type: string), null (type: string), null (type: string), null (type: string), null (type: string), null (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+            ListSink
+
+PREHOOK: query: SELECT LEAST('a', 'b', 'c'),
+       LEAST('C', 'a', 'B'),
+       LEAST('AAA', 'AaA', 'AAa'),
+       LEAST('A', 'AA', 'AAA'),
+       LEAST('11', '13', '12'),
+       LEAST('11', '2', '12'),
+       LEAST('01', '03', '02'),
+       LEAST('01', '1', '02'),
+       LEAST(null, 'b', 'c' ),
+       LEAST('a', null, 'c'),
+       LEAST('a', 'b', null ),
+       LEAST('a', null, null),
+       LEAST(null, 'b', null),
+       LEAST(cast(null as string), null, null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST('a', 'b', 'c'),
+       LEAST('C', 'a', 'B'),
+       LEAST('AAA', 'AaA', 'AAa'),
+       LEAST('A', 'AA', 'AAA'),
+       LEAST('11', '13', '12'),
+       LEAST('11', '2', '12'),
+       LEAST('01', '03', '02'),
+       LEAST('01', '1', '02'),
+       LEAST(null, 'b', 'c' ),
+       LEAST('a', null, 'c'),
+       LEAST('a', 'b', null ),
+       LEAST('a', null, null),
+       LEAST(null, 'b', null),
+       LEAST(cast(null as string), null, null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+a	B	AAA	A	11	11	01	01	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT LEAST(11, 13, 12),
+       LEAST(1, 13, 2),
+       LEAST(-11, -13, -12),
+       LEAST(1, -13, 2),
+       LEAST(null, 1, 2),
+       LEAST(1, null, 2),
+       LEAST(1, 2, null),
+       LEAST(cast(null as int), null, null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST(11, 13, 12),
+       LEAST(1, 13, 2),
+       LEAST(-11, -13, -12),
+       LEAST(1, -13, 2),
+       LEAST(null, 1, 2),
+       LEAST(1, null, 2),
+       LEAST(1, 2, null),
+       LEAST(cast(null as int), null, null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+11	1	-13	-13	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT LEAST(11.4, 13.5, 12.2),
+       LEAST(1.0, 13.2, 2.0),
+       LEAST(-11.4, -13.1, -12.2),
+       LEAST(1.0, -13.3, 2.2),
+       LEAST(null, 1.1, 2.2),
+       LEAST(1.1, null, 2.2),
+       LEAST(1.1, 2.2, null),
+       LEAST(cast(null as double), null, null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST(11.4, 13.5, 12.2),
+       LEAST(1.0, 13.2, 2.0),
+       LEAST(-11.4, -13.1, -12.2),
+       LEAST(1.0, -13.3, 2.2),
+       LEAST(null, 1.1, 2.2),
+       LEAST(1.1, null, 2.2),
+       LEAST(1.1, 2.2, null),
+       LEAST(cast(null as double), null, null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+11.4	1.0	-13.1	-13.3	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT LEAST(101Y, -101S, 100, -100L, null),
+       LEAST(-101Y, 101S, 100, -100L, 0),
+       LEAST(100Y, -100S, 101, -101L, null),
+       LEAST(100Y, -100S, -101, 101L, 0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST(101Y, -101S, 100, -100L, null),
+       LEAST(-101Y, 101S, 100, -100L, 0),
+       LEAST(100Y, -100S, 101, -101L, null),
+       LEAST(100Y, -100S, -101, 101L, 0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	-101	NULL	-101
+PREHOOK: query: SELECT LEAST(cast(1.1 as float), cast(-1.1 as double), cast(0.5 as decimal)),
+       LEAST(cast(-1.1 as float), cast(1.1 as double), cast(0.5 as decimal)),
+       LEAST(cast(0.1 as float), cast(-0.1 as double), cast(0.5 as decimal)),
+       LEAST(null, cast(-0.1 as double), cast(0.5 as decimal))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST(cast(1.1 as float), cast(-1.1 as double), cast(0.5 as decimal)),
+       LEAST(cast(-1.1 as float), cast(1.1 as double), cast(0.5 as decimal)),
+       LEAST(cast(0.1 as float), cast(-0.1 as double), cast(0.5 as decimal)),
+       LEAST(null, cast(-0.1 as double), cast(0.5 as decimal))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-1.1	-1.100000023841858	-0.1	NULL
+PREHOOK: query: SELECT LEAST(-100Y, -80S, -60, -40L, cast(-20 as float), cast(0 as double), cast(0.5 as decimal)),
+       LEAST(100Y, 80S, 60, 40L, cast(20 as float), cast(0 as double), cast(-0.5 as decimal)),
+       LEAST(100Y, 80S, 60, 40L, null, cast(0 as double), cast(-0.5 as decimal))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST(-100Y, -80S, -60, -40L, cast(-20 as float), cast(0 as double), cast(0.5 as decimal)),
+       LEAST(100Y, 80S, 60, 40L, cast(20 as float), cast(0 as double), cast(-0.5 as decimal)),
+       LEAST(100Y, 80S, 60, 40L, null, cast(0 as double), cast(-0.5 as decimal))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-100.0	-1.0	NULL
+PREHOOK: query: SELECT LEAST(10L, 'a', date('2001-01-28'))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT LEAST(10L, 'a', date('2001-01-28'))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10

@@ -40,9 +40,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   @Override
   public void release(String key) {
     // nothing to do
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(key + " no longer needed");
-    }
+    LOG.debug("{} no longer needed", key);
   }
 
   @Override
@@ -53,9 +51,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
     try {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Creating " + key);
-      }
+      LOG.debug("Creating {}", key);
       return fn.call();
     } catch (Exception e) {
       throw new HiveException(e);

@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -35,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import java.util.List;
-import org.apache.hadoop.hive.common.ValidTxnList;
 
 /**
  * ReplTxnTask.
@@ -50,22 +48,11 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     String replPolicy = work.getReplPolicy();
     String tableName = work.getTableName();
     ReplicationSpec replicationSpec = work.getReplicationSpec();
     if ((tableName != null) && (replicationSpec != null)) {
-      Table tbl;
-      try {
-        tbl = Hive.get().getTable(work.getDbName(), tableName);
-        if (!replicationSpec.allowReplacementInto(tbl.getParameters())) {
-          // if the event is already replayed, then no need to replay it again.
-          LOG.debug("ReplTxnTask: Event is skipped as it is already replayed. Event Id: " +
-                  replicationSpec.getReplicationState() + "Event Type: " + work.getOperationType());
-          return 0;
-        }
-      } catch (InvalidTableException e) {
-        // In scenarios like import to mm tables, the alloc write id event is generated before create table event.
         try {
           Database database = Hive.get().getDatabase(work.getDbName());
           if (!replicationSpec.allowReplacementInto(database.getParameters())) {
@@ -78,54 +65,24 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
           LOG.error("Get database failed with exception " + e1.getMessage());
           return 1;
         }
-      } catch (HiveException e) {
-        LOG.error("Get table failed with exception " + e.getMessage());
-        return 1;
-      }
     }
 
     try {
-      HiveTxnManager txnManager = driverContext.getCtx().getHiveTxnManager();
+      HiveTxnManager txnManager = context.getHiveTxnManager();
       String user = UserGroupInformation.getCurrentUser().getUserName();
       switch(work.getOperationType()) {
       case REPL_OPEN_TXN:
         List<Long> txnIds = txnManager.replOpenTxn(replPolicy, work.getTxnIds(), user);
         assert txnIds.size() == work.getTxnIds().size();
         LOG.info("Replayed OpenTxn Event for policy " + replPolicy + " with srcTxn " +
-                work.getTxnIds().toString() + " and target txn id " + txnIds.toString());
+            work.getTxnIds().toString() + " and target txn id " + txnIds.toString());
         return 0;
-      case REPL_MIGRATION_OPEN_TXN:
-          // if transaction is already opened (mostly by repl load command), then close it.
-          if (txnManager.isTxnOpen()) {
-            long txnId = txnManager.getCurrentTxnId();
-            txnManager.commitTxn();
-            LOG.info("Committed txn from REPL_MIGRATION_OPEN_TXN : " + txnId);
-          }
-          Long txnIdMigration = txnManager.openTxn(driverContext.getCtx(), user);
-          long writeId = txnManager.getTableWriteId(work.getDbName(), work.getTableName());
-          String validTxnList = txnManager.getValidTxns().toString();
-          conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
-          conf.set(ReplUtils.REPL_CURRENT_TBL_WRITE_ID, Long.toString(writeId));
-          LOG.info("Started open txn for migration : " + txnIdMigration + " with  valid txn list : " +
-                  validTxnList + " and write id " + writeId);
-          return 0;
       case REPL_ABORT_TXN:
         for (long txnId : work.getTxnIds()) {
           txnManager.replRollbackTxn(replPolicy, txnId);
           LOG.info("Replayed AbortTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
         }
         return 0;
-      case REPL_MIGRATION_COMMIT_TXN:
-          assert (work.getReplLastIdInfo() != null);
-          long txnIdMigrationCommit = txnManager.getCurrentTxnId();
-          CommitTxnRequest commitTxnRequestMigr = new CommitTxnRequest(txnIdMigrationCommit);
-          commitTxnRequestMigr.setReplLastIdInfo(work.getReplLastIdInfo());
-          txnManager.replCommitTxn(commitTxnRequestMigr);
-          conf.unset(ValidTxnList.VALID_TXNS_KEY);
-          conf.unset(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-          LOG.info("Committed Migration Txn with replLastIdInfo: " + work.getReplLastIdInfo() + " for txnId: " +
-                  txnIdMigrationCommit);
-          return 0;
       case REPL_COMMIT_TXN:
         // Currently only one commit txn per event is supported.
         assert (work.getTxnIds().size() == 1);
@@ -134,9 +91,10 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
         commitTxnRequest.setReplPolicy(work.getReplPolicy());
         commitTxnRequest.setWriteEventInfos(work.getWriteEventInfos());
+        commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
         txnManager.replCommitTxn(commitTxnRequest);
         LOG.info("Replayed CommitTxn Event for replPolicy: " + replPolicy + " with srcTxn: " + txnId +
-                "WriteEventInfos: " + work.getWriteEventInfos());
+            "WriteEventInfos: " + work.getWriteEventInfos());
         return 0;
       case REPL_ALLOC_WRITE_ID:
         assert work.getTxnToWriteIdList() != null;
@@ -144,14 +102,13 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         List <TxnToWriteId> txnToWriteIdList = work.getTxnToWriteIdList();
         txnManager.replAllocateTableWriteIdsBatch(dbName, tableName, replPolicy, txnToWriteIdList);
         LOG.info("Replayed alloc write Id Event for repl policy: " + replPolicy + " db Name : " + dbName +
-                " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " + tableName);
+            " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " + tableName);
         return 0;
       case REPL_WRITEID_STATE:
-        txnManager.replTableWriteIdState(work.getValidWriteIdList(),
-                work.getDbName(), tableName, work.getPartNames());
-        LOG.info("Replicated WriteId state for DbName: " + work.getDbName()
-                + " TableName: " + tableName
-                + " ValidWriteIdList: " + work.getValidWriteIdList());
+        txnManager.replTableWriteIdState(work.getValidWriteIdList(), work.getDbName(), tableName, work.getPartNames());
+        LOG.info("Replicated WriteId state for DbName: " + work.getDbName() +
+            " TableName: " + tableName +
+            " ValidWriteIdList: " + work.getValidWriteIdList());
         return 0;
       default:
         LOG.error("Operation Type " + work.getOperationType() + " is not supported ");
@@ -161,7 +118,9 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       setException(e);
-      return 1;
+      LOG.error("ReplTxnTask failed", e);
+      return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
+              getName(), conf);
     }
   }
 

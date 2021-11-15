@@ -114,8 +114,6 @@ public class TransactionBatch extends AbstractStreamingTransaction {
       this.numTxns = conn.getTransactionBatchSize();
       this.tableId = conn.getTable().getTTable().getId();
 
-      setupHeartBeatThread();
-
       List<Long> txnIds = openTxnImpl(username, numTxns);
       txnToWriteIds = allocateWriteIdsImpl(txnIds);
       assert (txnToWriteIds.size() == numTxns);
@@ -132,6 +130,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
           txnToWriteIds.get(numTxns - 1).getWriteId(), conn.getStatementId());
       this.minTxnId = new AtomicLong(txnIds.get(0));
       this.maxTxnId = txnIds.get(txnIds.size() - 1);
+      setupHeartBeatThread();
       success = true;
     } catch (TException e) {
       throw new StreamingException(conn.toString(), e);
@@ -285,6 +284,20 @@ public class TransactionBatch extends AbstractStreamingTransaction {
               DataOperationType.INSERT);
         }
       }
+
+      // If it is the last transaction in the batch, then close the files and add write events.
+      // We need to close the writer as file checksum can't be obtained on the opened file.
+      if ((currentTxnIndex + 1) >= txnToWriteIds.size()) {
+        // Replication doesn't work if txn batch size > 1 and the last txn is aborted as write events
+        // are ignored by abort txn event causing data loss. However, if the last txn in the batch is
+        // committed, then data gets replicated making eventually consistent, but doesn't guarantee
+        // point-in-time consistency.
+        recordWriter.close();
+
+        // Add write notification events if it is enabled.
+        conn.addWriteNotificationEvents();
+      }
+
       transactionLock.lock();
       try {
         if (key != null) {
@@ -425,7 +438,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
         .setDbName(connection.getDatabase())
         .setTableName(connection.getTable().getTableName())
-        .setShared()
+        .setSharedRead()
         .setOperationType(DataOperationType.INSERT);
     if (connection.isDynamicPartitioning()) {
       lockCompBuilder.setIsDynamicPartitionWrite(true);

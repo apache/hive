@@ -70,7 +70,7 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
 
     // Set the HiveDecimalWritable from bytes without converting to String first for
     // better performance.
-    data.setFromBytes(bytes.getData(), start, length);
+    data.setFromBytes(bytes.getData(), start, length, true);
     if (!data.isSet()) {
       isNull = true;
     } else {

@@ -21,10 +21,14 @@ import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.DateUtils;
 
+import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -600,4 +604,17 @@ public class DateTimeMath {
     result.set(totalSeconds, nanosResult.nanos);
     return true;
   }
+
+  /**
+   * TODO - this is a temporary fix for handling Julian calendar dates.
+   * Returns a Gregorian calendar that can be used from year 0+ instead of default 1582.10.15.
+   * This is desirable for some UDFs that work on dates which normally would use Julian calendar.
+   * @return the calendar
+   */
+  public static Calendar getProlepticGregorianCalendarUTC() {
+    GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC".intern()));
+    calendar.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
+    return calendar;
+  }
+
 }

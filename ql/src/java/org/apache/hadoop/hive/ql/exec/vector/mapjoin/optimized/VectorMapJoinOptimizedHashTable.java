@@ -75,6 +75,12 @@ public abstract class VectorMapJoinOptimizedHashTable
     putRowInternal(currentKey, currentValue);
   }
 
+  @Override
+  public boolean containsLongKey(long currentKey) {
+    // Method only supported by FAST HashTable implementations
+    throw new RuntimeException("Not implemented");
+  }
+
   protected void putRowInternal(BytesWritable key, BytesWritable value)
       throws SerDeException, HiveException, IOException {
 

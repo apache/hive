@@ -1,0 +1,200 @@
+PREHOOK: query: explain
+SELECT  
+SUM((CASE WHEN 1000000 = 0 THEN NULL ELSE l_partkey / 1000000 END)),
+SUM(1) AS `sum_number_of_records_ok` FROM lineitem  
+WHERE 
+(((CASE WHEN ('N' = l_returnflag) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('MAIL' = l_shipmode) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('O' = l_linestatus) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('NONE' = l_shipinstruct) THEN 1 ELSE 1 END) = 1) AND  
+((CASE WHEN ('All' = (CASE WHEN (l_shipmode = 'TRUCK') THEN 'East' WHEN (l_shipmode = 'MAIL') THEN 'West' WHEN (l_shipmode = 'REG AIR') THEN 'BizDev' ELSE 'Other' END)) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('AIR' = l_shipmode) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('1996-03-30' = TO_DATE(l_shipdate)) THEN 1 ELSE NULL END) = 1) AND  
+((CASE WHEN ('RAIL' = l_shipmode) THEN 1 ELSE NULL END) = 1) AND (1 = 1) AND 
+((CASE WHEN (1 = l_linenumber) THEN 1 ELSE 1 END) = 1) AND (1 = 1)) 
+GROUP BY l_orderkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT  
+SUM((CASE WHEN 1000000 = 0 THEN NULL ELSE l_partkey / 1000000 END)),
+SUM(1) AS `sum_number_of_records_ok` FROM lineitem  
+WHERE 
+(((CASE WHEN ('N' = l_returnflag) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('MAIL' = l_shipmode) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('O' = l_linestatus) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('NONE' = l_shipinstruct) THEN 1 ELSE 1 END) = 1) AND  
+((CASE WHEN ('All' = (CASE WHEN (l_shipmode = 'TRUCK') THEN 'East' WHEN (l_shipmode = 'MAIL') THEN 'West' WHEN (l_shipmode = 'REG AIR') THEN 'BizDev' ELSE 'Other' END)) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('AIR' = l_shipmode) THEN 1 ELSE 1 END) = 1) AND 
+((CASE WHEN ('1996-03-30' = TO_DATE(l_shipdate)) THEN 1 ELSE NULL END) = 1) AND  
+((CASE WHEN ('RAIL' = l_shipmode) THEN 1 ELSE NULL END) = 1) AND (1 = 1) AND 
+((CASE WHEN (1 = l_linenumber) THEN 1 ELSE 1 END) = 1) AND (1 = 1)) 
+GROUP BY l_orderkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  filterExpr: ((l_shipmode = 'RAIL') and (to_date(CAST( l_shipdate AS TIMESTAMP)) = DATE'1996-03-30')) (type: boolean)
+                  Statistics: Num rows: 100 Data size: 19000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((l_shipmode = 'RAIL') and (to_date(CAST( l_shipdate AS TIMESTAMP)) = DATE'1996-03-30')) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 1330 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0D) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 7 Data size: 1330 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: sum(_col1), sum(1)
+                        keys: _col0 (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 7 Data size: 140 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 7 Data size: 140 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: double), _col2 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 7 Data size: 140 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: double), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '238') (type: boolean)
+          Filter Operator
+            predicate: (key = '238') (type: boolean)
+            Select Operator
+              expressions: '238' (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select key from src where (case key when '238' then 1  when '94' then 1 else 3 end) = cast('1' as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key from src where (case key when '238' then 1  when '94' then 1 else 3 end) = cast('1' as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key) IN ('238', '94') (type: boolean)
+          Filter Operator
+            predicate: (key) IN ('238', '94') (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = (case when key != '238' then 1 else 1 end)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = (case when key != '238' then 1 else 1 end)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '238') (type: boolean)
+          Filter Operator
+            predicate: (key = '238') (type: boolean)
+            Select Operator
+              expressions: '238' (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select key from src where (case key when '238' then 1 end) = (case when key != '238' then 1 when key = '23' then 1 end)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key from src where (case key when '238' then 1 end) = (case when key != '238' then 1 when key = '23' then 1 end)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+

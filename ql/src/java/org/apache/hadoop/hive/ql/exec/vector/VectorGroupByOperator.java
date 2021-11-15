@@ -22,14 +22,16 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,8 +48,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperGeneral;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -107,7 +111,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   // transient.
   //---------------------------------------------------------------------------
 
-  private transient VectorAggregateExpression[] aggregators;
+  @VisibleForTesting
+  transient VectorAggregateExpression[] aggregators;
   /**
    * The aggregation buffers to use for the current batch.
    */
@@ -143,6 +148,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private transient boolean[][] allGroupingSetsOverrideIsNulls;
 
   private transient int numEntriesHashTable;
+  private transient long numFlushedOutEntriesBeforeFinalFlush;
 
   private transient long maxHashTblMemory;
 
@@ -151,20 +157,32 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private float memoryThreshold;
 
   private boolean isLlap = false;
+
+  // tracks overall access count in map agg buffer any given time.
+  private long totalAccessCount;
+
   /**
    * Interface for processing mode: global, hash, unsorted streaming, or group batch
    */
   private static interface IProcessingMode {
-    public void initialize(Configuration hconf) throws HiveException;
-    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException;
-    public void processBatch(VectorizedRowBatch batch) throws HiveException;
-    public void close(boolean aborted) throws HiveException;
+    void initialize(Configuration hconf) throws HiveException;
+    void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException;
+    void processBatch(VectorizedRowBatch batch) throws HiveException;
+    void close(boolean aborted) throws HiveException;
   }
 
   /**
    * Base class for all processing modes
    */
   private abstract class ProcessingModeBase implements IProcessingMode {
+    /**
+     * The VectorAggregationBufferRow instance. This field can be shared with ProcessingMode
+     * subclasses, where is only 1 VectorAggregationBufferRow instance needed at the same time. This
+     * is the case for ProcessingModeGlobalAggregate, ProcessingModeReduceMergePartial,
+     * ProcessingModeStreaming, but not for ProcessingModeHashAggregate where this field is not
+     * used.
+     */
+    protected VectorAggregationBufferRow aggregationBufferSet;
 
     // Overridden and used in ProcessingModeReduceMergePartial mode.
     @Override
@@ -180,21 +198,25 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       if (!groupingSetsPresent) {
         doProcessBatch(batch, false, null);
-        return;
+      } else {
+        // We drive the doProcessBatch logic with the same batch but different
+        // grouping set id and null variation.
+        // PERFORMANCE NOTE: We do not try to reuse columns and generate the KeyWrappers anew...
+
+        final int size = groupingSets.length;
+        for (int i = 0; i < size; i++) {
+
+          // NOTE: We are overwriting the constant vector value...
+          groupingSetsDummyVectorExpression.setLongValue(groupingSets[i]);
+          groupingSetsDummyVectorExpression.evaluate(batch);
+
+          doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
+        }
       }
 
-      // We drive the doProcessBatch logic with the same batch but different
-      // grouping set id and null variation.
-      // PERFORMANCE NOTE: We do not try to reuse columns and generate the KeyWrappers anew...
-
-      final int size = groupingSets.length;
-      for (int i = 0; i < size; i++) {
-
-        // NOTE: We are overwriting the constant vector value...
-        groupingSetsDummyVectorExpression.setLongValue(groupingSets[i]);
-        groupingSetsDummyVectorExpression.evaluate(batch);
-
-        doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
+      if (this instanceof ProcessingModeHashAggregate) {
+        // Check if we should turn into streaming mode
+        ((ProcessingModeHashAggregate)this).checkHashModeEfficiency();
       }
     }
 
@@ -240,6 +262,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       return bufferSet;
     }
 
+    @Override
+    public void close(boolean aborted) throws HiveException {
+      finishAggregators(aggregationBufferSet, aborted);
+    }
+
+    public void finishAggregators(VectorAggregationBufferRow vectorAggregationBufferRow, boolean aborted) {
+      if (vectorAggregationBufferRow != null) {
+        for (int i = 0; i < aggregators.length; ++i) {
+          aggregators[i].finish(vectorAggregationBufferRow.getAggregationBuffer(i), aborted);
+        }
+      }
+    }
   }
 
   /**
@@ -247,16 +281,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    * This mode is very simple, there are no keys to consider, and only flushes one row at closing
    * The one row must flush even if no input was seen (NULLs)
    */
-  private class ProcessingModeGlobalAggregate extends ProcessingModeBase {
-
-    /**
-     * In global processing mode there is only one set of aggregation buffers
-     */
-    private VectorAggregationBufferRow aggregationBuffers;
+  final class ProcessingModeGlobalAggregate extends ProcessingModeBase {
 
     @Override
     public void initialize(Configuration hconf) throws HiveException {
-      aggregationBuffers =  allocateAggregationBuffer();
+      aggregationBufferSet =  allocateAggregationBuffer();
       LOG.info("using global aggregation processing mode");
     }
 
@@ -269,14 +298,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     public void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
         boolean[] currentGroupingSetsOverrideIsNulls) throws HiveException {
       for (int i = 0; i < aggregators.length; ++i) {
-        aggregators[i].aggregateInput(aggregationBuffers.getAggregationBuffer(i), batch);
+        aggregators[i].aggregateInput(aggregationBufferSet.getAggregationBuffer(i), batch);
       }
     }
 
     @Override
     public void close(boolean aborted) throws HiveException {
+      super.close(aborted);
+
       if (!aborted) {
-        writeSingleRow(null, aggregationBuffers);
+        writeSingleRow(null, aggregationBufferSet);
       }
     }
   }
@@ -284,12 +315,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   /**
    * Hash Aggregate mode processing
    */
-  private class ProcessingModeHashAggregate extends ProcessingModeBase {
+   final class ProcessingModeHashAggregate extends ProcessingModeBase {
+
+    private Queue<KeyWrapper> reusableKeyWrapperBuffer;
 
     /**
      * The global key-aggregation hash map.
      */
-    private Map<KeyWrapper, VectorAggregationBufferRow> mapKeysAggregationBuffers;
+    @VisibleForTesting
+    Map<KeyWrapper, VectorAggregationBufferRow> mapKeysAggregationBuffers;
+
+    private Queue<VectorAggregationBufferRow> reusableAggregationBufferRows =
+        new ArrayDeque<>(VectorizedRowBatch.DEFAULT_SIZE);
 
     /**
      * Total per hashtable entry fixed memory (does not depend on key/agg values).
@@ -330,7 +367,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     /**
      * A soft reference used to detect memory pressure
      */
-    private SoftReference<Object> gcCanary = new SoftReference<Object>(new Object());
+    @VisibleForTesting
+    SoftReference<Object> gcCanary = new SoftReference<Object>(new Object());
 
     /**
      * Counts the number of time the gcCanary died and was resurrected
@@ -383,8 +421,44 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       sumBatchSize = 0;
 
       mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
+      /*
+       * The grouping sets expand the hash sizes by producing intermediate keys. 3 grouping sets
+       * of (),(col1),(col1,col2), will turn 10 rows into 30 rows. If the col1 has an nDV of 2 and
+       * col2 has nDV of 5, then this turns into a maximum of 1+3+(2*5) or 14 keys into the
+       * hashtable.
+       *
+       * So you get 10 rows in and 14 rows out, which is a reduction of ~2x vs Streaming mode,
+       * but it is an increase if the grouping-set is not accounted for.
+       *
+       * For performance, it is definitely better to send 14 rows out to shuffle and not 30.
+       *
+       * Particularly if the same nDVs are repeated for a thousand rows, this would send a
+       * thousand rows via streaming to a single reducer which owns the empty grouping set,
+       * instead of sending 1 from the hash.
+       *
+       */
+      if (groupingSets != null && groupingSets.length > 0) {
+        /**
+         * Adjust for grouping sets. For grouping sets, input records are processed 'n' number of times.
+         * Ref processBatch(). Ensure that reduction is super effective, otherwise they become
+         * memory intensive.
+         */
+        this.minReductionHashAggr = this.minReductionHashAggr / groupingSets.length;
+        LOG.info("New maxHtEntries: {}, groupingSets len: {}, numRowsCompareHashAggr: {}, "
+                + "minReductionHashAggr:{} ", maxHtEntries, groupingSets.length,
+            numRowsCompareHashAggr, minReductionHashAggr);
+      }
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
+
+      if (keyWrappersBatch.getVectorHashKeyWrappers()[0] instanceof VectorHashKeyWrapperGeneral) {
+        reusableKeyWrapperBuffer = new ArrayDeque<>(VectorizedRowBatch.DEFAULT_SIZE);
+      }
+    }
+
+    @VisibleForTesting
+    int getMaxHtEntries() {
+      return maxHtEntries;
     }
 
     @Override
@@ -426,11 +500,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
         //Validate that some progress is being made
         if (!(numEntriesHashTable < preFlushEntriesCount)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Flush did not progress: %d entries before, %d entries after",
-                preFlushEntriesCount,
-                numEntriesHashTable));
-          }
+          LOG.debug("Flush did not progress: {} entries before, {} entries after", preFlushEntriesCount,
+              numEntriesHashTable);
           break;
         }
         preFlushEntriesCount = numEntriesHashTable;
@@ -443,13 +514,31 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       sumBatchSize += batch.size;
       lastModeCheckRowCount += batch.size;
+    }
 
-      // Check if we should turn into streaming mode
-      checkHashModeEfficiency();
+    @Override
+    protected VectorAggregationBufferRow allocateAggregationBuffer() throws HiveException {
+      VectorAggregationBufferRow bufferSet;
+      if (reusableAggregationBufferRows.size() > 0) {
+        bufferSet = reusableAggregationBufferRows.remove();
+        bufferSet.setVersionAndIndex(0, 0);
+        for (int i = 0; i < aggregators.length; i++) {
+          aggregators[i].reset(bufferSet.getAggregationBuffer(i));
+        }
+        return bufferSet;
+      } else {
+        return super.allocateAggregationBuffer();
+      }
     }
 
     @Override
     public void close(boolean aborted) throws HiveException {
+      super.close(aborted);
+
+      reusableAggregationBufferRows.clear();
+      if (reusableKeyWrapperBuffer != null) {
+        reusableKeyWrapperBuffer.clear();
+      }
       if (!aborted) {
         flush(true);
       }
@@ -464,6 +553,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           keyWrappersBatch.setLongValue(kw, pos, val);
         }
         VectorAggregationBufferRow groupAggregators = allocateAggregationBuffer();
+        finishAggregators(groupAggregators, false);
         writeSingleRow(kw, groupAggregators);
       }
 
@@ -498,11 +588,26 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           // is very important to clone the keywrapper, the one we have from our
           // keyWrappersBatch is going to be reset/reused on next batch.
           aggregationBuffer = allocateAggregationBuffer();
-          mapKeysAggregationBuffers.put(kw.copyKey(), aggregationBuffer);
+          KeyWrapper copyKeyWrapper = cloneKeyWrapper(kw);
+          mapKeysAggregationBuffers.put(copyKeyWrapper, aggregationBuffer);
           numEntriesHashTable++;
           numEntriesSinceCheck++;
+        } else {
+          // for access tracking
+          aggregationBuffer.incrementAccessCount();
+          totalAccessCount++;
         }
         aggregationBatchInfo.mapAggregationBufferSet(aggregationBuffer, i);
+      }
+    }
+
+    private KeyWrapper cloneKeyWrapper(VectorHashKeyWrapperBase from) {
+      if (reusableKeyWrapperBuffer != null && reusableKeyWrapperBuffer.size() > 0) {
+        KeyWrapper keyWrapper = reusableKeyWrapperBuffer.poll();
+        from.copyKey(keyWrapper);
+        return keyWrapper;
+      } else {
+        return from.copyKey();
       }
     }
 
@@ -539,6 +644,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       }
     }
 
+    int computeAvgAccess() {
+      if (numEntriesHashTable == 0) {
+        return 0;
+      }
+      int avgAccess = (int) (totalAccessCount / numEntriesHashTable);
+      LOG.debug("totalAccessCount:{}, numEntries:{}, avgAccess:{}",
+          totalAccessCount, numEntriesHashTable, avgAccess);
+      return avgAccess;
+    }
+
     /**
      * Flushes the entries in the hash table by emiting output (forward).
      * When parameter 'all' is true all the entries are flushed.
@@ -560,6 +675,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
             maxHashTblMemory/1024/1024,
             gcCanary.get() == null ? "dead" : "alive"));
       }
+      int avgAccess = computeAvgAccess();
 
       /* Iterate the global (keywrapper,aggregationbuffers) map and emit
        a row for each key */
@@ -567,10 +683,27 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           mapKeysAggregationBuffers.entrySet().iterator();
       while(iter.hasNext()) {
         Map.Entry<KeyWrapper, VectorAggregationBufferRow> pair = iter.next();
+        KeyWrapper keyWrapper = pair.getKey();
+        VectorAggregationBufferRow bufferRow = pair.getValue();
+        if (!all && avgAccess >= 1) {
+          if (bufferRow.getAccessCount() > avgAccess) {
+            // resetting to give chance for other entries
+            totalAccessCount -= bufferRow.getAccessCount();
+            bufferRow.resetAccessCount();
+            continue;
+          }
+        }
 
-        writeSingleRow((VectorHashKeyWrapperBase) pair.getKey(), pair.getValue());
+        finishAggregators(bufferRow, false);
+        writeSingleRow((VectorHashKeyWrapperBase) keyWrapper, bufferRow);
 
         if (!all) {
+          totalAccessCount -= bufferRow.getAccessCount();
+          reusableAggregationBufferRows.add(bufferRow);
+          bufferRow.resetAccessCount();
+          if (reusableKeyWrapperBuffer != null) {
+            reusableKeyWrapperBuffer.add(pair.getKey());
+          }
           iter.remove();
           --numEntriesHashTable;
           if (++entriesFlushed >= entriesToFlush) {
@@ -579,9 +712,15 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         }
       }
 
+      if (!all) {
+        numFlushedOutEntriesBeforeFinalFlush += entriesFlushed;
+      }
+
       if (all) {
         mapKeysAggregationBuffers.clear();
+        totalAccessCount = 0;
         numEntriesHashTable = 0;
+        numFlushedOutEntriesBeforeFinalFlush = 0;
       }
 
       if (all && LOG.isDebugEnabled()) {
@@ -591,20 +730,23 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     /**
      * Returns true if the memory threshold for the hash table was reached.
+     * WARN: Frequent flushing can reduce Op throughput
      */
     private boolean shouldFlush(VectorizedRowBatch batch) {
       if (batch.size == 0) {
         return false;
       }
-      //numEntriesSinceCheck is the number of entries added to the hash table
+      // numEntriesSinceCheck is the number of entries added to the hash table
       // since the last time we checked the average variable size
       if (numEntriesSinceCheck >= this.checkInterval) {
         // Were going to update the average variable row size by sampling the current batch
         updateAvgVariableSize(batch);
         numEntriesSinceCheck = 0;
       }
-      if (numEntriesHashTable > this.maxHtEntries ||
-          numEntriesHashTable * (fixedHashEntrySize + avgVariableSize) > maxHashTblMemory) {
+      long currMemUsed = numEntriesHashTable * (fixedHashEntrySize + avgVariableSize);
+      // Protect against low maxHtEntries setting: if memory usage is below 30% avoid flushing
+      if ( ((numEntriesHashTable > this.maxHtEntries) && (currMemUsed > 0.3 * maxHashTblMemory))  ||
+          currMemUsed > maxHashTblMemory) {
         return true;
       }
       if (gcCanary.get() == null) {
@@ -640,10 +782,19 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           LOG.debug(String.format("checkHashModeEfficiency: HT:%d RC:%d MIN:%d",
               numEntriesHashTable, sumBatchSize, (long)(sumBatchSize * minReductionHashAggr)));
         }
-        if (numEntriesHashTable > sumBatchSize * minReductionHashAggr) {
-          flush(true);
-
-          changeToStreamingMode();
+        /**
+         * For grouping sets, incoming data is processed multiple times depending on
+         * grouping set length. sumBatchSize already accounts for this. Here we mainly check for
+         * hashtable efficiency.
+         */
+        final long inputRecords = sumBatchSize;
+        final long outputRecords = numEntriesHashTable + numFlushedOutEntriesBeforeFinalFlush;
+        final float ratio = (outputRecords) / (inputRecords * 1.0f);
+        if (ratio > minReductionHashAggr) {
+          if (inputRecords > maxHtEntries) { // Don't bail out too soon.
+            flush(true);
+            changeToStreamingMode();
+          }
         }
       }
     }
@@ -653,12 +804,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    * Streaming processing mode on ALREADY GROUPED data. Each input VectorizedRowBatch may
    * have a mix of different keys.  Intermediate values are flushed each time key changes.
    */
-  private class ProcessingModeStreaming extends ProcessingModeBase {
-
-    /**
-     * The aggregation buffers used in streaming mode
-     */
-    private VectorAggregationBufferRow currentStreamingAggregators;
+  final class ProcessingModeStreaming extends ProcessingModeBase {
 
     /**
      * The current key, used in streaming mode
@@ -732,7 +878,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       final VectorHashKeyWrapperBase prevKey = streamingKey;
       if (streamingKey == null) {
         // This is the first batch we process after switching from hash mode
-        currentStreamingAggregators = streamAggregationBufferRowPool.getFromPool();
+        aggregationBufferSet = streamAggregationBufferRowPool.getFromPool();
         streamingKey = batchKeys[0];
       }
 
@@ -743,13 +889,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         if (!batchKeys[i].equals(streamingKey)) {
           // We've encountered a new key, must save current one
           // We can't forward yet, the aggregators have not been evaluated
-          rowsToFlush[flushMark] = currentStreamingAggregators;
+          rowsToFlush[flushMark] = aggregationBufferSet;
           keysToFlush[flushMark] = streamingKey;
-          currentStreamingAggregators = streamAggregationBufferRowPool.getFromPool();
+          aggregationBufferSet = streamAggregationBufferRowPool.getFromPool();
           streamingKey = batchKeys[i];
           ++flushMark;
         }
-        aggregationBatchInfo.mapAggregationBufferSet(currentStreamingAggregators, i);
+        aggregationBatchInfo.mapAggregationBufferSet(aggregationBufferSet, i);
       }
 
       // evaluate the aggregators
@@ -757,6 +903,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       // Now flush/forward all keys/rows, except the last (current) one
       for (int i = 0; i < flushMark; ++i) {
+        finishAggregators(rowsToFlush[i], false); //finish aggregations before flushing
         writeSingleRow(keysToFlush[i], rowsToFlush[i]);
         rowsToFlush[i].reset();
         keysToFlush[i] = null;
@@ -770,8 +917,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     @Override
     public void close(boolean aborted) throws HiveException {
+      super.close(aborted);
       if (!aborted && null != streamingKey) {
-        writeSingleRow(streamingKey, currentStreamingAggregators);
+        writeSingleRow(streamingKey, aggregationBufferSet);
       }
     }
   }
@@ -795,7 +943,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    *      writeGroupRow does this and finally increments outputBatch.size.
    *
    */
-  private class ProcessingModeReduceMergePartial extends ProcessingModeBase {
+  final class ProcessingModeReduceMergePartial extends ProcessingModeBase {
 
     private boolean first;
     private boolean isLastGroupBatch;
@@ -804,11 +952,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
      * The group vector key helper.
      */
     VectorGroupKeyHelper groupKeyHelper;
-
-    /**
-     * The group vector aggregation buffers.
-     */
-    private VectorAggregationBufferRow groupAggregators;
 
     /**
      * Buffer to hold string values.
@@ -823,7 +966,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       // instead of keyExpressions.length
       groupKeyHelper = new VectorGroupKeyHelper(outputKeyLength);
       groupKeyHelper.init(keyExpressions);
-      groupAggregators = allocateAggregationBuffer();
+      aggregationBufferSet = allocateAggregationBuffer();
       buffer = new DataOutputBuffer();
       LOG.info("using sorted group batch aggregation processing mode");
     }
@@ -855,19 +998,21 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       // Aggregate this batch.
       for (int i = 0; i < aggregators.length; ++i) {
-        aggregators[i].aggregateInput(groupAggregators.getAggregationBuffer(i), batch);
+        aggregators[i].aggregateInput(aggregationBufferSet.getAggregationBuffer(i), batch);
       }
 
       if (isLastGroupBatch) {
-        writeGroupRow(groupAggregators, buffer);
-        groupAggregators.reset();
+        finishAggregators(aggregationBufferSet, false);
+        writeGroupRow(aggregationBufferSet, buffer);
+        aggregationBufferSet.reset();
       }
     }
 
     @Override
     public void close(boolean aborted) throws HiveException {
+      super.close(aborted);
       if (!aborted && !first && !isLastGroupBatch) {
-        writeGroupRow(groupAggregators, buffer);
+        writeGroupRow(aggregationBufferSet, buffer);
       }
     }
   }
@@ -875,7 +1020,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   /**
    * Current processing mode. Processing mode can change (eg. hash -> streaming).
    */
-  private transient IProcessingMode processingMode;
+  @VisibleForTesting
+  transient IProcessingMode processingMode;
 
   private static final long serialVersionUID = 1L;
 
@@ -980,7 +1126,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     isLlap = LlapProxy.isDaemon();
-    VectorExpression.doTransientInit(keyExpressions);
+    VectorExpression.doTransientInit(keyExpressions, hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -1004,22 +1150,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
         Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
 
-        Constructor<? extends VectorAggregateExpression> ctor = null;
-        try {
-          ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class);
-        } catch (Exception e) {
-          throw new HiveException("Constructor " + vecAggrClass.getSimpleName() +
-              "(VectorAggregationDesc) not available");
-        }
-        VectorAggregateExpression vecAggrExpr = null;
-        try {
-          vecAggrExpr = ctor.newInstance(vecAggrDesc);
-        } catch (Exception e) {
-
-           throw new HiveException("Failed to create " + vecAggrClass.getSimpleName() +
-               "(VectorAggregationDesc) object ", e);
-        }
-        VectorExpression.doTransientInit(vecAggrExpr.getInputExpression());
+        VectorAggregateExpression vecAggrExpr =
+            instantiateExpression(vecAggrDesc, hconf);
+        VectorExpression.doTransientInit(vecAggrExpr.getInputExpression(), hconf);
         aggregators[i] = vecAggrExpr;
 
         ObjectInspector objInsp =
@@ -1082,6 +1215,41 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     processingMode.initialize(hconf);
   }
 
+  @VisibleForTesting
+  VectorAggregateExpression instantiateExpression(VectorAggregationDesc vecAggrDesc,
+      Configuration hconf) throws HiveException {
+    Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
+
+    Constructor<? extends VectorAggregateExpression> ctor = null;
+    try {
+      if (vecAggrDesc.getVecAggrClass() == VectorUDAFBloomFilterMerge.class) {
+        // VectorUDAFBloomFilterMerge is instantiated with a number of threads of parallel processing
+        ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class, int.class);
+      } else {
+        ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class);
+      }
+    } catch (Exception e) {
+      throw new HiveException(
+          "Constructor " + vecAggrClass.getSimpleName() + "(VectorAggregationDesc) not available", e);
+    }
+    VectorAggregateExpression vecAggrExpr = null;
+    try {
+      if (vecAggrDesc.getVecAggrClass() == VectorUDAFBloomFilterMerge.class) {
+        vecAggrExpr = ctor.newInstance(vecAggrDesc,
+            hconf.getInt(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.varname,
+                HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal));
+      } else {
+        vecAggrExpr = ctor.newInstance(vecAggrDesc);
+      }
+    } catch (Exception e) {
+
+      throw new HiveException(
+          "Failed to create " + vecAggrClass.getSimpleName() + "(VectorAggregationDesc) object ",
+          e);
+    }
+    return vecAggrExpr;
+  }
+
   /**
    * changes the processing mode to streaming
    * This is done at the request of the hash agg mode, if the number of keys
@@ -1091,7 +1259,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private void changeToStreamingMode() throws HiveException {
     processingMode = this.new ProcessingModeStreaming();
     processingMode.initialize(null);
-    LOG.trace("switched to streaming mode");
+    LOG.info("switched to streaming mode");
   }
 
   @Override

@@ -1,0 +1,14 @@
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+  HiveProject(i_product_name=[$0])
+    HiveAggregate(group=[{1}])
+      HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(i_manufact=[$14], i_product_name=[$21])
+          HiveFilter(condition=[AND(BETWEEN(false, $13, 970, 1010), IS NOT NULL($14))])
+            HiveTableScan(table=[[default, item]], table:alias=[i1])
+        HiveProject(i_manufact=[$0])
+          HiveFilter(condition=[>($1, 0)])
+            HiveAggregate(group=[{14}], agg#0=[count()])
+              HiveFilter(condition=[AND(OR(AND(=($12, _UTF-16LE'Women                                             '), IN($17, _UTF-16LE'frosted             ', _UTF-16LE'rose                '), IN($18, _UTF-16LE'Lb        ', _UTF-16LE'Gross     '), IN($15, _UTF-16LE'medium              ', _UTF-16LE'large               ')), AND(=($12, _UTF-16LE'Women                                             '), IN($17, _UTF-16LE'chocolate           ', _UTF-16LE'black               '), IN($18, _UTF-16LE'Box       ', _UTF-16LE'Dram      '), IN($15, _UTF-16LE'economy             ', _UTF-16LE'petite              ')), AND(=($12, _UTF-16LE'Men                                               '), IN($17, _UTF-16LE'slate               ', _UTF-16LE'magenta             '), IN($18, _UTF-16LE'Carton    ', _UTF-16LE'Bundle    '), IN($15, _UTF-16LE'N/A                 ', _UTF-16LE'small               ')), AND(=($12, _UTF-16LE'Men                                               '), IN($17, _UTF-16LE'cornflower          ', _UTF-16LE'firebrick           '), IN($18, _UTF-16LE'Pound     ', _UTF-16LE'Oz        '), IN($15, _UTF-16LE'medium              ', _UTF-16LE'large               ')), AND(=($12, _UTF-16LE'Women                                             '), IN($17, _UTF-16LE'almond              ', _UTF-16LE'steel               '), IN($18, _UTF-16LE'Tsp       ', _UTF-16LE'Case      '), IN($15, _UTF-16LE'medium              ', _UTF-16LE'large               ')), AND(=($12, _UTF-16LE'Women                                             '), IN($17, _UTF-16LE'purple              ', _UTF-16LE'aquamarine          '), IN($18, _UTF-16LE'Bunch     ', _UTF-16LE'Gram      '), IN($15, _UTF-16LE'economy             ', _UTF-16LE'petite              ')), AND(=($12, _UTF-16LE'Men                                               '), IN($17, _UTF-16LE'lavender            ', _UTF-16LE'papaya              '), IN($18, _UTF-16LE'Pallet    ', _UTF-16LE'Cup       '), IN($15, _UTF-16LE'N/A                 ', _UTF-16LE'small               ')), AND(=($12, _UTF-16LE'Men                                               '), IN($17, _UTF-16LE'maroon              ', _UTF-16LE'cyan                '), IN($18, _UTF-16LE'Each      ', _UTF-16LE'N/A       '), IN($15, _UTF-16LE'medium              ', _UTF-16LE'large               '))), IS NOT NULL($14))])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+

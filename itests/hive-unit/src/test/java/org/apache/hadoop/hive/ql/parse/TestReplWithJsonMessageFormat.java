@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +33,17 @@ import java.util.Map;
 public class TestReplWithJsonMessageFormat extends TestReplicationScenarios {
   @Rule
   public TestRule replV1BackwardCompatibleRule =
-      new ReplicationV1CompatRule(metaStoreClient, hconf,
-          new ArrayList<>(Collections.singletonList("testEventFilters")));
+      new ReplicationV1CompatRule(metaStoreClient, hconf, new ArrayList<String>() {{
+          add("testEventFilters");
+          add("testReplConfiguredCleanupOfNotificationEvents");
+      }});
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             JSONMessageEncoder.class.getCanonicalName());
-    internalBeforeClassSetup(overrides, false);
+    internalBeforeClassSetup(overrides);
   }
 
 }

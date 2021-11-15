@@ -1,0 +1,1295 @@
+PREHOOK: query: EXPLAIN
+SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 6 <- Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Lateral View Forward
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Lateral View Join Operator
+                        outputColumnNames: _col0, _col1, _col8
+                        Statistics: Num rows: 500 Data size: 117000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: count(1)
+                            keys: _col0 (type: string), _col1 (type: string)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string), _col1 (type: string)
+                              null sort order: zz
+                              sort order: ++
+                              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                              Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col2 (type: bigint)
+                    Select Operator
+                      expressions: array(1,2,3) (type: array<int>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                      UDTF Operator
+                        Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col8
+                          Statistics: Num rows: 500 Data size: 117000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col0 (type: string), _col1 (type: string)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: count(1)
+                              keys: _col0 (type: string), _col1 (type: string)
+                              minReductionHashAggr: 0.4
+                              mode: hash
+                              outputColumnNames: _col0, _col1, _col2
+                              Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                key expressions: _col0 (type: string), _col1 (type: string)
+                                null sort order: zz
+                                sort order: ++
+                                Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                                Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col2 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                    Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: bigint)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col2 (type: bigint), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 645 Data size: 119970 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+10	100	val_100
+10	103	val_103
+10	104	val_104
+10	113	val_113
+10	118	val_118
+10	12	val_12
+10	120	val_120
+10	125	val_125
+10	129	val_129
+10	134	val_134
+10	137	val_137
+10	146	val_146
+10	149	val_149
+10	15	val_15
+10	152	val_152
+10	164	val_164
+10	165	val_165
+10	172	val_172
+10	174	val_174
+10	175	val_175
+10	176	val_176
+10	179	val_179
+10	18	val_18
+10	191	val_191
+10	195	val_195
+10	197	val_197
+10	200	val_200
+10	203	val_203
+10	205	val_205
+10	207	val_207
+10	209	val_209
+10	213	val_213
+10	216	val_216
+10	217	val_217
+10	219	val_219
+10	221	val_221
+10	223	val_223
+10	224	val_224
+10	229	val_229
+10	233	val_233
+10	237	val_237
+10	238	val_238
+10	239	val_239
+10	24	val_24
+10	242	val_242
+10	255	val_255
+10	256	val_256
+10	26	val_26
+10	265	val_265
+10	272	val_272
+10	278	val_278
+10	280	val_280
+10	281	val_281
+10	282	val_282
+10	288	val_288
+10	307	val_307
+10	309	val_309
+10	317	val_317
+10	321	val_321
+10	322	val_322
+10	325	val_325
+10	331	val_331
+10	333	val_333
+10	342	val_342
+10	344	val_344
+10	353	val_353
+10	367	val_367
+10	37	val_37
+10	382	val_382
+10	395	val_395
+10	397	val_397
+10	399	val_399
+10	404	val_404
+10	413	val_413
+10	414	val_414
+10	42	val_42
+10	424	val_424
+10	429	val_429
+10	439	val_439
+10	458	val_458
+10	459	val_459
+10	462	val_462
+10	463	val_463
+10	478	val_478
+10	492	val_492
+10	51	val_51
+10	58	val_58
+10	67	val_67
+10	72	val_72
+10	76	val_76
+10	83	val_83
+10	84	val_84
+10	95	val_95
+10	97	val_97
+10	98	val_98
+18	0	val_0
+18	119	val_119
+18	128	val_128
+18	167	val_167
+18	187	val_187
+18	193	val_193
+18	199	val_199
+18	208	val_208
+18	273	val_273
+18	298	val_298
+18	311	val_311
+18	316	val_316
+18	318	val_318
+18	327	val_327
+18	35	val_35
+18	369	val_369
+18	384	val_384
+18	396	val_396
+18	403	val_403
+18	409	val_409
+18	417	val_417
+18	430	val_430
+18	431	val_431
+18	438	val_438
+18	454	val_454
+18	466	val_466
+18	480	val_480
+18	498	val_498
+18	5	val_5
+18	70	val_70
+18	90	val_90
+28	138	val_138
+28	169	val_169
+28	277	val_277
+28	406	val_406
+28	468	val_468
+28	489	val_489
+4	10	val_10
+4	105	val_105
+4	11	val_11
+4	111	val_111
+4	114	val_114
+4	116	val_116
+4	126	val_126
+4	131	val_131
+4	133	val_133
+4	136	val_136
+4	143	val_143
+4	145	val_145
+4	150	val_150
+4	153	val_153
+4	155	val_155
+4	156	val_156
+4	157	val_157
+4	158	val_158
+4	160	val_160
+4	162	val_162
+4	163	val_163
+4	166	val_166
+4	168	val_168
+4	17	val_17
+4	170	val_170
+4	177	val_177
+4	178	val_178
+4	180	val_180
+4	181	val_181
+4	183	val_183
+4	186	val_186
+4	189	val_189
+4	19	val_19
+4	190	val_190
+4	192	val_192
+4	194	val_194
+4	196	val_196
+4	2	val_2
+4	20	val_20
+4	201	val_201
+4	202	val_202
+4	214	val_214
+4	218	val_218
+4	222	val_222
+4	226	val_226
+4	228	val_228
+4	235	val_235
+4	241	val_241
+4	244	val_244
+4	247	val_247
+4	248	val_248
+4	249	val_249
+4	252	val_252
+4	257	val_257
+4	258	val_258
+4	260	val_260
+4	262	val_262
+4	263	val_263
+4	266	val_266
+4	27	val_27
+4	274	val_274
+4	275	val_275
+4	28	val_28
+4	283	val_283
+4	284	val_284
+4	285	val_285
+4	286	val_286
+4	287	val_287
+4	289	val_289
+4	291	val_291
+4	292	val_292
+4	296	val_296
+4	30	val_30
+4	302	val_302
+4	305	val_305
+4	306	val_306
+4	308	val_308
+4	310	val_310
+4	315	val_315
+4	323	val_323
+4	33	val_33
+4	332	val_332
+4	335	val_335
+4	336	val_336
+4	338	val_338
+4	339	val_339
+4	34	val_34
+4	341	val_341
+4	345	val_345
+4	351	val_351
+4	356	val_356
+4	360	val_360
+4	362	val_362
+4	364	val_364
+4	365	val_365
+4	366	val_366
+4	368	val_368
+4	373	val_373
+4	374	val_374
+4	375	val_375
+4	377	val_377
+4	378	val_378
+4	379	val_379
+4	386	val_386
+4	389	val_389
+4	392	val_392
+4	393	val_393
+4	394	val_394
+4	4	val_4
+4	400	val_400
+4	402	val_402
+4	407	val_407
+4	41	val_41
+4	411	val_411
+4	418	val_418
+4	419	val_419
+4	421	val_421
+4	427	val_427
+4	43	val_43
+4	432	val_432
+4	435	val_435
+4	436	val_436
+4	437	val_437
+4	44	val_44
+4	443	val_443
+4	444	val_444
+4	446	val_446
+4	448	val_448
+4	449	val_449
+4	452	val_452
+4	453	val_453
+4	455	val_455
+4	457	val_457
+4	460	val_460
+4	467	val_467
+4	47	val_47
+4	470	val_470
+4	472	val_472
+4	475	val_475
+4	477	val_477
+4	479	val_479
+4	481	val_481
+4	482	val_482
+4	483	val_483
+4	484	val_484
+4	485	val_485
+4	487	val_487
+4	490	val_490
+4	491	val_491
+4	493	val_493
+4	494	val_494
+4	495	val_495
+4	496	val_496
+4	497	val_497
+4	53	val_53
+4	54	val_54
+4	57	val_57
+4	64	val_64
+4	65	val_65
+4	66	val_66
+4	69	val_69
+4	74	val_74
+4	77	val_77
+4	78	val_78
+4	8	val_8
+4	80	val_80
+4	82	val_82
+4	85	val_85
+4	86	val_86
+4	87	val_87
+4	9	val_9
+4	92	val_92
+4	96	val_96
+40	230	val_230
+40	348	val_348
+40	401	val_401
+40	469	val_469
+PREHOOK: query: SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+10	100	val_100
+10	103	val_103
+10	104	val_104
+10	113	val_113
+10	118	val_118
+10	12	val_12
+10	120	val_120
+10	125	val_125
+10	129	val_129
+10	134	val_134
+10	137	val_137
+10	146	val_146
+10	149	val_149
+10	15	val_15
+10	152	val_152
+10	164	val_164
+10	165	val_165
+10	172	val_172
+10	174	val_174
+10	175	val_175
+10	176	val_176
+10	179	val_179
+10	18	val_18
+10	191	val_191
+10	195	val_195
+10	197	val_197
+10	200	val_200
+10	203	val_203
+10	205	val_205
+10	207	val_207
+10	209	val_209
+10	213	val_213
+10	216	val_216
+10	217	val_217
+10	219	val_219
+10	221	val_221
+10	223	val_223
+10	224	val_224
+10	229	val_229
+10	233	val_233
+10	237	val_237
+10	238	val_238
+10	239	val_239
+10	24	val_24
+10	242	val_242
+10	255	val_255
+10	256	val_256
+10	26	val_26
+10	265	val_265
+10	272	val_272
+10	278	val_278
+10	280	val_280
+10	281	val_281
+10	282	val_282
+10	288	val_288
+10	307	val_307
+10	309	val_309
+10	317	val_317
+10	321	val_321
+10	322	val_322
+10	325	val_325
+10	331	val_331
+10	333	val_333
+10	342	val_342
+10	344	val_344
+10	353	val_353
+10	367	val_367
+10	37	val_37
+10	382	val_382
+10	395	val_395
+10	397	val_397
+10	399	val_399
+10	404	val_404
+10	413	val_413
+10	414	val_414
+10	42	val_42
+10	424	val_424
+10	429	val_429
+10	439	val_439
+10	458	val_458
+10	459	val_459
+10	462	val_462
+10	463	val_463
+10	478	val_478
+10	492	val_492
+10	51	val_51
+10	58	val_58
+10	67	val_67
+10	72	val_72
+10	76	val_76
+10	83	val_83
+10	84	val_84
+10	95	val_95
+10	97	val_97
+10	98	val_98
+18	0	val_0
+18	119	val_119
+18	128	val_128
+18	167	val_167
+18	187	val_187
+18	193	val_193
+18	199	val_199
+18	208	val_208
+18	273	val_273
+18	298	val_298
+18	311	val_311
+18	316	val_316
+18	318	val_318
+18	327	val_327
+18	35	val_35
+18	369	val_369
+18	384	val_384
+18	396	val_396
+18	403	val_403
+18	409	val_409
+18	417	val_417
+18	430	val_430
+18	431	val_431
+18	438	val_438
+18	454	val_454
+18	466	val_466
+18	480	val_480
+18	498	val_498
+18	5	val_5
+18	70	val_70
+18	90	val_90
+28	138	val_138
+28	169	val_169
+28	277	val_277
+28	406	val_406
+28	468	val_468
+28	489	val_489
+4	10	val_10
+4	105	val_105
+4	11	val_11
+4	111	val_111
+4	114	val_114
+4	116	val_116
+4	126	val_126
+4	131	val_131
+4	133	val_133
+4	136	val_136
+4	143	val_143
+4	145	val_145
+4	150	val_150
+4	153	val_153
+4	155	val_155
+4	156	val_156
+4	157	val_157
+4	158	val_158
+4	160	val_160
+4	162	val_162
+4	163	val_163
+4	166	val_166
+4	168	val_168
+4	17	val_17
+4	170	val_170
+4	177	val_177
+4	178	val_178
+4	180	val_180
+4	181	val_181
+4	183	val_183
+4	186	val_186
+4	189	val_189
+4	19	val_19
+4	190	val_190
+4	192	val_192
+4	194	val_194
+4	196	val_196
+4	2	val_2
+4	20	val_20
+4	201	val_201
+4	202	val_202
+4	214	val_214
+4	218	val_218
+4	222	val_222
+4	226	val_226
+4	228	val_228
+4	235	val_235
+4	241	val_241
+4	244	val_244
+4	247	val_247
+4	248	val_248
+4	249	val_249
+4	252	val_252
+4	257	val_257
+4	258	val_258
+4	260	val_260
+4	262	val_262
+4	263	val_263
+4	266	val_266
+4	27	val_27
+4	274	val_274
+4	275	val_275
+4	28	val_28
+4	283	val_283
+4	284	val_284
+4	285	val_285
+4	286	val_286
+4	287	val_287
+4	289	val_289
+4	291	val_291
+4	292	val_292
+4	296	val_296
+4	30	val_30
+4	302	val_302
+4	305	val_305
+4	306	val_306
+4	308	val_308
+4	310	val_310
+4	315	val_315
+4	323	val_323
+4	33	val_33
+4	332	val_332
+4	335	val_335
+4	336	val_336
+4	338	val_338
+4	339	val_339
+4	34	val_34
+4	341	val_341
+4	345	val_345
+4	351	val_351
+4	356	val_356
+4	360	val_360
+4	362	val_362
+4	364	val_364
+4	365	val_365
+4	366	val_366
+4	368	val_368
+4	373	val_373
+4	374	val_374
+4	375	val_375
+4	377	val_377
+4	378	val_378
+4	379	val_379
+4	386	val_386
+4	389	val_389
+4	392	val_392
+4	393	val_393
+4	394	val_394
+4	4	val_4
+4	400	val_400
+4	402	val_402
+4	407	val_407
+4	41	val_41
+4	411	val_411
+4	418	val_418
+4	419	val_419
+4	421	val_421
+4	427	val_427
+4	43	val_43
+4	432	val_432
+4	435	val_435
+4	436	val_436
+4	437	val_437
+4	44	val_44
+4	443	val_443
+4	444	val_444
+4	446	val_446
+4	448	val_448
+4	449	val_449
+4	452	val_452
+4	453	val_453
+4	455	val_455
+4	457	val_457
+4	460	val_460
+4	467	val_467
+4	47	val_47
+4	470	val_470
+4	472	val_472
+4	475	val_475
+4	477	val_477
+4	479	val_479
+4	481	val_481
+4	482	val_482
+4	483	val_483
+4	484	val_484
+4	485	val_485
+4	487	val_487
+4	490	val_490
+4	491	val_491
+4	493	val_493
+4	494	val_494
+4	495	val_495
+4	496	val_496
+4	497	val_497
+4	53	val_53
+4	54	val_54
+4	57	val_57
+4	64	val_64
+4	65	val_65
+4	66	val_66
+4	69	val_69
+4	74	val_74
+4	77	val_77
+4	78	val_78
+4	8	val_8
+4	80	val_80
+4	82	val_82
+4	85	val_85
+4	86	val_86
+4	87	val_87
+4	9	val_9
+4	92	val_92
+4	96	val_96
+40	230	val_230
+40	348	val_348
+40	401	val_401
+40	469	val_469
+PREHOOK: query: SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 
+count(1) as counts,
+key,
+value
+FROM
+(
+
+SELECT
+a.key, a.value
+FROM srcpart a JOIN srcpart b 
+ON a.ds='2008-04-08' and a.hr='11' and b.ds='2008-04-08' and b.hr='12'
+AND a.key = b.key 
+
+UNION ALL
+
+select key, value 
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+WHERE ds='2008-04-08' and hr='11'
+) a
+group by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+10	100	val_100
+10	103	val_103
+10	104	val_104
+10	113	val_113
+10	118	val_118
+10	12	val_12
+10	120	val_120
+10	125	val_125
+10	129	val_129
+10	134	val_134
+10	137	val_137
+10	146	val_146
+10	149	val_149
+10	15	val_15
+10	152	val_152
+10	164	val_164
+10	165	val_165
+10	172	val_172
+10	174	val_174
+10	175	val_175
+10	176	val_176
+10	179	val_179
+10	18	val_18
+10	191	val_191
+10	195	val_195
+10	197	val_197
+10	200	val_200
+10	203	val_203
+10	205	val_205
+10	207	val_207
+10	209	val_209
+10	213	val_213
+10	216	val_216
+10	217	val_217
+10	219	val_219
+10	221	val_221
+10	223	val_223
+10	224	val_224
+10	229	val_229
+10	233	val_233
+10	237	val_237
+10	238	val_238
+10	239	val_239
+10	24	val_24
+10	242	val_242
+10	255	val_255
+10	256	val_256
+10	26	val_26
+10	265	val_265
+10	272	val_272
+10	278	val_278
+10	280	val_280
+10	281	val_281
+10	282	val_282
+10	288	val_288
+10	307	val_307
+10	309	val_309
+10	317	val_317
+10	321	val_321
+10	322	val_322
+10	325	val_325
+10	331	val_331
+10	333	val_333
+10	342	val_342
+10	344	val_344
+10	353	val_353
+10	367	val_367
+10	37	val_37
+10	382	val_382
+10	395	val_395
+10	397	val_397
+10	399	val_399
+10	404	val_404
+10	413	val_413
+10	414	val_414
+10	42	val_42
+10	424	val_424
+10	429	val_429
+10	439	val_439
+10	458	val_458
+10	459	val_459
+10	462	val_462
+10	463	val_463
+10	478	val_478
+10	492	val_492
+10	51	val_51
+10	58	val_58
+10	67	val_67
+10	72	val_72
+10	76	val_76
+10	83	val_83
+10	84	val_84
+10	95	val_95
+10	97	val_97
+10	98	val_98
+18	0	val_0
+18	119	val_119
+18	128	val_128
+18	167	val_167
+18	187	val_187
+18	193	val_193
+18	199	val_199
+18	208	val_208
+18	273	val_273
+18	298	val_298
+18	311	val_311
+18	316	val_316
+18	318	val_318
+18	327	val_327
+18	35	val_35
+18	369	val_369
+18	384	val_384
+18	396	val_396
+18	403	val_403
+18	409	val_409
+18	417	val_417
+18	430	val_430
+18	431	val_431
+18	438	val_438
+18	454	val_454
+18	466	val_466
+18	480	val_480
+18	498	val_498
+18	5	val_5
+18	70	val_70
+18	90	val_90
+28	138	val_138
+28	169	val_169
+28	277	val_277
+28	406	val_406
+28	468	val_468
+28	489	val_489
+4	10	val_10
+4	105	val_105
+4	11	val_11
+4	111	val_111
+4	114	val_114
+4	116	val_116
+4	126	val_126
+4	131	val_131
+4	133	val_133
+4	136	val_136
+4	143	val_143
+4	145	val_145
+4	150	val_150
+4	153	val_153
+4	155	val_155
+4	156	val_156
+4	157	val_157
+4	158	val_158
+4	160	val_160
+4	162	val_162
+4	163	val_163
+4	166	val_166
+4	168	val_168
+4	17	val_17
+4	170	val_170
+4	177	val_177
+4	178	val_178
+4	180	val_180
+4	181	val_181
+4	183	val_183
+4	186	val_186
+4	189	val_189
+4	19	val_19
+4	190	val_190
+4	192	val_192
+4	194	val_194
+4	196	val_196
+4	2	val_2
+4	20	val_20
+4	201	val_201
+4	202	val_202
+4	214	val_214
+4	218	val_218
+4	222	val_222
+4	226	val_226
+4	228	val_228
+4	235	val_235
+4	241	val_241
+4	244	val_244
+4	247	val_247
+4	248	val_248
+4	249	val_249
+4	252	val_252
+4	257	val_257
+4	258	val_258
+4	260	val_260
+4	262	val_262
+4	263	val_263
+4	266	val_266
+4	27	val_27
+4	274	val_274
+4	275	val_275
+4	28	val_28
+4	283	val_283
+4	284	val_284
+4	285	val_285
+4	286	val_286
+4	287	val_287
+4	289	val_289
+4	291	val_291
+4	292	val_292
+4	296	val_296
+4	30	val_30
+4	302	val_302
+4	305	val_305
+4	306	val_306
+4	308	val_308
+4	310	val_310
+4	315	val_315
+4	323	val_323
+4	33	val_33
+4	332	val_332
+4	335	val_335
+4	336	val_336
+4	338	val_338
+4	339	val_339
+4	34	val_34
+4	341	val_341
+4	345	val_345
+4	351	val_351
+4	356	val_356
+4	360	val_360
+4	362	val_362
+4	364	val_364
+4	365	val_365
+4	366	val_366
+4	368	val_368
+4	373	val_373
+4	374	val_374
+4	375	val_375
+4	377	val_377
+4	378	val_378
+4	379	val_379
+4	386	val_386
+4	389	val_389
+4	392	val_392
+4	393	val_393
+4	394	val_394
+4	4	val_4
+4	400	val_400
+4	402	val_402
+4	407	val_407
+4	41	val_41
+4	411	val_411
+4	418	val_418
+4	419	val_419
+4	421	val_421
+4	427	val_427
+4	43	val_43
+4	432	val_432
+4	435	val_435
+4	436	val_436
+4	437	val_437
+4	44	val_44
+4	443	val_443
+4	444	val_444
+4	446	val_446
+4	448	val_448
+4	449	val_449
+4	452	val_452
+4	453	val_453
+4	455	val_455
+4	457	val_457
+4	460	val_460
+4	467	val_467
+4	47	val_47
+4	470	val_470
+4	472	val_472
+4	475	val_475
+4	477	val_477
+4	479	val_479
+4	481	val_481
+4	482	val_482
+4	483	val_483
+4	484	val_484
+4	485	val_485
+4	487	val_487
+4	490	val_490
+4	491	val_491
+4	493	val_493
+4	494	val_494
+4	495	val_495
+4	496	val_496
+4	497	val_497
+4	53	val_53
+4	54	val_54
+4	57	val_57
+4	64	val_64
+4	65	val_65
+4	66	val_66
+4	69	val_69
+4	74	val_74
+4	77	val_77
+4	78	val_78
+4	8	val_8
+4	80	val_80
+4	82	val_82
+4	85	val_85
+4	86	val_86
+4	87	val_87
+4	9	val_9
+4	92	val_92
+4	96	val_96
+40	230	val_230
+40	348	val_348
+40	401	val_401
+40	469	val_469

@@ -45,19 +45,28 @@ public class LockComponentBuilder {
   }
 
   /**
-   * Set the lock to be semi-shared.
+   * Set the lock to be excl_write.
    * @return reference to this builder
    */
-  public LockComponentBuilder setSemiShared() {
+  public LockComponentBuilder setExclWrite() {
+    component.setType(LockType.EXCL_WRITE);
+    return this;
+  }
+
+  /**
+   * Set the lock to be shared_write.
+   * @return reference to this builder
+   */
+  public LockComponentBuilder setSharedWrite() {
     component.setType(LockType.SHARED_WRITE);
     return this;
   }
 
   /**
-   * Set the lock to be shared.
+   * Set the lock to be shared_read.
    * @return reference to this builder
    */
-  public LockComponentBuilder setShared() {
+  public LockComponentBuilder setSharedRead() {
     component.setType(LockType.SHARED_READ);
     return this;
   }

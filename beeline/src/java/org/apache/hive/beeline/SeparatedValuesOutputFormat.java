@@ -23,8 +23,8 @@
 package org.apache.hive.beeline;
 
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.supercsv.encoder.CsvEncoder;
 import org.supercsv.encoder.DefaultCsvEncoder;
 import org.supercsv.encoder.SelectiveCsvEncoder;

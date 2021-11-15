@@ -1,0 +1,115 @@
+PREHOOK: query: create table test_table_n7(d date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n7
+POSTHOOK: query: create table test_table_n7(d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n7
+PREHOOK: query: insert into test_table_n7 values(null), (null), (null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_table_n7
+POSTHOOK: query: insert into test_table_n7 values(null), (null), (null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_table_n7
+POSTHOOK: Lineage: test_table_n7.d EXPRESSION []
+PREHOOK: query: analyze table test_table_n7 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@test_table_n7
+PREHOOK: Output: default@test_table_n7
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table test_table_n7 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@test_table_n7
+POSTHOOK: Output: default@test_table_n7
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test_table_n7
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n7
+POSTHOOK: query: describe formatted test_table_n7
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n7
+# col_name            	data_type           	comment             
+d                   	date                	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	6                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select * from test_table_n7 where d is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from test_table_n7 where d is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table_n7
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_table_n7
+                  filterExpr: d is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: d is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: d (type: date)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from test_table_n7 where d is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table_n7
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table_n7 where d is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table_n7
+#### A masked pattern was here ####

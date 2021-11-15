@@ -45,6 +45,7 @@ public class HiveVarcharWritable extends HiveBaseCharWritable
 
   public void set(HiveVarcharWritable val) {
     value.set(val.value);
+    charLength = val.charLength;
   }
 
   public void set(HiveVarcharWritable val, int maxLength) {
@@ -57,6 +58,7 @@ public class HiveVarcharWritable extends HiveBaseCharWritable
 
   public void set(String val, int maxLength) {
     value.set(HiveBaseChar.enforceMaxLength(val, maxLength));
+    charLength = maxLength;
   }
 
   public HiveVarchar getHiveVarchar() {

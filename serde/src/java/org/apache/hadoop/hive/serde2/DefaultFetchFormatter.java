@@ -58,7 +58,7 @@ public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
       serdeProps.put(SERIALIZATION_FORMAT, props.getProperty(SERIALIZATION_FORMAT));
       serdeProps.put(SERIALIZATION_NULL_FORMAT, props.getProperty(SERIALIZATION_NULL_FORMAT));
     }
-    SerDeUtils.initializeSerDe(serde, conf, serdeProps, null);
+    serde.initialize(conf, serdeProps, null);
     return serde;
   }
 

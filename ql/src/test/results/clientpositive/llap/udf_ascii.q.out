@@ -1,0 +1,66 @@
+PREHOOK: query: DESCRIBE FUNCTION ascii
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION ascii
+POSTHOOK: type: DESCFUNCTION
+ascii(str) - returns the numeric value of the first character of str
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED ascii
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED ascii
+POSTHOOK: type: DESCFUNCTION
+ascii(str) - returns the numeric value of the first character of str
+Returns 0 if str is empty or NULL if str is NULL
+Example:
+  > SELECT ascii('222') FROM src LIMIT 1;  50
+  > SELECT ascii(2) FROM src LIMIT 1;
+  50
+Function class:org.apache.hadoop.hive.ql.udf.UDFAscii
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN SELECT
+  ascii('Facebook'),
+  ascii(''),
+  ascii('!')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT
+  ascii('Facebook'),
+  ascii(''),
+  ascii('!')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 70 (type: int), 0 (type: int), 33 (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT
+  ascii('Facebook'),
+  ascii(''),
+  ascii('!')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ascii('Facebook'),
+  ascii(''),
+  ascii('!')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+70	0	33

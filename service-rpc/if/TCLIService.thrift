@@ -523,6 +523,7 @@ enum TOperationType {
   GET_COLUMNS,
   GET_FUNCTIONS,
   UNKNOWN,
+  PROCEDURAL_SQL
 }
 
 // Client-side reference to a task running

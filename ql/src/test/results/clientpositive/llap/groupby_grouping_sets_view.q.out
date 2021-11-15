@@ -1,0 +1,148 @@
+PREHOOK: query: create database test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test
+POSTHOOK: query: create database test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test
+PREHOOK: query: create table test.case665558 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
+PREHOOK: Output: test@case665558
+POSTHOOK: query: create table test.case665558 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@case665558
+PREHOOK: query: insert into test.case665558 values ("1", "1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@case665558
+POSTHOOK: query: insert into test.case665558 values ("1", "1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@case665558
+POSTHOOK: Lineage: case665558.c1 SCRIPT []
+POSTHOOK: Lineage: case665558.c2 SCRIPT []
+PREHOOK: query: insert into test.case665558 values ("2", "1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@case665558
+POSTHOOK: query: insert into test.case665558 values ("2", "1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@case665558
+POSTHOOK: Lineage: case665558.c1 SCRIPT []
+POSTHOOK: Lineage: case665558.c2 SCRIPT []
+PREHOOK: query: insert into test.case665558 values ("3", "1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@case665558
+POSTHOOK: query: insert into test.case665558 values ("3", "1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@case665558
+POSTHOOK: Lineage: case665558.c1 SCRIPT []
+POSTHOOK: Lineage: case665558.c2 SCRIPT []
+PREHOOK: query: insert into test.case665558 values ("1", "4")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@case665558
+POSTHOOK: query: insert into test.case665558 values ("1", "4")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@case665558
+POSTHOOK: Lineage: case665558.c1 SCRIPT []
+POSTHOOK: Lineage: case665558.c2 SCRIPT []
+PREHOOK: query: insert into test.case665558 values ("1", "5")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test@case665558
+POSTHOOK: query: insert into test.case665558 values ("1", "5")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test@case665558
+POSTHOOK: Lineage: case665558.c1 SCRIPT []
+POSTHOOK: Lineage: case665558.c2 SCRIPT []
+PREHOOK: query: create view   test.viewcase665558
+as
+select
+   case
+      when GROUPING__ID = 255 then `c1`
+   end as `col_1`,
+   case
+      when GROUPING__ID = 255 then 3
+   end as `col_2`,
+   `c1`,
+   `c2`
+from
+   `test`.`case665558`
+group by
+   `c1`,
+   `c2`
+GROUPING SETS
+   (
+      (`c1`),
+      (`c1`, `c2`)
+   )
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: test@case665558
+PREHOOK: Output: database:test
+PREHOOK: Output: test@viewcase665558
+POSTHOOK: query: create view   test.viewcase665558
+as
+select
+   case
+      when GROUPING__ID = 255 then `c1`
+   end as `col_1`,
+   case
+      when GROUPING__ID = 255 then 3
+   end as `col_2`,
+   `c1`,
+   `c2`
+from
+   `test`.`case665558`
+group by
+   `c1`,
+   `c2`
+GROUPING SETS
+   (
+      (`c1`),
+      (`c1`, `c2`)
+   )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: test@case665558
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@viewcase665558
+POSTHOOK: Lineage: viewcase665558.c1 SIMPLE [(case665558)case665558.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: viewcase665558.c2 SIMPLE [(case665558)case665558.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: viewcase665558.col_1 EXPRESSION [(case665558)case665558.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: viewcase665558.col_2 EXPRESSION []
+PREHOOK: query: select * from test.viewcase665558
+PREHOOK: type: QUERY
+PREHOOK: Input: test@case665558
+PREHOOK: Input: test@viewcase665558
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test.viewcase665558
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test@case665558
+POSTHOOK: Input: test@viewcase665558
+#### A masked pattern was here ####
+NULL	NULL	1	1
+NULL	NULL	1	4
+NULL	NULL	1	5
+NULL	NULL	1	NULL
+NULL	NULL	2	1
+NULL	NULL	2	NULL
+NULL	NULL	3	1
+NULL	NULL	3	NULL
+PREHOOK: query: drop database test cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test
+PREHOOK: Output: database:test
+PREHOOK: Output: test@case665558
+PREHOOK: Output: test@viewcase665558
+POSTHOOK: query: drop database test cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@case665558
+POSTHOOK: Output: test@viewcase665558

@@ -14,7 +14,8 @@ create table over10k_n19(
            `dec` decimal(4,2),  
            bin binary)
        row format delimited
-       fields terminated by '|';
+       fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 load data local inpath '../../data/files/over10k' into table over10k_n19;
 
@@ -51,29 +52,47 @@ SELECT explode(
   
 select a, b,
 first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b respect nulls) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) ignore nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b ignore nulls) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
-first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
+first_value(b) respect nulls over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ),
+first_value(b) ignore nulls over (partition by a order by b rows between unbounded preceding and 1 following )
 from wtest_n0;
 
 
 select a, b,
 first_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) ignore nulls over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
 first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
-first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
+first_value(b) respect nulls over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ),
+first_value(b) ignore nulls over (partition by a order by b desc rows between unbounded preceding and 1 following )
 from wtest_n0;
 
 select a, b,
 last_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) ignore nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
 last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
-last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
+last_value(b) respect nulls over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ),
+last_value(b) ignore nulls over (partition by a order by b rows between unbounded preceding and 1 following )
 from wtest_n0;
 
 select a, b,
 last_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) ignore nulls over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
 last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
-last_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
+last_value(b) respect nulls over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ),
+last_value(b) ignore nulls over (partition by a order by b desc rows between unbounded preceding and 1 following )
 from wtest_n0;

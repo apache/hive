@@ -32,11 +32,11 @@ import java.util.List;
  */
 public class DeletePartColStatHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     context.log.info("Replication of partition stat delete event is not supported yet");
     if (!context.isDbNameEmpty()) {
-      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, null, null);
     }
     return Collections.singletonList(TaskFactory.get(new DependencyCollectionWork(), context.hiveConf));
   }

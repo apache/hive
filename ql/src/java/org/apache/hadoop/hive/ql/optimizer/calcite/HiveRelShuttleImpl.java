@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalAggregate;
+import org.apache.calcite.rel.logical.LogicalCalc;
 import org.apache.calcite.rel.logical.LogicalCorrelate;
 import org.apache.calcite.rel.logical.LogicalExchange;
 import org.apache.calcite.rel.logical.LogicalFilter;
@@ -31,25 +34,27 @@ import org.apache.calcite.rel.logical.LogicalMatch;
 import org.apache.calcite.rel.logical.LogicalMinus;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rel.logical.LogicalSort;
+import org.apache.calcite.rel.logical.LogicalTableModify;
 import org.apache.calcite.rel.logical.LogicalUnion;
 import org.apache.calcite.rel.logical.LogicalValues;
-import org.apache.calcite.util.Stacks;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HiveRelShuttleImpl implements HiveRelShuttle {
-    protected final List<RelNode> stack = new ArrayList<RelNode>();
+    protected final Deque<RelNode> stack = new ArrayDeque<>();
 
     /**
      * Visits a particular child of a parent.
      */
     protected RelNode visitChild(RelNode parent, int i, RelNode child) {
-        Stacks.push(stack, parent);
+        stack.push(parent);
         try {
             RelNode child2 = child.accept(this);
             if (child2 != child) {
@@ -60,7 +65,7 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
             }
             return parent;
         } finally {
-            Stacks.pop(stack, parent);
+            stack.pop();
         }
     }
 
@@ -94,8 +99,14 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
     public RelNode visit(HiveFilter filter) {
         return visitChild(filter, 0, filter.getInput());
     }
+
     public RelNode visit(LogicalFilter filter) {
         return visitChild(filter, 0, filter.getInput());
+    }
+
+    @Override
+    public RelNode visit(LogicalCalc calc) {
+        return visitChild(calc, 0, calc.getInput());
     }
 
     public RelNode visit(HiveProject project) {
@@ -138,12 +149,27 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
         return visitChildren(exchange);
     }
 
+    @Override
+    public RelNode visit(LogicalTableModify modify) {
+        return visitChildren(modify);
+    }
+
     public RelNode visit(RelNode other) {
         return visitChildren(other);
     }
 
     public RelNode visit(LogicalMatch match) {
       return visitChildren(match);
+    }
+
+    @Override
+    public RelNode visit(HiveSortLimit hiveSortLimit) {
+        return visitChildren(hiveSortLimit);
+    }
+
+    @Override
+    public RelNode visit(HiveTableScan scan) {
+        return scan;
     }
 }
 

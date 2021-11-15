@@ -1,0 +1,58 @@
+WARNING: Comparing bigint and double may result in loss of information.
+PREHOOK: query: SELECT AVG(cbigint),
+       (-(AVG(cbigint))),
+       (-6432 + AVG(cbigint)),
+       STDDEV_POP(cbigint),
+       (-((-6432 + AVG(cbigint)))),
+       ((-((-6432 + AVG(cbigint)))) + (-6432 + AVG(cbigint))),
+       VAR_SAMP(cbigint),
+       (-((-6432 + AVG(cbigint)))),
+       (-6432 + (-((-6432 + AVG(cbigint))))),
+       (-((-6432 + AVG(cbigint)))),
+       ((-((-6432 + AVG(cbigint)))) / (-((-6432 + AVG(cbigint))))),
+       COUNT(*),
+       SUM(cfloat),
+       (VAR_SAMP(cbigint) % STDDEV_POP(cbigint)),
+       (-(VAR_SAMP(cbigint))),
+       ((-((-6432 + AVG(cbigint)))) * (-(AVG(cbigint)))),
+       MIN(ctinyint),
+       (-(MIN(ctinyint)))
+FROM   alltypesparquet
+WHERE  (((cstring2 LIKE '%b%')
+         OR ((79.553 != cint)
+             OR (NOT(cbigint >= cdouble))))
+        OR ((ctinyint >= csmallint)
+            AND (NOT ((cboolean2 != 1)
+                 OR (3569 != ctinyint)))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT AVG(cbigint),
+       (-(AVG(cbigint))),
+       (-6432 + AVG(cbigint)),
+       STDDEV_POP(cbigint),
+       (-((-6432 + AVG(cbigint)))),
+       ((-((-6432 + AVG(cbigint)))) + (-6432 + AVG(cbigint))),
+       VAR_SAMP(cbigint),
+       (-((-6432 + AVG(cbigint)))),
+       (-6432 + (-((-6432 + AVG(cbigint))))),
+       (-((-6432 + AVG(cbigint)))),
+       ((-((-6432 + AVG(cbigint)))) / (-((-6432 + AVG(cbigint))))),
+       COUNT(*),
+       SUM(cfloat),
+       (VAR_SAMP(cbigint) % STDDEV_POP(cbigint)),
+       (-(VAR_SAMP(cbigint))),
+       ((-((-6432 + AVG(cbigint)))) * (-(AVG(cbigint)))),
+       MIN(ctinyint),
+       (-(MIN(ctinyint)))
+FROM   alltypesparquet
+WHERE  (((cstring2 LIKE '%b%')
+         OR ((79.553 != cint)
+             OR (NOT(cbigint >= cdouble))))
+        OR ((ctinyint >= csmallint)
+            AND (NOT ((cboolean2 != 1)
+                 OR (3569 != ctinyint)))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+-3.875652215945533E8	3.875652215945533E8	-3.875716535945533E8	1.4363874554593508E9	3.875716535945533E8	0.0	2.06347151720190515E18	3.875716535945533E8	3.875652215945533E8	3.875716535945533E8	1.0	10934	-37224.52399241924	1.051665108770714E9	-2.06347151720190515E18	1.5020929380914048E17	-64	64

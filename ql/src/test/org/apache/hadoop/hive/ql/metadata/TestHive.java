@@ -23,9 +23,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -38,21 +40,25 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -66,25 +72,31 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Test;
 
 /**
  * TestHive.
  *
  */
-public class TestHive extends TestCase {
-  protected Hive hm;
-  protected HiveConf hiveConf;
+public class TestHive {
+  protected static Hive hm;
+  protected static HiveConf hiveConf;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    hiveConf = new HiveConf(this.getClass());
+  @BeforeClass
+  public static void setUp() throws Exception {
+
+    hiveConf = new HiveConf(TestHive.class);
     hm = setUpImpl(hiveConf);
   }
 
@@ -94,6 +106,8 @@ public class TestHive extends TestCase {
     // enable trash so it can be tested
     hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
     hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     SessionState.start(hiveConf);
     try {
       return Hive.get(hiveConf);
@@ -104,10 +118,10 @@ public class TestHive extends TestCase {
     }
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     try {
-      super.tearDown();
+
       // disable trash
       hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
       hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
@@ -121,6 +135,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testTable() throws Throwable {
     try {
       // create a simple table and test create, drop, get
@@ -220,6 +235,7 @@ public class TestHive extends TestCase {
    *
    * @throws Throwable
    */
+  @Test
   public void testThriftTable() throws Throwable {
     String tableName = "table_for_test_thrifttable";
     try {
@@ -263,6 +279,7 @@ public class TestHive extends TestCase {
    *
    * @throws Throwable
    */
+  @Test
   public void testMetaStoreApiTiming() throws Throwable {
     // Get the RootLogger which, if you don't have log4j2-test.properties defined, will only log ERRORs
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
@@ -343,6 +360,11 @@ public class TestHive extends TestCase {
         ft.getTTable().setWriteId(0);
         tbl.getTTable().setWriteId(0);
       }
+      // accessType set by HMS Transformer
+      if (tbl.getTTable().isSetAccessType() != ft.getTTable().isSetAccessType()) {
+        // No need to compare this field.
+        tbl.getTTable().setAccessType(ft.getTTable().getAccessType());
+      }
 
       tbl.getTTable().unsetId();
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
@@ -372,6 +394,7 @@ public class TestHive extends TestCase {
    * Test basic Hive class interaction, that:
    * - We can have different Hive objects throughout the lifetime of this thread.
    */
+  @Test
   public void testHiveCloseCurrent() throws Throwable {
     Hive hive1 = Hive.get();
     Hive.closeCurrent();
@@ -380,6 +403,7 @@ public class TestHive extends TestCase {
     assertTrue(hive1 != hive2);
   }
 
+  @Test
   public void testGetAndDropTables() throws Throwable {
     try {
       String dbName = "db_for_testgettables";
@@ -432,6 +456,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testWmNamespaceHandling() throws Throwable {
     HiveConf hiveConf = new HiveConf(this.getClass());
     Hive hm = setUpImpl(hiveConf);
@@ -478,6 +503,7 @@ public class TestHive extends TestCase {
     hm2.alterResourcePlan("hm", changes, true, false, false);
   }
 
+  @Test
   public void testDropTableTrash() throws Throwable {
     if (!ShimLoader.getHadoopShims().supportTrashFeature()) {
       return; // it's hadoop-1
@@ -590,6 +616,7 @@ public class TestHive extends TestCase {
    * 2. Drop partitions with PURGE, and check that the data is moved to Trash.
    * @throws Exception on failure.
    */
+  @Test
   public void testDropPartitionsWithPurge() throws Exception {
     String dbName = Warehouse.DEFAULT_DATABASE_NAME;
     String tableName = "table_for_testDropPartitionsWithPurge";
@@ -652,6 +679,7 @@ public class TestHive extends TestCase {
    * Test that tables set up with auto-purge skip trash-directory when tables/partitions are dropped.
    * @throws Throwable
    */
+  @Test
   public void testAutoPurgeTablesAndPartitions() throws Throwable {
 
     String dbName = Warehouse.DEFAULT_DATABASE_NAME;
@@ -659,7 +687,7 @@ public class TestHive extends TestCase {
     try {
 
       Table table = createPartitionedTable(dbName, tableName);
-      table.getParameters().put("auto.purge", "true");
+      table.getParameters().put("skip.trash", "true");
       hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
@@ -704,6 +732,7 @@ public class TestHive extends TestCase {
     }
   }
 
+  @Test
   public void testPartition() throws Throwable {
     try {
       String tableName = "table_for_testpartition";
@@ -744,6 +773,64 @@ public class TestHive extends TestCase {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to create parition for table: " + tableName, false);
       }
+
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-08");
+      part_spec.put("hr", "13");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-08");
+      part_spec.put("hr", "14");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-07");
+      part_spec.put("hr", "12");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-07");
+      part_spec.put("hr", "13");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      checkPartitionsConsistency(tbl);
+
+      Map<String, String> partialSpec = new HashMap<>();
+      partialSpec.put("ds", "2008-04-07");
+      assertEquals(2, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      partialSpec.put("ds", "2008-04-08");
+      assertEquals(3, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      partialSpec.put("hr", "13");
+      assertEquals(2, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      assertEquals(5, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      partialSpec.put("hr", "14");
+      assertEquals(1, hm.getPartitions(tbl, partialSpec).size());
+
       hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -752,6 +839,25 @@ public class TestHive extends TestCase {
     }
   }
 
+  private void checkPartitionsConsistency(Table tbl) throws Exception {
+    Set<Partition> allParts = hm.getAllPartitionsOf(tbl);
+    List<Partition> allParts2 = hm.getPartitions(tbl);
+    assertEquals("inconsistent results: getAllPartitionsOf/getPartitions", allParts, new HashSet<>(allParts2));
+
+    Partition singlePart = allParts2.get(0);
+    Partition singlePart2 = hm.getPartition(tbl, singlePart.getSpec(), false);
+    assertEquals("inconsistent results: getPartition", singlePart, singlePart2);
+
+    List<ExprNodeDesc> exprs = Lists.newArrayList(new ExprNodeConstantDesc(true), new ExprNodeConstantDesc(true));
+    ExprNodeGenericFuncDesc trueExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", exprs);
+    List<Partition> allParts3 = new ArrayList<Partition>();
+    hm.getPartitionsByExpr(tbl, trueExpr, hm.getConf(), allParts3);
+
+    assertEquals("inconsistent results: getPartitionsByExpr", allParts2, allParts3);
+
+  }
+
+  @Test
   public void testHiveRefreshOnConfChange() throws Throwable{
     Hive prevHiveObj = Hive.get();
     prevHiveObj.getDatabaseCurrent();

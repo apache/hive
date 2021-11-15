@@ -1,0 +1,120 @@
+PREHOOK: query: EXPLAIN
+SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
+            Select Operator
+              expressions: value (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_86
+val_27
+val_98
+val_66
+val_37
+val_15
+val_82
+val_17
+val_0
+val_57
+val_20
+val_92
+val_47
+val_72
+val_4
+val_35
+val_54
+val_51
+val_65
+val_83
+val_12
+val_67
+val_84
+val_58
+val_8
+val_24
+val_42
+val_0
+val_96
+val_26
+val_51
+val_43
+val_95
+val_98
+val_85
+val_77
+val_0
+val_87
+val_15
+val_72
+val_90
+val_19
+val_10
+val_5
+val_58
+val_35
+val_95
+val_11
+val_34
+val_42
+val_78
+val_76
+val_41
+val_30
+val_64
+val_76
+val_74
+val_69
+val_33
+val_70
+val_5
+val_2
+val_35
+val_80
+val_44
+val_53
+val_90
+val_12
+val_5
+val_70
+val_24
+val_70
+val_83
+val_26
+val_67
+val_18
+val_9
+val_18
+val_97
+val_84
+val_28
+val_37
+val_90
+val_97

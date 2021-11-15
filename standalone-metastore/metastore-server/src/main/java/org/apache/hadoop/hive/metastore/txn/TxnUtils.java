@@ -21,8 +21,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -32,11 +34,18 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -155,6 +164,12 @@ public class TxnUtils {
       .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
+  public static boolean isAcidTable(Map<String, String> parameters) {
+    return isTransactionalTable(parameters) &&
+            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.
+                    equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+  }
+
   /**
    * Should produce the result as &lt;dbName&gt;.&lt;tableName&gt;.
    */
@@ -172,9 +187,9 @@ public class TxnUtils {
    * Build a query (or queries if one query is too big but only for the case of 'IN'
    * composite clause. For the case of 'NOT IN' clauses, multiple queries change
    * the semantics of the intended query.
-   * E.g., Let's assume that input "inList" parameter has [5, 6] and that
+   * E.g., Let's assume that input "inValues" parameter has [5, 6] and that
    * _DIRECT_SQL_MAX_QUERY_LENGTH_ configuration parameter only allows one value in a 'NOT IN' clause,
-   * Then having two delete statements changes the semantics of the inteneded SQL statement.
+   * Then having two delete statements changes the semantics of the intended SQL statement.
    * I.e. 'delete from T where a not in (5)' and 'delete from T where a not in (6)' sequence
    * is not equal to 'delete from T where a not in (5, 6)'.)
    * with one or multiple 'IN' or 'NOT IN' clauses with the given input parameters.
@@ -192,7 +207,7 @@ public class TxnUtils {
    * @param queries   OUT: Array of query strings
    * @param prefix    IN:  Part of the query that comes before IN list
    * @param suffix    IN:  Part of the query that comes after IN list
-   * @param inList    IN:  the list with IN list values
+   * @param inValues  IN:  Collection containing IN clause values
    * @param inColumn  IN:  single column name of IN list operator
    * @param addParens IN:  add a pair of parenthesis outside the IN lists
    *                       e.g. "(id in (1,2,3) OR id in (4,5,6))"
@@ -203,17 +218,16 @@ public class TxnUtils {
                                             List<String> queries,
                                             StringBuilder prefix,
                                             StringBuilder suffix,
-                                            List<Long> inList,
+                                            Collection<Long> inValues,
                                             String inColumn,
                                             boolean addParens,
                                             boolean notIn) {
-    List<String> inListStrings = new ArrayList<>(inList.size());
-    for (Long aLong : inList) {
-      inListStrings.add(aLong.toString());
-    }
-    return buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
-        inListStrings, inColumn, addParens, notIn);
+    List<String> inValueStrings = inValues.stream()
+            .map(Object::toString)
+            .collect(Collectors.toList());
 
+    return buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
+            inValueStrings, inColumn, addParens, notIn);
   }
   /**
    * Build a query (or queries if one query is too big but only for the case of 'IN'
@@ -236,21 +250,22 @@ public class TxnUtils {
    * Note that, in this method, "a composite 'IN' clause" is defined as "a list of multiple 'IN'
    * clauses in a query".
    *
-   * @param queries   OUT: Array of query strings
-   * @param prefix    IN:  Part of the query that comes before IN list
-   * @param suffix    IN:  Part of the query that comes after IN list
-   * @param inList    IN:  the list with IN list values
-   * @param inColumn  IN:  single column name of IN list operator
-   * @param addParens IN:  add a pair of parenthesis outside the IN lists
-   *                       e.g. "(id in (1,2,3) OR id in (4,5,6))"
-   * @param notIn     IN:  is this for building a 'NOT IN' composite clause?
-   * @return          OUT: a list of the count of IN list values that are in each of the corresponding queries
+   * @param queries   IN-OUT: Array of query strings
+   * @param prefix    IN:     Part of the query that comes before IN list
+   * @param suffix    IN:     Part of the query that comes after IN list
+   * @param inList    IN:     the list with IN list values
+   * @param inColumn  IN:     single column name of IN list operator
+   * @param addParens IN:     add a pair of parenthesis outside the IN lists
+   *                          e.g. "(id in (1,2,3) OR id in (4,5,6))"
+   * @param notIn     IN:     is this for building a 'NOT IN' composite clause?
+   * @return          OUT:    a list of the count of IN list values that are in each of the corresponding queries
    */
   public static List<Integer> buildQueryWithINClauseStrings(Configuration conf, List<String> queries, StringBuilder prefix,
       StringBuilder suffix, List<String> inList, String inColumn, boolean addParens, boolean notIn) {
     // Get configuration parameters
     int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    int maxParameters = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_PARAMETERS);
 
     // Check parameter set validity as a public method.
     if (inList == null || inList.size() == 0 || maxQueryLength <= 0 || batchSize <= 0) {
@@ -302,7 +317,7 @@ public class TxnUtils {
       // Compute the size of a query when the 'nextValue' is added to the current query.
       int querySize = querySizeExpected(buf.length(), nextValue.length(), suffix.length(), addParens);
 
-      if (querySize > maxQueryLength * 1024) {
+      if ((querySize > maxQueryLength * 1024) || (currentCount >= maxParameters)) {
         // Check an edge case where the DIRECT_SQL_MAX_QUERY_LENGTH does not allow one 'IN' clause with single value.
         if (cursor4queryOfInClauses == 1 && cursor4InClauseElements == 0) {
           throw new IllegalArgumentException("The current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.getVarname() + " is set too small to have one IN clause with single value!");
@@ -337,9 +352,8 @@ public class TxnUtils {
         continue;
       } else if (cursor4InClauseElements >= batchSize-1 && cursor4InClauseElements != 0) {
         // Finish the current 'IN'/'NOT IN' clause and start a new clause.
-        buf.setCharAt(buf.length() - 1, ')'); // replace the "commar".
+        buf.setCharAt(buf.length() - 1, ')'); // replace the "comma".
         buf.append(newInclausePrefix.toString());
-
         newInclausePrefixJustAppended = true;
 
         // increment cursor for per-query IN-clause list
@@ -389,5 +403,96 @@ public class TxnUtils {
     }
 
     return size;
+  }
+
+  /**
+   * Get database specific function which returns the milliseconds value after the epoch.
+   * @param dbProduct The type of the db which is used
+   * @throws MetaException For unknown database type.
+   */
+  public static String getEpochFn(DatabaseProduct dbProduct) throws MetaException {
+    return dbProduct.getMillisAfterEpochFn();
+  }
+
+  /**
+   * Calls queries in batch, but does not return affected row numbers. Same as executeQueriesInBatch,
+   * with the only difference when the db is Oracle. In this case it is called as an anonymous stored
+   * procedure instead of batching, since batching is not optimized. See:
+   * https://docs.oracle.com/cd/E11882_01/java.112/e16548/oraperf.htm#JJDBC28752
+   * @param dbProduct The type of the db which is used
+   * @param stmt Statement which will be used for batching and execution.
+   * @param queries List of sql queries to execute in a Statement batch.
+   * @param batchSize maximum number of queries in a single batch
+   * @throws SQLException Thrown if an execution error occurs.
+   */
+  public static void executeQueriesInBatchNoCount(DatabaseProduct dbProduct, Statement stmt, List<String> queries, int batchSize) throws SQLException {
+    if (dbProduct.isORACLE()) {
+      int queryCounter = 0;
+      StringBuilder sb = new StringBuilder();
+      sb.append("begin ");
+      for (String query : queries) {
+        LOG.debug("Adding query to batch: <" + query + ">");
+        queryCounter++;
+        sb.append(query).append(";");
+        if (queryCounter % batchSize == 0) {
+          sb.append("end;");
+          String batch = sb.toString();
+          LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+          stmt.execute(batch);
+          sb.setLength(0);
+          sb.append("begin ");
+        }
+      }
+      if (queryCounter % batchSize != 0) {
+        sb.append("end;");
+        String batch = sb.toString();
+        LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+        stmt.execute(batch);
+      }
+    } else {
+      executeQueriesInBatch(stmt, queries, batchSize);
+    }
+  }
+
+  /**
+   * @param stmt Statement which will be used for batching and execution.
+   * @param queries List of sql queries to execute in a Statement batch.
+   * @param batchSize maximum number of queries in a single batch
+   * @return A list with the number of rows affected by each query in queries.
+   * @throws SQLException Thrown if an execution error occurs.
+   */
+  public static List<Integer> executeQueriesInBatch(Statement stmt, List<String> queries, int batchSize) throws SQLException {
+    List<Integer> affectedRowsByQuery = new ArrayList<>();
+    int queryCounter = 0;
+    for (String query : queries) {
+      LOG.debug("Adding query to batch: <" + query + ">");
+      queryCounter++;
+      stmt.addBatch(query);
+      if (queryCounter % batchSize == 0) {
+        LOG.debug("Going to execute queries in batch. Batch size: " + batchSize);
+        int[] affectedRecordsByQuery = stmt.executeBatch();
+        Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
+      }
+    }
+    if (queryCounter % batchSize != 0) {
+      LOG.debug("Going to execute queries in batch. Batch size: " + queryCounter % batchSize);
+      int[] affectedRecordsByQuery = stmt.executeBatch();
+      Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
+    }
+    return affectedRowsByQuery;
+  }
+
+  /**
+   * Restarts the txnId sequence with the given seed value.
+   * It is the responsibility of the caller to not set the sequence backward.
+   * @param conn database connection
+   * @param stmt sql statement
+   * @param seedTxnId the seed value for the sequence
+   * @throws SQLException ex
+   */
+  public static void seedTxnSequence(Connection conn, Configuration conf, Statement stmt, long seedTxnId) throws SQLException {
+    String dbProduct = conn.getMetaData().getDatabaseProductName();
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
+    stmt.execute(databaseProduct.getTxnSeedFn(seedTxnId));
   }
 }

@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import com.jolbox.bonecp.BoneCPDataSource;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.commons.dbcp.PoolingDataSource;
+
+import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -55,57 +55,18 @@ public class TestDataSourceProviderFactory {
   }
 
   @Test
-  public void testCreateBoneCpDataSource() throws SQLException {
+  public void testSetHikariCpLeakDetectionThresholdProperty() throws SQLException {
 
-    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
-
-    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-    Assert.assertNotNull(dsp);
-
-    DataSource ds = dsp.create(conf);
-    Assert.assertTrue(ds instanceof BoneCPDataSource);
-  }
-
-  @Test
-  public void testSetBoneCpStringProperty() throws SQLException {
-
-    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
-    conf.set(BoneCPDataSourceProvider.BONECP + ".initSQL", "select 1 from dual");
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".leakDetectionThreshold", "3600");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
 
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
-    Assert.assertTrue(ds instanceof BoneCPDataSource);
-    Assert.assertEquals("select 1 from dual", ((BoneCPDataSource)ds).getInitSQL());
-  }
-
-  @Test
-  public void testSetBoneCpNumberProperty() throws SQLException {
-
-    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
-    conf.set(BoneCPDataSourceProvider.BONECP + ".acquireRetryDelayInMs", "599");
-
-    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-    Assert.assertNotNull(dsp);
-
-    DataSource ds = dsp.create(conf);
-    Assert.assertTrue(ds instanceof BoneCPDataSource);
-    Assert.assertEquals(599L, ((BoneCPDataSource)ds).getAcquireRetryDelayInMs());
-  }
-
-  @Test
-  public void testSetBoneCpBooleanProperty() throws SQLException {
-
-    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
-    conf.set(BoneCPDataSourceProvider.BONECP + ".disableJMX", "true");
-
-    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-    Assert.assertNotNull(dsp);
-
-    DataSource ds = dsp.create(conf);
-    Assert.assertTrue(ds instanceof BoneCPDataSource);
-    Assert.assertEquals(true, ((BoneCPDataSource)ds).isDisableJMX());
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertEquals(3600L, ((HikariDataSource)ds).getLeakDetectionThreshold());
   }
 
   @Test

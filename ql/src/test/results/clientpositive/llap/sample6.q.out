@@ -1,0 +1,3296 @@
+PREHOOK: query: CREATE TABLE dest1_n27(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n27
+POSTHOOK: query: CREATE TABLE dest1_n27(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n27
+PREHOOK: query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@dest1_n27
+POSTHOOK: query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@dest1_n27
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 4) = 0) (type: boolean)
+                    sampleDesc: BUCKET 1 OUT OF 4
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        bucketingVersion: 2
+                        compressed: false
+                        GlobalTableId: 1
+#### A masked pattern was here ####
+                        NumFilesPerFileSink: 1
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            properties:
+                              bucketing_version 2
+                              column.name.delimiter ,
+                              columns key,value
+                              columns.comments 
+                              columns.types int:string
+#### A masked pattern was here ####
+                              name default.dest1_n27
+                              serialization.format 1
+                              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.dest1_n27
+                        TotalFiles: 1
+                        GatherStats: true
+                        MultiFileSpray: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string)
+                        outputColumnNames: key, value
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            bucketingVersion: 2
+                            null sort order: 
+                            numBuckets: -1
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                            tag: -1
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+                            auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket
+                  name: default.srcbucket
+            Truncated Path -> Alias:
+              /srcbucket [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11
+                          columns.types string:bigint:bigint:bigint:bigint:binary:string:bigint:double:bigint:bigint:binary
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.dest1_n27
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n27
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+#### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.dest1_n27
+          Is Table Level Stats: true
+
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@dest1_n27
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@dest1_n27
+POSTHOOK: Lineage: dest1_n27.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n27.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT dest1_n27.* FROM dest1_n27
+order by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n27
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1_n27.* FROM dest1_n27
+order by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n27
+#### A masked pattern was here ####
+2	val_2
+2	val_3
+6	val_7
+6	val_7
+10	val_10
+10	val_11
+17	val_17
+21	val_22
+21	val_22
+21	val_22
+21	val_22
+27	val_27
+30	val_30
+30	val_31
+31	val_32
+40	val_41
+40	val_41
+51	val_51
+51	val_51
+51	val_52
+57	val_57
+58	val_58
+58	val_58
+58	val_59
+58	val_59
+64	val_64
+65	val_65
+65	val_66
+65	val_66
+70	val_70
+70	val_70
+70	val_70
+70	val_71
+80	val_80
+80	val_81
+83	val_83
+83	val_83
+86	val_86
+86	val_87
+90	val_90
+90	val_90
+90	val_90
+91	val_92
+98	val_98
+98	val_98
+105	val_105
+105	val_106
+105	val_106
+110	val_111
+113	val_113
+113	val_113
+116	val_116
+116	val_117
+117	val_118
+117	val_118
+119	val_119
+119	val_119
+119	val_119
+119	val_120
+119	val_120
+119	val_120
+121	val_122
+121	val_122
+123	val_124
+123	val_124
+126	val_126
+126	val_127
+126	val_127
+134	val_134
+134	val_134
+134	val_135
+137	val_137
+137	val_137
+137	val_138
+153	val_153
+153	val_154
+153	val_154
+156	val_156
+156	val_157
+156	val_157
+157	val_157
+157	val_158
+157	val_158
+158	val_158
+163	val_163
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+177	val_177
+177	val_178
+177	val_178
+178	val_178
+178	val_179
+178	val_179
+184	val_185
+187	val_187
+187	val_187
+187	val_187
+195	val_195
+195	val_195
+197	val_197
+197	val_197
+197	val_198
+206	val_207
+206	val_207
+206	val_207
+208	val_208
+208	val_208
+208	val_208
+221	val_221
+221	val_221
+229	val_229
+229	val_229
+237	val_237
+237	val_237
+243	val_244
+243	val_244
+244	val_244
+244	val_245
+244	val_245
+244	val_245
+249	val_249
+249	val_250
+249	val_250
+252	val_252
+252	val_253
+254	val_255
+256	val_256
+256	val_256
+256	val_257
+266	val_266
+271	val_272
+272	val_272
+272	val_272
+272	val_273
+286	val_286
+286	val_287
+289	val_289
+289	val_290
+292	val_292
+292	val_293
+292	val_293
+304	val_305
+307	val_307
+307	val_307
+308	val_308
+308	val_309
+308	val_309
+315	val_315
+316	val_316
+316	val_316
+316	val_316
+317	val_317
+317	val_317
+317	val_318
+326	val_327
+327	val_327
+327	val_327
+327	val_327
+334	val_335
+336	val_336
+336	val_337
+338	val_338
+338	val_339
+339	val_339
+342	val_342
+342	val_342
+342	val_343
+344	val_344
+344	val_344
+344	val_345
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_349
+349	val_350
+349	val_350
+349	val_350
+349	val_350
+352	val_353
+352	val_353
+353	val_353
+353	val_353
+353	val_354
+355	val_356
+355	val_356
+360	val_360
+360	val_361
+362	val_362
+364	val_364
+364	val_365
+369	val_369
+369	val_369
+369	val_369
+369	val_370
+371	val_372
+371	val_372
+371	val_372
+371	val_372
+377	val_377
+378	val_378
+378	val_379
+391	val_392
+391	val_392
+392	val_392
+392	val_393
+392	val_393
+396	val_396
+396	val_396
+396	val_396
+399	val_399
+399	val_399
+399	val_400
+399	val_400
+402	val_402
+402	val_403
+402	val_403
+402	val_403
+404	val_404
+404	val_404
+404	val_405
+404	val_405
+404	val_405
+407	val_407
+407	val_408
+407	val_408
+407	val_408
+408	val_409
+408	val_409
+410	val_411
+417	val_417
+417	val_417
+417	val_417
+419	val_419
+423	val_424
+426	val_427
+427	val_427
+427	val_428
+427	val_428
+440	val_441
+440	val_441
+449	val_449
+452	val_452
+458	val_458
+458	val_458
+463	val_463
+463	val_463
+463	val_464
+466	val_466
+466	val_466
+466	val_466
+472	val_472
+476	val_477
+476	val_477
+478	val_478
+478	val_478
+478	val_479
+478	val_479
+479	val_479
+482	val_482
+482	val_483
+484	val_484
+484	val_485
+497	val_497
+497	val_498
+497	val_498
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 4) = 3) (type: boolean)
+                    sampleDesc: BUCKET 4 OUT OF 4
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket
+                  name: default.srcbucket
+            Truncated Path -> Alias:
+              /srcbucket [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+5	val_5
+5	val_5
+5	val_5
+5	val_6
+12	val_12
+12	val_12
+12	val_13
+15	val_15
+15	val_15
+15	val_16
+15	val_16
+16	val_17
+16	val_17
+22	val_23
+23	val_24
+24	val_24
+24	val_24
+28	val_28
+33	val_33
+33	val_34
+35	val_35
+35	val_35
+35	val_35
+35	val_36
+35	val_36
+35	val_36
+42	val_42
+42	val_42
+42	val_43
+42	val_43
+42	val_43
+44	val_44
+47	val_47
+47	val_48
+49	val_50
+49	val_50
+50	val_51
+52	val_53
+52	val_53
+52	val_53
+52	val_53
+53	val_53
+53	val_54
+56	val_57
+63	val_64
+75	val_76
+76	val_76
+76	val_76
+76	val_77
+76	val_77
+76	val_77
+87	val_87
+87	val_88
+87	val_88
+94	val_95
+95	val_95
+95	val_95
+104	val_104
+104	val_104
+104	val_105
+104	val_105
+104	val_105
+111	val_111
+114	val_114
+114	val_115
+114	val_115
+114	val_115
+125	val_125
+125	val_125
+125	val_126
+129	val_129
+129	val_129
+129	val_130
+129	val_130
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_139
+138	val_139
+145	val_145
+147	val_148
+147	val_148
+151	val_152
+151	val_152
+161	val_162
+161	val_162
+161	val_162
+161	val_162
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+167	val_168
+168	val_168
+168	val_169
+170	val_170
+170	val_171
+172	val_172
+172	val_172
+172	val_173
+180	val_180
+192	val_192
+192	val_193
+193	val_193
+193	val_193
+193	val_193
+196	val_196
+196	val_197
+196	val_197
+196	val_197
+203	val_203
+203	val_203
+207	val_207
+207	val_207
+209	val_209
+209	val_209
+209	val_210
+209	val_210
+213	val_213
+213	val_213
+213	val_214
+219	val_219
+219	val_219
+224	val_224
+224	val_224
+224	val_225
+227	val_228
+241	val_241
+241	val_242
+241	val_242
+241	val_242
+241	val_242
+242	val_242
+242	val_242
+242	val_243
+245	val_246
+245	val_246
+257	val_257
+257	val_258
+257	val_258
+258	val_258
+258	val_259
+259	val_260
+259	val_260
+263	val_263
+265	val_265
+265	val_265
+265	val_266
+267	val_268
+268	val_269
+273	val_273
+273	val_273
+273	val_273
+273	val_274
+274	val_274
+274	val_275
+278	val_278
+278	val_278
+278	val_279
+281	val_281
+281	val_281
+281	val_282
+281	val_282
+281	val_282
+283	val_283
+293	val_294
+293	val_294
+300	val_301
+300	val_301
+303	val_304
+303	val_304
+318	val_318
+318	val_318
+318	val_318
+318	val_319
+322	val_322
+322	val_322
+322	val_323
+330	val_331
+331	val_331
+331	val_331
+331	val_332
+331	val_332
+335	val_335
+335	val_336
+335	val_336
+356	val_356
+356	val_357
+356	val_357
+358	val_359
+367	val_367
+367	val_367
+367	val_368
+367	val_368
+373	val_373
+373	val_374
+379	val_379
+379	val_380
+381	val_382
+382	val_382
+382	val_382
+382	val_383
+382	val_383
+385	val_386
+385	val_386
+390	val_391
+390	val_391
+390	val_391
+395	val_395
+395	val_395
+395	val_396
+395	val_396
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_402
+403	val_403
+403	val_403
+403	val_403
+405	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_407
+412	val_413
+412	val_413
+415	val_416
+416	val_417
+418	val_418
+429	val_429
+429	val_429
+429	val_430
+429	val_430
+431	val_431
+431	val_431
+431	val_431
+431	val_432
+436	val_436
+436	val_437
+441	val_442
+447	val_448
+448	val_448
+448	val_449
+468	val_468
+468	val_468
+468	val_468
+468	val_468
+468	val_469
+468	val_469
+468	val_469
+470	val_470
+470	val_471
+475	val_475
+475	val_476
+481	val_481
+481	val_482
+489	val_489
+489	val_489
+489	val_489
+489	val_489
+489	val_490
+492	val_492
+492	val_492
+492	val_493
+492	val_493
+494	val_494
+494	val_495
+494	val_495
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 2) = 0) (type: boolean)
+                    sampleDesc: BUCKET 1 OUT OF 2
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket
+                  name: default.srcbucket
+            Truncated Path -> Alias:
+              /srcbucket [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+2	val_2
+2	val_3
+3	val_4
+6	val_7
+6	val_7
+10	val_10
+10	val_11
+17	val_17
+19	val_19
+19	val_20
+20	val_20
+20	val_21
+20	val_21
+21	val_22
+21	val_22
+21	val_22
+21	val_22
+27	val_27
+29	val_30
+29	val_30
+30	val_30
+30	val_31
+31	val_32
+40	val_41
+40	val_41
+41	val_41
+43	val_43
+46	val_47
+48	val_49
+48	val_49
+51	val_51
+51	val_51
+51	val_52
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+58	val_59
+58	val_59
+59	val_60
+60	val_61
+61	val_62
+64	val_64
+65	val_65
+65	val_66
+65	val_66
+67	val_67
+67	val_67
+68	val_69
+69	val_69
+69	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_71
+77	val_77
+77	val_78
+77	val_78
+80	val_80
+80	val_81
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+85	val_86
+86	val_86
+86	val_87
+89	val_90
+89	val_90
+89	val_90
+90	val_90
+90	val_90
+90	val_90
+91	val_92
+93	val_94
+93	val_94
+93	val_94
+96	val_96
+97	val_97
+97	val_97
+97	val_98
+97	val_98
+98	val_98
+98	val_98
+99	val_100
+101	val_102
+105	val_105
+105	val_106
+105	val_106
+106	val_107
+110	val_111
+113	val_113
+113	val_113
+116	val_116
+116	val_117
+117	val_118
+117	val_118
+119	val_119
+119	val_119
+119	val_119
+119	val_120
+119	val_120
+119	val_120
+121	val_122
+121	val_122
+123	val_124
+123	val_124
+126	val_126
+126	val_127
+126	val_127
+132	val_133
+132	val_133
+133	val_133
+133	val_134
+134	val_134
+134	val_134
+134	val_135
+135	val_136
+135	val_136
+135	val_136
+137	val_137
+137	val_137
+137	val_138
+140	val_141
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+149	val_150
+153	val_153
+153	val_154
+153	val_154
+156	val_156
+156	val_157
+156	val_157
+157	val_157
+157	val_158
+157	val_158
+158	val_158
+162	val_162
+162	val_163
+163	val_163
+164	val_164
+164	val_164
+164	val_165
+164	val_165
+165	val_165
+165	val_165
+165	val_166
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+177	val_177
+177	val_178
+177	val_178
+178	val_178
+178	val_179
+178	val_179
+181	val_181
+182	val_183
+184	val_185
+185	val_186
+187	val_187
+187	val_187
+187	val_187
+190	val_190
+191	val_191
+191	val_191
+191	val_192
+195	val_195
+195	val_195
+197	val_197
+197	val_197
+197	val_198
+199	val_199
+199	val_199
+199	val_199
+199	val_200
+201	val_201
+202	val_202
+206	val_207
+206	val_207
+206	val_207
+208	val_208
+208	val_208
+208	val_208
+212	val_213
+214	val_214
+215	val_216
+216	val_216
+216	val_216
+216	val_217
+221	val_221
+221	val_221
+226	val_226
+226	val_227
+226	val_227
+226	val_227
+226	val_227
+229	val_229
+229	val_229
+231	val_232
+233	val_233
+233	val_233
+237	val_237
+237	val_237
+238	val_238
+238	val_238
+238	val_239
+239	val_239
+239	val_239
+239	val_240
+239	val_240
+240	val_241
+243	val_244
+243	val_244
+244	val_244
+244	val_245
+244	val_245
+244	val_245
+248	val_248
+248	val_249
+249	val_249
+249	val_250
+249	val_250
+252	val_252
+252	val_253
+254	val_255
+255	val_255
+255	val_255
+256	val_256
+256	val_256
+256	val_257
+260	val_260
+260	val_261
+260	val_261
+261	val_262
+266	val_266
+271	val_272
+272	val_272
+272	val_272
+272	val_273
+276	val_277
+284	val_284
+284	val_285
+284	val_285
+286	val_286
+286	val_287
+287	val_287
+287	val_288
+287	val_288
+289	val_289
+289	val_290
+291	val_291
+291	val_292
+291	val_292
+292	val_292
+292	val_293
+292	val_293
+304	val_305
+307	val_307
+307	val_307
+308	val_308
+308	val_309
+308	val_309
+310	val_310
+310	val_311
+310	val_311
+310	val_311
+311	val_311
+311	val_311
+311	val_311
+313	val_314
+315	val_315
+316	val_316
+316	val_316
+316	val_316
+317	val_317
+317	val_317
+317	val_318
+324	val_325
+325	val_325
+325	val_325
+326	val_327
+327	val_327
+327	val_327
+327	val_327
+332	val_332
+334	val_335
+336	val_336
+336	val_337
+337	val_338
+338	val_338
+338	val_339
+339	val_339
+341	val_341
+341	val_342
+341	val_342
+341	val_342
+342	val_342
+342	val_342
+342	val_343
+343	val_344
+344	val_344
+344	val_344
+344	val_345
+347	val_348
+347	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_349
+349	val_350
+349	val_350
+349	val_350
+349	val_350
+351	val_351
+351	val_352
+351	val_352
+352	val_353
+352	val_353
+353	val_353
+353	val_353
+353	val_354
+355	val_356
+355	val_356
+360	val_360
+360	val_361
+362	val_362
+364	val_364
+364	val_365
+365	val_365
+368	val_368
+369	val_369
+369	val_369
+369	val_369
+369	val_370
+371	val_372
+371	val_372
+371	val_372
+371	val_372
+377	val_377
+378	val_378
+378	val_379
+384	val_384
+384	val_384
+384	val_384
+384	val_385
+384	val_385
+384	val_385
+386	val_386
+386	val_387
+386	val_387
+388	val_389
+391	val_392
+391	val_392
+392	val_392
+392	val_393
+392	val_393
+393	val_393
+393	val_394
+393	val_394
+394	val_394
+396	val_396
+396	val_396
+396	val_396
+397	val_397
+397	val_397
+399	val_399
+399	val_399
+399	val_400
+399	val_400
+402	val_402
+402	val_403
+402	val_403
+402	val_403
+404	val_404
+404	val_404
+404	val_405
+404	val_405
+404	val_405
+407	val_407
+407	val_408
+407	val_408
+407	val_408
+408	val_409
+408	val_409
+409	val_409
+409	val_409
+409	val_409
+409	val_410
+409	val_410
+410	val_411
+411	val_411
+411	val_412
+414	val_414
+414	val_414
+414	val_415
+417	val_417
+417	val_417
+417	val_417
+419	val_419
+421	val_421
+421	val_422
+421	val_422
+423	val_424
+425	val_426
+426	val_427
+427	val_427
+427	val_428
+427	val_428
+428	val_429
+430	val_430
+430	val_430
+430	val_430
+430	val_431
+432	val_432
+432	val_433
+435	val_435
+435	val_436
+437	val_437
+437	val_438
+440	val_441
+440	val_441
+443	val_443
+443	val_444
+443	val_444
+443	val_444
+444	val_444
+446	val_446
+446	val_447
+446	val_447
+449	val_449
+452	val_452
+453	val_453
+453	val_454
+454	val_454
+454	val_454
+454	val_454
+454	val_455
+454	val_455
+458	val_458
+458	val_458
+459	val_459
+459	val_459
+459	val_460
+463	val_463
+463	val_463
+463	val_464
+466	val_466
+466	val_466
+466	val_466
+467	val_467
+467	val_468
+472	val_472
+473	val_474
+474	val_475
+474	val_475
+476	val_477
+476	val_477
+478	val_478
+478	val_478
+478	val_479
+478	val_479
+479	val_479
+480	val_480
+480	val_480
+480	val_480
+480	val_481
+480	val_481
+482	val_482
+482	val_483
+483	val_483
+484	val_484
+484	val_485
+485	val_485
+485	val_486
+485	val_486
+488	val_489
+490	val_490
+490	val_491
+491	val_491
+491	val_492
+491	val_492
+495	val_495
+495	val_496
+497	val_497
+497	val_498
+497	val_498
+498	val_498
+498	val_498
+498	val_498
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 3) = 0) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket
+                  name: default.srcbucket
+            Truncated Path -> Alias:
+              /srcbucket [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+9	val_9
+16	val_17
+16	val_17
+18	val_18
+18	val_18
+19	val_19
+19	val_20
+20	val_20
+20	val_21
+20	val_21
+21	val_22
+21	val_22
+21	val_22
+21	val_22
+24	val_24
+24	val_24
+27	val_27
+29	val_30
+29	val_30
+30	val_30
+30	val_31
+31	val_32
+32	val_33
+40	val_41
+40	val_41
+41	val_41
+43	val_43
+44	val_44
+47	val_47
+47	val_48
+49	val_50
+49	val_50
+50	val_51
+54	val_54
+61	val_62
+64	val_64
+67	val_67
+67	val_67
+70	val_70
+70	val_70
+70	val_70
+70	val_71
+71	val_72
+74	val_74
+75	val_76
+76	val_76
+76	val_76
+76	val_77
+76	val_77
+76	val_77
+77	val_77
+77	val_78
+77	val_78
+82	val_82
+82	val_83
+82	val_83
+85	val_85
+85	val_86
+87	val_87
+87	val_88
+87	val_88
+89	val_90
+89	val_90
+89	val_90
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+105	val_105
+105	val_106
+105	val_106
+114	val_114
+114	val_115
+114	val_115
+114	val_115
+116	val_116
+116	val_117
+117	val_118
+117	val_118
+118	val_118
+118	val_118
+118	val_119
+118	val_119
+118	val_119
+120	val_120
+120	val_120
+120	val_121
+122	val_123
+122	val_123
+122	val_123
+134	val_134
+134	val_134
+134	val_135
+135	val_136
+135	val_136
+135	val_136
+143	val_143
+143	val_144
+144	val_145
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+149	val_150
+157	val_157
+157	val_158
+157	val_158
+158	val_158
+161	val_162
+161	val_162
+161	val_162
+161	val_162
+165	val_165
+165	val_165
+165	val_166
+166	val_166
+168	val_168
+168	val_169
+170	val_170
+170	val_171
+179	val_179
+179	val_179
+179	val_180
+180	val_180
+181	val_181
+183	val_183
+183	val_184
+192	val_192
+192	val_193
+193	val_193
+193	val_193
+193	val_193
+195	val_195
+195	val_195
+197	val_197
+197	val_197
+197	val_198
+203	val_203
+203	val_203
+204	val_205
+209	val_209
+209	val_209
+209	val_210
+209	val_210
+214	val_214
+222	val_222
+222	val_223
+226	val_226
+226	val_227
+226	val_227
+226	val_227
+226	val_227
+228	val_228
+228	val_229
+235	val_235
+235	val_236
+238	val_238
+238	val_238
+238	val_239
+241	val_241
+241	val_242
+241	val_242
+241	val_242
+241	val_242
+242	val_242
+242	val_242
+242	val_243
+245	val_246
+245	val_246
+254	val_255
+256	val_256
+256	val_256
+256	val_257
+261	val_262
+262	val_262
+262	val_263
+262	val_263
+266	val_266
+268	val_269
+271	val_272
+273	val_273
+273	val_273
+273	val_273
+273	val_274
+276	val_277
+278	val_278
+278	val_278
+278	val_279
+280	val_280
+280	val_280
+284	val_284
+284	val_285
+284	val_285
+285	val_285
+285	val_286
+286	val_286
+286	val_287
+287	val_287
+287	val_288
+287	val_288
+288	val_288
+288	val_288
+292	val_292
+292	val_293
+292	val_293
+293	val_294
+293	val_294
+295	val_296
+295	val_296
+298	val_298
+298	val_298
+298	val_298
+300	val_301
+300	val_301
+306	val_306
+306	val_307
+308	val_308
+308	val_309
+308	val_309
+309	val_309
+309	val_309
+309	val_310
+316	val_316
+316	val_316
+316	val_316
+318	val_318
+318	val_318
+318	val_318
+318	val_319
+323	val_323
+323	val_324
+325	val_325
+325	val_325
+326	val_327
+331	val_331
+331	val_331
+331	val_332
+331	val_332
+332	val_332
+341	val_341
+341	val_342
+341	val_342
+341	val_342
+343	val_344
+344	val_344
+344	val_344
+344	val_345
+347	val_348
+347	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_349
+364	val_364
+364	val_365
+366	val_366
+369	val_369
+369	val_369
+369	val_369
+369	val_370
+373	val_373
+373	val_374
+374	val_374
+374	val_375
+379	val_379
+379	val_380
+384	val_384
+384	val_384
+384	val_384
+384	val_385
+384	val_385
+384	val_385
+391	val_392
+391	val_392
+392	val_392
+392	val_393
+392	val_393
+395	val_395
+395	val_395
+395	val_396
+395	val_396
+397	val_397
+397	val_397
+399	val_399
+399	val_399
+399	val_400
+399	val_400
+407	val_407
+407	val_408
+407	val_408
+407	val_408
+409	val_409
+409	val_409
+409	val_409
+409	val_410
+409	val_410
+410	val_411
+414	val_414
+414	val_414
+414	val_415
+415	val_416
+417	val_417
+417	val_417
+417	val_417
+423	val_424
+426	val_427
+430	val_430
+430	val_430
+430	val_430
+430	val_431
+435	val_435
+435	val_436
+438	val_438
+438	val_438
+438	val_438
+438	val_439
+438	val_439
+439	val_439
+439	val_439
+439	val_440
+439	val_440
+440	val_441
+440	val_441
+443	val_443
+443	val_444
+443	val_444
+443	val_444
+444	val_444
+447	val_448
+448	val_448
+448	val_449
+452	val_452
+459	val_459
+459	val_459
+459	val_460
+468	val_468
+468	val_468
+468	val_468
+468	val_468
+468	val_469
+468	val_469
+468	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_470
+470	val_470
+470	val_471
+472	val_472
+478	val_478
+478	val_478
+478	val_479
+478	val_479
+480	val_480
+480	val_480
+480	val_480
+480	val_481
+480	val_481
+485	val_485
+485	val_486
+485	val_486
+491	val_491
+491	val_492
+491	val_492
+492	val_492
+492	val_492
+492	val_493
+492	val_493
+495	val_495
+495	val_496
+497	val_497
+497	val_498
+497	val_498
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 3) = 1) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket
+                  name: default.srcbucket
+            Truncated Path -> Alias:
+              /srcbucket [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_1
+0	val_1
+1	val_2
+5	val_5
+5	val_5
+5	val_5
+5	val_6
+8	val_8
+8	val_9
+10	val_10
+10	val_11
+15	val_15
+15	val_15
+15	val_16
+15	val_16
+17	val_17
+26	val_26
+26	val_26
+33	val_33
+33	val_34
+34	val_34
+37	val_37
+37	val_37
+42	val_42
+42	val_42
+42	val_43
+42	val_43
+42	val_43
+52	val_53
+52	val_53
+52	val_53
+52	val_53
+53	val_53
+53	val_54
+56	val_57
+58	val_58
+58	val_58
+58	val_59
+58	val_59
+59	val_60
+60	val_61
+65	val_65
+65	val_66
+65	val_66
+66	val_66
+69	val_69
+69	val_70
+72	val_72
+72	val_72
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+91	val_92
+94	val_95
+97	val_97
+97	val_97
+97	val_98
+97	val_98
+99	val_100
+101	val_102
+102	val_103
+104	val_104
+104	val_104
+104	val_105
+104	val_105
+104	val_105
+106	val_107
+110	val_111
+113	val_113
+113	val_113
+121	val_122
+121	val_122
+123	val_124
+123	val_124
+126	val_126
+126	val_127
+126	val_127
+128	val_128
+128	val_128
+128	val_128
+128	val_129
+128	val_129
+132	val_133
+132	val_133
+133	val_133
+133	val_134
+137	val_137
+137	val_137
+137	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_139
+138	val_139
+150	val_150
+152	val_152
+152	val_152
+152	val_153
+152	val_153
+152	val_153
+153	val_153
+153	val_154
+153	val_154
+160	val_160
+160	val_161
+163	val_163
+164	val_164
+164	val_164
+164	val_165
+164	val_165
+167	val_167
+167	val_167
+167	val_167
+167	val_168
+172	val_172
+172	val_172
+172	val_173
+175	val_175
+175	val_175
+175	val_176
+175	val_176
+176	val_176
+176	val_176
+177	val_177
+177	val_178
+177	val_178
+184	val_185
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+189	val_190
+190	val_190
+194	val_194
+199	val_199
+199	val_199
+199	val_199
+199	val_200
+202	val_202
+212	val_213
+213	val_213
+213	val_213
+213	val_214
+215	val_216
+218	val_218
+219	val_219
+219	val_219
+224	val_224
+224	val_224
+224	val_225
+227	val_228
+229	val_229
+229	val_229
+233	val_233
+233	val_233
+243	val_244
+243	val_244
+246	val_247
+246	val_247
+247	val_247
+249	val_249
+249	val_250
+249	val_250
+252	val_252
+252	val_253
+255	val_255
+255	val_255
+257	val_257
+257	val_258
+257	val_258
+259	val_260
+259	val_260
+260	val_260
+260	val_261
+260	val_261
+267	val_268
+272	val_272
+272	val_272
+272	val_273
+275	val_275
+275	val_276
+275	val_276
+277	val_277
+277	val_277
+277	val_277
+277	val_277
+277	val_278
+277	val_278
+282	val_282
+282	val_282
+289	val_289
+289	val_290
+304	val_305
+310	val_310
+310	val_311
+310	val_311
+310	val_311
+313	val_314
+314	val_315
+315	val_315
+324	val_325
+330	val_331
+333	val_333
+333	val_333
+333	val_334
+340	val_341
+351	val_351
+351	val_352
+351	val_352
+353	val_353
+353	val_353
+353	val_354
+356	val_356
+356	val_357
+356	val_357
+358	val_359
+363	val_364
+363	val_364
+363	val_364
+377	val_377
+378	val_378
+378	val_379
+382	val_382
+382	val_382
+382	val_383
+382	val_383
+385	val_386
+385	val_386
+388	val_389
+393	val_393
+393	val_394
+393	val_394
+396	val_396
+396	val_396
+396	val_396
+402	val_402
+402	val_403
+402	val_403
+402	val_403
+405	val_406
+408	val_409
+408	val_409
+412	val_413
+412	val_413
+413	val_413
+413	val_413
+413	val_414
+416	val_417
+419	val_419
+421	val_421
+421	val_422
+421	val_422
+429	val_429
+429	val_429
+429	val_430
+429	val_430
+432	val_432
+432	val_433
+436	val_436
+436	val_437
+437	val_437
+437	val_438
+441	val_442
+446	val_446
+446	val_447
+446	val_447
+451	val_452
+453	val_453
+453	val_454
+454	val_454
+454	val_454
+454	val_454
+454	val_455
+454	val_455
+457	val_457
+457	val_458
+457	val_458
+458	val_458
+458	val_458
+460	val_460
+461	val_462
+463	val_463
+463	val_463
+463	val_464
+466	val_466
+466	val_466
+466	val_466
+474	val_475
+474	val_475
+475	val_475
+475	val_476
+476	val_477
+476	val_477
+477	val_477
+477	val_478
+481	val_481
+481	val_482
+482	val_482
+482	val_483
+483	val_483
+484	val_484
+484	val_485
+486	val_487
+487	val_487
+487	val_488
+489	val_489
+489	val_489
+489	val_489
+489	val_489
+489	val_490
+490	val_490
+490	val_491
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 2) = 0) (type: boolean)
+                    sampleDesc: BUCKET 1 OUT OF 2
+                    Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket2
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 4
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket2
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 4
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket2
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket2
+                  name: default.srcbucket2
+            Truncated Path -> Alias:
+              /srcbucket2 [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+2	val_2
+10	val_10
+17	val_17
+19	val_19
+20	val_20
+27	val_27
+30	val_30
+41	val_41
+43	val_43
+51	val_51
+51	val_51
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+64	val_64
+65	val_65
+67	val_67
+67	val_67
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+77	val_77
+80	val_80
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+90	val_90
+90	val_90
+90	val_90
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+105	val_105
+113	val_113
+113	val_113
+116	val_116
+119	val_119
+119	val_119
+119	val_119
+126	val_126
+133	val_133
+134	val_134
+134	val_134
+137	val_137
+137	val_137
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+153	val_153
+156	val_156
+157	val_157
+158	val_158
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+177	val_177
+178	val_178
+181	val_181
+187	val_187
+187	val_187
+187	val_187
+190	val_190
+191	val_191
+191	val_191
+195	val_195
+195	val_195
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+201	val_201
+202	val_202
+208	val_208
+208	val_208
+208	val_208
+214	val_214
+216	val_216
+216	val_216
+221	val_221
+221	val_221
+226	val_226
+229	val_229
+229	val_229
+233	val_233
+233	val_233
+237	val_237
+237	val_237
+238	val_238
+238	val_238
+239	val_239
+239	val_239
+244	val_244
+248	val_248
+249	val_249
+252	val_252
+255	val_255
+255	val_255
+256	val_256
+256	val_256
+260	val_260
+266	val_266
+272	val_272
+272	val_272
+284	val_284
+286	val_286
+287	val_287
+289	val_289
+291	val_291
+292	val_292
+307	val_307
+307	val_307
+308	val_308
+310	val_310
+311	val_311
+311	val_311
+311	val_311
+315	val_315
+316	val_316
+316	val_316
+316	val_316
+317	val_317
+317	val_317
+325	val_325
+325	val_325
+327	val_327
+327	val_327
+327	val_327
+332	val_332
+336	val_336
+338	val_338
+339	val_339
+341	val_341
+342	val_342
+342	val_342
+344	val_344
+344	val_344
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+351	val_351
+353	val_353
+353	val_353
+360	val_360
+362	val_362
+364	val_364
+365	val_365
+368	val_368
+369	val_369
+369	val_369
+369	val_369
+377	val_377
+378	val_378
+384	val_384
+384	val_384
+384	val_384
+386	val_386
+392	val_392
+393	val_393
+394	val_394
+396	val_396
+396	val_396
+396	val_396
+397	val_397
+397	val_397
+399	val_399
+399	val_399
+402	val_402
+404	val_404
+404	val_404
+407	val_407
+409	val_409
+409	val_409
+409	val_409
+411	val_411
+414	val_414
+414	val_414
+417	val_417
+417	val_417
+417	val_417
+419	val_419
+421	val_421
+427	val_427
+430	val_430
+430	val_430
+430	val_430
+432	val_432
+435	val_435
+437	val_437
+443	val_443
+444	val_444
+446	val_446
+449	val_449
+452	val_452
+453	val_453
+454	val_454
+454	val_454
+454	val_454
+458	val_458
+458	val_458
+459	val_459
+459	val_459
+463	val_463
+463	val_463
+466	val_466
+466	val_466
+466	val_466
+467	val_467
+472	val_472
+478	val_478
+478	val_478
+479	val_479
+480	val_480
+480	val_480
+480	val_480
+482	val_482
+483	val_483
+484	val_484
+485	val_485
+490	val_490
+491	val_491
+495	val_495
+497	val_497
+498	val_498
+498	val_498
+498	val_498
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 4) = 1) (type: boolean)
+                    sampleDesc: BUCKET 2 OUT OF 4
+                    Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: srcbucket2
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 4
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket2
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 4
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket2
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket2
+                  name: default.srcbucket2
+            Truncated Path -> Alias:
+              /srcbucket2 [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket2
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+4	val_4
+8	val_8
+9	val_9
+11	val_11
+18	val_18
+18	val_18
+26	val_26
+26	val_26
+34	val_34
+37	val_37
+37	val_37
+66	val_66
+72	val_72
+72	val_72
+74	val_74
+78	val_78
+82	val_82
+92	val_92
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+118	val_118
+118	val_118
+120	val_120
+120	val_120
+128	val_128
+128	val_128
+128	val_128
+131	val_131
+136	val_136
+143	val_143
+150	val_150
+152	val_152
+152	val_152
+155	val_155
+160	val_160
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+179	val_179
+179	val_179
+183	val_183
+186	val_186
+189	val_189
+194	val_194
+200	val_200
+200	val_200
+205	val_205
+205	val_205
+217	val_217
+217	val_217
+218	val_218
+222	val_222
+223	val_223
+223	val_223
+228	val_228
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+235	val_235
+247	val_247
+262	val_262
+275	val_275
+277	val_277
+277	val_277
+277	val_277
+277	val_277
+280	val_280
+280	val_280
+282	val_282
+282	val_282
+285	val_285
+288	val_288
+288	val_288
+296	val_296
+298	val_298
+298	val_298
+298	val_298
+302	val_302
+305	val_305
+306	val_306
+309	val_309
+309	val_309
+321	val_321
+321	val_321
+323	val_323
+333	val_333
+333	val_333
+345	val_345
+366	val_366
+374	val_374
+375	val_375
+389	val_389
+400	val_400
+413	val_413
+413	val_413
+424	val_424
+424	val_424
+438	val_438
+438	val_438
+438	val_438
+439	val_439
+439	val_439
+455	val_455
+457	val_457
+460	val_460
+462	val_462
+462	val_462
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+477	val_477
+487	val_487
+493	val_493
+496	val_496
+PREHOOK: query: CREATE TABLE empty_bucket (key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_bucket
+POSTHOOK: query: CREATE TABLE empty_bucket (key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_bucket
+PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_bucket
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_bucket
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: true
+                    predicate: (((hash(key) & 2147483647) % 2) = 0) (type: boolean)
+                    sampleDesc: BUCKET 1 OUT OF 2
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        numBuckets: -1
+                        sort order: ++
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: empty_bucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.empty_bucket
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.empty_bucket
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.empty_bucket
+                  name: default.empty_bucket
+            Truncated Path -> Alias:
+              /empty_bucket [s]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_bucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
+ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_bucket
+#### A masked pattern was here ####

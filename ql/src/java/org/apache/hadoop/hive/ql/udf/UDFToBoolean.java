@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.ql.udf;
 
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToBoolean;
@@ -50,10 +53,33 @@ import org.apache.hadoop.io.Text;
 @VectorizedExpressions({CastLongToBooleanViaLongToLong.class,
     CastDateToBoolean.class, CastTimestampToBoolean.class, CastStringToBoolean.class,
   CastDoubleToBooleanViaDoubleToLong.class, CastDecimalToBoolean.class, CastStringToLong.class})
+@Description(
+        name = "boolean",
+        value = "_FUNC_(x) - converts it's parameter to _FUNC_",
+        extended =
+                "- x is NULL -> NULL\n" +
+                "- byte, short, integer, long, float, double, decimal:\n" +
+                "  x == 0 -> false\n" +
+                "  x != 0 -> true\n" +
+                "- string:\n" +
+                "  x is '', 'false', 'no', 'zero', 'off' -> false\n" +
+                "  true otherwise\n" +
+                "- date: always NULL\n" +
+                "- timestamp\n" +
+                "  seconds or nanos are 0 -> false\n" +
+                "  true otherwise\n" +
+                "Example:\n "
+                + "  > SELECT _FUNC_(0);\n"
+                + "  false")
 public class UDFToBoolean extends UDF {
   private final BooleanWritable booleanWritable = new BooleanWritable();
 
   public UDFToBoolean() {
+  }
+
+  @Override
+  public UDFMethodResolver getResolver() {
+    return new TimestampCastRestrictorResolver(super.getResolver());
   }
 
   /**
@@ -188,7 +214,8 @@ public class UDFToBoolean extends UDF {
     if (i == null) {
       return null;
     } else {
-      booleanWritable.set(i.getSeconds() != 0 || i.getNanos() != 0);
+      TimestampTZ timestamp = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp());
+      booleanWritable.set((timestamp.getEpochSecond() != 0) || (timestamp.getNanos() != 0));
       return booleanWritable;
     }
   }

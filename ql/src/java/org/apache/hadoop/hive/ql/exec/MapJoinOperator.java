@@ -23,13 +23,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -69,7 +67,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -134,7 +131,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   // Only used in bucket map join.
   private transient int numBuckets = -1;
   private transient int bucketId = -1;
-  private transient ReentrantLock subCacheLock = new ReentrantLock();
 
   /** Kryo ctor. */
   protected MapJoinOperator() {
@@ -233,9 +229,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
        * requires changes in the Tez API with regard to finding bucket id and
        * also ability to schedule tasks to re-use containers that have cached the specific bucket.
        */
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("This is not bucket map join, so cache");
-      }
+      LOG.debug("This is not bucket map join, so cache");
 
       Future<Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>> future =
           cache.retrieveAsync(
@@ -354,10 +348,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
-      AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
-          keyTableDesc.getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
-      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
+      AbstractSerDe keySerDe = (AbstractSerDe) ReflectionUtil.newInstance(
+          keyTableDesc.getSerDeClass(), null);
+      keySerDe.initialize(null, keyTableDesc.getProperties(), null);
+      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerDe, false);
       for (int pos = 0; pos < order.length; pos++) {
         if (pos == posBigTable) {
           continue;
@@ -369,8 +363,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
         }
         AbstractSerDe valueSerDe = (AbstractSerDe) ReflectionUtil.newInstance(
-            valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+            valueTableDesc.getSerDeClass(), null);
+        valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
         MapJoinObjectSerDeContext valueContext =
             new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
         mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);
@@ -383,14 +377,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   // Core logic to load hash table using HashTableLoader
   private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTableInternal(
           ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(mapContext, mrContext, hconf, this);
     try {
       loader.load(mapJoinTables, mapJoinTableSerdes);
     } catch (HiveException e) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers.");
-      }
+      LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers");
 
       // there could be some spilled partitions which needs to be cleaned up
       clearAllTableContainers();
@@ -402,7 +394,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
             new ImmutablePair<> (mapJoinTables, mapJoinTableSerdes);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
 
     if (canSkipJoinProcessing(mapContext)) {
       LOG.info("Skipping big table join processing for " + this.toString());
@@ -585,6 +577,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
       if (joinNeeded) {
         List<Object> value = getFilteredValue(alias, row);
+        addToAliasFilterTags(alias, value, false);
         // Add the value to the ArrayList
         storage[alias].addRow(value);
         // generate the output records
@@ -680,8 +673,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
      */
     NonMatchedSmallTableIterator nonMatchedIterator =
         substituteSmallTable.createNonMatchedSmallTableIterator(matchTracker);
-    int nonMatchedKeyCount = 0;
-    int nonMatchedValueCount = 0;
     while (nonMatchedIterator.isNext()) {
       List<Object> keyObjList = nonMatchedIterator.getCurrentKey();
 
@@ -729,10 +720,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
         // FUTURE: Support residual filters for non-equi joins.
         internalForward(standardCopyRow, outputObjInspector);
-        nonMatchedValueCount++;
       }
-
-      nonMatchedKeyCount++;
     }
   }
 
@@ -839,9 +827,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
-      }
+      LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
 
       // spilled tables are loaded always (no sharing), so clear it
       clearAllTableContainers();
@@ -853,9 +839,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && !(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
             && SparkUtilities.isDedicatedCluster(hconf))) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("MR: Clearing all map join table containers.");
-      }
+      LOG.info("MR: Clearing all map join table containers.");
       clearAllTableContainers();
     }
 
@@ -938,9 +922,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     KeyValueHelper writeHelper = container.getWriteHelper();
     while (kvContainer.hasNext()) {
-      ObjectPair<HiveKey, BytesWritable> pair = kvContainer.next();
-      Writable key = pair.getFirst();
-      Writable val = pair.getSecond();
+      Pair<HiveKey, BytesWritable> pair = kvContainer.next();
+      Writable key = pair.getLeft();
+      Writable val = pair.getRight();
       writeHelper.setKeyValue(key, val);
       restoredHashMap.put(writeHelper, -1);
     }

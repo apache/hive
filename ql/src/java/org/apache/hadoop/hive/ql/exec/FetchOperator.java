@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,14 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,11 +68,11 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.InvalidInputException;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -157,6 +157,8 @@ public class FetchOperator implements Serializable {
     LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
   private void initialize() throws HiveException {
+    ensureCorrectSchemaEvolutionConfigs(job);
+
     if (isStatReader) {
       outputOI = work.getStatRowOI();
       return;
@@ -214,7 +216,6 @@ public class FetchOperator implements Serializable {
    */
   private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
-  @SuppressWarnings("unchecked")
   public static InputFormat getInputFormatFromCache(
       Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
@@ -267,36 +268,6 @@ public class FetchOperator implements Serializable {
     return partValues;
   }
 
-  private boolean getNextPath() throws Exception {
-    while (iterPath.hasNext()) {
-      currPath = iterPath.next();
-      currDesc = iterPartDesc.next();
-      if (isNonNativeTable) {
-        return true;
-      }
-      // if fetch is not being done from table and file sink has provided a list
-      // of files to fetch from then there is no need to query FS to check the existence
-      // of currpath
-      if(!this.getWork().isSourceTable() && this.getWork().getFilesToFetch() != null
-          && !this.getWork().getFilesToFetch().isEmpty()) {
-        return true;
-      }
-      FileSystem fs = currPath.getFileSystem(job);
-      if (fs.exists(currPath)) {
-        if (extractValidWriteIdList() != null &&
-            AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
-          return true;
-        }
-        for (FileStatus fStat : listStatusUnderPath(fs, currPath)) {
-          if (fStat.getLen() > 0) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
   /**
    * Set context for this fetch operator in to the jobconf.
    * This helps InputFormats make decisions based on the scope of the complete
@@ -317,9 +288,22 @@ public class FetchOperator implements Serializable {
     }
   }
 
+  private void ensureCorrectSchemaEvolutionConfigs(JobConf conf) {
+    boolean isSchemaEvolution = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
+    boolean isForcePositionalEvolution =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION);
+
+    if (!isSchemaEvolution && isForcePositionalEvolution) {
+      LOG.warn(
+          "invalid schema evolution ({}) and force positional evolution ({}) pair, falling back to disabling both",
+          isSchemaEvolution, isForcePositionalEvolution);
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION, false);
+    }
+  }
+
   private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
     if (!iterSplits.hasNext()) {
-      FetchInputFormatSplit[] splits = getNextSplits();
+      List<FetchInputFormatSplit> splits = getNextSplits();
       if (splits == null) {
         return null;
       }
@@ -335,7 +319,7 @@ public class FetchOperator implements Serializable {
       if (isPartitioned) {
         row[1] = createPartValue(currDesc, partKeyOI);
       }
-      iterSplits = Arrays.asList(splits).iterator();
+      iterSplits = splits.iterator();
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating fetchTask with deserializer typeinfo: "
@@ -348,7 +332,6 @@ public class FetchOperator implements Serializable {
 
     final FetchInputFormatSplit target = iterSplits.next();
 
-    @SuppressWarnings("unchecked")
     final RecordReader<WritableComparable, Writable> reader = target.getRecordReader(job);
     if (hasVC || work.getSplitSample() != null) {
       currRecReader = new HiveRecordReader<WritableComparable, Writable>(reader, job) {
@@ -374,8 +357,10 @@ public class FetchOperator implements Serializable {
     return currRecReader;
   }
 
-  protected FetchInputFormatSplit[] getNextSplits() throws Exception {
-    while (getNextPath()) {
+  private List<FetchInputFormatSplit> getNextSplits() throws Exception {
+    while (iterPath.hasNext()) {
+      currPath = iterPath.next();
+      currDesc = iterPartDesc.next();
       // not using FileInputFormat.setInputPaths() here because it forces a connection to the
       // default file system - which may or may not be online during pure metadata operations
       job.set("mapred.input.dir", StringUtils.escapeString(currPath.toString()));
@@ -437,15 +422,25 @@ public class FetchOperator implements Serializable {
       if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_IN_TEST)) {
         Collections.sort(inputSplits, new FetchInputFormatSplitComparator());
       }
-      return inputSplits.toArray(new FetchInputFormatSplit[inputSplits.size()]);
+      return inputSplits;
     }
 
     return null;
   }
 
-  private void generateWrappedSplits(InputFormat inputFormat,
-      List<FetchInputFormatSplit> inputSplits, JobConf job) throws IOException {
-    InputSplit[] splits = inputFormat.getSplits(job, 1);
+  private void generateWrappedSplits(InputFormat inputFormat, List<FetchInputFormatSplit> inputSplits, JobConf job)
+      throws IOException {
+    InputSplit[] splits;
+    try {
+      splits = inputFormat.getSplits(job, 1);
+    } catch (Exception ex) {
+      Throwable t = ExceptionUtils.getRootCause(ex);
+      if (t instanceof FileNotFoundException || t instanceof InvalidInputException) {
+        LOG.warn("Input path " + currPath + " is empty", t.getMessage());
+        return;
+      }
+      throw ex;
+    }
     for (int i = 0; i < splits.length; i++) {
       inputSplits.add(new FetchInputFormatSplit(splits[i], inputFormat));
     }
@@ -471,16 +466,18 @@ public class FetchOperator implements Serializable {
   }
 
   private String makeInputString(List<Path> dirs) {
-    if (dirs == null || dirs.isEmpty()) return "";
-    StringBuffer str = new StringBuffer(StringUtils.escapeString(dirs.get(0).toString()));
-    for(int i = 1; i < dirs.size(); i++) {
-      str.append(",").append(StringUtils.escapeString(dirs.get(i).toString()));
+    if (dirs == null || dirs.isEmpty()) {
+      return "";
     }
-    return str.toString();
+    // remove duplicates
+    return dirs.stream()
+        .map(dir -> StringUtils.escapeString(dir.toString()))
+        .distinct()
+        .collect(Collectors.joining(","));
 
   }
   private ValidWriteIdList extractValidWriteIdList() {
-    if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
+    if (currDesc.getTableName() == null || !org.apache.commons.lang3.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       LOG.debug("FetchOperator get writeIdStr: " + txnString);
       return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
@@ -663,7 +660,6 @@ public class FetchOperator implements Serializable {
    */
   public void setupContext(List<Path> paths) {
     this.iterPath = paths.iterator();
-    List<PartitionDesc> partitionDescs;
     if (!isPartitioned) {
       this.iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
     } else {
@@ -682,14 +678,13 @@ public class FetchOperator implements Serializable {
   private StructObjectInspector setupOutputObjectInspector() throws HiveException {
     TableDesc tableDesc = work.getTblDesc();
     try {
-      tableSerDe = tableDesc.getDeserializer(job, true);
+      tableSerDe = tableDesc.getSerDe(job, true);
       tableOI = (StructObjectInspector) tableSerDe.getObjectInspector();
       if (!isPartitioned) {
         return getTableRowOI(tableOI);
       }
       partKeyOI = getPartitionKeyOI(tableDesc);
 
-      PartitionDesc partDesc = new PartitionDesc(tableDesc, null);
       List<PartitionDesc> listParts = work.getPartDesc();
       // Chose the table descriptor if none of the partitions is present.
       // For eg: consider the query:
@@ -729,7 +724,7 @@ public class FetchOperator implements Serializable {
 
   // if table and all partitions have the same schema and serde, no need to convert
   private boolean needConversion(TableDesc tableDesc, List<PartitionDesc> partDescs) {
-    Class<?> tableSerDe = tableDesc.getDeserializerClass();
+    Class<?> tableSerDe = tableDesc.getSerDeClass();
     SerDeSpec spec = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class);
     if (null == spec) {
       // Serde may not have this optional annotation defined in which case be conservative
@@ -751,31 +746,6 @@ public class FetchOperator implements Serializable {
       }
     }
     return false;
-  }
-
-  /**
-   * Lists status for all files under a given path. Whether or not this is recursive depends on the
-   * setting of job configuration parameter mapred.input.dir.recursive.
-   *
-   * @param fs
-   *          file system
-   *
-   * @param p
-   *          path in file system
-   *
-   * @return list of file status entries
-   */
-  private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
-    boolean recursive = job.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false);
-    // If this is in acid format always read it recursively regardless of what the jobconf says.
-    if (!recursive && !AcidUtils.isAcid(fs, p, job)) {
-      return fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER);
-    }
-    List<FileStatus> results = new ArrayList<FileStatus>();
-    for (FileStatus stat : fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
-      FileUtils.listStatusRecursively(fs, stat, results);
-    }
-    return results.toArray(new FileStatus[results.size()]);
   }
 
   // for split sampling. shrinkedLength is checked against IOContext.getCurrentBlockStart,

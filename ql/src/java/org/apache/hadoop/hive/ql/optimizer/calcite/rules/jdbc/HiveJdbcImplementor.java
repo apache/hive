@@ -52,12 +52,11 @@ public class HiveJdbcImplementor extends JdbcImplementor {
 
   @Override public Result visit(Project e) {
     // This variant keeps the column aliases instead of producing STAR
-    Result x = visitChild(0, e.getInput());
+    Result x = visitInput(e, 0, Clause.SELECT);
     parseCorrelTable(e, x);
-    final Builder builder =
-        x.builder(e, Clause.SELECT);
+    final Builder builder = x.builder(e);
     final List<SqlNode> selectList = new ArrayList<>();
-    for (RexNode ref : e.getChildExps()) {
+    for (RexNode ref : e.getProjects()) {
       SqlNode sqlExpr = builder.context.toSql(null, ref);
       addSelect(selectList, sqlExpr, e.getRowType());
     }
@@ -67,8 +66,8 @@ public class HiveJdbcImplementor extends JdbcImplementor {
   }
 
   @Override public Result visit(Sort e) {
-    Result x = visitChild(0, e.getInput());
-    Builder builder = x.builder(e, Clause.ORDER_BY);
+    Result x = visitInput(e, 0, Clause.ORDER_BY, Clause.FETCH, Clause.OFFSET);
+    Builder builder = x.builder(e);
     List<SqlNode> orderByList = Expressions.list();
     for (RelFieldCollation field : e.getCollation().getFieldCollations()) {
       builder.addOrderItem(orderByList, field);
@@ -89,12 +88,12 @@ public class HiveJdbcImplementor extends JdbcImplementor {
       x = builder.result();
     }
     if (e.fetch != null) {
-      builder = x.builder(e, Clause.FETCH);
+      builder = x.builder(e);
       builder.setFetch(builder.context.toSql(null, e.fetch));
       x = builder.result();
     }
     if (e.offset != null) {
-      builder = x.builder(e, Clause.OFFSET);
+      builder = x.builder(e);
       builder.setOffset(builder.context.toSql(null, e.offset));
       x = builder.result();
     }
@@ -102,8 +101,8 @@ public class HiveJdbcImplementor extends JdbcImplementor {
   }
 
   @Override public Result visit(Join e) {
-    final Result leftResult = visitChild(0, e.getLeft()).resetAlias();
-    final Result rightResult = visitChild(1, e.getRight()).resetAlias();
+    final Result leftResult = visitInput(e, 0).resetAlias();
+    final Result rightResult = visitInput(e, 1).resetAlias();
     final Context leftContext = leftResult.qualifiedContext();
     final Context rightContext = rightResult.qualifiedContext();
     SqlNode sqlCondition = null;

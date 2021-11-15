@@ -1,0 +1,148 @@
+PREHOOK: query: DESCRIBE FUNCTION last_day
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION last_day
+POSTHOOK: type: DESCFUNCTION
+last_day(date) - Returns the last day of the month which the date belongs to.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED last_day
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED last_day
+POSTHOOK: type: DESCFUNCTION
+last_day(date) - Returns the last day of the month which the date belongs to.
+date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time part of date is ignored.
+Example:
+  > SELECT last_day('2009-01-12') FROM src LIMIT 1;
+ '2009-01-31'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLastDay
+Function type:BUILTIN
+PREHOOK: query: explain select last_day('2015-02-05')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select last_day('2015-02-05')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: '2015-02-28' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+last_day('2014-01-01'),
+last_day('2014-01-14'),
+last_day('2014-01-31'),
+last_day('2014-02-02'),
+last_day('2014-02-28'),
+last_day('2016-02-03'),
+last_day('2016-02-28'),
+last_day('2016-02-29'),
+last_day(cast(null as string))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+last_day('2014-01-01'),
+last_day('2014-01-14'),
+last_day('2014-01-31'),
+last_day('2014-02-02'),
+last_day('2014-02-28'),
+last_day('2016-02-03'),
+last_day('2016-02-28'),
+last_day('2016-02-29'),
+last_day(cast(null as string))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2014-01-31	2014-01-31	2014-01-31	2014-02-28	2014-02-28	2016-02-29	2016-02-29	2016-02-29	NULL
+PREHOOK: query: select
+last_day('2014-01-01 10:30:45'),
+last_day('2014-01-14 10:30:45'),
+last_day('2014-01-31 10:30:45'),
+last_day('2014-02-02 10:30:45'),
+last_day('2014-02-28 10:30:45'),
+last_day('2016-02-03 10:30:45'),
+last_day('2016-02-28 10:30:45'),
+last_day('2016-02-29 10:30:45'),
+last_day(cast(null as string))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+last_day('2014-01-01 10:30:45'),
+last_day('2014-01-14 10:30:45'),
+last_day('2014-01-31 10:30:45'),
+last_day('2014-02-02 10:30:45'),
+last_day('2014-02-28 10:30:45'),
+last_day('2016-02-03 10:30:45'),
+last_day('2016-02-28 10:30:45'),
+last_day('2016-02-29 10:30:45'),
+last_day(cast(null as string))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2014-01-31	2014-01-31	2014-01-31	2014-02-28	2014-02-28	2016-02-29	2016-02-29	2016-02-29	NULL
+PREHOOK: query: select
+last_day(cast('2014-01-01' as date)),
+last_day(cast('2014-01-14' as date)),
+last_day(cast('2014-01-31' as date)),
+last_day(cast('2014-02-02' as date)),
+last_day(cast('2014-02-28' as date)),
+last_day(cast('2016-02-03' as date)),
+last_day(cast('2016-02-28' as date)),
+last_day(cast('2016-02-29' as date)),
+last_day(cast(null as date))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+last_day(cast('2014-01-01' as date)),
+last_day(cast('2014-01-14' as date)),
+last_day(cast('2014-01-31' as date)),
+last_day(cast('2014-02-02' as date)),
+last_day(cast('2014-02-28' as date)),
+last_day(cast('2016-02-03' as date)),
+last_day(cast('2016-02-28' as date)),
+last_day(cast('2016-02-29' as date)),
+last_day(cast(null as date))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2014-01-31	2014-01-31	2014-01-31	2014-02-28	2014-02-28	2016-02-29	2016-02-29	2016-02-29	NULL
+PREHOOK: query: select
+last_day(cast('2014-01-01 10:30:45' as timestamp)),
+last_day(cast('2014-01-14 10:30:45' as timestamp)),
+last_day(cast('2014-01-31 10:30:45' as timestamp)),
+last_day(cast('2014-02-02 10:30:45' as timestamp)),
+last_day(cast('2014-02-28 10:30:45' as timestamp)),
+last_day(cast('2016-02-03 10:30:45' as timestamp)),
+last_day(cast('2016-02-28 10:30:45' as timestamp)),
+last_day(cast('2016-02-29 10:30:45' as timestamp)),
+last_day(cast(null as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+last_day(cast('2014-01-01 10:30:45' as timestamp)),
+last_day(cast('2014-01-14 10:30:45' as timestamp)),
+last_day(cast('2014-01-31 10:30:45' as timestamp)),
+last_day(cast('2014-02-02 10:30:45' as timestamp)),
+last_day(cast('2014-02-28 10:30:45' as timestamp)),
+last_day(cast('2016-02-03 10:30:45' as timestamp)),
+last_day(cast('2016-02-28 10:30:45' as timestamp)),
+last_day(cast('2016-02-29 10:30:45' as timestamp)),
+last_day(cast(null as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2014-01-31	2014-01-31	2014-01-31	2014-02-28	2014-02-28	2016-02-29	2016-02-29	2016-02-29	NULL

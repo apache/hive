@@ -1,0 +1,302 @@
+PREHOOK: query: drop database if exists expr2 cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists expr2 cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database expr2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:expr2
+POSTHOOK: query: create database expr2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:expr2
+PREHOOK: query: use expr2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:expr2
+POSTHOOK: query: use expr2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:expr2
+PREHOOK: query: create table sales(prod_id int, cust_id int, store_id int, sale_date timestamp, qty int, amt double, descr string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:expr2
+PREHOOK: Output: expr2@sales
+POSTHOOK: query: create table sales(prod_id int, cust_id int, store_id int, sale_date timestamp, qty int, amt double, descr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:expr2
+POSTHOOK: Output: expr2@sales
+PREHOOK: query: insert into sales values
+(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: expr2@sales
+POSTHOOK: query: insert into sales values
+(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: expr2@sales
+POSTHOOK: Lineage: sales.amt SCRIPT []
+POSTHOOK: Lineage: sales.cust_id SCRIPT []
+POSTHOOK: Lineage: sales.descr SCRIPT []
+POSTHOOK: Lineage: sales.prod_id SCRIPT []
+POSTHOOK: Lineage: sales.qty SCRIPT []
+POSTHOOK: Lineage: sales.sale_date SCRIPT []
+POSTHOOK: Lineage: sales.store_id SCRIPT []
+PREHOOK: query: create materialized view mv1 stored as orc as (select prod_id, cust_id, store_id, sale_date, qty, amt, descr from sales where cust_id in (1,2,3,4,5))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: expr2@sales
+PREHOOK: Output: database:expr2
+PREHOOK: Output: expr2@mv1
+POSTHOOK: query: create materialized view mv1 stored as orc as (select prod_id, cust_id, store_id, sale_date, qty, amt, descr from sales where cust_id in (1,2,3,4,5))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: expr2@sales
+POSTHOOK: Output: database:expr2
+POSTHOOK: Output: expr2@mv1
+POSTHOOK: Lineage: mv1.amt SIMPLE [(sales)sales.FieldSchema(name:amt, type:double, comment:null), ]
+POSTHOOK: Lineage: mv1.cust_id SIMPLE [(sales)sales.FieldSchema(name:cust_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.descr SIMPLE [(sales)sales.FieldSchema(name:descr, type:string, comment:null), ]
+POSTHOOK: Lineage: mv1.prod_id SIMPLE [(sales)sales.FieldSchema(name:prod_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.qty SIMPLE [(sales)sales.FieldSchema(name:qty, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.sale_date SIMPLE [(sales)sales.FieldSchema(name:sale_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: mv1.store_id SIMPLE [(sales)sales.FieldSchema(name:store_id, type:int, comment:null), ]
+PREHOOK: query: explain cbo
+select prod_id, cust_id  from sales where cust_id in (1,2,3,4,5)
+PREHOOK: type: QUERY
+PREHOOK: Input: expr2@mv1
+PREHOOK: Input: expr2@sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select prod_id, cust_id  from sales where cust_id in (1,2,3,4,5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: expr2@mv1
+POSTHOOK: Input: expr2@sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(prod_id=[$0], cust_id=[$1])
+  HiveTableScan(table=[[expr2, mv1]], table:alias=[expr2.mv1])
+
+PREHOOK: query: explain cbo
+select prod_id, cust_id  from sales where cust_id in (5,1,2,3,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: expr2@mv1
+PREHOOK: Input: expr2@sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select prod_id, cust_id  from sales where cust_id in (5,1,2,3,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: expr2@mv1
+POSTHOOK: Input: expr2@sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(prod_id=[$0], cust_id=[$1])
+  HiveTableScan(table=[[expr2, mv1]], table:alias=[expr2.mv1])
+
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: expr2@mv1
+PREHOOK: Output: expr2@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: expr2@mv1
+POSTHOOK: Output: expr2@mv1
+PREHOOK: query: drop database if exists in_pred cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists in_pred cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database in_pred
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:in_pred
+POSTHOOK: query: create database in_pred
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:in_pred
+PREHOOK: query: use in_pred
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:in_pred
+POSTHOOK: query: use in_pred
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:in_pred
+PREHOOK: query: create table census_pop (state string, year int, population bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:in_pred
+PREHOOK: Output: in_pred@census_pop
+POSTHOOK: query: create table census_pop (state string, year int, population bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:in_pred
+POSTHOOK: Output: in_pred@census_pop
+PREHOOK: query: insert into census_pop values("AZ", 2010, 200), ("CA", 2011, 100), ("CA", 2010, 200), ("AZ", 2010, 100), ("NY", 2011, 121), ("AZ", 2011, 1000), ("OR", 2015, 1001), ("WA", 2016, 121), ("NJ", 2010, 500), ("NJ", 2010, 5000), ("AZ", 2014, 1004), ("TX", 2010, 1000), ("AZ", 2010, 1000), ("PT", 2017, 1200), ("NM", 2018, 120), ("CA", 2010, 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: in_pred@census_pop
+POSTHOOK: query: insert into census_pop values("AZ", 2010, 200), ("CA", 2011, 100), ("CA", 2010, 200), ("AZ", 2010, 100), ("NY", 2011, 121), ("AZ", 2011, 1000), ("OR", 2015, 1001), ("WA", 2016, 121), ("NJ", 2010, 500), ("NJ", 2010, 5000), ("AZ", 2014, 1004), ("TX", 2010, 1000), ("AZ", 2010, 1000), ("PT", 2017, 1200), ("NM", 2018, 120), ("CA", 2010, 200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: in_pred@census_pop
+POSTHOOK: Lineage: census_pop.population SCRIPT []
+POSTHOOK: Lineage: census_pop.state SCRIPT []
+POSTHOOK: Lineage: census_pop.year SCRIPT []
+PREHOOK: query: create materialized view mv2 stored as orc as select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: in_pred@census_pop
+PREHOOK: Output: database:in_pred
+PREHOOK: Output: in_pred@mv2
+POSTHOOK: query: create materialized view mv2 stored as orc as select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: in_pred@census_pop
+POSTHOOK: Output: database:in_pred
+POSTHOOK: Output: in_pred@mv2
+POSTHOOK: Lineage: mv2._c2 EXPRESSION [(census_pop)census_pop.FieldSchema(name:population, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv2.state SIMPLE [(census_pop)census_pop.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: mv2.year SIMPLE [(census_pop)census_pop.FieldSchema(name:year, type:int, comment:null), ]
+PREHOOK: query: explain cbo
+select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
+PREHOOK: type: QUERY
+PREHOOK: Input: in_pred@census_pop
+PREHOOK: Input: in_pred@mv2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: in_pred@census_pop
+POSTHOOK: Input: in_pred@mv2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
+
+PREHOOK: query: explain cbo
+select state, year, sum(population) from census_pop where year = 2010 group by state, year
+PREHOOK: type: QUERY
+PREHOOK: Input: in_pred@census_pop
+PREHOOK: Input: in_pred@mv2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select state, year, sum(population) from census_pop where year = 2010 group by state, year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: in_pred@census_pop
+POSTHOOK: Input: in_pred@mv2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
+  HiveAggregate(group=[{0}], agg#0=[sum($2)])
+    HiveFilter(condition=[=(2010, $1)])
+      HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
+
+PREHOOK: query: explain cbo
+select state, year, sum(population) from census_pop where year in (2010) group by state, year
+PREHOOK: type: QUERY
+PREHOOK: Input: in_pred@census_pop
+PREHOOK: Input: in_pred@mv2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select state, year, sum(population) from census_pop where year in (2010) group by state, year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: in_pred@census_pop
+POSTHOOK: Input: in_pred@mv2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
+  HiveAggregate(group=[{0}], agg#0=[sum($2)])
+    HiveFilter(condition=[=(2010, $1)])
+      HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
+
+PREHOOK: query: drop materialized view mv2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: in_pred@mv2
+PREHOOK: Output: in_pred@mv2
+POSTHOOK: query: drop materialized view mv2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: in_pred@mv2
+POSTHOOK: Output: in_pred@mv2
+PREHOOK: query: drop database if exists expr9 cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists expr9 cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database expr9
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:expr9
+POSTHOOK: query: create database expr9
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:expr9
+PREHOOK: query: use expr9
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:expr9
+POSTHOOK: query: use expr9
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:expr9
+PREHOOK: query: create table sales(prod_id int, cust_id int, store_id int, sale_date timestamp, qty int, amt double, descr string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:expr9
+PREHOOK: Output: expr9@sales
+POSTHOOK: query: create table sales(prod_id int, cust_id int, store_id int, sale_date timestamp, qty int, amt double, descr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:expr9
+POSTHOOK: Output: expr9@sales
+PREHOOK: query: insert into sales values
+(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: expr9@sales
+POSTHOOK: query: insert into sales values
+(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: expr9@sales
+POSTHOOK: Lineage: sales.amt SCRIPT []
+POSTHOOK: Lineage: sales.cust_id SCRIPT []
+POSTHOOK: Lineage: sales.descr SCRIPT []
+POSTHOOK: Lineage: sales.prod_id SCRIPT []
+POSTHOOK: Lineage: sales.qty SCRIPT []
+POSTHOOK: Lineage: sales.sale_date SCRIPT []
+POSTHOOK: Lineage: sales.store_id SCRIPT []
+PREHOOK: query: create materialized view mv3 stored as orc as (select prod_id, cust_id, store_id, sale_date, qty, amt, descr from sales where cust_id >= 1 and prod_id < 31)
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: expr9@sales
+PREHOOK: Output: database:expr9
+PREHOOK: Output: expr9@mv3
+POSTHOOK: query: create materialized view mv3 stored as orc as (select prod_id, cust_id, store_id, sale_date, qty, amt, descr from sales where cust_id >= 1 and prod_id < 31)
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: expr9@sales
+POSTHOOK: Output: database:expr9
+POSTHOOK: Output: expr9@mv3
+POSTHOOK: Lineage: mv3.amt SIMPLE [(sales)sales.FieldSchema(name:amt, type:double, comment:null), ]
+POSTHOOK: Lineage: mv3.cust_id SIMPLE [(sales)sales.FieldSchema(name:cust_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.descr SIMPLE [(sales)sales.FieldSchema(name:descr, type:string, comment:null), ]
+POSTHOOK: Lineage: mv3.prod_id SIMPLE [(sales)sales.FieldSchema(name:prod_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.qty SIMPLE [(sales)sales.FieldSchema(name:qty, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.sale_date SIMPLE [(sales)sales.FieldSchema(name:sale_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: mv3.store_id SIMPLE [(sales)sales.FieldSchema(name:store_id, type:int, comment:null), ]
+PREHOOK: query: explain cbo
+select  * from sales where cust_id >= 1 and  prod_id < 31
+PREHOOK: type: QUERY
+PREHOOK: Input: expr9@mv3
+PREHOOK: Input: expr9@sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  * from sales where cust_id >= 1 and  prod_id < 31
+POSTHOOK: type: QUERY
+POSTHOOK: Input: expr9@mv3
+POSTHOOK: Input: expr9@sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
+
+PREHOOK: query: explain cbo
+select  * from sales where cust_id between 1 and 20 and prod_id < 31
+PREHOOK: type: QUERY
+PREHOOK: Input: expr9@mv3
+PREHOOK: Input: expr9@sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  * from sales where cust_id between 1 and 20 and prod_id < 31
+POSTHOOK: type: QUERY
+POSTHOOK: Input: expr9@mv3
+POSTHOOK: Input: expr9@sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveFilter(condition=[>=(20, $1)])
+  HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
+
+PREHOOK: query: drop materialized view mv3
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: expr9@mv3
+PREHOOK: Output: expr9@mv3
+POSTHOOK: query: drop materialized view mv3
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: expr9@mv3
+POSTHOOK: Output: expr9@mv3

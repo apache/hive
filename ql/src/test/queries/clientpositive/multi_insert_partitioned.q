@@ -1,8 +1,9 @@
+--! qt:disabled:multi insert is falky
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
 set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 drop table intermediate_n3;
 

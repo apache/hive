@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.apache.hadoop.io.BytesWritable;
@@ -41,6 +41,7 @@ import org.apache.spark.rdd.RDD;
 import org.apache.spark.rdd.ShuffledRDD;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import scala.Tuple2;
@@ -50,7 +51,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 
-
+@Ignore("HIVE-22944: Kryo 5 upgrade conflicts with Spark, which is not supported anymore")
 public class TestSparkPlan {
 
   @Test
@@ -75,9 +76,9 @@ public class TestSparkPlan {
 
     try {
       driver = DriverFactory.newDriver(conf);
-      Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
+      driver.run("create table test (col int)");
 
-      driver.compile("select * from test order by col");
+      ((ReExecDriver)driver).compile("select * from test order by col", true);
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
       Assert.assertEquals(1, sparkTasks.size());
 
@@ -132,7 +133,7 @@ public class TestSparkPlan {
       Assert.assertTrue(hadoopRdd.creationSite().shortForm().contains("Map 1"));
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists test").getResponseCode());
+        driver.run("drop table if exists test");
         driver.destroy();
       }
       if (sc != null) {

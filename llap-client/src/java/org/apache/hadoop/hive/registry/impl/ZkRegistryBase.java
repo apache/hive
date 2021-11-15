@@ -30,31 +30,31 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
-import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
-import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode.Mode;
+import org.apache.curator.framework.recipes.nodes.PersistentNode;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMarshal;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.InvalidACLException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.ZooDefs;
@@ -111,7 +111,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private final Map<String, Set<InstanceType>> nodeToInstanceCache;
 
   // The registration znode.
-  private PersistentEphemeralNode znode;
+  private PersistentNode znode;
   private String znodePath; // unique identity for this instance
 
   private PathChildrenCache instancesCache; // Created on demand.
@@ -160,7 +160,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     this.stateChangeListeners = new HashSet<>();
     this.pathToInstanceCache = new ConcurrentHashMap<>();
     this.nodeToInstanceCache = new ConcurrentHashMap<>();
-    final String namespace = getRootNamespace(rootNs, nsPrefix);
+    final String namespace = getRootNamespace(conf, rootNs, nsPrefix);
     ACLProvider aclProvider;
     // get acl provider for most outer path that is non-null
     if (userPathPrefix == null) {
@@ -180,8 +180,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     this.zooKeeperClient.getConnectionStateListenable().addListener(new ZkConnectionStateListener());
   }
 
-  public static String getRootNamespace(String userProvidedNamespace, String defaultNamespacePrefix) {
-    final boolean isSecure = UserGroupInformation.isSecurityEnabled();
+  public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
+      String defaultNamespacePrefix) {
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
     String rootNs = userProvidedNamespace;
     if (rootNs == null) {
       rootNs = defaultNamespacePrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE);
@@ -190,7 +191,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private ACLProvider getACLProviderForZKPath(String zkPath) {
-    final boolean isSecure = UserGroupInformation.isSecurityEnabled();
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
     return new ACLProvider() {
       @Override
       public List<ACL> getDefaultAcl() {
@@ -211,28 +212,35 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private CuratorFramework getZookeeperClient(Configuration conf, String namespace, ACLProvider zooKeeperAclProvider) {
-    String zkEnsemble = getQuorumServers(conf);
-    int sessionTimeout = (int) HiveConf.getTimeVar(conf,
-      ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
-    int connectionTimeout = (int) HiveConf.getTimeVar(conf,
-      ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
-    int baseSleepTime = (int) HiveConf.getTimeVar(conf,
-      ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
-    int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
-
-    LOG.info("Creating curator client with connectString: {} sessionTimeoutMs: {} connectionTimeoutMs: {}" +
-      " namespace: {} exponentialBackoff - sleepTime: {} maxRetries: {}", zkEnsemble, sessionTimeout,
-      connectionTimeout, namespace, baseSleepTime, maxRetries);
-    // Create a CuratorFramework instance to be used as the ZooKeeper client
-    // Use the zooKeeperAclProvider to create appropriate ACLs
-    return CuratorFrameworkFactory.builder()
-      .connectString(zkEnsemble)
-      .sessionTimeoutMs(sessionTimeout)
-      .connectionTimeoutMs(connectionTimeout)
-      .aclProvider(zooKeeperAclProvider)
-      .namespace(namespace)
-      .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
-      .build();
+    String keyStorePassword = "";
+    String trustStorePassword = "";
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE)) {
+      try {
+        keyStorePassword =
+            ShimLoader.getHadoopShims().getPassword(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname);
+        trustStorePassword =
+            ShimLoader.getHadoopShims().getPassword(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to read zookeeper conf passwords", e);
+      }
+    }
+    return ZooKeeperHiveHelper.builder()
+        .quorum(conf.get(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname))
+        .clientPort(conf.get(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname,
+            ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.getDefaultValue()))
+        .connectionTimeout(
+            (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
+        .sessionTimeout(
+            (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS))
+        .baseSleepTime(
+            (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS))
+        .maxRetries(HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES))
+        .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
+        .keyStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
+        .keyStorePassword(keyStorePassword)
+        .trustStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
+        .trustStorePassword(trustStorePassword)
+        .build().getNewZookeeperClient(zooKeeperAclProvider, namespace);
   }
 
   private static List<ACL> createSecureAcls() {
@@ -282,9 +290,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
-      // PersistentEphemeralNode will make sure the ephemeral node created on server will be present
+      // PersistentNode will make sure the ephemeral node created on server will be present
       // even under connection or session interruption (will automatically handle retries)
-      znode = new PersistentEphemeralNode(zooKeeperClient, Mode.EPHEMERAL_SEQUENTIAL,
+      znode = new PersistentNode(zooKeeperClient, CreateMode.EPHEMERAL_SEQUENTIAL, false,
           workersPath + "/" + workerNodePrefix, encoder.toBytes(srv));
     
       // start the creation of znodes
@@ -344,7 +352,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
 
-  final void initializeWithoutRegisteringInternal() throws IOException {
+  final protected void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
       try {
@@ -366,7 +374,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private void checkAndSetAcls() throws Exception {
-    if (!UserGroupInformation.isSecurityEnabled()) return;
+    if (!ZookeeperUtils.isKerberosEnabled(conf)) {
+      return;
+    }
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
     // able to write to. Higher-level directories shouldn't matter - we don't read them.
     String pathToCheck = workersPath;
@@ -453,7 +463,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       byte[] data = getWorkerData(childData, workerNodePrefix);
       if (data == null) continue;
       String nodeName = extractNodeName(childData);
-      if (!nodeName.startsWith(workerNodePrefix)) continue;
+      if (!isLlapWorker(nodeName, workerNodePrefix)) continue;
       int ephSeqVersion = extractSeqNum(nodeName);
       try {
         ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
@@ -471,13 +481,17 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     }
   }
 
+  private static boolean isLlapWorker(String nodeName, String workerNodePrefix) {
+    return nodeName.startsWith(workerNodePrefix) && nodeName.length() > workerNodePrefix.length();
+  }
+
   protected abstract InstanceType createServiceInstance(ServiceRecord srv) throws IOException;
 
   protected static byte[] getWorkerData(ChildData childData, String workerNodePrefix) {
     if (childData == null) return null;
     byte[] data = childData.getData();
     if (data == null) return null;
-    if (!extractNodeName(childData).startsWith(workerNodePrefix)) return null;
+    if (!isLlapWorker(extractNodeName(childData), workerNodePrefix)) return null;
     return data;
   }
 
@@ -493,7 +507,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         ChildData childData = event.getData();
         if (childData == null) return;
         String nodeName = extractNodeName(childData);
-        if (!nodeName.startsWith(workerNodePrefix)) return;
+        if (nodeName.equals(workerNodePrefix)) {
+          LOG.warn("Invalid LLAP worker node name: {} was {}", childData.getPath(), event.getType());
+        }
+        if (!isLlapWorker(nodeName, workerNodePrefix)) return;
         LOG.info("{} for zknode {}", event.getType(), childData.getPath());
         InstanceType instance = extractServiceInstance(event, childData);
         if (instance != null) {
@@ -653,7 +670,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   private int extractSeqNum(String nodeName) {
     // Extract the sequence number of this ephemeral-sequential znode.
-    String ephSeqVersionStr = nodeName.substring(workerNodePrefix.length() + 1);
+    String ephSeqVersionStr = nodeName.substring(workerNodePrefix.length());
     try {
       return Integer.parseInt(ephSeqVersionStr);
     } catch (NumberFormatException e) {
@@ -667,6 +684,14 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     @Override
     public void stateChanged(final CuratorFramework curatorFramework, final ConnectionState connectionState) {
       LOG.info("Connection state change notification received. State: {}", connectionState);
+    }
+  }
+
+  public String currentUser() {
+    try {
+      return UserGroupInformation.getCurrentUser().getShortUserName();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 }

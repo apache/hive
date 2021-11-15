@@ -1,0 +1,229 @@
+PREHOOK: query: CREATE TEMPORARY TABLE broken_temp (c int) PARTITIONED BY (b1 BOOLEAN, s STRING, b2 BOOLEAN, i INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@broken_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE broken_temp (c int) PARTITIONED BY (b1 BOOLEAN, s STRING, b2 BOOLEAN, i INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@broken_temp
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=false,s='a',b2=false,i=0) VALUES(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=false,s='a',b2=false,i=0) VALUES(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=FALSE,s='a',b2=false,i=0) VALUES(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=FALSE,s='a',b2=false,i=0) VALUES(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='no',s='a',b2=False,i=0) VALUES(5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='no',s='a',b2=False,i=0) VALUES(5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='off',s='a',b2='0',i=0) VALUES(7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='off',s='a',b2='0',i=0) VALUES(7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
+PREHOOK: query: select * from broken_temp where b1=false and b2=false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@broken_temp
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from broken_temp where b1=false and b2=false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@broken_temp
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+#### A masked pattern was here ####
+1	false	a	false	0
+3	false	a	false	0
+5	false	a	false	0
+7	false	a	false	0
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=true,s='a',b2=true,i=0) VALUES(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=true,s='a',b2=true,i=0) VALUES(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=TRUE,s='a',b2=true,i=0) VALUES(4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=TRUE,s='a',b2=true,i=0) VALUES(4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='yes',s='a',b2=True,i=0) VALUES(6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='yes',s='a',b2=True,i=0) VALUES(6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='1',s='a',b2='on',i=0) VALUES(8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1='1',s='a',b2='on',i=0) VALUES(8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=true/s=a/b2=true/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
+PREHOOK: query: select * from broken_temp where b1 is true and b2 is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@broken_temp
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from broken_temp where b1 is true and b2 is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@broken_temp
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+2	true	a	true	0
+4	true	a	true	0
+6	true	a	true	0
+8	true	a	true	0
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=false,s='a',b2=true,i=0) VALUES(100)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=false,s='a',b2=true,i=0) VALUES(100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=false,s=a,b2=true,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=FALSE,s='a',b2=TRUE,i=0) VALUES(1000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=FALSE,s='a',b2=TRUE,i=0) VALUES(1000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=false,s=a,b2=true,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=true,s='a',b2=false,i=0) VALUES(10000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=true,s='a',b2=false,i=0) VALUES(10000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=true,s=a,b2=false,i=0).c SCRIPT []
+PREHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=tRUe,s='a',b2=fALSe,i=0) VALUES(100000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: query: INSERT INTO TABLE broken_temp PARTITION(b1=tRUe,s='a',b2=fALSe,i=0) VALUES(100000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: Lineage: broken_temp PARTITION(b1=true,s=a,b2=false,i=0).c SCRIPT []
+PREHOOK: query: select * from broken_temp where b1 is true and b2=false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@broken_temp
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=true/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from broken_temp where b1 is true and b2=false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@broken_temp
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+10000	true	a	false	0
+100000	true	a	false	0
+PREHOOK: query: select * from broken_temp where b1=false and b2 is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@broken_temp
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=true/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from broken_temp where b1=false and b2 is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@broken_temp
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+100	false	a	true	0
+1000	false	a	true	0
+PREHOOK: query: select count(*) from broken_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@broken_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from broken_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@broken_temp
+#### A masked pattern was here ####
+12
+PREHOOK: query: select * from broken_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@broken_temp
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=false/s=a/b2=true/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=false/i=0
+PREHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from broken_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@broken_temp
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=false/s=a/b2=true/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=false/i=0
+POSTHOOK: Input: default@broken_temp@b1=true/s=a/b2=true/i=0
+#### A masked pattern was here ####
+1	false	a	false	0
+100	false	a	true	0
+1000	false	a	true	0
+10000	true	a	false	0
+100000	true	a	false	0
+2	true	a	true	0
+3	false	a	false	0
+4	true	a	true	0
+5	false	a	false	0
+6	true	a	true	0
+7	false	a	false	0
+8	true	a	true	0
+PREHOOK: query: show partitions broken_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@broken_temp
+POSTHOOK: query: show partitions broken_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@broken_temp
+b1=false/s=a/b2=false/i=0
+b1=false/s=a/b2=true/i=0
+b1=true/s=a/b2=false/i=0
+b1=true/s=a/b2=true/i=0

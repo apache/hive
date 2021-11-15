@@ -32,9 +32,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFDate extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
+/**
+ * TestGenericUDFDate.
+ */
+public class TestGenericUDFDate {
+  @Test
   public void testStringToDate() throws HiveException {
     GenericUDFDate udf = new GenericUDFDate();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
@@ -53,6 +61,7 @@ public class TestGenericUDFDate extends TestCase {
     assertNull("to_date() with null STRING", output);
   }
 
+  @Test
   public void testTimestampToDate() throws HiveException {
     GenericUDFDate udf = new GenericUDFDate();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -72,6 +81,7 @@ public class TestGenericUDFDate extends TestCase {
     assertNull("to_date() with null TIMESTAMP", output);
   }
 
+  @Test
   public void testDateWritablepToDate() throws HiveException {
     GenericUDFDate udf = new GenericUDFDate();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -90,6 +100,7 @@ public class TestGenericUDFDate extends TestCase {
     assertNull("to_date() with null DATE", output);
   }
 
+  @Test
   public void testVoidToDate() throws HiveException {
     GenericUDFDate udf = new GenericUDFDate();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableVoidObjectInspector;

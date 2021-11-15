@@ -27,13 +27,86 @@ import java.io.IOException;
 public class LlapDaemonTestUtils {
   private LlapDaemonTestUtils() {}
 
+  public static SubmitWorkRequestProto buildSubmitProtoRequest(String appId, int dagId, String dagName, int amPort,
+      Credentials credentials) throws IOException {
+    LlapDaemonProtocolProtos.QueryIdentifierProto qrId = LlapDaemonProtocolProtos.QueryIdentifierProto.newBuilder()
+        .setApplicationIdString(appId)
+        .setAppAttemptNumber(0)
+        .setDagIndex(dagId)
+        .build();
+    LlapDaemonProtocolProtos.SignableVertexSpec vSpec = LlapDaemonProtocolProtos.SignableVertexSpec.newBuilder()
+        .setQueryIdentifier(qrId)
+        .setVertexIndex(1)
+        .setDagName(dagName)
+        .setHiveQueryId(dagName)
+        .setVertexName("MockVertex")
+        .setUser("MockUser")
+        .setTokenIdentifier("MockToken_1")
+        .setProcessorDescriptor(LlapDaemonProtocolProtos.EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
+        .build();
+    LlapDaemonProtocolProtos.FragmentRuntimeInfo frInfo = LlapDaemonProtocolProtos.FragmentRuntimeInfo.newBuilder()
+        .setDagStartTime(0)
+        .setFirstAttemptStartTime(0)
+        .setNumSelfAndUpstreamTasks(0)
+        .setNumSelfAndUpstreamCompletedTasks(0)
+        .setWithinDagPriority(1)
+        .build();
+    return SubmitWorkRequestProto.newBuilder()
+        .setAttemptNumber(0)
+        .setFragmentNumber(1)
+        .setWorkSpec(LlapDaemonProtocolProtos.VertexOrBinary.newBuilder().setVertex(vSpec).build())
+        .setAmHost("localhost")
+        .setAmPort(amPort)
+        .setCredentialsBinary(ByteString.copyFrom(LlapTezUtils.serializeCredentials(credentials)))
+        .setContainerIdString("MockContainer_1")
+        .setFragmentRuntimeInfo(frInfo)
+        .build();
+  }
+
+  public static LlapDaemonProtocolProtos.QueryCompleteRequestProto buildQueryCompleteRequest(String appId, int dagId) {
+    LlapDaemonProtocolProtos.QueryIdentifierProto qrId = LlapDaemonProtocolProtos.QueryIdentifierProto.newBuilder()
+        .setApplicationIdString(appId)
+        .setAppAttemptNumber(0)
+        .setDagIndex(dagId)
+        .build();
+    return LlapDaemonProtocolProtos.QueryCompleteRequestProto.newBuilder()
+        .setQueryIdentifier(qrId)
+        .setDeleteDelay(0)
+        .build();
+  }
+
+  public static LlapDaemonProtocolProtos.RegisterDagRequestProto buildRegisterDagRequest(String appId, int dagId,
+      Credentials credentials) throws IOException {
+    LlapDaemonProtocolProtos.QueryIdentifierProto qrId = LlapDaemonProtocolProtos.QueryIdentifierProto.newBuilder()
+        .setApplicationIdString(appId)
+        .setAppAttemptNumber(0)
+        .setDagIndex(dagId)
+        .build();
+    return LlapDaemonProtocolProtos.RegisterDagRequestProto.newBuilder()
+        .setQueryIdentifier(qrId)
+        .setUser("MockUser")
+        .setCredentialsBinary(ByteString.copyFrom(LlapTezUtils.serializeCredentials(credentials)))
+        .build();
+  }
+  
   public static SubmitWorkRequestProto buildSubmitProtoRequest(int fragmentNumber,
+                                                               String appId, int dagId, int vId, String dagName,
+                                                               int dagStartTime, int attemptStartTime, int numSelfAndUpstreamTasks, int numSelfAndUpstreamComplete,
+                                                               int withinDagPriority, Credentials credentials) throws IOException {
+    return buildSubmitProtoRequest(fragmentNumber, 0,
+            appId, dagId, vId, dagName, dagStartTime, attemptStartTime,
+            numSelfAndUpstreamTasks, numSelfAndUpstreamComplete,
+            withinDagPriority, credentials);
+  }
+
+  public static SubmitWorkRequestProto buildSubmitProtoRequest(int fragmentNumber,
+      int attemptNumber,
       String appId, int dagId, int vId, String dagName,
       int dagStartTime, int attemptStartTime, int numSelfAndUpstreamTasks, int numSelfAndUpstreamComplete,
       int withinDagPriority, Credentials credentials) throws IOException {
     return SubmitWorkRequestProto
         .newBuilder()
-        .setAttemptNumber(0)
+        .setAttemptNumber(attemptNumber)
         .setFragmentNumber(fragmentNumber)
         .setWorkSpec(
             LlapDaemonProtocolProtos.VertexOrBinary.newBuilder().setVertex(

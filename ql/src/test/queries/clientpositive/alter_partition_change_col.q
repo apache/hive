@@ -1,6 +1,5 @@
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 SET hive.exec.dynamic.partition = true;
-SET hive.exec.dynamic.partition.mode = nonstrict;
 
 -- SORT_QUERY_RESULTS
 
@@ -34,6 +33,7 @@ select * from alter_partition_change_col1 where p1='abc';
 select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__';
 
 -- change the comment on a partition column without changing type or renaming it
+explain alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1');
 alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1');
 describe alter_partition_change_col1;
 

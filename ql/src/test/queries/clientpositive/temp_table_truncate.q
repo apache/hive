@@ -7,7 +7,7 @@ CREATE TEMPORARY TABLE tmp_srcpart AS SELECT * FROM srcpart;
 
 DESCRIBE tmp_src;
 DESCRIBE tmp_srcpart;
-SHOW TABLES LIKE "tmp_src*";
+SHOW TABLES LIKE "tmp_src%";
 
 SELECT count(*) FROM tmp_src;
 SELECT count(*) FROM tmp_srcpart;

@@ -97,6 +97,7 @@ STAGE PLANS:
                 TableScan
                   alias: test_n1
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.303
                   Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -117,11 +118,12 @@ STAGE PLANS:
                         Statistics: Num rows: 1650 Data size: 156750 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: 1650 Data size: 156750 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: some inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -137,11 +139,12 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

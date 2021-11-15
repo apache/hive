@@ -19,6 +19,24 @@
 
 <configuration>
 
+  <property>
+    <name>hive.metastore.client.cache.maxSize</name>
+    <value>10Mb</value>
+    <description>Max size for hive metastore client local cache</description>
+  </property>
+
+  <property>
+    <name>hive.metastore.client.cache.enabled</name>
+    <value>true</value>
+    <description>This property enables a Caffeiene Cache for Metastore client</description>
+  </property>
+
+  <property>
+    <name>hive.metastore.client.cache.recordStats</name>
+    <value>true</value>
+    <description>This property enables recording metastore client cache stats in DEBUG logs</description>
+  </property>
+
 <property>
   <name>hive.in.test</name>
   <value>true</value>
@@ -80,13 +98,18 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
 </property>
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+  <value>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
 
 <property>
@@ -163,7 +186,7 @@
 
 <property>
   <name>hive.exec.post.hooks</name>
-  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter, org.apache.hadoop.hive.ql.hooks.RuntimeStatsPersistenceCheckerHook, org.apache.hadoop.hive.ql.hooks.NoOperatorReuseCheckerHook</value>
+  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter, org.apache.hadoop.hive.ql.hooks.RuntimeStatsPersistenceCheckerHook, org.apache.hadoop.hive.ql.hooks.OperatorHealthCheckerHook</value>
   <description>Post Execute Hook for Tests</description>
 </property>
 
@@ -358,4 +381,35 @@
   <value>1024</value>
 </property>
 
+<property>
+  <name>hive.query.reexecution.stats.persist.scope</name>
+  <value>query</value>
+</property>
+
+<property>
+  <name>hive.semantic.analyzer.hook</name>
+  <value>org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook</value>
+</property>
+
+<property>
+  <name>hive.users.in.admin.role</name>
+  <value>hive_admin_user</value>
+</property>
+
+<property>
+  <name>hive.conf.restricted.list</name>
+  <value>hive.query.max.length</value>
+  <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
+</property>
+
+<property>
+  <name>hive.strict.timestamp.conversion</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.cbo.fallback.strategy</name>
+  <value>TEST</value>
+</property>
+  
 </configuration>

@@ -1,0 +1,114 @@
+PREHOOK: query: explain
+SELECT value from (
+  select explode(array(key, value)) as (value) from (
+    select * FROM src WHERE key > 400
+  ) A
+) B WHERE value < 450
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT value from (
+  select explode(array(key, value)) as (value) from (
+    select * FROM src WHERE key > 400
+  ) A
+) B WHERE value < 450
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (UDFToDouble(key) > 400.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) > 400.0D) (type: boolean)
+            Select Operator
+              expressions: array(key,value) (type: array<string>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Filter Operator
+                  predicate: (UDFToDouble(col) < 450.0D) (type: boolean)
+                  Select Operator
+                    expressions: col (type: string)
+                    outputColumnNames: _col0
+                    ListSink
+
+PREHOOK: query: SELECT value from (
+  select explode(array(key, value)) as (value) from (
+    select * FROM src WHERE key > 400
+  ) A
+) B WHERE value < 450
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value from (
+  select explode(array(key, value)) as (value) from (
+    select * FROM src WHERE key > 400
+  ) A
+) B WHERE value < 450
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+409
+401
+406
+429
+403
+417
+430
+446
+413
+417
+439
+438
+427
+437
+430
+404
+411
+431
+418
+404
+436
+409
+413
+419
+435
+401
+402
+430
+449
+401
+438
+432
+403
+406
+409
+406
+401
+424
+431
+431
+424
+438
+414
+439
+417
+444
+429
+443
+406
+401
+421
+407
+448
+414
+403

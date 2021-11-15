@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class AllocWriteIdHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     if (!AcidUtils.isAcidEnabled(context.hiveConf)) {
       context.log.error("Cannot load alloc write id event as acid is not enabled");
@@ -46,16 +46,15 @@ public class AllocWriteIdHandler extends AbstractMessageHandler {
 
     String dbName = (context.dbName != null && !context.dbName.isEmpty() ? context.dbName : msg.getDB());
 
-    // The context table name can be null if repl load is done on a full db.
-    // But we need table name for alloc write id and that is received from source.
-    String tableName = (context.tableName != null && !context.tableName.isEmpty() ? context.tableName : msg
-            .getTableName());
+    // We need table name for alloc write id and that is received from source.
+    String tableName = msg.getTableName();
 
     // Repl policy should be created based on the table name in context.
-    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName, context.tableName), dbName, tableName,
-        ReplTxnWork.OperationType.REPL_ALLOC_WRITE_ID, msg.getTxnToWriteIdList(), context.eventOnlyReplicationSpec());
+    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), dbName, tableName,
+        ReplTxnWork.OperationType.REPL_ALLOC_WRITE_ID, msg.getTxnToWriteIdList(), context.eventOnlyReplicationSpec(),
+            context.getDumpDirectory(), context.getMetricCollector());
 
-    Task<? extends Serializable> allocWriteIdTask = TaskFactory.get(work, context.hiveConf);
+    Task<?> allocWriteIdTask = TaskFactory.get(work, context.hiveConf);
     context.log.info("Added alloc write id task : {}", allocWriteIdTask.getId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), dbName, tableName, null);
     return Collections.singletonList(allocWriteIdTask);

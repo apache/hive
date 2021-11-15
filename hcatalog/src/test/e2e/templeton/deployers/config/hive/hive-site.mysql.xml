@@ -55,11 +55,6 @@
         <value>true</value>
     </property>
     <property>
-        <name>hive.exec.dynamic.partition.mode</name>
-        <value>nonstrict</value>
-    </property>
-
-    <property>
         <name>hive.compactor.initiator.on</name>
         <value>true</value>
     </property>

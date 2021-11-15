@@ -38,6 +38,6 @@ public interface ConditionalResolver {
    *          opaque context
    * @return position of the task
    */
-  List<Task<? extends Serializable>> getTasks(HiveConf conf, Object ctx);
+  List<Task<?>> getTasks(HiveConf conf, Object ctx);
 
 }

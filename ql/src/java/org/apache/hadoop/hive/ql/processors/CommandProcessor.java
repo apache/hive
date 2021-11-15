@@ -19,5 +19,5 @@
 package org.apache.hadoop.hive.ql.processors;
 
 public interface CommandProcessor extends AutoCloseable {
-  CommandProcessorResponse run(String command);
+  CommandProcessorResponse run(String command) throws CommandProcessorException;
 }

@@ -23,28 +23,25 @@ import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
-import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -89,15 +86,15 @@ public class TestTezProgressMonitor {
   @Test
   public void setupInternalStateOnObjectCreation() throws IOException, TezException {
     when(dagStatus.getState()).thenReturn(DAGStatus.State.RUNNING);
-    when(dagClient.getVertexStatus(eq(MAPPER), anySet())).thenReturn(succeeded);
-    when(dagClient.getVertexStatus(eq(REDUCER), anySet())).thenReturn(running);
+    when(dagClient.getVertexStatus(eq(MAPPER), any())).thenReturn(succeeded);
+    when(dagClient.getVertexStatus(eq(REDUCER), any())).thenReturn(running);
 
     TezProgressMonitor monitor =
         new TezProgressMonitor(dagClient, dagStatus, new ArrayList<BaseWork>(), progressMap(), console,
             Long.MAX_VALUE);
 
-    verify(dagClient).getVertexStatus(eq(MAPPER), isNull(Set.class));
-    verify(dagClient).getVertexStatus(eq(REDUCER), isNull(Set.class));
+    verify(dagClient).getVertexStatus(eq(MAPPER), isNull());
+    verify(dagClient).getVertexStatus(eq(REDUCER), isNull());
     verifyNoMoreInteractions(dagClient);
 
     assertThat(monitor.vertexStatusMap.keySet(), hasItems(MAPPER, REDUCER));

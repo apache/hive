@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,10 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -69,7 +68,7 @@ public class SparkPlan {
 
   @SuppressWarnings("unchecked")
   public JavaPairRDD<HiveKey, BytesWritable> generateGraph() {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
     Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> tranToOutputRDDMap
         = new HashMap<SparkTran, JavaPairRDD<HiveKey, BytesWritable>>();
     for (SparkTran tran : getAllTrans()) {
@@ -113,7 +112,7 @@ public class SparkPlan {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
 
     LOG.info("\n\nSpark RDD Graph:\n\n" + finalRDD.toDebugString() + "\n");
 
@@ -134,7 +133,7 @@ public class SparkPlan {
   private String getLongFormCallSite(SparkTran tran) {
     if (this.jobConf.getBoolean(HiveConf.ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.varname, HiveConf
             .ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.defaultBoolVal)) {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
 
       ExplainWork explainWork = new ExplainWork();
       explainWork.setConfig(new ExplainConfiguration());
@@ -154,7 +153,7 @@ public class SparkPlan {
         LOG.error("Error while generating explain plan for " + tran.getName(), e);
       }
 
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
       return explainOutput;
     }
     return "";
@@ -226,7 +225,7 @@ public class SparkPlan {
 
   public List<SparkTran> getParents(SparkTran tran) {
     if (!invertedTransGraph.containsKey(tran)) {
-      return new ArrayList<SparkTran>();
+      return Collections.emptyList();
     }
 
     return invertedTransGraph.get(tran);
@@ -234,7 +233,7 @@ public class SparkPlan {
 
   public List<SparkTran> getChildren(SparkTran tran) {
     if (!transGraph.containsKey(tran)) {
-      return new ArrayList<SparkTran>();
+      return Collections.emptyList();
     }
 
     return transGraph.get(tran);

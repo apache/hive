@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
@@ -214,15 +216,17 @@ public class Partition implements Serializable {
 
   public Path getDataLocation() {
     if (table.isPartitioned()) {
-      if (tPartition.getSd() == null)
+      if (tPartition.getSd() == null) {
         return null;
-      else
+      } else {
         return new Path(tPartition.getSd().getLocation());
+      }
     } else {
-      if (table.getTTable() == null || table.getTTable().getSd() == null)
+      if (table.getTTable() == null || table.getTTable().getSd() == null) {
         return null;
-      else
+      } else {
         return new Path(table.getTTable().getSd().getLocation());
+      }
     }
   }
 
@@ -511,7 +515,7 @@ public class Partition implements Serializable {
           tPartition.getSd().getSerdeInfo().getSerializationLib(), e);
     }
 
-    return new ArrayList<FieldSchema>();
+    return Collections.emptyList();
   }
 
   public String getLocation() {
@@ -598,4 +602,19 @@ public class Partition implements Serializable {
       Table.validateColumns(getCols(), table.getPartCols());
     }
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(tPartition);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Partition) {
+      Partition o = (Partition) obj;
+      return Objects.equals(tPartition, o.tPartition);
+    }
+    return false;
+  }
+
 }

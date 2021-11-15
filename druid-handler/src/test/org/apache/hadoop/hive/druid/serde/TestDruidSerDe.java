@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.druid.serde;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.druid.io.HiveDruidSplit;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
@@ -83,7 +82,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.apache.druid.data.input.Row;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.Result;
-import org.apache.druid.query.select.SelectResultValue;
 import org.apache.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.druid.query.topn.TopNResultValue;
 import org.junit.rules.ExpectedException;
@@ -92,7 +90,8 @@ import org.junit.rules.ExpectedException;
  * Basic tests for Druid SerDe. The examples are taken from Druid 0.9.1.1
  * documentation.
  */
-@SuppressWarnings({ "SameParameterValue", "SpellCheckingInspection" }) public class TestDruidSerDe {
+@SuppressWarnings({"SameParameterValue", "SpellCheckingInspection"})
+public class TestDruidSerDe {
   // Timeseries query
   private static final String
       TIMESERIES_QUERY =
@@ -156,12 +155,12 @@ import org.junit.rules.ExpectedException;
           new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC)),
           0L,
           1.0F,
-          2.2222F },
+          2.2222F},
       new Object[]{
           new TimestampTZ(Instant.ofEpochMilli(1325462400000L).atZone(ZoneOffset.UTC)),
           2L,
           3.32F,
-          4F } };
+          4F}};
 
   // Timeseries query results as records (types defined by metastore)
   private static final String TIMESERIES_COLUMN_NAMES = "timestamp,sample_name1,sample_name2,sample_divide";
@@ -269,19 +268,19 @@ import org.junit.rules.ExpectedException;
   private static final Object[][] TOPN_QUERY_RESULTS_RECORDS = new Object[][]{
       new Object[]{
           new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC)),
-          "dim1_val", 111L, 10669F, 96.11711711711712F },
+          "dim1_val", 111L, 10669F, 96.11711711711712F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          "another_dim1_val", 88L, 28344F, 322.09090909090907F },
+          "another_dim1_val", 88L, 28344F, 322.09090909090907F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          "dim1_val3", 70L, 871F, 12.442857142857143F },
+          "dim1_val3", 70L, 871F, 12.442857142857143F},
       new Object[]{
           new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC)),
-          "dim1_val4", 62L, 815F, 13.14516129032258F },
+          "dim1_val4", 62L, 815F, 13.14516129032258F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          "dim1_val5", 60L, 2787F, 46.45F } };
+          "dim1_val5", 60L, 2787F, 46.45F}};
 
   // TopN query results as records (types defined by metastore)
   private static final String TOPN_COLUMN_NAMES = "timestamp,sample_dim,count,some_metric,sample_divide";
@@ -422,24 +421,24 @@ import org.junit.rules.ExpectedException;
   private static final Object[][] GROUP_BY_QUERY_EXTRACTION_RESULTS_RECORDS = new Object[][]{
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
-          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), 200L },
+          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), 200L},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
-          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), 400L } };
+          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), 400L}};
 
   private static final Object[][] GROUP_BY_QUERY_RESULTS_RECORDS = new Object[][]{
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), "India",
-          "phone", 88L, 29.91233453, 60.32F },
+          "phone", 88L, 29.91233453, 60.32F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
-          "Spain", "pc", 16L, 172.93494959, 6.333333F } };
+          "Spain", "pc", 16L, 172.93494959, 6.333333F}};
 
   private static final Object[][] GB_MONTH_EXTRACTION_RESULTS_RECORDS = new Object[][]{
       new Object[]{
-          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), 1, 200L },
+          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), 1, 200L},
       new Object[]{
-          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), 1, 400L } };
+          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), 1, 400L}};
 
   // GroupBy query results as records (types defined by metastore)
   private static final String GROUP_BY_COLUMN_NAMES = "timestamp,country,device,total_usage,data_transfer,avg_usage";
@@ -455,146 +454,14 @@ import org.junit.rules.ExpectedException;
   private static final String GB_MONTH_EXTRACTIONS_COLUMN_NAMES = "timestamp,extract_month,$f1";
   private static final String GB_MONTH_EXTRACTIONS_COLUMN_TYPES = "timestamp with local time zone,int,bigint";
 
-  // Select query
-  private static final String
-      SELECT_QUERY =
-      "{   \"queryType\": \"select\",  "
-          + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
-          + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
-          + "\"newpage\",\"user\"],  "
-          + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
-          + " \"granularity\": \"all\",  "
-          + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],  "
-          + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5} }";
-
-  // Select query results
-  private static final String
-      SELECT_QUERY_RESULTS =
-      "[{ "
-          + " \"timestamp\" : \"2013-01-01T00:00:00.000Z\", "
-          + " \"result\" : {  "
-          + "  \"pagingIdentifiers\" : {   "
-          + "   \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\" : 4    }, "
-          + "   \"events\" : [ {  "
-          + "    \"segmentId\" : \"wikipedia_editstream_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00"
-          + ".000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 0,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-          + "     \"robot\" : 1,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"11._korpus_(NOVJ)\",   "
-          + "     \"language\" : \"sl\",   "
-          + "     \"newpage\" : \"0\",   "
-          + "     \"user\" : \"EmausBot\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 39.0,   "
-          + "     \"delta\" : 39.0,   "
-          + "     \"variation\" : 39.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 1,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"112_U.S._580\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 70.0,   "
-          + "     \"delta\" : 70.0,   "
-          + "     \"variation\" : 70.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 2,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._243\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 77.0,   "
-          + "     \"delta\" : 77.0,   "
-          + "     \"variation\" : 77.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 3,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._73\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 70.0,   "
-          + "     \"delta\" : 70.0,   "
-          + "     \"variation\" : 70.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
-          + ".830Z_v9\",  "
-          + "    \"offset\" : 4,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : 0,   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._756\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 68.0,   "
-          + "     \"delta\" : 68.0,   "
-          + "     \"variation\" : 68.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   } ]  }} ]";
-
-  // Select query results as records (types defined by metastore)
-  private static final String
-      SELECT_COLUMN_NAMES =
+  private static final String SCAN_COLUMN_NAMES =
       "__time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted";
-  private static final String
-      SELECT_COLUMN_TYPES =
+  private static final String SCAN_COLUMN_TYPES =
       "timestamp with local time zone,boolean,string,string,string,string,string,string,string,double,double,float,"
           + "float,float";
-  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][]{
-      new Object[]{
-          (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.TRUE,
-          "article",
-          "0",
-          "0",
-          "11._korpus_(NOVJ)",
-          "sl",
-          "0",
-          "EmausBot", 1.0d, 39.0d, 39.0F, 39.0F, 0.0F },
+  private static final Object[][] SCAN_QUERY_RESULTS_RECORDS = new Object[][]{
+      new Object[]{(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.TRUE,
+          "article", "0", "0", "11._korpus_(NOVJ)", "sl", "0", "EmausBot", 1.0d, 39.0d, 39.0F, 39.0F, 0.0F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
           "article",
@@ -603,7 +470,7 @@ import org.junit.rules.ExpectedException;
           "112_U.S._580",
           "en",
           "1",
-          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F },
+          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
           "article",
@@ -612,7 +479,7 @@ import org.junit.rules.ExpectedException;
           "113_U.S._243",
           "en",
           "1",
-          "MZMcBride", 1.0d, 77.0d, 77.0F, 77.0F, 0.0F },
+          "MZMcBride", 1.0d, 77.0d, 77.0F, 77.0F, 0.0F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
           "article",
@@ -621,7 +488,7 @@ import org.junit.rules.ExpectedException;
           "113_U.S._73",
           "en",
           "1",
-          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F },
+          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F},
       new Object[]{
           (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
           "article",
@@ -630,7 +497,7 @@ import org.junit.rules.ExpectedException;
           "113_U.S._756",
           "en",
           "1",
-          "MZMcBride", 1.0d, 68.0d, 68.0F, 68.0F, 0.0F } };
+          "MZMcBride", 1.0d, 68.0d, 68.0F, 68.0F, 0.0F}};
 
   // Scan query
   private static final String
@@ -664,7 +531,8 @@ import org.junit.rules.ExpectedException;
           + ".0,68.0,68.0,68.0,0.0]"
           + "]}]";
 
-  @Before public void setup() throws IOException {
+  @Before
+  public void setup() throws IOException {
     tsQueryResults =
         DruidStorageHandlerUtils.SMILE_MAPPER.writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(
             TIMESERIES_QUERY_RESULTS,
@@ -691,12 +559,6 @@ import org.junit.rules.ExpectedException;
             GB_MONTH_EXTRACTIONS_RESULTS,
             new TypeReference<List<Row>>() {
             }));
-    selectQueryResults =
-        DruidStorageHandlerUtils.SMILE_MAPPER.writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-            SELECT_QUERY_RESULTS,
-            new TypeReference<List<Result<SelectResultValue>>>() {
-            }));
-
     scanQueryResults =
         DruidStorageHandlerUtils.SMILE_MAPPER.writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(
             SCAN_QUERY_RESULTS,
@@ -704,7 +566,8 @@ import org.junit.rules.ExpectedException;
             }));
   }
 
-  @Test public void testDruidDeserializer()
+  @Test
+  public void testDruidDeserializer()
       throws SerDeException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException,
       IOException, InterruptedException, NoSuchMethodException, InvocationTargetException {
     // Create, initialize, and test the SerDe
@@ -718,7 +581,7 @@ import org.junit.rules.ExpectedException;
             TIMESERIES_QUERY,
             TIMESERIES_COLUMN_NAMES,
             TIMESERIES_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe,
         Query.TIMESERIES,
         TIMESERIES_QUERY,
@@ -727,7 +590,7 @@ import org.junit.rules.ExpectedException;
 
     // TopN query
     tbl = createPropertiesQuery("sample_data", Query.TOPN, TOPN_QUERY, TOPN_COLUMN_NAMES, TOPN_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY, topNQueryResults, TOPN_QUERY_RESULTS_RECORDS);
 
     // GroupBy query
@@ -737,7 +600,7 @@ import org.junit.rules.ExpectedException;
             GROUP_BY_QUERY,
             GROUP_BY_COLUMN_NAMES,
             GROUP_BY_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY, groupByQueryResults, GROUP_BY_QUERY_RESULTS_RECORDS);
 
     tbl =
@@ -746,7 +609,7 @@ import org.junit.rules.ExpectedException;
             GB_TIME_EXTRACTIONS,
             GB_TIME_EXTRACTIONS_COLUMN_NAMES,
             GB_TIME_EXTRACTIONS_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe,
         Query.GROUP_BY,
         GB_TIME_EXTRACTIONS,
@@ -759,28 +622,24 @@ import org.junit.rules.ExpectedException;
             GB_MONTH_EXTRACTIONS,
             GB_MONTH_EXTRACTIONS_COLUMN_NAMES,
             GB_MONTH_EXTRACTIONS_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe,
         Query.GROUP_BY,
         GB_MONTH_EXTRACTIONS,
         groupByMonthExtractQueryResults,
         GB_MONTH_EXTRACTION_RESULTS_RECORDS);
-    // Select query
-    tbl = createPropertiesQuery("wikipedia", Query.SELECT, SELECT_QUERY, SELECT_COLUMN_NAMES, SELECT_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY, selectQueryResults, SELECT_QUERY_RESULTS_RECORDS);
 
     // Scan query -- results should be same as select query
-    tbl = createPropertiesQuery("wikipedia", Query.SCAN, SCAN_QUERY, SELECT_COLUMN_NAMES, SELECT_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.SCAN, SCAN_QUERY, scanQueryResults, SELECT_QUERY_RESULTS_RECORDS);
+    tbl = createPropertiesQuery("wikipedia", Query.SCAN, SCAN_QUERY, SCAN_COLUMN_NAMES, SCAN_COLUMN_TYPES);
+    serDe.initialize(conf, tbl, null);
+    deserializeQueryResults(serDe, Query.SCAN, SCAN_QUERY, scanQueryResults, SCAN_QUERY_RESULTS_RECORDS);
   }
 
   private static Properties createPropertiesQuery(String dataSource,
-      String queryType,
-      String jsonQuery,
-      String columnNames,
-      String columnTypes) {
+                                                  String queryType,
+                                                  String jsonQuery,
+                                                  String columnNames,
+                                                  String columnTypes) {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
@@ -792,11 +651,12 @@ import org.junit.rules.ExpectedException;
     return tbl;
   }
 
-  @SuppressWarnings("unchecked") private void deserializeQueryResults(DruidSerDe serDe,
-      String queryType,
-      String jsonQuery,
-      byte[] resultString,
-      Object[][] records)
+  @SuppressWarnings("unchecked")
+  private void deserializeQueryResults(DruidSerDe serDe,
+                                       String queryType,
+                                       String jsonQuery,
+                                       byte[] resultString,
+                                       Object[][] records)
       throws SerDeException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException,
       IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
 
@@ -808,8 +668,9 @@ import org.junit.rules.ExpectedException;
     DruidQueryRecordReader<?> reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
 
     final HiveDruidSplit split = new HiveDruidSplit(jsonQuery, new Path("empty"), new String[]{"testing_host"});
-
-    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient);
+    Configuration conf = new Configuration();
+    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient,
+        conf);
     StructObjectInspector oi = (StructObjectInspector) serDe.getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
 
@@ -834,7 +695,8 @@ import org.junit.rules.ExpectedException;
     futureResult.set(new ByteArrayInputStream(resultString));
     when(httpClient.go(anyObject(), any(HttpResponseHandler.class))).thenReturn(futureResult);
     reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
-    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient);
+    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient,
+        conf);
 
     pos = 0;
     while (reader.nextKeyValue()) {
@@ -884,7 +746,8 @@ import org.junit.rules.ExpectedException;
           .put("__time_granularity", 1377907200000L)
           .build());
 
-  @Test public void testDruidObjectSerializer()
+  @Test
+  public void testDruidObjectSerializer()
       throws SerDeException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException,
       IOException, InterruptedException, NoSuchMethodException, InvocationTargetException {
     // Create, initialize, and test the SerDe
@@ -893,20 +756,22 @@ import org.junit.rules.ExpectedException;
     Properties tbl;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     serializeObject(tbl, serDe, ROW_OBJECT, DRUID_WRITABLE);
   }
 
-  @Rule public ExpectedException expectedEx = ExpectedException.none();
+  @Rule
+  public ExpectedException expectedEx = ExpectedException.none();
 
-  @Test public void testDruidObjectSerializerwithNullTimestamp() throws Exception {
+  @Test
+  public void testDruidObjectSerializerwithNullTimestamp() throws Exception {
     // Create, initialize, and test the SerDe
     DruidSerDe serDe = new DruidSerDe();
     Configuration conf = new Configuration();
     Properties tbl;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     Object[] row = new Object[]{
         null,
         new Text("dim1_val"),
@@ -937,9 +802,9 @@ import org.junit.rules.ExpectedException;
   }
 
   private static void serializeObject(Properties properties,
-      DruidSerDe serDe,
-      Object[] rowObject,
-      DruidWritable druidWritable) throws SerDeException {
+                                      DruidSerDe serDe,
+                                      Object[] rowObject,
+                                      DruidWritable druidWritable) throws SerDeException {
     // Build OI with timestamp granularity column
     final List<String> columnNames = new ArrayList<>(Utilities.getColumnNames(properties));
     columnNames.add(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
@@ -989,7 +854,8 @@ import org.junit.rules.ExpectedException;
           .put("c8", (byte) 0)
           .build());
 
-  @Test public void testDruidObjectDeserializer()
+  @Test
+  public void testDruidObjectDeserializer()
       throws SerDeException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException,
       IOException, InterruptedException, NoSuchMethodException, InvocationTargetException {
     // Create, initialize, and test the SerDe
@@ -998,13 +864,14 @@ import org.junit.rules.ExpectedException;
     Properties tbl;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeObject(serDe, ROW_OBJECT_2, DRUID_WRITABLE_2);
   }
 
-  @SuppressWarnings("unchecked") private static void deserializeObject(DruidSerDe serDe,
-      Object[] rowObject,
-      DruidWritable druidWritable) throws SerDeException {
+  @SuppressWarnings("unchecked")
+  private static void deserializeObject(DruidSerDe serDe,
+                                        Object[] rowObject,
+                                        DruidWritable druidWritable) throws SerDeException {
     // Deserialize
     List<Object> object = (List<Object>) serDe.deserialize(druidWritable);
     // Check result

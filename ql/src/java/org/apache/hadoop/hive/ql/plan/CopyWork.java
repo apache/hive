@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -33,6 +34,10 @@ public class CopyWork implements Serializable {
   private Path[] fromPath;
   private Path[] toPath;
   private boolean errorOnSrcEmpty;
+  private boolean overwrite = true;
+  private boolean isReplication;
+  private String dumpDirectory;
+  private transient ReplicationMetricCollector metricCollector;
 
   public CopyWork() {
   }
@@ -40,6 +45,32 @@ public class CopyWork implements Serializable {
   public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty) {
     this(new Path[] { fromPath }, new Path[] { toPath });
     this.setErrorOnSrcEmpty(errorOnSrcEmpty);
+  }
+
+  public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty,
+                  String dumpDirectory, ReplicationMetricCollector metricCollector,
+                  boolean isReplication) {
+    this(new Path[] { fromPath }, new Path[] { toPath });
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
+    this.setErrorOnSrcEmpty(errorOnSrcEmpty);
+    this.isReplication = isReplication;
+  }
+
+  public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty, boolean overwrite) {
+    this(new Path[] { fromPath }, new Path[] { toPath });
+    this.setErrorOnSrcEmpty(errorOnSrcEmpty);
+    this.setOverwrite(overwrite);
+  }
+
+  public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty, boolean overwrite,
+                  String dumpDirectory, ReplicationMetricCollector metricCollector, boolean isReplication) {
+    this(new Path[] { fromPath }, new Path[] { toPath });
+    this.setErrorOnSrcEmpty(errorOnSrcEmpty);
+    this.setOverwrite(overwrite);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
+    this.isReplication = isReplication;
   }
 
   public CopyWork(final Path[] fromPath, final Path[] toPath) {
@@ -80,11 +111,29 @@ public class CopyWork implements Serializable {
     return toPath;
   }
 
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public String getDumpDirectory() {
+    return dumpDirectory;
+  }
+
+  public boolean isReplication() { return isReplication; }
+
   public void setErrorOnSrcEmpty(boolean errorOnSrcEmpty) {
     this.errorOnSrcEmpty = errorOnSrcEmpty;
   }
 
   public boolean isErrorOnSrcEmpty() {
     return errorOnSrcEmpty;
+  }
+
+  public boolean isOverwrite() {
+    return overwrite;
+  }
+
+  public void setOverwrite(boolean overwrite) {
+    this.overwrite = overwrite;
   }
 }

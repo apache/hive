@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24265
 set hive.stats.dbclass=fs;
 set hive.stats.fetch.column.stats=true;
 set datanucleus.cache.collections=false;
@@ -16,7 +17,6 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.query.results.cache.enabled=false;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 create table stats3(key int,value string) stored as orc tblproperties ("transactional"="true");
 insert into table stats3  values (1, "foo");

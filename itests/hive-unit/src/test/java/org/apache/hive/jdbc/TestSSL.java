@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -52,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@org.junit.Ignore("HIVE-22620")
 public class TestSSL {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestSSL.class);
@@ -59,8 +61,10 @@ public class TestSSL {
   private static final String EXAMPLEDOTCOM_KEY_STORE_NAME = "keystore_exampledotcom.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
   private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
+  private static final String KEY_STORE_TRUST_STORE_TYPE = "jks";
   private static final String JAVA_TRUST_STORE_PROP = "javax.net.ssl.trustStore";
   private static final String JAVA_TRUST_STORE_PASS_PROP = "javax.net.ssl.trustStorePassword";
+  private static final String JAVA_TRUST_STORE_TYPE_PROP = "javax.net.ssl.trustStoreType";
 
   private MiniHS2 miniHS2 = null;
   private static HiveConf conf = new HiveConf();
@@ -435,8 +439,28 @@ public class TestSSL {
    */
   @Test
   public void testMetastoreWithSSL() throws Exception {
+    testSSLHMS(true);
+  }
+
+  /**
+   * Test HMS server with SSL with input keystore type
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreWithSSLKeyStoreType() throws Exception {
+    testSSLHMS(false);
+  }
+
+  private void testSSLHMS(boolean useDefaultStoreType) throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
     SSLTestUtils.setSslConfOverlay(confOverlay);
+    // Test in binary mode
+    SSLTestUtils.setBinaryConfOverlay(confOverlay);
+    if (!useDefaultStoreType) {
+      confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_TYPE.varname, KEY_STORE_TRUST_STORE_TYPE);
+      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
+    }
+    //MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     // Test in http mode
     SSLTestUtils.setHttpConfOverlay(confOverlay);
     miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).cleanupLocalDirOnStartup(false).build();
@@ -447,7 +471,7 @@ public class TestSSL {
 
     // make SSL connection
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default", SSLTestUtils.SSL_CONN_PARAMS),
-        System.getProperty("user.name"), "bar");
+            System.getProperty("user.name"), "bar");
 
     // Set up test data
     SSLTestUtils.setupTestTableWithData(tableName, dataFilePath, hs2Conn);
@@ -463,12 +487,12 @@ public class TestSSL {
 
     hs2Conn.close();
   }
-
   /**
    * Verify the HS2 can't connect to HMS if the certificate doesn't match
    * @throws Exception
    */
   @Test
+  @Ignore("HIVE-22621: test case is unstable")
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
     conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
@@ -481,5 +505,37 @@ public class TestSSL {
     }
 
     miniHS2.stop();
+  }
+
+  /***
+   * Test SSL client connection to SSL server
+   * @throws Exception
+   */
+  @Test
+  public void testSSLConnectionWithKeystoreType() throws Exception {
+    SSLTestUtils.setSslConfOverlay(confOverlay);
+    confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_TYPE.varname, KEY_STORE_TRUST_STORE_TYPE);
+    // Test in binary mode
+    SSLTestUtils.setBinaryConfOverlay(confOverlay);
+    // Start HS2 with SSL
+    miniHS2.start(confOverlay);
+
+    System.setProperty(JAVA_TRUST_STORE_PROP, dataFileDir + File.separator + TRUST_STORE_NAME );
+    System.setProperty(JAVA_TRUST_STORE_PASS_PROP, KEY_STORE_TRUST_STORE_PASSWORD);
+    System.setProperty(JAVA_TRUST_STORE_TYPE_PROP, KEY_STORE_TRUST_STORE_TYPE);
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true",
+            System.getProperty("user.name"), "bar");
+    hs2Conn.close();
+    miniHS2.stop();
+
+    // Test in http mode
+    SSLTestUtils.setHttpConfOverlay(confOverlay);
+    miniHS2.start(confOverlay);
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default",
+        SSLTestUtils.SSL_CONN_PARAMS) + ";trustStoreType=" + KEY_STORE_TRUST_STORE_TYPE,
+            System.getProperty("user.name"), "bar");
+    hs2Conn.close();
   }
 }

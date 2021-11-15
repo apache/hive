@@ -1,4 +1,5 @@
 --! qt:dataset:srcpart
+-- SORT_QUERY_RESULTS
 
 set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
@@ -67,12 +68,11 @@ select ti, si, i, bi from alltypes_orc_n0;
 
 SET hive.exec.schema.evolution=false;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 create table src_part_orc (key int, value string) partitioned by (ds string) stored as orc;
 insert overwrite table src_part_orc partition(ds) select key, value, ds from srcpart where ds is not null;
 
-select * from src_part_orc limit 10;
+select * from src_part_orc order by key, value, ds limit 10;
 
 alter table src_part_orc change key key bigint;
-select * from src_part_orc limit 10;
+select * from src_part_orc order by key, value, ds limit 10;
 reset hive.metastore.disallow.incompatible.col.type.changes;

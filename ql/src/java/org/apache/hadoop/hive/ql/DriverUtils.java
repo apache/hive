@@ -15,19 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql;
+
+import java.io.IOException;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DriverUtils {
-  private static final Logger LOG = LoggerFactory.getLogger(DriverUtils.class);
+/**
+ * Utility functions for the Driver.
+ */
+public final class DriverUtils {
+  private static final String CLASS_NAME = Driver.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static final LogHelper CONSOLE = new LogHelper(LOG);
+
+  private DriverUtils() {
+    throw new UnsupportedOperationException("DriverUtils should not be instantiated!");
+  }
 
   public static void runOnDriver(HiveConf conf, String user, SessionState sessionState,
       String query) throws HiveException {
@@ -48,13 +65,13 @@ public class DriverUtils {
     boolean isOk = false;
     try {
       QueryState qs = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(true).nonIsolated().build();
-      Driver driver = new Driver(qs, user, null, null);
-      driver.setCompactionWriteIds(writeIds, compactorTxnId);
+      Driver driver = new Driver(qs, null, null, writeIds, compactorTxnId);
       try {
-        CommandProcessorResponse cpr = driver.run(query);
-        if (cpr.getResponseCode() != 0) {
-          LOG.error("Failed to run " + query, cpr.getException());
-          throw new HiveException("Failed to run " + query, cpr.getException());
+        try {
+          driver.run(query);
+        } catch (CommandProcessorException e) {
+          LOG.error("Failed to run " + query, e);
+          throw new HiveException("Failed to run " + query, e);
         }
       } finally {
         driver.close();
@@ -87,5 +104,71 @@ public class DriverUtils {
       SessionState.setCurrentSessionState(sessionState);
     }
     return sessionState;
+  }
+
+  public static void checkInterrupted(DriverState driverState, DriverContext driverContext, String msg,
+      HookContext hookContext, PerfLogger perfLogger) throws CommandProcessorException {
+    if (driverState.isAborted()) {
+      String errorMessage = "FAILED: command has been interrupted: " + msg;
+      CONSOLE.printError(errorMessage);
+      if (hookContext != null) {
+        try {
+          invokeFailureHooks(driverContext, perfLogger, hookContext, errorMessage, null);
+        } catch (Exception e) {
+          LOG.warn("Caught exception attempting to invoke Failure Hooks", e);
+        }
+      }
+      throw createProcessorException(driverContext, 1000, errorMessage, "HY008", null);
+    }
+  }
+
+  public static void invokeFailureHooks(DriverContext driverContext, PerfLogger perfLogger, HookContext hookContext,
+      String errorMessage, Throwable exception) throws Exception {
+    hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+    hookContext.setErrorMessage(errorMessage);
+    hookContext.setException(exception);
+    // Get all the failure execution hooks and execute them.
+    driverContext.getHookRunner().runFailureHooks(hookContext);
+  }
+
+  public static void handleHiveException(DriverContext driverContext, HiveException e, int ret, String rootMsg)
+      throws CommandProcessorException {
+    String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+    if (rootMsg != null) {
+      errorMessage += "\n" + rootMsg;
+    }
+    String sqlState = e.getCanonicalErrorMsg() != null ?
+        e.getCanonicalErrorMsg().getSQLState() : ErrorMsg.findSQLState(e.getMessage());
+    CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
+    throw DriverUtils.createProcessorException(driverContext, ret, errorMessage, sqlState, e);
+  }
+
+  public static CommandProcessorException createProcessorException(DriverContext driverContext, int ret,
+      String errorMessage, String sqlState, Throwable downstreamError) {
+    SessionState.getPerfLogger().cleanupPerfLogMetrics();
+    driverContext.getQueryDisplay().setErrorMessage(errorMessage);
+    if (downstreamError != null && downstreamError instanceof HiveException) {
+      ErrorMsg em = ((HiveException)downstreamError).getCanonicalErrorMsg();
+      if (em != null) {
+        return new CommandProcessorException(ret, em.getErrorCode(), errorMessage, sqlState, downstreamError);
+      }
+    }
+    return new CommandProcessorException(ret, -1, errorMessage, sqlState, downstreamError);
+  }
+
+  public static boolean checkConcurrency(DriverContext driverContext) {
+    return driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+  }
+
+  public static String getUserFromUGI(DriverContext driverContext) throws CommandProcessorException {
+    // Don't use the userName member, as it may or may not have been set.  Get the value from
+    // conf, which calls into getUGI to figure out who the process is running as.
+    try {
+      return driverContext.getConf().getUser();
+    } catch (IOException e) {
+      String errorMessage = "FAILED: Error in determining user while acquiring locks: " + e.getMessage();
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+      throw createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
+    }
   }
 }

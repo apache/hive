@@ -25,7 +25,7 @@ import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -176,7 +176,7 @@ public class HdfsUtils {
     Iterables.removeIf(entries, new Predicate<AclEntry>() {
       @Override
       public boolean apply(AclEntry input) {
-        if (input.getName() == null) {
+        if (input != null && input.getName() == null) {
           return true;
         }
         return false;

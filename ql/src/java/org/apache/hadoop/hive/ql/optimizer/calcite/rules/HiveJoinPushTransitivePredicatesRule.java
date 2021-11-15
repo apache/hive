@@ -42,12 +42,14 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hive.common.util.AnnotationUtils;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -68,6 +70,9 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
   public static final HiveJoinPushTransitivePredicatesRule INSTANCE_SEMIJOIN =
           new HiveJoinPushTransitivePredicatesRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+
+  public static final HiveJoinPushTransitivePredicatesRule INSTANCE_ANTIJOIN =
+          new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   private final FilterFactory filterFactory;
 
@@ -104,15 +109,13 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
     if (!newLeftPredicate.isAlwaysTrue()) {
       RelNode curr = lChild;
-      lChild = filterFactory.createFilter(
-          lChild, newLeftPredicate.accept(new RexReplacer(lChild)));
+      lChild = filterFactory.createFilter(lChild, newLeftPredicate.accept(new RexReplacer(lChild)), ImmutableSet.of());
       call.getPlanner().onCopy(curr, lChild);
     }
 
     if (!newRightPredicate.isAlwaysTrue()) {
       RelNode curr = rChild;
-      rChild = filterFactory.createFilter(
-          rChild, newRightPredicate.accept(new RexReplacer(rChild)));
+      rChild = filterFactory.createFilter(rChild, newRightPredicate.accept(new RexReplacer(rChild)), ImmutableSet.of());
       call.getPlanner().onCopy(curr, rChild);
     }
 

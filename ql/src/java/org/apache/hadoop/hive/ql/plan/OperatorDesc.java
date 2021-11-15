@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 public interface OperatorDesc extends Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException;
@@ -40,4 +41,12 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap);
 
   void fillSignature(Map<String, Object> ret);
+
+  public void setBucketingVersion(int bucketingVersion);
+
+  public int getBucketingVersion();
+
+  void addComputedField(String column);
+
+  Set<String> getComputedFields();
 }

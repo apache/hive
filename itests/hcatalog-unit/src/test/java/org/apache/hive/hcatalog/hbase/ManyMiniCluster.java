@@ -29,12 +29,12 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hive.testutils.MiniZooKeeperCluster;
 
 import java.io.File;
 import java.io.IOException;
@@ -254,8 +254,9 @@ public class ManyMiniCluster {
       hbaseDir = hbaseDir.replaceAll("\\\\", "/");
       hbaseRoot = "file:///" + hbaseDir;
 
-      if (hbaseConf == null)
+      if (hbaseConf == null) {
         hbaseConf = HBaseConfiguration.create();
+      }
 
       hbaseConf.set("hbase.rootdir", hbaseRoot);
       hbaseConf.set("hbase.master", "local");
@@ -265,6 +266,7 @@ public class ManyMiniCluster {
       hbaseConf.setInt("hbase.master.info.port", -1);
       hbaseConf.setInt("hbase.regionserver.port", findFreePort());
       hbaseConf.setInt("hbase.regionserver.info.port", -1);
+      hbaseConf.setBoolean("hbase.unsafe.stream.capability.enforce", false);
 
       hbaseCluster = new MiniHBaseCluster(hbaseConf, numRegionServers);
       hbaseConf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());

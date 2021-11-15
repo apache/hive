@@ -1,0 +1,136 @@
+PREHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_update_bucketed(id string, value string) CLUSTERED BY(id) INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: CREATE TABLE test_update_bucketed(id string, value string) CLUSTERED BY(id) INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_update_bucketed
+PREHOOK: query: INSERT INTO test_update_bucketed values ('1','one'),('2','two'),('3','three'),('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten'),('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen'),('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: INSERT INTO test_update_bucketed values ('1','one'),('2','two'),('3','three'),('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten'),('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen'),('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_update_bucketed
+POSTHOOK: Lineage: test_update_bucketed.id SCRIPT []
+POSTHOOK: Lineage: test_update_bucketed.value SCRIPT []
+PREHOOK: query: SELECT * FROM test_update_bucketed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_update_bucketed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+10	ten
+11	eleven
+12	twelve
+13	thirteen
+14	fourteen
+15	fifteen
+16	sixteen
+17	seventeen
+18	eighteen
+19	nineteen
+2	two
+20	twenty
+3	three
+4	four
+5	five
+6	six
+7	seven
+8	eight
+9	nine
+PREHOOK: query: DELETE FROM test_update_bucketed WHERE id IN ('2', '4', '12', '15')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: DELETE FROM test_update_bucketed WHERE id IN ('2', '4', '12', '15')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed
+PREHOOK: query: UPDATE test_update_bucketed SET value='New value' WHERE id IN ('6','11', '18', '20')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: UPDATE test_update_bucketed SET value='New value' WHERE id IN ('6','11', '18', '20')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed
+PREHOOK: query: SELECT * FROM test_update_bucketed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_update_bucketed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+10	ten
+11	New value
+13	thirteen
+14	fourteen
+16	sixteen
+17	seventeen
+18	New value
+19	nineteen
+20	New value
+3	three
+5	five
+6	New value
+7	seven
+8	eight
+9	nine
+PREHOOK: query: DELETE FROM test_update_bucketed WHERE id IN ('2', '11', '10')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: DELETE FROM test_update_bucketed WHERE id IN ('2', '11', '10')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed
+PREHOOK: query: UPDATE test_update_bucketed SET value='New value2' WHERE id IN ('2','18', '19')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: UPDATE test_update_bucketed SET value='New value2' WHERE id IN ('2','18', '19')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed
+PREHOOK: query: SELECT * FROM test_update_bucketed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_update_bucketed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+13	thirteen
+14	fourteen
+16	sixteen
+17	seventeen
+18	New value2
+19	New value2
+20	New value
+3	three
+5	five
+6	New value
+7	seven
+8	eight
+9	nine
+PREHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_update_bucketed
+POSTHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_update_bucketed

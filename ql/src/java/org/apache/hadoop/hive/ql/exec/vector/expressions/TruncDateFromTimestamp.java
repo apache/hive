@@ -30,31 +30,27 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Argument
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.common.util.DateParser;
 
 /**
  * Vectorized implementation of trunc(date, fmt) function for timestamp input
  */
 public class TruncDateFromTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  protected int colNum;
-  protected String fmt;
-  protected transient final DateParser dateParser = new DateParser();
+  private final String fmt;
+
+  public TruncDateFromTimestamp(int colNum, byte[] fmt, int outputColumnNum) {
+    super(colNum, outputColumnNum);
+    this.fmt = new String(fmt, StandardCharsets.UTF_8);
+  }
 
   public TruncDateFromTimestamp() {
     super();
-    colNum = -1;
-  }
-
-  public TruncDateFromTimestamp(int colNum, byte[] fmt, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
-    this.fmt = new String(fmt, StandardCharsets.UTF_8);
+    this.fmt = "";
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", format " + fmt;
+    return "col " + inputColumnNum[0] + ", format " + fmt;
   }
 
   @Override
@@ -64,7 +60,7 @@ public class TruncDateFromTimestamp extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[colNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
@@ -149,18 +145,29 @@ public class TruncDateFromTimestamp extends VectorExpression {
   }
 
   protected void processDate(BytesColumnVector outV, int i, Date date) {
-    if ("MONTH".equals(fmt) || "MON".equals(fmt) || "MM".equals(fmt)) {
+    switch (fmt) {
+    case "YEAR":
+    case "YYYY":
+    case "YY":
+      date.setMonth(1);
+      /* fall through */
+    case "MONTH":
+    case "MON":
+    case "MM":
       date.setDayOfMonth(1);
-    } else if ("QUARTER".equals(fmt) || "Q".equals(fmt)) {
+      break;
+    case "QUARTER":
+    case "Q":
       int month = date.getMonth() - 1;
       int quarter = month / 3;
       int monthToSet = quarter * 3 + 1;
       date.setMonth(monthToSet);
       date.setDayOfMonth(1);
-    } else if ("YEAR".equals(fmt) || "YYYY".equals(fmt) || "YY".equals(fmt)) {
-      date.setMonth(1);
-      date.setDayOfMonth(1);
+      break;
+    default:
+      break;
     }
+
     byte[] bytes = date.toString().getBytes(StandardCharsets.UTF_8);
     outV.setVal(i, bytes, 0, bytes.length);
   }

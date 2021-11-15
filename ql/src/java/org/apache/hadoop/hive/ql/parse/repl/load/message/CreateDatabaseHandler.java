@@ -18,14 +18,15 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.database.create.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -42,8 +43,8 @@ import java.util.List;
 public class CreateDatabaseHandler extends AbstractMessageHandler {
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
-      throws SemanticException {
+  public List<Task<?>> handle(Context context)
+          throws SemanticException {
     MetaData metaData;
     try {
       FileSystem fs = FileSystem.get(new Path(context.location).toUri(), context.hiveConf);
@@ -57,22 +58,25 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
         context.dbName == null ? db.getName() : context.dbName;
 
     CreateDatabaseDesc createDatabaseDesc =
-        new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, true, db.getParameters());
-    Task<DDLWork2> createDBTask = TaskFactory.get(
-        new DDLWork2(new HashSet<>(), new HashSet<>(), createDatabaseDesc), context.hiveConf);
+        new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, null, true, db.getParameters());
+    Task<DDLWork> createDBTask = TaskFactory.get(
+        new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc, true,
+                context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     if (!db.getParameters().isEmpty()) {
-      AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(destinationDBName, db.getParameters(),
-          context.eventOnlyReplicationSpec());
-      Task<DDLWork2> alterDbProperties = TaskFactory
-          .get(new DDLWork2(new HashSet<>(), new HashSet<>(), alterDbDesc), context.hiveConf);
+      AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(destinationDBName,
+          db.getParameters(), context.eventOnlyReplicationSpec());
+      Task<DDLWork> alterDbProperties = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(),
+                                        alterDbDesc, true, context.getDumpDirectory(),
+                                        context.getMetricCollector()), context.hiveConf);
       createDBTask.addDependentTask(alterDbProperties);
     }
     if (StringUtils.isNotEmpty(db.getOwnerName())) {
-      AlterDatabaseDesc alterDbOwner = new AlterDatabaseDesc(destinationDBName,
+      AlterDatabaseSetOwnerDesc alterDbOwner = new AlterDatabaseSetOwnerDesc(destinationDBName,
           new PrincipalDesc(db.getOwnerName(), db.getOwnerType()),
           context.eventOnlyReplicationSpec());
-      Task<DDLWork2> alterDbTask = TaskFactory
-          .get(new DDLWork2(new HashSet<>(), new HashSet<>(), alterDbOwner), context.hiveConf);
+      Task<DDLWork> alterDbTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(),
+              alterDbOwner, true, context.getDumpDirectory(), context.getMetricCollector()),
+              context.hiveConf);
       createDBTask.addDependentTask(alterDbTask);
     }
     updatedMetadata

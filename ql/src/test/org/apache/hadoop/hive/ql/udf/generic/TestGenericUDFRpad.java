@@ -25,10 +25,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFRpad extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFRpad.
+ */
+public class TestGenericUDFRpad {
+
+  @Test
   public void testRpad() throws HiveException {
     GenericUDFRpad udf = new GenericUDFRpad();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

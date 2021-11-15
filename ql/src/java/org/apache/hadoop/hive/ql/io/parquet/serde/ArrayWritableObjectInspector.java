@@ -246,7 +246,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return false;
     }
 
-    return fieldsByName != null ? fieldsByName.equals(that.fieldsByName) : that.fieldsByName == null;
+    return true;
   }
 
   @Override
@@ -255,7 +255,6 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     result = 31 * result + (fieldInfos != null ? fieldInfos.hashCode() : 0);
     result = 31 * result + (fieldNames != null ? fieldNames.hashCode() : 0);
     result = 31 * result + (fields != null ? fields.hashCode() : 0);
-    result = 31 * result + (fieldsByName != null ? fieldsByName.hashCode() : 0);
     result = 31 * result + (isRoot ? 1 : 0);
     return result;
   }

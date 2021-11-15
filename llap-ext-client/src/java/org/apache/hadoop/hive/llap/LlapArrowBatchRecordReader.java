@@ -39,11 +39,19 @@ public class LlapArrowBatchRecordReader extends LlapBaseRecordReader<ArrowWrappe
   private BufferAllocator allocator;
   private ArrowStreamReader arrowStreamReader;
 
+  //Allows client to provide and manage their own arrow BufferAllocator
+  public LlapArrowBatchRecordReader(InputStream in, Schema schema, Class<ArrowWrapperWritable> clazz,
+      JobConf job, Closeable client, Socket socket, BufferAllocator allocator) throws IOException {
+    super(in, schema, clazz, job, client, socket);
+    this.allocator = allocator;
+    this.arrowStreamReader = new ArrowStreamReader(socket.getInputStream(), allocator);
+  }
+
+  //Use the global arrow BufferAllocator
   public LlapArrowBatchRecordReader(InputStream in, Schema schema, Class<ArrowWrapperWritable> clazz,
       JobConf job, Closeable client, Socket socket, long arrowAllocatorLimit) throws IOException {
-    super(in, schema, clazz, job, client, socket);
-    allocator = RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(arrowAllocatorLimit);
-    this.arrowStreamReader = new ArrowStreamReader(socket.getInputStream(), allocator);
+    this(in, schema, clazz, job, client, socket,
+        RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(arrowAllocatorLimit));
   }
 
   @Override
@@ -57,10 +65,8 @@ public class LlapArrowBatchRecordReader extends LlapBaseRecordReader<ArrowWrappe
         VectorSchemaRoot vectorSchemaRoot = arrowStreamReader.getVectorSchemaRoot();
         //There must be at least one column vector
         Preconditions.checkState(vectorSchemaRoot.getFieldVectors().size() > 0);
-        if(vectorSchemaRoot.getFieldVectors().get(0).getValueCount() == 0) {
-          //An empty batch will appear at the end of the stream
-          return false;
-        }
+        // We should continue even if FieldVectors are empty. The next read might have the
+        // data. We should stop only when loadNextBatch returns false.
         value.setVectorSchemaRoot(arrowStreamReader.getVectorSchemaRoot());
         return true;
       } else {
@@ -76,6 +82,9 @@ public class LlapArrowBatchRecordReader extends LlapBaseRecordReader<ArrowWrappe
   @Override
   public void close() throws IOException {
     arrowStreamReader.close();
+    //allocator.close() will throw exception unless all buffers have been released
+    //See org.apache.arrow.memory.BaseAllocator.close()
+    allocator.close();
   }
 
 }

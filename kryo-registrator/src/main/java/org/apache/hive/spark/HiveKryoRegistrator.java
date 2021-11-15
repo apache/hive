@@ -46,7 +46,7 @@ public class HiveKryoRegistrator implements KryoRegistrator {
       output.writeVarInt(object.hashCode(), false);
     }
 
-    public HiveKey read(Kryo kryo, Input input, Class<HiveKey> type) {
+    public HiveKey read(Kryo kryo, Input input, Class<? extends HiveKey> type) {
       int len = input.readVarInt(true);
       byte[] bytes = new byte[len];
       input.readBytes(bytes);
@@ -61,7 +61,7 @@ public class HiveKryoRegistrator implements KryoRegistrator {
       output.write(object.getBytes(), 0, object.getLength());
     }
 
-    public BytesWritable read(Kryo kryo, Input input, Class<BytesWritable> type) {
+    public BytesWritable read(Kryo kryo, Input input, Class<? extends BytesWritable> type) {
       int len = input.readVarInt(true);
       byte[] bytes = new byte[len];
       input.readBytes(bytes);

@@ -28,14 +28,18 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
 import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -112,10 +116,8 @@ import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
-import org.apache.hive.service.server.HiveServer2;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;
-import org.apache.thrift.server.TServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,11 +128,11 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class ThriftCLIService extends AbstractService implements TCLIService.Iface, Runnable {
 
-  public static final Logger LOG = LoggerFactory.getLogger(ThriftCLIService.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(ThriftCLIService.class);
 
   protected CLIService cliService;
   private static final TStatus OK_STATUS = new TStatus(TStatusCode.SUCCESS_STATUS);
-  protected static HiveAuthFactory hiveAuthFactory;
+  protected HiveAuthFactory hiveAuthFactory;
 
   protected int portNum;
   protected InetAddress serverIPAddress;
@@ -147,15 +149,90 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   protected ThreadLocal<ServerContext> currentServerContext;
 
+  /**
+   * A context container for information related to client connections to the
+   * Thrift server.
+   */
   static class ThriftCLIServerContext implements ServerContext {
-    private SessionHandle sessionHandle = null;
 
-    public void setSessionHandle(SessionHandle sessionHandle) {
-      this.sessionHandle = sessionHandle;
+    private final long createTime;
+    private Optional<SessionHandle> hiveSessionHandle;
+    private int messagesProcessedCounter;
+    private int sessionCount;
+
+    public ThriftCLIServerContext() {
+      this.createTime = System.nanoTime();
+      this.hiveSessionHandle = Optional.empty();
+      this.messagesProcessedCounter = 0;
+      this.sessionCount = 0;
     }
 
-    public SessionHandle getSessionHandle() {
-      return sessionHandle;
+    /**
+     * Set the Hive session handle tied to this client connection.
+     *
+     * @param hiveSessionHandle The Hive session handle
+     * @throws NullPointerException if {@code hiveSessionHandle} is null
+     */
+    public void setSessionHandle(SessionHandle hiveSessionHandle) {
+      this.hiveSessionHandle = Optional.of(hiveSessionHandle);
+      this.sessionCount++;
+    }
+
+    /**
+     * Clear the Hive session handle once the session is closed and no longer
+     * valid.
+     */
+    public void clearSessionHandle() {
+      this.hiveSessionHandle = Optional.empty();
+    }
+
+    /**
+     * Get the currently assigned Hive session handle.
+     *
+     * @return the currently assigned Hive session handle (if there is one)
+     */
+    public Optional<SessionHandle> getSessionHandle() {
+      return this.hiveSessionHandle;
+    }
+
+    public int getMessagesProcessedCount() {
+      return this.messagesProcessedCounter;
+    }
+
+    public void incMessagesProcessedCount() {
+      this.messagesProcessedCounter++;
+    }
+
+    /**
+     * Get the duration of time that this {@code ServerContext} has been in
+     * existence.
+     *
+     * @return The duration of time this context has been existing.
+     */
+    public Duration getDuration() {
+      return Duration.ofNanos(System.nanoTime() - this.createTime);
+    }
+
+    /**
+     * Return the number of Hive sessions this context has handled. It is
+     * technically possible that a single connection context could handle an
+     * unbounded number of sequential Hive sessions, though it is currently not
+     * implemented.
+     *
+     * @return The number of sessions this thrift context has handled
+     */
+    public int getSessionCount() {
+      return this.sessionCount;
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> aClass) {
+      return null;
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> aClass) {
+      return false;
     }
   }
 
@@ -169,7 +246,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
 
-    String hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
+    hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
     if (hiveHost == null) {
       hiveHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
     }
@@ -182,7 +259,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     // Initialize common server configs needed in both binary & http modes
     String portString;
     // HTTP mode
-    if (HiveServer2.isHTTPTransportMode(hiveConf)) {
+    if (getTransportMode() == HiveServer2TransportMode.http) {
       workerKeepAliveTime =
           hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_WORKER_KEEPALIVE_TIME,
               TimeUnit.SECONDS);
@@ -261,7 +338,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         resp.setDelegationToken(token);
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Error obtaining delegation token", e);
+        LOG.error("Failed to get delegation token [request: {}]", req, e);
         TStatus tokenErrorStatus = HiveSQLException.toTStatus(e);
         tokenErrorStatus.setSqlState("42000");
         resp.setStatus(tokenErrorStatus);
@@ -283,7 +360,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Error canceling delegation token", e);
+        LOG.error("Failed to cancel delegation token [request: {}]", req, e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -302,7 +379,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Error obtaining renewing token", e);
+        LOG.error("Failed to renew delegation token [request: {}]", e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -320,26 +397,28 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TOpenSessionResp OpenSession(TOpenSessionReq req) throws TException {
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
+    String userName = null;
     try {
-      SessionHandle sessionHandle = getSessionHandle(req, resp);
+      userName = getUserName(req);
+      final SessionHandle sessionHandle = getSessionHandle(req, resp, userName);
+
+      final int fetchSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
+
+      Map<String, String> map = new HashMap<>();
+      map.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname, Integer.toString(fetchSize));
+      map.put(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname,
+          String.valueOf(hiveConf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
-      Map<String, String> configurationMap = new HashMap<String, String>();
-      // Set the updated fetch size from the server into the configuration map for the client
-      HiveConf sessionConf = cliService.getSessionConf(sessionHandle);
-      configurationMap.put(
-        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
-        Integer.toString(sessionConf != null ?
-          sessionConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE) :
-          hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE)));
-      resp.setConfiguration(configurationMap);
+      resp.setConfiguration(map);
       resp.setStatus(OK_STATUS);
-      ThriftCLIServerContext context =
-        (ThriftCLIServerContext)currentServerContext.get();
+      ThriftCLIServerContext context = (ThriftCLIServerContext) currentServerContext.get();
       if (context != null) {
         context.setSessionHandle(sessionHandle);
       }
+      LOG.info("Login attempt is successful for user : " + userName);
     } catch (Exception e) {
-      LOG.warn("Error opening session: ", e);
+      // Do not log request as it contains password information
+      LOG.error("Login attempt failed for user : {}", userName, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -365,7 +444,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           try {
             cliService.setApplicationName(sh, e.getValue());
           } catch (Exception ex) {
-            LOG.warn("Error setting application name", ex);
+            LOG.error("Failed setting application name", ex);
             resp = new TSetClientInfoResp(HiveSQLException.toTStatus(ex));
           }
         }
@@ -381,8 +460,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     String clientIpAddress;
     // Http transport mode.
     // We set the thread local ip address, in ThriftHttpServlet.
-    if (cliService.getHiveConf().getVar(
-        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+    //Since we are allowing multiple transport modes, this
+    //transport information comes from the subclasses
+    //instead of reading from hive configuration
+    if (getTransportMode() == HiveServer2TransportMode.http) {
       clientIpAddress = SessionManager.getIpAddress();
     }
     else {
@@ -394,7 +475,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         clientIpAddress = TSetIpAddressProcessor.getUserIpAddress();
       }
     }
-    LOG.debug("Client's IP Address: " + clientIpAddress);
     return clientIpAddress;
   }
 
@@ -420,8 +500,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
     // Http transport mode.
     // We set the thread local username, in ThriftHttpServlet.
-    if (cliService.getHiveConf().getVar(
-        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+    if (getTransportMode() == HiveServer2TransportMode.http) {
       userName = SessionManager.getUserName();
     }
     if (userName == null) {
@@ -434,7 +513,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
 
     String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
-    LOG.debug("Client's username: " + effectiveClientUser);
+    LOG.debug("Client's username: {}", effectiveClientUser);
     return effectiveClientUser;
   }
 
@@ -465,13 +544,15 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
    * @throws LoginException
    * @throws IOException
    */
-  SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res)
+  private SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res, String userName)
       throws HiveSQLException, LoginException, IOException {
-    String userName = getUserName(req);
-    String ipAddress = getIpAddress();
+    final String ipAddress = getIpAddress();
+
+    LOG.info("Creating Hive session handle for user [{}] from IP {}", req.getUsername(), ipAddress);
+
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());
-    SessionHandle sessionHandle;
+    final SessionHandle sessionHandle;
     if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
         (userName != null)) {
       String delegationTokenStr = getDelegationToken(userName);
@@ -486,7 +567,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   }
 
   private double getProgressedPercentage(OperationHandle opHandle) throws HiveSQLException {
-    checkArgument(OperationType.EXECUTE_STATEMENT.equals(opHandle.getOperationType()));
+    checkArgument(OperationType.EXECUTE_STATEMENT == opHandle.getOperationType());
+
     Operation operation = cliService.getSessionManager().getOperationManager().getOperation(opHandle);
     SessionState state = operation.getParentSession().getSessionState();
     ProgressMonitor monitor = state.getProgressMonitor();
@@ -527,13 +609,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
       cliService.closeSession(sessionHandle);
       resp.setStatus(OK_STATUS);
-      ThriftCLIServerContext context =
-        (ThriftCLIServerContext)currentServerContext.get();
+      ThriftCLIServerContext context = (ThriftCLIServerContext) currentServerContext.get();
       if (context != null) {
-        context.setSessionHandle(null);
+        context.clearSessionHandle();
       }
     } catch (Exception e) {
-      LOG.warn("Error closing session: ", e);
+      LOG.error("Failed to close the session", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -549,7 +630,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setInfoValue(getInfoValue.toTGetInfoValue());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting info: ", e);
+      LOG.error("Failed to get info", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -569,12 +650,27 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
               queryTimeout) : cliService.executeStatement(sessionHandle, statement, confOverlay,
               queryTimeout);
       resp.setOperationHandle(operationHandle.toTOperationHandle());
-      resp.setStatus(OK_STATUS);
+      SessionManager sessionManager = cliService.getSessionManager();
+      if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle)) {
+        StringBuilder urlBuilder = new StringBuilder("The url to track the statement: ")
+            .append(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_USE_SSL) ? "https" : "http")
+            .append("://")
+            .append(sessionManager.getHiveServer2HostName())
+            .append(":")
+            .append(hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT))
+            .append("/query_page.html?operationId=")
+            .append(operationHandle.getHandleIdentifier().toString());
+        TStatus successWithInfo = new TStatus(TStatusCode.SUCCESS_WITH_INFO_STATUS);
+        successWithInfo.addToInfoMessages(urlBuilder.toString());
+        resp.setStatus(successWithInfo);
+      } else {
+        resp.setStatus(OK_STATUS);
+      }
     } catch (Exception e) {
       // Note: it's rather important that this (and other methods) catch Exception, not Throwable;
       // in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used
       // to also catch all errors; and now it allows OOMs only to propagate.
-      LOG.warn("Error executing statement: ", e);
+      LOG.error("Failed to execute statement [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -588,7 +684,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting type info: ", e);
+      LOG.error("Failed to get type info [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -602,7 +698,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting catalogs: ", e);
+      LOG.error("Failed getting catalogs [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -617,7 +713,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting schemas: ", e);
+      LOG.error("Failed to get schemas [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -633,7 +729,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting tables: ", e);
+      LOG.error("Failed to get tables [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -647,7 +743,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting table types: ", e);
+      LOG.error("Failed to get table types [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -666,7 +762,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting columns: ", e);
+      LOG.error("Failed to get column types [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -682,7 +778,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting functions: ", e);
+      LOG.error("Failed to get function: [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -741,7 +837,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       }
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting operation status: ", e);
+      LOG.error("Failed to get operation status [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -754,7 +850,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.cancelOperation(new OperationHandle(req.getOperationHandle()));
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error cancelling operation: ", e);
+      LOG.error("Failed to get cancel operation [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -767,7 +863,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.closeOperation(new OperationHandle(req.getOperationHandle()));
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error closing operation: ", e);
+      LOG.error("Failed to close operation [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -782,7 +878,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setSchema(schema.toTTableSchema());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting result set metadata: ", e);
+      LOG.error("Failed to get result set metadata [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -791,13 +887,15 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   @Override
   public TFetchResultsResp FetchResults(TFetchResultsReq req) throws TException {
     TFetchResultsResp resp = new TFetchResultsResp();
+
+    final int maxFetchSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
+    if (req.getMaxRows() > maxFetchSize) {
+      LOG.warn("Fetch Size greater than maximum allowed. Capping fetch size. [req={}, max={}]", req.getMaxRows(),
+          maxFetchSize);
+      req.setMaxRows(maxFetchSize);
+    }
+
     try {
-      // Set fetch size
-      int maxFetchSize =
-        hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
-      if (req.getMaxRows() > maxFetchSize) {
-        req.setMaxRows(maxFetchSize);
-      }
       RowSet rowSet = cliService.fetchResults(
           new OperationHandle(req.getOperationHandle()),
           FetchOrientation.getFetchOrientation(req.getOrientation()),
@@ -807,7 +905,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setHasMoreRows(false);
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error fetching results: ", e);
+      LOG.error("Failed fetch results [request: {}]", req, e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -824,7 +922,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-     LOG.warn("Error getting functions: ", e);
+     LOG.error("Failed to get primary keys [request: {}]", req, e);
      resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -842,9 +940,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           resp.setOperationHandle(opHandle.toTOperationHandle());
           resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting functions: ", e);
-	  resp.setStatus(HiveSQLException.toTStatus(e));
-	}
+      LOG.error("Failed to get cross reference [request: {}]", req, e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
     return resp;
   }
 
@@ -853,22 +951,28 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     try {
       return new TGetQueryIdResp(cliService.getQueryId(req.getOperationHandle()));
     } catch (HiveSQLException e) {
+      LOG.error("Failed to get query ID [request: {}]", req, e);
       throw new TException(e);
     } catch (Exception e) {
       // If concurrently the query is closed before we fetch queryID.
-      return new TGetQueryIdResp((String)null);
+      return new TGetQueryIdResp("");
     }
   }
 
   @Override
   public abstract void run();
 
+  /** Transport mode of hiveserver2 thrift.
+   * @return the mode.
+   */
+  protected abstract HiveServer2TransportMode getTransportMode();
+
   /**
    * If the proxy user name is provided then check privileges to substitute the user.
    * @param realUser
    * @param sessionConf
    * @param ipAddress
-   * @return
+   * @return username
    * @throws HiveSQLException
    */
   private String getProxyUser(String realUser, Map<String, String> sessionConf,
@@ -876,15 +980,14 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     String proxyUser = null;
     // Http transport mode.
     // We set the thread local proxy username, in ThriftHttpServlet.
-    if (cliService.getHiveConf().getVar(
-        ConfVars.HIVE_SERVER2_TRANSPORT_MODE).equalsIgnoreCase("http")) {
+    if (getTransportMode() == HiveServer2TransportMode.http) {
       proxyUser = SessionManager.getProxyUserName();
-      LOG.debug("Proxy user from query string: " + proxyUser);
+      LOG.debug("Proxy user from query string: {}", proxyUser);
     }
 
     if (proxyUser == null && sessionConf != null && sessionConf.containsKey(HiveAuthConstants.HS2_PROXY_USER)) {
       String proxyUserFromThriftBody = sessionConf.get(HiveAuthConstants.HS2_PROXY_USER);
-      LOG.debug("Proxy user from thrift body: " + proxyUserFromThriftBody);
+      LOG.debug("Proxy user from thrift body: {}", proxyUserFromThriftBody);
       proxyUser = proxyUserFromThriftBody;
     }
 
@@ -905,7 +1008,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     // Verify proxy user privilege of the realUser for the proxyUser
     HiveAuthFactory.verifyProxyAccess(realUser, proxyUser, ipAddress, hiveConf);
-    LOG.debug("Verified proxy user: " + proxyUser);
+    LOG.debug("Verified proxy user: {}", proxyUser);
     return proxyUser;
   }
 }

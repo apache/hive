@@ -47,11 +47,11 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -102,6 +102,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Map<String, String> extraConf = new HashMap<>();
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
+    extraConf.put(ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS.getVarname(), " ");
+
     startMetaStores(msConf, extraConf);
   }
 
@@ -151,7 +154,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         new TableBuilder()
             .setTableName("external_table_for_test")
             .addCol("test_col", "int")
-            .setLocation(metaStore.getWarehouseRoot() + "/external/table_dir")
+            .setLocation(metaStore.getExternalWarehouseRoot() + "/external/table_dir")
             .addTableParam("EXTERNAL", "TRUE")
             .setType("EXTERNAL_TABLE")
             .create(client, metaStore.getConf());
@@ -392,7 +395,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = InvalidObjectException.class)
   public void testCreateTableInvalidTableName() throws Exception {
     Table table = testTables[0];
-    table.setTableName("test_table;");
+    table.setTableName("test§table;");
 
     client.createTable(table);
   }
@@ -408,6 +411,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testCreateTableNullStorageDescriptor() throws Exception {
     Table table = testTables[0];
+    table.setTableName("NullStorageT");
     table.setSd(null);
 
     client.createTable(table);
@@ -619,6 +623,29 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         metaStore.isPathExists(new Path(table.getSd().getLocation())));
     Assert.assertFalse("Table path should not be in trash",
         metaStore.isPathExistsInTrash(new Path(table.getSd().getLocation())));
+
+    Table newTable = table.deepCopy();
+    newTable.setTableName("external_table_for_purge");
+    newTable.getSd().setLocation(metaStore.getWarehouseRoot() + "/external/purge_table_dir");
+    newTable.getParameters().put("external.table.purge", "true");
+
+    client.createTable(newTable);
+    client.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, true);
+
+    Assert.assertFalse("Table path should be removed",
+        metaStore.isPathExists(new Path(newTable.getSd().getLocation())));
+    Assert.assertFalse("Table path should not be in trash",
+        metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
+
+    newTable.getParameters().put("skip.trash", "true");
+
+    client.createTable(newTable);
+    client.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, false);
+
+    Assert.assertFalse("Table path should be removed",
+        metaStore.isPathExists(new Path(newTable.getSd().getLocation())));
+    Assert.assertFalse("Table path should not be in trash",
+        metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
   }
 
   @Test
@@ -629,8 +656,21 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     Assert.assertTrue("Table path should not be removed",
         metaStore.isPathExists(new Path(table.getSd().getLocation())));
-    Assert.assertFalse("Table path should be in trash",
+    Assert.assertFalse("Table path should not be in trash",
         metaStore.isPathExistsInTrash(new Path(table.getSd().getLocation())));
+
+    Table newTable = table.deepCopy();
+    newTable.setTableName("external_table_for_purge");
+    newTable.getSd().setLocation(metaStore.getWarehouseRoot() + "/external/purge_table_dir");
+    newTable.getParameters().put("external.table.purge", "true");
+
+    client.createTable(newTable);
+    client.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, false);
+
+    Assert.assertFalse("Table path should be removed",
+        metaStore.isPathExists(new Path(newTable.getSd().getLocation())));
+    Assert.assertTrue("Table path should be in trash",
+        metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
   }
 
   @Test
@@ -947,7 +987,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   public void testAlterTableInvalidTableNameInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();
-    newTable.setTableName("test_table;");
+    newTable.setTableName("test§table;");
     client.alter_table(originalTable.getDbName(), originalTable.getTableName(), newTable);
   }
 
@@ -1144,9 +1184,13 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
           .addCol("col1_" + i, ColumnType.STRING_TYPE_NAME)
           .addCol("col2_" + i, ColumnType.INT_TYPE_NAME);
       // Make one have a non-standard location
-      if (i == 0) builder.setLocation(MetaStoreTestUtils.getTestWarehouseDir(tableNames[i]));
+      if (i == 0) {
+        builder.setLocation(MetaStoreTestUtils.getTestWarehouseDir(tableNames[i]));
+      }
       // Make one partitioned
-      if (i == 2) builder.addPartCol("pcol1", ColumnType.STRING_TYPE_NAME);
+      if (i == 2) {
+        builder.addPartCol("pcol1", ColumnType.STRING_TYPE_NAME);
+      }
       // Make one a materialized view
       if (i == 3) {
         builder.setType(TableType.MATERIALIZED_VIEW.name())
@@ -1194,10 +1238,14 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     // test getAllTables
     Set<String> fetchedNames = new HashSet<>(client.getAllTables(catName, dbName));
     Assert.assertEquals(tableNames.length, fetchedNames.size());
-    for (String tableName : tableNames) Assert.assertTrue(fetchedNames.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertTrue(fetchedNames.contains(tableName));
+    }
 
     fetchedNames = new HashSet<>(client.getAllTables(DEFAULT_DATABASE_NAME));
-    for (String tableName : tableNames) Assert.assertFalse(fetchedNames.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertFalse(fetchedNames.contains(tableName));
+    }
 
     // test getMaterializedViewsForRewriting
     List<String> materializedViews = client.getMaterializedViewsForRewriting(catName, dbName);
@@ -1241,7 +1289,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     client.updateCreationMetadata(catName, dbName, tableNames[3], cm);
 
     List<String> partNames = new ArrayList<>();
-    for (String partVal : partVals) partNames.add("pcol1=" + partVal);
+    for (String partVal : partVals) {
+      partNames.add("pcol1=" + partVal);
+    }
     // Truncate a table
     client.truncateTable(catName, dbName, tableNames[0], partNames);
 

@@ -23,6 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -66,6 +68,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -1124,33 +1127,25 @@ public final class PrimitiveObjectInspectorUtils {
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o).trim();
-      try {
-        if (s.length() == DATE_LENGTH) {
-          result = Date.valueOf(s);
-        } else {
-          Timestamp ts = getTimestampFromString(s);
-          if (ts != null) {
-            result = Date.ofEpochMilli(ts.toEpochMilli());
-          }
+      if (s.length() == DATE_LENGTH) {
+        result = DateParser.parseDate(s);
+      } else {
+        Timestamp ts = getTimestampFromString(s);
+        if (ts != null) {
+          result = Date.ofEpochMilli(ts.toEpochMilli());
         }
-      } catch (IllegalArgumentException e) {
-        // Do nothing
       }
       break;
     case CHAR:
     case VARCHAR: {
       String val = getString(o, oi).trim();
-      try {
-        if (val.length() == DATE_LENGTH) {
-          result = Date.valueOf(val);
-        } else {
-          Timestamp ts = getTimestampFromString(val);
-          if (ts != null) {
-            result = Date.ofEpochMilli(ts.toEpochMilli());
-          }
+      if (val.length() == DATE_LENGTH) {
+        result = DateParser.parseDate(val);
+      } else {
+        Timestamp ts = getTimestampFromString(val);
+        if (ts != null) {
+          result = Date.ofEpochMilli(ts.toEpochMilli());
         }
-      } catch (IllegalArgumentException e) {
-        // Do nothing
       }
       break;
     }
@@ -1261,9 +1256,12 @@ public final class PrimitiveObjectInspectorUtils {
     s = s.trim();
     s = trimNanoTimestamp(s);
 
+    if(StringUtils.isEmpty(s))
+      return null;
+
     try {
       return TimestampUtils.stringToTimestamp(s);
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | DateTimeException e) {
       return null;
     }
   }

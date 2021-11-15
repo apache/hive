@@ -28,12 +28,13 @@ import org.apache.hadoop.hive.druid.io.HiveDruidSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 import org.apache.druid.query.Query;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Test Class.
  */
-@SuppressWarnings("SameParameterValue") public class TestHiveDruidQueryBasedInputFormat extends TestCase {
+@SuppressWarnings("SameParameterValue") public class TestHiveDruidQueryBasedInputFormat {
 
   private static final String
       TIMESERIES_QUERY =
@@ -140,47 +141,7 @@ import junit.framework.TestCase;
           + "\"context\":{\"queryId\":\"\"},"
           + "\"descending\":false}, [localhost:8082]}]";
 
-  private static final String
-      SELECT_QUERY =
-      "{   \"queryType\": \"select\",  "
-          + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
-          + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
-          + "\"newpage\",\"user\"],  "
-          + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
-          + " \"granularity\": \"all\",  "
-          + " \"intervals\": [     \"2013-01-01T00:00:00.000-08:00/2013-01-02T00:00:00.000-08:00\"   ],  "
-          + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5}, "
-          + " \"context\":{\"druid.query.fetch\":true}}";
-  private static final String
-      SELECT_QUERY_SPLIT =
-      "[HiveDruidSplit{{\"queryType\":\"select\","
-          + "\"dataSource\":{\"type\":\"table\",\"name\":\"wikipedia\"},"
-          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-01-01T08:00:00"
-          + ".000Z/2013-01-02T08:00:00.000Z\"]},"
-          + "\"descending\":false,"
-          + "\"filter\":null,"
-          + "\"granularity\":{\"type\":\"all\"},"
-          + "\"dimensions\":[{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"robot\",\"outputName\":\"robot\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"namespace\",\"outputName\":\"namespace\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"anonymous\",\"outputName\":\"anonymous\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"unpatrolled\",\"outputName\":\"unpatrolled\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"page\",\"outputName\":\"page\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"language\",\"outputName\":\"language\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"newpage\",\"outputName\":\"newpage\","
-          + "\"outputType\":\"STRING\"},"
-          + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"user\",\"outputName\":\"user\","
-          + "\"outputType\":\"STRING\"}],"
-          + "\"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],"
-          + "\"virtualColumns\":[],"
-          + "\"pagingSpec\":{\"pagingIdentifiers\":{},\"threshold\":5,\"fromNext\":false},"
-          + "\"context\":{\"druid.query.fetch\":true,\"queryId\":\"\"}}, [localhost:8082]}]";
-
+  @Test
   public void testTimeZone() throws Exception {
     DruidQueryBasedInputFormat input = new DruidQueryBasedInputFormat();
 
@@ -200,9 +161,6 @@ import junit.framework.TestCase;
     resultSplits = (HiveDruidSplit[]) method1.invoke(input, conf);
     assertEquals(GROUP_BY_QUERY_SPLIT, Arrays.toString(resultSplits));
 
-    conf = createPropertiesQuery("sample_datasource", Query.SELECT, SELECT_QUERY);
-    resultSplits = (HiveDruidSplit[]) method1.invoke(input, conf);
-    assertEquals(SELECT_QUERY_SPLIT, Arrays.toString(resultSplits));
   }
 
   private static Configuration createPropertiesQuery(String dataSource, String queryType, String jsonQuery) {

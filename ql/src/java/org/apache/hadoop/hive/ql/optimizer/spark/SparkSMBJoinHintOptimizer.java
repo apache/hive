@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.AbstractSMBJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.SortBucketJoinProcCtx;
@@ -42,7 +42,7 @@ import com.clearspring.analytics.util.Preconditions;
 /**
  * Converts from a bucket-mapjoin created from hints to SMB mapjoin.
  */
-public class SparkSMBJoinHintOptimizer extends AbstractSMBJoinProc implements NodeProcessor {
+public class SparkSMBJoinHintOptimizer extends AbstractSMBJoinProc implements SemanticNodeProcessor {
 
   public SparkSMBJoinHintOptimizer(ParseContext pctx) {
     super(pctx);

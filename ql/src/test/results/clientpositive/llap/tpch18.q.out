@@ -1,0 +1,380 @@
+PREHOOK: query: use tpch_0_001
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tpch_0_001
+POSTHOOK: query: use tpch_0_001
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tpch_0_001
+PREHOOK: query: create view q18_tmp_cached as
+select
+	l_orderkey,
+	sum(l_quantity) as t_sum_quantity
+from
+	lineitem
+where
+	l_orderkey is not null
+group by
+	l_orderkey
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: database:tpch_0_001
+PREHOOK: Output: tpch_0_001@q18_tmp_cached
+POSTHOOK: query: create view q18_tmp_cached as
+select
+	l_orderkey,
+	sum(l_quantity) as t_sum_quantity
+from
+	lineitem
+where
+	l_orderkey is not null
+group by
+	l_orderkey
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: database:tpch_0_001
+POSTHOOK: Output: tpch_0_001@q18_tmp_cached
+POSTHOOK: Lineage: q18_tmp_cached.l_orderkey SIMPLE [(lineitem)lineitem.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+POSTHOOK: Lineage: q18_tmp_cached.t_sum_quantity EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_quantity, type:double, comment:null), ]
+PREHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@customer
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Input: tpch_0_001@q18_tmp_cached
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@customer
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Input: tpch_0_001@q18_tmp_cached
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
+  HiveProject(c_name=[$6], c_custkey=[$5], o_orderkey=[$2], o_orderdate=[$4], o_totalprice=[$3], $f5=[*($1, $7)])
+    HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(l_orderkey=[$0], $f1=[$1])
+        HiveAggregate(group=[{0}], agg#0=[sum($1)])
+          HiveProject(l_orderkey=[$0], l_quantity=[$4])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
+      HiveProject(o_orderkey=[$0], o_totalprice=[$2], o_orderdate=[$3], c_custkey=[$5], c_name=[$6], $f8=[*($4, $7)])
+        HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$2], o_orderdate=[$3], count=[$4])
+            HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$2], o_orderdate=[$3], count=[$4])
+                HiveAggregate(group=[{0, 1, 2, 3}], count=[count()])
+                  HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
+                    HiveTableScan(table=[[tpch_0_001, orders]], table:alias=[orders])
+              HiveProject($f0=[$0])
+                HiveFilter(condition=[>($1, 3E2)])
+                  HiveAggregate(group=[{0}], agg#0=[sum($4)])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
+          HiveProject(c_custkey=[$0], c_name=[$1], count=[$2])
+            HiveAggregate(group=[{0, 1}], count=[count()])
+              HiveProject(c_custkey=[$0], c_name=[$1])
+                HiveTableScan(table=[[tpch_0_001, customer]], table:alias=[customer])
+
+PREHOOK: query: select 'add constraints'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'add constraints'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+add constraints
+PREHOOK: query: alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Output: tpch_0_001@orders
+POSTHOOK: query: alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Output: tpch_0_001@orders
+PREHOOK: query: alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@customer
+PREHOOK: Output: tpch_0_001@customer
+POSTHOOK: query: alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@customer
+POSTHOOK: Output: tpch_0_001@customer
+PREHOOK: query: alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: tpch_0_001@lineitem
+POSTHOOK: query: alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: tpch_0_001@lineitem
+PREHOOK: query: alter table lineitem change column L_ORDERKEY L_ORDERKEY int constraint li_ok_nn not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: tpch_0_001@lineitem
+POSTHOOK: query: alter table lineitem change column L_ORDERKEY L_ORDERKEY int constraint li_ok_nn not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: tpch_0_001@lineitem
+PREHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: tpch_0_001@lineitem
+POSTHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: tpch_0_001@lineitem
+PREHOOK: query: alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Output: tpch_0_001@orders
+POSTHOOK: query: alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Output: tpch_0_001@orders
+PREHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@customer
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Input: tpch_0_001@q18_tmp_cached
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@customer
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Input: tpch_0_001@q18_tmp_cached
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
+  HiveProject(c_name=[$6], c_custkey=[$5], o_orderkey=[$2], o_orderdate=[$4], o_totalprice=[$3], $f5=[$1])
+    HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(l_orderkey=[$0], $f1=[$1])
+        HiveAggregate(group=[{0}], agg#0=[sum($1)])
+          HiveProject(l_orderkey=[$0], l_quantity=[$4])
+            HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
+      HiveProject(o_orderkey=[$0], o_totalprice=[$2], o_orderdate=[$3], c_custkey=[$4], c_name=[$5])
+        HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
+              HiveTableScan(table=[[tpch_0_001, orders]], table:alias=[orders])
+            HiveProject(c_custkey=[$0], c_name=[$1])
+              HiveTableScan(table=[[tpch_0_001, customer]], table:alias=[customer])
+          HiveProject($f0=[$0])
+            HiveFilter(condition=[>($1, 3E2)])
+              HiveAggregate(group=[{0}], agg#0=[sum($4)])
+                HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
+
+PREHOOK: query: select 'with extended costmodel'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'with extended costmodel'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+with extended costmodel
+PREHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@customer
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Input: tpch_0_001@q18_tmp_cached
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice,
+sum(l_quantity)
+from
+	customer,
+	orders,
+	q18_tmp_cached t,
+	lineitem l
+where
+c_custkey = o_custkey
+and o_orderkey = t.l_orderkey
+and o_orderkey is not null
+and t.t_sum_quantity > 300
+and o_orderkey = l.l_orderkey
+and l.l_orderkey is not null
+group by
+c_name,
+c_custkey,
+o_orderkey,
+o_orderdate,
+o_totalprice
+order by
+o_totalprice desc,
+o_orderdate
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@customer
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Input: tpch_0_001@q18_tmp_cached
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
+  HiveProject(c_name=[$6], c_custkey=[$5], o_orderkey=[$0], o_orderdate=[$3], o_totalprice=[$2], $f5=[$4])
+    HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$2], o_orderdate=[$3], $f4=[$4])
+        HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(o_orderkey=[$2], o_custkey=[$3], o_totalprice=[$4], o_orderdate=[$5], $f1=[$1])
+            HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(l_orderkey=[$0], $f1=[$1])
+                HiveAggregate(group=[{0}], agg#0=[sum($1)])
+                  HiveProject(l_orderkey=[$0], l_quantity=[$4])
+                    HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
+              HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
+                HiveTableScan(table=[[tpch_0_001, orders]], table:alias=[orders])
+          HiveProject($f0=[$0])
+            HiveFilter(condition=[>($1, 3E2)])
+              HiveAggregate(group=[{0}], agg#0=[sum($4)])
+                HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
+      HiveProject(c_custkey=[$0], c_name=[$1])
+        HiveTableScan(table=[[tpch_0_001, customer]], table:alias=[customer])
+

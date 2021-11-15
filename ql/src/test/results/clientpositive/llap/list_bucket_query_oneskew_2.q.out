@@ -1,0 +1,605 @@
+PREHOOK: query: CREATE TABLE fact_daily_n5(x int, y STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: CREATE TABLE fact_daily_n5(x int, y STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fact_daily_n5
+PREHOOK: query: CREATE TABLE fact_tz_n2(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_tz_n2
+POSTHOOK: query: CREATE TABLE fact_tz_n2(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fact_tz_n2
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='1')	
+SELECT key, value FROM src WHERE key=484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@fact_tz_n2@ds=1/hr=1
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='1')	
+SELECT key, value FROM src WHERE key=484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@fact_tz_n2@ds=1/hr=1
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='2')	
+SELECT key+11, value FROM src WHERE key=484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@fact_tz_n2@ds=1/hr=2
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='2')	
+SELECT key+11, value FROM src WHERE key=484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@fact_tz_n2@ds=1/hr=2
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).x EXPRESSION []
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####
+PREHOOK: query: alter table fact_daily_n5 skewed by (x) on (484)
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: alter table fact_daily_n5 skewed by (x) on (484)
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Output: default@fact_daily_n5
+PREHOOK: query: ALTER TABLE fact_daily_n5 SET TBLPROPERTIES('EXTERNAL'='TRUE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: ALTER TABLE fact_daily_n5 SET TBLPROPERTIES('EXTERNAL'='TRUE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Output: default@fact_daily_n5
+PREHOOK: query: ALTER TABLE fact_daily_n5 ADD PARTITION (ds='1')	
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: ALTER TABLE fact_daily_n5 ADD PARTITION (ds='1')	
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@fact_daily_n5
+POSTHOOK: Output: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Output: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+POSTHOOK: Output: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted fact_daily_n5 PARTITION (ds = '1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily_n5
+POSTHOOK: query: describe formatted fact_daily_n5 PARTITION (ds = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@fact_daily_n5
+# col_name            	data_type           	comment             
+x                   	int                 	                    
+y                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	fact_daily_n5       	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	2                   
+	totalSize           	24                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[x]                 	 
+Skewed Values:      	[[484]]             	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[484]=/fact_tz/ds=1/x=484, [HIVE_DEFAULT_LIST_BUCKETING_KEY]=/fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME}	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM fact_daily_n5 WHERE ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM fact_daily_n5 WHERE ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+484	val_484	1
+495	val_484	1
+PREHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INT) AS `$f0`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+            properties:
+              column.name.delimiter ,
+              columns x,y
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.fact_daily_n5
+              partition_columns ds
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                EXTERNAL TRUE
+                bucketing_version 2
+                column.name.delimiter ,
+                columns x,y
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.fact_daily_n5
+                partition_columns ds
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily_n5
+            name: default.fact_daily_n5
+      Processor Tree:
+        TableScan
+          alias: fact_daily_n5
+          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (x = 484) (type: boolean)
+            Select Operator
+              expressions: 484 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select x from (select * from fact_daily_n5 where ds = '1') subq where x = 484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select x from (select * from fact_daily_n5 where ds = '1') subq where x = 484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+484
+PREHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INT) AS `x1`, `y` AS `y1`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+            properties:
+              column.name.delimiter ,
+              columns x,y
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.fact_daily_n5
+              partition_columns ds
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                EXTERNAL TRUE
+                bucketing_version 2
+                column.name.delimiter ,
+                columns x,y
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.fact_daily_n5
+                partition_columns ds
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily_n5
+            name: default.fact_daily_n5
+      Processor Tree:
+        TableScan
+          alias: fact_daily_n5
+          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (x = 484) (type: boolean)
+            Select Operator
+              expressions: 484 (type: int), y (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+484	val_484
+PREHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `y`, COUNT(*) AS `$f1`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+GROUP BY `y`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact_daily_n5
+                  filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (x = 484) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: y (type: string)
+                      outputColumnNames: y
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        keys: y (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          numBuckets: -1
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+                          tag: -1
+                          value expressions: _col1 (type: bigint)
+                          auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: x=484
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 1
+                  properties:
+                    column.name.delimiter ,
+                    columns x,y
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.fact_daily_n5
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns x,y
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.fact_daily_n5
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.fact_daily_n5
+                  name: default.fact_daily_n5
+            Truncated Path -> Alias:
+              /fact_tz/ds=1/x=484 [fact_daily_n5]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types string:bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+val_484	1
+PREHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INT) AS `x`, COUNT(*) AS `c`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+GROUP BY TRUE
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact_daily_n5
+                  filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (x = 484) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        keys: true (type: boolean)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: boolean)
+                          null sort order: z
+                          numBuckets: -1
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                          tag: -1
+                          value expressions: _col1 (type: bigint)
+                          auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: x=484
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 1
+                  properties:
+                    column.name.delimiter ,
+                    columns x,y
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.fact_daily_n5
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns x,y
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.fact_daily_n5
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.fact_daily_n5
+                  name: default.fact_daily_n5
+            Truncated Path -> Alias:
+              /fact_tz/ds=1/x=484 [fact_daily_n5]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: 484 (type: int), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1
+                          columns.types int:bigint
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+484	1

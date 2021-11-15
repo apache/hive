@@ -43,8 +43,7 @@ public class HiveDriver implements Driver {
     try {
       java.sql.DriverManager.registerDriver(new HiveDriver());
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      throw new RuntimeException("Failed to register driver", e);
     }
   }
 
@@ -67,18 +66,6 @@ public class HiveDriver implements Driver {
    * Property key for the Hive Server2 port.
    */
   private static final String PORT_PROPERTY_KEY = "PORT";
-
-
-  /**
-   *
-   */
-  public HiveDriver() {
-    // TODO Auto-generated constructor stub
-    SecurityManager security = System.getSecurityManager();
-    if (security != null) {
-      security.checkWrite("foobah");
-    }
-  }
 
   /**
    * Checks whether a given url is in a valid format.

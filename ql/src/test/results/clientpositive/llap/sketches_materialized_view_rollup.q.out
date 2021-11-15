@@ -1,0 +1,190 @@
+PREHOOK: query: create table sketch_input (id int, category char(1))
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: create table sketch_input (id int, category char(1))
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sketch_input
+PREHOOK: query: insert into table sketch_input values
+  (1,'a'),(1, 'a'), (2, 'a'), (3, 'a'), (4, 'a'), (5, 'a'), (6, 'a'), (7, 'a'), (8, 'a'), (9, 'a'), (10, 'a'),
+  (6,'b'),(6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: insert into table sketch_input values
+  (1,'a'),(1, 'a'), (2, 'a'), (3, 'a'), (4, 'a'), (5, 'a'), (6, 'a'), (7, 'a'), (8, 'a'), (9, 'a'), (10, 'a'),
+  (6,'b'),(6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sketch_input
+POSTHOOK: Lineage: sketch_input.category SCRIPT []
+POSTHOOK: Lineage: sketch_input.id SCRIPT []
+PREHOOK: query: create  materialized view mv_1 as
+  select category, ds_hll_sketch(id),count(id) from sketch_input group by category
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_1
+POSTHOOK: query: create  materialized view mv_1 as
+  select category, ds_hll_sketch(id),count(id) from sketch_input group by category
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@sketch_input
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_1
+POSTHOOK: Lineage: mv_1._c1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_1._c2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
+PREHOOK: query: explain
+select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_1
+                  Statistics: Num rows: 2 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: category (type: char(1)), round(ds_hll_estimate(_c1)) (type: double)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+a	10.0
+b	10.0
+PREHOOK: query: explain
+select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_1
+                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _c1 (type: binary)
+                    outputColumnNames: _c1
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_hll_union(_c1)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: struct<lgk:int,type:string,sketch:binary>)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: ds_hll_union(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: round(ds_hll_estimate(_col0)) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_1
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+15.0
+PREHOOK: query: drop materialized view mv_1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv_1
+PREHOOK: Output: default@mv_1
+POSTHOOK: query: drop materialized view mv_1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv_1
+POSTHOOK: Output: default@mv_1

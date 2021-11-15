@@ -29,6 +29,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public interface HiveDriverRunHookContext extends Configurable{
-  public String getCommand();
-  public void setCommand(String command);
+  String getCommand();
+  void setCommand(String command);
 }

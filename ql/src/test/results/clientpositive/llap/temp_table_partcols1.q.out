@@ -1,0 +1,63 @@
+PREHOOK: query: create temporary table test1_n15_temp(col1 string) partitioned by (partitionid int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1_n15_temp
+POSTHOOK: query: create temporary table test1_n15_temp(col1 string) partitioned by (partitionid int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1_n15_temp
+PREHOOK: query: insert overwrite table test1_n15_temp partition (partitionid=1)
+  select key from src tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test1_n15_temp@partitionid=1
+POSTHOOK: query: insert overwrite table test1_n15_temp partition (partitionid=1)
+  select key from src tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test1_n15_temp@partitionid=1
+POSTHOOK: Lineage: test1_n15_temp PARTITION(partitionid=1).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: FROM (
+  FROM test1_n15_temp
+  SELECT partitionid, 111 as col2, 222 as col3, 333 as col4
+  WHERE partitionid = 1
+  DISTRIBUTE BY partitionid
+  SORT BY partitionid
+) b
+
+SELECT TRANSFORM(
+b.partitionid,b.col2,b.col3,b.col4
+)
+
+USING 'cat' as (a,b,c,d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n15_temp
+PREHOOK: Input: default@test1_n15_temp@partitionid=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: FROM (
+  FROM test1_n15_temp
+  SELECT partitionid, 111 as col2, 222 as col3, 333 as col4
+  WHERE partitionid = 1
+  DISTRIBUTE BY partitionid
+  SORT BY partitionid
+) b
+
+SELECT TRANSFORM(
+b.partitionid,b.col2,b.col3,b.col4
+)
+
+USING 'cat' as (a,b,c,d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n15_temp
+POSTHOOK: Input: default@test1_n15_temp@partitionid=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333

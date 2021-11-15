@@ -31,24 +31,24 @@ import java.util.Set;
 public class RowSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private ArrayList<ColumnInfo> signature = new ArrayList<ColumnInfo>();
+  private List<ColumnInfo> signature = new ArrayList<ColumnInfo>();
 
   public RowSchema() {
   }
 
   public RowSchema(RowSchema that) {
-    this.signature = (ArrayList<ColumnInfo>) that.signature.clone();
+    this.signature = new ArrayList<>(that.signature);
   }
 
-  public RowSchema(ArrayList<ColumnInfo> signature) {
+  public RowSchema(List<ColumnInfo> signature) {
     this.signature = signature;
   }
 
-  public void setSignature(ArrayList<ColumnInfo> signature) {
+  public void setSignature(List<ColumnInfo> signature) {
     this.signature = signature;
   }
 
-  public ArrayList<ColumnInfo> getSignature() {
+  public List<ColumnInfo> getSignature() {
     return signature;
   }
 
@@ -65,16 +65,15 @@ public class RowSchema implements Serializable {
     for (ColumnInfo columnInfo: this.signature) {
       if (columnInfo.getTabAlias() == null) {
         if (tabAlias == null) {
-          if(columnInfo.getAlias() != null && alias != null &&
+          if(columnInfo.getAlias() != null &&
                   columnInfo.getAlias().equals(alias)) {
             return columnInfo;
           }
         }
-      }
-      else {
+      } else {
         if (tabAlias != null) {
           if (columnInfo.getTabAlias().equals(tabAlias) &&
-                  columnInfo.getAlias() != null && alias != null &&
+                  columnInfo.getAlias() != null &&
                   columnInfo.getAlias().equals(alias)) {
             return columnInfo;
           }

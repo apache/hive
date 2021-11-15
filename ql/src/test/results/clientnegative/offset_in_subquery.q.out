@@ -1,0 +1,9 @@
+PREHOOK: query: create table web_sales (ws_order_number int, ws_warehouse_sk int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: create table web_sales (ws_order_number int, ws_warehouse_sk int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_sales
+FAILED: RuntimeException [Error 10424]: OFFSET is not supported in subquery of exists

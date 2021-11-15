@@ -1,0 +1,441 @@
+PREHOOK: query: create table `masking_test_n5` as select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n5
+POSTHOOK: query: create table `masking_test_n5` as select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n5
+POSTHOOK: Lineage: masking_test_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view `v0` as select * from `masking_test_n5`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v0
+POSTHOOK: query: create view `v0` as select * from `masking_test_n5`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v0
+POSTHOOK: Lineage: v0.key SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: v0.value SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain
+select * from `v0`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from `v0`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: masking_test_n5
+          filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+          properties:
+            insideView TRUE
+          Filter Operator
+            predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+            Select Operator
+              expressions: key (type: int), reverse(value) (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: select * from `v0`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `v0`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+0	0_lav
+4	4_lav
+8	8_lav
+0	0_lav
+0	0_lav
+2	2_lav
+PREHOOK: query: create table `masking_test_subq_n1` as select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_subq_n1
+POSTHOOK: query: create table `masking_test_subq_n1` as select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_subq_n1
+POSTHOOK: Lineage: masking_test_subq_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_subq_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view `v1_n9` as select * from `masking_test_subq_n1`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@masking_test_subq_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1_n9
+POSTHOOK: query: create view `v1_n9` as select * from `masking_test_subq_n1`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@masking_test_subq_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1_n9
+POSTHOOK: Lineage: v1_n9.key SIMPLE [(masking_test_subq_n1)masking_test_subq_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: v1_n9.value SIMPLE [(masking_test_subq_n1)masking_test_subq_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain cbo
+select * from `v1_n9`
+limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_subq_n1
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from `v1_n9`
+limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_subq_n1
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(fetch=[20])
+  HiveProject(key=[$0], value=[$1])
+    HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
+      HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
+        HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])
+          HiveTableScan(table=[[default, masking_test_subq_n1]], table:alias=[masking_test_subq_n1])
+      HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
+        HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, src]], table:alias=[src])
+
+PREHOOK: query: explain
+select * from `v1_n9`
+limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_subq_n1
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from `v1_n9`
+limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_subq_n1
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: masking_test_subq_n1
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(_col0) (type: double), _col2 (type: double)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col2 (type: double)
+                        Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string), _col1 (type: double)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: UDFToDouble(_col0) (type: double), _col1 (type: double)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: double)
+                          Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 UDFToDouble(_col0) (type: double), _col2 (type: double)
+                  1 UDFToDouble(_col0) (type: double), _col1 (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 1900 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 1900 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from `v1_n9`
+limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_subq_n1
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `v1_n9`
+limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_subq_n1
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+2	val_2
+4	val_4
+5	val_5
+5	val_5
+5	val_5
+8	val_8
+9	val_9
+10	val_10
+11	val_11
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+17	val_17
+18	val_18
+18	val_18
+19	val_19
+PREHOOK: query: create view `masking_test_view` as select key from `v0`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@v0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view
+POSTHOOK: query: create view `masking_test_view` as select key from `v0`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@v0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view
+POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: explain
+select key from `masking_test_view`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select key from `masking_test_view`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: masking_test_n5
+          filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
+          properties:
+            insideView TRUE
+          Filter Operator
+            predicate: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
+            Select Operator
+              expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select key from `masking_test_view`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: select key from `masking_test_view`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+4
+PREHOOK: query: explain
+select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: masking_test_n5
+                  filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), reverse(value) (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: masking_test_n5
+                  filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key < 10) and (key > 6) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+4_lav

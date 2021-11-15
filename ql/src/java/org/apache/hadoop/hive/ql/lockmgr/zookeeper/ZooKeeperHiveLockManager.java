@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.lockmgr.*;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
@@ -156,7 +156,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    **/
   @Override
   public List<HiveLock> lock(List<HiveLockObj> lockObjects,
-      boolean keepAlive, LockedDriverState lDrvState) throws LockException
+      boolean keepAlive, DriverState driverState) throws LockException
   {
     // Sort the objects first. You are guaranteed that if a partition is being locked,
     // the table has already been locked
@@ -195,12 +195,12 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
       HiveLock lock = null;
       boolean isInterrupted = false;
-      if (lDrvState != null) {
-        lDrvState.stateLock.lock();
-        if (lDrvState.isAborted()) {
+      if (driverState != null) {
+        driverState.lock();
+        if (driverState.isAborted()) {
           isInterrupted = true;
         }
-        lDrvState.stateLock.unlock();
+        driverState.unlock();
       }
       if (!isInterrupted) {
         try {
@@ -419,6 +419,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
     String exLock = getLockName(lastName, HiveLockMode.EXCLUSIVE);
     String shLock = getLockName(lastName, HiveLockMode.SHARED);
+    String semiLock = getLockName(lastName, HiveLockMode.SEMI_SHARED);
 
     for (String child : children) {
       child = lastName + "/" + child;
@@ -431,6 +432,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
       if ((mode == HiveLockMode.EXCLUSIVE) && child.startsWith(shLock)) {
         childSeq = getSequenceNumber(child, shLock);
+      }
+      if ((mode == HiveLockMode.SEMI_SHARED || mode == HiveLockMode.EXCLUSIVE) && child.startsWith(semiLock)) {
+        childSeq = getSequenceNumber(child, semiLock);
       }
 
       if ((childSeq >= 0) && (childSeq < seqNo)) {

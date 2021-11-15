@@ -17,16 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexFieldCollation;
@@ -39,8 +42,10 @@ import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -58,7 +63,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -104,6 +108,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private final RelDataTypeFactory dTFactory;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private static long uniqueCounter = 0;
+  private RexBuilder rexBuilder = null;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
@@ -118,6 +123,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory) {
     this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, dTFactory, false);
+  }
+
+  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
+                           RelDataType outputRowType, Set<Integer> inputVCols, RexBuilder rexBuilder) {
+    this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, rexBuilder.getTypeFactory(), false);
+    this.rexBuilder = rexBuilder;
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
@@ -187,6 +198,11 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       // is implicit in the function name, thus translation will
       // proceed correctly if we just ignore the <time_unit>
       args.add(call.operands.get(0).accept(this));
+    } else if (call.getKind() == SqlKind.IS_DISTINCT_FROM) {
+      call = (RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.operands));
+      for (RexNode operand : call.operands) {
+        args.add(operand.accept(this));
+      }
     } else {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
@@ -227,6 +243,10 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   @Override
   public ExprNodeDesc visitLiteral(RexLiteral literal) {
+    return toExprNodeConstantDesc(literal);
+  }
+
+  public static ExprNodeConstantDesc toExprNodeConstantDesc(RexLiteral literal) {
     RelDataType lType = literal.getType();
 
     if (RexLiteral.value(literal) == null) {
@@ -259,12 +279,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
           throw new RuntimeException(e);
         }
         return new ExprNodeConstantDesc(
-                TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
+            TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
       case DECIMAL:
         return new ExprNodeConstantDesc(
-                TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(), lType.getScale()), null);
+            TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(), lType.getScale()), null);
       case VARCHAR:
       case CHAR:
         return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
@@ -289,27 +309,27 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     } else {
       switch (literal.getType().getSqlTypeName()) {
       case BOOLEAN:
-        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.valueOf(RexLiteral
-            .booleanValue(literal)));
+        return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo,
+            RexLiteral.booleanValue(literal));
       case TINYINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo, Byte.valueOf(((Number) literal
-            .getValue3()).byteValue()));
+        return new ExprNodeConstantDesc(TypeInfoFactory.byteTypeInfo,
+            ((Number) literal.getValue3()).byteValue());
       case SMALLINT:
         return new ExprNodeConstantDesc(TypeInfoFactory.shortTypeInfo,
-            Short.valueOf(((Number) literal.getValue3()).shortValue()));
+            ((Number) literal.getValue3()).shortValue());
       case INTEGER:
         return new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo,
-            Integer.valueOf(((Number) literal.getValue3()).intValue()));
+            ((Number) literal.getValue3()).intValue());
       case BIGINT:
-        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
-            .getValue3()).longValue()));
+        return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo,
+            ((Number) literal.getValue3()).longValue());
       case FLOAT:
       case REAL:
         return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
-            Float.valueOf(((Number) literal.getValue3()).floatValue()));
+            ((Number) literal.getValue3()).floatValue());
       case DOUBLE:
         return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
-            Double.valueOf(((Number) literal.getValue3()).doubleValue()));
+            ((Number) literal.getValue3()).doubleValue());
       case DATE:
         return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
             Date.valueOf(literal.getValueAs(DateString.class).toString()));
@@ -331,37 +351,34 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()),
             TimestampTZUtil.parse(literal.getValueAs(TimestampString.class).toString() + " UTC"));
       case BINARY:
-        return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
+        return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo,
+            literal.getValueAs(ByteString.class).getBytes());
       case DECIMAL:
         return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
-      case VARCHAR:
       case CHAR: {
-        if (literal.getValue() instanceof HiveNlsString) {
-          HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
-          switch (mxNlsString.interpretation) {
-          case STRING:
-            return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-          case CHAR: {
-            int precision = lType.getPrecision();
-            HiveChar value = new HiveChar((String) literal.getValue3(), precision);
-            return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
-          }
-          case VARCHAR: {
-            int precision = lType.getPrecision();
-            HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
-            return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
-          }
-          }
+        Preconditions.checkState(literal.getValue() instanceof NlsString,
+            "char values must use NlsString for correctness");
+        int precision = lType.getPrecision();
+        HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+        return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+      }
+      case VARCHAR: {
+        Preconditions.checkState(literal.getValue() instanceof NlsString,
+            "varchar/string values must use NlsString for correctness");
+        int precision = lType.getPrecision();
+        if (precision == Integer.MAX_VALUE) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
         }
-        throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
+        HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
+        return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:
       case INTERVAL_YEAR_MONTH: {
         BigDecimal monthsBd = (BigDecimal) literal.getValue();
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-                new HiveIntervalYearMonth(monthsBd.intValue()));
+            new HiveIntervalYearMonth(monthsBd.intValue()));
       }
       case INTERVAL_DAY:
       case INTERVAL_DAY_HOUR:
@@ -377,7 +394,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         // Calcite literal is in millis, we need to convert to seconds
         BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                new HiveIntervalDayTime(secsBd));
+            new HiveIntervalDayTime(secsBd));
       }
       default:
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
@@ -469,15 +486,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private WindowFrameSpec getWindowRange(RexWindow window) {
     // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
     BoundarySpec start = null;
-    RexWindowBound ub = window.getUpperBound();
-    if (ub != null) {
-      start = getWindowBound(ub);
+    RexWindowBound lb = window.getLowerBound();
+    if (lb != null) {
+      start = getWindowBound(lb);
     }
 
     BoundarySpec end = null;
-    RexWindowBound lb = window.getLowerBound();
-    if (lb != null) {
-      end = getWindowBound(lb);
+    RexWindowBound ub = window.getUpperBound();
+    if (ub != null) {
+      end = getWindowBound(ub);
     }
 
     return new WindowFrameSpec(window.isRows() ? WindowType.ROWS : WindowType.RANGE, start, end);

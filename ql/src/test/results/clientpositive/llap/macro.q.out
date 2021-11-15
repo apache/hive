@@ -1,0 +1,258 @@
+PREHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: SELECT SIGMOID(2) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SIGMOID(2) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.8807970779778823
+PREHOOK: query: EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 0.8807970779778823D (type: double)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: EXPLAIN EXTENDED SELECT SIGMOID(2) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT SIGMOID(2) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(0.8807970779778823 AS DOUBLE) AS `_o__c0`
+FROM `default`.`src`
+LIMIT 1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          GatherStats: false
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 0.8807970779778823D (type: double)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: DROP TEMPORARY MACRO SIGMOID
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TEMPORARY MACRO SIGMOID
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY MACRO FIXED_NUMBER() 1
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO FIXED_NUMBER() 1
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2
+PREHOOK: query: EXPLAIN SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 2 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: EXPLAIN EXTENDED SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(2 AS INT) AS `_o__c0`
+FROM `default`.`src`
+LIMIT 1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          GatherStats: false
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 2 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: DROP TEMPORARY MACRO FIXED_NUMBER
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TEMPORARY MACRO FIXED_NUMBER
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY MACRO CONF_TEST() "1"
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO CONF_TEST() "1"
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: SELECT CONF_TEST() FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CONF_TEST() FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: DROP TEMPORARY MACRO CONF_TEST
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TEMPORARY MACRO CONF_TEST
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY MACRO SIMPLE_ADD (x INT, y INT) x + y
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO SIMPLE_ADD (x INT, y INT) x + y
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY MACRO SIMPLE_ADD (x INT, y INT) x + y
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO SIMPLE_ADD (x INT, y INT) x + y
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10
+PREHOOK: query: EXPLAIN SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 10 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: EXPLAIN EXTENDED SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(10 AS INT) AS `_o__c0`
+FROM `default`.`src`
+LIMIT 1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          GatherStats: false
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 10 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: DROP TEMPORARY MACRO SIMPLE_ADD
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TEMPORARY MACRO SIMPLE_ADD
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TEMPORARY MACRO SIMPLE_ADD
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TEMPORARY MACRO SIMPLE_ADD
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default

@@ -1,0 +1,175 @@
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT cstring1,
+       cboolean1,
+       cdouble,
+       ctimestamp1,
+       (-3728 * csmallint),
+       (cdouble - 9763215.5639),
+       (-(cdouble)),
+       ((-(cdouble)) + 6981),
+       (cdouble * -5638.15)
+FROM   alltypesparquet
+WHERE  ((cstring2 = cstring1)
+        OR ((ctimestamp1 IS NULL)
+            AND (cstring1 LIKE '%a')))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT cstring1,
+       cboolean1,
+       cdouble,
+       ctimestamp1,
+       (-3728 * csmallint),
+       (cdouble - 9763215.5639),
+       (-(cdouble)),
+       ((-(cdouble)) + 6981),
+       (cdouble * -5638.15)
+FROM   alltypesparquet
+WHERE  ((cstring2 = cstring1)
+        OR ((ctimestamp1 IS NULL)
+            AND (cstring1 LIKE '%a')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesparquet
+                  filterExpr: ((ctimestamp1 is null and (cstring1 like '%a')) or (cstring2 = cstring1)) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 2256914 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNull(col 8:timestamp), FilterStringColLikeStringScalar(col 6:string, pattern %a)), FilterStringGroupColEqualStringGroupColumn(col 7:string, col 6:string))
+                    predicate: ((ctimestamp1 is null and (cstring1 like '%a')) or (cstring2 = cstring1)) (type: boolean)
+                    Statistics: Num rows: 7701 Data size: 1414500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cstring1 (type: string), cboolean1 (type: boolean), cdouble (type: double), ctimestamp1 (type: timestamp), (-3728 * UDFToInteger(csmallint)) (type: int), (cdouble - 9763215.5639D) (type: double), (- cdouble) (type: double), ((- cdouble) + 6981.0D) (type: double), (cdouble * -5638.15D) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6, 10, 5, 8, 14, 15, 16, 18, 19]
+                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1:int)(children: col 1:smallint) -> 14:int, DoubleColSubtractDoubleScalar(col 5:double, val 9763215.5639) -> 15:double, DoubleColUnaryMinus(col 5:double) -> 16:double, DoubleColAddDoubleScalar(col 17:double, val 6981.0)(children: DoubleColUnaryMinus(col 5:double) -> 17:double) -> 18:double, DoubleColMultiplyDoubleScalar(col 5:double, val -5638.15) -> 19:double
+                      Statistics: Num rows: 7701 Data size: 1116736 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 7701 Data size: 1116736 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cstring1,
+       cboolean1,
+       cdouble,
+       ctimestamp1,
+       (-3728 * csmallint),
+       (cdouble - 9763215.5639),
+       (-(cdouble)),
+       ((-(cdouble)) + 6981),
+       (cdouble * -5638.15)
+FROM   alltypesparquet
+WHERE  ((cstring2 = cstring1)
+        OR ((ctimestamp1 IS NULL)
+            AND (cstring1 LIKE '%a')))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cstring1,
+       cboolean1,
+       cdouble,
+       ctimestamp1,
+       (-3728 * csmallint),
+       (cdouble - 9763215.5639),
+       (-(cdouble)),
+       ((-(cdouble)) + 6981),
+       (cdouble * -5638.15)
+FROM   alltypesparquet
+WHERE  ((cstring2 = cstring1)
+        OR ((ctimestamp1 IS NULL)
+            AND (cstring1 LIKE '%a')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+055VA1s2XC7q70aD8S0PLpa	true	-12485.0	NULL	46544080	-9775700.5639	12485.0	19466.0	7.039230275E7
+067wD7F8YQ8h32jPa	true	-16012.0	NULL	59692736	-9779227.5639	16012.0	22993.0	9.02780578E7
+0AP3HERf5Ra	true	5045.0	NULL	-18807760	-9758170.5639	-5045.0	1936.0	-2.844446675E7
+0MPx71oMa	false	6644.0	NULL	-24768832	-9756571.5639	-6644.0	337.0	-3.7459868599999994E7
+1MJ884f1w6B38WBeya	false	-2575.0	NULL	9599600	-9765790.5639	2575.0	9556.0	1.4518236249999998E7
+3B3ubgg3B6a	true	14468.0	NULL	-53936704	-9748747.5639	-14468.0	-7487.0	-8.157275419999999E7
+47x5248dXuiqta	true	-12888.0	NULL	48046464	-9776103.5639	12888.0	19869.0	7.266447719999999E7
+4gBPJa	true	13167.0	NULL	-49086576	-9750048.5639	-13167.0	-6186.0	-7.423752105E7
+5712We1FSa	false	8801.0	NULL	-32810128	-9754414.5639	-8801.0	-1820.0	-4.962135815E7
+5ctB5Don6vvjSc6a	false	-1786.0	NULL	6658208	-9765001.5639	1786.0	8767.0	1.0069735899999999E7
+5xaNVvLa	true	2315.0	NULL	-8630320	-9760900.5639	-2315.0	4666.0	-1.305231725E7
+60S63VPytWwf5Hu6j75cHa	false	-4739.0	NULL	17666992	-9767954.5639	4739.0	11720.0	2.6719192849999998E7
+7C1L24VM7Ya	true	4122.0	NULL	-15366816	-9759093.5639	-4122.0	2859.0	-2.3240454299999997E7
+DUSKf88a	false	6764.0	NULL	-25216192	-9756451.5639	-6764.0	217.0	-3.8136446599999994E7
+FWCW47mXs2a	true	-6839.0	NULL	25495792	-9770054.5639	6839.0	13820.0	3.8559307849999994E7
+G5n81R5jjsG5Gp58vqNa	false	-3597.0	NULL	13409616	-9766812.5639	3597.0	10578.0	2.0280425549999997E7
+G7Ve8Px6a7J0DafBodF8JMma	false	-1291.0	NULL	4812848	-9764506.5639	1291.0	8272.0	7278851.649999999
+JRN4nLo30dv0bRtsrJa	true	-4319.0	NULL	16101232	-9767534.5639	4319.0	11300.0	2.4351169849999998E7
+K7tGy146ydka	false	-1236.0	NULL	4607808	-9764451.5639	1236.0	8217.0	6968753.399999999
+L057p1HPpJsmA3a	true	-9542.0	NULL	35572576	-9772757.5639	9542.0	16523.0	5.37992273E7
+LAFo0rFpPj1aW8Js4Scpa	true	2719.0	NULL	-10136432	-9760496.5639	-2719.0	4262.0	-1.533012985E7
+OHG2wWD83Ba	false	6914.0	NULL	-25775392	-9756301.5639	-6914.0	67.0	-3.8982169099999994E7
+PMoJ1NvQoAm5a	true	539.0	NULL	-2009392	-9762676.5639	-539.0	6442.0	-3038962.8499999996
+QTTWGUR2P2b08Dn62ea	false	-16086.0	NULL	59968608	-9779301.5639	16086.0	23067.0	9.069528089999999E7
+S7UM6KgdxTofi6rwXBFa2a	false	12520.0	NULL	-46674560	-9750695.5639	-12520.0	-5539.0	-7.0589638E7
+Sd8C6q6L7l72qsa	false	5306.0	NULL	-19780768	-9757909.5639	-5306.0	1675.0	-2.99160239E7
+Tt484a	true	754.0	NULL	-2810912	-9762461.5639	-754.0	6227.0	-4251165.1
+Vb8ub0i0Maa	true	-9883.0	NULL	36843824	-9773098.5639	9883.0	16864.0	5.5721836449999996E7
+a	false	3350.0	NULL	-12488800	-9759865.5639	-3350.0	3631.0	-1.88878025E7
+a	true	-2944.0	NULL	10975232	-9766159.5639	2944.0	9925.0	1.65987136E7
+a	true	-5905.0	NULL	22013840	-9769120.5639	5905.0	12886.0	3.3293275749999996E7
+a	true	12004.0	NULL	-44750912	-9751211.5639	-12004.0	-5023.0	-6.76803526E7
+a	true	4991.0	NULL	-18606448	-9758224.5639	-4991.0	1990.0	-2.814000665E7
+bBAKio7bAmQq7vIlsc8H14a	true	1949.0	NULL	-7265872	-9761266.5639	-1949.0	5032.0	-1.098875435E7
+dun2EEixI701imr3d6a	true	-8352.0	NULL	31136256	-9771567.5639	8352.0	15333.0	4.70898288E7
+eNsh5tYa	false	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+f3oGa8ByjMs5eo7462S84Aa	false	4278.0	NULL	-15948384	-9758937.5639	-4278.0	2703.0	-2.41200057E7
+hQAra	true	14460.0	NULL	-53906880	-9748755.5639	-14460.0	-7479.0	-8.1527649E7
+hnq6hkAfna	true	5926.0	NULL	-22092128	-9757289.5639	-5926.0	1055.0	-3.34116769E7
+iS4P5128HY44wa	false	3890.0	NULL	-14501920	-9759325.5639	-3890.0	3091.0	-2.19324035E7
+kro4Xu41bB7hiFa	false	-3277.0	NULL	12216656	-9766492.5639	3277.0	10258.0	1.8476217549999997E7
+lJ63qx87BLmdMfa	false	11619.0	NULL	-43315632	-9751596.5639	-11619.0	-4638.0	-6.5509664849999994E7
+oTh026tl2Ena	false	-11198.0	NULL	41746144	-9774413.5639	11198.0	18179.0	6.3136003699999996E7
+w62rRn0DnCSWJ1ht6qWa	false	-5638.15	NULL	958096	-9768853.7139	5638.15	12619.15	3.1788735422499996E7

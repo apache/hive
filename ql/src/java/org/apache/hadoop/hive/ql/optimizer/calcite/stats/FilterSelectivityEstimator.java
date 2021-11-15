@@ -35,19 +35,27 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(FilterSelectivityEstimator.class);
+
   private final RelNode childRel;
   private final double  childCardinality;
   private final RelMetadataQuery mq;
 
-  protected FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
+  public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
@@ -56,6 +64,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   public Double estimateSelectivity(RexNode predicate) {
     return predicate.accept(this);
+  }
+
+  @Override
+  public Double visitInputRef(RexInputRef inputRef) {
+    if (inputRef.getType().getSqlTypeName() == SqlTypeName.BOOLEAN) {
+      // If it is a boolean and we assume uniform distribution,
+      // it will filter half the rows
+      return 0.5;
+    }
+    return null;
   }
 
   @Override
@@ -99,7 +117,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         if (totalNoOfTuples >= noOfNulls) {
           selectivity = (totalNoOfTuples - noOfNulls) / Math.max(totalNoOfTuples, 1);
         } else {
-          throw new RuntimeException("Invalid Stats number of null > no of tuples");
+          // If we are running explain, we will print the warning in the console
+          // and the log files. Otherwise, we just print it in the log files.
+          HiveConfPlannerContext ctx = childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class);
+          String msg = "Invalid statistics: Number of null values > number of tuples. " +
+              "Consider recomputing statistics for table: " +
+              ((RelOptHiveTable) childRel.getTable()).getHiveTableMD().getFullyQualifiedName();
+          if (ctx.isExplainPlan()) {
+            SessionState.getConsole().printError("WARNING: " + msg);
+          }
+          LOG.warn(msg);
+          selectivity = ((double) 1 / (double) 3);
         }
       } else {
         selectivity = computeNotEqualitySelectivity(call);
@@ -120,11 +148,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       // present in NDV which may not be correct (Range check can find it) 3) We
       // assume values in NDV set is uniformly distributed over col values
       // (account for skewness - histogram).
-      selectivity = computeFunctionSelectivity(call) * (call.operands.size() - 1);
-      if (selectivity <= 0.0) {
-        selectivity = 0.10;
-      } else if (selectivity >= 1.0) {
-        selectivity = 1.0;
+      selectivity = computeFunctionSelectivity(call);
+      if (selectivity != null) {
+        selectivity = selectivity * (call.operands.size() - 1);
+        if (selectivity <= 0.0) {
+          selectivity = 0.10;
+        } else if (selectivity >= 1.0) {
+          selectivity = 1.0;
+        }
       }
       break;
     }
@@ -145,7 +176,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeNotEqualitySelectivity(RexCall call) {
-    double tmpNDV = getMaxNDV(call);
+    Double tmpNDV = getMaxNDV(call);
+    if (tmpNDV == null) {
+      // Could not be computed
+      return null;
+    }
 
     if (tmpNDV > 1) {
       return (tmpNDV - 1) / tmpNDV;
@@ -164,7 +199,12 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeFunctionSelectivity(RexCall call) {
-    return 1 / getMaxNDV(call);
+    Double tmpNDV = getMaxNDV(call);
+    if (tmpNDV == null) {
+      // Could not be computed
+      return null;
+    }
+    return 1 / tmpNDV;
   }
 
   /**
@@ -255,13 +295,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   private Double getMaxNDV(RexCall call) {
-    double tmpNDV;
+    Double tmpNDV;
     double maxNDV = 1.0;
     InputReferencedVisitor irv;
     for (RexNode op : call.getOperands()) {
       if (op instanceof RexInputRef) {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
             ((RexInputRef) op).getIndex());
+        if (tmpNDV == null) {
+          return null;
+        }
         if (tmpNDV > maxNDV) {
           maxNDV = tmpNDV;
         }
@@ -271,6 +314,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         for (Integer childProjIndx : irv.inputPosReferenced) {
           tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
               mq, childProjIndx);
+          if (tmpNDV == null) {
+            return null;
+          }
           if (tmpNDV > maxNDV) {
             maxNDV = tmpNDV;
           }

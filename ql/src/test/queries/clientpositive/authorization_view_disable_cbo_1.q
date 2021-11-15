@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 set hive.cbo.enable=false;
+set hive.exec.reducers.max=1;
 
 create table src_autho_test_n9 as select * from src;
 
@@ -64,7 +65,7 @@ set hive.cbo.enable=true;
 
 --although cbo is enabled, it will not succeed.
 
-select key from v_n10 sort by key limit 10;
+select key from v_n10 cluster by key limit 10;
 
 select key from
 (select key as key from src_autho_test_n9 union all select key from v_n10 cluster by key)subq

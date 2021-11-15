@@ -19,6 +19,12 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -31,12 +37,32 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.metastore.tools.Constants.HMS_DEFAULT_PORT;
-import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.*;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartition;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartitions;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteCreate;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteWithPartitions;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropDatabase;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropPartition;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDropPartitions;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetNotificationId;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionNames;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitions;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByName;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetTable;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListAllTables;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListDatabases;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListManyPartitions;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListPartition;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListTables;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkOpenTxns;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkRenameTable;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkTableCreate;
 import static org.apache.hadoop.hive.metastore.tools.Util.getServerUri;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
@@ -54,6 +80,11 @@ public class BenchmarkTool implements Runnable {
   private static final TimeUnit scale = TimeUnit.MILLISECONDS;
   private static final String CSV_SEPARATOR = "\t";
   private static final String TEST_TABLE = "bench_table";
+  private enum RunModes {
+    ACID,
+    NONACID,
+    ALL
+  }
 
 
   @Option(names = {"-H", "--host"}, description = "HMS Host", paramLabel = "URI")
@@ -68,8 +99,7 @@ public class BenchmarkTool implements Runnable {
   @Option(names = {"-t", "--table"}, description = "table name")
   private String tableName = TEST_TABLE + "_" + System.getProperty("user.name");
 
-
-  @Option(names = {"-N", "--number"}, description = "umber of object instances")
+  @Option(names = {"-N", "--number"}, description = "number of object instances")
   private int[] instances = {100};
 
   @Option(names = {"-L", "--spin"}, description = "spin count")
@@ -84,7 +114,7 @@ public class BenchmarkTool implements Runnable {
   @Option(names = {"-o", "--output"}, description = "output file")
   private String outputFile;
 
-  @Option(names = {"-T", "--threads"}, description = "number of concurrent threads")
+  @Option(names = {"-T", "--threads"}, description = "number of concurrent threads/clients")
   private int nThreads = 2;
 
   @Option(names = {"--confdir"}, description = "configuration directory")
@@ -97,7 +127,7 @@ public class BenchmarkTool implements Runnable {
   private boolean doCSV = false;
 
   @Option(names = {"--params"}, description = "number of table/partition parameters")
-  private int nParameters = 0;
+  private int[] nParameters = {0};
 
   @Option(names = {"--savedata"}, description = "save raw data in specified dir")
   private String dataSaveDir;
@@ -110,6 +140,10 @@ public class BenchmarkTool implements Runnable {
 
   @Option(names = {"-E", "--exclude"}, description = "test name patterns to exclude")
   private Pattern[] exclude;
+
+  @Option(names = {"--runMode"},
+      description = "flag for setting the mode for the benchmark, acceptable values are: ACID, NONACID, ALL")
+  private RunModes runMode = RunModes.ALL;
 
   public static void main(String[] args) {
     CommandLine.run(new BenchmarkTool(), args);
@@ -141,12 +175,67 @@ public class BenchmarkTool implements Runnable {
     }
   }
 
-
   @Override
   public void run() {
-    LOG.info("Using warmup " + warmup +
-        " spin " + spinCount + " nparams " + nParameters + " threads " + nThreads);
+    LOG.info("Using warmup " + warmup + " spin " + spinCount + " nparams " + Arrays.toString(nParameters) + " threads "
+        + nThreads);
+    HMSConfig.getInstance().init(host, port, confDir);
 
+    switch (runMode) {
+      case ACID:
+        runAcidBenchmarks();
+        break;
+      case NONACID:
+        runNonAcidBenchmarks();
+        break;
+      case ALL:
+      default:
+        runNonAcidBenchmarks();
+        runAcidBenchmarks();
+        break;
+    }
+  }
+
+  private void runAcidBenchmarks() {
+    ChainedOptionsBuilder optsBuilder =
+        new OptionsBuilder()
+            .warmupIterations(warmup)
+            .measurementIterations(spinCount)
+            .operationsPerInvocation(1)
+            .mode(Mode.SingleShotTime)
+            .timeUnit(TimeUnit.MILLISECONDS)
+            .forks(0)
+            .threads(nThreads)
+            .syncIterations(true);
+
+    String[] candidates = new String[] {
+        ACIDBenchmarks.TestOpenTxn.class.getSimpleName(),
+        ACIDBenchmarks.TestLocking.class.getSimpleName(),
+        ACIDBenchmarks.TestGetValidWriteIds.class.getSimpleName(),
+        ACIDBenchmarks.TestAllocateTableWriteIds.class.getSimpleName()
+    };
+
+    for (String pattern : Util.filterMatches(Arrays.asList(candidates), matches, exclude)) {
+      optsBuilder = optsBuilder.include(pattern);
+    }
+
+    Options opts =
+        optsBuilder
+            .param("howMany", Arrays.stream(instances)
+            .mapToObj(String::valueOf)
+                .toArray(String[]::new))
+            .param("nPartitions", Arrays.stream(nParameters)
+                .mapToObj(String::valueOf).toArray(String[]::new))
+            .build();
+
+    try {
+      new Runner(opts).run();
+    } catch (RunnerException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
+
+  private void runNonAcidBenchmarks() {
     StringBuilder sb = new StringBuilder();
     BenchData bData = new BenchData(dbName, tableName);
 
@@ -163,7 +252,7 @@ public class BenchmarkTool implements Runnable {
         .add("createTable", () -> benchmarkTableCreate(bench, bData))
         .add("dropTable", () -> benchmarkDeleteCreate(bench, bData))
         .add("dropTableWithPartitions",
-            () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters))
+            () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters[0]))
         .add("addPartition", () -> benchmarkCreatePartition(bench, bData))
         .add("dropPartition", () -> benchmarkDropPartition(bench, bData))
         .add("listPartition", () -> benchmarkListPartition(bench, bData))
@@ -176,13 +265,15 @@ public class BenchmarkTool implements Runnable {
         .add("renameTable",
             () -> benchmarkRenameTable(bench, bData, 1))
         .add("dropDatabase",
-            () -> benchmarkDropDatabase(bench, bData, 1));
+            () -> benchmarkDropDatabase(bench, bData, 1))
+        .add("openTxn",
+            () -> benchmarkOpenTxns(bench, bData, 1));
 
     for (int howMany: instances) {
       suite.add("listTables" + '.' + howMany,
           () -> benchmarkListTables(bench, bData, howMany))
           .add("dropTableWithPartitions" + '.' + howMany,
-              () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters))
+              () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters[0]))
           .add("listPartitions" + '.' + howMany,
               () -> benchmarkListManyPartitions(bench, bData, howMany))
           .add("getPartitions" + '.' + howMany,
@@ -198,11 +289,17 @@ public class BenchmarkTool implements Runnable {
           .add("renameTable" + '.' + howMany,
               () -> benchmarkRenameTable(bench, bData, howMany))
           .add("dropDatabase" + '.' + howMany,
-              () -> benchmarkDropDatabase(bench, bData, howMany));
+              () -> benchmarkDropDatabase(bench, bData, howMany))
+          .add("openTxns" + '.' + howMany,
+              () -> benchmarkOpenTxns(bench, bData, howMany));
     }
 
+    List<String> toRun = suite.listMatching(matches, exclude);
+    if (toRun.isEmpty()) {
+      return;
+    }
     if (doList) {
-      suite.listMatching(matches, exclude).forEach(System.out::println);
+      toRun.forEach(System.out::println);
       return;
     }
 
@@ -244,12 +341,13 @@ public class BenchmarkTool implements Runnable {
 
       output.print(sb.toString());
       fmt.close();
+      output.close();
 
       if (dataSaveDir != null) {
         saveData(result.getResult(), dataSaveDir, scale);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error(e.getMessage(), e);
     }
   }
 }

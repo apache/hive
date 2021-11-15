@@ -101,6 +101,26 @@ POSTHOOK: Input: ac_test@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: ac_test@tstsrcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 48479881068
+PREHOOK: query: EXPLAIN ALTER TABLE ac_test.tstsrcpart ARCHIVE PARTITION (ds='2008-04-08')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+PREHOOK: Input: ac_test@tstsrcpart
+PREHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: EXPLAIN ALTER TABLE ac_test.tstsrcpart ARCHIVE PARTITION (ds='2008-04-08')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: Input: ac_test@tstsrcpart
+POSTHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=12
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Archive
+      partition spec:
+        ds 2008-04-08
+      table name: ac_test.tstsrcpart
+
 PREHOOK: query: ALTER TABLE ac_test.tstsrcpart ARCHIVE PARTITION (ds='2008-04-08')
 PREHOOK: type: ALTERTABLE_ARCHIVE
 PREHOOK: Input: ac_test@tstsrcpart
@@ -161,6 +181,26 @@ POSTHOOK: Input: ac_test@tstsrcpart@ds=2008-04-08/hr=12
 0	val_0	2008-04-08	12	0	val_0
 0	val_0	2008-04-08	12	0	val_0
 0	val_0	2008-04-08	12	0	val_0
+PREHOOK: query: EXPLAIN ALTER TABLE ac_test.tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08')
+PREHOOK: type: ALTERTABLE_UNARCHIVE
+PREHOOK: Input: ac_test@tstsrcpart
+PREHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: EXPLAIN ALTER TABLE ac_test.tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08')
+POSTHOOK: type: ALTERTABLE_UNARCHIVE
+POSTHOOK: Input: ac_test@tstsrcpart
+POSTHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: ac_test@tstsrcpart@ds=2008-04-08/hr=12
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Unarchive
+      partition spec:
+        ds 2008-04-08
+      table name: ac_test.tstsrcpart
+
 PREHOOK: query: ALTER TABLE ac_test.tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08')
 PREHOOK: type: ALTERTABLE_UNARCHIVE
 PREHOOK: Input: ac_test@tstsrcpart

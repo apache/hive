@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,7 +56,8 @@ import org.apache.hadoop.mapred.RecordReader;
   * a binary search to find the block to begin reading from, and stop reading once it can be
   * determined no other entries will match the filter.
   */
-public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader<K, V> {
+public abstract class HiveContextAwareRecordReader<K extends WritableComparable, V extends Writable>
+    implements RecordReader<K, V> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveContextAwareRecordReader.class.getName());
 
@@ -68,7 +71,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
   private Map<Path, PartitionDesc> pathToPartitionInfo;
 
-  protected RecordReader recordReader;
+  protected RecordReader<K, V> recordReader;
   protected JobConf jobConf;
   protected boolean isSorted = false;
 
@@ -76,17 +79,17 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     this(null, conf);
   }
 
-  public HiveContextAwareRecordReader(RecordReader recordReader) {
+  public HiveContextAwareRecordReader(RecordReader<K, V> recordReader) {
     this.recordReader = recordReader;
   }
 
-  public HiveContextAwareRecordReader(RecordReader recordReader, JobConf conf)
+  public HiveContextAwareRecordReader(RecordReader<K, V> recordReader, JobConf conf)
       throws IOException {
     this.recordReader = recordReader;
     this.jobConf = conf;
   }
 
-  public void setRecordReader(RecordReader recordReader) {
+  public void setRecordReader(RecordReader<K, V> recordReader) {
     this.recordReader = recordReader;
   }
 
@@ -121,7 +124,16 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         }
         else if(recordReader instanceof AcidInputFormat.AcidRecordReader) {
           //supports AcidInputFormat which do not use the KEY pass ROW__ID info
-          ioCxtRef.setRecordIdentifier(((AcidInputFormat.AcidRecordReader) recordReader).getRecordIdentifier());
+          AcidInputFormat.AcidRecordReader acidRecordReader = (AcidInputFormat.AcidRecordReader) this.recordReader;
+          OrcRawRecordMerger.ReaderKey recordIdentifier = acidRecordReader.getRecordIdentifier();
+          if (recordIdentifier == null) {
+            ioCxtRef.parseRecordIdentifier(jobConf);
+          } else {
+            ioCxtRef.setRecordIdentifier(recordIdentifier);
+          }
+          ioCxtRef.setDeletedRecord(recordIdentifier != null && recordIdentifier.isDeleteEvent());
+        } else {
+          ioCxtRef.parseRecordIdentifier(jobConf);
         }
       }
       return retVal;
@@ -339,18 +351,20 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
           part = null;
         }
         TableDesc table = (part == null) ? null : part.getTableDesc();
-        if (table != null) {
+        // In TextFormat, skipping is already taken care of as part of SkippingTextInputFormat.
+        // This code will be also called from LLAP when pipeline is non-vectorized and cannot create wrapper.
+        if (table != null && !TextInputFormat.class.isAssignableFrom(part.getInputFileFormatClass())) {
           headerCount = Utilities.getHeaderCount(table);
           footerCount = Utilities.getFooterCount(table, jobConf);
         }
 
         // If input contains header, skip header.
-        if (!Utilities.skipHeader(recordReader, headerCount, (WritableComparable)key, (Writable)value)) {
+        if (!Utilities.skipHeader(recordReader, headerCount, key, value)) {
           return false;
         }
         if (footerCount > 0) {
           footerBuffer = new FooterBuffer();
-          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, (WritableComparable)key, (Writable)value)) {
+          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, key, value)) {
             return false;
           }
         }
@@ -360,7 +374,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         // Table files don't have footer rows.
         return recordReader.next(key,  value);
       } else {
-        return footerBuffer.updateBuffer(jobConf, recordReader, (WritableComparable)key, (Writable)value);
+        return footerBuffer.updateBuffer(jobConf, recordReader, key, value);
       }
     } catch (Exception e) {
       return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);

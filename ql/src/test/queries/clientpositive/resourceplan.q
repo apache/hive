@@ -1,4 +1,6 @@
 --! qt:dataset:alltypesorc,alltypesparquet,cbo_t1,cbo_t2,cbo_t3,lineitem,part,src,src1,src_cbo,src_json,src_sequencefile,src_thrift,srcbucket,srcbucket2,srcpart
+--! qt:sysdb
+
 -- Continue on errors, we do check some error conditions below.
 set hive.cli.errors.ignore=true;
 set hive.test.authz.sstd.hs2.mode=true;
@@ -9,9 +11,6 @@ set hive.cbo.enable=false;
 -- Force DN to create db_privs tables.
 show grant user hive_test_user;
 
--- Initialize the hive schema.
-source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
-
 -- SORT_QUERY_RESULTS
 
 --
@@ -21,6 +20,10 @@ source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
 -- Empty resource plans.
 SHOW RESOURCE PLANS;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+-- Show how ENABLE WORKLOAD MANAGEMENT not works :)
+EXPLAIN ENABLE WORKLOAD MANAGEMENT;
+ENABLE WORKLOAD MANAGEMENT;
 
 -- Create and show plan_1.
 CREATE RESOURCE PLAN plan_1;
@@ -115,6 +118,7 @@ ALTER RESOURCE PLAN plan_3 DISABLE;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 
 -- DISABLE WM - ok.
+EXPLAIN DISABLE WORKLOAD MANAGEMENT;
 DISABLE WORKLOAD MANAGEMENT;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 
@@ -262,6 +266,7 @@ CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75;
 
 -- Cannot activate c1 + c2 = 1.0
+EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE;
 ALTER RESOURCE PLAN plan_2 VALIDATE;
 ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE;
 
@@ -316,7 +321,16 @@ SELECT * FROM SYS.WM_POOLS;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 
 -- Changed default pool, now it should work.
-ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool;
+EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2;
+ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2;
+SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM;
+ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM;
+SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=1;
+
 DROP POOL `table`.default;
 SELECT * FROM SYS.WM_POOLS;
 
@@ -439,6 +453,7 @@ SELECT * FROM SYS.WM_TRIGGERS;
 SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS;
 SELECT * FROM SYS.WM_MAPPINGS;
 
+EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b;
 REPLACE RESOURCE PLAN plan_4a WITH plan_4b;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 SELECT * FROM SYS.WM_POOLS;
@@ -447,6 +462,7 @@ REPLACE ACTIVE RESOURCE PLAN WITH plan_4a;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 CREATE RESOURCE PLAN plan_4a LIKE plan_4;
 CREATE POOL plan_4a.pool3 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0;
+EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE;
 ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 SELECT * FROM SYS.WM_POOLS;

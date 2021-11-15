@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Arrays;
+
 /**
  * The representation of a vectorized column of list objects.
  *
@@ -158,7 +160,88 @@ public class ListColumnVector extends MultiValuedColumnVector {
   @Override
   public void copySelected(boolean selectedInUse, int[] sel, int size,
       ColumnVector outputColVector) {
-    throw new RuntimeException("Not supported");
+    ListColumnVector output = (ListColumnVector) outputColVector;
+    boolean[] outputIsNull = output.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    output.isRepeating = false;
+
+    // Handle repeating case
+    if (isRepeating) {
+      if (noNulls || !isNull[0]) {
+        outputIsNull[0] = false;
+        outputColVector.setElement(0, 0, this);
+      } else {
+        outputIsNull[0] = true;
+        output.noNulls = false;
+      }
+      output.isRepeating = true;
+      return;
+    }
+
+    // Handle normal case
+
+    if (noNulls) {
+      if (selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != size; j++) {
+            final int i = sel[j];
+            // Set isNull before call in case it changes it mind.
+            outputIsNull[i] = false;
+            outputColVector.setElement(i, i, this);
+          }
+        } else {
+          for(int j = 0; j != size; j++) {
+            final int i = sel[j];
+            outputColVector.setElement(i, i, this);
+          }
+        }
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        child.shallowCopyTo(output.child);
+        System.arraycopy(offsets, 0, output.offsets, 0, size);
+        System.arraycopy(lengths, 0, output.lengths, 0, size);
+        output.childCount = childCount;
+      }
+    } else /* there are nulls in our column */ {
+
+      // Carefully handle NULLs...
+
+      /*
+       * For better performance on LONG/DOUBLE we don't want the conditional
+       * statements inside the for loop.
+       */
+      output.noNulls = false;
+
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          output.isNull[i] = isNull[i];
+          outputColVector.setElement(i, i, this);
+        }
+      } else {
+        child.shallowCopyTo(output.child);
+        System.arraycopy(isNull, 0, output.isNull, 0, size);
+        System.arraycopy(offsets, 0, output.offsets, 0, size);
+        System.arraycopy(lengths, 0, output.lengths, 0, size);
+        output.childCount = childCount;
+      }
+    }
   }
 
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    ListColumnVector other = (ListColumnVector)otherCv;
+    super.shallowCopyTo(other);
+    child.shallowCopyTo(other.child);
+  }
 }

@@ -46,6 +46,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -68,6 +69,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -90,6 +92,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -232,6 +235,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -252,6 +256,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -272,6 +277,7 @@ STAGE PLANS:
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.1
@@ -403,6 +409,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -425,6 +432,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -447,6 +455,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -528,10 +537,10 @@ STAGE PLANS:
   Stage: Stage-3
     Create Table
       columns: key string, value int
+      name: default.union_top
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.union_top
 
   Stage: Stage-2
     Stats Work
@@ -633,6 +642,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -655,6 +665,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -677,6 +688,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -851,6 +863,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -873,6 +886,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -895,6 +909,7 @@ STAGE PLANS:
                         Number of rows: 3
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1

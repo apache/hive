@@ -40,9 +40,10 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Splitter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -82,6 +83,9 @@ public class HiveStringUtils {
           {"\\", "\\\\"},
       }).with(
         new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
+
+  private static final CharSequenceTranslator UNICODE_CONVERTER =
+      JavaUnicodeEscaper.outsideOf(32, 127);
 
   static {
     NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
@@ -652,6 +656,16 @@ public class HiveStringUtils {
   }
 
   /**
+   * Escape java unicode characters.
+   *
+   * @param str Original string
+   * @return Escaped string
+   */
+  public static String escapeUnicode(String str) {
+    return UNICODE_CONVERTER.translate(str);
+  }
+
+  /**
    * Unescape commas in the string using the default escape char
    * @param str a string
    * @return an unescaped string
@@ -1102,7 +1116,7 @@ public class HiveStringUtils {
         ret.append("\n");
       }
     }
-    return ret.toString();
+    return ret.toString().trim();
   }
 
   /**
@@ -1144,7 +1158,7 @@ public class HiveStringUtils {
       index++;
     }
 
-    return builder.toString().trim();
+    return builder.toString();
   }
 
   /**

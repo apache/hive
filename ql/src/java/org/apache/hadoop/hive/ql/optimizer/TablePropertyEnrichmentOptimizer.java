@@ -32,18 +32,18 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +96,7 @@ class TablePropertyEnrichmentOptimizer extends Transform {
     return originalTableParameters;
   }
 
-  private static class Processor implements NodeProcessor {
+  private static class Processor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
@@ -106,34 +106,29 @@ class TablePropertyEnrichmentOptimizer extends Transform {
       Table table = tsOp.getConf().getTableMetadata().getTTable();
 
       Map<String, String> originalTableParameters = getTableParameters(table);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Original Table parameters: " + originalTableParameters);
-      }
+      LOG.debug("Original Table parameters: {}", originalTableParameters);
       Properties clonedTableParameters = new Properties();
       clonedTableParameters.putAll(originalTableParameters);
 
       String deserializerClassName = null;
       try {
         deserializerClassName = tableScanDesc.getTableMetadata().getSd().getSerdeInfo().getSerializationLib();
-        Deserializer deserializer = ReflectionUtil.newInstance(
+        AbstractSerDe serDe = ReflectionUtil.newInstance(
             context.conf.getClassByName(deserializerClassName)
-                .asSubclass(Deserializer.class),
+                .asSubclass(AbstractSerDe.class),
             context.conf);
 
         if (context.serdeClassesUnderConsideration.contains(deserializerClassName)) {
-          deserializer.initialize(context.conf, clonedTableParameters);
-          LOG.debug("SerDe init succeeded for class: " + deserializerClassName);
+          serDe.initialize(context.conf, clonedTableParameters, null);
+          LOG.debug("SerDe init succeeded for class: {}", deserializerClassName);
           for (Map.Entry property : clonedTableParameters.entrySet()) {
             if (!property.getValue().equals(originalTableParameters.get(property.getKey()))) {
               LOG.debug("Resolving changed parameters! key=" + property.getKey() + ", value=" + property.getValue());
               table.getParameters().put((String) property.getKey(), (String) property.getValue());
             }
           }
-        }
-        else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Skipping prefetch for " + deserializerClassName);
-          }
+        } else {
+          LOG.debug("Skipping prefetch for {}", deserializerClassName);
         }
       }
       catch(Throwable t) {
@@ -150,17 +145,17 @@ class TablePropertyEnrichmentOptimizer extends Transform {
 
     LOG.info("TablePropertyEnrichmentOptimizer::transform().");
 
-    Map<Rule, NodeProcessor> opRules = Maps.newLinkedHashMap();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = Maps.newLinkedHashMap();
     opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%"),
         new Processor());
 
     WalkerCtx context = new WalkerCtx(pctx.getConf());
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
 
     List<Node> topNodes = Lists.newArrayList();
     topNodes.addAll(pctx.getTopOps().values());
 
-    GraphWalker walker = new PreOrderWalker(disp);
+    SemanticGraphWalker walker = new PreOrderWalker(disp);
     walker.startWalking(topNodes, null);
 
     LOG.info("TablePropertyEnrichmentOptimizer::transform() complete!");

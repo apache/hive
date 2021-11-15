@@ -25,9 +25,17 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import javax.management.ObjectName;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.LlapCacheHydration;
+import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
+import org.apache.hadoop.hive.llap.cache.PathCache;
+import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,30 +65,35 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.SimpleAllocator;
 import org.apache.hadoop.hive.llap.cache.SimpleBufferManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
+import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.orc.impl.OrcTail;
 
 
-
-
-
-
-
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -94,22 +107,28 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   // TODO: later, we may have a map
   private final ColumnVectorProducer orcCvp, genericCvp;
   private final ExecutorService executor;
+  private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
+  private final boolean useLowLevelCache;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
   private final LowLevelCache dataCache;
+  private final SerDeLowLevelCacheImpl serdeCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
+  private PathCache pathCache;
+  private final FixedSizedObjectPool<IoTrace> tracePool;
+  private LowLevelCachePolicy realCachePolicy;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
-    boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
+    useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
     LOG.info("Initializing LLAP IO in {} mode", useLowLevelCache ? LlapIoImpl.MODE_CACHE : "none");
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
@@ -143,9 +162,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
-      int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy realCachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
-          minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
+      int minAllocSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+      realCachePolicy =
+          useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
+      if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
+        HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
+        LOG.info("Turning off proactive cache eviction, as selected cache policy does not support it.");
+      }
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
       LowLevelCachePolicy cachePolicyWrapper;
       if (trackUsage) {
@@ -194,6 +217,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         debugDumpComponents.add(metadataCache);
       }
       debugDumpComponents.add(allocator);
+      pathCache = new MemoryLimitedPathCache(conf);
     } else {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
@@ -208,20 +232,32 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         }
       });
     }
+    this.serdeCache = serdeCache;
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
-    FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
+    tracePool = IoTrace.createTracePool(conf);
+    if (isEncodeEnabled) {
+      int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
+      int encodeThreads = numThreads * encodePoolMultiplier;
+      encodeExecutor = new StatsRecordingThreadPool(encodeThreads, encodeThreads, 0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<Runnable>(),
+          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true).build());
+    } else {
+      encodeExecutor = null;
+    }
+
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
+        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
+    LlapCacheHydration.setupAndStartIfEnabled(daemonConf);
   }
 
   private void registerMXBeans() {
@@ -241,6 +277,41 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       return memoryManager.purge();
     }
     return 0;
+  }
+
+  public long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
+    if (memoryManager == null || !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED)) {
+      return -1;
+    }
+    final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
+        .fromProtoRequest(protoRequest).build();
+    Predicate<CacheTag> predicate = tag -> request.isTagMatch(tag);
+    boolean isInstantDeallocation = HiveConf.getBoolVar(daemonConf,
+        HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC);
+    LOG.debug("Starting proactive eviction.");
+    long time = System.currentTimeMillis();
+
+    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+
+    // Signal mark phase of proactive eviction was done
+    if (markedBytes > 0) {
+      memoryManager.notifyProactiveEvictionMark();
+    }
+
+    time = System.currentTimeMillis() - time;
+
+    if (LOG.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(markedBytes).append(" bytes marked for eviction from LLAP cache buffers that belong to table(s): ");
+      for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
+        sb.append(table).append(" ");
+      }
+      sb.append(" Duration: ").append(time).append(" ms");
+      LOG.debug(sb.toString());
+    }
+    return markedBytes;
   }
 
   @Override
@@ -264,6 +335,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       buddyAllocatorMXBean = null;
     }
     executor.shutdownNow();
+    if (encodeExecutor != null) {
+      encodeExecutor.shutdownNow();
+    }
   }
 
 
@@ -299,7 +373,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
-        MemoryBuffer[] data, long baseOffset, String tag) {
+        MemoryBuffer[] data, long baseOffset, CacheTag tag) {
       return lowLevelCache.putFileData(
           fileKey, ranges, data, baseOffset, Priority.NORMAL, null, tag);
     }
@@ -335,6 +409,70 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   public void debugDumpShort(StringBuilder sb) {
     for (LlapIoDebugDump child : debugDumpComponents) {
       child.debugDumpShort(sb);
+    }
+  }
+
+  @Override
+  public OrcTail getOrcTailFromCache(Path path, Configuration jobConf, CacheTag tag, Object fileKey)
+      throws IOException {
+    return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache, fileKey);
+  }
+
+  @Override
+  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path,
+      CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter)
+      throws IOException {
+
+    OrcTail tail = null;
+    if (tag != null) {
+      // Tag information is required for metadata lookup only - which itself can be done later should this info be yet
+      // to be known
+      tail = getOrcTailFromCache(path, conf, tag, fileKey);
+    }
+    OrcSplit split = new OrcSplit(path, fileKey, offset, length, (String[]) null, tail, false, false,
+        Lists.newArrayList(), 0, length, path.getParent(), null);
+    try {
+      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
+          orcCvp, executor, null, null, reporter, daemonConf);
+
+      // May happen when attempting with unsupported schema evolution between reader and file schemas
+      if (rr == null) {
+        return null;
+      }
+
+      // This needs to be cleared as no partition values should be added to the result batches as constants.
+      rr.setPartitionValues(null);
+
+      // Triggers the IO thread pool to pick up this read job
+      rr.start();
+      return rr;
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo() {
+    if (useLowLevelCache) {
+      GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+      LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+          pathCache, tracePool, realCachePolicy);
+      return serializer.fetchCachedContentInfo();
+    } else {
+      LOG.warn("Low level cache is disabled.");
+      return LlapDaemonProtocolProtos.CacheEntryList.getDefaultInstance();
+    }
+  }
+
+  @Override
+  public void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata) {
+    if (useLowLevelCache) {
+      GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+      LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+          pathCache, tracePool, realCachePolicy);
+      serializer.loadData(metadata);
+    } else {
+      LOG.warn("Cannot load data into the cache. Low level cache is disabled.");
     }
   }
 }

@@ -172,17 +172,19 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
+                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 31:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: s_store_id (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Reduce Sink Vectorization:
@@ -254,11 +256,11 @@ POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 NULL
 AAAAAAAABAAAAAAA
+AAAAAAAACAAAAAAA
 AAAAAAAAEAAAAAAA
 AAAAAAAAHAAAAAAA
 AAAAAAAAIAAAAAAA
 AAAAAAAAKAAAAAAA
-AAAAAAAACAAAAAAA
 PREHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
  from store_n1
@@ -308,17 +310,19 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
+                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 31:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Reduce Sink Vectorization:
@@ -397,11 +401,11 @@ POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 NULL	1
 AAAAAAAABAAAAAAA	0
+AAAAAAAACAAAAAAA	0
 AAAAAAAAEAAAAAAA	0
 AAAAAAAAHAAAAAAA	0
 AAAAAAAAIAAAAAAA	0
 AAAAAAAAKAAAAAAA	0
-AAAAAAAACAAAAAAA	0
 PREHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store_n1
@@ -439,12 +443,14 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE

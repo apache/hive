@@ -17,33 +17,29 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * Metadata related to Msck.
  */
 public class MsckInfo {
 
-  private String catalogName;
-  private String dbName;
-  private String tableName;
-  private ArrayList<LinkedHashMap<String, String>> partSpecs;
-  private String resFile;
-  private boolean repairPartitions;
-  private boolean addPartitions;
-  private boolean dropPartitions;
-  private long partitionExpirySeconds;
+  private final String catalogName;
+  private final String dbName;
+  private final String tableName;
+  private final byte[] filterExp;
+  private final String resFile;
+  private final boolean repairPartitions;
+  private final boolean addPartitions;
+  private final boolean dropPartitions;
+  private final long partitionExpirySeconds;
 
-  public MsckInfo(final String catalogName, final String dbName, final String tableName,
-    final ArrayList<LinkedHashMap<String, String>> partSpecs, final String resFile, final boolean repairPartitions,
-    final boolean addPartitions,
-    final boolean dropPartitions,
-    final long partitionExpirySeconds) {
+  public MsckInfo(String catalogName, String dbName, String tableName, byte[] filterExp, String resFile,
+                  boolean repairPartitions, boolean addPartitions,
+                  boolean dropPartitions, long partitionExpirySeconds) {
     this.catalogName = catalogName;
     this.dbName = dbName;
     this.tableName = tableName;
-    this.partSpecs = partSpecs;
+    this.filterExp = filterExp;
     this.resFile = resFile;
     this.repairPartitions = repairPartitions;
     this.addPartitions = addPartitions;
@@ -55,71 +51,35 @@ public class MsckInfo {
     return catalogName;
   }
 
-  public void setCatalogName(final String catalogName) {
-    this.catalogName = catalogName;
-  }
-
   public String getDbName() {
     return dbName;
-  }
-
-  public void setDbName(final String dbName) {
-    this.dbName = dbName;
   }
 
   public String getTableName() {
     return tableName;
   }
 
-  public void setTableName(final String tableName) {
-    this.tableName = tableName;
-  }
-
-  public ArrayList<LinkedHashMap<String, String>> getPartSpecs() {
-    return partSpecs;
-  }
-
-  public void setPartSpecs(final ArrayList<LinkedHashMap<String, String>> partSpecs) {
-    this.partSpecs = partSpecs;
+  public byte[] getFilterExp() {
+    return filterExp;
   }
 
   public String getResFile() {
     return resFile;
   }
 
-  public void setResFile(final String resFile) {
-    this.resFile = resFile;
-  }
-
   public boolean isRepairPartitions() {
     return repairPartitions;
-  }
-
-  public void setRepairPartitions(final boolean repairPartitions) {
-    this.repairPartitions = repairPartitions;
   }
 
   public boolean isAddPartitions() {
     return addPartitions;
   }
 
-  public void setAddPartitions(final boolean addPartitions) {
-    this.addPartitions = addPartitions;
-  }
-
   public boolean isDropPartitions() {
     return dropPartitions;
   }
 
-  public void setDropPartitions(final boolean dropPartitions) {
-    this.dropPartitions = dropPartitions;
-  }
-
   public long getPartitionExpirySeconds() {
     return partitionExpirySeconds;
-  }
-
-  public void setPartitionExpirySeconds(final long partitionExpirySeconds) {
-    this.partitionExpirySeconds = partitionExpirySeconds;
   }
 }

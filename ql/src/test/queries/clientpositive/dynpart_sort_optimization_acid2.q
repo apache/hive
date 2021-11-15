@@ -1,7 +1,7 @@
 --! qt:dataset:srcpart
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.optimize.clustered.sort=false;
 set hive.optimize.sort.dynamic.partition.threshold=1;
 
 CREATE TABLE non_acid(key string, value string)

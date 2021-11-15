@@ -1,0 +1,145 @@
+PREHOOK: query: CREATE external TABLE IF NOT EXISTS sessions
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sessions
+POSTHOOK: query: CREATE external TABLE IF NOT EXISTS sessions
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sessions
+PREHOOK: query: CREATE TABLE IF NOT EXISTS sessions_orc
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sessions_orc
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS sessions_orc
+(
+session_id string,
+uid bigint,
+uids array<bigint>,
+search_ids array<string>,
+total_views int,
+datestamp date
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sessions_orc
+PREHOOK: query: describe formatted sessions_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sessions_orc
+POSTHOOK: query: describe formatted sessions_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sessions_orc
+# col_name            	data_type           	comment             
+session_id          	string              	                    
+uid                 	bigint              	                    
+uids                	array<bigint>       	                    
+search_ids          	array<string>       	                    
+total_views         	int                 	                    
+datestamp           	date                	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"datestamp\":\"true\",\"search_ids\":\"true\",\"session_id\":\"true\",\"total_views\":\"true\",\"uid\":\"true\",\"uids\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT OVERWRITE TABLE sessions_orc
+SELECT * FROM sessions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sessions
+PREHOOK: Output: default@sessions_orc
+POSTHOOK: query: INSERT OVERWRITE TABLE sessions_orc
+SELECT * FROM sessions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sessions
+POSTHOOK: Output: default@sessions_orc
+POSTHOOK: Lineage: sessions_orc.datestamp SIMPLE [(sessions)sessions.FieldSchema(name:datestamp, type:date, comment:null), ]
+POSTHOOK: Lineage: sessions_orc.search_ids SIMPLE [(sessions)sessions.FieldSchema(name:search_ids, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: sessions_orc.session_id SIMPLE [(sessions)sessions.FieldSchema(name:session_id, type:string, comment:null), ]
+POSTHOOK: Lineage: sessions_orc.total_views SIMPLE [(sessions)sessions.FieldSchema(name:total_views, type:int, comment:null), ]
+POSTHOOK: Lineage: sessions_orc.uid SIMPLE [(sessions)sessions.FieldSchema(name:uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: sessions_orc.uids SIMPLE [(sessions)sessions.FieldSchema(name:uids, type:array<bigint>, comment:null), ]
+PREHOOK: query: select count(1) from sessions_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sessions_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from sessions_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sessions_orc
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(1) from sessions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sessions
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from sessions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sessions
+#### A masked pattern was here ####
+1
+PREHOOK: query: drop table sessions
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sessions
+PREHOOK: Output: default@sessions
+POSTHOOK: query: drop table sessions
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sessions
+POSTHOOK: Output: default@sessions
+PREHOOK: query: drop table sessions_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sessions_orc
+PREHOOK: Output: default@sessions_orc
+POSTHOOK: query: drop table sessions_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sessions_orc
+POSTHOOK: Output: default@sessions_orc

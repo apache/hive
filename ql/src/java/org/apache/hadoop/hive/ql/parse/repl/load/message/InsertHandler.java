@@ -36,7 +36,7 @@ public class InsertHandler extends AbstractMessageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(InsertHandler.class);
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context withinContext)
+  public List<Task<?>> handle(Context withinContext)
       throws SemanticException {
     try {
       FileSystem fs =
@@ -55,13 +55,12 @@ public class InsertHandler extends AbstractMessageHandler {
     InsertMessage insertMessage = deserializer.getInsertMessage(withinContext.dmd.getPayload());
     String actualDbName =
         withinContext.isDbNameEmpty() ? insertMessage.getDB() : withinContext.dbName;
-    String actualTblName =
-        withinContext.isTableNameEmpty() ? insertMessage.getTable() : withinContext.tableName;
+    Context currentContext = new Context(withinContext, actualDbName,
+                                         withinContext.getDumpDirectory(), withinContext.getMetricCollector());
 
-    Context currentContext = new Context(withinContext, actualDbName, actualTblName);
     // Piggybacking in Import logic for now
     TableHandler tableHandler = new TableHandler();
-    List<Task<? extends Serializable>> tasks = tableHandler.handle(currentContext);
+    List<Task<?>> tasks = tableHandler.handle(currentContext);
     readEntitySet.addAll(tableHandler.readEntities());
     writeEntitySet.addAll(tableHandler.writeEntities());
     getUpdatedMetadata().copyUpdatedMetadata(tableHandler.getUpdatedMetadata());

@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -32,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -40,6 +44,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -48,10 +53,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class ColStatsProcessor implements IStatsProcessor {
   private static transient final Logger LOG = LoggerFactory.getLogger(ColStatsProcessor.class);
@@ -76,7 +83,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       JobConf job = new JobConf(conf);
       ftOp = new FetchOperator(fWork, job);
     } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.error("Failed to initialize", e);
       throw new RuntimeException(e);
     }
   }
@@ -86,39 +93,37 @@ public class ColStatsProcessor implements IStatsProcessor {
     return persistColumnStats(db, tbl);
   }
 
-  private List<ColumnStatistics> constructColumnStatsFromPackedRows(Table tbl1) throws HiveException, MetaException, IOException {
-
-    Table tbl = tbl1;
-
+  private boolean constructColumnStatsFromPackedRows(Table tbl, List<ColumnStatistics> stats, long maxNumStats)
+      throws HiveException, MetaException, IOException {
     String partName = null;
     List<String> colName = colStatDesc.getColName();
     List<String> colType = colStatDesc.getColType();
     boolean isTblLevel = colStatDesc.isTblLevel();
 
-    List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
     InspectableObject packedRow;
+    long numStats = 0;
     while ((packedRow = ftOp.getNextRow()) != null) {
       if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
         throw new HiveException("Unexpected object type encountered while unpacking row");
       }
 
-      List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
-      StructObjectInspector soi = (StructObjectInspector) packedRow.oi;
-      List<? extends StructField> fields = soi.getAllStructFieldRefs();
-      List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
+      final List<ColumnStatisticsObj> statsObjs = new ArrayList<>();
+      final StructObjectInspector soi = (StructObjectInspector) packedRow.oi;
+      final List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      final List<Object> values = soi.getStructFieldsDataAsList(packedRow.o);
 
-      List<FieldSchema> partColSchema = tbl.getPartCols();
       // Partition columns are appended at end, we only care about stats column
-      int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
-      assert list != null;
-      for (int i = 0; i < numOfStatCols; i++) {
-        StructField structField = fields.get(i);
+      int pos = 0;
+      for (int i = 0; i < colName.size(); i++) {
         String columnName = colName.get(i);
         String columnType = colType.get(i);
-        Object values = list.get(i);
+        PrimitiveTypeInfo typeInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(columnType);
+        List<ColumnStatsField> columnStatsFields = ColumnStatsType.getColumnStats(typeInfo);
         try {
-          ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveStruct(columnName, columnType, structField, values);
+          ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveColumnStatistics(
+              columnName, columnType, columnStatsFields, pos, fields, values);
           statsObjs.add(statObj);
+          numStats++;
         } catch (Exception e) {
           if (isStatsReliable) {
             throw new HiveException("Statistics collection failed while (hive.stats.reliable)", e);
@@ -126,15 +131,17 @@ public class ColStatsProcessor implements IStatsProcessor {
             LOG.debug("Because {} is infinite or NaN, we skip stats.", columnName, e);
           }
         }
+        pos += columnStatsFields.size();
       }
 
       if (!statsObjs.isEmpty()) {
-
         if (!isTblLevel) {
-          List<String> partVals = new ArrayList<String>();
+          List<FieldSchema> partColSchema = tbl.getPartCols();
+          List<String> partVals = new ArrayList<>();
           // Iterate over partition columns to figure out partition name
-          for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
-            Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(list.get(i));
+          for (int i = pos; i < pos + partColSchema.size(); i++) {
+            Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
+                .getPrimitiveJavaObject(values.get(i));
             partVals.add(partVal == null ? // could be null for default partition
               this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
           }
@@ -145,11 +152,15 @@ public class ColStatsProcessor implements IStatsProcessor {
         ColumnStatistics colStats = new ColumnStatistics();
         colStats.setStatsDesc(statsDesc);
         colStats.setStatsObj(statsObjs);
+        colStats.setEngine(Constants.HIVE_ENGINE);
         stats.add(colStats);
+        if (numStats >= maxNumStats) {
+          return false;
+        }
       }
     }
     ftOp.clearFetchContext();
-    return stats;
+    return true;
   }
 
   private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
@@ -171,22 +182,44 @@ public class ColStatsProcessor implements IStatsProcessor {
   public int persistColumnStats(Hive db, Table tbl) throws HiveException, MetaException, IOException {
     // Construct a column statistics object from the result
 
-    List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(tbl);
-    // Persist the column statistics object to the metastore
-    // Note, this function is shared for both table and partition column stats.
-    if (colStats.isEmpty()) {
-      return 0;
-    }
-    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
-    request.setNeedMerge(colStatDesc.isNeedMerge());
-    HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
-        ? SessionState.get().getTxnMgr() : null;
+    long writeId = -1;
+    ValidWriteIdList validWriteIdList = null;
+    HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl) ? SessionState.get().getTxnMgr() : null;
     if (txnMgr != null) {
-      request.setValidWriteIdList(AcidUtils.getTableValidWriteIdList(conf,
-          AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName())).toString());
-      request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));
+      writeId = txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName());
+      validWriteIdList =
+              AcidUtils.getTableValidWriteIdList(conf, AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
     }
-    db.setPartitionColumnStatistics(request);
+
+    boolean done = false;
+    long maxNumStats = conf.getLongVar(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS);
+    while (!done) {
+      List<ColumnStatistics> colStats = new ArrayList<>();
+
+      long start = System. currentTimeMillis();
+      done = constructColumnStatsFromPackedRows(tbl, colStats, maxNumStats);
+      long end = System.currentTimeMillis();
+      LOG.info("Time taken to build " + colStats.size() + " stats desc : " + ((end - start)/1000F) + " seconds.");
+
+      // Persist the column statistics object to the metastore
+      // Note, this function is shared for both table and partition column stats.
+      if (colStats.isEmpty()) {
+        continue;
+      }
+      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Constants.HIVE_ENGINE);
+      request.setNeedMerge(colStatDesc.isNeedMerge());
+      if (txnMgr != null) {
+        request.setWriteId(writeId);
+        if (validWriteIdList != null) {
+          request.setValidWriteIdList(validWriteIdList.toString());
+        }
+      }
+
+      start = System. currentTimeMillis();
+      db.setPartitionColumnStatistics(request);
+      end = System.currentTimeMillis();
+      LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
+    }
     return 0;
   }
 
@@ -194,4 +227,148 @@ public class ColStatsProcessor implements IStatsProcessor {
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
   }
 
+  /**
+   * Enumeration of column stats fields that can currently
+   * be computed. Each one has a field name associated.
+   */
+  public enum ColumnStatsField {
+    COLUMN_STATS_TYPE("columntype"),
+    COUNT_TRUES("counttrues"),
+    COUNT_FALSES("countfalses"),
+    COUNT_NULLS("countnulls"),
+    MIN("min"),
+    MAX("max"),
+    NDV("numdistinctvalues"),
+    BITVECTOR("ndvbitvector"),
+    MAX_LENGTH("maxlength"),
+    AVG_LENGTH("avglength");
+
+    private final String fieldName;
+
+    ColumnStatsField(String fieldName) {
+      this.fieldName = fieldName;
+    }
+
+    public String getFieldName() {
+      return fieldName;
+    }
+  }
+
+  /**
+   * Enumeration of column stats type. Each Hive primitive type maps into a single
+   * column stats type, e.g., byte, short, int, and bigint types map into long
+   * column type. Each column stats type has _n_ column stats fields associated
+   * with it.
+   */
+  public enum ColumnStatsType {
+    BOOLEAN(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.COUNT_TRUES,
+            ColumnStatsField.COUNT_FALSES,
+            ColumnStatsField.COUNT_NULLS)),
+    LONG(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MIN,
+            ColumnStatsField.MAX,
+            ColumnStatsField.COUNT_NULLS,
+            ColumnStatsField.NDV,
+            ColumnStatsField.BITVECTOR)),
+    DOUBLE(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MIN,
+            ColumnStatsField.MAX,
+            ColumnStatsField.COUNT_NULLS,
+            ColumnStatsField.NDV,
+            ColumnStatsField.BITVECTOR)),
+    STRING(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MAX_LENGTH,
+            ColumnStatsField.AVG_LENGTH,
+            ColumnStatsField.COUNT_NULLS,
+            ColumnStatsField.NDV,
+            ColumnStatsField.BITVECTOR)),
+    BINARY(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MAX_LENGTH,
+            ColumnStatsField.AVG_LENGTH,
+            ColumnStatsField.COUNT_NULLS)),
+    DECIMAL(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MIN,
+            ColumnStatsField.MAX,
+            ColumnStatsField.COUNT_NULLS,
+            ColumnStatsField.NDV,
+            ColumnStatsField.BITVECTOR)),
+    DATE(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MIN,
+            ColumnStatsField.MAX,
+            ColumnStatsField.COUNT_NULLS,
+            ColumnStatsField.NDV,
+            ColumnStatsField.BITVECTOR)),
+    TIMESTAMP(
+        ImmutableList.of(
+            ColumnStatsField.COLUMN_STATS_TYPE,
+            ColumnStatsField.MIN,
+            ColumnStatsField.MAX,
+            ColumnStatsField.COUNT_NULLS,
+            ColumnStatsField.NDV,
+            ColumnStatsField.BITVECTOR));
+
+
+    private final List<ColumnStatsField> columnStats;
+
+    ColumnStatsType(List<ColumnStatsField> columnStats) {
+      this.columnStats = columnStats;
+    }
+
+    public List<ColumnStatsField> getColumnStats() {
+      return columnStats;
+    }
+
+    public static ColumnStatsType getColumnStatsType(PrimitiveTypeInfo typeInfo)
+        throws SemanticException {
+      switch (typeInfo.getPrimitiveCategory()) {
+      case BOOLEAN:
+        return BOOLEAN;
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case TIMESTAMPLOCALTZ:
+        return LONG;
+      case FLOAT:
+      case DOUBLE:
+        return DOUBLE;
+      case DECIMAL:
+        return DECIMAL;
+      case DATE:
+        return DATE;
+      case TIMESTAMP:
+        return TIMESTAMP;
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+        return STRING;
+      case BINARY:
+        return BINARY;
+      default:
+        throw new SemanticException("Not supported type "
+            + typeInfo.getTypeName() + " for statistics computation");
+      }
+    }
+
+    public static List<ColumnStatsField> getColumnStats(PrimitiveTypeInfo typeInfo)
+        throws SemanticException {
+      return getColumnStatsType(typeInfo).getColumnStats();
+    }
+
+  }
 }

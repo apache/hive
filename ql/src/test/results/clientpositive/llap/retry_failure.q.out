@@ -23,13 +23,45 @@ PREHOOK: Input: default@tx_n1
 Status: Failed
 Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
 DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 PREHOOK: query: select assert_true(2 > a) from tx_n1 group by a
@@ -41,3 +73,52 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx_n1
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: select assert_true(1 > a), assert_true("default" = "default") from tx_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx_n1
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+PREHOOK: query: select assert_true(2 > a), assert_true("default" = "default") from tx_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(2 > a), assert_true("default" = "default") from tx_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx_n1
+#### A masked pattern was here ####
+NULL	NULL

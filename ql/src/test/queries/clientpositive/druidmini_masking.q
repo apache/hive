@@ -1,3 +1,5 @@
+--! qt:disabled:Disabled in HIVE-20322
+
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 SET hive.ctas.external.tables=true;

@@ -1,0 +1,487 @@
+PREHOOK: query: CREATE TABLE T1_n81(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n81
+POSTHOOK: query: CREATE TABLE T1_n81(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n81
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_n81
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_n81
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_n81
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_n81
+PREHOOK: query: EXPLAIN
+SELECT a, b, count(*) from T1_n81 group by a, b with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a, b, count(*) from T1_n81 group by a, b with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n81
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: a (type: string), b (type: string)
+                    outputColumnNames: a, b
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: a (type: string), b (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: zzz
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col3 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT a, b, count(*) from T1_n81 group by cube(a, b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a, b, count(*) from T1_n81 group by cube(a, b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n81
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: a (type: string), b (type: string)
+                    outputColumnNames: a, b
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: a (type: string), b (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: zzz
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col3 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a, b, count(*) from T1_n81 group by a, b with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, count(*) from T1_n81 group by a, b with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+a	b	_c2
+1	1	1
+1	NULL	1
+2	2	1
+2	3	1
+2	NULL	2
+3	2	1
+3	NULL	1
+5	2	1
+5	NULL	1
+8	1	1
+8	NULL	1
+NULL	1	2
+NULL	2	3
+NULL	3	1
+NULL	NULL	6
+PREHOOK: query: EXPLAIN
+SELECT a, b, sum(c) from T1_n81 group by a, b with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a, b, sum(c) from T1_n81 group by a, b with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n81
+                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: a (type: string), b (type: string), c (type: string)
+                    outputColumnNames: a, b, c
+                    Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(c)
+                      keys: a (type: string), b (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: double)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: zzz
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col3 (type: double)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 2 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a, b, sum(c) from T1_n81 group by a, b with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(c) from T1_n81 group by a, b with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n81
+#### A masked pattern was here ####
+a	b	_c2
+1	1	3.0
+1	NULL	3.0
+2	2	4.0
+2	3	5.0
+2	NULL	9.0
+3	2	8.0
+3	NULL	8.0
+5	2	2.0
+5	NULL	2.0
+8	1	1.0
+8	NULL	1.0
+NULL	1	4.0
+NULL	2	14.0
+NULL	3	5.0
+NULL	NULL	23.0
+PREHOOK: query: CREATE TABLE T2_n50(a STRING, b STRING, c int, d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_n50
+POSTHOOK: query: CREATE TABLE T2_n50(a STRING, b STRING, c int, d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_n50
+PREHOOK: query: INSERT OVERWRITE TABLE T2_n50
+SELECT a, b, c, c from T1_n81
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n81
+PREHOOK: Output: default@t2_n50
+POSTHOOK: query: INSERT OVERWRITE TABLE T2_n50
+SELECT a, b, c, c from T1_n81
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n81
+POSTHOOK: Output: default@t2_n50
+POSTHOOK: Lineage: t2_n50.a SIMPLE [(t1_n81)t1_n81.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n50.b SIMPLE [(t1_n81)t1_n81.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n50.c EXPRESSION [(t1_n81)t1_n81.FieldSchema(name:c, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n50.d EXPRESSION [(t1_n81)t1_n81.FieldSchema(name:c, type:string, comment:null), ]
+_col0	_col1	_col2	_col3
+PREHOOK: query: EXPLAIN
+SELECT a, b, sum(c+d) from T2_n50 group by a, b with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n50
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a, b, sum(c+d) from T2_n50 group by a, b with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n50
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2_n50
+                  Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: string), b (type: string), (c + d) (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col2)
+                      keys: _col0 (type: string), _col1 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: zzz
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col3 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 20 Data size: 3560 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 3560 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a, b, sum(c+d) from T2_n50 group by a, b with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n50
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(c+d) from T2_n50 group by a, b with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n50
+#### A masked pattern was here ####
+a	b	_c2
+1	1	6
+1	NULL	6
+2	2	8
+2	3	10
+2	NULL	18
+3	2	16
+3	NULL	16
+5	2	4
+5	NULL	4
+8	1	2
+8	NULL	2
+NULL	1	8
+NULL	2	28
+NULL	3	10
+NULL	NULL	46

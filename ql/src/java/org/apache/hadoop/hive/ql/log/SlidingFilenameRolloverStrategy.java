@@ -73,6 +73,10 @@ public class SlidingFilenameRolloverStrategy
     return getLogFileName(pattern);
   }
 
+  @Override public void clearCurrentFileName() {
+    // no rename is needed
+  }
+
   /**
    * @return Mangled file name formed by appending the current timestamp
    */

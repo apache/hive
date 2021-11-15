@@ -1,0 +1,40 @@
+WARNING: Comparing string and bigint may result in loss of information.
+WARNING: Comparing string and bigint may result in loss of information.
+PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+9
+PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0S
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0S
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+9
+PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0Y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0Y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+9
+WARNING: Comparing string and decimal(1,0) may result in loss of information.
+WARNING: Comparing string and decimal(1,0) may result in loss of information.
+PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0BD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0BD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+9

@@ -57,8 +57,9 @@ public class HiveWrapper {
 
   public Tuple<Table> table(final String tableName, HiveConf conf) throws HiveException {
     // Column statistics won't be accurate if we are dumping only metadata
-    boolean getColStats = !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
-    return new Tuple<>(functionForSpec, () -> db.getTable(dbName, tableName, true, false,
+    boolean getColStats = !Utils.shouldDumpMetaDataOnlyForExternalTables(db.getTable(dbName, tableName), conf)
+            && !Utils.shouldDumpMetaDataOnly(conf);
+    return new Tuple<>(functionForSpec, () -> db.getTable(dbName, tableName, null, true, false,
             getColStats));
   }
 

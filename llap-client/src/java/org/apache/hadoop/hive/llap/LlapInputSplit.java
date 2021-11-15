@@ -20,11 +20,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.Schema;
-import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
+import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
 import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.apache.hadoop.security.token.Token;
 
 public class LlapInputSplit implements InputSplitWithLocationInfo {
 
@@ -32,25 +30,33 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
   private byte[] planBytes;
   private byte[] fragmentBytes;
   private SplitLocationInfo[] locations;
+  private LlapDaemonInfo[] llapDaemonInfos;
   private Schema schema;
   private String llapUser;
   private byte[] fragmentBytesSignature;
   private byte[] tokenBytes;
+  //only needed in cloud deployments for llap server to validate request from external llap clients.
+  //HS2 generates a JWT and populates this field while get_splits() call, this jwt gets validated at LLAP server
+  //when LlapInputSplit is submitted.
+  private String jwt;
 
   public LlapInputSplit() {
   }
 
   public LlapInputSplit(int splitNum, byte[] planBytes, byte[] fragmentBytes,
-      byte[] fragmentBytesSignature, SplitLocationInfo[] locations, Schema schema,
-      String llapUser, byte[] tokenBytes) {
+                        byte[] fragmentBytesSignature, SplitLocationInfo[] locations,
+                        LlapDaemonInfo[] llapDaemonInfos, Schema schema,
+                        String llapUser, byte[] tokenBytes, String jwt) {
     this.planBytes = planBytes;
     this.fragmentBytes = fragmentBytes;
     this.fragmentBytesSignature = fragmentBytesSignature;
     this.locations = locations;
+    this.llapDaemonInfos = llapDaemonInfos;
     this.schema = schema;
     this.splitNum = splitNum;
     this.llapUser = llapUser;
     this.tokenBytes = tokenBytes;
+    this.jwt = jwt;
   }
 
   public Schema getSchema() {
@@ -91,6 +97,18 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     return tokenBytes;
   }
 
+  public void setPlanBytes(byte[] planBytes) {
+    this.planBytes = planBytes;
+  }
+
+  public void setSchema(Schema schema) {
+    this.schema = schema;
+  }
+
+  public String getJwt() {
+    return jwt;
+  }
+
   @Override
   public void write(DataOutput out) throws IOException {
     out.writeInt(splitNum);
@@ -111,6 +129,11 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       out.writeUTF(locations[i].getLocation());
     }
 
+    out.writeInt(llapDaemonInfos.length);
+    for (LlapDaemonInfo llapDaemonInfo : llapDaemonInfos) {
+      llapDaemonInfo.write(out);
+    }
+
     schema.write(out);
     out.writeUTF(llapUser);
     if (tokenBytes != null) {
@@ -118,6 +141,10 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       out.write(tokenBytes);
     } else {
       out.writeInt(0);
+    }
+
+    if (jwt != null) {
+      out.writeUTF(jwt);
     }
   }
 
@@ -144,6 +171,12 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       locations[i] = new SplitLocationInfo(in.readUTF(), false);
     }
 
+    llapDaemonInfos = new LlapDaemonInfo[in.readInt()];
+    for (int i = 0; i < llapDaemonInfos.length; i++) {
+      llapDaemonInfos[i] = new LlapDaemonInfo();
+      llapDaemonInfos[i].readFields(in);
+    }
+
     schema = new Schema();
     schema.readFields(in);
     llapUser = in.readUTF();
@@ -152,6 +185,7 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       tokenBytes = new byte[length];
       in.readFully(tokenBytes);
     }
+    jwt = in.readUTF();
   }
 
   @Override
@@ -161,5 +195,9 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
 
   public String getLlapUser() {
     return llapUser;
+  }
+
+  public LlapDaemonInfo[] getLlapDaemonInfos() {
+    return llapDaemonInfos;
   }
 }

@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rex.RexLiteral;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
@@ -41,8 +43,24 @@ public final class HiveSortLimitRemoveRule extends RelOptRule {
     final HiveSortLimit sortLimit = call.rel(0);
 
     Double maxRowCount = call.getMetadataQuery().getMaxRowCount(sortLimit.getInput());
-    if (maxRowCount != null &&(maxRowCount <= 1)) {
-      return true;
+    if (maxRowCount != null) {
+      if (HiveCalciteUtil.pureLimitRelNode(sortLimit)) {
+        // We only have only LIMIT: Remove if the input is producing less or
+        // equal number of rows.
+        return maxRowCount <= RexLiteral.intValue(sortLimit.getFetchExpr());
+      } else if (HiveCalciteUtil.pureOrderRelNode(sortLimit)) {
+        // We only have ORDER BY: Remove if the input is producing at
+        // most one row.
+        return maxRowCount <= 1;
+      } else {
+        // ORDER BY + LIMIT: Remove if the input is producing at most
+        // one row and the limit is larger or equal than the number of
+        // rows.
+        // TODO: If the second condition was not true, we could still
+        //       rewrite the operator (rather than removing it).
+        return maxRowCount <= 1 &&
+            RexLiteral.intValue(sortLimit.getFetchExpr()) >= maxRowCount;
+      }
     }
     return false;
   }

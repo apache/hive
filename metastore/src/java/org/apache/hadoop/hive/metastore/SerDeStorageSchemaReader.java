@@ -35,16 +35,16 @@ public class SerDeStorageSchemaReader implements StorageSchemaReader {
     try {
       if (envContext != null) {
         String addedJars = envContext.getProperties().get("hive.added.jars.path");
-        if (org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(addedJars)) {
           //for thread safe
           orgHiveLoader = conf.getClassLoader();
           ClassLoader loader = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.addToClassPath(
-              orgHiveLoader, org.apache.commons.lang.StringUtils.split(addedJars, ","));
+              orgHiveLoader, org.apache.commons.lang3.StringUtils.split(addedJars, ","));
           conf.setClassLoader(loader);
         }
       }
 
-      Deserializer s = HiveMetaStoreUtils.getDeserializer(conf, tbl, false);
+      Deserializer s = HiveMetaStoreUtils.getDeserializer(conf, tbl, null, false);
       return HiveMetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(), s);
     } catch (Exception e) {
       StringUtils.stringifyException(e);

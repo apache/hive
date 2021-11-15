@@ -37,6 +37,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@basetable_rebuild
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_rebuild
+POSTHOOK: Lineage: mv_rebuild._c2 EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.a SIMPLE [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.b SIMPLE [(basetable_rebuild)basetable_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), ]
 PREHOOK: query: select * from mv_rebuild
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_rebuild
@@ -75,12 +78,12 @@ POSTHOOK: Input: default@mv_rebuild
 3	calvin	3
 3	charlie	3
 PREHOOK: query: alter materialized view mv_rebuild rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@basetable_rebuild
 PREHOOK: Input: default@mv_rebuild
 PREHOOK: Output: default@mv_rebuild
 POSTHOOK: query: alter materialized view mv_rebuild rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@basetable_rebuild
 POSTHOOK: Input: default@mv_rebuild
 POSTHOOK: Output: default@mv_rebuild

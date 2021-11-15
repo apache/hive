@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public abstract class HiveBaseChar {
   protected String value;

@@ -286,7 +286,7 @@ public class TestFileSinkOperator {
       DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(partColMap, "Sunday", 100);
       //todo: does this need the finalDestination?
       desc = new FileSinkDesc(basePath, tableDesc, false, 1, false,
-          false, 1, 1, partCols, dpCtx, null, null, false, false, false);
+          false, 1, 1, partCols, dpCtx, null, null, false, false, false, false, false, writeType);
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }
@@ -705,7 +705,8 @@ public class TestFileSinkOperator {
                                               int bucket,
                                               ValidWriteIdList validWriteIdList,
                                               Path baseDirectory,
-                                              Path[] deltaDirectory) throws
+                                              Path[] deltaDirectory,
+                                              Map<String,Integer> deltaToAttemptId) throws
         IOException {
       return null;
     }
@@ -778,6 +779,11 @@ public class TestFileSinkOperator {
         public long getBufferedRowCount() {
           return records.size();
         }
+
+        @Override
+        public Path getUpdatedFilePath() {
+          return null;
+        }
       };
     }
 
@@ -833,8 +839,8 @@ public class TestFileSinkOperator {
   public static class TFSOSerDe extends AbstractSerDe {
 
     @Override
-    public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-
+    public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+        throws SerDeException {
     }
 
     @Override
@@ -856,11 +862,6 @@ public class TestFileSinkOperator {
 
     @Override
     public ObjectInspector getObjectInspector() throws SerDeException {
-      return null;
-    }
-
-    @Override
-    public SerDeStats getSerDeStats() {
       return null;
     }
   }

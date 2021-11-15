@@ -19,14 +19,22 @@ package org.apache.hadoop.hive.common.auth;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManagerFactory;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
@@ -42,8 +50,8 @@ import org.slf4j.LoggerFactory;
 public class HiveAuthUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthUtils.class);
 
-  public static TTransport getSocketTransport(String host, int port, int loginTimeout) {
-    return new TSocket(host, port, loginTimeout);
+  public static TTransport getSocketTransport(String host, int port, int loginTimeout) throws TTransportException {
+    return new TSocket(new TConfiguration(),host, port, loginTimeout);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout)
@@ -54,10 +62,14 @@ public class HiveAuthUtils {
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout,
-    String trustStorePath, String trustStorePassWord) throws TTransportException {
+      String trustStorePath, String trustStorePassWord, String trustStoreType,
+      String trustStoreAlgorithm) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
       new TSSLTransportFactory.TSSLTransportParameters();
-    params.setTrustStore(trustStorePath, trustStorePassWord);
+    String tStoreType = trustStoreType.isEmpty()? KeyStore.getDefaultType() : trustStoreType;
+    String tStoreAlgorithm = trustStoreAlgorithm.isEmpty()?
+            TrustManagerFactory.getDefaultAlgorithm() : trustStoreAlgorithm;
+    params.setTrustStore(trustStorePath, trustStorePassWord, tStoreAlgorithm, tStoreType);
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // SSLContext created with the given params
@@ -88,11 +100,27 @@ public class HiveAuthUtils {
   }
 
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-      String keyStorePassWord, List<String> sslVersionBlacklist) throws TTransportException,
+      String keyStorePassWord, String keyStoreType, String keyStoreAlgorithm,
+      List<String> sslVersionBlacklist, String includeCipherSuites) throws TTransportException,
       UnknownHostException {
-    TSSLTransportFactory.TSSLTransportParameters params =
-        new TSSLTransportFactory.TSSLTransportParameters();
-    params.setKeyStore(keyStorePath, keyStorePassWord);
+
+    TSSLTransportFactory.TSSLTransportParameters params = null;
+    if (!includeCipherSuites.trim().isEmpty()) {
+      Set<String> includeCS = Sets.newHashSet(
+              Splitter.on(":").trimResults().omitEmptyStrings().split(includeCipherSuites.trim()));
+      int eSize = includeCS.size();
+      if (eSize > 0) {
+        params = new TSSLTransportFactory.TSSLTransportParameters("TLS", includeCS.toArray(new String[eSize]));
+      }
+    }
+    if (params == null) {
+      params = new TSSLTransportFactory.TSSLTransportParameters();
+    }
+    String kStoreType = keyStoreType.isEmpty()? KeyStore.getDefaultType() : keyStoreType;
+    String kStoreAlgorithm = keyStoreAlgorithm.isEmpty()?
+            KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm;
+    params.setKeyStore(keyStorePath, keyStorePassWord,
+        kStoreAlgorithm, kStoreType);
     InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
       // Wildcard bind

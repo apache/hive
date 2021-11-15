@@ -242,7 +242,7 @@ public class AggregationBase {
        throw new HiveException("Failed to create " + vecAggrClass.getSimpleName() +
            "(VectorAggregationDesc) object ", e);
     }
-    VectorExpression.doTransientInit(vecAggrExpr.getInputExpression());
+    VectorExpression.doTransientInit(vecAggrExpr.getInputExpression(), hiveConf);
 
     // System.out.println("*VECTOR AGGREGATION EXPRESSION* " + vecAggrExpr.getClass().getSimpleName());
 

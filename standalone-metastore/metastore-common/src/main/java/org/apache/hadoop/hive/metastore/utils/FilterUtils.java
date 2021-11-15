@@ -17,20 +17,31 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.util.Collections;
-import java.util.List;
-import static org.apache.commons.lang.StringUtils.isBlank;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CATALOG_DB_SEPARATOR;
 
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Utilities common to Filtering operations.
@@ -82,6 +93,26 @@ public class FilterUtils {
     }
 
     return dbNames;
+  }
+
+  /**
+   * Filter the list of dataconnectors if filtering is enabled. Otherwise, return original list
+   * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
+   * @param filterHook: the object that does filtering
+   * @param connectorNames: the list of dataconnector names to filter
+   * @return the list of dataconnector names that current user has access if filtering is enabled;
+   *         otherwise, the original list
+   * @throws MetaException
+   */
+  public static List<String> filterDataConnectorsIfEnabled(
+      boolean isFilterEnabled,
+      MetaStoreFilterHook filterHook,
+      List<String> connectorNames) throws MetaException {
+
+    if (isFilterEnabled) {
+      return filterHook.filterDatabases(connectorNames); // TODO add a new ATZ call
+    }
+    return connectorNames;
   }
 
   /**
@@ -371,4 +402,100 @@ public class FilterUtils {
     }
   }
 
+  /**
+   * Filter the list of compactions if filtering is enabled. Otherwise, return original list
+   *
+   * @param isFilterEnabled true: filtering is enabled; false: filtering is disabled.
+   * @param filterHook      the object that does filtering
+   * @param compactions     the list of compactions
+   * @return the list of compactions that user has access or original list if filtering is disabled;
+   * @throws MetaException
+   */
+  public static List<ShowCompactResponseElement> filterCompactionsIfEnabled(
+          boolean isFilterEnabled,
+          MetaStoreFilterHook filterHook, String catName, List<ShowCompactResponseElement> compactions)
+          throws MetaException {
+
+    if (isFilterEnabled) {
+      List<ShowCompactResponseElement> result = new ArrayList<>(compactions.size());
+
+      // DBName -> List of TableNames map used for checking access rights for non partitioned tables
+      Map<String, List<String>> nonPartTables = new HashMap<>();
+      // DBName -> TableName -> List of PartitionNames map used for checking access rights for
+      // partitioned tables
+      Map<String, Map<String, List<String>>> partTables = new HashMap<>();
+      for (ShowCompactResponseElement c : compactions) {
+        if (c.getPartitionname() == null) {
+          nonPartTables.computeIfAbsent(c.getDbname(), k -> new ArrayList<>());
+          if (!nonPartTables.get(c.getDbname()).contains(c.getTablename())) {
+            nonPartTables.get(c.getDbname()).add(c.getTablename());
+          }
+        } else {
+          partTables.computeIfAbsent(c.getDbname(), k -> new HashMap<>());
+          partTables.get(c.getDbname()).computeIfAbsent(c.getTablename(), k -> new ArrayList<>());
+          if (!partTables.get(c.getDbname()).get(c.getTablename()).contains(c.getPartitionname())) {
+            partTables.get(c.getDbname()).get(c.getTablename()).add(c.getPartitionname());
+          }
+        }
+      }
+      // Checking non partitioned table access rights
+      for (Map.Entry<String, List<String>> e : nonPartTables.entrySet()) {
+        nonPartTables.put(e.getKey(), filterHook.filterTableNames(catName, e.getKey(), e.getValue()));
+      }
+      // Checking partitioned table access rights
+      for (Map.Entry<String, Map<String, List<String>>> dbName : partTables.entrySet()) {
+        for (Map.Entry<String, List<String>> tableName : dbName.getValue().entrySet()) {
+          dbName.getValue().put(tableName.getKey(),
+              filterHook.filterPartitionNames(catName, dbName.getKey(), tableName.getKey(), tableName.getValue()));
+        }
+      }
+
+      // Add the compactions to the response only we have access right
+      for (ShowCompactResponseElement c : compactions) {
+        if (c.getPartitionname() == null) {
+          if (nonPartTables.get(c.getDbname()).contains(c.getTablename())) {
+            result.add(c);
+          }
+        } else {
+          if (partTables.get(c.getDbname()).get(c.getTablename()).contains(c.getPartitionname())) {
+            result.add(c);
+          }
+        }
+      }
+      return result;
+    } else {
+      return compactions;
+    }
+  }
+
+  public static GetLatestCommittedCompactionInfoResponse filterCommittedCompactionInfoStructIfEnabled(
+      boolean isFilterEnabled, MetaStoreFilterHook filterHook,
+      String catName, String dbName, String tableName, GetLatestCommittedCompactionInfoResponse response
+  ) throws MetaException {
+    if (isFilterEnabled && response.getCompactionsSize() > 0) {
+      List<CompactionInfoStruct> compactions = response.getCompactions();
+      if (compactions.get(0).getPartitionname() == null) {
+        // non partitioned table
+        List<String> tableNames = new ArrayList<>();
+        tableNames.add(tableName);
+        tableNames = filterHook.filterTableNames(catName, dbName, tableNames);
+        if (tableNames.isEmpty()) {
+          response.unsetCompactions();
+        }
+      } else {
+        // partitioned table
+        List<String> partitionNames = compactions.stream()
+            .map(CompactionInfoStruct::getPartitionname)
+            .collect(Collectors.toList());
+        partitionNames = filterHook.filterPartitionNames(
+            catName, dbName, tableName, partitionNames);
+        Set<String> partitionNameSet = new HashSet<>(partitionNames);
+        compactions = compactions.stream()
+            .filter(lci -> partitionNameSet.contains(lci.getPartitionname()))
+            .collect(Collectors.toList());
+        response.setCompactions(compactions);
+      }
+    }
+    return response;
+  }
 }

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
@@ -308,6 +307,9 @@ public class MapJoinTestConfig {
     case LEFT_SEMI:
       joinDescType = JoinDesc.LEFT_SEMI_JOIN;
       break;
+    case LEFT_ANTI:
+        joinDescType = JoinDesc.ANTI_JOIN;
+        break;
     case OUTER:
       joinDescType = JoinDesc.LEFT_OUTER_JOIN;
       break;
@@ -363,6 +365,7 @@ public class MapJoinTestConfig {
       hashTableKind = HashTableKind.HASH_MULTISET;
       break;
     case LEFT_SEMI:
+    case LEFT_ANTI:
       hashTableKind = HashTableKind.HASH_SET;
       break;
     case OUTER:
@@ -682,7 +685,7 @@ public class MapJoinTestConfig {
     TableDesc keyTableDesc = mapJoinDesc.getKeyTblDesc();
     AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
         BinarySortableSerDe.class, null);
-    SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
+    keySerializer.initialize(null, keyTableDesc.getProperties(), null);
     MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
 
     final List<TableDesc> valueTableDescList;
@@ -693,8 +696,8 @@ public class MapJoinTestConfig {
     }
     TableDesc valueTableDesc = valueTableDescList.get(smallTablePos);
     AbstractSerDe valueSerDe = (AbstractSerDe) ReflectionUtil.newInstance(
-        valueTableDesc.getDeserializerClass(), null);
-    SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+        valueTableDesc.getSerDeClass(), null);
+    valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
     MapJoinObjectSerDeContext valueContext =
         new MapJoinObjectSerDeContext(valueSerDe, hasFilter(mapJoinDesc, smallTablePos));
     MapJoinTableContainerSerDe mapJoinTableContainerSerDe =

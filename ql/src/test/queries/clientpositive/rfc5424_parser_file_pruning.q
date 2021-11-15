@@ -1,3 +1,4 @@
+--! qt:disabled:Disabled in HIVE-21427
 set hive.fetch.task.conversion=none;
 
 set time zone UTC;

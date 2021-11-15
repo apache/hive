@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.kafka;
 
 import com.google.common.base.Preconditions;
+import org.apache.kafka.clients.consumer.ConsumerGroupMetadata;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
-
 
 /**
  * Kafka Producer with public methods to extract the producer state then resuming transaction in another process.
@@ -86,6 +86,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
   @Override public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, String consumerGroupId)
       throws ProducerFencedException {
     kafkaProducer.sendOffsetsToTransaction(offsets, consumerGroupId);
+  }
+
+  @Override public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, ConsumerGroupMetadata groupMetadata)
+      throws ProducerFencedException {
+    kafkaProducer.sendOffsetsToTransaction(offsets, groupMetadata);
   }
 
   @Override public Future<RecordMetadata> send(ProducerRecord<K, V> record) {
@@ -133,15 +138,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
 
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
 
-    Object nextSequence = getValue(transactionManager, "nextSequence");
-    Object lastAckedSequence = getValue(transactionManager, "lastAckedSequence");
-
+    Object topicPartitionBookkeeper = getValue(transactionManager, "topicPartitionBookkeeper");
     invoke(transactionManager,
         "transitionTo",
         getEnum("org.apache.kafka.clients.producer.internals.TransactionManager$State.INITIALIZING"));
-    invoke(nextSequence, "clear");
-    invoke(lastAckedSequence, "clear");
-
+    invoke(topicPartitionBookkeeper, "reset");
     Object producerIdAndEpoch = getValue(transactionManager, "producerIdAndEpoch");
     setValue(producerIdAndEpoch, "producerId", producerId);
     setValue(producerIdAndEpoch, "epoch", epoch);

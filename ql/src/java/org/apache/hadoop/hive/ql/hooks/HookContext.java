@@ -28,16 +28,16 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.HiveDriverRunHook;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 /**
  * Hook Context keeps all the necessary information for all the hooks.
  * New implemented hook can get the query plan, job conf and the list of all completed tasks from this hook context
@@ -47,7 +47,48 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 public class HookContext {
 
   static public enum HookType {
-    PRE_EXEC_HOOK, POST_EXEC_HOOK, ON_FAILURE_HOOK
+
+    PRE_EXEC_HOOK(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class,
+        "Pre-execution hooks to be invoked for each statement"),
+    POST_EXEC_HOOK(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class,
+        "Post-execution hooks to be invoked for each statement"),
+    ON_FAILURE_HOOK(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class,
+        "On-failure hooks to be invoked for each statement"),
+    QUERY_LIFETIME_HOOKS(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class,
+      "Hooks that will be triggered before/after query compilation and before/after query execution"),
+    SEMANTIC_ANALYZER_HOOK(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class,
+      "Hooks that invoked before/after Hive performs its own semantic analysis on a statement"),
+    DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class,
+      "Hooks that Will be run at the beginning and end of Driver.run"),
+    QUERY_REDACTOR_HOOKS(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class,
+      "Hooks to be invoked for each query which can tranform the query before it's placed in the job.xml file"),
+    // The HiveSessionHook.class cannot access, use Hook.class instead
+    HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class,
+      "Hooks to be executed when session manager starts a new session");
+
+    private final HiveConf.ConfVars confVar;
+    // the super class or interface of the corresponding hooks
+    private final Class hookClass;
+    private final String description;
+
+    HookType(HiveConf.ConfVars confVar, Class hookClass, String description) {
+      this.confVar = confVar;
+      this.description = description;
+      this.hookClass = hookClass;
+    }
+
+    public Class getHookClass() {
+      return this.hookClass;
+    }
+
+    public HiveConf.ConfVars getConfVar() {
+      return this.confVar;
+    }
+
+    public String getDescription() {
+      return this.description;
+    }
+    
   }
 
   private QueryPlan queryPlan;

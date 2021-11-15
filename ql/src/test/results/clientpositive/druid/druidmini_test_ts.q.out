@@ -6,7 +6,7 @@ POSTHOOK: query: SELECT count(*) FROM druid_table_alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6105
+9173
 PREHOOK: query: SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
 FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
@@ -17,7 +17,7 @@ FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00.0 US/Pacific	-39590.24724686146	2.7308662793799996E7	-39967	7781089	1408069801800	10992545287
+1969-01-01 00:00:00.0 US/Pacific	-39590.24699282646	2.73086627938E7	-39967	7781089	1408069801800	10992545287
 PREHOOK: query: SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
 FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
@@ -28,7 +28,7 @@ FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00.0 US/Pacific	-1790.7781	-308691.8399999999	2	14255	-1073279343	-8577981133
+1969-01-01 00:00:00.0 US/Pacific	-64.0	-16373.0	-64	-16373	-1073279343	-2147311592
 PREHOOK: query: SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
@@ -39,7 +39,7 @@ FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00.0 US/Pacific	769.16394	1.9565517977799997E7	-45	-8101	1276572707	4923772860
+1969-01-01 00:00:00.0 US/Pacific	79.553	9763215.5639	62	16370	1073680599	2145498388
 PREHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table_alltypesorc GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -49,7 +49,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1cGVWH7n1QU	-596096.6799999999
-821UdmGbkEf4j	-14161.82699999999
+821UdmGbkEf4j	-14161.826999999997
 00iT08	0.0
 02v8WnLuYDos3Cq	0.0
 yv1js	0.0
@@ -66,7 +66,7 @@ POSTHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table_alltypesorc GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	1.9565517977799997E7
+NULL	9763215.5639
 0034fkcXMQI3	15601.0
 004J8y	0.0
 00GNm	-200.0

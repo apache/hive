@@ -25,11 +25,9 @@
     <version>4.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.apache.hive</groupId>
   <artifactId>hive-spark-client</artifactId>
   <packaging>jar</packaging>
   <name>Hive Spark Remote Client</name>
-  <version>4.0.0-SNAPSHOT</version>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
@@ -40,6 +38,7 @@
     <dependency>
       <groupId>com.esotericsoftware</groupId>
       <artifactId>kryo-shaded</artifactId>
+      <version>${kryo4.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -82,6 +81,10 @@
           <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>net.java.dev.jets3t</groupId>
+          <artifactId>jets3t</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
@@ -96,6 +99,10 @@
         <exclusion>
           <groupId>com.fasterxml.jackson.module</groupId>
           <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
         </exclusion>
       </exclusions>
    </dependency>

@@ -1,0 +1,16 @@
+CBO PLAN:
+HiveSortLimit(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject($f0=[$0], $f1=[$1])
+    HiveAggregate(group=[{0}], agg#0=[sum($1)])
+      HiveProject($f0=[$1], $f1=[CASE(IS NOT NULL($8), *(CAST(-($3, $8)):DECIMAL(10, 0), $4), *(CAST($3):DECIMAL(10, 0), $4))])
+        HiveJoin(condition=[AND(=($5, $0), =($7, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_quantity=[$9], ss_sales_price=[$12])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveJoin(condition=[=($1, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(sr_item_sk=[$1], sr_reason_sk=[$7], sr_ticket_number=[$8], sr_return_quantity=[$9])
+              HiveFilter(condition=[IS NOT NULL($7)])
+                HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+            HiveProject(r_reason_sk=[$0])
+              HiveFilter(condition=[=($2, _UTF-16LE'Did not like the warranty                                                                           ')])
+                HiveTableScan(table=[[default, reason]], table:alias=[reason])
+

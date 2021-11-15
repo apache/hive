@@ -20,6 +20,7 @@ package org.apache.hive.beeline;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 
 import java.io.File;
@@ -152,7 +153,7 @@ public class QFileBeeLineClient implements AutoCloseable {
           .map(database -> "DROP DATABASE `" + database + "` CASCADE;")
           .collect(Collectors.toSet());
 
-      Set<String> srcTables = QTestUtil.getSrcTables();
+      Set<String> srcTables = QTestDatasetHandler.getSrcTables();
       dropCommands.addAll(getTables().stream()
           .filter(table -> !srcTables.contains(table))
           .map(table -> "DROP TABLE `" + table + "` PURGE;")

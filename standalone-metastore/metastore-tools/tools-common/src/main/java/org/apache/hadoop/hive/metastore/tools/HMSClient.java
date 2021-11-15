@@ -20,24 +20,37 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
+import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.jetbrains.annotations.NotNull;
@@ -48,11 +61,15 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -319,6 +336,60 @@ final class HMSClient implements AutoCloseable {
     client.append_partition_with_environment_context(dbName, tableName, partitionValues, null);
   }
 
+  List<Long> getOpenTxns() throws TException {
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    GetOpenTxnsResponse txns = client.get_open_txns_req(getOpenTxnsRequest);
+    List<Long> openTxns = new ArrayList<>();
+    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
+    int i = 0;
+    for(long txnId : txns.getOpen_txns()) {
+      if(!abortedBits.get(i)) {
+        openTxns.add(txnId);
+      }
+      ++i;
+    }
+    return openTxns;
+  }
+
+  List<TxnInfo> getOpenTxnsInfo() throws TException {
+    return client.get_open_txns_info().getOpen_txns();
+  }
+
+  boolean commitTxn(long txnId) throws TException {
+    client.commit_txn(new CommitTxnRequest(txnId));
+    return true;
+  }
+
+  boolean abortTxns(List<Long> txnIds) throws TException {
+    client.abort_txns(new AbortTxnsRequest(txnIds));
+    return true;
+  }
+
+  boolean allocateTableWriteIds(String dbName, String tableName, List<Long> openTxns) throws TException {
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    openTxns.forEach(t -> {
+      awiRqst.addToTxnIds(t);
+    });
+
+    client.allocate_table_write_ids(awiRqst);
+    return true;
+  }
+
+  boolean getValidWriteIds(List<String> fullTableNames) throws TException {
+    client.get_valid_write_ids(new GetValidWriteIdsRequest(fullTableNames));
+    return true;
+  }
+
+  LockResponse lock(@NotNull LockRequest rqst) throws TException {
+    return client.lock(rqst);
+  }
+
+  List<Long> openTxn(int howMany) throws TException {
+    OpenTxnsResponse txns = openTxnsIntr("", howMany, null);
+    return txns.getTxn_ids();
+  }
+
   private TTransport open(Configuration conf, @NotNull URI uri) throws
       TException, IOException, LoginException {
     boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
@@ -335,7 +406,7 @@ final class HMSClient implements AutoCloseable {
 
     // Sasl/SSL code is copied from HiveMetastoreCLient
     if (!useSSL) {
-      transport = new TSocket(host, port, clientSocketTimeout);
+      transport = new TSocket(new TConfiguration(),host, port, clientSocketTimeout);
     } else {
       String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
       if (trustStorePath.isEmpty()) {
@@ -344,10 +415,14 @@ final class HMSClient implements AutoCloseable {
       }
       String trustStorePassword =
           MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+      String trustStoreType =
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+      String trustStoreAlgorithm =
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
 
       // Create an SSL socket and connect
       transport = SecurityUtils.getSSLSocket(host, port, clientSocketTimeout,
-          trustStorePath, trustStorePassword);
+          trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       LOG.info("Opened an SSL connection to metastore, current connections");
     }
 
@@ -416,6 +491,21 @@ final class HMSClient implements AutoCloseable {
 
     LOG.debug("Connected to metastore, using compact protocol = {}", useCompactProtocol);
     return transport;
+  }
+
+  private OpenTxnsResponse openTxnsIntr(String user, int numTxns, TxnType txnType) throws TException {
+    String hostname;
+    try {
+      hostname = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+    OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
+    if (txnType != null) {
+      rqst.setTxn_type(txnType);
+    }
+    return client.open_txns(rqst);
   }
 
   @Override

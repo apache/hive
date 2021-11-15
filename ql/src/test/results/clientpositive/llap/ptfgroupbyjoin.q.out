@@ -1,0 +1,531 @@
+PREHOOK: query: create table tlb1 (id int, fkey int, val string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tlb1
+POSTHOOK: query: create table tlb1 (id int, fkey int, val string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tlb1
+PREHOOK: query: create table tlb2 (fid int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tlb2
+POSTHOOK: query: create table tlb2 (fid int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tlb2
+PREHOOK: query: insert into table tlb1 values(100,1,'abc')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tlb1
+POSTHOOK: query: insert into table tlb1 values(100,1,'abc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tlb1
+POSTHOOK: Lineage: tlb1.fkey SCRIPT []
+POSTHOOK: Lineage: tlb1.id SCRIPT []
+POSTHOOK: Lineage: tlb1.val SCRIPT []
+PREHOOK: query: insert into table tlb1 values(200,1,'efg')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tlb1
+POSTHOOK: query: insert into table tlb1 values(200,1,'efg')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tlb1
+POSTHOOK: Lineage: tlb1.fkey SCRIPT []
+POSTHOOK: Lineage: tlb1.id SCRIPT []
+POSTHOOK: Lineage: tlb1.val SCRIPT []
+PREHOOK: query: insert into table tlb2 values(1, 'key1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tlb2
+POSTHOOK: query: insert into table tlb2 values(1, 'key1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tlb2
+POSTHOOK: Lineage: tlb2.fid SCRIPT []
+POSTHOOK: Lineage: tlb2.name SCRIPT []
+PREHOOK: query: explain 
+select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey, 
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd 
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey, 
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd 
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tlb1
+                  filterExpr: fkey is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: fkey is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: fkey (type: int), id (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: aaa
+                  filterExpr: fid is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: fid is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: fid (type: int), name (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey, 
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd 
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+POSTHOOK: query: select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey, 
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd 
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+100	1	key1
+200	1	key1
+PREHOOK: query: explain
+select ddd.id, ddd.fkey, aaa.name, ddd.rnum
+from (
+    select id, fkey,
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select ddd.id, ddd.fkey, aaa.name, ddd.rnum
+from (
+    select id, fkey,
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tlb1
+                  filterExpr: fkey is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: fkey is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: id (type: int), fkey (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: aa
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: aaa
+                  filterExpr: fid is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: fid is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: fid (type: int), name (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int)
+                  outputColumnNames: _col0, _col1
+                  PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col0: int, _col1: int
+                          type: WINDOWING
+                        Windowing table definition
+                          input alias: ptf_1
+                          name: windowingtablefunction
+                          order by: _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          partition by: _col0, _col1
+                          raw input shape:
+                          window functions:
+                              window function definition
+                                alias: row_number_window_0
+                                name: row_number
+                                window function: GenericUDAFRowNumberEvaluator
+                                window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                                isPivotResult: true
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: int), row_number_window_0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col2 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col4
+                Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col4 (type: string), _col2 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ddd.id, ddd.fkey, aaa.name, ddd.rnum
+from (
+    select id, fkey,
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+POSTHOOK: query: select ddd.id, ddd.fkey, aaa.name, ddd.rnum
+from (
+    select id, fkey,
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+100	1	key1	1
+200	1	key1	1
+PREHOOK: query: explain 
+select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey,
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey,
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tlb1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: fkey is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: fkey (type: int), id (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: aaa
+                  Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: fid is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: fid (type: int), name (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey, 
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd 
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+POSTHOOK: query: select ddd.id, ddd.fkey, aaa.name
+from (
+    select id, fkey, 
+    row_number() over (partition by id, fkey) as rnum
+    from tlb1 group by id, fkey
+ ) ddd 
+inner join tlb2 aaa on aaa.fid = ddd.fkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
+100	1	key1
+200	1	key1

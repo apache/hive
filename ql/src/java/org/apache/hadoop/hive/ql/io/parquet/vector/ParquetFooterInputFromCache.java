@@ -143,13 +143,13 @@ final class ParquetFooterInputFromCache
     // Simple implementation for now - currently Parquet uses heap buffers.
     int result = -1;
     if (bb.hasArray()) {
-      result = readInternal(bb.array(), bb.arrayOffset(), result);
+      result = readInternal(bb.array(), bb.arrayOffset(), bb.remaining());
       if (result > 0) {
         bb.position(bb.position() + result);
       }
     } else {
       byte[] b = new byte[bb.remaining()];
-      result = readInternal(b, 0, result);
+      result = readInternal(b, 0, bb.remaining());
       bb.put(b, 0, result);
     }
     return result;

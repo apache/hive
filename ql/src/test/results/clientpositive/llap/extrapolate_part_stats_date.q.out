@@ -1,0 +1,305 @@
+PREHOOK: query: create table date_dim_n1 (d_date date) partitioned by (d_date_sk bigint) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim_n1
+POSTHOOK: query: create table date_dim_n1 (d_date date) partitioned by (d_date_sk bigint) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim_n1
+PREHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416945) values('1905-04-09')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416945
+POSTHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416945) values('1905-04-09')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416945
+POSTHOOK: Lineage: date_dim_n1 PARTITION(d_date_sk=2416945).d_date SCRIPT []
+PREHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416946) values('1905-04-10')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416946
+POSTHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416946) values('1905-04-10')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416946
+POSTHOOK: Lineage: date_dim_n1 PARTITION(d_date_sk=2416946).d_date SCRIPT []
+PREHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416947) values('1905-04-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416947
+POSTHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416947) values('1905-04-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416947
+POSTHOOK: Lineage: date_dim_n1 PARTITION(d_date_sk=2416947).d_date SCRIPT []
+PREHOOK: query: analyze table date_dim_n1 partition(d_date_sk) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@date_dim_n1
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416945
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416946
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416947
+PREHOOK: Output: default@date_dim_n1
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416945
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416946
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416947
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table date_dim_n1 partition(d_date_sk) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@date_dim_n1
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416945
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416946
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416947
+POSTHOOK: Output: default@date_dim_n1
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416945
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416946
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416947
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(*) from date_dim_n1 where d_date > date "1900-01-02" and d_date_sk= 2416945
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_n1
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416945
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from date_dim_n1 where d_date > date "1900-01-02" and d_date_sk= 2416945
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_n1
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416945
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim_n1
+                  filterExpr: ((d_date > DATE'1900-01-02') and (d_date_sk = 2416945L)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (d_date > DATE'1900-01-02') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416948) values('1905-04-12')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@date_dim_n1@d_date_sk=2416948
+POSTHOOK: query: insert into date_dim_n1 partition(d_date_sk=2416948) values('1905-04-12')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@date_dim_n1@d_date_sk=2416948
+POSTHOOK: Lineage: date_dim_n1 PARTITION(d_date_sk=2416948).d_date SCRIPT []
+PREHOOK: query: explain extended select d_date from date_dim_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_n1
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416945
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416946
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416947
+PREHOOK: Input: default@date_dim_n1@d_date_sk=2416948
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select d_date from date_dim_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_n1
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416945
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416946
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416947
+POSTHOOK: Input: default@date_dim_n1@d_date_sk=2416948
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `d_date`
+FROM `default`.`date_dim_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              d_date_sk 2416945
+            properties:
+              column.name.delimiter ,
+              columns d_date
+              columns.types date
+#### A masked pattern was here ####
+              name default.date_dim_n1
+              partition_columns d_date_sk
+              partition_columns.types bigint
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns d_date
+                columns.comments 
+                columns.types date
+#### A masked pattern was here ####
+                name default.date_dim_n1
+                partition_columns d_date_sk
+                partition_columns.types bigint
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.date_dim_n1
+            name: default.date_dim_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              d_date_sk 2416946
+            properties:
+              column.name.delimiter ,
+              columns d_date
+              columns.types date
+#### A masked pattern was here ####
+              name default.date_dim_n1
+              partition_columns d_date_sk
+              partition_columns.types bigint
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns d_date
+                columns.comments 
+                columns.types date
+#### A masked pattern was here ####
+                name default.date_dim_n1
+                partition_columns d_date_sk
+                partition_columns.types bigint
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.date_dim_n1
+            name: default.date_dim_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              d_date_sk 2416947
+            properties:
+              column.name.delimiter ,
+              columns d_date
+              columns.types date
+#### A masked pattern was here ####
+              name default.date_dim_n1
+              partition_columns d_date_sk
+              partition_columns.types bigint
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns d_date
+                columns.comments 
+                columns.types date
+#### A masked pattern was here ####
+                name default.date_dim_n1
+                partition_columns d_date_sk
+                partition_columns.types bigint
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.date_dim_n1
+            name: default.date_dim_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              d_date_sk 2416948
+            properties:
+              column.name.delimiter ,
+              columns d_date
+              columns.types date
+#### A masked pattern was here ####
+              name default.date_dim_n1
+              partition_columns d_date_sk
+              partition_columns.types bigint
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns d_date
+                columns.comments 
+                columns.types date
+#### A masked pattern was here ####
+                name default.date_dim_n1
+                partition_columns d_date_sk
+                partition_columns.types bigint
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.date_dim_n1
+            name: default.date_dim_n1
+      Processor Tree:
+        TableScan
+          alias: date_dim_n1
+          GatherStats: false
+          Select Operator
+            expressions: d_date (type: date)
+            outputColumnNames: _col0
+            ListSink
+

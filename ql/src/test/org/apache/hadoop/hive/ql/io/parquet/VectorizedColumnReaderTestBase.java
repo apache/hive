@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.parquet;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -65,6 +65,7 @@ import org.apache.parquet.schema.MessageType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
@@ -211,7 +212,7 @@ public class VectorizedColumnReaderTestBase {
   protected static NanoTime getNanoTime(int index) {
     Timestamp ts = new Timestamp();
     ts.setTimeInMillis(index);
-    return NanoTimeUtils.getNanoTime(ts, false);
+    return NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId(), false);
   }
 
   protected static HiveDecimal getDecimal(

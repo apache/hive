@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -36,8 +37,6 @@ import java.util.Arrays;
 public class VectorUDFDateAddScalarCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-
   private Object object;
   private long longValue = 0;
   private Timestamp timestampValue = null;
@@ -45,7 +44,6 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
   protected boolean isPositive = true;
 
-  private transient final DateParser dateParser = new DateParser();
   private transient final Date baseDate = new Date();
 
   // Transient members initialized by transientInit method.
@@ -53,14 +51,10 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
   public VectorUDFDateAddScalarCol() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   public VectorUDFDateAddScalarCol(Object object, int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
 
     this.object = object;
     if (object instanceof Long) {
@@ -75,8 +69,8 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     primitiveCategory =
         ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
@@ -89,7 +83,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputCol = (LongColumnVector) batch.cols[this.colNum];
+    LongColumnVector inputCol = (LongColumnVector) batch.cols[this.inputColumnNum[0]];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
@@ -109,7 +103,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
       case STRING:
       case CHAR:
       case VARCHAR:
-        boolean parsed = dateParser.parseDate(new String(stringValue, StandardCharsets.UTF_8), baseDate);
+        boolean parsed = DateParser.parseDate(new String(stringValue, StandardCharsets.UTF_8), baseDate);
         if (!parsed) {
           outputColVector.noNulls = false;
           if (selectedInUse) {
@@ -256,7 +250,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     } else {
       value = "unknown";
     }
-    return "val " + value + ", " + getColumnParamString(0, colNum);
+    return "val " + value + ", " + getColumnParamString(0, inputColumnNum[0]);
   }
 
   public VectorExpressionDescriptor.Descriptor getDescriptor() {

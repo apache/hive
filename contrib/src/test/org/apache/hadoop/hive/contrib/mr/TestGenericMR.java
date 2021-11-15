@@ -22,15 +22,19 @@ import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.util.Shell;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestGenericMR.
  *
  */
-public final class TestGenericMR extends TestCase {
+public final class TestGenericMR {
+  @Test
   public void testReduceTooFar() throws Exception {
     try {
       new GenericMR().reduce(new StringReader("a\tb\tc"), new StringWriter(),
@@ -50,6 +54,7 @@ public final class TestGenericMR extends TestCase {
     fail("Expected NoSuchElementException");
   }
 
+  @Test
   public void testEmptyMap() throws Exception {
     final StringWriter out = new StringWriter();
 
@@ -58,6 +63,7 @@ public final class TestGenericMR extends TestCase {
     assertEquals(0, out.toString().length());
   }
 
+  @Test
   public void testIdentityMap() throws Exception {
     final String in = "a\tb\nc\td";
     final StringWriter out = new StringWriter();
@@ -66,6 +72,7 @@ public final class TestGenericMR extends TestCase {
     assertEquals(in + "\n", out.toString());
   }
 
+  @Test
   public void testKVSplitMap() throws Exception {
     final String in = "k1=v1,k2=v2\nk1=v2,k2=v3";
     final String expected = "k1\tv1\nk2\tv2\nk1\tv2\nk2\tv3\n";
@@ -83,6 +90,7 @@ public final class TestGenericMR extends TestCase {
     assertEquals(expected, out.toString());
   }
 
+  @Test
   public void testIdentityReduce() throws Exception {
     final String in = "a\tb\nc\td";
     final StringWriter out = new StringWriter();
@@ -92,6 +100,7 @@ public final class TestGenericMR extends TestCase {
     assertEquals(in + "\n", out.toString());
   }
 
+  @Test
   public void testWordCountReduce() throws Exception {
     final String in = "hello\t1\nhello\t2\nokay\t4\nokay\t6\nokay\t2";
     final StringWriter out = new StringWriter();

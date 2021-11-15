@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.SemiJoin;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSize;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -30,7 +31,9 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
@@ -38,7 +41,7 @@ import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdSize extends RelMdSize {
 
-  private static final HiveRelMdSize INSTANCE = new HiveRelMdSize();
+  public static final HiveRelMdSize INSTANCE = new HiveRelMdSize();
 
   public static final RelMetadataProvider SOURCE =
           ReflectiveRelMetadataProvider.reflectiveSource(INSTANCE,
@@ -59,8 +62,9 @@ public class HiveRelMdSize extends RelMdSize {
     // Obtain list of col stats, or use default if they are not available
     final ImmutableList.Builder<Double> list = ImmutableList.builder();
     int indxRqdCol = 0;
+    int nNoVirtualColumns = ((RelOptHiveTable) scan.getTable()).getNoOfNonVirtualCols();
     int nFields = scan.getRowType().getFieldCount();
-    for (int i = 0; i < nFields; i++) {
+    for (int i = 0; i < nNoVirtualColumns; i++) {
       if (neededcolsLst.contains(i)) {
         ColStatistics columnStatistic = columnStatistics.get(indxRqdCol);
         indxRqdCol++;
@@ -74,12 +78,28 @@ public class HiveRelMdSize extends RelMdSize {
         list.add(Double.valueOf(0));
       }
     }
+    for (int i = nNoVirtualColumns; i < nFields; i++) {
+      if (neededcolsLst.contains(i)) {
+        RelDataTypeField field = scan.getRowType().getFieldList().get(i);
+        list.add(averageTypeValueSize(field.getType()));
+      } else {
+        list.add(Double.valueOf(0));
+      }
+    }
 
     return list.build();
   }
 
-  @Override
-  public List<Double> averageColumnSizes(SemiJoin rel, RelMetadataQuery mq) {
+  public List<Double> averageColumnSizes(HiveSemiJoin rel, RelMetadataQuery mq) {
+    return averageColumnSizesInt(rel, mq);
+  }
+
+  public List<Double> averageColumnSizes(HiveAntiJoin rel, RelMetadataQuery mq) {
+    return averageColumnSizesInt(rel, mq);
+  }
+
+  private List<Double> averageColumnSizesInt(Join rel, RelMetadataQuery mq) {
+    assert rel.getJoinType() == JoinRelType.SEMI || rel.getJoinType() == JoinRelType.ANTI;
     final RelNode left = rel.getLeft();
     final List<Double> lefts =
         mq.getAverageColumnSizes(left);
@@ -88,9 +108,7 @@ public class HiveRelMdSize extends RelMdSize {
     }
     final int fieldCount = rel.getRowType().getFieldCount();
     Double[] sizes = new Double[fieldCount];
-    if (lefts != null) {
-      lefts.toArray(sizes);
-    }
+    lefts.toArray(sizes);
     return ImmutableNullableList.copyOf(sizes);
   }
 
@@ -133,10 +151,14 @@ public class HiveRelMdSize extends RelMdSize {
     case DECIMAL:
     case DATE:
     case TIME:
+    case INTERVAL_YEAR:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_MONTH:
       return 4d;
     case BIGINT:
     case DOUBLE:
     case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
     case INTERVAL_DAY:
     case INTERVAL_DAY_HOUR:
     case INTERVAL_DAY_MINUTE:
@@ -146,10 +168,7 @@ public class HiveRelMdSize extends RelMdSize {
     case INTERVAL_HOUR_SECOND:
     case INTERVAL_MINUTE:
     case INTERVAL_MINUTE_SECOND:
-    case INTERVAL_MONTH:
     case INTERVAL_SECOND:
-    case INTERVAL_YEAR:
-    case INTERVAL_YEAR_MONTH:
       return 8d;
     case BINARY:
       return (double) type.getPrecision();
@@ -170,5 +189,4 @@ public class HiveRelMdSize extends RelMdSize {
       return null;
     }
   }
-
 }

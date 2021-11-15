@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -43,6 +46,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * PrivilegeSynchronizer defines a thread to synchronize privileges from
  * external authorizer to Hive metastore.
@@ -57,7 +61,8 @@ public class PrivilegeSynchronizer implements Runnable {
   private PolicyProviderContainer policyProviderContainer;
 
   public PrivilegeSynchronizer(LeaderLatch privilegeSynchronizerLatch,
-      PolicyProviderContainer policyProviderContainer, HiveConf hiveConf) {
+      PolicyProviderContainer policyProviderContainer,
+      HiveConf hiveConf) {
     this.hiveConf = new HiveConf(hiveConf);
     this.hiveConf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(), DefaultMetaStoreFilterHookImpl.class.getName());
     try {
@@ -78,6 +83,9 @@ public class PrivilegeSynchronizer implements Runnable {
     for (Map.Entry<String, Map<HiveResourceACLs.Privilege, HiveResourceACLs.AccessResult>> principalAcls
         : principalAclsMap.entrySet()) {
       String principal = principalAcls.getKey();
+      int[] columnPrivilegeBits = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      boolean columnUpdateFlag = false;
+
       for (Map.Entry<HiveResourceACLs.Privilege, HiveResourceACLs.AccessResult> acl : principalAcls.getValue()
           .entrySet()) {
         if (acl.getValue() == HiveResourceACLs.AccessResult.ALLOWED) {
@@ -95,30 +103,43 @@ public class PrivilegeSynchronizer implements Runnable {
                         (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case COLUMN:
-            privBag.addToPrivileges(
-                new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, columnName),
-                    principal, principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
-                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
+
+            int privilegeBit = acl.getKey().ordinal();
+            columnPrivilegeBits[privilegeBit] = 1;
+            columnUpdateFlag = true;
+
             break;
           default:
             throw new RuntimeException("Get unknown object type " + objectType);
           }
         }
       }
+      if (columnUpdateFlag) {
+        String columnPrivilegeBitsString =
+            StringUtils.join(Arrays.asList(ArrayUtils.toObject(columnPrivilegeBits)), " ");
+        privBag.addToPrivileges(
+            new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, columnName),
+                principal, principalType, new PrivilegeGrantInfo(columnPrivilegeBitsString,
+                    (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
+
+        columnUpdateFlag = false;
+      }
     }
   }
-
-  private HiveObjectRef getObjToRefresh(HiveObjectType type, String dbName, String tblName) throws Exception {
+  private HiveObjectRef getObjToRefresh(HiveObjectType type, String dbName, String objectName) throws Exception {
     HiveObjectRef objToRefresh = null;
     switch (type) {
+    case DATACONNECTOR:
+      objToRefresh = new HiveObjectRef(HiveObjectType.DATACONNECTOR, null, objectName, null, null);
+      break;
     case DATABASE:
       objToRefresh = new HiveObjectRef(HiveObjectType.DATABASE, dbName, null, null, null);
       break;
     case TABLE:
-      objToRefresh = new HiveObjectRef(HiveObjectType.TABLE, dbName, tblName, null, null);
+      objToRefresh = new HiveObjectRef(HiveObjectType.TABLE, dbName, objectName, null, null);
       break;
     case COLUMN:
-      objToRefresh = new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, null);
+      objToRefresh = new HiveObjectRef(HiveObjectType.COLUMN, dbName, objectName, null, null);
       break;
     default:
       throw new RuntimeException("Get unknown object type " + type);
@@ -127,11 +148,16 @@ public class PrivilegeSynchronizer implements Runnable {
   }
 
   private void addGrantPrivilegesToBag(HivePolicyProvider policyProvider, PrivilegeBag privBag, HiveObjectType type,
-      String dbName, String tblName, String columnName, String authorizer) throws Exception {
+      String dbName, String objName, String columnName, String authorizer) throws Exception {
 
     HiveResourceACLs objectAcls = null;
 
     switch (type) {
+    case DATACONNECTOR:
+      objectAcls = policyProvider
+              .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, null, objName));
+      break;
+
     case DATABASE:
       objectAcls = policyProvider
           .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbName, null));
@@ -139,12 +165,12 @@ public class PrivilegeSynchronizer implements Runnable {
 
     case TABLE:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, tblName));
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, objName));
       break;
 
     case COLUMN:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, dbName, tblName, null, columnName));
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, dbName, objName, null, columnName));
       break;
 
     default:
@@ -155,9 +181,9 @@ public class PrivilegeSynchronizer implements Runnable {
       return;
     }
 
-    addACLsToBag(objectAcls.getUserPermissions(), privBag, type, dbName, tblName, columnName,
+    addACLsToBag(objectAcls.getUserPermissions(), privBag, type, dbName, objName, columnName,
         PrincipalType.USER, authorizer);
-    addACLsToBag(objectAcls.getGroupPermissions(), privBag, type, dbName, tblName, columnName,
+    addACLsToBag(objectAcls.getGroupPermissions(), privBag, type, dbName, objName, columnName,
         PrincipalType.GROUP, authorizer);
   }
 
@@ -173,7 +199,18 @@ public class PrivilegeSynchronizer implements Runnable {
             LOG.info("Not selected as leader, skip");
             continue;
           }
-          int numDb = 0, numTbl = 0;
+          int numDc = 0, numDb = 0, numTbl = 0;
+          for (String dcName : hiveClient.getAllDataConnectorNames()) {
+            numDc++;
+            HiveObjectRef dcToRefresh = getObjToRefresh(HiveObjectType.DATACONNECTOR, null, dcName);
+            PrivilegeBag grantDataConnectorBag = new PrivilegeBag();
+            addGrantPrivilegesToBag(policyProvider, grantDataConnectorBag, HiveObjectType.DATACONNECTOR,
+                    null, dcName, null, authorizer);
+            hiveClient.refresh_privileges(dcToRefresh, authorizer, grantDataConnectorBag);
+            LOG.debug("processing data connector: " + dcName);
+          }
+          LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDc + " dataconnectors");
+
           for (String dbName : hiveClient.getAllDatabases()) {
             numDb++;
             HiveObjectRef dbToRefresh = getObjToRefresh(HiveObjectType.DATABASE, dbName, null);

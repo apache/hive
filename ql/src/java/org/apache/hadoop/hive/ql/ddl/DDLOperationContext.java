@@ -19,13 +19,11 @@
 package org.apache.hadoop.hive.ql.ddl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
-import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
@@ -34,20 +32,18 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 public class DDLOperationContext {
   private final Hive db;
   private final HiveConf conf;
-  private final DriverContext driverContext;
-  private final MetaDataFormatter formatter;
-  private final DDLTask2 task;
-  private final DDLWork2 work;
+  private final Context context;
+  private final DDLTask task;
+  private final DDLWork work;
   private final QueryState queryState;
   private final QueryPlan queryPlan;
   private final LogHelper console;
 
-  public DDLOperationContext(HiveConf conf, DriverContext driverContext, DDLTask2 task, DDLWork2 work,
-      QueryState queryState, QueryPlan queryPlan, LogHelper console) throws HiveException {
+  public DDLOperationContext(HiveConf conf, Context context, DDLTask task, DDLWork work, QueryState queryState,
+      QueryPlan queryPlan, LogHelper console) throws HiveException {
     this.db = Hive.get(conf);
     this.conf = conf;
-    this.driverContext = driverContext;
-    this.formatter = MetaDataFormatUtils.getFormatter(conf);
+    this.context = context;
     this.task = task;
     this.work = work;
     this.queryState = queryState;
@@ -63,19 +59,15 @@ public class DDLOperationContext {
     return conf;
   }
 
-  public DriverContext getDriverContext() {
-    return driverContext;
+  public Context getContext() {
+    return context;
   }
 
-  public MetaDataFormatter getFormatter() {
-    return formatter;
-  }
-
-  public DDLTask2 getTask() {
+  public DDLTask getTask() {
     return task;
   }
 
-  public DDLWork2 getWork() {
+  public DDLWork getWork() {
     return work;
   }
 

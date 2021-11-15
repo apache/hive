@@ -46,6 +46,16 @@ public class MetastoreDelegationTokenManager {
   public static final String DELEGATION_TOKEN_STORE_ZK_ACL =
       "hive.cluster.delegation.token.store.zookeeper.acl";
   public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT = "/hivedelegation";
+  public static final String DELEGATION_TOKEN_STORE_ZK_SSL_ENABLE =
+      "hive.cluster.delegation.token.store.zookeeper.ssl.client.enable";
+  public static final String DELEGATION_TOKEN_STORE_ZK_KEYSTORE_LOCATION =
+      "hive.cluster.delegation.token.store.zookeeper.keystore.location";
+  public static final String DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD =
+      "hive.cluster.delegation.token.store.zookeeper.keystore.password";
+  public static final String DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION =
+      "hive.cluster.delegation.token.store.zookeeper.truststore.location";
+  public static final String DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD =
+      "hive.cluster.delegation.token.store.zookeeper.truststore.password";
 
   public MetastoreDelegationTokenManager() {
   }

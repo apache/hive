@@ -79,3 +79,5 @@ select decode(unmatched, 'UTF-8') from logs where unmatched is not null limit 10
 
 drop table logs;
 drop table logs2;
+
+dfs -rm -r ${hiveconf:hive.metastore.warehouse.dir}/logs2/;

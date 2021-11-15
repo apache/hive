@@ -22,8 +22,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hive.common.util.IntervalDayTimeUtils;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 
 /**
@@ -168,6 +169,7 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
    * Return a copy of this object.
    */
   @Override
+  @SuppressFBWarnings(value = "CN_IMPLEMENTS_CLONE_BUT_NOT_CLONEABLE", justification = "Intended")
   public Object clone() {
       return new HiveIntervalDayTime(totalSeconds, nanos);
   }

@@ -1,5 +1,4 @@
 SET hive.exec.dynamic.partition = true;
-SET hive.exec.dynamic.partition.mode = nonstrict;
 
 create table alter_partition_partial_spec_dyndisabled0 (c1 string) partitioned by (p1 string, p2 string);
 

@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -76,7 +76,7 @@ import com.google.common.base.Preconditions;
  * For MapJoinOperator, this optimizer will not do anything - it should be executed within
  * the same SparkTask.
  */
-public class SplitOpTreeForDPP implements NodeProcessor {
+public class SplitOpTreeForDPP implements SemanticNodeProcessor {
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,

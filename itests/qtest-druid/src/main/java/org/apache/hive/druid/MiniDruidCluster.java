@@ -60,7 +60,7 @@ public class MiniDruidCluster extends AbstractService {
           "druid.storage.type",
           "hdfs",
           "druid.processing.buffer.sizeBytes",
-          "213870912",
+          "10485760",
           "druid.processing.numThreads",
           "2",
           "druid.worker.capacity",
@@ -72,16 +72,14 @@ public class MiniDruidCluster extends AbstractService {
 
   private static final Map<String, String>
       COMMON_COORDINATOR_INDEXER =
-      ImmutableMap.of("druid.indexer.logs.type",
-          "file",
-          "druid.coordinator.asOverlord.enabled",
-          "true",
-          "druid.coordinator.asOverlord.overlordService",
-          "druid/overlord",
-          "druid.coordinator.period",
-          "PT2S",
-          "druid.manager.segments.pollDuration",
-          "PT2S");
+      ImmutableMap.<String,String>builder()
+          .put("druid.indexer.logs.type", "file")
+          .put("druid.coordinator.asOverlord.enabled", "true")
+          .put("druid.coordinator.asOverlord.overlordService", "druid/overlord")
+          .put("druid.coordinator.period", "PT2S")
+          .put("druid.manager.segments.pollDuration", "PT2S")
+          .put("druid.indexer.runner.javaOpts", "-Xmx512m")
+          .build();
   private static final int MIN_PORT_NUMBER = 60000;
   private static final int MAX_PORT_NUMBER = 65535;
 

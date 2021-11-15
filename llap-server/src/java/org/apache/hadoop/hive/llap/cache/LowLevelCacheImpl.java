@@ -17,31 +17,32 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.orc.impl.RecordReaderUtils;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.Allocator;
-import org.apache.hadoop.hive.common.io.DiskRange;
-import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hive.common.util.Ref;
+import org.apache.orc.impl.RecordReaderUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 
 public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapIoDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
@@ -177,6 +178,31 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     return prev.next;
   }
 
+  @Override
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
+    long markedBytes = 0;
+    // Proactive eviction does not need to be perfectly accurate - the iterator returned here might be missing some
+    // concurrent inserts / removals but it's fine for us here.
+    Collection<FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> fileCaches = cache.values();
+    for (FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> fileCache : fileCaches) {
+      if (predicate.test(fileCache.getTag()) && fileCache.incRef()) {
+        // Locked on subcache so that the async cleaner won't pull out buffers in an unlikely scenario.
+        try {
+          Collection<LlapDataBuffer> buffers = fileCache.getCache().values();
+          for (LlapDataBuffer buffer : buffers) {
+            markedBytes += buffer.markForEviction();
+            if (isInstantDeallocation) {
+              allocator.deallocate(buffer);
+            }
+          }
+        } finally {
+          fileCache.decRef();
+        }
+      }
+    }
+    return markedBytes;
+  }
+
   private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
       ConcurrentSkipListMap<Long, LlapDataBuffer> cache, DiskRangeListFactory factory,
       BooleanRef gotAllData) {
@@ -290,11 +316,11 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
 
   @Override
   public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] buffers,
-      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag) {
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, CacheTag tag) {
     long[] result = null;
     assert buffers.length == ranges.length;
     FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> subCache =
-        FileCache.getOrAddFileSubCache(cache, fileKey, CACHE_CTOR);
+        FileCache.getOrAddFileSubCache(cache, fileKey, CACHE_CTOR, tag);
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapDataBuffer buffer = (LlapDataBuffer)buffers[i];
@@ -306,10 +332,11 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         long offset = ranges[i].getOffset() + baseOffset;
         assert buffer.declaredCachedLength == LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
         buffer.declaredCachedLength = ranges[i].getLength();
-        buffer.setTag(tag);
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapDataBuffer oldVal = subCache.getCache().putIfAbsent(offset, buffer);
           if (oldVal == null) {
+            buffer.setStart(offset);
+            buffer.setFileCache(subCache);
             // Cached successfully, add to policy.
             cachePolicy.cache(buffer, priority);
             if (qfCounters != null) {
@@ -339,12 +366,16 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
                   buffer, oldVal);
             }
 
+            // This is always set to ranges[i].getLength() prior inserting into the map to avoid inconsistency with the
+            // check above. However once we decided that this new buffer will not be cached, we should unset
+            // declaredCachedLength, so that it can be instantly deallocated at unlockBuffer()'s else branch.
+            buffer.declaredCachedLength = LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
             unlockBuffer(buffer, false);
             buffers[i] = oldVal;
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];
             }
-            result[i >>> 6] |= (1 << (i & 63)); // indicate that we've replaced the value
+            result[i >>> 6] |= (1L << (i & 63)); // indicate that we've replaced the value
             break;
           }
           // We found some old value but couldn't incRef it; remove it.
@@ -452,13 +483,13 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nORC cache state ");
-    int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0;
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0, allMarked = 0;
     long totalUsedSpace = 0;
     for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
       cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
-        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0, fileMarked = 0;
         long fileMemoryUsage = 0;
         if (e.getValue().getCache().isEmpty()) continue;
         List<LlapDataBuffer> lockedBufs = null;
@@ -474,6 +505,9 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
               ++fileMoving;
             }
             continue;
+          }
+          if (e2.getValue().isMarkedForEviction()) {
+            ++fileMarked;
           }
           try {
             if (newRc > 1) { // We hold one refcount.
@@ -493,6 +527,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         allUnlocked += fileUnlocked;
         allEvicted += fileEvicted;
         allMoving += fileMoving;
+        allMarked += fileMarked;
         totalUsedSpace += fileMemoryUsage;
 
         sb.append("\n  file "
@@ -505,7 +540,9 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             + fileEvicted
             + " evicted, "
             + fileMoving
-            + " being moved,"
+            + " being moved, "
+            + fileMarked
+            + " marked for eviction, "
             + fileMemoryUsage
             + " total used byte");
         if (fileLocked > 0 && LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
@@ -523,8 +560,10 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         + allEvicted
         + " evicted, "
         + allMoving
-        + " being moved,"
+        + " being moved, "
+        + allMarked
+        + " marked for eviction, "
         + totalUsedSpace
-        + "total used space");
+        + " total used space");
   }
 }

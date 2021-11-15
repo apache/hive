@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common.io.encoded;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -78,13 +79,21 @@ public class EncodedColumnBatch<BatchKey> {
 
     @Override
     public String toString() {
-      String bufStr = "";
+      StringBuilder sb = new StringBuilder();
       if (cacheBuffers != null) {
-        for (MemoryBuffer mb : cacheBuffers) {
-          bufStr += mb.getClass().getSimpleName() + " with " + mb.getByteBufferRaw().remaining() + " bytes, ";
+        Iterator<MemoryBuffer> iter = cacheBuffers.iterator();
+        while (iter.hasNext()) {
+          MemoryBuffer mb = iter.next();
+          sb.append(mb.getClass().getSimpleName());
+          sb.append(" with ");
+          sb.append(mb.getByteBufferRaw().remaining());
+          sb.append(" bytes");
+          if (iter.hasNext()) {
+            sb.append(", ");
+          }
         }
       }
-      return "ColumnStreamData [cacheBuffers=[" + bufStr
+      return "ColumnStreamData [cacheBuffers=[" + sb.toString()
           + "], indexBaseOffset=" + indexBaseOffset + "]";
     }
 

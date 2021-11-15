@@ -35,15 +35,19 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import junit.framework.TestCase;
 
-public class TestJsonSerDe extends TestCase {
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+
+/**
+ * TestJsonSerDe.
+ */
+public class TestJsonSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestJsonSerDe.class);
 
@@ -139,6 +143,7 @@ public class TestJsonSerDe extends TestCase {
     return data;
   }
 
+  @Test
   public void testRW() throws Exception {
 
     Configuration conf = new Configuration();
@@ -148,10 +153,10 @@ public class TestJsonSerDe extends TestCase {
       HCatRecord r = e.second;
 
       HCatRecordSerDe hrsd = new HCatRecordSerDe();
-      SerDeUtils.initializeSerDe(hrsd, conf, tblProps, null);
+      hrsd.initialize(conf, tblProps, null);
 
       JsonSerDe jsde = new JsonSerDe();
-      SerDeUtils.initializeSerDe(jsde, conf, tblProps, null);
+      jsde.initialize(conf, tblProps, null);
 
       LOG.info("ORIG:{}", r);
 
@@ -174,6 +179,7 @@ public class TestJsonSerDe extends TestCase {
 
   }
 
+  @Test
   public void testRobustRead() throws Exception {
     /**
      *  This test has been added to account for HCATALOG-436
@@ -200,10 +206,10 @@ public class TestJsonSerDe extends TestCase {
       LOG.info("modif tbl props:{}", internalTblProps);
 
       JsonSerDe wjsd = new JsonSerDe();
-      SerDeUtils.initializeSerDe(wjsd, conf, internalTblProps, null);
+      wjsd.initialize(conf, internalTblProps, null);
 
       JsonSerDe rjsd = new JsonSerDe();
-      SerDeUtils.initializeSerDe(rjsd, conf, tblProps, null);
+      rjsd.initialize(conf, tblProps, null);
 
       LOG.info("ORIG:{}", r);
 
@@ -264,6 +270,7 @@ public class TestJsonSerDe extends TestCase {
    * Then it should still work, and ignore the "x" and "t" field and "c" subfield of "s", and it
    * should read k as null.
    */
+  @Test
   public void testLooseJsonReadability() throws Exception {
     Configuration conf = new Configuration();
     Properties props = new Properties();
@@ -271,7 +278,7 @@ public class TestJsonSerDe extends TestCase {
     props.put(serdeConstants.LIST_COLUMNS, "s,k");
     props.put(serdeConstants.LIST_COLUMN_TYPES, "struct<a:int,b:string>,int");
     JsonSerDe rjsd = new JsonSerDe();
-    SerDeUtils.initializeSerDe(rjsd, conf, props, null);
+    rjsd.initialize(conf, props, null);
 
     Text jsonText = new Text("{ \"x\" : \"abc\" , "
         + " \"t\" : { \"a\":\"1\", \"b\":\"2\", \"c\":[ { \"x\":2 , \"y\":3 } , { \"x\":3 , \"y\":2 }] } ,"
@@ -291,6 +298,7 @@ public class TestJsonSerDe extends TestCase {
 
   }
 
+  @Test
   public void testUpperCaseKey() throws Exception {
     Configuration conf = new Configuration();
     Properties props = new Properties();
@@ -298,7 +306,7 @@ public class TestJsonSerDe extends TestCase {
     props.put(serdeConstants.LIST_COLUMNS, "empid,name");
     props.put(serdeConstants.LIST_COLUMN_TYPES, "int,string");
     JsonSerDe rjsd = new JsonSerDe();
-    SerDeUtils.initializeSerDe(rjsd, conf, props, null);
+    rjsd.initialize(conf, props, null);
 
     Text text1 = new Text("{ \"empId\" : 123, \"name\" : \"John\" } ");
     Text text2 = new Text("{ \"empId\" : 456, \"name\" : \"Jane\" } ");
@@ -320,6 +328,7 @@ public class TestJsonSerDe extends TestCase {
     return retval;
   }
 
+  @Test
   public void testMapValues() throws Exception {
     Configuration conf = new Configuration();
     Properties props = new Properties();
@@ -327,7 +336,7 @@ public class TestJsonSerDe extends TestCase {
     props.put(serdeConstants.LIST_COLUMNS, "a,b");
     props.put(serdeConstants.LIST_COLUMN_TYPES, "array<string>,map<string,int>");
     JsonSerDe rjsd = new JsonSerDe();
-    SerDeUtils.initializeSerDe(rjsd, conf, props, null);
+    rjsd.initialize(conf, props, null);
 
     Text text1 = new Text("{ \"a\":[\"aaa\"],\"b\":{\"bbb\":1}} ");
     Text text2 = new Text("{\"a\":[\"yyy\"],\"b\":{\"zzz\":123}}");

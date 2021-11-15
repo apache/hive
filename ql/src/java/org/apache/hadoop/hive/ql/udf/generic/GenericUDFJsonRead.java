@@ -21,7 +21,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.json.HiveJsonStructReader;
+import org.apache.hadoop.hive.serde2.json.HiveJsonReader;
+import org.apache.hadoop.hive.serde2.json.HiveJsonReader.Feature;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -39,7 +40,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 public class GenericUDFJsonRead extends GenericUDF {
 
   private TextConverter inputConverter;
-  private HiveJsonStructReader jsonReader;
+  private HiveJsonReader jsonReader;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -55,9 +56,11 @@ public class GenericUDFJsonRead extends GenericUDF {
     String typeStr = getConstantStringValue(arguments, 1);
 
     try {
-      TypeInfo t = TypeInfoUtils.getTypeInfoFromTypeString(typeStr);
-      jsonReader = new HiveJsonStructReader(t);
-      jsonReader.setWritablesUsage(true);
+      final TypeInfo t = TypeInfoUtils.getTypeInfoFromTypeString(typeStr);
+      final ObjectInspector oi =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
+      jsonReader = new HiveJsonReader(oi);
+      jsonReader.enable(Feature.PRIMITIVE_TO_WRITABLE);
     } catch (Exception e) {
       throw new UDFArgumentException(getFuncName() + ": Error parsing typestring: " + e.getMessage());
     }

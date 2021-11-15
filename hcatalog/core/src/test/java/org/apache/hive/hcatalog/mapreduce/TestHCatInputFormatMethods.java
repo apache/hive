@@ -40,10 +40,8 @@ public class TestHCatInputFormatMethods extends HCatBaseTest {
       return;
     }
 
-    Assert.assertEquals(0, driver.run("drop table if exists testHCIFMethods").getResponseCode());
-    Assert.assertEquals(0, driver.run(
-      "create table testHCIFMethods (a string, b int) partitioned by (x string, y string)")
-      .getResponseCode());
+    driver.run("drop table if exists testHCIFMethods");
+    driver.run("create table testHCIFMethods (a string, b int) partitioned by (x string, y string)");
 
     setUpComplete = true;
   }

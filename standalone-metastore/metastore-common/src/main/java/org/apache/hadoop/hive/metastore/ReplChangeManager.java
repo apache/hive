@@ -19,11 +19,16 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -32,15 +37,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.permission.AclEntry;
+import static org.apache.hadoop.fs.permission.AclEntryScope.ACCESS;
+import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
+import static org.apache.hadoop.fs.permission.AclEntryType.USER;
+import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +66,7 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Path cmroot;
+  private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -60,6 +76,11 @@ public class ReplChangeManager {
   private static final String URI_FRAGMENT_SEPARATOR = "#";
   public static final String SOURCE_OF_REPLICATION = "repl.source.for";
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
+  static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
+  private static final String NO_ENCRYPTION = "noEncryption";
+  private static String cmRootDir;
+  private static String encryptedCmRootDir;
+  private static String fallbackNonEncryptedCmRootDir;
 
   public enum RecycleType {
     MOVE,
@@ -132,19 +153,49 @@ public class ReplChangeManager {
     return instance;
   }
 
+  public static synchronized ReplChangeManager getInstance() {
+    if (!inited) {
+      throw new IllegalStateException("Replication Change Manager is not initialized.");
+    }
+    return instance;
+  }
+
   private ReplChangeManager(Configuration conf) throws MetaException {
     try {
       if (!inited) {
         if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
-          ReplChangeManager.cmroot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR));
           ReplChangeManager.conf = conf;
-
-          FileSystem cmFs = cmroot.getFileSystem(conf);
-          // Create cmroot with permission 700 if not exist
-          if (!cmFs.exists(cmroot)) {
-            cmFs.mkdirs(cmroot);
-            cmFs.setPermission(cmroot, new FsPermission("700"));
+          cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
+          encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
+          fallbackNonEncryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR);
+          //validate cmRootEncrypted is absolute
+          Path cmRootEncrypted = new Path(encryptedCmRootDir);
+          if (cmRootEncrypted.isAbsolute()) {
+            throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be a relative path");
+          }
+          //Create default cm root
+          Path cmroot = new Path(cmRootDir);
+          createCmRoot(cmroot);
+          FileSystem cmRootFs = cmroot.getFileSystem(conf);
+          if (EncryptionZoneUtils.isPathEncrypted(cmroot, conf)) {
+            //If cm root is encrypted we keep using it for the encryption zone
+            String encryptionZonePath = cmRootFs.getUri()
+                    + EncryptionZoneUtils.getEncryptionZoneForPath(cmroot, conf).getPath();
+            encryptionZoneToCmrootMapping.put(encryptionZonePath, cmRootDir);
+          } else {
+            encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
+          }
+          if (!StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)) {
+            Path cmRootFallback = new Path(fallbackNonEncryptedCmRootDir);
+            if (!cmRootFallback.isAbsolute()) {
+              throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
+            }
+            createCmRoot(cmRootFallback);
+            if (EncryptionZoneUtils.isPathEncrypted(cmRootFallback, conf)) {
+              throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
+                      + " should not be encrypted");
+            }
           }
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -193,7 +244,12 @@ public class ReplChangeManager {
       }
     } else {
       String fileCheckSum = checksumFor(path, fs);
-      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmroot.toString());
+      Path cmRootPath = getCmRoot(path);
+      String cmRoot = null;
+      if (cmRootPath != null) {
+        cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+      }
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmRoot);
 
       // set timestamp before moving to cmroot, so we can
       // avoid race condition CM remove the file before setting
@@ -212,9 +268,18 @@ public class ReplChangeManager {
         switch (type) {
         case MOVE: {
           LOG.info("Moving {} to {}", path.toString(), cmPath.toString());
-
           // Rename fails if the file with same name already exist.
-          success = fs.rename(path, cmPath);
+          Retry<Boolean> retriable = new Retry<Boolean>(IOException.class) {
+            @Override
+            public Boolean execute() throws IOException {
+              return fs.rename(path, cmPath);
+            }
+          };
+          try {
+            success = retriable.run();
+          } catch (Exception e) {
+            throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+          }
           break;
         }
         case COPY: {
@@ -235,15 +300,12 @@ public class ReplChangeManager {
       // Ignore if a file with same content already exist in cmroot
       // We might want to setXAttr for the new location in the future
       if (success) {
-        // set the file owner to hive (or the id metastore run as)
-        fs.setOwner(cmPath, msUser, msGroup);
-
         // tag the original file name so we know where the file comes from
         // Note we currently only track the last known trace as
         // xattr has limited capacity. We shall revisit and store all original
         // locations if orig-loc becomes important
         try {
-          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes(StandardCharsets.UTF_8));
         } catch (UnsupportedOperationException e) {
           LOG.warn("Error setting xattr for {}", path.toString());
         }
@@ -354,12 +416,23 @@ public class ReplChangeManager {
    */
   // TODO: this needs to be enhanced once change management based filesystem is implemented
   // Currently using fileuri#checksum#cmrooturi#subdirs as the format
-  public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
+  public String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
           throws IOException {
+    if (instance == null) {
+      throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
+    }
+    Path cmRootPath = getCmRoot(new Path(fileUriStr));
+    String cmRoot = null;
+    if (cmRootPath != null) {
+      cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+    }
+    return ReplChangeManager.encodeFileUri(fileUriStr, fileChecksum, cmRoot, encodedSubDir);
+  }
+
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String cmRoot, String encodedSubDir) {
     String encodedUri = fileUriStr;
-    if ((fileChecksum != null) && (cmroot != null)) {
-      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum
-              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmroot, conf);
+    if ((fileChecksum != null) && (cmRoot != null)) {
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum + URI_FRAGMENT_SEPARATOR + cmRoot;
     } else {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }
@@ -400,12 +473,12 @@ public class ReplChangeManager {
    * Thread to clear old files of cmroot recursively
    */
   static class CMClearer implements Runnable {
-    private Path cmroot;
+    private Map<String, String> encryptionZones;
     private long secRetain;
     private Configuration conf;
 
-    CMClearer(String cmrootString, long secRetain, Configuration conf) {
-      this.cmroot = new Path(cmrootString);
+    CMClearer(Map<String, String> encryptionZones, long secRetain, Configuration conf) {
+      this.encryptionZones = encryptionZones;
       this.secRetain = secRetain;
       this.conf = conf;
     }
@@ -414,37 +487,39 @@ public class ReplChangeManager {
     public void run() {
       try {
         LOG.info("CMClearer started");
+        for (String cmrootString : encryptionZones.values()) {
+          Path cmroot = new Path(cmrootString);
+          long now = System.currentTimeMillis();
+          FileSystem fs = cmroot.getFileSystem(conf);
+          FileStatus[] files = fs.listStatus(cmroot);
 
-        long now = System.currentTimeMillis();
-        FileSystem fs = cmroot.getFileSystem(conf);
-        FileStatus[] files = fs.listStatus(cmroot);
-
-        for (FileStatus file : files) {
-          long modifiedTime = file.getModificationTime();
-          if (now - modifiedTime > secRetain*1000) {
-            try {
-              if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
-                boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), conf);
-                if (succ) {
-                  LOG.debug("Move " + file.toString() + " to trash");
+          for (FileStatus file : files) {
+            long modifiedTime = file.getModificationTime();
+            if (now - modifiedTime > secRetain * 1000) {
+              try {
+                if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
+                  boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), conf);
+                  if (succ) {
+                    LOG.debug("Move " + file.toString() + " to trash");
+                  } else {
+                    LOG.warn("Fail to move " + file.toString() + " to trash");
+                  }
                 } else {
-                  LOG.warn("Fail to move " + file.toString() + " to trash");
+                  boolean succ = fs.delete(file.getPath(), false);
+                  if (succ) {
+                    LOG.debug("Remove " + file.toString());
+                  } else {
+                    LOG.warn("Fail to remove " + file.toString());
+                  }
                 }
-              } else {
-                boolean succ = fs.delete(file.getPath(), false);
-                if (succ) {
-                  LOG.debug("Remove " + file.toString());
-                } else {
-                  LOG.warn("Fail to remove " + file.toString());
-                }
+              } catch (UnsupportedOperationException e) {
+                LOG.warn("Error getting xattr for " + file.getPath().toString());
               }
-            } catch (UnsupportedOperationException e) {
-              LOG.warn("Error getting xattr for " + file.getPath().toString());
             }
           }
         }
       } catch (IOException e) {
-        LOG.error("Exception when clearing cmroot:" + StringUtils.stringifyException(e));
+        LOG.error("Exception when clearing cmroot", e);
       }
     }
   }
@@ -454,13 +529,18 @@ public class ReplChangeManager {
     if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
           new BasicThreadFactory.Builder()
-          .namingPattern("cmclearer-%d")
+          .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
-      executor.scheduleAtFixedRate(new CMClearer(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR),
-          MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
-          0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
+      executor.scheduleAtFixedRate(new CMClearer(encryptionZoneToCmrootMapping,
+                      MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
+              0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
+  }
+
+  public static boolean shouldEnableCm(Database db, Table table) {
+    assert (table != null);
+    return isSourceOfReplication(db) && !MetaStoreUtils.isExternalTable(table);
   }
 
   public static boolean isSourceOfReplication(Database db) {
@@ -477,7 +557,7 @@ public class ReplChangeManager {
         LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
         return replPolicyId;
       }
-      LOG.debug("Repl policy is not set for database ", db.getName());
+      LOG.debug("Repl policy is not set for database: {}", db.getName());
     }
     return null;
   }
@@ -489,4 +569,114 @@ public class ReplChangeManager {
   public static String[] getListFromSeparatedString(String commaSeparatedString) {
     return commaSeparatedString.split("\\s*" + TXN_WRITE_EVENT_FILE_SEPARATOR + "\\s*");
   }
+
+  @VisibleForTesting
+  Path getCmRoot(Path path) throws IOException {
+    Path cmroot = null;
+    //Default path if hive.repl.cm dir is encrypted
+    String cmrootDir = fallbackNonEncryptedCmRootDir;
+    String encryptionZonePath = NO_ENCRYPTION;
+    if (enabled) {
+      if (EncryptionZoneUtils.isPathEncrypted(path, conf)) {
+        encryptionZonePath = path.getFileSystem(conf).getUri()
+                + EncryptionZoneUtils.getEncryptionZoneForPath(path, conf).getPath();
+        //For encryption zone, create cm at the relative path specified by hive.repl.cm.encryptionzone.rootdir
+        //at the root of the encryption zone
+        cmrootDir = encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir;
+      }
+      if (encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
+        cmroot = new Path(encryptionZoneToCmrootMapping.get(encryptionZonePath));
+      } else {
+        cmroot = new Path(cmrootDir);
+        synchronized (instance) {
+          if (!encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
+            createCmRoot(cmroot);
+            encryptionZoneToCmrootMapping.put(encryptionZonePath, cmrootDir);
+          }
+        }
+      }
+    }
+    return cmroot;
+  }
+
+  private static void createCmRoot(Path cmroot) throws IOException {
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        FileSystem cmFs = cmroot.getFileSystem(conf);
+        // Create cmroot if not exist
+        if (!cmFs.exists(cmroot)) {
+          cmFs.mkdirs(cmroot);
+          setCmRootPermissions(cmroot);
+        }
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new IOException("Failed to createCmRoot", e);
+    }
+  }
+
+  /*
+   * Provide members of warehouse group access to the cmRoot location.
+   * To do this, assign cmRoot to group of warehouse if possible. If not, set acl for wh-group.
+   * If warehouse directory cannot be determined then give rwx permissions to default group of cmroot.
+   */
+  private static void setCmRootPermissions(Path cmroot) throws IOException{
+    FileSystem cmFs = cmroot.getFileSystem(conf);
+    cmFs.setPermission(cmroot, new FsPermission("770"));
+    try {
+      FileStatus warehouseStatus = cmFs.getFileStatus(new Path(MetastoreConf.get(conf, ConfVars.WAREHOUSE.getVarname())));
+      String warehouseOwner = warehouseStatus.getOwner();
+      String warehouseGroup = warehouseStatus.getGroup();
+      if (warehouseOwner.equals(cmFs.getFileStatus(cmroot).getOwner())) {
+        FsAction whOwnerAction = warehouseStatus.getPermission().getUserAction();
+        FsAction whGroupAction = warehouseStatus.getPermission().getGroupAction();
+        FsAction whOtherAction = warehouseStatus.getPermission().getOtherAction();
+        if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          //change group to wh-group.
+          //since cmRoot owner is already part of wh-group, this can be done.
+          cmFs.setOwner(cmroot, null, warehouseGroup);
+          cmFs.setPermission(cmroot, new FsPermission(whOwnerAction, whGroupAction, whOtherAction));
+        }
+      } else {
+        LOG.warn("Metastore-user is not same as owner of warehouse.");
+        if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          List<AclEntry> aclList = Lists.newArrayList(
+                  new AclEntry.Builder().setScope(ACCESS).setType(USER).setPermission(FsAction.ALL).build(),
+                  new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setPermission(FsAction.ALL).build(),
+                  new AclEntry.Builder().setScope(ACCESS).setType(OTHER).setPermission(FsAction.NONE).build());
+          aclList.add(new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setName(warehouseGroup).
+                  setPermission(warehouseStatus.getPermission().getGroupAction()).build());
+          cmFs.setAcl(cmroot, aclList);
+        }
+      }
+    } catch (RuntimeException | IOException e) {
+      LOG.error("Unable to set permissions corresponding to hive-warehouse on CMRoot: ", e);
+    }
+  }
+
+  @VisibleForTesting
+  static void resetReplChangeManagerInstance() {
+    inited = false;
+    enabled = false;
+    instance = null;
+    encryptionZoneToCmrootMapping.clear();
+  }
+
+  public static final PathFilter CMROOT_PATH_FILTER = new PathFilter() {
+    @Override
+    public boolean accept(Path p) {
+      if (enabled) {
+        String name = p.getName();
+        return StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)
+                ? (!name.contains(cmRootDir) && !name.contains(encryptedCmRootDir))
+                : (!name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
+                && !name.contains(fallbackNonEncryptedCmRootDir));
+      }
+      return true;
+    }
+  };
 }

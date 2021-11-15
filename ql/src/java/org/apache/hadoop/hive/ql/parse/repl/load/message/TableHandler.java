@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadTask;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -34,9 +33,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,28 +41,21 @@ public class TableHandler extends AbstractMessageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TableHandler.class);
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
+  public List<Task<?>> handle(Context context) throws SemanticException {
     try {
-      List<Task<? extends Serializable>> importTasks = new ArrayList<>();
+      List<Task<?>> importTasks = new ArrayList<>();
       boolean isExternal = false, isLocationSet = false;
       String parsedLocation = null;
 
       DumpType eventType = context.dmd.getDumpType();
       Tuple tuple = extract(context);
+      MetaData rv = EximUtil.getMetaDataFromLocation(context.location, context.hiveConf);
+
       if (tuple.isExternalTable) {
-        URI fromURI = EximUtil.getValidatedURI(context.hiveConf, context.location);
-        Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
         isLocationSet = true;
         isExternal = true;
-        FileSystem fs = FileSystem.get(fromURI, context.hiveConf);
-        try {
-          MetaData rv = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
-          Table table = new Table(rv.getTable());
-          parsedLocation = ReplExternalTables
-              .externalTableLocation(context.hiveConf, table.getSd().getLocation());
-        } catch (IOException e) {
-          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
-        }
+        Table table = new Table(rv.getTable());
+        parsedLocation = ReplExternalTables.externalTableLocation(context.hiveConf, table.getSd().getLocation());
       }
 
       context.nestedContext.setConf(context.hiveConf);
@@ -77,14 +66,19 @@ public class TableHandler extends AbstractMessageHandler {
       x.setEventType(eventType);
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
-      // Also, REPL LOAD doesn't support external table and hence no location set as well.
-      ImportSemanticAnalyzer.prepareImport(false, isLocationSet, isExternal, false,
-          (context.precursor != null), parsedLocation, context.tableName, context.dbName,
-          null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId);
+      if (TableType.VIRTUAL_VIEW.name().equals(rv.getTable().getTableType())) {
+        importTasks.add(ReplLoadTask.createViewTask(rv, context.dbName, context.hiveConf,
+                context.getDumpDirectory(), context.getMetricCollector()));
+      } else {
+        ImportSemanticAnalyzer.prepareImport(false, isLocationSet, isExternal, false,
+            (context.precursor != null), parsedLocation, null, context.dbName,
+            null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId, rv,
+                context.getDumpDirectory(), context.getMetricCollector());
+      }
 
-      Task<? extends Serializable> openTxnTask = x.getOpenTxnTask();
+      Task<?> openTxnTask = x.getOpenTxnTask();
       if (openTxnTask != null && !importTasks.isEmpty()) {
-        for (Task<? extends Serializable> t : importTasks) {
+        for (Task<?> t : importTasks) {
           openTxnTask.addDependentTask(t);
         }
         importTasks.add(openTxnTask);

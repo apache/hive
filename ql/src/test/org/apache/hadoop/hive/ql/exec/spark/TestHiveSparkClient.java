@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
@@ -35,6 +35,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -44,7 +45,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
+@Ignore("HIVE-22944: Kryo 5 upgrade conflicts with Spark, which is not supported anymore")
 public class TestHiveSparkClient {
 
   @Test
@@ -68,10 +69,10 @@ public class TestHiveSparkClient {
 
     try {
       driver = DriverFactory.newDriver(conf);
-      Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
+      driver.run("create table test (col int)");
 
       String query = "select * from test order by col";
-      driver.compile(query);
+      ((ReExecDriver)driver).compile(query, true);
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
       Assert.assertEquals(1, sparkTasks.size());
 
@@ -102,7 +103,7 @@ public class TestHiveSparkClient {
               .contains(sparkTask.getWork().getQueryId()));
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists test").getResponseCode());
+        driver.run("drop table if exists test");
         driver.destroy();
       }
       if (sc != null) {

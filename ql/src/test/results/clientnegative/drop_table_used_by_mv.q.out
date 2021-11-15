@@ -28,8 +28,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mytable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.key SIMPLE [(mytable)mytable.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.value SIMPLE [(mytable)mytable.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table mytable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mytable
 PREHOOK: Output: default@mytable
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Cannot drop table since it is used by at least one materialized view definition. Please drop any materialized view that uses the table before dropping it
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Cannot drop table as it is used in the following materialized views [default.mv1]
+)

@@ -35,7 +35,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.EvalFunc;
@@ -178,7 +178,6 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testWriteDate3() throws Exception {
     DateTime d = new DateTime(1991, 10, 11, 23, 10, DateTimeZone.forOffsetHours(-11));
-    FrontendException fe = null;
     // expect to fail since the time component is not 0
     pigValueRangeTestOverflow("junitTypeTest4", "date", "datetime",
         HCatBaseStorer.OOR_VALUE_OPT_VALUES.Throw, d.toString(), FORMAT_4_DATE);
@@ -274,7 +273,6 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     int queryNumber = 1;
     logAndRegister(server,
         "A = load '" + INPUT_FILE_NAME + "' as (" + field + ":" + pigType + ");", queryNumber++);
-    Iterator<Tuple> firstLoad = server.openIterator("A");
     if (goal == null) {
       logAndRegister(server, "store A into '" + tblName + "' using " + HCatStorer.class.getName()
           + "();", queryNumber++);
@@ -301,9 +299,11 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     }
     logAndRegister(server,
         "B = load '" + tblName + "' using " + HCatLoader.class.getName() + "();", queryNumber);
-    CommandProcessorResponse cpr = driver.run("select * from " + tblName);
-    LOG.debug("cpr.respCode=" + cpr.getResponseCode() + " cpr.errMsg=" + cpr.getErrorMessage()
-        + " for table " + tblName);
+    try {
+      driver.run("select * from " + tblName);
+    } catch (CommandProcessorException e) {
+      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getMessage() + " for table " + tblName);
+    }
     List l = new ArrayList();
     driver.getResults(l);
     LOG.debug("Dumping rows via SQL from " + tblName);
@@ -367,8 +367,11 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
         + "();", queryNumber++);
     logAndRegister(server,
         "B = load '" + tblName + "' using " + HCatLoader.class.getName() + "();", queryNumber);
-    CommandProcessorResponse cpr = driver.run("select * from " + tblName);
-    LOG.debug("cpr.respCode=" + cpr.getResponseCode() + " cpr.errMsg=" + cpr.getErrorMessage());
+    try {
+      driver.run("select * from " + tblName);
+    } catch (CommandProcessorException e) {
+      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getMessage());
+    }
     List l = new ArrayList();
     driver.getResults(l);
     LOG.debug("Dumping rows via SQL from " + tblName);
@@ -965,6 +968,65 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
+  public void testStaticPartitioningMultiPartCols() throws Exception {
+    AbstractHCatLoaderTest.dropTable("employee", driver);
+    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+        "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
+        "emp_country STRING , emp_state STRING", driver, storageFormat);
+
+    String[] inputData =
+        {"111237\tKrishna\t01/01/1990\tM\tIN\tKA", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
+            "111239\tSatya\t01/01/2001\tM\tIN\tKA", "111240\tKavya\t01/01/2002\tF\tIN\tKA"};
+
+    HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
+    PigServer pig = createPigServer(false);
+    pig.setBatchOn();
+    pig.registerQuery("A = LOAD '" + INPUT_FILE_NAME
+        + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
+        + "emp_gender:chararray,emp_country:chararray,emp_state:chararray);");
+    pig.registerQuery("IN = FILTER A BY emp_country == 'IN' AND emp_state== 'KA';");
+    pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
+        + "('emp_country=IN, emp_state=KA');");
+    pig.executeBatch();
+    driver.run("select * from employee");
+    ArrayList<String> results = new ArrayList<String>();
+    driver.getResults(results);
+    assertEquals(4, results.size());
+    Collections.sort(results);
+    assertEquals(inputData[0], results.get(0));
+    assertEquals(inputData[1], results.get(1));
+    assertEquals(inputData[2], results.get(2));
+    assertEquals(inputData[3], results.get(3));
+    driver.run("drop table employee");
+  }
+
+  @Test
+  public void testStaticPartitioningMultiPartColsNoData() throws Exception {
+    AbstractHCatLoaderTest.dropTable("employee", driver);
+    AbstractHCatLoaderTest.createTableDefaultDB("employee",
+        "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
+        "emp_country STRING , emp_state STRING", driver, storageFormat);
+
+    String[] inputData = {};
+
+    HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
+    PigServer pig = createPigServer(false);
+    pig.setBatchOn();
+    pig.registerQuery("A = LOAD '" + INPUT_FILE_NAME
+        + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
+        + "emp_gender:chararray,emp_country:chararray,emp_state:chararray);");
+    pig.registerQuery("IN = FILTER A BY emp_country == 'IN' AND emp_state== 'KA';");
+    pig.registerQuery("STORE IN INTO 'employee' USING " + HCatStorer.class.getName()
+        + "('emp_country=IN, emp_state=KA');");
+    pig.executeBatch();
+    driver.run("select * from employee");
+    ArrayList<String> results = new ArrayList<String>();
+    driver.getResults(results);
+    assertEquals(0, results.size());
+    driver.run("drop table employee");
+  }
+
+  @Test
   public void testPartitionPublish() throws Exception {
     AbstractHCatLoaderTest.dropTable("ptn_fail", driver);
     AbstractHCatLoaderTest.createTableDefaultDB("ptn_fail", "a int, c string", "b string",
@@ -986,11 +1048,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     server.executeBatch();
 
     String query = "show partitions ptn_fail";
-    int retCode = driver.run(query).getResponseCode();
-
-    if (retCode != 0) {
-      throw new IOException("Error " + retCode + " running query " + query);
-    }
+    driver.run(query);
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);

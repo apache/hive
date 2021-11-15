@@ -11,7 +11,6 @@ SET hive.exec.orc.default.row.index.stride=1000;
 SET hive.optimize.index.filter=true;
 set hive.fetch.task.conversion=none;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 DROP TABLE orc_a;
 DROP TABLE orc_b;

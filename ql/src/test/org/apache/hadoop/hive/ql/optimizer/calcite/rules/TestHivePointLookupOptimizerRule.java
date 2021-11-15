@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import static org.junit.Assert.assertEquals;
-
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
@@ -38,10 +37,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHivePointLookupOptimizerRule {
@@ -74,9 +79,11 @@ public class TestHivePointLookupOptimizerRule {
     RexBuilder rexBuilder = new RexBuilder(typeFactory);
     final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
     RelDataType rowTypeMock = typeFactory.createStructType(MyRecord.class);
-    Mockito.doReturn(rowTypeMock).when(tableMock).getRowType();
-    Mockito.doReturn(tableMock).when(schemaMock).getTableForMember(Matchers.any());
-    Mockito.doReturn(hiveTableMDMock).when(tableMock).getHiveTableMD();
+    doReturn(rowTypeMock).when(tableMock).getRowType();
+    LogicalTableScan tableScan = LogicalTableScan.create(optCluster, tableMock, Collections.emptyList());
+    doReturn(tableScan).when(tableMock).toRel(ArgumentMatchers.any());
+    doReturn(tableMock).when(schemaMock).getTableForMember(any());
+    lenient().doReturn(hiveTableMDMock).when(tableMock).getHiveTableMD();
 
     builder = HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);
 

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.testutil;
 
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.Ignore;
 
+import org.junit.Test;
 /**
  *
  * Provides a base environment for testing scalar UDF's. Users should extend this class
@@ -45,7 +46,7 @@ import org.junit.Ignore;
  */
 @SuppressWarnings("deprecation")
 @Ignore
-public abstract class BaseScalarUdfTest extends TestCase {
+public abstract class BaseScalarUdfTest {
 
   /**
    * The data from this method will be fed through the
@@ -70,7 +71,7 @@ public abstract class BaseScalarUdfTest extends TestCase {
    * @return A list of expressions
    * @throws UDFArgumentException if the UDF has been formulated incorrectly
    */
-  public abstract List<ExprNodeDesc> getExpressionList() throws UDFArgumentException;
+  public abstract List<ExprNodeDesc> getExpressionList() throws Exception;
 
   /**
    * This method drives the test. It takes the data from getBaseTable() and
@@ -79,7 +80,8 @@ public abstract class BaseScalarUdfTest extends TestCase {
    * and if every row is the expected result the method completes without asserting.
    * @throws HiveException
    */
-  public final void testUdf() throws HiveException {
+  @Test
+  public final void testUdf() throws Exception {
     InspectableObject [] data = getBaseTable();
     List<ExprNodeDesc> expressionList = getExpressionList();
     SelectDesc selectCtx = new SelectDesc(expressionList,

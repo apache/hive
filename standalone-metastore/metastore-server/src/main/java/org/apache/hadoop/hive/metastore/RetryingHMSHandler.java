@@ -25,7 +25,7 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -103,7 +103,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     int threadId = baseHandler.getThreadId();
     boolean error = true;
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, method.getName());
+    perfLogger.perfLogBegin(CLASS_NAME, method.getName());
     try {
       Result result = invokeInternal(proxy, method, args);
       retryCount = result.numRetries;
@@ -113,7 +113,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       StringBuilder additionalInfo = new StringBuilder();
       additionalInfo.append("threadId=").append(threadId).append(" retryCount=").append(retryCount)
         .append(" error=").append(error);
-      perfLogger.PerfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
+      perfLogger.perfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
     }
   }
 
@@ -178,7 +178,8 @@ public class RetryingHMSHandler implements InvocationHandler {
         } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
           if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
-              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
+              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")
+              && !methodName.startsWith("get_stored_procedure") && !methodName.startsWith("find_package")) {
             LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           }
           throw e.getCause();
@@ -205,7 +206,7 @@ public class RetryingHMSHandler implements InvocationHandler {
 
       if (retryCount >= retryLimit) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        MetaException me = new MetaException(caughtException.getMessage());
+        MetaException me = new MetaException(caughtException.toString());
         me.initCause(caughtException);
         throw me;
       }

@@ -48,10 +48,12 @@ public class TestHS2HttpServerPamConfiguration {
   private static HiveConf hiveConf = null;
   private static String keyStorePassword = "123456";
   private static String keyFileName = "myKeyStore";
+  private static String keyStoreType = KeyStore.getDefaultType();
   private static String testDataDir = new File(
       System.getProperty("java.io.tmpdir") + File.separator + TestHS2HttpServerPam.class.getCanonicalName() + "-"
           + System.currentTimeMillis()).getPath().replaceAll("\\\\", "/");
   private static String sslKeyStorePath = testDataDir + File.separator + keyFileName;
+  private static String excludeSuites = "^.*_(MD5|SHA1)$,^TLS_RSA_.*$,^SSL_.*$,^.*_NULL_.*$,^.*_anon_.*$";
 
 
   @BeforeClass
@@ -89,6 +91,7 @@ public class TestHS2HttpServerPamConfiguration {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL, true);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH, sslKeyStorePath);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD, keyStorePassword);
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES, excludeSuites);
     hiveServer2 = new HiveServer2();
     hiveServer2.init(hiveConf);
   }
@@ -99,6 +102,8 @@ public class TestHS2HttpServerPamConfiguration {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL, true);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH, sslKeyStorePath);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD, keyStorePassword);
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE, keyStoreType);
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES, excludeSuites);
     hiveServer2 = new HiveServer2();
     hiveServer2.init(hiveConf);
   }

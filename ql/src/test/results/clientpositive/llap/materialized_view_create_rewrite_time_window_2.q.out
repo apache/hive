@@ -72,6 +72,8 @@ POSTHOOK: Input: default@cmv_basetable_2_n100
 POSTHOOK: Input: default@cmv_basetable_n100
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n300
+POSTHOOK: Lineage: cmv_mat_view_n300.a SIMPLE [(cmv_basetable_n100)cmv_basetable_n100.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n300.c SIMPLE [(cmv_basetable_2_n100)cmv_basetable_2_n100.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n300
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n300
@@ -94,7 +96,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
-	totalSize           	608                 
+	totalSize           	610                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -153,7 +155,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
-	totalSize           	608                 
+	totalSize           	610                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -177,13 +179,13 @@ Expanded Query:     	SELECT `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	Yes                 	 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n300 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n100
 PREHOOK: Input: default@cmv_basetable_n100
 PREHOOK: Input: default@cmv_mat_view_n300
 PREHOOK: Output: default@cmv_mat_view_n300
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n300 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n100
 POSTHOOK: Input: default@cmv_basetable_n100
 POSTHOOK: Input: default@cmv_mat_view_n300
@@ -212,7 +214,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	348                 
-	totalSize           	628                 
+	totalSize           	640                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

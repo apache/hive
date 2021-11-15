@@ -12,16 +12,16 @@ set hive.auto.convert.join.noconditionaltask.size=88888888;
 -- set hive.auto.convert.sortmerge.join=true;
 -- set hive.auto.convert.sortmerge.join.to.mapjoin=true;
 
-create table lineitem (L_ORDERKEY integer);
+create table lineitem1 (L_ORDERKEY integer);
 
-insert into lineitem values (1),(2),(3);
+insert into lineitem1 values (1),(2),(3);
 
 create table lineitem2
  stored as orc  TBLPROPERTIES ('transactional'='true')
-  as select * from lineitem;
+  as select * from lineitem1;
 create table lineitem_stage
  stored as orc  TBLPROPERTIES ('transactional'='true')
-  as select * from lineitem limit 1;
+  as select * from lineitem1 limit 1;
 
 
 analyze table lineitem2 compute statistics for columns;

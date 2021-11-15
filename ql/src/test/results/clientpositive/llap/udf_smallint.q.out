@@ -1,0 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION smallint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION smallint
+POSTHOOK: type: DESCFUNCTION
+smallint(x) - converts it's parameter to smallint
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED smallint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED smallint
+POSTHOOK: type: DESCFUNCTION
+smallint(x) - converts it's parameter to smallint
+Synonyms: udftoshort
+- x is NULL -> NULL
+- byte, short, integer, long, timestamp:
+  x fits into the type smallint -> integer part of x
+  undefined otherwise
+- boolean:
+  true  -> 1
+  false -> 0
+- string:
+  x is a valid integer -> x
+  NULL otherwise
+Example:
+   > SELECT smallint(true);
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFToShort
+Function type:BUILTIN

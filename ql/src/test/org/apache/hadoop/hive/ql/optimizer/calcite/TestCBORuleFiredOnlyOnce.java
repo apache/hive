@@ -62,7 +62,7 @@ public class TestCBORuleFiredOnlyOnce {
     // Create rules registry to not trigger a rule more than once
     HiveRulesRegistry registry = new HiveRulesRegistry();
     HivePlannerContext context = new HivePlannerContext(null, registry, null,
-        null, null);
+        null, null, null);
     HepPlanner planner = new HepPlanner(programBuilder.build(), context);
 
     // Cluster
@@ -70,7 +70,7 @@ public class TestCBORuleFiredOnlyOnce {
     RelOptCluster cluster = RelOptCluster.create(planner, rexBuilder);
 
     // Create MD provider
-    HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
+    HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, null);
     List<RelMetadataProvider> list = Lists.newArrayList();
     list.add(mdProvider.getMetadataProvider());
     planner.registerMetadataProviders(list);

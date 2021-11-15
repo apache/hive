@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -45,17 +45,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import org.junit.Test;
 
-public class TestStatsSerde extends TestCase {
-
-  public TestStatsSerde(String name) {
-    super(name);
-  }
+/**
+ * StatsSerde Test.
+ */
+public class TestStatsSerde {
 
   /**
    * Test LazySimpleSerDe
    */
 
+  @Test
   public void testLazySimpleSerDe() throws Throwable {
     try {
       // Create the SerDe
@@ -63,7 +66,7 @@ public class TestStatsSerde extends TestCase {
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+      serDe.initialize(conf, tbl, null);
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL");
@@ -100,6 +103,7 @@ public class TestStatsSerde extends TestCase {
    * Test LazyBinarySerDe
    */
 
+  @Test
   public void testLazyBinarySerDe() throws Throwable {
     try {
       System.out.println("test: testLazyBinarySerDe");
@@ -126,7 +130,7 @@ public class TestStatsSerde extends TestCase {
       schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
 
       LazyBinarySerDe serDe = new LazyBinarySerDe();
-      SerDeUtils.initializeSerDe(serDe, new Configuration(), schema, null);
+      serDe.initialize(new Configuration(), schema, null);
 
       deserializeAndSerializeLazyBinary(serDe, rows, rowOI);
       System.out.println("test: testLazyBinarySerDe - OK");
@@ -165,6 +169,7 @@ public class TestStatsSerde extends TestCase {
    * Test ColumnarSerDe
    */
 
+  @Test
   public void testColumnarSerDe() throws Throwable {
     try {
       System.out.println("test: testColumnarSerde");
@@ -172,7 +177,7 @@ public class TestStatsSerde extends TestCase {
       ColumnarSerDe serDe = new ColumnarSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+      serDe.initialize(conf, tbl, null);
 
       // Data
       BytesRefArrayWritable braw = new BytesRefArrayWritable(8);

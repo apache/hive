@@ -29,6 +29,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.parser.SqlParserPos;
@@ -140,7 +141,7 @@ public class TypeConverter {
   }
 
   public static RelDataType convert(TypeInfo type, RelDataTypeFactory dtFactory)
-    throws CalciteSemanticException{
+      throws CalciteSemanticException {
     RelDataType convertedType = null;
 
     switch (type.getCategory()) {
@@ -160,7 +161,8 @@ public class TypeConverter {
       convertedType = convert((UnionTypeInfo) type, dtFactory);
       break;
     }
-    return convertedType;
+    // hive does not have concept of not nullable types
+    return dtFactory.createTypeWithNullability(convertedType, true);
   }
 
   public static RelDataType convert(PrimitiveTypeInfo type, RelDataTypeFactory dtFactory) {
@@ -269,6 +271,10 @@ public class TypeConverter {
     throws CalciteSemanticException{
     // Union type is not supported in Calcite.
     throw new CalciteSemanticException("Union type is not supported", UnsupportedFeature.Union_type);
+  }
+
+  public static TypeInfo convertLiteralType(RexLiteral literal) {
+    return TypeConverter.convertPrimitiveType(literal.getType());
   }
 
   public static TypeInfo convert(RelDataType rType) {

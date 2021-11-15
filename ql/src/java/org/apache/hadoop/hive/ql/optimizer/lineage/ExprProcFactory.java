@@ -42,15 +42,16 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo.Predicate;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.TableAliasInfo;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -70,7 +71,7 @@ public class ExprProcFactory {
   private static final String exprNodeFieldDescRegExp = ExprNodeFieldDesc.class.getName() + "%";
   private static final String exprNodeGenFuncDescRegExp = ExprNodeGenericFuncDesc.class.getName() + "%";
 
-  private static final Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+  private static final Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
   static {
     exprRules.put(new RuleRegExp("R1", exprNodeColDescRegExp), getColumnProcessor());
@@ -81,7 +82,7 @@ public class ExprProcFactory {
   /**
    * Processor for column expressions.
    */
-  public static class ColumnExprProcessor implements NodeProcessor {
+  public static class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -113,7 +114,7 @@ public class ExprProcFactory {
   /**
    * Processor for any function or field expression.
    */
-  public static class GenericExprProcessor implements NodeProcessor {
+  public static class GenericExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -150,12 +151,12 @@ public class ExprProcFactory {
    * Processor for constants and null expressions. For such expressions the
    * processor simply returns a null dependency vector.
    */
-  public static class DefaultExprProcessor implements NodeProcessor {
+  public static class DefaultExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      assert (nd instanceof ExprNodeConstantDesc);
+      assert (nd instanceof ExprNodeConstantDesc || nd instanceof ExprDynamicParamDesc);
 
       // Create a dependency that has no basecols
       Dependency dep = new Dependency();
@@ -166,19 +167,19 @@ public class ExprProcFactory {
     }
   }
 
-  public static NodeProcessor getDefaultExprProcessor() {
+  public static SemanticNodeProcessor getDefaultExprProcessor() {
     return new DefaultExprProcessor();
   }
 
-  public static NodeProcessor getGenericFuncProcessor() {
+  public static SemanticNodeProcessor getGenericFuncProcessor() {
     return new GenericExprProcessor();
   }
 
-  public static NodeProcessor getFieldProcessor() {
+  public static SemanticNodeProcessor getFieldProcessor() {
     return new GenericExprProcessor();
   }
 
-  public static NodeProcessor getColumnProcessor() {
+  public static SemanticNodeProcessor getColumnProcessor() {
     return new ColumnExprProcessor();
   }
 
@@ -315,9 +316,9 @@ public class ExprProcFactory {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
         exprRules, exprCtx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    SemanticGraphWalker egw = new DefaultGraphWalker(disp);
 
     List<Node> startNodes = Collections.singletonList((Node)expr);
 

@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationT
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hive.common.util.ReflectionUtil;
 
 /**
@@ -318,10 +318,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   public String getDebugKeyContext() {
     MapJoinObjectSerDeContext keyContext;
     try {
-      AbstractSerDe keySerde =
-          (AbstractSerDe) ReflectionUtil.newInstance(
-              keyTblDesc.getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(keySerde, null, keyTblDesc.getProperties(), null);
+      AbstractSerDe keySerde = (AbstractSerDe) ReflectionUtil.newInstance(keyTblDesc.getSerDeClass(), null);
+      keySerde.initialize(null, keyTblDesc.getProperties(), null);
       keyContext = new MapJoinObjectSerDeContext(keySerde, false);
     } catch (SerDeException e) {
       return null;
@@ -354,9 +352,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
           valueTableDesc = getValueFilteredTblDescs().get(pos);
         }
         AbstractSerDe valueSerDe =
-            (AbstractSerDe) ReflectionUtil.newInstance(
-                valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+            (AbstractSerDe) ReflectionUtil.newInstance(valueTableDesc.getSerDeClass(), null);
+        valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
         MapJoinObjectSerDeContext valueContext =
             new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos, filterMaps));
         valueContextStringList.add(pos + ":" + valueContext.stringify());
@@ -784,6 +781,16 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
           isBucketMapJoin() == otherDesc.isBucketMapJoin();
     }
     return false;
+  }
+
+  public static boolean isSupportedComplexType(List<ExprNodeDesc> keys) {
+    for (ExprNodeDesc key : keys) {
+      if (key.getTypeInfo().getCategory() == ObjectInspector.Category.MAP
+        || key.getTypeInfo().getCategory() == ObjectInspector.Category.UNION) {
+        return false;
+      }
+    }
+    return true;
   }
 
 }

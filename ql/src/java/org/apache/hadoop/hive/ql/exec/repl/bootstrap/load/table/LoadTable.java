@@ -18,16 +18,15 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.drop.DropTableDesc;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -42,11 +41,11 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -56,14 +55,11 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
 
 public class LoadTable {
@@ -74,17 +70,19 @@ public class LoadTable {
   private final TableContext tableContext;
   private final TaskTracker tracker;
   private final TableEvent event;
+  private final ReplicationMetricCollector metricCollector;
 
   public LoadTable(TableEvent event, Context context, ReplLogger replLogger,
-      TableContext tableContext, TaskTracker limiter) {
+      TableContext tableContext, TaskTracker limiter, ReplicationMetricCollector metricCollector) {
     this.event = event;
     this.context = context;
     this.replLogger = replLogger;
     this.tableContext = tableContext;
     this.tracker = new TaskTracker(limiter);
+    this.metricCollector = metricCollector;
   }
 
-  public TaskTracker tasks() throws Exception {
+  public TaskTracker tasks(boolean isBootstrapDuringInc) throws Exception {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
     // If tblName is null, then we default to the table name specified in _metadata, which is good.
     // or are both specified, in which case, that's what we are intended to create the new table as.
@@ -94,7 +92,7 @@ public class LoadTable {
     String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
-    ImportTableDesc tableDesc = tableContext.overrideProperties(event.tableDesc(dbName));
+    ImportTableDesc tableDesc = event.tableDesc(dbName);
     Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
@@ -114,7 +112,7 @@ public class LoadTable {
     }
 
     Task<?> tblRootTask = null;
-    ReplLoadOpType loadTblType = getLoadTableType(table);
+    ReplLoadOpType loadTblType = getLoadTableType(table, isBootstrapDuringInc);
     switch (loadTblType) {
       case LOAD_NEW:
         break;
@@ -148,21 +146,34 @@ public class LoadTable {
             tableDesc,
             null,
             context.dumpDirectory,
+            this.metricCollector,
             context.hiveConf
     );
     if (!isPartitioned(tableDesc)) {
-      Task<? extends Serializable> replLogTask
-              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
+      Task<?> replLogTask
+              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector,
+                                              (new Path(context.dumpDirectory)).getParent().toString());
       ckptTask.addDependentTask(replLogTask);
     }
     tracker.addDependentTask(ckptTask);
     return tracker;
   }
 
-  private ReplLoadOpType getLoadTableType(Table table) throws InvalidOperationException, HiveException {
+  private ReplLoadOpType getLoadTableType(Table table, boolean isBootstrapDuringInc)
+          throws InvalidOperationException, HiveException {
     if (table == null) {
       return ReplLoadOpType.LOAD_NEW;
     }
+
+    // In case user has asked for bootstrap of table during a incremental load, we replace the old one if present.
+    // This is to make sure that the transactional info like write id etc for the table is consistent between the
+    // source and target cluster. This is also to avoid mismatch between target and source cluster table type in case
+    // migration and upgrade uses different conversion rule.
+    if (isBootstrapDuringInc) {
+      LOG.info("Table " + table.getTableName() + " will be replaced as bootstrap is requested during incremental load");
+      return ReplLoadOpType.LOAD_REPLACE;
+    }
+
     if (ReplUtils.replCkptStatus(table.getDbName(), table.getParameters(), context.dumpDirectory)) {
       return ReplLoadOpType.LOAD_SKIP;
     }
@@ -173,8 +184,12 @@ public class LoadTable {
       throws Exception {
     Table table = tblDesc.toTable(context.hiveConf);
     ReplicationSpec replicationSpec = event.replicationSpec();
+    if (!tblDesc.isExternal()) {
+      tblDesc.setLocation(null);
+    }
     Task<?> createTableTask =
-        tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf);
+        tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf, true,
+                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector, true);
     if (tblRootTask == null) {
       tblRootTask = createTableTask;
     } else {
@@ -189,18 +204,8 @@ public class LoadTable {
     if (replicationSpec.isTransactionalTableDump()) {
       List<String> partNames = isPartitioned(tblDesc) ? event.partitions(tblDesc) : null;
       ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getDatabaseName(), tblDesc.getTableName(), partNames,
-              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE);
-      Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
-      parentTask.addDependentTask(replTxnTask);
-      parentTask = replTxnTask;
-    } else if (replicationSpec.isMigratingToTxnTable()) {
-      // Non-transactional table is converted to transactional table.
-      // The write-id 1 is used to copy data for the given table and also no writes are aborted.
-      ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(
-              AcidUtils.getFullTableName(tblDesc.getDatabaseName(), tblDesc.getTableName()),
-              new long[0], new BitSet(), ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID);
-      ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getDatabaseName(), tblDesc.getTableName(), null,
-              validWriteIdList.writeToString(), ReplTxnWork.OperationType.REPL_WRITEID_STATE);
+              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE,
+              (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
       Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
       parentTask.addDependentTask(replTxnTask);
       parentTask = replTxnTask;
@@ -211,8 +216,8 @@ public class LoadTable {
     ) || tuple.isConvertedFromManagedToExternal;
     if (shouldCreateLoadTableTask) {
       LOG.debug("adding dependent ReplTxnTask/CopyWork/MoveWork for table");
-      Task<?> loadTableTask = loadTableTask(table, replicationSpec, new Path(tblDesc.getLocation()),
-              event.metadataPath());
+      Task<?> loadTableTask = loadTableTask(table, replicationSpec, table.getDataLocation(),
+              event.dataPath());
       parentTask.addDependentTask(loadTableTask);
     }
     tracker.addTask(tblRootTask);
@@ -261,22 +266,15 @@ public class LoadTable {
 
   private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath,
       Path fromURI) {
-    Path dataPath = new Path(fromURI, EximUtil.DATA_PATH_NAME);
+    Path dataPath = fromURI;
     Path tmpPath = tgtPath;
 
-    // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
+    // if acid tables, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
-    if (replicationSpec.isInReplicationScope() &&
-            context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+    if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(table)) {
       loadFileType = LoadFileType.IGNORE;
-      if (event.replicationSpec().isMigratingToTxnTable()) {
-        // Migrating to transactional tables in bootstrap load phase.
-        // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
-        // ReplTxnTask added earlier in the DAG ensure that the write-id=1 is made valid in HMS metadata.
-        tmpPath = new Path(tmpPath, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
-      }
     } else {
-      loadFileType = (replicationSpec.isReplace() || replicationSpec.isMigratingToTxnTable())
+      loadFileType = (replicationSpec.isReplace())
               ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
       tmpPath = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
     }
@@ -285,29 +283,18 @@ public class LoadTable {
             + table.getCompleteName() + " with source location: "
             + dataPath.toString() + " and target location " + tgtPath.toString());
 
-    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf);
-
-    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
+    boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
+            copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
+    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
+                                     (new Path(context.dumpDirectory)).getParent().toString(), metricCollector,
+                                      true);
     if (AcidUtils.isTransactionalTable(table)) {
-      if (replicationSpec.isMigratingToTxnTable()) {
-        // Write-id is hardcoded to 1 so that for migration, we just move all original files under base_1 dir.
-        // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
-        LoadTableDesc loadTableWork = new LoadTableDesc(
-                tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
-                loadFileType, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID
-        );
-        loadTableWork.setStmtId(0);
-
-        // Need to set insertOverwrite so base_1 is created instead of delta_1_1_0.
-        loadTableWork.setInsertOverwrite(true);
-        moveWork.setLoadTableWork(loadTableWork);
-      } else {
-        LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-                Collections.singletonList(tmpPath),
-                Collections.singletonList(tgtPath),
-                true, null, null);
-        moveWork.setMultiFilesDesc(loadFilesWork);
-      }
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+        Collections.singletonList(tmpPath),
+        Collections.singletonList(tgtPath),
+        true, null, null);
+      moveWork.setMultiFilesDesc(loadFilesWork);
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
@@ -323,8 +310,9 @@ public class LoadTable {
 
   private Task<?> dropTableTask(Table table) {
     assert(table != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), table.getTableType(),
-            true, false, event.replicationSpec());
-    return TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
+    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), true, false, event.replicationSpec());
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc,
+                                      true, (new Path(context.dumpDirectory)).getParent().toString(),
+                                      this.metricCollector), context.hiveConf);
   }
 }

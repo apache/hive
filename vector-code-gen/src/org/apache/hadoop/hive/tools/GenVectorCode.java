@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -309,12 +308,20 @@ public class GenVectorCode extends Task {
 
       {"Decimal64ColumnArithmeticDecimal64Scalar", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Scalar", "Subtract", "-"},
+      {"Decimal64ColumnArithmeticDecimal64Scalar", "Multiply", "*"},
 
       {"Decimal64ScalarArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ScalarArithmeticDecimal64Column", "Subtract", "-"},
+      {"Decimal64ScalarArithmeticDecimal64Column", "Multiply", "*"},
 
       {"Decimal64ColumnArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Column", "Subtract", "-"},
+      {"Decimal64ColumnArithmeticDecimal64Column", "Multiply", "*"},
+
+      {"Decimal64ColumnDivideDecimal64Scalar", "Divide", "/"},
+      {"Decimal64ColumnDivideDecimal64Column", "Divide", "/"},
+
+      {"Decimal64ColumnScaleUp", "ScaleUp", "*"},
 
       {"ColumnCompareScalar", "Equal", "long", "long", "=="},
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
@@ -1059,15 +1066,15 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)", "", ""},
       // Ceil on an integer argument is a noop, but it is less code to handle it this way.
       {"ColumnUnaryFunc", "FuncCeil", "long", "long", "Math.ceil", "", "(long)", "", ""},
-      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", "", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", "",
+      {"ColumnUnaryFunc", "FuncExp", "double", "double", "StrictMath.exp", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "long", "StrictMath.exp", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncLn", "double", "double", "StrictMath.log", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", "",
+      {"ColumnUnaryFunc", "FuncLn", "double", "long", "StrictMath.log", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", "",
+      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "StrictMath.log10", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", "",
+      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "StrictMath.log10", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       // The MathExpr class contains helper functions for cases when existing library
       // routines can't be used directly.
@@ -1093,8 +1100,8 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "long", "Math.cos", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "double", "StrictMath.cos", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "long", "StrictMath.cos", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", "", ""},
@@ -1200,6 +1207,11 @@ public class GenVectorCode extends Task {
       // Template, <ClassName>, <ValueType>
       {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
       {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
+
+      {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorFinal", "long", "MERGING"},
+      {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorLong", "long", "COMPLETE"},
+      {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
+
 
       // Template, <ClassName>, <ValueType>, <IfDefined>
       {"VectorUDAFAvg", "VectorUDAFAvgLong", "long", "PARTIAL1"},
@@ -1414,6 +1426,12 @@ public class GenVectorCode extends Task {
         generateDecimal64ScalarArithmeticDecimal64Column(tdesc);
       } else if (tdesc[0].equals("Decimal64ColumnArithmeticDecimal64Column")) {
         generateDecimal64ColumnArithmeticDecimal64Column(tdesc);
+      } else if (tdesc[0].equals("Decimal64ColumnDivideDecimal64Scalar")) {
+        generateDecimal64ColumnArithmeticDecimal64Scalar(tdesc);
+      } else if (tdesc[0].equals("Decimal64ColumnDivideDecimal64Column")) {
+        generateDecimal64ColumnArithmeticDecimal64Column(tdesc);
+      } else if(tdesc[0].equals("Decimal64ColumnScaleUp")) {
+        generateDecimal64ColumnScaleUp(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryFunc")) {
@@ -1446,6 +1464,8 @@ public class GenVectorCode extends Task {
         generateVectorUDAFAvgObject(tdesc);
       } else if (tdesc[0].equals("VectorUDAFAvgDecimalMerge")) {
         generateVectorUDAFAvgMerge(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
+        generateVectorUDAFComputeBitVector(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
@@ -1908,6 +1928,27 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
 
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateVectorUDAFComputeBitVector(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String valueType = tdesc[2];
+    String columnType = getColumnVectorType(valueType);
+    String ifDefined = "";
+    if (tdesc.length > 3) {
+      ifDefined = tdesc[3];
+    }
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
+    templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
     templateString = evaluateIfDefined(templateString, ifDefined);
 
     writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
@@ -2528,22 +2569,39 @@ public class GenVectorCode extends Task {
   private void generateDecimal64ColumnArithmeticDecimal64Scalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "Decimal64Col" + operatorName + "Decimal64Scalar";
-    generateDecimal64ColumnArithmetic(tdesc, className);
+    generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
+    if ("Multiply".equals(operatorName)) {
+      tdesc[0] = tdesc[0] + "Unscaled";
+      String unscaledClassName = className + "Unscaled";
+      generateDecimal64ColumnArithmetic(tdesc, unscaledClassName, className);
+    }
   }
 
   private void generateDecimal64ScalarArithmeticDecimal64Column(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "Decimal64Scalar" + operatorName + "Decimal64Column";
-    generateDecimal64ColumnArithmetic(tdesc, className);
+    generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
+    if ("Multiply".equals(operatorName)) {
+      tdesc[0] = tdesc[0] + "Unscaled";
+      String unscaledClassName = className + "Unscaled";
+      generateDecimal64ColumnArithmetic(tdesc, unscaledClassName, className);
+    }
   }
 
   private void generateDecimal64ColumnArithmeticDecimal64Column(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "Decimal64Col" + operatorName + "Decimal64Column";
-    generateDecimal64ColumnArithmetic(tdesc, className);
+    generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
   }
 
-  private void generateDecimal64ColumnArithmetic(String[] tdesc, String className)
+  private void generateDecimal64ColumnScaleUp(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "Decimal64Col" + operatorName;
+    String parentClassName = "Decimal64ColMultiplyDecimal64Scalar";
+    generateDecimal64ColumnArithmetic(tdesc, className, parentClassName);
+  }
+
+  private void generateDecimal64ColumnArithmetic(String[] tdesc, String className, String parentClassName)
       throws IOException {
 
     String operatorSymbol = tdesc[2];
@@ -2553,6 +2611,9 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
 
     // Expand, and write result
+    if (parentClassName != null) {
+      templateString = templateString.replaceAll("<ParentClassName>", parentClassName);
+    }
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
@@ -3179,8 +3240,8 @@ public class GenVectorCode extends Task {
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replace("<ClassName>", className);
+    templateString = templateString.replace("<Operator>", operatorName.toLowerCase());
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3371,7 +3432,7 @@ public class GenVectorCode extends Task {
     if (type.equals("date")) {
       return
           "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
-          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
+          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, inputColumnNum[0]);";
     } else {
       return
           "    return super.vectorExpressionParameters();";
@@ -3382,7 +3443,7 @@ public class GenVectorCode extends Task {
     if (type.equals("date")) {
       return
           "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
-          "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
+          "    return getColumnParamString(0, inputColumnNum[0]) + \", date \" + dt.toString();";
     } else {
       return
           "    return super.vectorExpressionParameters();";

@@ -21,11 +21,17 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BooleanColumnStatsMerger extends ColumnStatsMerger {
 
+  private static final Logger LOG = LoggerFactory.getLogger(BooleanColumnStatsMerger.class);
+
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+    LOG.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
+
     BooleanColumnStatsData aggregateData = aggregateColStats.getStatsData().getBooleanStats();
     BooleanColumnStatsData newData = newColStats.getStatsData().getBooleanStats();
     aggregateData.setNumTrues(aggregateData.getNumTrues() + newData.getNumTrues());

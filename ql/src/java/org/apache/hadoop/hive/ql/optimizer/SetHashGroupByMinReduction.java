@@ -24,12 +24,13 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
@@ -40,14 +41,14 @@ import org.slf4j.LoggerFactory;
  * SetHashGroupByMinReduction determines the min reduction to perform
  * a hash aggregation for a group by.
  */
-public class SetHashGroupByMinReduction implements NodeProcessor {
+public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(SetHashGroupByMinReduction.class.getName());
 
   @SuppressWarnings("unchecked")
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procContext, Object... nodeOutputs)
+                        NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
 
     GroupByOperator groupByOperator = (GroupByOperator) nd;
@@ -65,21 +66,26 @@ public class SetHashGroupByMinReduction implements NodeProcessor {
       colStats.add(
           groupByOperator.getStatistics().getColumnStatisticsFromColName(ci.getInternalName()));
     }
+    Statistics parentStats = groupByOperator.getParentOperators().get(0).getStatistics();
     long ndvProduct = StatsUtils.computeNDVGroupingColumns(
-        colStats, groupByOperator.getParentOperators().get(0).getStatistics(), true);
+        colStats, parentStats, true);
     // if ndvProduct is 0 then column stats state must be partial and we are missing
     if (ndvProduct == 0) {
       return null;
     }
 
-    long numRows = groupByOperator.getStatistics().getNumRows();
+    long numRows = parentStats.getNumRows();
     if (ndvProduct > numRows) {
       ndvProduct = numRows;
     }
 
     // change the min reduction for hash group by
     float defaultMinReductionHashAggrFactor = desc.getMinReductionHashAggr();
+    float defaultMinReductionHashAggrFactorLowerBound = desc.getMinReductionHashAggrLowerBound();
     float minReductionHashAggrFactor = 1f - ((float) ndvProduct / numRows);
+    if (minReductionHashAggrFactor < defaultMinReductionHashAggrFactorLowerBound) {
+      minReductionHashAggrFactor = defaultMinReductionHashAggrFactorLowerBound;
+    }
     if (minReductionHashAggrFactor < defaultMinReductionHashAggrFactor) {
       desc.setMinReductionHashAggr(minReductionHashAggrFactor);
       if (LOG.isDebugEnabled()) {

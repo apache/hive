@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.conf;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,7 @@ public class LoopingByteArrayInputStream extends InputStream {
 
   private final byte[] buf;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Intended")
   public LoopingByteArrayInputStream(byte[] buf) {
     this.buf = buf;
   }

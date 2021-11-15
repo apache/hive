@@ -27,20 +27,23 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  *
@@ -49,7 +52,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * sql. Later we can expand to add join tables etc.
  *
  */
-public class LineageInfo implements NodeProcessor {
+public class LineageInfo implements SemanticNodeProcessor {
 
   /**
    * Stores input tables in sql.
@@ -103,15 +106,12 @@ public class LineageInfo implements NodeProcessor {
    * parses given query and gets the lineage info.
    *
    * @param query
-   * @throws ParseException
    */
-  public void getLineageInfo(String query) throws ParseException,
-      SemanticException {
-
+  public void getLineageInfo(String query, Context ctx) throws Exception {
     /*
      * Get the AST tree
      */
-    ASTNode tree = ParseUtils.parse(query, null);
+    ASTNode tree = ParseUtils.parse(query, ctx );
 
     while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
       tree = (ASTNode) tree.getChild(0);
@@ -126,12 +126,12 @@ public class LineageInfo implements NodeProcessor {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> rules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(this, rules, null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(this, rules, null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -139,14 +139,14 @@ public class LineageInfo implements NodeProcessor {
     ogw.startWalking(topNodes, null);
   }
 
-  public static void main(String[] args) throws IOException, ParseException,
-      SemanticException {
+  public static void main(String[] args) throws Exception {
 
     String query = args[0];
 
     LineageInfo lep = new LineageInfo();
 
-    lep.getLineageInfo(query);
+    Context ctx=new Context(new HiveConf());
+    lep.getLineageInfo(query, ctx);
 
     for (String tab : lep.getInputTableList()) {
       System.out.println("InputTable=" + tab);

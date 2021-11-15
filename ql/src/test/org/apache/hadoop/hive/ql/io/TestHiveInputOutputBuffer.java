@@ -17,21 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 /**
  * TestHiveInputOutputBuffer.
  *
  */
-public class TestHiveInputOutputBuffer extends TestCase {
+public class TestHiveInputOutputBuffer {
 
   private static final int numCases = 14; 
   
@@ -39,6 +38,7 @@ public class TestHiveInputOutputBuffer extends TestCase {
   private static final String asciiLine2 = "Line two";
   private static final String asciiString = asciiLine1 + "\n" + asciiLine2 + "\r\n";
 
+  @Test
   public void testReadAndWrite() throws IOException {
     String testString = "test_hive_input_output_number_0";
     byte[] string_bytes = testString.getBytes();

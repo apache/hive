@@ -21,20 +21,33 @@ package org.apache.hive.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import java.math.BigDecimal;
+
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.hive.llap.FieldDesc;
+import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.llap.Row;
+import org.apache.hadoop.hive.ql.ddl.process.kill.KillQueriesOperation;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
 import org.junit.BeforeClass;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Connection;
+import java.util.concurrent.Callable;
+import java.util.stream.IntStream;
+
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
@@ -49,6 +62,7 @@ import org.slf4j.LoggerFactory;
 /**
  * TestJdbcWithMiniLlap for Arrow format
  */
+@Ignore("unstable HIVE-23549")
 public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestJdbcWithMiniLlapArrow.class);
@@ -110,8 +124,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     return new LlapArrowRowInputFormat(Long.MAX_VALUE);
   }
 
-  // Currently MAP type is not supported. Add it back when Arrow 1.0 is released.
-  // See: SPARK-21187
+  @Test
   @Override
   public void testDataTypes() throws Exception {
     createDataTypesTable("datatypes");
@@ -170,11 +183,13 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     List<?> c5Value = (List<?>) rowValues[4];
     assertEquals(0, c5Value.size());
 
-    //Map<?,?> c6Value = (Map<?,?>) rowValues[5];
-    //assertEquals(0, c6Value.size());
+    Map<?,?> c6Value = (Map<?,?>) rowValues[5];
+    assertEquals(1, c6Value.size());
+    assertEquals(null, c6Value.get(1));
 
-    //Map<?,?> c7Value = (Map<?,?>) rowValues[6];
-    //assertEquals(0, c7Value.size());
+    Map<?,?> c7Value = (Map<?,?>) rowValues[6];
+    assertEquals(1, c7Value.size());
+    assertEquals("b", c7Value.get("a"));
 
     List<?> c8Value = (List<?>) rowValues[7];
     assertEquals(null, c8Value.get(0));
@@ -189,15 +204,18 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     List<?> c13Value = (List<?>) rowValues[12];
     assertEquals(0, c13Value.size());
 
-    //Map<?,?> c14Value = (Map<?,?>) rowValues[13];
-    //assertEquals(0, c14Value.size());
+    Map<?,?> c14Value = (Map<?,?>) rowValues[13];
+    assertEquals(1, c14Value.size());
+    Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    assertEquals(1, mapVal.size());
+    assertEquals(100, mapVal.get(Integer.valueOf(10)));
 
     List<?> c15Value = (List<?>) rowValues[14];
     assertEquals(null, c15Value.get(0));
     assertEquals(null, c15Value.get(1));
 
-    //List<?> c16Value = (List<?>) rowValues[15];
-    //assertEquals(0, c16Value.size());
+    List<?> c16Value = (List<?>) rowValues[15];
+    assertEquals(0, c16Value.size());
 
     assertEquals(null, rowValues[16]);
     assertEquals(null, rowValues[17]);
@@ -219,14 +237,15 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertEquals(Integer.valueOf(1), c5Value.get(0));
     assertEquals(Integer.valueOf(2), c5Value.get(1));
 
-    //c6Value = (Map<?,?>) rowValues[5];
-    //assertEquals(2, c6Value.size());
-    //assertEquals("x", c6Value.get(Integer.valueOf(1)));
-    //assertEquals("y", c6Value.get(Integer.valueOf(2)));
+    c6Value = (Map<?,?>) rowValues[5];
+    assertEquals(2, c6Value.size());
+    assertEquals("x", c6Value.get(Integer.valueOf(1)));
+    assertEquals("y", c6Value.get(Integer.valueOf(2)));
 
-    //c7Value = (Map<?,?>) rowValues[6];
-    //assertEquals(1, c7Value.size());
-    //assertEquals("v", c7Value.get("k"));
+    c7Value = (Map<?,?>) rowValues[6];
+    assertEquals(2, c7Value.size());
+    assertEquals("v", c7Value.get("k"));
+    assertEquals("c", c7Value.get("b"));
 
     c8Value = (List<?>) rowValues[7];
     assertEquals("a", c8Value.get(0));
@@ -247,15 +266,15 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertEquals("c", listVal.get(0));
     assertEquals("d", listVal.get(1));
 
-    //c14Value = (Map<?,?>) rowValues[13];
-    //assertEquals(2, c14Value.size());
-    //Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
-    //assertEquals(2, mapVal.size());
-    //assertEquals(Integer.valueOf(12), mapVal.get(Integer.valueOf(11)));
-    //assertEquals(Integer.valueOf(14), mapVal.get(Integer.valueOf(13)));
-    //mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(2));
-    //assertEquals(1, mapVal.size());
-    //assertEquals(Integer.valueOf(22), mapVal.get(Integer.valueOf(21)));
+    c14Value = (Map<?,?>) rowValues[13];
+    assertEquals(2, c14Value.size());
+    mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    assertEquals(2, mapVal.size());
+    assertEquals(Integer.valueOf(12), mapVal.get(Integer.valueOf(11)));
+    assertEquals(Integer.valueOf(14), mapVal.get(Integer.valueOf(13)));
+    mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(2));
+    assertEquals(1, mapVal.size());
+    assertEquals(Integer.valueOf(22), mapVal.get(Integer.valueOf(21)));
 
     c15Value = (List<?>) rowValues[14];
     assertEquals(Integer.valueOf(1), c15Value.get(0));
@@ -264,19 +283,19 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertEquals(Integer.valueOf(2), listVal.get(0));
     assertEquals("x", listVal.get(1));
 
-    //c16Value = (List<?>) rowValues[15];
-    //assertEquals(2, c16Value.size());
-    //listVal = (List<?>) c16Value.get(0);
-    //assertEquals(2, listVal.size());
-    //mapVal = (Map<?,?>) listVal.get(0);
-    //assertEquals(0, mapVal.size());
-    //assertEquals(Integer.valueOf(1), listVal.get(1));
-    //listVal = (List<?>) c16Value.get(1);
-    //mapVal = (Map<?,?>) listVal.get(0);
-    //assertEquals(2, mapVal.size());
-    //assertEquals("b", mapVal.get("a"));
-    //assertEquals("d", mapVal.get("c"));
-    //assertEquals(Integer.valueOf(2), listVal.get(1));
+    c16Value = (List<?>) rowValues[15];
+    assertEquals(2, c16Value.size());
+    listVal = (List<?>) c16Value.get(0);
+    assertEquals(2, listVal.size());
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(0, mapVal.size());
+    assertEquals(Integer.valueOf(1), listVal.get(1));
+    listVal = (List<?>) c16Value.get(1);
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(2, mapVal.size());
+    assertEquals("b", mapVal.get("a"));
+    assertEquals("d", mapVal.get("c"));
+    assertEquals(Integer.valueOf(2), listVal.get(1));
 
     assertEquals(Timestamp.valueOf("2012-04-22 09:00:00.123456"), rowValues[16]);
     assertEquals(new BigDecimal("123456789.123456"), rowValues[17]);
@@ -346,7 +365,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
     // wait for other thread to create the stmt handle
     int count = 0;
-    while (count < 10) {
+    while (++count <= 10) {
       try {
         tKillHolder.throwable = null;
         Thread.sleep(2000);
@@ -368,7 +387,6 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
         stmt2.close();
         break;
       } catch (SQLException e) {
-        count++;
         LOG.warn("Exception when kill query", e);
         tKillHolder.throwable = e;
       }
@@ -394,15 +412,19 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     testKillQueryByTagOwner();
   }
 
+  @Test
   public void testKillQueryById() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
     testKillQueryInternal(System.getProperty("user.name"), System.getProperty("user.name"), false,
             tExecuteHolder, tKillHolder);
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
 
+  @Test
   public void testKillQueryByTagNegative() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
@@ -412,20 +434,111 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
   }
 
+  @Test
   public void testKillQueryByTagAdmin() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
     testKillQueryInternal("user1", System.getProperty("user.name"), true, tExecuteHolder, tKillHolder);
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
 
+  @Test
   public void testKillQueryByTagOwner() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
     testKillQueryInternal("user1", "user1", true, tExecuteHolder, tKillHolder);
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
+
+  @Test
+  public void testConcurrentAddAndCloseAndCloseAllConnections() throws Exception {
+    createTestTable("testtab1");
+
+    String url = miniHS2.getJdbcURL();
+    String user = System.getProperty("user.name");
+    String pwd = user;
+
+    InputFormat<NullWritable, Row> inputFormat = getInputFormat();
+
+    // Get splits
+    JobConf job = new JobConf(conf);
+    job.set(LlapBaseInputFormat.URL_KEY, url);
+    job.set(LlapBaseInputFormat.USER_KEY, user);
+    job.set(LlapBaseInputFormat.PWD_KEY, pwd);
+    job.set(LlapBaseInputFormat.QUERY_KEY, "select * from testtab1");
+
+    final String[] handleIds = IntStream.range(0, 20).boxed().map(i -> "handleId-" + i).toArray(String[]::new);
+
+    final ExceptionHolder exceptionHolder = new ExceptionHolder();
+
+    // addConnThread thread will keep adding connections
+    // closeConnThread thread tries close connection(s) associated to handleIds, one at a time
+    // closeAllConnThread thread tries to close All at once.
+
+    final int numIterations = 100;
+    final Iterator<String> addConnIterator = Iterables.cycle(handleIds).iterator();
+    Thread addConnThread = new Thread(() -> executeNTimes(() -> {
+      String handleId = addConnIterator.next();
+      job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
+      InputSplit[] splits = inputFormat.getSplits(job, 1);
+      assertTrue(splits.length > 0);
+      return null;
+    }, numIterations, 1, exceptionHolder));
+
+    final Iterator<String> removeConnIterator = Iterables.cycle(handleIds).iterator();
+    Thread closeConnThread = new Thread(() -> executeNTimes(() -> {
+      String handleId = removeConnIterator.next();
+      LlapBaseInputFormat.close(handleId);
+      return null;
+    }, numIterations, 2, exceptionHolder));
+
+    Thread closeAllConnThread = new Thread(() -> executeNTimes(() -> {
+      LlapBaseInputFormat.closeAll();
+      return null;
+    }, numIterations, 5, exceptionHolder));
+
+    addConnThread.start();
+    closeConnThread.start();
+    closeAllConnThread.start();
+
+    closeAllConnThread.join();
+    closeConnThread.join();
+    addConnThread.join();
+
+    Throwable throwable = exceptionHolder.throwable;
+    assertNull("Something went wrong while testAddCloseCloseAllConnections" + throwable, throwable);
+
+  }
+
+  @Override
+  @Ignore
+  public void testMultipleBatchesOfComplexTypes() {
+    // ToDo: FixMe
+  }
+
+  private void executeNTimes(Callable action, int noOfTimes, long intervalMillis, ExceptionHolder exceptionHolder) {
+    for (int i = 0; i < noOfTimes; i++) {
+      try {
+        action.call();
+        Thread.sleep(intervalMillis);
+      } catch (Exception e) {
+        // populate first exception only
+        if (exceptionHolder.throwable == null) {
+          synchronized (this) {
+            if (exceptionHolder.throwable == null) {
+              exceptionHolder.throwable = e;
+            }
+          }
+        }
+      }
+    }
+  }
+
 }
 

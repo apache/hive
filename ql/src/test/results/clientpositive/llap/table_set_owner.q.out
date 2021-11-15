@@ -1,0 +1,35 @@
+PREHOOK: query: CREATE TABLE t (a INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: EXPLAIN ALTER TABLE t SET OWNER USER user1
+PREHOOK: type: ALTERTABLE_OWNER
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t SET OWNER USER user1
+POSTHOOK: type: ALTERTABLE_OWNER
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+#### A masked pattern was here ####
+      table name: default.t
+#### A masked pattern was here ####
+        Principal
+          name: user1
+
+PREHOOK: query: ALTER TABLE t SET OWNER USER user1
+PREHOOK: type: ALTERTABLE_OWNER
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SET OWNER USER user1
+POSTHOOK: type: ALTERTABLE_OWNER
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t

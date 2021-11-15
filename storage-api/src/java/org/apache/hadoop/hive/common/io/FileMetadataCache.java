@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 
@@ -42,10 +43,10 @@ public interface FileMetadataCache {
 
   @Deprecated
   MemoryBufferOrBuffers putFileMetadata(
-      Object fileKey, int length, InputStream is, String tag) throws IOException;
+      Object fileKey, int length, InputStream is, CacheTag tag) throws IOException;
 
   @Deprecated
-  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer, String tag);
+  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer, CacheTag tag);
 
   /**
    * Releases the buffer returned from getFileMetadata or putFileMetadata method.
@@ -61,8 +62,17 @@ public interface FileMetadataCache {
    *         The caller must decref this buffer when done.
    */
   MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer,
-      String tag, AtomicBoolean isStopped);
+      CacheTag tag, AtomicBoolean isStopped);
 
   MemoryBufferOrBuffers putFileMetadata(Object fileKey, int length,
-      InputStream is, String tag, AtomicBoolean isStopped) throws IOException;
+      InputStream is, CacheTag tag, AtomicBoolean isStopped) throws IOException;
+
+  /**
+   * Iterates through the file entries of this cache and for those that match the given predicate (aka have a matching
+   * CacheTag) will have their buffers marked for (a later) proactive eviction.
+   * @param predicate - matching the predicate indicates eligibility for proactive eviction
+   * @param isInstantDeallocation - whether to ask allocator to deallocate eligible buffers immediately after marking
+   * @return number of bytes marked in the buffers eligible for eviction
+   */
+  long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation);
 }

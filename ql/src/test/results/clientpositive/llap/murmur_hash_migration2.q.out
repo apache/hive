@@ -1,0 +1,331 @@
+PREHOOK: query: create transactional table acid_ptn_bucket1 (a int, b int) partitioned by(ds string)
+clustered by (a) into 2 buckets stored as ORC
+TBLPROPERTIES('bucketing_version'='1', 'transactional'='true', 'transactional_properties'='default')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: query: create transactional table acid_ptn_bucket1 (a int, b int) partitioned by(ds string)
+clustered by (a) into 2 buckets stored as ORC
+TBLPROPERTIES('bucketing_version'='1', 'transactional'='true', 'transactional_properties'='default')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_ptn_bucket1
+PREHOOK: query: explain extended insert into acid_ptn_bucket1 partition (ds) values(1,2,'today'),(1,3,'today'),(1,4,'yesterday'),(2,2,'yesterday'),(2,3,'today'),(2,4,'today')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: query: explain extended insert into acid_ptn_bucket1 partition (ds) values(1,2,'today'),(1,3,'today'),(1,4,'yesterday'),(2,2,'yesterday'),(2,3,'today'),(2,4,'today')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_ptn_bucket1
+OPTIMIZED SQL: SELECT *
+FROM TABLE(INLINE(ARRAY[ (1, 2, 'today'),  (1, 3, 'today'),  (1, 4, 'yesterday'),  (2, 2, 'yesterday'),  (2, 3, 'today'),  (2, 4, 'today')]))
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: array(const struct(1,2,'today'),const struct(1,3,'today'),const struct(1,4,'yesterday'),const struct(2,2,'yesterday'),const struct(2,3,'today'),const struct(2,4,'today')) (type: array<struct<col1:int,col2:int,col3:string>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int), col2 (type: int), col3 (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 1
+                          key expressions: _col2 (type: string), _bucket_number (type: string), _col0 (type: int)
+                          null sort order: aaa
+                          numBuckets: 2
+                          sort order: +++
+                          Map-reduce partition columns: _col2 (type: string)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col1 (type: int)
+                          auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: dummy_path
+                  input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns 
+                    columns.types 
+#### A masked pattern was here ####
+                    name _dummy_database._dummy_table
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+                  serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+                
+                    input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns 
+                      columns.comments 
+                      columns.types 
+#### A masked pattern was here ####
+                      name _dummy_database._dummy_table
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+                    serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+                    name: _dummy_database._dummy_table
+                  name: _dummy_database._dummy_table
+            Truncated Path -> Alias:
+#### A masked pattern was here ####
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY._col0 (type: int), VALUE._col1 (type: int), KEY._col2 (type: string), KEY._bucket_number (type: string)
+                outputColumnNames: _col0, _col1, _col2, _bucket_number
+                File Output Operator
+                  bucketingVersion: 1
+                  compressed: false
+                  GlobalTableId: 1
+#### A masked pattern was here ####
+                  Dp Sort State: PARTITION_BUCKET_SORTED
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      properties:
+                        bucket_count 2
+                        bucket_field_name a
+                        bucketing_version 1
+                        column.name.delimiter ,
+                        columns a,b
+                        columns.comments 
+                        columns.types int:int
+#### A masked pattern was here ####
+                        name default.acid_ptn_bucket1
+                        partition_columns ds
+                        partition_columns.types string
+                        serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        transactional true
+                        transactional_properties default
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.acid_ptn_bucket1
+                  TotalFiles: 1
+                  Write Type: INSERT
+                  GatherStats: true
+                  MultiFileSpray: false
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+          replace: false
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucket_count 2
+                bucket_field_name a
+                bucketing_version 1
+                column.name.delimiter ,
+                columns a,b
+                columns.comments 
+                columns.types int:int
+#### A masked pattern was here ####
+                name default.acid_ptn_bucket1
+                partition_columns ds
+                partition_columns.types string
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                transactional true
+                transactional_properties default
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid_ptn_bucket1
+          Write Type: INSERT
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+#### A masked pattern was here ####
+
+PREHOOK: query: insert into acid_ptn_bucket1 partition (ds) values(1,2,'today'),(1,3,'today'),(1,4,'yesterday'),(2,2,'yesterday'),(2,3,'today'),(2,4,'today')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: query: insert into acid_ptn_bucket1 partition (ds) values(1,2,'today'),(1,3,'today'),(1,4,'yesterday'),(2,2,'yesterday'),(2,3,'today'),(2,4,'today')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: Output: default@acid_ptn_bucket1@ds=today
+POSTHOOK: Output: default@acid_ptn_bucket1@ds=yesterday
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).a SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).b SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=yesterday).a SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=yesterday).b SCRIPT []
+PREHOOK: query: alter table acid_ptn_bucket1 add columns(c int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@acid_ptn_bucket1
+PREHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: query: alter table acid_ptn_bucket1 add columns(c int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@acid_ptn_bucket1
+POSTHOOK: Output: default@acid_ptn_bucket1
+PREHOOK: query: insert into acid_ptn_bucket1 partition (ds) values(3,2,1000,'yesterday'),(3,3,1001,'today'),(3,4,1002,'yesterday'),(4,2,1003,'today'), (4,3,1004,'yesterday'),(4,4,1005,'today')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: query: insert into acid_ptn_bucket1 partition (ds) values(3,2,1000,'yesterday'),(3,3,1001,'today'),(3,4,1002,'yesterday'),(4,2,1003,'today'), (4,3,1004,'yesterday'),(4,4,1005,'today')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_ptn_bucket1
+POSTHOOK: Output: default@acid_ptn_bucket1@ds=today
+POSTHOOK: Output: default@acid_ptn_bucket1@ds=yesterday
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).a SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).b SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).c SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=yesterday).a SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=yesterday).b SCRIPT []
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=yesterday).c SCRIPT []
+PREHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536870912 and ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ptn_bucket1
+PREHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536870912 and ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ptn_bucket1
+POSTHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	4	2	1003	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	4	4	1005	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	2	3	NULL	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	2	4	NULL	today
+PREHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536936448 and ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ptn_bucket1
+PREHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536936448 and ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ptn_bucket1
+POSTHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	3	3	1001	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	1	2	NULL	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	1	3	NULL	today
+PREHOOK: query: create table s1 (key int, value int) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s1
+POSTHOOK: query: create table s1 (key int, value int) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s1
+PREHOOK: query: create table s2 (key int, value int) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s2
+POSTHOOK: query: create table s2 (key int, value int) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s2
+PREHOOK: query: insert into s1 values(111, 33), (10, 45), (103, 44), (129, 34), (128, 11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@s1
+POSTHOOK: query: insert into s1 values(111, 33), (10, 45), (103, 44), (129, 34), (128, 11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@s1
+POSTHOOK: Lineage: s1.key SCRIPT []
+POSTHOOK: Lineage: s1.value SCRIPT []
+PREHOOK: query: insert into s2 values(10, 45), (100, 45), (103, 44), (110, 12), (128, 34), (117, 71)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@s2
+POSTHOOK: query: insert into s2 values(10, 45), (100, 45), (103, 44), (110, 12), (128, 34), (117, 71)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@s2
+POSTHOOK: Lineage: s2.key SCRIPT []
+POSTHOOK: Lineage: s2.value SCRIPT []
+PREHOOK: query: insert into table acid_ptn_bucket1 partition(ds='today') select key, count(value), key from (select * from s1 union all select * from s2) sub group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s1
+PREHOOK: Input: default@s2
+PREHOOK: Output: default@acid_ptn_bucket1@ds=today
+POSTHOOK: query: insert into table acid_ptn_bucket1 partition(ds='today') select key, count(value), key from (select * from s1 union all select * from s2) sub group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s1
+POSTHOOK: Input: default@s2
+POSTHOOK: Output: default@acid_ptn_bucket1@ds=today
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).a EXPRESSION [(s1)s1.FieldSchema(name:key, type:int, comment:null), (s2)s2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).b EXPRESSION [(s1)s1.FieldSchema(name:value, type:int, comment:null), (s2)s2.FieldSchema(name:value, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_ptn_bucket1 PARTITION(ds=today).c EXPRESSION [(s1)s1.FieldSchema(name:key, type:int, comment:null), (s2)s2.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536870912 and ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ptn_bucket1
+PREHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536870912 and ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ptn_bucket1
+POSTHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	10	2	10	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	100	1	100	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":2}	110	1	110	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":3}	128	2	128	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	4	2	1003	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	4	4	1005	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	2	3	NULL	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	2	4	NULL	today
+PREHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536936448 and ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ptn_bucket1
+PREHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536936448 and ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ptn_bucket1
+POSTHOOK: Input: default@acid_ptn_bucket1@ds=today
+#### A masked pattern was here ####
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	103	2	103	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	111	1	111	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":2}	117	1	117	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":3}	129	1	129	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	3	3	1001	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	1	2	NULL	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	1	3	NULL	today

@@ -1,0 +1,835 @@
+PREHOOK: query: explain
+select key, value, avg(key + 1) from src
+group by value, key with rollup
+order by key, value limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select key, value, avg(key + 1) from src
+group by value, key with rollup
+order by key, value limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: value (type: string), key (type: string), (UDFToDouble(key) + 1.0D) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col2), count(_col2)
+                      keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 3
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col3 (type: double), _col4 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3, _col4
+                Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Top N Key Operator
+                  sort order: ++
+                  keys: _col1 (type: string), _col0 (type: string)
+                  null sort order: zz
+                  Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 20
+                  Select Operator
+                    expressions: _col1 (type: string), _col0 (type: string), (_col3 / _col4) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 750 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Statistics: Num rows: 750 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col2 (type: double)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 750 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v_n13 as
+with q1 as ( select key from src where key = '5')
+select * from q1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as
+with q1 as ( select key from src where key = '5')
+select * from q1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE []
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	with q1 as ( select key from src where key = '5')	 
+	                    	select * from q1    
+Expanded Query:     	with q1 as ( select `src`.`key` from `default`.`src` where `src`.`key` = '5')	 
+	                    	select `q1`.`key` from q1
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as
+select b.key, count(*) as c
+from src b
+group by b.key
+having exists
+  (select a.key
+  from src a
+  where a.key = b.key and a.value > 'val_9'
+  )
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as
+select b.key, count(*) as c
+from src b
+group by b.key
+having exists
+  (select a.key
+  from src a
+  where a.key = b.key and a.value > 'val_9'
+  )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.c EXPRESSION [(src)b.null, ]
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+c                   	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select b.key, count(*) as c	 
+	                    	from src b          
+	                    	group by b.key      
+	                    	having exists       
+	                    	  (select a.key     
+	                    	  from src a        
+	                    	  where a.key = b.key and a.value > 'val_9'
+	                    	  )                 
+Expanded Query:     	select `b`.`key`, count(*) as `c`	 
+	                    	from `default`.`src` `b`
+	                    	group by `b`.`key`  
+	                    	having exists       
+	                    	  (select `a`.`key` 
+	                    	  from `default`.`src` `a`
+	                    	  where `a`.`key` = b.key and `a`.`value` > 'val_9'
+	                    	  )                 
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as
+select *
+from src b
+where not exists
+  (select distinct a.key
+  from src a
+  where b.value = a.value and a.value > 'val_2'
+  )
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as
+select *
+from src b
+where not exists
+  (select distinct a.key
+  from src a
+  where b.value = a.value and a.value > 'val_2'
+  )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select *            	 
+	                    	from src b          
+	                    	where not exists    
+	                    	  (select distinct a.key
+	                    	  from src a        
+	                    	  where b.value = a.value and a.value > 'val_2'
+	                    	  )                 
+Expanded Query:     	select `b`.`key`, `b`.`value`	 
+	                    	from `default`.`src` `b`
+	                    	where not exists    
+	                    	  (select distinct `a`.`key`
+	                    	  from `default`.`src` `a`
+	                    	  where `b`.`value` = `a`.`value` and `a`.`value` > 'val_2'
+	                    	  )                 
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select a.key from src a join src b on a.key=b.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select a.key from src a join src b on a.key=b.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select a.key from src a join src b on a.key=b.key	 
+Expanded Query:     	select `a`.`key` from `default`.`src` `a` join `default`.`src` `b` on `a`.`key`=`b`.`key`	 
+PREHOOK: query: CREATE VIEW view15_n0 AS
+SELECT key,COUNT(value) AS value_count
+FROM src
+GROUP BY key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view15_n0
+POSTHOOK: query: CREATE VIEW view15_n0 AS
+SELECT key,COUNT(value) AS value_count
+FROM src
+GROUP BY key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view15_n0
+POSTHOOK: Lineage: view15_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view15_n0.value_count EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted view15_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view15_n0
+POSTHOOK: query: desc formatted view15_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@view15_n0
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value_count         	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT key,COUNT(value) AS value_count	 
+	                    	FROM src            
+	                    	GROUP BY key        
+Expanded Query:     	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 
+	                    	FROM `default`.`src`
+	                    	GROUP BY `src`.`key`
+PREHOOK: query: CREATE VIEW view16_n0 AS
+SELECT DISTINCT value
+FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view16_n0
+POSTHOOK: query: CREATE VIEW view16_n0 AS
+SELECT DISTINCT value
+FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view16_n0
+POSTHOOK: Lineage: view16_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted view16_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view16_n0
+POSTHOOK: query: desc formatted view16_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@view16_n0
+# col_name            	data_type           	comment             
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT DISTINCT value	 
+	                    	FROM src            
+Expanded Query:     	SELECT DISTINCT `src`.`value`	 
+	                    	FROM `default`.`src`
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select key from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select key from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select key from src 	 
+Expanded Query:     	select `src`.`key` from `default`.`src`	 
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select * from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select * from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select * from src   	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src`	 
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select * from src intersect select * from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select * from src intersect select * from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select * from src intersect select * from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src` intersect select `src`.`key`, `src`.`value` from `default`.`src`	 
+PREHOOK: query: drop view v_n13
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select * from src except select * from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select * from src except select * from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v_n13
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select * from src except select * from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src` except select `src`.`key`, `src`.`value` from `default`.`src`	 
+PREHOOK: query: explain select * from v_n13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n13
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from v_n13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n13
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), 2L (type: bigint), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint), (_col2 * _col3) (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 632 Data size: 122608 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col2), sum(_col3)
+                      keys: _col0 (type: string), _col1 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint), _col3 (type: bigint)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: ((_col2 > 0L) and ((_col2 * 2L) = _col3)) (type: boolean)
+                  Statistics: Num rows: 52 Data size: 10088 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 52 Data size: 9256 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 52 Data size: 9256 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), 1L (type: bigint), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint), (_col2 * _col3) (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 632 Data size: 122608 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col2), sum(_col3)
+                      keys: _col0 (type: string), _col1 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 316 Data size: 61304 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint), _col3 (type: bigint)
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

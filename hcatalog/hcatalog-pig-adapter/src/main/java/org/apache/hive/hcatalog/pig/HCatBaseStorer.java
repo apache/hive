@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -245,7 +245,6 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       return new HCatFieldSchema(fSchema.alias, TypeInfoFactory.decimalTypeInfo, null);
     case DataType.BAG:
       Schema bagSchema = fSchema.schema;
-      List<HCatFieldSchema> arrFields = new ArrayList<HCatFieldSchema>(1);
       FieldSchema field;
       // Find out if we need to throw away the tuple or not.
       if (removeTupleFromBag(hcatFieldSchema, fSchema)) {
@@ -253,8 +252,8 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       } else {
         field = bagSchema.getField(0);
       }
-      arrFields.add(getHCatFSFromPigFS(field, hcatFieldSchema == null ? null : hcatFieldSchema
-              .getArrayElementSchema().get(0), pigSchema, tableSchema));
+      List<HCatFieldSchema> arrFields = Collections.singletonList(getHCatFSFromPigFS(field,
+          hcatFieldSchema == null ? null : hcatFieldSchema.getArrayElementSchema().get(0), pigSchema, tableSchema));
       return new HCatFieldSchema(fSchema.alias, Type.ARRAY, new HCatSchema(arrFields), "");
     case DataType.TUPLE:
       List<HCatFieldSchema> hcatFSs = new ArrayList<HCatFieldSchema>();
@@ -270,17 +269,14 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
       // values. So, if its a new column assume <string,string> if its existing
       // return whatever is contained in the existing column.
 
-      HCatFieldSchema valFS;
-      List<HCatFieldSchema> valFSList = new ArrayList<HCatFieldSchema>(1);
-
       if (hcatFieldSchema != null) {
         return HCatFieldSchema.createMapTypeFieldSchema(fSchema.alias, hcatFieldSchema.getMapKeyTypeInfo(), 
           hcatFieldSchema.getMapValueSchema(), "");
       }
 
       // Column not found in target table. Its a new column. Its schema is map<string,string>
-      valFS = new HCatFieldSchema(fSchema.alias, TypeInfoFactory.stringTypeInfo, "");
-      valFSList.add(valFS);
+      List<HCatFieldSchema> valFSList =
+          Collections.singletonList(new HCatFieldSchema(fSchema.alias, TypeInfoFactory.stringTypeInfo, ""));
       return HCatFieldSchema.createMapTypeFieldSchema(fSchema.alias,
         TypeInfoFactory.stringTypeInfo, new HCatSchema(valFSList), "");
     }

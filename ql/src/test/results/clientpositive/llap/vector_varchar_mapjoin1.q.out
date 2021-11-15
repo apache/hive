@@ -154,6 +154,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: c2 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:c2, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)
@@ -174,6 +175,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: varchar(10))
@@ -203,6 +205,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: varchar(10))
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: varchar(10))
                         Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -288,6 +291,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: c2 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:c2, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)
@@ -308,6 +312,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: varchar(20))
@@ -337,6 +342,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: varchar(20))
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: varchar(20))
                         Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -448,6 +454,7 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: z
                             sort order: +
                             Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: string)
@@ -477,6 +484,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE

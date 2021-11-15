@@ -77,7 +77,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.dest1_n122
                   Filter Operator
-                    predicate: ((key < 200) and (key >= 100)) (type: boolean)
+                    predicate: ((key >= 100) and (key < 200)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToInteger(key) (type: int), value (type: string)

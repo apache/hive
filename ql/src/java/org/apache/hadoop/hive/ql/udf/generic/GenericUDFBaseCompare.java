@@ -18,22 +18,27 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -76,79 +81,122 @@ public abstract class GenericUDFBaseCompare extends GenericUDFBaseBinary {
 
     argumentOIs = arguments;
 
-    for (int i = 0; i < arguments.length; i++) {
-      Category category = arguments[i].getCategory();
-      if (category != Category.PRIMITIVE) {
-        throw new UDFArgumentTypeException(i, "The "
-            + GenericUDFUtils.getOrdinal(i + 1)
-            + " argument of " + opName + "  is expected to a "
-            + Category.PRIMITIVE.toString().toLowerCase() + " type, but "
-            + category.toString().toLowerCase() + " is found");
-      }
+    Category c1 = arguments[0].getCategory();
+    Category c2 = arguments[1].getCategory();
+    if (c1 != c2) {
+      throw new UDFArgumentException("Type mismatch in " + opName + "(" + c1 + "," + c2 + ")");
+    }
+    if (!supportsCategory(c1)) {
+      throw new UDFArgumentException(opName + " does not support " + c1 + " types");
     }
 
-    if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
-      TypeInfoFactory.stringTypeInfo) &&
-      TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
-      TypeInfoFactory.stringTypeInfo)) {
-      soi0 = (StringObjectInspector) arguments[0];
-      soi1 = (StringObjectInspector) arguments[1];
+    switch (c1) {
+    case PRIMITIVE:
+      initForPrimitives(arguments[0], arguments[1]);
+      break;
+    case MAP:
+    case STRUCT:
+    case LIST:
+      initForNonPrimitives(arguments[0], arguments[1]);
+      break;
+    default:
+      throw new AssertionError("Missing init method for " + c1 + " types");
+    }
+    return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+
+  }
+
+  /**
+   * Returns whether the operator can handle operands with the specified category.
+   */
+  protected boolean supportsCategory(Category c){
+    return c == Category.PRIMITIVE;
+  }
+
+  private void initForPrimitives(ObjectInspector arg0, ObjectInspector arg1) throws UDFArgumentException {
+    assert arg0.getCategory() == Category.PRIMITIVE;
+    assert arg1.getCategory() == Category.PRIMITIVE;
+    final TypeInfo type0 = TypeInfoUtils.getTypeInfoFromObjectInspector(arg0);
+    final TypeInfo type1 = TypeInfoUtils.getTypeInfoFromObjectInspector(arg1);
+    if (type0.equals(TypeInfoFactory.stringTypeInfo) && type1.equals(TypeInfoFactory.stringTypeInfo)) {
+      soi0 = (StringObjectInspector) arg0;
+      soi1 = (StringObjectInspector) arg1;
       if (soi0.preferWritable() || soi1.preferWritable()) {
         compareType = CompareType.COMPARE_TEXT;
       } else {
         compareType = CompareType.COMPARE_STRING;
       }
-    } else if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
-      TypeInfoFactory.intTypeInfo) &&
-      TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
-        TypeInfoFactory.intTypeInfo)) {
+    } else if (type0.equals(TypeInfoFactory.intTypeInfo) && type1.equals(TypeInfoFactory.intTypeInfo)) {
       compareType = CompareType.COMPARE_INT;
-      ioi0 = (IntObjectInspector) arguments[0];
-      ioi1 = (IntObjectInspector) arguments[1];
-    } else if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
-        TypeInfoFactory.longTypeInfo) &&
-        TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
-          TypeInfoFactory.longTypeInfo)) {
-        compareType = CompareType.COMPARE_LONG;
-        loi0 = (LongObjectInspector) arguments[0];
-        loi1 = (LongObjectInspector) arguments[1];
-    } else if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
-        TypeInfoFactory.byteTypeInfo) &&
-        TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
-          TypeInfoFactory.byteTypeInfo)) {
-        compareType = CompareType.COMPARE_BYTE;
-        byoi0 = (ByteObjectInspector) arguments[0];
-        byoi1 = (ByteObjectInspector) arguments[1];
-    } else if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
-        TypeInfoFactory.booleanTypeInfo) &&
-        TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
-          TypeInfoFactory.booleanTypeInfo)) {
+      ioi0 = (IntObjectInspector) arg0;
+      ioi1 = (IntObjectInspector) arg1;
+    } else if (type0.equals(TypeInfoFactory.longTypeInfo) && type1.equals(TypeInfoFactory.longTypeInfo)) {
+      compareType = CompareType.COMPARE_LONG;
+      loi0 = (LongObjectInspector) arg0;
+      loi1 = (LongObjectInspector) arg1;
+    } else if (type0.equals(TypeInfoFactory.byteTypeInfo) && type1.equals(TypeInfoFactory.byteTypeInfo)) {
+      compareType = CompareType.COMPARE_BYTE;
+      byoi0 = (ByteObjectInspector) arg0;
+      byoi1 = (ByteObjectInspector) arg1;
+    } else if (type0.equals(TypeInfoFactory.booleanTypeInfo) && type1.equals(TypeInfoFactory.booleanTypeInfo)) {
       compareType = CompareType.COMPARE_BOOL;
-      boi0 = (BooleanObjectInspector) arguments[0];
-      boi1 = (BooleanObjectInspector) arguments[1];
-     } else {
-      TypeInfo oiTypeInfo0 = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]);
-      TypeInfo oiTypeInfo1 = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]);
-
-      if (oiTypeInfo0 == oiTypeInfo1
-          || TypeInfoUtils.doPrimitiveCategoriesMatch(oiTypeInfo0, oiTypeInfo1)) {
+      boi0 = (BooleanObjectInspector) arg0;
+      boi1 = (BooleanObjectInspector) arg1;
+    } else {
+      if (type0 == type1 || TypeInfoUtils.doPrimitiveCategoriesMatch(type0, type1)) {
         compareType = CompareType.SAME_TYPE;
       } else {
         compareType = CompareType.NEED_CONVERT;
-        TypeInfo compareType = FunctionRegistry.getCommonClassForComparison(
-            oiTypeInfo0, oiTypeInfo1);
+        TypeInfo compareType = FunctionRegistry.getCommonClassForComparison(type0, type1);
 
         // For now, we always convert to double if we can't find a common type
         compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
-            (compareType == null) ?
-            TypeInfoFactory.doubleTypeInfo : compareType);
+            (compareType == null) ? TypeInfoFactory.doubleTypeInfo : compareType);
 
-        converter0 = ObjectInspectorConverters.getConverter(arguments[0], compareOI);
-        converter1 = ObjectInspectorConverters.getConverter(arguments[1], compareOI);
+        converter0 = ObjectInspectorConverters.getConverter(arg0, compareOI);
+        converter1 = ObjectInspectorConverters.getConverter(arg1, compareOI);
+
+        checkConversionAllowed(arg0, compareOI);
+        checkConversionAllowed(arg1, compareOI);
       }
     }
-    return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+  }
 
+  private void initForNonPrimitives(ObjectInspector arg0, ObjectInspector arg1) throws UDFArgumentException {
+    assert arg0.getCategory() != Category.PRIMITIVE;
+    assert arg1.getCategory() != Category.PRIMITIVE;
+    assert arg0.getCategory() == arg1.getCategory();
+    final TypeInfo type0 = TypeInfoUtils.getTypeInfoFromObjectInspector(arg0);
+    final TypeInfo type1 = TypeInfoUtils.getTypeInfoFromObjectInspector(arg1);
+    if (type0.equals(type1)) {
+      compareType = CompareType.SAME_TYPE;
+    } else {
+      throw new UDFArgumentException("Type mismatch in " + opName + "(" + type0 + "," + type1 + ")");
+    }
+  }
+  
+  protected void checkConversionAllowed(ObjectInspector argOI, ObjectInspector compareOI)
+      throws UDFArgumentException {
+    if (primitiveGroupOf(argOI) != PrimitiveGrouping.DATE_GROUP) {
+      return;
+    }
+    SessionState ss = SessionState.get();
+    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
+      if (primitiveGroupOf(compareOI) == PrimitiveGrouping.NUMERIC_GROUP) {
+        throw new UDFArgumentException(
+            "Casting DATE/TIMESTAMP to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
+      }
+    }
+  }
+
+  protected PrimitiveGrouping primitiveGroupOf(ObjectInspector oi) {
+    if (oi instanceof PrimitiveObjectInspector) {
+      PrimitiveCategory category = ((PrimitiveObjectInspector) oi).getPrimitiveCategory();
+      PrimitiveGrouping group = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(category);
+      return group;
+    } else {
+      return null;
+    }
   }
 
   public Integer compare(DeferredObject[] arguments) throws HiveException {

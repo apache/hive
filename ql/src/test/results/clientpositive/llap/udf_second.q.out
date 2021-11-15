@@ -1,0 +1,61 @@
+PREHOOK: query: DESCRIBE FUNCTION second
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION second
+POSTHOOK: type: DESCFUNCTION
+second(date) - Returns the second component of the string/timestamp/interval
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED second
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED second
+POSTHOOK: type: DESCFUNCTION
+second(date) - Returns the second component of the string/timestamp/interval
+param can be one of:
+1. A string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
+2. A timestamp value
+3. A day-time interval valueExample:
+   > SELECT second('2009-07-30 12:58:59') FROM src LIMIT 1;
+  59
+  > SELECT second('12:58:59') FROM src LIMIT 1;
+  59
+Function class:org.apache.hadoop.hive.ql.udf.UDFSecond
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
+FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
+FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (UDFToDouble(key) = 86.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 86.0D) (type: boolean)
+            Select Operator
+              expressions: 15 (type: int), 15 (type: int), 0 (type: int)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
+FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
+FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+15	15	0

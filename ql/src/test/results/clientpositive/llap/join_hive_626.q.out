@@ -1,0 +1,215 @@
+PREHOOK: query: create table hive_foo (foo_id int, foo_name string, foo_a string, foo_b string, 
+foo_c string, foo_d string) row format delimited fields terminated by ','
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_foo
+POSTHOOK: query: create table hive_foo (foo_id int, foo_name string, foo_a string, foo_b string, 
+foo_c string, foo_d string) row format delimited fields terminated by ','
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_foo
+PREHOOK: query: create table hive_bar (bar_id int, bar_0 int, foo_id int, bar_1 int, bar_name
+string, bar_a string, bar_b string, bar_c string, bar_d string) row format 
+delimited fields terminated by ',' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_bar
+POSTHOOK: query: create table hive_bar (bar_id int, bar_0 int, foo_id int, bar_1 int, bar_name
+string, bar_a string, bar_b string, bar_c string, bar_d string) row format 
+delimited fields terminated by ',' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_bar
+PREHOOK: query: create table hive_count (bar_id int, n int) row format delimited fields 
+terminated by ',' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_count
+POSTHOOK: query: create table hive_count (bar_id int, n int) row format delimited fields 
+terminated by ',' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_count
+PREHOOK: query: load data local inpath '../../data/files/hive_626_foo.txt' overwrite into table hive_foo
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hive_foo
+POSTHOOK: query: load data local inpath '../../data/files/hive_626_foo.txt' overwrite into table hive_foo
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hive_foo
+PREHOOK: query: load data local inpath '../../data/files/hive_626_bar.txt' overwrite into table hive_bar
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hive_bar
+POSTHOOK: query: load data local inpath '../../data/files/hive_626_bar.txt' overwrite into table hive_bar
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hive_bar
+PREHOOK: query: load data local inpath '../../data/files/hive_626_count.txt' overwrite into table hive_count
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hive_count
+POSTHOOK: query: load data local inpath '../../data/files/hive_626_count.txt' overwrite into table hive_count
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hive_count
+PREHOOK: query: explain
+select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hive_foo.foo_id =
+hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_bar
+PREHOOK: Input: default@hive_count
+PREHOOK: Input: default@hive_foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hive_foo.foo_id =
+hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_bar
+POSTHOOK: Input: default@hive_count
+POSTHOOK: Input: default@hive_foo
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: hive_bar
+                  filterExpr: (foo_id is not null and bar_id is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (foo_id is not null and bar_id is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: bar_id (type: int), foo_id (type: int), bar_name (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: hive_foo
+                  filterExpr: foo_id is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: foo_id is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: foo_id (type: int), foo_name (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: hive_count
+                  filterExpr: bar_id is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: bar_id is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: bar_id (type: int), n (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col2, _col4
+                Statistics: Num rows: 1 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: string), _col4 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col2, _col4, _col6
+                Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col4 (type: string), _col2 (type: string), _col6 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hive_foo.foo_id =
+hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_bar
+PREHOOK: Input: default@hive_count
+PREHOOK: Input: default@hive_foo
+#### A masked pattern was here ####
+POSTHOOK: query: select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hive_foo.foo_id =
+hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_bar
+POSTHOOK: Input: default@hive_count
+POSTHOOK: Input: default@hive_foo
+#### A masked pattern was here ####
+foo1	bar10	2

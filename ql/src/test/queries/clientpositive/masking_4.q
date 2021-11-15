@@ -1,5 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+set hive.security.authorization.enabled=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 
 create table masking_test_n11 as select cast(key as int) as key, value from src;
@@ -25,7 +26,9 @@ with masking_test_subq_n2 as ( select * from masking_test_n11 where key = '5')
 select * from masking_test_subq_n2;
 
 --should mask masking_test_subq_n2
-
+explain cbo
+with q1 as ( select * from masking_test_n11 where key = '5')
+select * from masking_test_subq_n2;
 explain
 with q1 as ( select * from masking_test_n11 where key = '5')
 select * from masking_test_subq_n2;

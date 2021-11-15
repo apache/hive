@@ -31,10 +31,18 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFMonthsBetween extends TestCase {
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFMonthsBetween.
+ */
+public class TestGenericUDFMonthsBetween {
+
+  @Test
   public void testMonthsBetweenForString() throws HiveException {
     // Default run
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
@@ -58,6 +66,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     testMonthsBetweenForString(udf);
   }
 
+  @Test
   public void testWrongDateStr() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -67,6 +76,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
     runTestStr("2002-03", "2002-02-24", null, udf);
     runTestStr("2002-03-24", "2002-02", null, udf);
+    runTestStr("2002-02-31", "2002-03-01", null, udf);
   }
 
   public void testMonthsBetweenForString(GenericUDFMonthsBetween udf) throws HiveException {
@@ -79,15 +89,12 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestStr("2000-06-01", "2004-07-01", -49.0, udf);
     // test February of non-leap year, 2/28
     runTestStr("2002-02-28", "2002-03-01", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-    runTestStr("2002-02-31", "2002-03-01", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestStr("2012-02-29", "2012-03-01", -0.09677419, udf);
     // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
     // 2/31 to 2/29
-    runTestStr("2012-02-31", "2012-03-01", 0.03225806, udf);
+    runTestStr("2012-02-31", "2012-03-01", null, udf);
 
     // time part
     // test that there is no lead second adjustment
@@ -122,10 +129,14 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestStr(null, null, null, udf);
 
     runTestStr("2003-04-23", "2002-04-24", 11.96774194, udf);
+
+    //Test for Julian vs Gregorian dates
+    runTestStr("1582-10-05", "1582-11-05", -1., udf);
   }
 
 
 
+  @Test
   public void testMonthsBetweenForTimestamp() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -183,6 +194,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2003-04-23 23:59:59", "2003-03-24 00:00:00", 0.99999963, udf);
   }
 
+  @Test
   public void testMonthsBetweenForDate() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -215,15 +227,9 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestDt("2000-06-01", "2004-07-01", -49.0, udf);
     // test February of non-leap year, 2/28
     runTestDt("2002-02-28", "2002-03-01", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-    runTestDt("2002-02-31", "2002-03-01", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestDt("2012-02-29", "2012-03-01", -0.09677419, udf);
-    // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
-    // 2/31 to 2/29
-    runTestDt("2012-02-31", "2012-03-01", 0.03225806, udf);
     // Test with null args
     runTestDt(null, "2002-03-01", null, udf);
     runTestDt("2002-02-28", null, null, udf);

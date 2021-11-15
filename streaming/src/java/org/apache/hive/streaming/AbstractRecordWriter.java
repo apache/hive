@@ -77,7 +77,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   protected String fullyQualifiedTableName;
   protected Map<String, List<RecordUpdater>> updaters = new HashMap<>();
   protected Map<String, Path> partitionPaths = new HashMap<>();
-  protected Set<String> addedPartitions = new HashSet<>();
+  protected Set<String> updatedPartitions = new HashSet<>();
   // input OI includes table columns + partition columns
   protected StructObjectInspector inputRowObjectInspector;
   // output OI strips off the partition columns and retains other columns
@@ -366,7 +366,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   @Override
   public void close() throws StreamingIOFailure {
-    heapMemoryMonitor.close();
+    if(heapMemoryMonitor != null) {
+      heapMemoryMonitor.close();
+    }
     boolean haveError = false;
     String partition = null;
     if (LOG.isDebugEnabled()) {
@@ -391,11 +393,14 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       entry.getValue().clear();
     }
     updaters.clear();
+    updatedPartitions.clear();
     if (LOG.isDebugEnabled()) {
       logStats("Stats after close:");
     }
     try {
-      this.fs.close();
+      if(this.fs != null) {
+        this.fs.close();
+      }
     } catch (IOException e) {
       throw new StreamingIOFailure("Error while closing FileSystem", e);
     }
@@ -489,29 +494,36 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
+  /**
+   * @return the list of newly added or updated partitions.
+   */
   @Override
   public Set<String> getPartitions() {
-    return addedPartitions;
+    return updatedPartitions;
   }
 
-  protected RecordUpdater createRecordUpdater(final Path partitionPath, int bucketId, Long minWriteId,
-    Long maxWriteID)
-    throws IOException {
+  protected RecordUpdater createRecordUpdater(List<String> partitionValues, final Path partitionPath,
+                                              int bucketId, Long minWriteId, Long maxWriteID)
+          throws IOException {
     // Initialize table properties from the table parameters. This is required because the table
     // may define certain table parameters that may be required while writing. The table parameter
     // 'transactional_properties' is one such example.
     Properties tblProperties = new Properties();
     tblProperties.putAll(table.getParameters());
-    return acidOutputFormat.getRecordUpdater(partitionPath,
-      new AcidOutputFormat.Options(conf)
-        .filesystem(fs)
-        .inspector(outputRowObjectInspector)
-        .bucket(bucketId)
-        .tableProperties(tblProperties)
-        .minimumWriteId(minWriteId)
-        .maximumWriteId(maxWriteID)
-        .statementId(statementId)
-        .finalDestination(partitionPath));
+
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+            .filesystem(fs)
+            .inspector(outputRowObjectInspector)
+            .bucket(bucketId)
+            .tableProperties(tblProperties)
+            .minimumWriteId(minWriteId)
+            .maximumWriteId(maxWriteID)
+            .statementId(statementId)
+            .finalDestination(partitionPath);
+
+    // Add write directory information in the connection object.
+    conn.addWriteDirectoryInfo(partitionValues, AcidUtils.baseOrDeltaSubdirPath(partitionPath, options));
+    return acidOutputFormat.getRecordUpdater(partitionPath, options);
   }
 
   /**
@@ -573,16 +585,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
           destLocation = new Path(table.getSd().getLocation());
         } else {
           PartitionInfo partitionInfo = conn.createPartitionIfNotExists(partitionValues);
-          // collect the newly added partitions. connection.commitTransaction() will report the dynamically added
-          // partitions to TxnHandler
-          if (!partitionInfo.isExists()) {
-            addedPartitions.add(partitionInfo.getName());
-          } else {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Partition {} already exists for table {}",
-                  partitionInfo.getName(), fullyQualifiedTableName);
-            }
-          }
+          // collect the newly added/updated partitions. connection.commitTransaction() will report the dynamically
+          // added partitions to TxnHandler
+          updatedPartitions.add(partitionInfo.getName());
           destLocation = new Path(partitionInfo.getPartitionLocation());
         }
         partitionPaths.put(key, destLocation);
@@ -594,7 +599,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     if (recordUpdater == null) {
       try {
-        recordUpdater = createRecordUpdater(destLocation, bucketId, curBatchMinWriteId, curBatchMaxWriteId);
+        recordUpdater = createRecordUpdater(partitionValues, destLocation,
+                bucketId, curBatchMinWriteId, curBatchMaxWriteId);
       } catch (IOException e) {
         String errMsg = "Failed creating RecordUpdater for " + getWatermark(destLocation.toString());
         LOG.error(errMsg, e);
@@ -625,7 +631,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       .filter(Objects::nonNull)
       .mapToLong(RecordUpdater::getBufferedRowCount)
       .sum();
-    MemoryUsage memoryUsage = heapMemoryMonitor.getTenuredGenMemoryUsage();
+    MemoryUsage memoryUsage = heapMemoryMonitor == null ? null : heapMemoryMonitor.getTenuredGenMemoryUsage();
     String oldGenUsage = "NA";
     if (memoryUsage != null) {
       oldGenUsage = "used/max => " + LlapUtil.humanReadableByteCount(memoryUsage.getUsed()) + "/" +
@@ -633,8 +639,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     LOG.debug("{} [record-updaters: {}, partitions: {}, buffered-records: {} total-records: {} " +
         "buffered-ingest-size: {}, total-ingest-size: {} tenured-memory-usage: {}]", prefix, openRecordUpdaters,
-      partitionPaths.size(), bufferedRecords, conn.getConnectionStats().getRecordsWritten(),
+      partitionPaths.size(), bufferedRecords, conn == null ? 0 : conn.getConnectionStats().getRecordsWritten(),
       LlapUtil.humanReadableByteCount(ingestSizeBytes),
-      LlapUtil.humanReadableByteCount(conn.getConnectionStats().getRecordsSize()), oldGenUsage);
+      LlapUtil.humanReadableByteCount(conn == null ? 0 : conn.getConnectionStats().getRecordsSize()), oldGenUsage);
   }
 }

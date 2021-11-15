@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.tools.metatool;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;

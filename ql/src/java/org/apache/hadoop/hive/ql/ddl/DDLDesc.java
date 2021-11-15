@@ -22,4 +22,17 @@ package org.apache.hadoop.hive.ql.ddl;
  * Marker interface for all DDL operation descriptors.
  */
 public interface DDLDesc {
+  /**
+   * DDL Desc for operation which needs write id.
+   */
+  interface DDLDescWithWriteId extends DDLDesc {
+    void setWriteId(long writeId);
+    String getFullTableName();
+    // We have to advance the Write Id during DDL for transactional tables, so that
+    // we can provide strong consistency when serving the metadata from the cache.
+    // Override this method, only if you are sure that advancing the write Id is not required for your DDL.
+    default boolean mayNeedWriteId() {
+      return true;
+    }
+  }
 }

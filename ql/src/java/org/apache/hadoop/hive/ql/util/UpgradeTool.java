@@ -246,7 +246,6 @@ public class UpgradeTool {
    */
   static void handleRenameFiles(Table t, Path p, boolean execute, Configuration conf,
       boolean isBucketed, PrintWriter pw) throws IOException {
-    AcidUtils.BUCKET_DIGIT_PATTERN.matcher("foo");
     if (isBucketed) {
       /* For bucketed tables we assume that Hive wrote them and 0000M_0 and 0000M_0_copy_8
       are the only possibilities.  Since we can't move files across buckets the only thing we

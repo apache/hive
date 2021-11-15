@@ -34,7 +34,7 @@ public class BucketNumExpression extends VectorExpression {
   private boolean bucketNumSet = false;
 
   public BucketNumExpression(int outputColNum) {
-    super(outputColNum);
+    super(-1, outputColNum);
   }
 
   public void initBuffer(VectorizedRowBatch batch) {

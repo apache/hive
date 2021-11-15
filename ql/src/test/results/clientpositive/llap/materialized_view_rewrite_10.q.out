@@ -47,6 +47,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
+POSTHOOK: Lineage: mv1_n10._c1 EXPRESSION [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.a EXPRESSION [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.deptno SIMPLE [(emps_n10)emps_n10.FieldSchema(name:deptno, type:int, comment:null), ]
 PREHOOK: query: explain
 select deptno, avg(salary) as a
 from emps_n10 group by deptno
@@ -112,6 +115,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
+POSTHOOK: Lineage: mv1_n10._c1 EXPRESSION [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.a EXPRESSION [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.salary SIMPLE [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 group by salary
@@ -178,6 +184,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
+POSTHOOK: Lineage: mv1_n10._c1 EXPRESSION [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.a EXPRESSION [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.salary SIMPLE [(emps_n10)emps_n10.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 where salary > 0 group by salary
@@ -279,6 +288,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
+POSTHOOK: Lineage: mv1_n10._c1 EXPRESSION [(emps_n10_2)emps_n10_2.FieldSchema(name:salary, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.a EXPRESSION [(emps_n10_2)emps_n10_2.FieldSchema(name:salary, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: mv1_n10.salary SIMPLE [(emps_n10_2)emps_n10_2.FieldSchema(name:salary, type:tinyint, comment:null), ]
 PREHOOK: query: explain
 select avg(salary)
 from emps_n10_2 where salary > 0
@@ -316,11 +328,12 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_c1), sum(a)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6666666
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)

@@ -1,0 +1,163 @@
+PREHOOK: query: DESCRIBE FUNCTION shiftrightunsigned
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION shiftrightunsigned
+POSTHOOK: type: DESCFUNCTION
+shiftrightunsigned(a, b) - Bitwise unsigned right shift
+PREHOOK: query: DESC FUNCTION EXTENDED shiftrightunsigned
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED shiftrightunsigned
+POSTHOOK: type: DESCFUNCTION
+shiftrightunsigned(a, b) - Bitwise unsigned right shift
+Returns int for tinyint, smallint and int a. Returns bigint for bigint a.
+Example:
+  > SELECT shiftrightunsigned(4, 1);
+  2
+Function class:org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRightUnsigned
+Function type:BUILTIN
+PREHOOK: query: explain select shiftrightunsigned(4, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select shiftrightunsigned(4, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 2 (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 31),
+shiftrightunsigned(a, 32)
+from (
+  select cast(-128 as tinyint) a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 31),
+shiftrightunsigned(a, 32)
+from (
+  select cast(-128 as tinyint) a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+-128	2147483584	1073741792	1	-128
+PREHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 31),
+shiftrightunsigned(a, 32)
+from (
+  select cast(-32768 as smallint) a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 31),
+shiftrightunsigned(a, 32)
+from (
+  select cast(-32768 as smallint) a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+-32768	2147467264	1073733632	1	-32768
+PREHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 31),
+shiftrightunsigned(a, 32)
+from (
+  select cast(-2147483648 as int) a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 31),
+shiftrightunsigned(a, 32)
+from (
+  select cast(-2147483648 as int) a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+-2147483648	1073741824	536870912	1	-2147483648
+PREHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 63),
+shiftrightunsigned(a, 64)
+from (
+  select cast(-9223372036854775808 as bigint) a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+shiftrightunsigned(a, 0),
+shiftrightunsigned(a, 1),
+shiftrightunsigned(a, 2),
+shiftrightunsigned(a, 63),
+shiftrightunsigned(a, 64)
+from (
+  select cast(-9223372036854775808 as bigint) a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+-9223372036854775808	4611686018427387904	2305843009213693952	1	-9223372036854775808
+PREHOOK: query: select
+shiftrightunsigned(1024, 33),
+shiftrightunsigned(1024, 65),
+shiftrightunsigned(1024, 4001),
+shiftrightunsigned(1024, -2),
+shiftrightunsigned(1024, cast(null as int)),
+shiftrightunsigned(cast(null as int), 4),
+shiftrightunsigned(cast(null as int), cast(null as int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+shiftrightunsigned(1024, 33),
+shiftrightunsigned(1024, 65),
+shiftrightunsigned(1024, 4001),
+shiftrightunsigned(1024, -2),
+shiftrightunsigned(1024, cast(null as int)),
+shiftrightunsigned(cast(null as int), 4),
+shiftrightunsigned(cast(null as int), cast(null as int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+512	512	512	0	NULL	NULL	NULL

@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,26 +17,30 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-import org.apache.hadoop.fs.FileSystem;
-import java.io.BufferedWriter;
+
+import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,23 +55,23 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
-    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-  }
-
-  private void writeDumpFiles(Context withinContext, Iterable<String> files, Path dataPath) throws IOException {
-    // encoded filename/checksum of files, write into _files
-    try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
+  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
+                              Path dataPath)
+          throws IOException, LoginException, MetaException, HiveFatalException, SemanticException {
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+    if (copyAtLoad) {
+      // encoded filename/checksum of files, write into _files
+      writeEncodedDumpFiles(withinContext, files, dataPath);
+    } else {
       for (String file : files) {
-        fileListWriter.write(file + "\n");
+        writeFileEntry(qlMdTable, ptn, file, withinContext);
       }
     }
   }
 
   private void createDumpFile(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
-                  List<Partition> qlPtns, List<List<String>> fileListArray) throws IOException, SemanticException {
+                  List<Partition> qlPtns, List<List<String>> fileListArray)
+          throws IOException, SemanticException, LoginException, MetaException, HiveFatalException {
     if (fileListArray == null || fileListArray.isEmpty()) {
       return;
     }
@@ -84,25 +87,52 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
       Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      writeDumpFiles(withinContext, fileListArray.get(0), dataPath);
+      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext, dataPath);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
-        Path dataPath = new Path(withinContext.eventRoot, qlPtns.get(idx).getName());
-        writeDumpFiles(withinContext, fileListArray.get(idx), dataPath);
+        Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
+                + qlPtns.get(idx).getName());
+        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext, dataPath);
       }
     }
   }
 
   private void createDumpFileForTable(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
-                    List<Partition> qlPtns, List<List<String>> fileListArray) throws IOException, SemanticException {
+                    List<Partition> qlPtns, List<List<String>> fileListArray)
+          throws IOException, SemanticException, LoginException, MetaException, HiveFatalException {
     Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
     Context context = new Context(withinContext);
     context.setEventRoot(newPath);
     createDumpFile(context, qlMdTable, qlPtns, fileListArray);
   }
 
+  private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
+    String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
+    GetAllWriteEventInfoRequest request = new GetAllWriteEventInfoRequest(eventMessage.getTxnId());
+    request.setDbName(contextDbName);
+    List<WriteEventInfo> writeEventInfoList = withinContext.db.getMSC().getAllWriteEventInfo(request);
+    return ((writeEventInfoList == null)
+            ? null
+            : new ArrayList<>(Collections2.filter(writeEventInfoList,
+              writeEventInfo -> {
+                assert(writeEventInfo != null);
+                // If replication policy is replaced with new included/excluded tables list, then events
+                // corresponding to tables which are included in both old and new policies should be dumped.
+                // If table is included in new policy but not in old policy, then it should be skipped.
+                // Those tables would be bootstrapped along with the current incremental
+                // replication dump. If the table is in the list of tables to be bootstrapped, then
+                // it should be skipped.
+                return (ReplUtils.tableIncludedInReplScope(withinContext.replScope, writeEventInfo.getTable())
+                        && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable())
+                        && !withinContext.getTablesForBootstrap().contains(writeEventInfo.getTable().toLowerCase()));
+              })));
+  }
+
   @Override
   public void handle(Context withinContext) throws Exception {
+    if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+      return;
+    }
     LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), eventMessageAsJSON);
     String payload = eventMessageAsJSON;
 
@@ -125,15 +155,12 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
                 "not dumping acid tables.");
         replicatingAcidEvents = false;
       }
-      String contextDbName =  withinContext.dbName == null ? null :
-              StringUtils.normalizeIdentifier(withinContext.dbName);
-      String contextTableName =  withinContext.tableName == null ? null :
-              StringUtils.normalizeIdentifier(withinContext.tableName);
+
       List<WriteEventInfo> writeEventInfoList = null;
       if (replicatingAcidEvents) {
-        writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
-                getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, contextTableName);
+        writeEventInfoList = getAllWriteEventInfo(withinContext);
       }
+
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);

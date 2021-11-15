@@ -1,0 +1,117 @@
+PREHOOK: query: create table t_n19 (col string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n19
+POSTHOOK: query: create table t_n19 (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n19
+PREHOOK: query: insert into t_n19 values ('x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n19
+POSTHOOK: query: insert into t_n19 values ('x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n19
+POSTHOOK: Lineage: t_n19.col SCRIPT []
+PREHOOK: query: explain
+select array("b", "d", "c", "a") FROM t_n19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select array("b", "d", "c", "a") FROM t_n19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n19
+          Select Operator
+            expressions: array('b','d','c','a') (type: array<string>)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain
+select array("b", "d", "c", col) FROM t_n19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select array("b", "d", "c", col) FROM t_n19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n19
+          Select Operator
+            expressions: array('b','d','c',col) (type: array<string>)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain
+select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t_n19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t_n19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n19
+          Select Operator
+            expressions: sort_array(array('b','d','c','a')) (type: array<string>), array('1','2') (type: array<string>)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: explain
+select sort_array(array("b", "d", "c", col)),array("1","2") FROM t_n19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select sort_array(array("b", "d", "c", col)),array("1","2") FROM t_n19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n19
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n19
+          Select Operator
+            expressions: sort_array(array('b','d','c',col)) (type: array<string>), array('1','2') (type: array<string>)
+            outputColumnNames: _col0, _col1
+            ListSink
+

@@ -1,0 +1,356 @@
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '0') (type: boolean)
+          Filter Operator
+            predicate: (key = '0') (type: boolean)
+            Lateral View Forward
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: value
+                Lateral View Join Operator
+                  outputColumnNames: _col1, _col6
+                  Select Operator
+                    expressions: _col1 (type: string), _col6 (type: int)
+                    outputColumnNames: _col0, _col1
+                    ListSink
+              Select Operator
+                expressions: array(1,2,3) (type: array<int>)
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col1, _col6
+                    Select Operator
+                      expressions: _col1 (type: string), _col6 (type: int)
+                      outputColumnNames: _col0, _col1
+                      ListSink
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	1
+val_0	2
+val_0	3
+val_0	1
+val_0	2
+val_0	3
+val_0	1
+val_0	2
+val_0	3
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '0') (type: boolean)
+          Filter Operator
+            predicate: (key = '0') (type: boolean)
+            Lateral View Forward
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: value
+                Lateral View Join Operator
+                  outputColumnNames: _col1, _col6
+                  Select Operator
+                    expressions: _col1 (type: string), 1 (type: int)
+                    outputColumnNames: _col0, _col1
+                    ListSink
+              Select Operator
+                expressions: array(1,2,3) (type: array<int>)
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Filter Operator
+                    predicate: (col = 1) (type: boolean)
+                    Lateral View Join Operator
+                      outputColumnNames: _col1, _col6
+                      Select Operator
+                        expressions: _col1 (type: string), 1 (type: int)
+                        outputColumnNames: _col0, _col1
+                        ListSink
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	1
+val_0	1
+val_0	1
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 12
+      Processor Tree:
+        TableScan
+          alias: srcpart
+          filterExpr: ((ds = '2008-04-08') and (hr = '12')) (type: boolean)
+          Lateral View Forward
+            Select Operator
+              expressions: value (type: string)
+              outputColumnNames: value
+              Lateral View Join Operator
+                outputColumnNames: _col1, _col8
+                Limit
+                  Number of rows: 12
+                  Select Operator
+                    expressions: _col1 (type: string), _col8 (type: int)
+                    outputColumnNames: _col0, _col1
+                    ListSink
+            Select Operator
+              expressions: array(1,2,3) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col1, _col8
+                  Limit
+                    Number of rows: 12
+                    Select Operator
+                      expressions: _col1 (type: string), _col8 (type: int)
+                      outputColumnNames: _col0, _col1
+                      ListSink
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+val_238	1
+val_238	2
+val_238	3
+val_86	1
+val_86	2
+val_86	3
+val_311	1
+val_311	2
+val_311	3
+val_27	1
+val_27	2
+val_27	3
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '0') (type: boolean)
+          Filter Operator
+            predicate: (key = '0') (type: boolean)
+            Lateral View Forward
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: value
+                Lateral View Join Operator
+                  outputColumnNames: _col1, _col6
+                  Lateral View Forward
+                    Select Operator
+                      expressions: _col1 (type: string), _col6 (type: int)
+                      outputColumnNames: _col1, _col6
+                      Lateral View Join Operator
+                        outputColumnNames: _col1, _col6, _col7
+                        Select Operator
+                          expressions: _col1 (type: string), _col6 (type: int)
+                          outputColumnNames: _col0, _col1
+                          ListSink
+                    Select Operator
+                      expressions: array(1,2,3) (type: array<int>)
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col1, _col6, _col7
+                          Select Operator
+                            expressions: _col1 (type: string), _col6 (type: int)
+                            outputColumnNames: _col0, _col1
+                            ListSink
+              Select Operator
+                expressions: array(1,2,3) (type: array<int>)
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col1, _col6
+                    Lateral View Forward
+                      Select Operator
+                        expressions: _col1 (type: string), _col6 (type: int)
+                        outputColumnNames: _col1, _col6
+                        Lateral View Join Operator
+                          outputColumnNames: _col1, _col6, _col7
+                          Select Operator
+                            expressions: _col1 (type: string), _col6 (type: int)
+                            outputColumnNames: _col0, _col1
+                            ListSink
+                      Select Operator
+                        expressions: array(1,2,3) (type: array<int>)
+                        outputColumnNames: _col0
+                        UDTF Operator
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col1, _col6, _col7
+                            Select Operator
+                              expressions: _col1 (type: string), _col6 (type: int)
+                              outputColumnNames: _col0, _col1
+                              ListSink
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	1
+val_0	1
+val_0	1
+val_0	2
+val_0	2
+val_0	2
+val_0	3
+val_0	3
+val_0	3
+val_0	1
+val_0	1
+val_0	1
+val_0	2
+val_0	2
+val_0	2
+val_0	3
+val_0	3
+val_0	3
+val_0	1
+val_0	1
+val_0	1
+val_0	2
+val_0	2
+val_0	2
+val_0	3
+val_0	3
+val_0	3
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (key = '0') (type: boolean)
+          Filter Operator
+            predicate: (key = '0') (type: boolean)
+            Lateral View Forward
+              Select Operator
+                expressions: value (type: string)
+                outputColumnNames: value
+                Lateral View Join Operator
+                  outputColumnNames: _col1, _col6
+                  Select Operator
+                    expressions: _col1 (type: string), _col6 (type: int)
+                    outputColumnNames: _col0, _col1
+                    ListSink
+              Select Operator
+                expressions: array(1,2,3) (type: array<int>)
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Filter Operator
+                    predicate: (col > 1) (type: boolean)
+                    Lateral View Join Operator
+                      outputColumnNames: _col1, _col6
+                      Select Operator
+                        expressions: _col1 (type: string), _col6 (type: int)
+                        outputColumnNames: _col0, _col1
+                        ListSink
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	2
+val_0	3
+val_0	2
+val_0	3
+val_0	2
+val_0	3

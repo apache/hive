@@ -46,21 +46,21 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:double))
-                    predicate: (cdouble is not null and cint is not null) (type: boolean)
+                    predicate: (cint is not null and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 6848 Data size: 920460 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: cdate (type: date), cint (type: int), cdecimal (type: decimal(20,10))
-                      outputColumnNames: _col0, _col1, _col2
-                      Select Vectorization:
-                          className: VectorSelectOperator
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
                           native: true
-                          projectedOutputColumnNums: [2, 0, 3]
-                      Statistics: Num rows: 6848 Data size: 879548 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 10
-                        Limit Vectorization:
-                            className: VectorLimitOperator
+                      Statistics: Num rows: 10 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: cdate (type: date), cint (type: int), cdecimal (type: decimal(20,10))
+                        outputColumnNames: _col0, _col1, _col2
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [2, 0, 3]
                         Statistics: Num rows: 10 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false

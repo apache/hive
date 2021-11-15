@@ -24,6 +24,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -32,10 +34,15 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,12 +54,20 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -62,8 +77,9 @@ import java.util.Map;
  * Need to change some of these to have better test coverage.
  */
 public class TestWorker extends CompactorTest {
-  static final private String CLASS_NAME = TestWorker.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  private static final String CLASS_NAME = TestWorker.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   @Test
   public void nothing() throws Exception {
@@ -156,7 +172,7 @@ public class TestWorker extends CompactorTest {
     deltas[1] = new Path(delta2);
 
     CompactorMR.CompactorInputSplit split =
-        new CompactorMR.CompactorInputSplit(conf, 3, files, new Path(basename), deltas);
+        new CompactorMR.CompactorInputSplit(conf, 3, files, new Path(basename), deltas, new HashMap<String, Integer>());
 
     Assert.assertEquals(520L, split.getLength());
     String[] locations = split.getLocations();
@@ -201,7 +217,7 @@ public class TestWorker extends CompactorTest {
     deltas[1] = new Path(delta2);
 
     CompactorMR.CompactorInputSplit split =
-        new CompactorMR.CompactorInputSplit(conf, 3, files, null, deltas);
+        new CompactorMR.CompactorInputSplit(conf, 3, files, null, deltas, new HashMap<String, Integer>());
 
     ByteArrayOutputStream buf = new ByteArrayOutputStream();
     DataOutput out = new DataOutputStream(buf);
@@ -346,10 +362,11 @@ public class TestWorker extends CompactorTest {
 
     startWorker();
 
+    // since compaction was not run, state should not be "ready for cleaning" but "succeeded"
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
-    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(0).getState());
 
     // There should still be 4 directories in the location
     FileSystem fs = FileSystem.get(conf);
@@ -612,8 +629,8 @@ public class TestWorker extends CompactorTest {
 
     // Find the new delta file and make sure it has the right contents
     List<String> matchesNotFound = new ArrayList<>(numFilesExpected);
-    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21,23) + "_v\\d+");
-    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(25,33) + "_v\\d+");
+    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21,23) + VISIBILITY_PATTERN);
+    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(25,33) + VISIBILITY_PATTERN);
     matchesNotFound.add(makeDeltaDirName(21,21));
     matchesNotFound.add(makeDeltaDirName(23, 23));
     matchesNotFound.add(makeDeltaDirNameCompacted(25, 29));//streaming ingest
@@ -621,14 +638,14 @@ public class TestWorker extends CompactorTest {
     //todo: this should have some _vXXXX suffix but addDeltaFile() doesn't support it
     matchesNotFound.add(makeDeltaDirNameCompacted(31, 33));
     matchesNotFound.add(makeDeltaDirName(35, 35));
-    matchesNotFound.add(makeDeltaDirNameCompacted(21,23) + "_v\\d+");
-    matchesNotFound.add(makeDeltaDirNameCompacted(25,33) + "_v\\d+");
+    matchesNotFound.add(makeDeltaDirNameCompacted(21,23) + VISIBILITY_PATTERN);
+    matchesNotFound.add(makeDeltaDirNameCompacted(25,33) + VISIBILITY_PATTERN);
     if(type == CompactionType.MINOR) {
-      matchesNotFound.add(makeDeltaDirNameCompacted(21,35) + "_v\\d+");
-      matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21, 35) + "_v\\d+");
+      matchesNotFound.add(makeDeltaDirNameCompacted(21,35) + VISIBILITY_PATTERN);
+      matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21, 35) + VISIBILITY_PATTERN);
     }
     if(type == CompactionType.MAJOR) {
-      matchesNotFound.add(AcidUtils.baseDir(35) + "_v\\d+");
+      matchesNotFound.add(AcidUtils.baseDir(35) + VISIBILITY_PATTERN);
     }
     for(FileStatus f : stat) {
       for(int j = 0; j < matchesNotFound.size(); j++) {
@@ -960,6 +977,39 @@ public class TestWorker extends CompactorTest {
   }
 
   @Test
+  public void testWorkerAndInitiatorVersion() throws Exception {
+    LOG.debug("Starting minorTableWithBase");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mtwb", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
+    String initiatorVersion = "4.0.0";
+    rqst.setInitiatorVersion(initiatorVersion);
+    txnHandler.compact(rqst);
+
+    Worker worker = Mockito.spy(new Worker());
+    worker.setThreadId((int) t.getId());
+    worker.setConf(conf);
+    String workerVersion = "4.0.0-SNAPSHOT";
+    doReturn(workerVersion).when(worker).getRuntimeVersion();
+    worker.init(new AtomicBoolean(true));
+    worker.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+    Assert.assertEquals(initiatorVersion, compacts.get(0).getInitiatorVersion());
+    Assert.assertEquals(workerVersion, compacts.get(0).getWorkerVersion());
+
+  }
+
+  @Test
   public void droppedTable() throws Exception {
     Table t = newTable("default", "dt", false);
 
@@ -1005,8 +1055,162 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals(0, compacts.size());
   }
 
+  @Test
+  public void oneDeltaWithAbortedTxn() throws Exception {
+    Table t = newTable("default", "delta1", false);
+    addDeltaFile(t, null, 0, 2L, 3);
+    Set<Long> aborted = new HashSet<>();
+    aborted.add(1L);
+    burnThroughTransactions("default", "delta1", 3, null, aborted);
+
+    // MR
+    verifyTxn1IsAborted(0, t, CompactionType.MAJOR);
+    verifyTxn1IsAborted(1, t, CompactionType.MINOR);
+
+    // Query-based
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    verifyTxn1IsAborted(2, t, CompactionType.MAJOR);
+    verifyTxn1IsAborted(3, t, CompactionType.MINOR);
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, false);
+
+    // Insert-only
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+    Table mm = newTable("default", "delta1", false, parameters);
+    addDeltaFile(mm, null, 0, 2L, 3);
+    burnThroughTransactions("default", "delta1", 3, null, aborted);
+    verifyTxn1IsAborted(0, t, CompactionType.MAJOR);
+    verifyTxn1IsAborted(1, t, CompactionType.MINOR);
+  }
+  @Test
+  public void insertOnlyDisabled() throws Exception {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+    Table t = newTable("default", "iod", false, parameters);
+
+    addDeltaFile(t, null, 1L, 2L, 2);
+    addDeltaFile(t, null, 3L, 4L, 2);
+
+    burnThroughTransactions("default", "iod", 5);
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM, false);
+    CompactionRequest rqst = new CompactionRequest("default", "iod", CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("failed", compacts.get(0).getState());
+
+  }
+
+  private void verifyTxn1IsAborted(int compactionNum, Table t, CompactionType type)
+      throws Exception {
+    CompactionRequest rqst = new CompactionRequest("default", t.getTableName(), type);
+    txnHandler.compact(rqst);
+    startWorker();
+
+    // Compaction should not have run on a single delta file
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
+    Assert.assertEquals(1, stat.length);
+    Assert.assertEquals(makeDeltaDirName(0, 2), stat[0].getPath().getName());
+
+    // State should not be "ready for cleaning" because we skip cleaning
+    List<ShowCompactResponseElement> compacts =
+        txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals(compactionNum + 1, compacts.size());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(compactionNum).getState());
+
+    // assert transaction with txnId=1 is still aborted after cleaner is run
+    startCleaner();
+    List<TxnInfo> openTxns =
+        HiveMetaStoreUtils.getHiveMetastoreClient(conf).showTxns().getOpen_txns();
+    Assert.assertEquals(1, openTxns.get(0).getId());
+    Assert.assertEquals(TxnState.ABORTED, openTxns.get(0).getState());
+  }
+
+  // With high timeout, but fast run we should finish without a problem
+  @Test(timeout=1000)
+  public void testNormalRun() throws Exception {
+    runTimeoutTest(10000, false, true);
+  }
+
+  // With low timeout, but slow run we should finish without a problem
+  @Test(timeout=1000)
+  public void testTimeoutWithInterrupt() throws Exception {
+    runTimeoutTest(1, true, false);
+  }
+
+  // With low timeout, but slow run we should finish without a problem, even if the interrupt is swallowed
+  @Test(timeout=1000)
+  public void testTimeoutWithoutInterrupt() throws Exception {
+    runTimeoutTest(1, true, true);
+  }
+
+  private void runTimeoutTest(long timeout, boolean runForever, boolean swallowInterrupt) throws Exception {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    HiveConf timeoutConf = new HiveConf(conf);
+    timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
+
+    TimeoutWorker timeoutWorker = getTimeoutWorker(timeoutConf, executor,
+        runForever, swallowInterrupt, new CountDownLatch(2));
+    // Wait until the 2nd cycle is finished
+    timeoutWorker.looped.await();
+    timeoutWorker.stop.set(true);
+    executor.shutdownNow();
+  }
+
+  private TimeoutWorker getTimeoutWorker(HiveConf conf, ExecutorService executor, boolean runForever,
+      boolean swallowInterrupt, CountDownLatch looped) throws Exception {
+    TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt, looped);
+    timeoutWorker.setThreadId((int)timeoutWorker.getId());
+    timeoutWorker.setConf(conf);
+    timeoutWorker.init(new AtomicBoolean(false));
+    executor.submit(timeoutWorker);
+    return timeoutWorker;
+  }
+
   @After
   public void tearDown() throws Exception {
     compactorTestCleanup();
+  }
+
+  private static final class TimeoutWorker extends Worker {
+    private boolean runForever;
+    private boolean swallowInterrupt;
+    private CountDownLatch looped;
+
+    private TimeoutWorker(boolean runForever, boolean swallowInterrupt, CountDownLatch looped) {
+      this.runForever = runForever;
+      this.swallowInterrupt = swallowInterrupt;
+      this.looped = looped;
+    }
+
+    @Override
+    protected Boolean findNextCompactionAndExecute(boolean computeStats) {
+      if (runForever) {
+        while (!stop.get()) {
+          try {
+            Thread.sleep(Long.MAX_VALUE);
+          } catch (InterruptedException ie) {
+            if (!swallowInterrupt) {
+              break;
+            }
+            try {
+              Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException e) {
+            }
+          }
+          looped.countDown();
+        }
+      }
+      looped.countDown();
+      return true;
+    }
   }
 }

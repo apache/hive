@@ -61,16 +61,22 @@ public class LlapArrowRowRecordReader extends LlapRowRecordReader {
       //This is either the first batch or we've used up the current batch buffer
       batchSize = 0;
       rowIndex = 0;
-      hasNext = reader.next(key, data);
-      if(hasNext) {
+
+      // since HIVE-22856, a zero length batch doesn't mean that we won't have any more batches
+      // we can have more batches with data even after after a zero length batch
+      // we should keep trying until we get a batch with some data or reader.next() returns false
+      while (batchSize == 0 && (hasNext = reader.next(key, data))) {
+        List<FieldVector> vectors = batchData.getVectorSchemaRoot().getFieldVectors();
+        //hasNext implies there is some column in the batch
+        Preconditions.checkState(vectors.size() > 0);
+        //All the vectors have the same length,
+        //we can get the number of rows from the first vector
+        batchSize = vectors.get(0).getValueCount();
+      }
+
+      if (hasNext) {
         //There is another batch to buffer
         try {
-          List<FieldVector> vectors = batchData.getVectorSchemaRoot().getFieldVectors();
-          //hasNext implies there is some column in the batch
-          Preconditions.checkState(vectors.size() > 0);
-          //All the vectors have the same length,
-          //we can get the number of rows from the first vector
-          batchSize = vectors.get(0).getValueCount();
           ArrowWrapperWritable wrapper = new ArrowWrapperWritable(batchData.getVectorSchemaRoot());
           currentBatch = (Object[][]) serde.deserialize(wrapper);
           StructObjectInspector rowOI = (StructObjectInspector) serde.getObjectInspector();

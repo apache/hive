@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -39,22 +41,25 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   static final String HIKARI = "hikaricp";
   private static final String CONNECTION_TIMEOUT_PROPERTY = HIKARI + ".connectionTimeout";
+  private static final String LEAK_DETECTION_THRESHOLD = HIKARI + ".leakDetectionThreshold";
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
-
     LOG.debug("Creating Hikari connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
+
     int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
         MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
 
     Properties properties = replacePrefix(
         DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
-    HikariConfig config = null;
+    long leakDetectionThreshold = hdpConfig.getLong(LEAK_DETECTION_THRESHOLD, 3600000L);
+
+    HikariConfig config;
     try {
       config = new HikariConfig(properties);
     } catch (Exception e) {
@@ -64,16 +69,25 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
+    config.setLeakDetectionThreshold(leakDetectionThreshold);
+
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
-    return new HikariDataSource(initMetrics(config));
-  }
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
+    
+    String s = dbProduct.getPrepareTxnStmt();
+    if (s!= null) {
+      config.setConnectionInitSql(s);
+    }
+    
+    Map<String, String> props = dbProduct.getDataSourceProperties();
+    
+    for ( Map.Entry<String, String> kv : props.entrySet()) {
+      config.addDataSourceProperty(kv.getKey(), kv.getValue());
+    }
 
-  @Override
-  public boolean mayReturnClosedConnection() {
-    // Only BoneCP should return true
-    return false;
+    return new HikariDataSource(initMetrics(config));
   }
 
   @Override

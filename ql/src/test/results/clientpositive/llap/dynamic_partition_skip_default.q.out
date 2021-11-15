@@ -1,0 +1,283 @@
+PREHOOK: query: create table dynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dynamic_part_table
+POSTHOOK: query: create table dynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dynamic_part_table
+PREHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', '1', '1' from src where key=150
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dynamic_part_table
+POSTHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', '1', '1' from src where key=150
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dynamic_part_table
+POSTHOOK: Output: default@dynamic_part_table@partcol1=1/partcol2=1
+POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol SIMPLE []
+PREHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', NULL, '1' from src where key=150
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dynamic_part_table
+POSTHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', NULL, '1' from src where key=150
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dynamic_part_table
+POSTHOOK: Output: default@dynamic_part_table@partcol1=__HIVE_DEFAULT_PARTITION__/partcol2=1
+POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=1).intcol SIMPLE []
+PREHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', '1', NULL from src where key=150
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dynamic_part_table
+POSTHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', '1', NULL from src where key=150
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dynamic_part_table
+POSTHOOK: Output: default@dynamic_part_table@partcol1=1/partcol2=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=1,partcol2=__HIVE_DEFAULT_PARTITION__).intcol SIMPLE []
+PREHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', NULL, NULL from src where key=150
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dynamic_part_table
+POSTHOOK: query: insert into table dynamic_part_table partition(partcol1, partcol2) select '1', NULL, NULL from src where key=150
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dynamic_part_table
+POSTHOOK: Output: default@dynamic_part_table@partcol1=__HIVE_DEFAULT_PARTITION__/partcol2=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: dynamic_part_table PARTITION(partcol1=__HIVE_DEFAULT_PARTITION__,partcol2=__HIVE_DEFAULT_PARTITION__).intcol SIMPLE []
+PREHOOK: query: explain extended select intcol from dynamic_part_table where partcol1='1' and partcol2='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynamic_part_table
+PREHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select intcol from dynamic_part_table where partcol1='1' and partcol2='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynamic_part_table
+POSTHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `default`.`dynamic_part_table`
+WHERE `partcol1` = '1' AND `partcol2` = '1'
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              partcol1 1
+              partcol2 1
+            properties:
+              column.name.delimiter ,
+              columns intcol
+              columns.types string
+#### A masked pattern was here ####
+              name default.dynamic_part_table
+              partition_columns partcol1/partcol2
+              partition_columns.types string:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns intcol
+                columns.comments 
+                columns.types string
+#### A masked pattern was here ####
+                name default.dynamic_part_table
+                partition_columns partcol1/partcol2
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dynamic_part_table
+            name: default.dynamic_part_table
+      Processor Tree:
+        TableScan
+          alias: dynamic_part_table
+          filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
+          GatherStats: false
+          Select Operator
+            expressions: intcol (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain extended select intcol from dynamic_part_table where partcol1='1' and partcol2='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynamic_part_table
+PREHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select intcol from dynamic_part_table where partcol1='1' and partcol2='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynamic_part_table
+POSTHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `default`.`dynamic_part_table`
+WHERE `partcol1` = '1' AND `partcol2` = '1'
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              partcol1 1
+              partcol2 1
+            properties:
+              column.name.delimiter ,
+              columns intcol
+              columns.types string
+#### A masked pattern was here ####
+              name default.dynamic_part_table
+              partition_columns partcol1/partcol2
+              partition_columns.types string:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns intcol
+                columns.comments 
+                columns.types string
+#### A masked pattern was here ####
+                name default.dynamic_part_table
+                partition_columns partcol1/partcol2
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dynamic_part_table
+            name: default.dynamic_part_table
+      Processor Tree:
+        TableScan
+          alias: dynamic_part_table
+          filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
+          GatherStats: false
+          Select Operator
+            expressions: intcol (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain extended select intcol from dynamic_part_table where (partcol1='1' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynamic_part_table
+PREHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
+PREHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select intcol from dynamic_part_table where (partcol1='1' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynamic_part_table
+POSTHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=1
+POSTHOOK: Input: default@dynamic_part_table@partcol1=1/partcol2=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `default`.`dynamic_part_table`
+WHERE `partcol1` = '1' AND `partcol2` IN ('1', '__HIVE_DEFAULT_PARTITION__')
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              partcol1 1
+              partcol2 1
+            properties:
+              column.name.delimiter ,
+              columns intcol
+              columns.types string
+#### A masked pattern was here ####
+              name default.dynamic_part_table
+              partition_columns partcol1/partcol2
+              partition_columns.types string:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns intcol
+                columns.comments 
+                columns.types string
+#### A masked pattern was here ####
+                name default.dynamic_part_table
+                partition_columns partcol1/partcol2
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dynamic_part_table
+            name: default.dynamic_part_table
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              partcol1 1
+              partcol2 __HIVE_DEFAULT_PARTITION__
+            properties:
+              column.name.delimiter ,
+              columns intcol
+              columns.types string
+#### A masked pattern was here ####
+              name default.dynamic_part_table
+              partition_columns partcol1/partcol2
+              partition_columns.types string:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns intcol
+                columns.comments 
+                columns.types string
+#### A masked pattern was here ####
+                name default.dynamic_part_table
+                partition_columns partcol1/partcol2
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dynamic_part_table
+            name: default.dynamic_part_table
+      Processor Tree:
+        TableScan
+          alias: dynamic_part_table
+          filterExpr: ((partcol1 = '1') and (partcol2) IN ('1', '__HIVE_DEFAULT_PARTITION__')) (type: boolean)
+          GatherStats: false
+          Select Operator
+            expressions: intcol (type: string)
+            outputColumnNames: _col0
+            ListSink
+

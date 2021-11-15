@@ -1,0 +1,168 @@
+PREHOOK: query: CREATE TABLE TA(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TA
+POSTHOOK: query: CREATE TABLE TA(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TA
+PREHOOK: query: INSERT INTO TA VALUES(10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ta
+POSTHOOK: query: INSERT INTO TA VALUES(10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ta
+POSTHOOK: Lineage: ta.id SCRIPT []
+PREHOOK: query: EXPLAIN
+WITH
+TC AS
+(SELECT
+   TB.i A,
+   TB.i+1 B
+FROM TA
+LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
+ORDER BY A),
+TD AS
+(SELECT
+    CASE WHEN A = B THEN 1 ELSE 2 END C
+FROM TC)
+SELECT C
+FROM TD
+ORDER BY C
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ta
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+WITH
+TC AS
+(SELECT
+   TB.i A,
+   TB.i+1 B
+FROM TA
+LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
+ORDER BY A),
+TD AS
+(SELECT
+    CASE WHEN A = B THEN 1 ELSE 2 END C
+FROM TC)
+SELECT C
+FROM TD
+ORDER BY C
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ta
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ta
+                  Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
+                  Lateral View Forward
+                    Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Lateral View Join Operator
+                        outputColumnNames: _col5, _col6
+                        Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col5 (type: int), (_col5 + 1) (type: int)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: CASE WHEN ((_col0 = _col1)) THEN (1) ELSE (2) END (type: int)
+                            null sort order: z
+                            sort order: +
+                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: array('a','b') (type: array<string>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                      UDTF Operator
+                        Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                        function name: posexplode
+                        Lateral View Join Operator
+                          outputColumnNames: _col5, _col6
+                          Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col5 (type: int), (_col5 + 1) (type: int)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: CASE WHEN ((_col0 = _col1)) THEN (1) ELSE (2) END (type: int)
+                              null sort order: z
+                              sort order: +
+                              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: WITH
+TC AS
+(SELECT
+     TB.i A,
+     TB.i+1 B
+FROM TA
+LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
+ORDER BY A),
+TD AS
+(SELECT
+     CASE WHEN A = B THEN 1 ELSE 2 END C
+FROM TC)
+SELECT C
+FROM TD
+ORDER BY C
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ta
+#### A masked pattern was here ####
+POSTHOOK: query: WITH
+TC AS
+(SELECT
+     TB.i A,
+     TB.i+1 B
+FROM TA
+LATERAL VIEW POSEXPLODE(ARRAY('a','b')) TB as i, x
+ORDER BY A),
+TD AS
+(SELECT
+     CASE WHEN A = B THEN 1 ELSE 2 END C
+FROM TC)
+SELECT C
+FROM TD
+ORDER BY C
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ta
+#### A masked pattern was here ####
+2
+2

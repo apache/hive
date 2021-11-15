@@ -463,12 +463,13 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: float)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -487,6 +488,7 @@ WHERE "ikey" IS NOT NULL
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -549,6 +551,31 @@ POSTHOOK: Input: default@ext_simple_derby_table2
 POSTHOOK: Input: default@simple_hive_table1
 #### A masked pattern was here ####
 8
--16
 20
+-16
 50
+PREHOOK: query: explain cbo
+select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
+(ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_simple_derby_table1
+PREHOOK: Input: default@ext_simple_derby_table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
+(ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_simple_derby_table1
+POSTHOOK: Input: default@ext_simple_derby_table2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.DERBY])
+  JdbcProject(fkey=[$1], dkey=[$3])
+    JdbcJoin(condition=[=($0, $2)], joinType=[inner])
+      JdbcProject(ikey=[$0], fkey=[$2])
+        JdbcFilter(condition=[IS NOT NULL($0)])
+          JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
+      JdbcProject(ikey=[$0], dkey=[$3])
+        JdbcFilter(condition=[IS NOT NULL($0)])
+          JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
+

@@ -26,12 +26,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-import org.apache.commons.lang.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.Test;
-import org.spark_project.guava.collect.Sets;
+
+import com.google.common.collect.Sets;
 
 public class TestStatsUtils {
 
@@ -96,7 +97,8 @@ public class TestStatsUtils {
       if (exclusions.contains(typeName)) {
         continue;
       }
-      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, conf);
+      int maxVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
+      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, maxVarLen);
       assertNotEquals(field.toString(), 0, siz);
     }
   }

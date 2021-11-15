@@ -1,0 +1,845 @@
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+20	val_20
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY ((key),value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY ((key),value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+20	val_20
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,(value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,(value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+20	val_20
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY ((key),(value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY ((key),(value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+20	val_20
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY ((key),(((value))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY ((key),(((value))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+20	val_20
+PREHOOK: query: SELECT tab1.key,
+       tab1.value,
+       SUM(1)
+FROM src as tab1
+GROUP BY tab1.key,
+         tab1.value
+GROUPING SETS ((tab1.key, tab1.value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tab1.key,
+       tab1.value,
+       SUM(1)
+FROM src as tab1
+GROUP BY tab1.key,
+         tab1.value
+GROUPING SETS ((tab1.key, tab1.value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10	val_10	1
+100	val_100	2
+103	val_103	2
+104	val_104	2
+105	val_105	1
+11	val_11	1
+111	val_111	1
+114	val_114	1
+116	val_116	1
+118	val_118	2
+125	val_125	2
+126	val_126	1
+131	val_131	1
+133	val_133	1
+134	val_134	2
+143	val_143	1
+15	val_15	2
+150	val_150	1
+152	val_152	2
+155	val_155	1
+157	val_157	1
+163	val_163	1
+164	val_164	2
+167	val_167	3
+168	val_168	1
+169	val_169	4
+17	val_17	1
+170	val_170	1
+174	val_174	2
+175	val_175	2
+176	val_176	2
+177	val_177	1
+18	val_18	2
+180	val_180	1
+183	val_183	1
+187	val_187	3
+189	val_189	1
+19	val_19	1
+190	val_190	1
+191	val_191	2
+192	val_192	1
+193	val_193	3
+195	val_195	2
+197	val_197	2
+199	val_199	3
+2	val_2	1
+20	val_20	1
+200	val_200	2
+201	val_201	1
+202	val_202	1
+203	val_203	2
+205	val_205	2
+207	val_207	2
+208	val_208	3
+213	val_213	2
+214	val_214	1
+216	val_216	2
+217	val_217	2
+221	val_221	2
+229	val_229	2
+230	val_230	5
+237	val_237	2
+238	val_238	2
+239	val_239	2
+24	val_24	2
+241	val_241	1
+244	val_244	1
+248	val_248	1
+252	val_252	1
+258	val_258	1
+26	val_26	2
+263	val_263	1
+27	val_27	1
+272	val_272	2
+273	val_273	3
+274	val_274	1
+278	val_278	2
+281	val_281	2
+282	val_282	2
+283	val_283	1
+285	val_285	1
+286	val_286	1
+287	val_287	1
+288	val_288	2
+291	val_291	1
+298	val_298	3
+30	val_30	1
+302	val_302	1
+305	val_305	1
+306	val_306	1
+307	val_307	2
+309	val_309	2
+315	val_315	1
+316	val_316	3
+321	val_321	2
+322	val_322	2
+323	val_323	1
+325	val_325	2
+33	val_33	1
+332	val_332	1
+333	val_333	2
+335	val_335	1
+336	val_336	1
+338	val_338	1
+34	val_34	1
+344	val_344	2
+348	val_348	5
+35	val_35	3
+353	val_353	2
+360	val_360	1
+362	val_362	1
+366	val_366	1
+367	val_367	2
+373	val_373	1
+379	val_379	1
+386	val_386	1
+394	val_394	1
+399	val_399	2
+4	val_4	1
+401	val_401	5
+402	val_402	1
+404	val_404	2
+406	val_406	4
+409	val_409	3
+41	val_41	1
+411	val_411	1
+413	val_413	2
+418	val_418	1
+419	val_419	1
+421	val_421	1
+424	val_424	2
+427	val_427	1
+429	val_429	2
+431	val_431	3
+432	val_432	1
+435	val_435	1
+436	val_436	1
+437	val_437	1
+438	val_438	3
+444	val_444	1
+452	val_452	1
+453	val_453	1
+455	val_455	1
+457	val_457	1
+459	val_459	2
+463	val_463	2
+466	val_466	3
+47	val_47	1
+472	val_472	1
+475	val_475	1
+478	val_478	2
+479	val_479	1
+482	val_482	1
+483	val_483	1
+484	val_484	1
+492	val_492	2
+494	val_494	1
+498	val_498	3
+5	val_5	3
+54	val_54	1
+57	val_57	1
+65	val_65	1
+69	val_69	1
+72	val_72	2
+76	val_76	2
+78	val_78	1
+8	val_8	1
+80	val_80	1
+90	val_90	3
+98	val_98	2
+0	val_0	3
+113	val_113	2
+119	val_119	3
+12	val_12	2
+120	val_120	2
+128	val_128	3
+129	val_129	2
+136	val_136	1
+137	val_137	2
+138	val_138	4
+145	val_145	1
+146	val_146	2
+149	val_149	2
+153	val_153	1
+156	val_156	1
+158	val_158	1
+160	val_160	1
+162	val_162	1
+165	val_165	2
+166	val_166	1
+172	val_172	2
+178	val_178	1
+179	val_179	2
+181	val_181	1
+186	val_186	1
+194	val_194	1
+196	val_196	1
+209	val_209	2
+218	val_218	1
+219	val_219	2
+222	val_222	1
+223	val_223	2
+224	val_224	2
+226	val_226	1
+228	val_228	1
+233	val_233	2
+235	val_235	1
+242	val_242	2
+247	val_247	1
+249	val_249	1
+255	val_255	2
+256	val_256	2
+257	val_257	1
+260	val_260	1
+262	val_262	1
+265	val_265	2
+266	val_266	1
+275	val_275	1
+277	val_277	4
+28	val_28	1
+280	val_280	2
+284	val_284	1
+289	val_289	1
+292	val_292	1
+296	val_296	1
+308	val_308	1
+310	val_310	1
+311	val_311	3
+317	val_317	2
+318	val_318	3
+327	val_327	3
+331	val_331	2
+339	val_339	1
+341	val_341	1
+342	val_342	2
+345	val_345	1
+351	val_351	1
+356	val_356	1
+364	val_364	1
+365	val_365	1
+368	val_368	1
+369	val_369	3
+37	val_37	2
+374	val_374	1
+375	val_375	1
+377	val_377	1
+378	val_378	1
+382	val_382	2
+384	val_384	3
+389	val_389	1
+392	val_392	1
+393	val_393	1
+395	val_395	2
+396	val_396	3
+397	val_397	2
+400	val_400	1
+403	val_403	3
+407	val_407	1
+414	val_414	2
+417	val_417	3
+42	val_42	2
+43	val_43	1
+430	val_430	3
+439	val_439	2
+44	val_44	1
+443	val_443	1
+446	val_446	1
+448	val_448	1
+449	val_449	1
+454	val_454	3
+458	val_458	2
+460	val_460	1
+462	val_462	2
+467	val_467	1
+468	val_468	4
+469	val_469	5
+470	val_470	1
+477	val_477	1
+480	val_480	3
+481	val_481	1
+485	val_485	1
+487	val_487	1
+489	val_489	4
+490	val_490	1
+491	val_491	1
+493	val_493	1
+495	val_495	1
+496	val_496	1
+497	val_497	1
+51	val_51	2
+53	val_53	1
+58	val_58	2
+64	val_64	1
+66	val_66	1
+67	val_67	2
+70	val_70	3
+74	val_74	1
+77	val_77	1
+82	val_82	1
+83	val_83	2
+84	val_84	2
+85	val_85	1
+86	val_86	1
+87	val_87	1
+9	val_9	1
+92	val_92	1
+95	val_95	2
+96	val_96	1
+97	val_97	2
+PREHOOK: query: SELECT key,
+       src.value,
+       SUM(1)
+FROM src
+GROUP BY key,
+         src.value
+GROUPING SETS ((key, src.value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key,
+       src.value,
+       SUM(1)
+FROM src
+GROUP BY key,
+         src.value
+GROUPING SETS ((key, src.value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10	val_10	1
+100	val_100	2
+103	val_103	2
+104	val_104	2
+105	val_105	1
+11	val_11	1
+111	val_111	1
+114	val_114	1
+116	val_116	1
+118	val_118	2
+125	val_125	2
+126	val_126	1
+131	val_131	1
+133	val_133	1
+134	val_134	2
+143	val_143	1
+15	val_15	2
+150	val_150	1
+152	val_152	2
+155	val_155	1
+157	val_157	1
+163	val_163	1
+164	val_164	2
+167	val_167	3
+168	val_168	1
+169	val_169	4
+17	val_17	1
+170	val_170	1
+174	val_174	2
+175	val_175	2
+176	val_176	2
+177	val_177	1
+18	val_18	2
+180	val_180	1
+183	val_183	1
+187	val_187	3
+189	val_189	1
+19	val_19	1
+190	val_190	1
+191	val_191	2
+192	val_192	1
+193	val_193	3
+195	val_195	2
+197	val_197	2
+199	val_199	3
+2	val_2	1
+20	val_20	1
+200	val_200	2
+201	val_201	1
+202	val_202	1
+203	val_203	2
+205	val_205	2
+207	val_207	2
+208	val_208	3
+213	val_213	2
+214	val_214	1
+216	val_216	2
+217	val_217	2
+221	val_221	2
+229	val_229	2
+230	val_230	5
+237	val_237	2
+238	val_238	2
+239	val_239	2
+24	val_24	2
+241	val_241	1
+244	val_244	1
+248	val_248	1
+252	val_252	1
+258	val_258	1
+26	val_26	2
+263	val_263	1
+27	val_27	1
+272	val_272	2
+273	val_273	3
+274	val_274	1
+278	val_278	2
+281	val_281	2
+282	val_282	2
+283	val_283	1
+285	val_285	1
+286	val_286	1
+287	val_287	1
+288	val_288	2
+291	val_291	1
+298	val_298	3
+30	val_30	1
+302	val_302	1
+305	val_305	1
+306	val_306	1
+307	val_307	2
+309	val_309	2
+315	val_315	1
+316	val_316	3
+321	val_321	2
+322	val_322	2
+323	val_323	1
+325	val_325	2
+33	val_33	1
+332	val_332	1
+333	val_333	2
+335	val_335	1
+336	val_336	1
+338	val_338	1
+34	val_34	1
+344	val_344	2
+348	val_348	5
+35	val_35	3
+353	val_353	2
+360	val_360	1
+362	val_362	1
+366	val_366	1
+367	val_367	2
+373	val_373	1
+379	val_379	1
+386	val_386	1
+394	val_394	1
+399	val_399	2
+4	val_4	1
+401	val_401	5
+402	val_402	1
+404	val_404	2
+406	val_406	4
+409	val_409	3
+41	val_41	1
+411	val_411	1
+413	val_413	2
+418	val_418	1
+419	val_419	1
+421	val_421	1
+424	val_424	2
+427	val_427	1
+429	val_429	2
+431	val_431	3
+432	val_432	1
+435	val_435	1
+436	val_436	1
+437	val_437	1
+438	val_438	3
+444	val_444	1
+452	val_452	1
+453	val_453	1
+455	val_455	1
+457	val_457	1
+459	val_459	2
+463	val_463	2
+466	val_466	3
+47	val_47	1
+472	val_472	1
+475	val_475	1
+478	val_478	2
+479	val_479	1
+482	val_482	1
+483	val_483	1
+484	val_484	1
+492	val_492	2
+494	val_494	1
+498	val_498	3
+5	val_5	3
+54	val_54	1
+57	val_57	1
+65	val_65	1
+69	val_69	1
+72	val_72	2
+76	val_76	2
+78	val_78	1
+8	val_8	1
+80	val_80	1
+90	val_90	3
+98	val_98	2
+0	val_0	3
+113	val_113	2
+119	val_119	3
+12	val_12	2
+120	val_120	2
+128	val_128	3
+129	val_129	2
+136	val_136	1
+137	val_137	2
+138	val_138	4
+145	val_145	1
+146	val_146	2
+149	val_149	2
+153	val_153	1
+156	val_156	1
+158	val_158	1
+160	val_160	1
+162	val_162	1
+165	val_165	2
+166	val_166	1
+172	val_172	2
+178	val_178	1
+179	val_179	2
+181	val_181	1
+186	val_186	1
+194	val_194	1
+196	val_196	1
+209	val_209	2
+218	val_218	1
+219	val_219	2
+222	val_222	1
+223	val_223	2
+224	val_224	2
+226	val_226	1
+228	val_228	1
+233	val_233	2
+235	val_235	1
+242	val_242	2
+247	val_247	1
+249	val_249	1
+255	val_255	2
+256	val_256	2
+257	val_257	1
+260	val_260	1
+262	val_262	1
+265	val_265	2
+266	val_266	1
+275	val_275	1
+277	val_277	4
+28	val_28	1
+280	val_280	2
+284	val_284	1
+289	val_289	1
+292	val_292	1
+296	val_296	1
+308	val_308	1
+310	val_310	1
+311	val_311	3
+317	val_317	2
+318	val_318	3
+327	val_327	3
+331	val_331	2
+339	val_339	1
+341	val_341	1
+342	val_342	2
+345	val_345	1
+351	val_351	1
+356	val_356	1
+364	val_364	1
+365	val_365	1
+368	val_368	1
+369	val_369	3
+37	val_37	2
+374	val_374	1
+375	val_375	1
+377	val_377	1
+378	val_378	1
+382	val_382	2
+384	val_384	3
+389	val_389	1
+392	val_392	1
+393	val_393	1
+395	val_395	2
+396	val_396	3
+397	val_397	2
+400	val_400	1
+403	val_403	3
+407	val_407	1
+414	val_414	2
+417	val_417	3
+42	val_42	2
+43	val_43	1
+430	val_430	3
+439	val_439	2
+44	val_44	1
+443	val_443	1
+446	val_446	1
+448	val_448	1
+449	val_449	1
+454	val_454	3
+458	val_458	2
+460	val_460	1
+462	val_462	2
+467	val_467	1
+468	val_468	4
+469	val_469	5
+470	val_470	1
+477	val_477	1
+480	val_480	3
+481	val_481	1
+485	val_485	1
+487	val_487	1
+489	val_489	4
+490	val_490	1
+491	val_491	1
+493	val_493	1
+495	val_495	1
+496	val_496	1
+497	val_497	1
+51	val_51	2
+53	val_53	1
+58	val_58	2
+64	val_64	1
+66	val_66	1
+67	val_67	2
+70	val_70	3
+74	val_74	1
+77	val_77	1
+82	val_82	1
+83	val_83	2
+84	val_84	2
+85	val_85	1
+86	val_86	1
+87	val_87	1
+9	val_9	1
+92	val_92	1
+95	val_95	2
+96	val_96	1
+97	val_97	2
+PREHOOK: query: explain extended select int(1.2) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select int(1.2) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1.2 AS INT) AS `_o__c0`
+FROM `default`.`src`
+LIMIT 1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          GatherStats: false
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select int(1.2) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select int(1.2) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: select bigint(1.34) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select bigint(1.34) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: select binary('1') from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select binary('1') from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: select boolean(1) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select boolean(1) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select date('1') from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select date('1') from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+NULL
+PREHOOK: query: select double(1) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select double(1) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.0
+PREHOOK: query: select float(1) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select float(1) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.0
+PREHOOK: query: select smallint(0.9) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select smallint(0.9) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: select timestamp('1') from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select timestamp('1') from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+NULL
+PREHOOK: query: explain extended desc default.src key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: explain extended desc default.src key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Table
+      table: default.src
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: desc default.src key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: desc default.src key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+key                 	string              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 

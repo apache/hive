@@ -40,8 +40,9 @@ import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
 import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.thrift.ThriftCLIService;
+import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -67,11 +68,9 @@ public class HiveAuthFactory {
     this.conf = conf;
     transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
-
     // ShimLoader.getHadoopShims().isSecurityEnabled() will only check that
     // hadoopAuth is not simple, it does not guarantee it is kerberos
     hadoopAuth = conf.get(HADOOP_SECURITY_AUTHENTICATION, "simple");
-
     // In http mode we use NOSASL as the default auth type
     if (authTypeStr == null) {
       if ("http".equalsIgnoreCase(transportMode)) {
@@ -155,11 +154,17 @@ public class HiveAuthFactory {
           authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.LDAP.getAuthName()) ||
           authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.PAM.getAuthName()) ||
           authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.CUSTOM.getAuthName())) {
-       transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
-    } else if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.getAuthName())) {
+      transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
+    } else if (authTypeStr
+        .equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.getAuthName())) {
       transportFactory = new TTransportFactory();
     } else {
       throw new LoginException("Unsupported authentication type " + authTypeStr);
+    }
+
+    String trustedDomain = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
+    if (!trustedDomain.isEmpty()) {
+      transportFactory = PlainSaslHelper.getDualPlainTransportFactory(transportFactory, trustedDomain);
     }
     return transportFactory;
   }
@@ -170,7 +175,7 @@ public class HiveAuthFactory {
    * @return
    * @throws LoginException
    */
-  public TProcessorFactory getAuthProcFactory(ThriftCLIService service) throws LoginException {
+  public TProcessorFactory getAuthProcFactory(TCLIService.Iface service) throws LoginException {
     if (isSASLWithKerberizedHadoop()) {
       return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
     } else {

@@ -71,7 +71,6 @@ public class HiveHistoryViewer implements Listener {
       HiveHistoryUtil.parseHiveHistory(historyFile, this);
     } catch (IOException e) {
       // TODO pass on this exception
-      e.printStackTrace();
       LOG.error("Error parsing hive history log file", e);
     }
   }

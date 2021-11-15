@@ -1,0 +1,454 @@
+PREHOOK: query: explain
+SELECT * FROM (
+   VALUES(1, '1'),
+         (2, 'orange'),
+         (5, 'yellow'),
+         (10, 'green'),
+         (11, 'blue'),
+         (12, 'indigo'),
+         (20, 'violet'))
+   AS Colors
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM (
+   VALUES(1, '1'),
+         (2, 'orange'),
+         (5, 'yellow'),
+         (10, 'green'),
+         (11, 'blue'),
+         (12, 'indigo'),
+         (20, 'violet'))
+   AS Colors
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array(const struct(1,'1'),const struct(2,'orange'),const struct(5,'yellow'),const struct(10,'green'),const struct(11,'blue'),const struct(12,'indigo'),const struct(20,'violet')) (type: array<struct<col1:int,col2:string>>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: inline
+              Select Operator
+                expressions: col1 (type: int), col2 (type: string)
+                outputColumnNames: _col0, _col1
+                ListSink
+
+PREHOOK: query: explain
+SELECT * FROM (
+   VALUES(1, '1'),
+         (2, 'orange'),
+         (5, 'yellow'),
+         (10, 'green'),
+         (11, 'blue'),
+         (12, 'indigo'),
+         (20, 'violet'))
+   AS Colors
+union all
+  select 2,'2'
+union all
+  select 2,'2'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM (
+   VALUES(1, '1'),
+         (2, 'orange'),
+         (5, 'yellow'),
+         (10, 'green'),
+         (11, 'blue'),
+         (12, 'indigo'),
+         (20, 'violet'))
+   AS Colors
+union all
+  select 2,'2'
+union all
+  select 2,'2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 3 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(2,'2'),const struct(2,'2')) (type: array<struct<col1:int,col2:string>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int), col2 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1,'1'),const struct(2,'orange'),const struct(5,'yellow'),const struct(10,'green'),const struct(11,'blue'),const struct(12,'indigo'),const struct(20,'violet')) (type: array<struct<col1:int,col2:string>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int), col2 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: no inputs
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM (
+   VALUES(1, '1'),
+         (2, 'orange'),
+         (5, 'yellow'))
+   as colors1
+UNION ALL
+SELECT * FROM (
+   VALUES(10, 'green'),
+         (11, 'blue'),
+         (12, 'indigo'),
+         (20, 'violet'))
+   AS Colors
+union all
+  select 2,'2'
+union all
+  select 2,'2'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+   VALUES(1, '1'),
+         (2, 'orange'),
+         (5, 'yellow'))
+   as colors1
+UNION ALL
+SELECT * FROM (
+   VALUES(10, 'green'),
+         (11, 'blue'),
+         (12, 'indigo'),
+         (20, 'violet'))
+   AS Colors
+union all
+  select 2,'2'
+union all
+  select 2,'2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2	2
+2	2
+1	1
+2	orange
+5	yellow
+10	green
+11	blue
+12	indigo
+20	violet
+PREHOOK: query: explain
+  select 1, 1
+union all
+  select 2, 2
+union all
+  select 3, 3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+  select 1, 1
+union all
+  select 2, 2
+union all
+  select 3, 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array(const struct(1,1),const struct(2,2),const struct(3,3)) (type: array<struct<col1:int,col2:int>>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: inline
+              Select Operator
+                expressions: col1 (type: int), col2 (type: int)
+                outputColumnNames: _col0, _col1
+                ListSink
+
+PREHOOK: query: select 1, 1
+union all
+  select 2, 2
+union all
+  select 3, 3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1, 1
+union all
+  select 2, 2
+union all
+  select 3, 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	1
+2	2
+3	3
+PREHOOK: query: create table t (a string, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values(9,9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values(9,9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: explain cbo
+  select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+  select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(a=[CAST($0):INTEGER])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
+  HiveProject(_o__c0=[1])
+    HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: explain cbo
+  select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+union all
+  select cast(2 as integer)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+  select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+union all
+  select cast(2 as integer)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(a=[CAST($0):INTEGER])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
+  HiveProject(EXPR$0=[$0])
+    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1), ROW(2)))], rowType=[RecordType(INTEGER EXPR$0)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: explain
+  select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+union all
+  select cast(2 as integer)
+union all
+  select cast(3 as integer)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+  select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+union all
+  select cast(2 as integer)
+union all
+  select cast(3 as integer)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 3 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToInteger(a) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1),const struct(2),const struct(3)) (type: array<struct<col1:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: no inputs
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+union all
+  select cast(2 as integer)
+union all
+  select cast(3 as integer)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(a as integer) from t
+union all
+  select cast(1 as integer)
+union all
+  select cast(2 as integer)
+union all
+  select cast(3 as integer)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+9
+1
+2
+3
+PREHOOK: query: select cast(a as integer) from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(a as integer) from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+9

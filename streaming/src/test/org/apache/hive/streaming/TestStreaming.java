@@ -74,11 +74,12 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -88,7 +89,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -113,7 +114,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class TestStreaming {
   private static final Logger LOG = LoggerFactory.getLogger(TestStreaming.class);
@@ -212,15 +212,15 @@ public class TestStreaming {
     conf.set("fs.raw.impl", RawFileSystem.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    TxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.setConfValues(conf);
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     dbFolder.create();
 
 
     //1) Start from a clean slate (metastore)
-    TxnDbUtil.cleanDb(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.prepDb(conf);
 
     //2) obtain metastore clients
     msClient = new HiveMetaStoreClient(conf);
@@ -392,7 +392,7 @@ public class TestStreaming {
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000001_0000001_0000/bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000001_0000001_0000/bucket_00000_0"));
     Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/delta_0000002_0000003/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
@@ -416,13 +416,13 @@ public class TestStreaming {
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
     Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
     Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
-    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000005_v0000024/bucket_00000"));
   }
 
   @Test
@@ -570,7 +570,7 @@ public class TestStreaming {
         + "INPUT__FILE__NAME from default.writeidconnection order by a");
     Assert.assertEquals(4, rs.size());
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\ta0\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("bucket_00000_0"));
     Assert.assertTrue(rs.get(1), rs.get(1).contains("\"rowid\":0}\ta1\tb2"));
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).contains("\"rowid\":1}\ta3\tb4"));
@@ -728,7 +728,7 @@ public class TestStreaming {
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000001_0000001_0000/bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000001_0000001_0000/bucket_00000_0"));
     Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/delta_0000002_0000003/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
@@ -766,17 +766,17 @@ public class TestStreaming {
     rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
 
     Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000009_v0000029/bucket_00000"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
     Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000009_v0000029/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000009_v0000029/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
     Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\ta11\tb12"));
-    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000009_v0000029/bucket_00000"));
+    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
     Assert.assertTrue(rs.get(4), rs.get(4).startsWith("{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\ta13\tb14"));
-    Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/base_0000009_v0000029/bucket_00000"));
+    Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
     Assert.assertTrue(rs.get(5), rs.get(5).startsWith("{\"writeid\":6,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
-    Assert.assertTrue(rs.get(5), rs.get(5).endsWith("streamingnobuckets/base_0000009_v0000029/bucket_00000"));
+    Assert.assertTrue(rs.get(5), rs.get(5).endsWith("streamingnobuckets/base_0000009_v0000028/bucket_00000"));
   }
 
   /**
@@ -787,8 +787,7 @@ public class TestStreaming {
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
+    t.init(stop);
     t.run();
   }
 
@@ -945,7 +944,7 @@ public class TestStreaming {
   private void checkDataWritten(Path partitionPath, long minTxn, long maxTxn, int buckets, int numExpectedFiles,
     String... records) throws Exception {
     ValidWriteIdList writeIds = getTransactionContext(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, writeIds);
+    AcidDirectory dir = AcidUtils.getAcidState(null, partitionPath, conf, writeIds, null, false);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
@@ -966,8 +965,9 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
-    Assert.assertEquals(minTxn, min);
-    Assert.assertEquals(maxTxn, max);
+    // We are doing +1, as DDL operation will also advance the write Id now.
+    Assert.assertEquals(minTxn + 1, min);
+    Assert.assertEquals(maxTxn + 1, max);
 
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
@@ -999,7 +999,8 @@ public class TestStreaming {
    */
   private void checkDataWritten2(Path partitionPath, long minTxn, long maxTxn, int numExpectedFiles,
     String validationQuery, boolean vectorize, String... records) throws Exception {
-    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, getTransactionContext(conf));
+    AcidDirectory dir =
+        AcidUtils.getAcidState(null, partitionPath, conf, getTransactionContext(conf), null, false);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
@@ -1020,8 +1021,9 @@ public class TestStreaming {
         min = pd.getMinWriteId();
       }
     }
-    Assert.assertEquals(minTxn, min);
-    Assert.assertEquals(maxTxn, max);
+    // We are doing +1, as DDL operation will also advance the write Id now.
+    Assert.assertEquals(minTxn + 1, min);
+    Assert.assertEquals(maxTxn + 1, max);
     boolean isVectorizationEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (vectorize) {
       conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
@@ -1050,7 +1052,8 @@ public class TestStreaming {
     return TxnCommonUtils.createValidReaderWriteIdList(v.get(0));
   }
   private void checkNothingWritten(Path partitionPath) throws Exception {
-    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, getTransactionContext(conf));
+    AcidDirectory dir =
+        AcidUtils.getAcidState(null, partitionPath, conf, getTransactionContext(conf), null, false);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
@@ -1312,6 +1315,35 @@ public class TestStreaming {
     Assert.assertEquals(HiveStreamingConnection.TxnState.COMMITTED,
         connection.getCurrentTransactionState());
     connection.close();
+  }
+
+  @Test
+  public void testTransactionBatchSizeValidation() throws Exception {
+    final String schemes = conf.get(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname);
+    // the output stream of this FS doesn't support hflush, so the below test will fail
+    conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, "raw");
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    try {
+      HiveStreamingConnection.newBuilder()
+          .withDatabase(dbName)
+          .withTable(tblName)
+          .withAgentInfo("UT_" + Thread.currentThread().getName())
+          .withRecordWriter(writer)
+          .withTransactionBatchSize(2)
+          .withHiveConf(conf)
+          .connect();
+
+      Assert.fail();
+    } catch (ConnectionError e) {
+      Assert.assertTrue("Expected connection error due to batch sizes",
+          e.getMessage().contains("only supports transaction batch"));
+    } finally {
+      conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, schemes);
+    }
   }
 
   /**
@@ -1791,6 +1823,27 @@ public class TestStreaming {
 
   }
 
+  @Test(expected = ClassCastException.class)
+  public void testFileSystemError() throws Exception {
+    // Bad file system object, ClassCastException should occur during record writer init
+    conf.set("fs.raw.impl", Object.class.getName());
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+            .withFieldDelimiter(',')
+            .build();
+
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+            .withDatabase(dbName)
+            .withTable(tblName)
+            .withStaticPartitionValues(partitionVals)
+            .withAgentInfo("UT_" + Thread.currentThread().getName())
+            .withRecordWriter(writer)
+            .withHiveConf(conf)
+            .connect();
+
+    connection.beginTransaction();
+  }
+
 
   @Test
   public void testTransactionBatchAbortAndCommit() throws Exception {
@@ -1947,7 +2000,7 @@ public class TestStreaming {
     /*now both batches have committed (but not closed) so we for each primary file we expect a side
     file to exist and indicate the true length of primary file*/
     FileSystem fs = partLoc.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(partLoc, conf, getTransactionContext(conf));
+    AcidDirectory dir = AcidUtils.getAcidState(fs, partLoc, conf, getTransactionContext(conf), null, false);
     for (AcidUtils.ParsedDelta pd : dir.getCurrentDirectories()) {
       for (FileStatus stat : fs.listStatus(pd.getPath(), AcidUtils.bucketFileFilter)) {
         Path lengthFile = OrcAcidUtils.getSideFile(stat.getPath());
@@ -1972,7 +2025,7 @@ public class TestStreaming {
     //so each of 2 deltas has 1 bucket0 and 1 bucket0_flush_length.  Furthermore, each bucket0
     //has now received more data(logically - it's buffered) but it is not yet committed.
     //lets check that side files exist, etc
-    dir = AcidUtils.getAcidState(partLoc, conf, getTransactionContext(conf));
+    dir = AcidUtils.getAcidState(fs, partLoc, conf, getTransactionContext(conf), null, false);
     for (AcidUtils.ParsedDelta pd : dir.getCurrentDirectories()) {
       for (FileStatus stat : fs.listStatus(pd.getPath(), AcidUtils.bucketFileFilter)) {
         Path lengthFile = OrcAcidUtils.getSideFile(stat.getPath());
@@ -3147,19 +3200,21 @@ public class TestStreaming {
     LOG.debug(sql);
     System.out.println(sql);
     //LOG.debug("Running Hive Query: "+ sql);
-    CommandProcessorResponse cpr = driver.run(sql);
-    if (cpr.getResponseCode() == 0) {
+    try {
+      driver.run(sql);
       return true;
+    } catch (CommandProcessorException e) {
+      LOG.error("Statement: " + sql + " failed: " + e);
+      return false;
     }
-    LOG.error("Statement: " + sql + " failed: " + cpr);
-    return false;
   }
 
 
   private static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
-    CommandProcessorResponse cpr = driver.run(query);
-    if (cpr.getResponseCode() != 0) {
-      throw new RuntimeException(query + " failed: " + cpr);
+    try {
+      driver.run(query);
+    } catch (CommandProcessorException e) {
+      throw new RuntimeException(query + " failed: " + e);
     }
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);

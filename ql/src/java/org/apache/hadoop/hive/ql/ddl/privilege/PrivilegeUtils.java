@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Common utilities for Privilege related ddl operations.
  */
-final class PrivilegeUtils {
+public final class PrivilegeUtils {
   private PrivilegeUtils() {
     throw new UnsupportedOperationException("PrivilegeUtils should not be instantiated");
   }
 
-  static HiveAuthorizer getSessionAuthorizer(HiveConf conf) {
+  public static HiveAuthorizer getSessionAuthorizer(HiveConf conf) {
     HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
     if (authorizer == null) {
       authorizer = new HiveV1Authorizer(conf);
@@ -49,22 +49,22 @@ final class PrivilegeUtils {
     return authorizer;
   }
 
-  static void writeListToFileAfterSort(List<String> entries, String resFile, DDLOperationContext context)
+  public static void writeListToFileAfterSort(List<String> entries, String resFile, DDLOperationContext context)
       throws IOException {
     Collections.sort(entries);
 
     StringBuilder sb = new StringBuilder();
     for (String entry : entries) {
-      DDLUtils.appendNonNull(sb, entry, true);
+      ShowUtils.appendNonNull(sb, entry, true);
     }
 
-    DDLUtils.writeToFile(sb.toString(), resFile, context);
+    ShowUtils.writeToFile(sb.toString(), resFile, context);
   }
 
   private static final HiveAuthorizationTranslator DEFAULT_AUTHORIZATION_TRANSLATOR =
       new DefaultHiveAuthorizationTranslator();
 
-  static HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
+  public static HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
       throws HiveAuthzPluginException {
     if (authorizer.getHiveAuthorizationTranslator() == null) {
       return DEFAULT_AUTHORIZATION_TRANSLATOR;

@@ -30,8 +30,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -51,12 +51,12 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer.EnabledOverride;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
@@ -147,14 +147,14 @@ public class MapJoinProcessor extends Transform {
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
-      LinkedHashMap<Path, ArrayList<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
+      Map<Path, List<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
 
       // keep record all the input path for this alias
       HashSet<Path> pathSet = new HashSet<>();
       HashSet<Path> emptyPath = new HashSet<>();
-      for (Map.Entry<Path, ArrayList<String>> entry2 : pathToAliases.entrySet()) {
+      for (Map.Entry<Path, List<String>> entry2 : pathToAliases.entrySet()) {
         Path path = entry2.getKey();
-        ArrayList<String> list = entry2.getValue();
+        List<String> list = entry2.getValue();
         if (list.contains(alias)) {
           // add to path set
           pathSet.add(path);
@@ -399,20 +399,14 @@ public class MapJoinProcessor extends Transform {
         // Verify we handle the key column types for an optimized table.  This is the effectively
         // the same check used in Tez HashTableLoader.
         if (!MapJoinKey.isSupportedField(typeInfo)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("FULL OUTER MapJoin not enabled: " +
-                " key type " + typeInfo.toString() + " not supported");
-          }
+          LOG.debug("FULL OUTER MapJoin not enabled: key type {} not supported", typeInfo);
           return false;
         }
       }
     }
 
     if (onExpressionHasNullSafes(joinDesc)) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            "nullsafe not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: nullsafe not supported");
       return false;
     }
 
@@ -421,19 +415,13 @@ public class MapJoinProcessor extends Transform {
     boolean isHybridHashJoin = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN);
     if (isVectorizationMapJoinNativeEnabled && isHybridHashJoin) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            "Native Vector MapJoin and Hybrid Grace not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: Native Vector MapJoin and Hybrid Grace not supported");
       return false;
     }
 
     if (joinDesc.getResidualFilterExprs() != null &&
         joinDesc.getResidualFilterExprs().size() != 0) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            "non-equi joins not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: non-equi joins not supported");
       return false;
     }
 
@@ -462,9 +450,7 @@ public class MapJoinProcessor extends Transform {
     if (conds.length > 1) {
 
       // No multiple condition FULL OUTER MapJoin.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: multiple JOIN conditions not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: multiple JOIN conditions not supported");
       return false;
     }
 
@@ -488,10 +474,7 @@ public class MapJoinProcessor extends Transform {
     case NONE:
       {
         if (!isEnabled) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("FULL OUTER MapJoin not enabled: " +
-                HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname + " is false");
-          }
+          LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname);
           return false;
         }
       }
@@ -527,9 +510,7 @@ public class MapJoinProcessor extends Transform {
     if (!isTezEngine) {
 
       // Only Tez for now.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: Only Tez engine supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: Only Tez engine supported");
       return false;
     }
 
@@ -541,10 +522,7 @@ public class MapJoinProcessor extends Transform {
             hiveConf,
             HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
     if (!isOptimizedHashTableEnabled) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE.varname + " is false");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE.varname);
       return false;
     }
 
@@ -553,16 +531,12 @@ public class MapJoinProcessor extends Transform {
       return false;
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("FULL OUTER MapJoin enabled");
-    }
+    LOG.debug("FULL OUTER MapJoin enabled");
     return true;
   }
 
   public static boolean isFullOuterEnabledForDynamicPartitionHashJoin(HiveConf hiveConf, JoinOperator joinOp)
       throws SemanticException {
-    JoinDesc joinDesc = joinOp.getConf();
-
     return true;
   }
 
@@ -754,7 +728,8 @@ public class MapJoinProcessor extends Transform {
       seenPostitions.add(condn.getRight());
 
       if (joinType == JoinDesc.LEFT_OUTER_JOIN
-          || joinType == JoinDesc.LEFT_SEMI_JOIN) {
+          || joinType == JoinDesc.LEFT_SEMI_JOIN
+          || joinType == JoinDesc.ANTI_JOIN) {
         seenOuterJoin = true;
         if(bigTableCandidates.size() == 0) {
           bigTableCandidates.add(condn.getLeft());
@@ -934,7 +909,7 @@ public class MapJoinProcessor extends Transform {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R0",
       MapJoinOperator.getOperatorName() + "%"),
       getCurrentMapJoin());
@@ -950,10 +925,10 @@ public class MapJoinProcessor extends Transform {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefault(), opRules, new MapJoinWalkerCtx(
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefault(), opRules, new MapJoinWalkerCtx(
         listMapJoinOpsNoRed, pactx));
 
-    GraphWalker ogw = new GenMapRedWalker(disp);
+    SemanticGraphWalker ogw = new GenMapRedWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(listMapJoinOps);
     ogw.startWalking(topNodes, null);
@@ -966,7 +941,7 @@ public class MapJoinProcessor extends Transform {
    * CurrentMapJoin.
    *
    */
-  public static class CurrentMapJoin implements NodeProcessor {
+  public static class CurrentMapJoin implements SemanticNodeProcessor {
 
     /**
      * Store the current mapjoin in the context.
@@ -1076,7 +1051,7 @@ public class MapJoinProcessor extends Transform {
    * MapJoinFS.
    *
    */
-  public static class MapJoinFS implements NodeProcessor {
+  public static class MapJoinFS implements SemanticNodeProcessor {
 
     /**
      * Store the current mapjoin in a list of mapjoins followed by a filesink.
@@ -1103,7 +1078,7 @@ public class MapJoinProcessor extends Transform {
    * MapJoinDefault.
    *
    */
-  public static class MapJoinDefault implements NodeProcessor {
+  public static class MapJoinDefault implements SemanticNodeProcessor {
 
     /**
      * Store the mapjoin in a rejected list.
@@ -1122,7 +1097,7 @@ public class MapJoinProcessor extends Transform {
    * Default.
    *
    */
-  public static class Default implements NodeProcessor {
+  public static class Default implements SemanticNodeProcessor {
 
     /**
      * Nothing to do.
@@ -1134,19 +1109,19 @@ public class MapJoinProcessor extends Transform {
     }
   }
 
-  public static NodeProcessor getMapJoinFS() {
+  public static SemanticNodeProcessor getMapJoinFS() {
     return new MapJoinFS();
   }
 
-  public static NodeProcessor getMapJoinDefault() {
+  public static SemanticNodeProcessor getMapJoinDefault() {
     return new MapJoinDefault();
   }
 
-  public static NodeProcessor getDefault() {
+  public static SemanticNodeProcessor getDefault() {
     return new Default();
   }
 
-  public static NodeProcessor getCurrentMapJoin() {
+  public static SemanticNodeProcessor getCurrentMapJoin() {
     return new CurrentMapJoin();
   }
 
@@ -1230,7 +1205,7 @@ public class MapJoinProcessor extends Transform {
 
   }
 
-  public static ObjectPair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
+  public static Pair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
           boolean leftInputJoin, String[] baseSrc, JoinOperator op) {
 
     // Walk over all the sources (which are guaranteed to be reduce sink
@@ -1264,8 +1239,7 @@ public class MapJoinProcessor extends Transform {
       keyExprMap.put(pos, keyCols);
     }
 
-    return new ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>>(
-            oldReduceSinkParentOps, keyExprMap);
+    return Pair.of(oldReduceSinkParentOps, keyExprMap);
   }
 
   public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
@@ -1287,9 +1261,8 @@ public class MapJoinProcessor extends Transform {
     Map<Byte, List<ExprNodeDesc>> valueExprs = op.getConf().getExprs();
     Map<Byte, List<ExprNodeDesc>> newValueExprs = new HashMap<Byte, List<ExprNodeDesc>>();
 
-    ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>> pair =
-            getKeys(leftInputJoin, baseSrc, op);
-    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getFirst();
+    Pair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> pair = getKeys(leftInputJoin, baseSrc, op);
+    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getLeft();
     for (Map.Entry<Byte, List<ExprNodeDesc>> entry : valueExprs.entrySet()) {
       byte tag = entry.getKey();
       Operator<?> terminal = oldReduceSinkParentOps.get(tag);
@@ -1318,7 +1291,7 @@ public class MapJoinProcessor extends Transform {
     Map<Byte, int[]> valueIndices = new HashMap<Byte, int[]>();
 
     // get the join keys from old parent ReduceSink operators
-    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getSecond();
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getRight();
 
     if (!adjustParentsChildren) {
       // Since we did not remove reduce sink parents, keep the original value expressions

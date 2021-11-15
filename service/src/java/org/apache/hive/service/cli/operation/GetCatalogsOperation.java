@@ -18,8 +18,7 @@
 
 package org.apache.hive.service.cli.operation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -80,7 +79,7 @@ public class GetCatalogsOperation extends MetadataOperation {
    */
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
-    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
+    assertState(Collections.singleton(OperationState.FINISHED));
     validateDefaultFetchOrientation(orientation);
     if (orientation.equals(FetchOrientation.FETCH_FIRST)) {
       rowSet.setStartOffset(0);

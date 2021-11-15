@@ -32,6 +32,7 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
@@ -118,11 +119,16 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private boolean isMissingAcidState = false;
     private BasicStatsWork work;
     private boolean followedColStats1;
+    private Map<String, String> providedBasicStats;
 
     public BasicStatsProcessor(Partish partish, BasicStatsWork work, HiveConf conf, boolean followedColStats2) {
       this.partish = partish;
       this.work = work;
       followedColStats1 = followedColStats2;
+      Table table = partish.getTable();
+      if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) {
+        providedBasicStats = table.getStorageHandler().getBasicStatistics(partish);
+      }
     }
 
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
@@ -140,7 +146,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.clearColumnStatsState(parameters);
       }
 
-      if (partfileStatus == null) {
+      if (partfileStatus == null && providedBasicStats == null) {
         // This may happen if ACID state is absent from config.
         String spec =  partish.getPartition() == null ? partish.getTable().getTableName()
             :  partish.getPartition().getSpec().toString();
@@ -160,27 +166,33 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
-      MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
+      if (providedBasicStats == null) {
+        MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
 
-      if (statsAggregator != null) {
-        // Update stats for transactional tables (MM, or full ACID with overwrite), even
-        // though we are marking stats as not being accurate.
-        if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
-          String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
-          updateStats(statsAggregator, parameters, prefix);
+        if (statsAggregator != null) {
+          // Update stats for transactional tables (MM, or full ACID with overwrite), even
+          // though we are marking stats as not being accurate.
+          if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
+            String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
+            updateStats(statsAggregator, parameters, prefix);
+          }
         }
+      } else {
+        parameters.putAll(providedBasicStats);
       }
 
       return p.getOutput();
     }
 
     public void collectFileStatus(Warehouse wh, HiveConf conf) throws MetaException, IOException {
-      if (!partish.isTransactionalTable()) {
-        partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
-      } else {
-        Path path = new Path(partish.getPartSd().getLocation());
-        partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
-        isMissingAcidState = true;
+      if (providedBasicStats == null) {
+        if (!partish.isTransactionalTable()) {
+          partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
+        } else {
+          Path path = new Path(partish.getPartSd().getLocation());
+          partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
+          isMissingAcidState = true;
+        }
       }
     }
 
@@ -193,10 +205,10 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
 
       // prefix is of the form dbName.tblName
-      String prefix = table.getDbName() + "." + MetaStoreUtils.encodeTableName(table.getTableName());
+      String prefix = FileUtils.escapePathName(table.getDbName()).toLowerCase() + "." +
+          FileUtils.escapePathName(table.getTableName()).toLowerCase();
       // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
       // prefix = work.getAggKey();
-      prefix = prefix.toLowerCase();
       if (partition != null) {
         return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
       }

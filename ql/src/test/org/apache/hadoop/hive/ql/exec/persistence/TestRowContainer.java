@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -50,7 +49,7 @@ public class TestRowContainer {
     Properties props = new Properties();
     props.put(serdeConstants.LIST_COLUMNS, "x");
     props.put(serdeConstants.LIST_COLUMN_TYPES, "array<string>");
-    SerDeUtils.initializeSerDe(serde, null, props, null);
+    serde.initialize(null, props, null);
     result.setSerDe(serde,
       ObjectInspectorUtils.getStandardObjectInspector(serde.getObjectInspector()));
     result.setTableDesc(

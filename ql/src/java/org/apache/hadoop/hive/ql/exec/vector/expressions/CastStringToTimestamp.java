@@ -35,18 +35,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public class CastStringToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int inputColumn;
-
   public CastStringToTimestamp() {
     super();
-
-    // Dummy final assignments.
-    inputColumn = -1;
   }
 
-  public CastStringToTimestamp(int inputColumn, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputColumn = inputColumn;
+  public CastStringToTimestamp(int inputColumnNum, int outputColumnNum) {
+    super(inputColumnNum, outputColumnNum);
   }
 
   @Override
@@ -56,7 +50,7 @@ public class CastStringToTimestamp extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumn];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
@@ -143,7 +137,7 @@ public class CastStringToTimestamp extends VectorExpression {
     }
   }
 
-  private void evaluate(TimestampColumnVector outputColVector, BytesColumnVector inputColVector, int i) {
+  protected void evaluate(TimestampColumnVector outputColVector, BytesColumnVector inputColVector, int i) {
     try {
       org.apache.hadoop.hive.common.type.Timestamp timestamp =
           PrimitiveObjectInspectorUtils.getTimestampFromString(
@@ -152,15 +146,19 @@ public class CastStringToTimestamp extends VectorExpression {
                   "UTF-8"));
       outputColVector.set(i, timestamp.toSqlTimestamp());
     } catch (Exception e) {
-      outputColVector.setNullValue(i);
-      outputColVector.isNull[i] = true;
-      outputColVector.noNulls = false;
+      setNull(outputColVector, i);
     }
+  }
+
+  void setNull(TimestampColumnVector outputColVector, int i) {
+    outputColVector.setNullValue(i);
+    outputColVector.isNull[i] = true;
+    outputColVector.noNulls = false;
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

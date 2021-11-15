@@ -37,12 +37,14 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
     Table qlMdTable = new Table(eventMessage.getTableObject());
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 
     // Statistics without data doesn't make sense.
-    if (withinContext.replicationSpec.isMetadataOnly()) {
+    if (withinContext.replicationSpec.isMetadataOnly()
+            || Utils.shouldDumpMetaDataOnlyForExternalTables(qlMdTable, withinContext.hiveConf)) {
       return;
     }
 

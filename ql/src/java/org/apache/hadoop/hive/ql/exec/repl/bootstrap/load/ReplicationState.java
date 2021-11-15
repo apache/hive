@@ -17,19 +17,37 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
+import org.apache.hadoop.hive.ql.exec.CopyTask;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 
 public class ReplicationState implements Serializable {
 
   public static class PartitionState {
     final String tableName;
-    public final AddPartitionDesc lastReplicatedPartition;
+    public final AlterTableAddPartitionDesc lastReplicatedPartition;
+    public AlterTableAddPartitionDesc.PartitionDesc partSpec;
+    public Stage stage;
 
-    public PartitionState(String tableName, AddPartitionDesc lastReplicatedPartition) {
+    public enum Stage {
+      COPY,
+      PARTITION
+    }
+
+    public PartitionState(String tableName, AlterTableAddPartitionDesc lastReplicatedPartition) {
       this.tableName = tableName;
       this.lastReplicatedPartition = lastReplicatedPartition;
+      this.stage = Stage.PARTITION;
+    }
+
+    public PartitionState(String tableName, AlterTableAddPartitionDesc lastReplicatedPartition,
+                          AlterTableAddPartitionDesc.PartitionDesc lastProcessedPartSpec, Stage stage) {
+      this.tableName = tableName;
+      this.lastReplicatedPartition = lastReplicatedPartition;
+      this.partSpec = lastProcessedPartSpec;
+      this.stage = stage;
     }
   }
 

@@ -338,7 +338,7 @@ public abstract class HCatBaseInputFormat
     Iterator<String> pathIterator = pathStrings.iterator();
     while (pathIterator.hasNext()) {
       String pathString = pathIterator.next();
-      if (ignoreInvalidPath && org.apache.commons.lang.StringUtils.isBlank(pathString)) {
+      if (ignoreInvalidPath && org.apache.commons.lang3.StringUtils.isBlank(pathString)) {
         continue;
       }
       Path path = new Path(pathString);

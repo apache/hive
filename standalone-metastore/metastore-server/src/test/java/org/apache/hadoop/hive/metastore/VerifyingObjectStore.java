@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.commons.lang.StringUtils.repeat;
+import static org.apache.commons.lang3.StringUtils.repeat;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 import java.lang.reflect.AccessibleObject;
@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -93,31 +93,33 @@ public class VerifyingObjectStore extends ObjectStore {
   @Override
   public List<Partition> getPartitions(
       String catName, String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
+    openTransaction();
     List<Partition> sqlResults = getPartitionsInternal(catName, dbName, tableName, maxParts, true, false);
     List<Partition> ormResults = getPartitionsInternal(catName, dbName, tableName, maxParts, false, true);
     verifyLists(sqlResults, ormResults, Partition.class);
+    commitTransaction();
     return sqlResults;
   }
 
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName,
-      String tableName, List<String> colNames) throws MetaException, NoSuchObjectException {
+      String tableName, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     ColumnStatistics sqlResult = getTableColumnStatisticsInternal(
-        catName, dbName, tableName, colNames, true, false);
+        catName, dbName, tableName, colNames, engine, true, false);
     ColumnStatistics jdoResult = getTableColumnStatisticsInternal(
-        catName, dbName, tableName, colNames, false, true);
+        catName, dbName, tableName, colNames, engine, false, true);
     verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
   }
 
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
-      String tableName, List<String> partNames, List<String> colNames)
+      String tableName, List<String> partNames, List<String> colNames, String engine)
       throws MetaException, NoSuchObjectException {
     List<ColumnStatistics> sqlResult = getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames, true, false);
+        catName, dbName, tableName, partNames, colNames, engine, true, false);
     List<ColumnStatistics> jdoResult = getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames,  false, true);
+        catName, dbName, tableName, partNames, colNames, engine, false, true);
     verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
   }

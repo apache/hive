@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataIns
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 
 /**
@@ -46,6 +47,22 @@ public final class ColumnsStatsUtils {
       dateColumnStats = new DateColumnStatsDataInspector(cso.getStatsData().getDateStats());
     }
     return dateColumnStats;
+  }
+
+  /**
+   * Convertes to TimestampColumnStatsDataInspector if it's a TimestampColumnStatsData.
+   * @param cso ColumnStatisticsObj
+   * @return TimestampColumnStatsDataInspector
+   */
+  public static TimestampColumnStatsDataInspector timestampInspectorFromStats(ColumnStatisticsObj cso) {
+    TimestampColumnStatsDataInspector timestampColumnStats;
+    if (cso.getStatsData().getTimestampStats() instanceof TimestampColumnStatsDataInspector) {
+      timestampColumnStats =
+          (TimestampColumnStatsDataInspector)(cso.getStatsData().getTimestampStats());
+    } else {
+      timestampColumnStats = new TimestampColumnStatsDataInspector(cso.getStatsData().getTimestampStats());
+    }
+    return timestampColumnStats;
   }
 
   /**

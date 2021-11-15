@@ -46,8 +46,10 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized
         Reducer 2 
@@ -128,6 +130,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	0                   
@@ -182,7 +185,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_t1
-                  Statistics: Num rows: 392 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work
@@ -235,6 +237,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	2000                

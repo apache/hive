@@ -28,7 +28,6 @@ describe formatted src_multi2_n7;
 
 
 set hive.mapred.mode=nonstrict;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 

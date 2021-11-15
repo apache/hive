@@ -1,0 +1,101 @@
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+{"databases":["default"]}
+PREHOOK: query: DESC DATABASE default
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: DESC DATABASE default
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:default
+#### A masked pattern was here ####
+PREHOOK: query: CREATE TABLE t (i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+{"tables":["t"]}
+PREHOOK: query: SHOW EXTENDED TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW EXTENDED TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+{"tables":[{"Table Name":"t","Table Type":"MANAGED_TABLE"}]}
+PREHOOK: query: SHOW TABLE EXTENDED LIKE 't'
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE 't'
+POSTHOOK: type: SHOW_TABLESTATUS
+#### A masked pattern was here ####
+PREHOOK: query: DESC t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: DESC t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t
+{"columns":[{"name":"i","type":"int"}]}
+PREHOOK: query: CREATE VIEW v AS SELECT * FROM t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: CREATE VIEW v AS SELECT * FROM t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.i SIMPLE [(t)t.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: SHOW VIEWS
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS
+POSTHOOK: type: SHOWVIEWS
+{"tables":["v"]}
+PREHOOK: query: CREATE MATERIALIZED VIEW mv DISABLE REWRITE AS SELECT * FROM t
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv
+POSTHOOK: query: CREATE MATERIALIZED VIEW mv DISABLE REWRITE AS SELECT * FROM t
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv
+POSTHOOK: Lineage: mv.i SIMPLE [(t)t.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: SHOW MATERIALIZED VIEWS
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+{"materialized views":[{"MV Name":"mv","Rewriting Enabled":"No","Mode":"Manual refresh","Incremental rebuild":"Unknown"}]}
+PREHOOK: query: CREATE RESOURCE PLAN rp
+PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: CREATE RESOURCE PLAN rp
+POSTHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: query: SHOW RESOURCE PLANS
+PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: SHOW RESOURCE PLANS
+POSTHOOK: type: SHOW RESOURCEPLAN
+[{"name":"rp","status":"DISABLED","defaultPoolPath":"default"}]
+PREHOOK: query: SHOW RESOURCE PLAN rp
+PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: SHOW RESOURCE PLAN rp
+POSTHOOK: type: SHOW RESOURCEPLAN
+{"name":"rp","status":"DISABLED","parallelism":null,"defaultPool":"default","pools":[{"name":"default","allocFraction":1.0,"schedulingPolicy":null,"parallelism":4,"triggers":[],"mappings":[{"type":"default","values":[]}],"pools":[]}]}
+PREHOOK: query: ALTER RESOURCE PLAN rp VALIDATE
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN rp VALIDATE
+POSTHOOK: type: ALTER RESOURCEPLAN
+{"errors":[],"warnings":[]}

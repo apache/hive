@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
@@ -56,14 +54,14 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(5,6),(8,8)");
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDTBL + " order by a, b";
     String[][] expected = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t1\t4",
-            "acidtbl/delta_0000002_0000002_0000/bucket_00001"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4",
-            "acidtbl/delta_0000002_0000002_0000/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t5\t6",
-            "acidtbl/delta_0000003_0000003_0000/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "acidtbl/delta_0000003_0000003_0000/bucket_00001"}};
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
+            "acidtbl/delta_0000002_0000002_0000/bucket_00001_0"},
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
+            "acidtbl/delta_0000002_0000002_0000/bucket_00001_0"},
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
+            "acidtbl/delta_0000003_0000003_0000/bucket_00001_0"},
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
+            "acidtbl/delta_0000003_0000003_0000/bucket_00001_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
@@ -80,13 +78,13 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t1\t4",
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
             "acidtbl/base_0000003_v0000019/bucket_00001"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4",
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
             "acidtbl/base_0000003_v0000019/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t5\t6",
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
             "acidtbl/base_0000003_v0000019/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
             "acidtbl/base_0000003_v0000019/bucket_00001"}};
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
@@ -98,13 +96,13 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDTBLPART + " order by a, b";
     String[][] expected = new String[][] {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
-            "acidtblpart/p=p1/delta_0000002_0000002_0000/bucket_00001"},
+            "acidtblpart/p=p1/delta_0000002_0000002_0000/bucket_00001_0"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t4\t5",
-            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001"},
+            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
-            "acidtblpart/p=p1/delta_0000003_0000003_0000/bucket_00001"},
+            "acidtblpart/p=p1/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001"}};
+            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
@@ -124,11 +122,11 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
             "acidtblpart/p=p1/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t4\t5",
-            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001"},
+            "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
             "acidtblpart/p=p1/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001"}};
+            "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001_0"}};
 
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
@@ -162,10 +160,10 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
-        {"1\t2", "t/base_0000002_v0000020/000000_0"},
-        {"4\t5", "t/base_0000002_v0000020/000000_0"},
-        {"5\t6", "t/base_0000002_v0000020/000000_0"},
-        {"8\t8", "t/base_0000002_v0000020/000000_0"}};
+        {"1\t2", "t/base_0000003_v0000020/000000_0"},
+        {"4\t5", "t/base_0000003_v0000020/000000_0"},
+        {"5\t6", "t/base_0000003_v0000020/000000_0"},
+        {"8\t8", "t/base_0000003_v0000020/000000_0"}};
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
 }

@@ -1,0 +1,521 @@
+PREHOOK: query: EXPLAIN
+SELECT f.key, g.value
+FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
+WHERE (f.key = m.key AND f.value='2008-04-08' AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT f.key, g.value
+FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
+WHERE (f.key = m.key AND f.value='2008-04-08' AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: m
+                  filterExpr: (((value <> '') and key is not null) or (value <> '')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((value <> '') and key is not null) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (value = '2008-04-08') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: boolean)
+                  Filter Operator
+                    predicate: (value <> '') (type: boolean)
+                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: f
+                  filterExpr: ((value) IN ('2008-04-08', '2008-04-09') and key is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((value) IN ('2008-04-08', '2008-04-09') and key is not null) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), (value = '2008-04-08') (type: boolean), (value = '2008-04-09') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: boolean), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col4 and _col2) or _col5)}
+                Statistics: Num rows: 3 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 3 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col3 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col3, _col6
+                Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col3 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT f.key, g.value
+FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
+WHERE (f.key = m.key AND f.value IN ('2008-04-08','2008-04-10') AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT f.key, g.value
+FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
+WHERE (f.key = m.key AND f.value IN ('2008-04-08','2008-04-10') AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: m
+                  filterExpr: (((value <> '') and key is not null) or (value <> '')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((value <> '') and key is not null) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (value = '2008-04-08') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: boolean)
+                  Filter Operator
+                    predicate: (value <> '') (type: boolean)
+                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: f
+                  filterExpr: ((value) IN ('2008-04-08', '2008-04-10', '2008-04-09') and key is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((value) IN ('2008-04-08', '2008-04-10', '2008-04-09') and key is not null) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), (value) IN ('2008-04-08', '2008-04-10') (type: boolean), (value = '2008-04-09') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: boolean), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col4 and _col2) or _col5)}
+                Statistics: Num rows: 4 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 4 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col3 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col3, _col6
+                Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col3 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT t1.key 
+FROM cbo_t1 t1
+JOIN (
+  SELECT t2.key
+  FROM cbo_t2 t2
+  JOIN (SELECT * FROM cbo_t3 t3 WHERE c_int=1) t3 ON t2.key=t3.c_int
+  WHERE ((t2.key=t3.key) AND (t2.c_float + t3.c_float > 2)) OR
+      ((t2.key=t3.key) AND (t2.c_int + t3.c_int > 2))) t4 ON t1.key=t4.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT t1.key 
+FROM cbo_t1 t1
+JOIN (
+  SELECT t2.key
+  FROM cbo_t2 t2
+  JOIN (SELECT * FROM cbo_t3 t3 WHERE c_int=1) t3 ON t2.key=t3.c_int
+  WHERE ((t2.key=t3.key) AND (t2.c_float + t3.c_float > 2)) OR
+      ((t2.key=t3.key) AND (t2.c_int + t3.c_int > 2))) t4 ON t1.key=t4.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: (UDFToDouble(key) = 1.0D) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1767 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) = 1.0D) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_float (type: float), ((c_int + 1) > 2) (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: float), _col2 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t3
+                  filterExpr: ((c_int = 1) and (UDFToDouble(key) = 1.0D)) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1767 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((c_int = 1) and (UDFToDouble(key) = 1.0D)) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_float (type: float)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: float)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: (UDFToDouble(key) = 1.0D) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) = 1.0D) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col4
+                residual filter predicates: {(((_col1 + _col4) > 2.0) or _col2)}
+                Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col5
+                Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col5 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT f.key, f.value, m.value
+FROM src f JOIN src m ON(f.key = m.key AND m.value is not null AND m.value !='')
+WHERE (f.value IN ('2008-04-08','2008-04-10') AND f.value IN ('2008-04-08','2008-04-09') AND m.value='2008-04-10') OR (m.value='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT f.key, f.value, m.value
+FROM src f JOIN src m ON(f.key = m.key AND m.value is not null AND m.value !='')
+WHERE (f.value IN ('2008-04-08','2008-04-10') AND f.value IN ('2008-04-08','2008-04-09') AND m.value='2008-04-10') OR (m.value='2008-04-08')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: f
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (value) IN ('2008-04-08', '2008-04-10') (type: boolean), (value) IN ('2008-04-08', '2008-04-09') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: boolean), _col3 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: m
+                  filterExpr: ((value) IN ('2008-04-10', '2008-04-08') and (value <> '') and key is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((value) IN ('2008-04-10', '2008-04-08') and (value <> '') and key is not null) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (value = '2008-04-10') (type: boolean), (value = '2008-04-08') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 3 Data size: 558 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 558 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: boolean), _col3 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col7
+                residual filter predicates: {((_col2 and _col3 and _col6) or _col7)}
+                Statistics: Num rows: 2 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 538 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 538 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

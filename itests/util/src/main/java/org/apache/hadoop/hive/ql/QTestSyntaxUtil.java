@@ -22,10 +22,9 @@ import static org.junit.Assert.assertTrue;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.processors.AddResourceProcessor;
@@ -49,26 +48,26 @@ import org.apache.hive.common.util.HiveStringUtils;
  */
 public class QTestSyntaxUtil {
 
-  private QTestUtil qUtil;
+  private QTestUtil qTestUtil;
   private HiveConf conf;
   private ParseDriver pd;
 
   public QTestSyntaxUtil(QTestUtil qTestUtil, HiveConf conf, ParseDriver pd) {
-    qUtil = qTestUtil;
+    this.qTestUtil = qTestUtil;
     this.conf = conf;
     this.pd = pd;
   }
 
   public void checkQFileSyntax(List<String> cmds) {
     String command = "";
-    if (shouldCheckSyntax()) {
+    if (QTestSystemProperties.shouldCheckSyntax()) {
       //check syntax first
       for (String oneCmd : cmds) {
         if (StringUtils.endsWith(oneCmd, "\\")) {
           command += StringUtils.chop(oneCmd) + "\\;";
           continue;
         } else {
-          if (qUtil.isHiveCommand(oneCmd)) {
+          if (qTestUtil.isHiveCommand(oneCmd)) {
             command = oneCmd;
           } else {
             command += oneCmd;
@@ -81,10 +80,6 @@ public class QTestSyntaxUtil {
         command = "";
       }
     }
-  }
-
-  private boolean shouldCheckSyntax() {
-    return "true".equalsIgnoreCase(System.getProperty("test.check.syntax"));
   }
 
   private boolean checkSyntax(String cmd) {
@@ -107,13 +102,8 @@ public class QTestSyntaxUtil {
       CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
       if (proc instanceof IDriver) {
         try {
-          Context ctx = new Context(conf);
-          HiveTxnManager queryTxnMgr = SessionState.get().initTxnMgr(conf);
-          ctx.setHiveTxnManager(queryTxnMgr);
-          ctx.setCmd(cmd);
-          ctx.setHDFSCleanup(true);
-          tree = pd.parse(cmd, ctx);
-          qUtil.analyzeAST(tree);
+          tree = pd.parse(cmd, conf).getTree();
+          qTestUtil.analyzeAST(tree);
         } catch (Exception e) {
           return false;
         }

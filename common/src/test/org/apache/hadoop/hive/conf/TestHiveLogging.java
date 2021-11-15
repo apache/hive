@@ -23,7 +23,11 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.common.util.HiveTestUtils;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * TestHiveLogging
@@ -31,7 +35,7 @@ import junit.framework.TestCase;
  * Test cases for HiveLogging, which is initialized in HiveConf.
  * Loads configuration files located in common/src/test/resources.
  */
-public class TestHiveLogging extends TestCase {
+public class TestHiveLogging {
   public TestHiveLogging() {
     super();
   }
@@ -74,6 +78,7 @@ public class TestHiveLogging extends TestCase {
     assertTrue(logFile + " should exist", logFile.exists());
   }
 
+  @Test
   public void testHiveLogging() throws Exception {
     // customized log4j config log file to be: /${test.tmp.dir}/TestHiveLogging/hiveLog4jTest.log
     File customLogPath = new File(new File(System.getProperty("test.tmp.dir")),

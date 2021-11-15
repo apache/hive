@@ -1,0 +1,17 @@
+CBO PLAN:
+HiveProject(i_item_desc=[$0], i_category=[$1], i_class=[$2], i_current_price=[$3], itemrevenue=[$4], revenueratio=[$5])
+  HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$6], sort3=[$0], sort4=[$5], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
+    HiveProject(i_item_desc=[$1], i_category=[$4], i_class=[$3], i_current_price=[$2], itemrevenue=[$5], revenueratio=[/(*($5, 100:DECIMAL(10, 0)), sum($5) OVER (PARTITION BY $3 ORDER BY $3 NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING))], (tok_table_or_col i_item_id)=[$0])
+      HiveAggregate(group=[{4, 5, 6, 7, 8}], agg#0=[sum($1)])
+        HiveJoin(condition=[=($2, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(cs_item_sk=[$14], cs_ext_sales_price=[$22], cs_sold_date_sk=[$33])
+              HiveFilter(condition=[IS NOT NULL($33)])
+                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+            HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
+              HiveFilter(condition=[IN($12, _UTF-16LE'Jewelry                                           ', _UTF-16LE'Sports                                            ', _UTF-16LE'Books                                             ')])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+          HiveProject(d_date_sk=[$0])
+            HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 2001-01-12 00:00:00:TIMESTAMP(9), 2001-02-11 00:00:00:TIMESTAMP(9))])
+              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

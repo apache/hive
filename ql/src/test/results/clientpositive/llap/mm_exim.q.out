@@ -118,6 +118,7 @@ POSTHOOK: Input: default@intermediate_n4
 POSTHOOK: Input: default@intermediate_n4@p=455
 POSTHOOK: Input: default@intermediate_n4@p=456
 POSTHOOK: Input: default@intermediate_n4@p=457
+POSTHOOK: Output: default@intermmediate
 POSTHOOK: Output: default@intermmediate@p=455
 POSTHOOK: Output: default@intermmediate@p=456
 POSTHOOK: Output: default@intermmediate@p=457
@@ -386,7 +387,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numPartitions       	3                   

@@ -73,7 +73,8 @@ public abstract class TypedSerDe extends AbstractSerDe {
   }
 
   @Override
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
     // do nothing
   }
 
@@ -85,12 +86,6 @@ public abstract class TypedSerDe extends AbstractSerDe {
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     throw new RuntimeException("not supported");
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
 }

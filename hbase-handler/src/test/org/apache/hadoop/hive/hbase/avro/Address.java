@@ -37,8 +37,10 @@ public class Address extends org.apache.avro.specific.SpecificRecordBase impleme
     this.metadata = metadata;
   }
 
+  @Override
   public org.apache.avro.Schema getSchema() { return SCHEMA$; }
   // Used by DatumWriter.  Applications should not call. 
+  @Override
   public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return address1;
@@ -52,6 +54,7 @@ public class Address extends org.apache.avro.specific.SpecificRecordBase impleme
     }
   }
   // Used by DatumReader.  Applications should not call. 
+  @Override
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
@@ -59,7 +62,7 @@ public class Address extends org.apache.avro.specific.SpecificRecordBase impleme
     case 1: address2 = (java.lang.CharSequence)value$; break;
     case 2: city = (java.lang.CharSequence)value$; break;
     case 3: zipcode = (java.lang.Long)value$; break;
-    case 4: county = (java.lang.Object)value$; break;
+    case 4: county = value$; break;
     case 5: aliases = (java.util.List<java.lang.CharSequence>)value$; break;
     case 6: metadata = (java.util.Map<java.lang.CharSequence,java.lang.CharSequence>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");

@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +47,6 @@ public class TestStatsReplicationScenariosACIDNoAutogather extends TestStatsRepl
               "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     overrides.put(MetastoreConf.ConfVars.CAPABILITY_CHECK.getHiveName(),"false");
     overrides.put(HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT.varname,"1s");
-    overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
-
 
     internalBeforeClassSetup(overrides, overrides,
             TestStatsReplicationScenariosACIDNoAutogather.class, false, AcidTableKind.FULL_ACID);

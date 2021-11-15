@@ -214,11 +214,13 @@ public class LongColumnVector extends ColumnVector {
   }
 
   // Fill the column vector with nulls
-  public void fillWithNulls() {
+  public LongColumnVector fillWithNulls() {
     noNulls = false;
     isRepeating = true;
     vector[0] = NULL_VALUE;
     isNull[0] = true;
+
+    return this;
   }
 
   // Simplify vector by brute-force flattening noNulls and isRepeating

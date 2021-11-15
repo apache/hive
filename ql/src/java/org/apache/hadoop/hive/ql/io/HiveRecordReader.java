@@ -35,12 +35,12 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
 
 
 
-  public HiveRecordReader(RecordReader recordReader)
+  public HiveRecordReader(RecordReader<K, V> recordReader)
       throws IOException {
     super(recordReader);
   }
 
-  public HiveRecordReader(RecordReader recordReader, JobConf conf)
+  public HiveRecordReader(RecordReader<K, V> recordReader, JobConf conf)
       throws IOException {
     super(recordReader, conf);
   }
@@ -50,14 +50,17 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     recordReader.close();
   }
 
+  @Override
   public K createKey() {
-    return (K) recordReader.createKey();
+    return recordReader.createKey();
   }
 
+  @Override
   public V createValue() {
-    return (V) recordReader.createValue();
+    return recordReader.createValue();
   }
 
+  @Override
   public long getPos() throws IOException {
     return recordReader.getPos();
   }

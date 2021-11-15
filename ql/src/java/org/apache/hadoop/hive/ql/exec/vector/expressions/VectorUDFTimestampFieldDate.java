@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.TimeZone;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -34,22 +35,18 @@ import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.base.Preconditions;
 
-
 /**
  * Abstract class to return various fields from a Timestamp or Date.
  */
 public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  protected final int colNum;
   protected final int field;
 
-  protected transient final Calendar calendar = Calendar.getInstance(
-      TimeZone.getTimeZone("UTC"));
+  protected final transient Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
 
   public VectorUDFTimestampFieldDate(int field, int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
     this.field = field;
   }
 
@@ -57,7 +54,6 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum = -1;
     field = -1;
   }
 
@@ -65,8 +61,8 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
     initCalendar();
   }
 
@@ -86,7 +82,7 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
     }
 
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
-    ColumnVector inputColVec = batch.cols[this.colNum];
+    ColumnVector inputColVec = batch.cols[this.inputColumnNum[0]];
 
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputColVec.isRepeating ? 1 : batch.size;
@@ -173,9 +169,9 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   @Override
   public String vectorExpressionParameters() {
     if (field == -1) {
-      return "col " + colNum;
+      return "col " + inputColumnNum[0];
     } else {
-      return "col " + colNum + ", field " + DateUtils.getFieldName(field);
+      return "col " + inputColumnNum[0] + ", field " + DateUtils.getFieldName(field);
     }
   }
 

@@ -36,8 +36,12 @@ public final class SignatureUtils {
   private static Map<Class<?>, SignatureMapper> mappers = new HashMap<>();
 
   public static void write(Map<String, Object> ret, Object o) {
-    SignatureMapper mapper = getSigMapper(o.getClass());
-    mapper.write(ret, o);
+    if (o == null) {
+      ret.put("__null", "true");
+    } else {
+      SignatureMapper mapper = getSigMapper(o.getClass());
+      mapper.write(ret, o);
+    }
   }
 
   /** Prevent construction. */

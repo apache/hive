@@ -1,0 +1,165 @@
+PREHOOK: query: CREATE TABLE lv_table1( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1), c5 STRING, c6 STRING, c7 STRING, c8 STRING, c9 STRING, c10 STRING, c11 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lv_table1
+POSTHOOK: query: CREATE TABLE lv_table1( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1), c5 STRING, c6 STRING, c7 STRING, c8 STRING, c9 STRING, c10 STRING, c11 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lv_table1
+PREHOOK: query: INSERT OVERWRITE TABLE lv_table1 SELECT 'abc  ', array(1,2,3), 100, 't', 'test', 'test', 'test', 'test', 'test', 'test', 'test' FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@lv_table1
+POSTHOOK: query: INSERT OVERWRITE TABLE lv_table1 SELECT 'abc  ', array(1,2,3), 100, 't', 'test', 'test', 'test', 'test', 'test', 'test', 'test' FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@lv_table1
+POSTHOOK: Lineage: lv_table1.c1 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c10 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c11 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c2 EXPRESSION []
+POSTHOOK: Lineage: lv_table1.c3 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c4 EXPRESSION []
+POSTHOOK: Lineage: lv_table1.c5 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c6 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c7 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c8 SIMPLE []
+POSTHOOK: Lineage: lv_table1.c9 SIMPLE []
+PREHOOK: query: EXPLAIN SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: lv_table1
+                  filterExpr: (c3 = 100) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 800156 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (c3 = 100) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 8001 Basic stats: COMPLETE Column stats: NONE
+                    Lateral View Forward
+                      Statistics: Num rows: 5 Data size: 8001 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: c1 (type: string), c2 (type: array<int>), c4 (type: char(1)), c5 (type: string), c6 (type: string), c7 (type: string), c8 (type: string), c9 (type: string), c10 (type: string), c11 (type: string)
+                        outputColumnNames: c1, c2, c4, c5, c6, c7, c8, c9, c10, c11
+                        Statistics: Num rows: 5 Data size: 8001 Basic stats: COMPLETE Column stats: NONE
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col15
+                          Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                          Top N Key Operator
+                            sort order: ++
+                            keys: _col0 (type: string), _col15 (type: int)
+                            null sort order: zz
+                            Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                            top n: 1
+                            Select Operator
+                              expressions: _col0 (type: string), _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col15 (type: int)
+                              outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                              Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                              Reduce Output Operator
+                                key expressions: _col0 (type: string), _col11 (type: int)
+                                null sort order: zz
+                                sort order: ++
+                                Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                                value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
+                      Select Operator
+                        expressions: array(1,2,3) (type: array<int>)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 5 Data size: 8001 Basic stats: COMPLETE Column stats: NONE
+                        UDTF Operator
+                          Statistics: Num rows: 5 Data size: 8001 Basic stats: COMPLETE Column stats: NONE
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col15
+                            Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                            Top N Key Operator
+                              sort order: ++
+                              keys: _col0 (type: string), _col15 (type: int)
+                              null sort order: zz
+                              Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                              top n: 1
+                              Select Operator
+                                expressions: _col0 (type: string), _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col15 (type: int)
+                                outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                                Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                                Reduce Output Operator
+                                  key expressions: _col0 (type: string), _col11 (type: int)
+                                  null sort order: zz
+                                  sort order: ++
+                                  Statistics: Num rows: 5 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
+                                  value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
+                  null sort order: zz
+                  Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                  top n: 1
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: array<int>), VALUE._col2 (type: char(1)), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: string), VALUE._col8 (type: string), VALUE._col9 (type: string), KEY.reducesinkkey1 (type: int)
+                    outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                    Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col11 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: array<int>), 100 (type: int), VALUE._col2 (type: char(1)), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: string), VALUE._col8 (type: string), VALUE._col9 (type: string), KEY.reducesinkkey1 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 3200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
+abc  	[1,2,3]	100	t	test	test	test	test	test	test	test	1

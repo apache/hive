@@ -17,4 +17,4 @@ POSTHOOK: Output: default@cmv_basetable
 POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
-FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Automatic rewriting for materialized view cannot be enabled if the materialized view uses non-transactional tables
+FAILED: SemanticException Automatic rewriting for materialized view cannot be enabled if the materialized view uses non-transactional tables

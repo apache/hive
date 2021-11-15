@@ -29,6 +29,7 @@ SERVICE=""
 HELP=""
 SKIP_HBASECP=false
 SKIP_HADOOPVERSION=false
+EXECUTE_WITH_JAVA=false
 
 SERVICE_ARGS=()
 while [ $# -gt 0 ]; do
@@ -52,6 +53,10 @@ while [ $# -gt 0 ]; do
       ;;
     --llapdump)
       SERVICE=llapdump
+      shift
+      ;;
+    --replMigration)
+      SERVICE=replMigration
       shift
       ;;
     --skiphadoopversion)
@@ -85,12 +90,18 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+USE_BEELINE_FOR_HIVE_CLI="true"
 if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
   CLIUSER=`whoami`
   SERVICE="beeline"
 fi
 
-if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
+if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
+  SERVICE="beeline"
+  SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-c" "${BEELINE_URL_LEGACY}")
+fi
+
+if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus)$ ]] ; then
   SKIP_HBASECP=true
 fi
 
@@ -102,15 +113,17 @@ if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
   . "${HIVE_CONF_DIR}/hive-env.sh"
 fi
 
-if [[ -z "$SPARK_HOME" ]]
-then
-  bin=`dirname "$0"`
-  # many hadoop installs are in dir/{spark,hive,hadoop,..}
-  if test -e $bin/../../spark; then 
-    sparkHome=$(readlink -f $bin/../../spark)
-    if [[ -d $sparkHome ]]
-    then
-      export SPARK_HOME=$sparkHome
+if [ "$SERVICE" != "beeline" ]; then
+  if [[ -z "$SPARK_HOME" ]]
+  then
+    bin=`dirname "$0"`
+    # many hadoop installs are in dir/{spark,hive,hadoop,..}
+    if test -e $bin/../../spark; then 
+      sparkHome=$(readlink -f $bin/../../spark)
+      if [[ -d $sparkHome ]]
+      then
+        export SPARK_HOME=$sparkHome
+      fi
     fi
   fi
 fi
@@ -119,34 +132,27 @@ CLASSPATH="${TEZ_CONF_DIR:-/etc/tez/conf}:${HIVE_CONF_DIR}"
 
 HIVE_LIB=${HIVE_HOME}/lib
 
-# needed for execution
-if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
-  echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive-exec-*.jar"
-  exit 1;
-fi
+if [ "$SERVICE" != "beeline" ]; then
+  # needed for execution
+  if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
+    echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive-exec-*.jar"
+    exit 1;
+  fi
 
-if [ ! -f ${HIVE_LIB}/hive-metastore-*.jar ]; then
-  echo "Missing Hive MetaStore Jar"
-  exit 2;
-fi
+  if [ ! -f ${HIVE_LIB}/hive-metastore-*.jar ]; then
+    echo "Missing Hive MetaStore Jar"
+    exit 2;
+  fi
 
-# cli specific code
-if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
-  echo "Missing Hive CLI Jar"
-  exit 3;
+  # cli specific code
+  if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
+    echo "Missing Hive CLI Jar"
+    exit 3;
+  fi
 fi
-
-# Hbase and Hadoop use their own log4j jars.  Including hives log4j jars can cause
-# log4j warnings.  So save hives log4j jars in LOG_JAR_CLASSPATH, and add it to classpath
-# after Hbase and Hadoop calls finish
-LOG_JAR_CLASSPATH="";
 
 for f in ${HIVE_LIB}/*.jar; do
-  if [[ $f == *"log4j"* ]]; then
-    LOG_JAR_CLASSPATH=${LOG_JAR_CLASSPATH}:$f;
-  else
-    CLASSPATH=${CLASSPATH}:$f;
-  fi
+  CLASSPATH=${CLASSPATH}:$f;
 done
 
 # add the auxillary jars such as serdes
@@ -198,6 +204,54 @@ else
     CLASSPATH=${CLASSPATH}:${AUX_CLASSPATH}
 fi
 
+if [ "$SKIP_HBASECP" = false ]; then
+  # HBase detection. Need bin/hbase and a conf dir for building classpath entries.
+  # Start with BigTop defaults for HBASE_HOME and HBASE_CONF_DIR.
+  HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
+  HBASE_CONF_DIR=${HBASE_CONF_DIR:-"/etc/hbase/conf"}
+  if [[ ! -d $HBASE_CONF_DIR ]] ; then
+    # not explicitly set, nor in BigTop location. Try looking in HBASE_HOME.
+    HBASE_CONF_DIR="$HBASE_HOME/conf"
+  fi
+
+  # perhaps we've located the HBase config. if so, include it on classpath.
+  if [[ -d $HBASE_CONF_DIR ]] ; then
+    if [ "$HBASE_MR_CLASSPATH" != "" ]; then
+      HBASE_MR_CLASSPATH="${HBASE_MR_CLASSPATH},${HBASE_CONF_DIR}"
+    else
+      HBASE_MR_CLASSPATH="${HBASE_CONF_DIR}"
+    fi
+    CLASSPATH="${CLASSPATH}:${HBASE_CONF_DIR}"
+  fi
+
+  # look for the hbase script. First check HBASE_HOME and then ask PATH.
+  if [[ -e $HBASE_HOME/bin/hbase ]] ; then
+    HBASE_BIN="$HBASE_HOME/bin/hbase"
+  fi
+  HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
+
+  # perhaps we've located HBase. If so, include its details on the classpath
+  if [[ -n $HBASE_BIN ]] ; then
+    # exclude ZK, PB, and Guava (See HIVE-2055)
+    # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
+    for x in $($HBASE_BIN mapredcp 2>&2 | tr ':' '\n') ; do
+      if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* || $x == *slf4j* || $x == *log4j* ]] ; then
+        continue
+      fi
+      if [ "$HBASE_MR_CLASSPATH" != "" ]; then
+        HBASE_MR_CLASSPATH="${HBASE_MR_CLASSPATH},${x}"
+      else
+        HBASE_MR_CLASSPATH="${x}"
+      fi
+      CLASSPATH="${CLASSPATH}:${x}"
+    done
+  fi
+fi
+
+if [[ "$SERVICE" == "llap" && ! -z "$HBASE_MR_CLASSPATH" ]] ; then
+  SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-k" "${HBASE_MR_CLASSPATH}")
+fi
+
 # supress the HADOOP_HOME warnings in 1.x.x
 export HADOOP_HOME_WARN_SUPPRESS=true 
 
@@ -224,82 +278,69 @@ fi
 # HADOOP_HOME env variable overrides hadoop in the path
 HADOOP_HOME=${HADOOP_HOME:-${HADOOP_PREFIX:-$HADOOP_DIR}}
 if [ "$HADOOP_HOME" == "" ]; then
-  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
-  exit 4;
+  if [ "$SERVICE" != "beeline" ]; then
+    echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
+    exit 4;
+  fi
+else
+  # add distcp to classpath, hive depends on it
+  for f in ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-distcp-*.jar; do
+    export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f;
+  done
 fi
-
-# add distcp to classpath, hive depends on it
-for f in ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-distcp-*.jar; do
-  export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f;
-done
 
 HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
-  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
-  exit 4;
+  if [ "$SERVICE" != "beeline" ]; then
+    echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
+    exit 4;
+  else
+    JAVAEXE=$JAVA_HOME/bin/java
+    if [ ! -f ${JAVAEXE} ]; then
+      JAVAEXE=`which java 2>/dev/null`
+      if [ ! -f ${JAVAEXE} ]; then
+        echo "Cannot find hadoop or java installation: \$HADOOP_HOME or \$JAVA_HOME must be set or PATH be set";
+        exit 5;
+      fi
+    else
+      echo "HADOOP_HOME not set, executing beeline using JAVA";
+      export EXECUTE_WITH_JAVA=true
+      if [ -z ${HIVE_LIB} ]; then
+        export HIVE_LIB="${PWD}/lib"
+        export JAVAEXE=$JAVAEXE
+      fi
+    fi
+  fi
 fi
 
-if [ "$SKIP_HADOOPVERSION" = false ]; then
-  # Make sure we're using a compatible version of Hadoop
-  if [ "x$HADOOP_VERSION" == "x" ]; then
-      HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
-  fi
+if [ "$EXECUTE_WITH_JAVA" == "false" ]; then
+  if [ "$SKIP_HADOOPVERSION" = false ]; then
+    # Make sure we're using a compatible version of Hadoop
+    if [ "x$HADOOP_VERSION" == "x" ]; then
+        HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
+    fi
   
-  # Save the regex to a var to workaround quoting incompatabilities
-  # between Bash 3.1 and 3.2
-  hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
+    # Save the regex to a var to workaround quoting incompatabilities
+    # between Bash 3.1 and 3.2
+    hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
   
-  if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
+    if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
       hadoop_major_ver=${BASH_REMATCH[1]}
       hadoop_minor_ver=${BASH_REMATCH[2]}
       hadoop_patch_ver=${BASH_REMATCH[4]}
-  else
+    else
       echo "Unable to determine Hadoop version information."
       echo "'hadoop version' returned:"
       echo `$HADOOP version`
       exit 5
-  fi
+    fi
   
-  if [ "$hadoop_major_ver" -lt "1" -a  "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
+    if [ "$hadoop_major_ver" -lt "1" -a  "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
       echo "Hive requires Hadoop 0.20.x (x >= 1)."
       echo "'hadoop version' returned:"
       echo `$HADOOP version`
       exit 6
-  fi
-fi
-
-if [ "$SKIP_HBASECP" = false ]; then
-  # HBase detection. Need bin/hbase and a conf dir for building classpath entries.
-  # Start with BigTop defaults for HBASE_HOME and HBASE_CONF_DIR.
-  HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
-  HBASE_CONF_DIR=${HBASE_CONF_DIR:-"/etc/hbase/conf"}
-  if [[ ! -d $HBASE_CONF_DIR ]] ; then
-    # not explicitly set, nor in BigTop location. Try looking in HBASE_HOME.
-    HBASE_CONF_DIR="$HBASE_HOME/conf"
-  fi
-  
-  # perhaps we've located the HBase config. if so, include it on classpath.
-  if [[ -d $HBASE_CONF_DIR ]] ; then
-    export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HBASE_CONF_DIR}"
-  fi
-  
-  # look for the hbase script. First check HBASE_HOME and then ask PATH.
-  if [[ -e $HBASE_HOME/bin/hbase ]] ; then
-    HBASE_BIN="$HBASE_HOME/bin/hbase"
-  fi
-  HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
-  
-  # perhaps we've located HBase. If so, include its details on the classpath
-  if [[ -n $HBASE_BIN ]] ; then
-    # exclude ZK, PB, and Guava (See HIVE-2055)
-    # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
-    for x in $($HBASE_BIN mapredcp 2>&2 | tr ':' '\n') ; do
-      if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* ]] ; then
-        continue
-      fi
-      # TODO: should these should be added to AUX_PARAM as well?
-      export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${x}"
-    done
+    fi
   fi
 fi
 
@@ -354,9 +395,6 @@ if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
   fi
 fi
 
-# include the log4j jar that is used for hive into the classpath
-CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
-export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
 export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then

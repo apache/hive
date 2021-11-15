@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,9 +31,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -42,7 +44,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,6 +74,7 @@ public class Warehouse {
   private final Configuration conf;
   private final String whRootString;
   private final String whRootExternalString;
+  private final boolean isTenantBasedStorage;
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
@@ -91,6 +93,7 @@ public class Warehouse {
     fsHandler = getMetaStoreFsHandler(conf);
     cm = ReplChangeManager.getInstance(conf);
     storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
+    isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
   }
 
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
@@ -115,7 +118,7 @@ public class Warehouse {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -134,17 +137,50 @@ public class Warehouse {
    * This routine solves this problem by replacing the scheme and authority of a
    * path with the scheme and authority of the FileSystem that it maps to.
    *
+   * Since creating a new file system object is expensive, this method
+   * mimics getFileSystem() without creating an actual FileSystem object.
+   * When the input path lacks a scheme or an authority this is added
+   * from the default URI.
+   *
    * @param path
    *          Path to be canonicalized
    * @return Path with canonical scheme and authority
    */
   public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
-    FileSystem fs = getFs(path, conf);
-    String uriPath = path.toUri().getPath();
-    if (StringUtils.isEmpty(uriPath)) {
-      uriPath = "/";
+    if (isBlobStorageScheme(conf, path.toUri().getScheme())) {
+      String scheme = path.toUri().getScheme();
+      String authority = path.toUri().getAuthority();
+      URI defaultUri = FileSystem.getDefaultUri(conf);
+      if ((authority == null && scheme == null)
+              || StringUtils.equalsIgnoreCase(scheme, defaultUri.getScheme())) {
+        if (authority == null) {
+          authority = defaultUri.getAuthority();
+        }
+        if (scheme == null) {
+          scheme = defaultUri.getScheme();
+        }
+        String uriPath = path.toUri().getPath();
+        if (StringUtils.isEmpty(uriPath)) {
+          uriPath = "/";
+        }
+        return new Path(scheme, authority, uriPath);
+      }
+      return path;
+    } else { // fallback: for other FS type make the FS instance
+      FileSystem fs = getFs(path, conf);
+      String uriPath = path.toUri().getPath();
+      if (StringUtils.isEmpty(uriPath)) {
+        uriPath = "/";
+      }
+      return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), uriPath));
     }
-    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), uriPath));
+  }
+
+  private static boolean isBlobStorageScheme(Configuration conf, String scheme) {
+    final String uriScheme = scheme == null ? FileSystem.getDefaultUri(conf).getScheme() : scheme;
+    return MetastoreConf.getStringCollection(conf, MetastoreConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES)
+            .stream()
+            .anyMatch(each -> each.equalsIgnoreCase(uriScheme));
   }
 
   public Path getDnsPath(Path path) throws MetaException {
@@ -190,14 +226,17 @@ public class Warehouse {
    * file system.
    */
   public Path determineDatabasePath(Catalog cat, Database db) throws MetaException {
+    if (db.getType() == DatabaseType.REMOTE) {
+      return getDefaultDatabasePath(db.getName(), true);
+    }
     if (db.isSetLocationUri()) {
       return getDnsPath(new Path(db.getLocationUri()));
     }
     if (cat == null || cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
       if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRoot();
+        return getWhRootExternal();
       } else {
-        return new Path(getWhRoot(), dbDirFromDbName(db));
+        return new Path(getWhRootExternal(), dbDirFromDbName(db));
       }
     } else {
       return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
@@ -209,7 +248,7 @@ public class Warehouse {
   }
 
   /**
-   * Get the path specified by the database.  In the case of the default database the root of the
+   * Get the managed tables path specified by the database.  In the case of the default database the root of the
    * warehouse is returned.
    * @param db database to get the path of
    * @return path to the database directory
@@ -217,11 +256,54 @@ public class Warehouse {
    * file system.
    */
   public Path getDatabasePath(Database db) throws MetaException {
+    if (db.getManagedLocationUri() != null) {
+      return getDnsPath(new Path(db.getManagedLocationUri()));
+    }
     if (db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME) &&
         db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
+    // this is for backward-compatibility where certain DBs do not have managedLocationUri set
     return new Path(db.getLocationUri());
+  }
+
+  /**
+   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * warehouse is returned.
+   * @param db database to get the path of
+   * @return path to the database directory
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
+  public Path getDatabaseExternalPath(Database db) throws MetaException {
+      Path dbPath = new Path(db.getLocationUri());
+      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString() + Path.SEPARATOR)) {
+        // db metadata incorrect, find new location based on external warehouse root
+        dbPath = getDefaultExternalDatabasePath(db.getName());
+      }
+      return getDnsPath(dbPath);
+  }
+
+  /**
+   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * warehouse is returned.
+   * @param db database to get the path of
+   * @return path to the database directory
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
+  public Path getDatabaseManagedPath(Database db) throws MetaException {
+    if (db.getManagedLocationUri() != null) {
+      return getDnsPath(new Path(db.getManagedLocationUri()));
+    }
+    if (!db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
+      return new Path(db.getLocationUri());
+    }
+    if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      return getWhRoot();
+    }
+
+    return new Path(getWhRoot(), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
@@ -230,17 +312,26 @@ public class Warehouse {
     // new database is being created.  Once I have confirmation of this change calls of this to
     // getDatabasePath(), since it does the right thing.  Also, merge this with
     // determineDatabasePath() as it duplicates much of the logic.
-    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-      return getWhRoot();
-    }
-    return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return getDefaultDatabasePath(dbName, false);
   }
 
   public Path getDefaultExternalDatabasePath(String dbName) throws MetaException {
-    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-      return getWhRootExternal();
+    return getDefaultDatabasePath(dbName, true);
+  }
+
+  // should only be used to determine paths before the creation of databases
+  public Path getDefaultDatabasePath(String dbName, boolean inExternalWH) throws MetaException {
+    if (inExternalWH) {
+      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRootExternal();
+      }
+      return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    } else {
+      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRoot();
+      }
+      return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
     }
-    return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   private boolean hasExternalWarehouseRoot() {
@@ -257,16 +348,27 @@ public class Warehouse {
   @Deprecated
   public Path getDefaultTablePath(Database db, String tableName)
       throws MetaException {
-    return getDefaultTablePath(db, tableName, false);
+    return getDefaultTablePath(db, tableName, true);
   }
 
   public Path getDefaultTablePath(Database db, String tableName, boolean isExternal) throws MetaException {
     Path dbPath = null;
-    if (isExternal && hasExternalWarehouseRoot()) {
-      dbPath = getDefaultExternalDatabasePath(db.getName());
+    if (isExternal) {
+      dbPath = new Path(db.getLocationUri());
+      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString()) ||
+          getWhRoot().equals(dbPath)) {
+        // db metadata incorrect, find new location based on external warehouse root
+        dbPath = getDefaultExternalDatabasePath(db.getName());
+      }
     } else {
-      dbPath = getDatabasePath(db);
+      dbPath = getDatabaseManagedPath(db);
     }
+    return getDnsPath(
+        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+  }
+
+  public Path getDefaultManagedTablePath(Database db, String tableName) throws MetaException {
+    Path dbPath = getDatabaseManagedPath(db);
     return getDnsPath(
         new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
@@ -316,7 +418,7 @@ public class Warehouse {
       fs = getFs(f);
       return FileUtils.mkdir(fs, f);
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return false;
   }
@@ -332,7 +434,7 @@ public class Warehouse {
       FileSystem destFs = getFs(destPath);
       return FileUtils.rename(srcFs, destFs, sourcePath, destPath);
     } catch (Exception ex) {
-      MetaStoreUtils.logAndThrowMetaException(ex);
+      MetaStoreUtils.throwMetaException(ex);
     }
     return false;
   }
@@ -373,10 +475,15 @@ public class Warehouse {
     }
   }
 
-  public boolean isEmpty(Path path) throws IOException, MetaException {
-    ContentSummary contents = getFs(path).getContentSummary(path);
-    if (contents != null && contents.getFileCount() == 0 && contents.getDirectoryCount() == 1) {
-      return true;
+  public boolean isEmptyDir(Path path) throws IOException, MetaException {
+    try {
+      int listCount = getFs(path).listStatus(path).length;
+      if (listCount == 0) {
+        return true;
+      }
+    } catch (FileNotFoundException fnfe) {
+      // File named by path doesn't exist; nothing to validate.
+      return false;
     }
     return false;
   }
@@ -431,6 +538,45 @@ public class Warehouse {
 
   /**
    * Makes a partition name from a specification
+   * @param spec The partition specification, key and value pairs.
+   * @param addTrailingSeperator If true, adds a trailing separator e.g. 'ds=1/'.
+   * @param dynamic If true, create a dynamic partition name.
+   * @return partition name
+   * @throws MetaException
+   */
+  public static String makePartNameUtil(Map<String, String> spec, boolean addTrailingSeperator, boolean dynamic)
+          throws MetaException {
+    StringBuilder suffixBuf = new StringBuilder();
+    int i = 0;
+    for (Entry<String, String> e : spec.entrySet()) {
+      // Throw an exception if it is not a dynamic partition.
+      if (e.getValue() == null || e.getValue().length() == 0) {
+        if (dynamic) {
+          break;
+        }
+        else {
+          throw new MetaException("Partition spec is incorrect. " + spec);
+        }
+      }
+
+      if (i > 0) {
+        suffixBuf.append(Path.SEPARATOR);
+      }
+      suffixBuf.append(escapePathName(e.getKey()));
+      suffixBuf.append('=');
+      suffixBuf.append(escapePathName(e.getValue()));
+      i++;
+    }
+
+    if (addTrailingSeperator && i > 0) {
+      suffixBuf.append(Path.SEPARATOR);
+    }
+
+    return suffixBuf.toString();
+  }
+
+  /**
+   * Makes a partition name from a specification
    * @param spec
    * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
    * @return partition name
@@ -439,45 +585,47 @@ public class Warehouse {
   public static String makePartName(Map<String, String> spec,
       boolean addTrailingSeperator)
       throws MetaException {
-    StringBuilder suffixBuf = new StringBuilder();
-    int i = 0;
-    for (Entry<String, String> e : spec.entrySet()) {
-      if (e.getValue() == null || e.getValue().length() == 0) {
-        throw new MetaException("Partition spec is incorrect. " + spec);
-      }
-      if (i>0) {
-        suffixBuf.append(Path.SEPARATOR);
-      }
-      suffixBuf.append(escapePathName(e.getKey()));
-      suffixBuf.append('=');
-      suffixBuf.append(escapePathName(e.getValue()));
-      i++;
-    }
-    if (addTrailingSeperator) {
-      suffixBuf.append(Path.SEPARATOR);
-    }
-    return suffixBuf.toString();
+    return makePartNameUtil(spec, addTrailingSeperator, false);
   }
+
   /**
    * Given a dynamic partition specification, return the path corresponding to the
-   * static part of partition specification. This is basically a copy of makePartName
+   * static part of partition specification. This is basically similar to makePartName
    * but we get rid of MetaException since it is not serializable.
    * @param spec
    * @return string representation of the static part of the partition specification.
    */
   public static String makeDynamicPartName(Map<String, String> spec) {
-    StringBuilder suffixBuf = new StringBuilder();
-    for (Entry<String, String> e : spec.entrySet()) {
-      if (e.getValue() != null && e.getValue().length() > 0) {
-        suffixBuf.append(escapePathName(e.getKey()));
-        suffixBuf.append('=');
-        suffixBuf.append(escapePathName(e.getValue()));
-        suffixBuf.append(Path.SEPARATOR);
-      } else { // stop once we see a dynamic partition
-        break;
-      }
+    String partName = null;
+    try {
+       partName = makePartNameUtil(spec, true, true);
     }
-    return suffixBuf.toString();
+    catch (MetaException e) {
+      // This exception is not thrown when dynamic=true. This is a Noop and
+      // can be ignored.
+    }
+    return partName;
+  }
+
+  /**
+   * Given a dynamic partition specification, return the path corresponding to the
+   * static part of partition specification. This is basically similar to makePartName
+   * but we get rid of MetaException since it is not serializable. This method skips
+   * the trailing path seperator also.
+   *
+   * @param spec
+   * @return string representation of the static part of the partition specification.
+   */
+  public static String makeDynamicPartNameNoTrailingSeperator(Map<String, String> spec) {
+    String partName = null;
+    try {
+      partName = makePartNameUtil(spec, false, true);
+    }
+    catch (MetaException e) {
+      // This exception is not thrown when dynamic=true. This is a Noop and
+      // can be ignored.
+    }
+    return partName;
   }
 
   static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
@@ -656,7 +804,7 @@ public class Warehouse {
     } catch (FileNotFoundException e) {
       return false;
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return true;
   }
@@ -686,9 +834,9 @@ public class Warehouse {
     try {
       Path path = new Path(location);
       FileSystem fileSys = path.getFileSystem(conf);
-      return FileUtils.getFileStatusRecurse(path, -1, fileSys);
+      return FileUtils.getFileStatusRecurse(path, fileSys);
     } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
+      MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
   }
@@ -704,9 +852,9 @@ public class Warehouse {
     Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
     try {
       FileSystem fileSys = tablePath.getFileSystem(conf);
-      return FileUtils.getFileStatusRecurse(tablePath, -1, fileSys);
+      return FileUtils.getFileStatusRecurse(tablePath, fileSys);
     } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
+      MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
   }
@@ -723,15 +871,15 @@ public class Warehouse {
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals, String defaultStr) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
-      String errorStr = "Invalid partition key & values; keys [";
+      StringBuilder errorStrBuilder = new StringBuilder("Invalid partition key & values; keys [");
       for (FieldSchema fs : partCols) {
-        errorStr += (fs.getName() + ", ");
+        errorStrBuilder.append(fs.getName()).append(", ");
       }
-      errorStr += "], values [";
+      errorStrBuilder.append("], values [");
       for (String val : vals) {
-        errorStr += (val + ", ");
+        errorStrBuilder.append(val).append(", ");
       }
-      throw new MetaException(errorStr + "]");
+      throw new MetaException(errorStrBuilder.append("]").toString());
     }
     List<String> colNames = new ArrayList<>();
     for (FieldSchema col: partCols) {

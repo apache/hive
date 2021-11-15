@@ -1,0 +1,396 @@
+PREHOOK: query: create table tmptable_n1(key string, value string, hr string, ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable_n1
+POSTHOOK: query: create table tmptable_n1(key string, value string, hr string, ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmptable_n1
+PREHOOK: query: explain extended 
+insert overwrite table tmptable_n1
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tmptable_n1
+POSTHOOK: query: explain extended 
+insert overwrite table tmptable_n1
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tmptable_n1
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND RAND(1) < 0.1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (rand(1) < 0.1D) (type: boolean)
+                    Statistics: Num rows: 333 Data size: 120546 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 333 Data size: 151848 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        bucketingVersion: 2
+                        compressed: false
+                        GlobalTableId: 1
+#### A masked pattern was here ####
+                        NumFilesPerFileSink: 1
+                        Statistics: Num rows: 333 Data size: 151848 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            properties:
+                              bucketing_version 2
+                              column.name.delimiter ,
+                              columns key,value,hr,ds
+                              columns.comments 
+                              columns.types string:string:string:string
+#### A masked pattern was here ####
+                              name default.tmptable_n1
+                              serialization.format 1
+                              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.tmptable_n1
+                        TotalFiles: 1
+                        GatherStats: true
+                        MultiFileSpray: false
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                        outputColumnNames: key, value, hr, ds
+                        Statistics: Num rows: 333 Data size: 151848 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value), max(length(hr)), avg(COALESCE(length(hr),0)), count(hr), compute_bit_vector_hll(hr), max(length(ds)), avg(COALESCE(length(ds),0)), count(ds), compute_bit_vector_hll(ds)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                          Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            bucketingVersion: 2
+                            null sort order: 
+                            numBuckets: -1
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: COMPLETE
+                            tag: -1
+                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: struct<count:bigint,sum:double,input:int>), _col15 (type: bigint), _col16 (type: binary)
+                            auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [a]
+              /srcpart/ds=2008-04-08/hr=12 [a]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), max(VALUE._col13), avg(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                Statistics: Num rows: 1 Data size: 664 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col13,0)) (type: bigint), COALESCE(_col14,0) (type: double), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
+                  Statistics: Num rows: 1 Data size: 1064 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 1064 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21,_col22,_col23
+                          columns.types string:bigint:double:bigint:bigint:binary:string:bigint:double:bigint:bigint:binary:string:bigint:double:bigint:bigint:binary:string:bigint:double:bigint:bigint:binary
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value,hr,ds
+                columns.comments 
+                columns.types string:string:string:string
+#### A masked pattern was here ####
+                name default.tmptable_n1
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.tmptable_n1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+#### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value, hr, ds
+          Column Types: string, string, string, string
+          Table: default.tmptable_n1
+          Is Table Level Stats: true
+
+PREHOOK: query: insert overwrite table tmptable_n1
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tmptable_n1
+POSTHOOK: query: insert overwrite table tmptable_n1
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tmptable_n1
+POSTHOOK: Lineage: tmptable_n1.ds SIMPLE [(srcpart)a.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable_n1.hr SIMPLE []
+POSTHOOK: Lineage: tmptable_n1.key SIMPLE [(srcpart)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable_n1.value SIMPLE [(srcpart)a.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmptable_n1 x sort by x.key,x.value,x.ds,x.hr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmptable_n1 x sort by x.key,x.value,x.ds,x.hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable_n1
+#### A masked pattern was here ####
+103	val_103	2008-04-08	11
+118	val_118	2008-04-08	12
+119	val_119	2008-04-08	12
+119	val_119	2008-04-08	12
+126	val_126	2008-04-08	12
+131	val_131	2008-04-08	12
+133	val_133	2008-04-08	11
+134	val_134	2008-04-08	11
+138	val_138	2008-04-08	11
+143	val_143	2008-04-08	12
+152	val_152	2008-04-08	11
+153	val_153	2008-04-08	11
+162	val_162	2008-04-08	12
+169	val_169	2008-04-08	11
+170	val_170	2008-04-08	11
+175	val_175	2008-04-08	12
+176	val_176	2008-04-08	11
+176	val_176	2008-04-08	11
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	12
+191	val_191	2008-04-08	12
+197	val_197	2008-04-08	11
+199	val_199	2008-04-08	11
+200	val_200	2008-04-08	12
+201	val_201	2008-04-08	12
+202	val_202	2008-04-08	11
+203	val_203	2008-04-08	11
+209	val_209	2008-04-08	11
+214	val_214	2008-04-08	12
+217	val_217	2008-04-08	11
+218	val_218	2008-04-08	12
+221	val_221	2008-04-08	11
+223	val_223	2008-04-08	12
+224	val_224	2008-04-08	11
+229	val_229	2008-04-08	12
+230	val_230	2008-04-08	12
+233	val_233	2008-04-08	11
+233	val_233	2008-04-08	12
+237	val_237	2008-04-08	12
+238	val_238	2008-04-08	12
+256	val_256	2008-04-08	12
+26	val_26	2008-04-08	11
+265	val_265	2008-04-08	12
+273	val_273	2008-04-08	12
+277	val_277	2008-04-08	11
+277	val_277	2008-04-08	12
+280	val_280	2008-04-08	12
+286	val_286	2008-04-08	12
+288	val_288	2008-04-08	11
+298	val_298	2008-04-08	11
+309	val_309	2008-04-08	11
+309	val_309	2008-04-08	12
+310	val_310	2008-04-08	11
+317	val_317	2008-04-08	11
+322	val_322	2008-04-08	12
+323	val_323	2008-04-08	12
+325	val_325	2008-04-08	12
+331	val_331	2008-04-08	11
+332	val_332	2008-04-08	12
+336	val_336	2008-04-08	11
+336	val_336	2008-04-08	12
+339	val_339	2008-04-08	12
+341	val_341	2008-04-08	12
+342	val_342	2008-04-08	12
+348	val_348	2008-04-08	11
+348	val_348	2008-04-08	12
+35	val_35	2008-04-08	12
+364	val_364	2008-04-08	12
+37	val_37	2008-04-08	11
+378	val_378	2008-04-08	11
+384	val_384	2008-04-08	11
+389	val_389	2008-04-08	11
+400	val_400	2008-04-08	11
+403	val_403	2008-04-08	12
+407	val_407	2008-04-08	12
+409	val_409	2008-04-08	11
+417	val_417	2008-04-08	12
+42	val_42	2008-04-08	11
+424	val_424	2008-04-08	12
+429	val_429	2008-04-08	11
+429	val_429	2008-04-08	12
+430	val_430	2008-04-08	12
+431	val_431	2008-04-08	11
+432	val_432	2008-04-08	12
+44	val_44	2008-04-08	11
+453	val_453	2008-04-08	11
+454	val_454	2008-04-08	11
+457	val_457	2008-04-08	11
+457	val_457	2008-04-08	12
+458	val_458	2008-04-08	11
+466	val_466	2008-04-08	12
+467	val_467	2008-04-08	11
+469	val_469	2008-04-08	11
+469	val_469	2008-04-08	11
+469	val_469	2008-04-08	11
+47	val_47	2008-04-08	12
+470	val_470	2008-04-08	12
+489	val_489	2008-04-08	11
+491	val_491	2008-04-08	11
+496	val_496	2008-04-08	12
+498	val_498	2008-04-08	11
+498	val_498	2008-04-08	12
+51	val_51	2008-04-08	11
+58	val_58	2008-04-08	12
+70	val_70	2008-04-08	11
+72	val_72	2008-04-08	12
+74	val_74	2008-04-08	11
+77	val_77	2008-04-08	11
+77	val_77	2008-04-08	12
+78	val_78	2008-04-08	11
+82	val_82	2008-04-08	12
+87	val_87	2008-04-08	12
+90	val_90	2008-04-08	12
+97	val_97	2008-04-08	12
+97	val_97	2008-04-08	12
+98	val_98	2008-04-08	12

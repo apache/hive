@@ -258,12 +258,13 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Map 10 (SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 10 <- Map 9 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 11 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
-        Reducer 9 <- Map 8 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -273,7 +274,7 @@ STAGE PLANS:
                   filterExpr: (o_orderkey is not null and o_custkey is not null) (type: boolean)
                   Statistics: Num rows: 1500000000 Data size: 296399999792 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (o_custkey is not null and o_orderkey is not null) (type: boolean)
+                    predicate: (o_orderkey is not null and o_custkey is not null) (type: boolean)
                     Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: o_orderkey (type: bigint), o_custkey (type: bigint), o_totalprice (type: double), o_orderdate (type: string)
@@ -281,13 +282,14 @@ STAGE PLANS:
                       Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: bigint)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: bigint)
                         Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col2 (type: double), _col3 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 10 
+        Map 11 
             Map Operator Tree:
                 TableScan
                   alias: l
@@ -302,13 +304,14 @@ STAGE PLANS:
                       Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: customer
@@ -323,13 +326,14 @@ STAGE PLANS:
                       Statistics: Num rows: 142500000 Data size: 25992000182 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 142500000 Data size: 25992000182 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 8 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: lineitem
@@ -349,12 +353,35 @@ STAGE PLANS:
                       Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
+        Reducer 10 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2849995116 Data size: 43319925835 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 > 300.0D) (type: boolean)
+                  Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -368,6 +395,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1485000027 Data size: 293436005284 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: bigint)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
                   Statistics: Num rows: 1485000027 Data size: 293436005284 Basic stats: COMPLETE Column stats: NONE
@@ -385,6 +413,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1633500065 Data size: 322779612808 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: bigint)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
                   Statistics: Num rows: 1633500065 Data size: 322779612808 Basic stats: COMPLETE Column stats: NONE
@@ -403,6 +432,7 @@ STAGE PLANS:
                 Top N Key Operator
                   sort order: -++++
                   keys: _col2 (type: double), _col3 (type: string), _col0 (type: bigint), _col4 (type: bigint), _col5 (type: string)
+                  null sort order: azzzz
                   Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
                   top n: 100
                   Group By Operator
@@ -414,13 +444,13 @@ STAGE PLANS:
                     Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: double), _col1 (type: string), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: string)
+                      null sort order: azzzz
                       sort order: -++++
                       Map-reduce partition columns: _col0 (type: double), _col1 (type: string), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: string)
                       Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col5 (type: double)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -432,68 +462,65 @@ STAGE PLANS:
                   expressions: _col4 (type: string), _col3 (type: bigint), _col2 (type: bigint), _col1 (type: string), _col0 (type: double), _col5 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 3134994695 Data size: 47651919443 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 100
-                    Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: tpch_test.q18_large_volume_customer_cached
-                      Write Type: INSERT
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: double), _col5 (type: double)
-                      outputColumnNames: col1, col2, col3, col4, col5, col6
-                      Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll'), compute_stats(col4, 'hll'), compute_stats(col5, 'hll'), compute_stats(col6, 'hll')
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                        Statistics: Num rows: 1 Data size: 2576 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 2576 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+                  Reduce Output Operator
+                    key expressions: _col4 (type: double), _col3 (type: string)
+                    null sort order: az
+                    sort order: -+
+                    Statistics: Num rows: 3134994695 Data size: 47651919443 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col5 (type: double)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5)
-                mode: mergepartial
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: double), VALUE._col3 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 1 Data size: 2640 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 2640 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 9 
+                Statistics: Num rows: 3134994695 Data size: 47651919443 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: tpch_test.q18_large_volume_customer_cached
+                    Write Type: INSERT
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: double), _col5 (type: double)
+                    outputColumnNames: col1, col2, col3, col4, col5, col6
+                    Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector_hll(col1), min(col2), max(col2), count(col2), compute_bit_vector_hll(col2), min(col3), max(col3), count(col3), compute_bit_vector_hll(col3), max(length(col4)), avg(COALESCE(length(col4),0)), count(col4), compute_bit_vector_hll(col4), min(col5), max(col5), count(col5), compute_bit_vector_hll(col5), min(col6), max(col6), count(col6), compute_bit_vector_hll(col6)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                      Statistics: Num rows: 1 Data size: 1144 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 1144 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: struct<count:bigint,sum:double,input:int>), _col15 (type: bigint), _col16 (type: binary), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: binary), _col21 (type: double), _col22 (type: double), _col23 (type: bigint), _col24 (type: binary)
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0)
-                keys: KEY._col0 (type: bigint)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), max(VALUE._col13), avg(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20), min(VALUE._col21), max(VALUE._col22), count(VALUE._col23), compute_bit_vector_hll(VALUE._col24)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2849995116 Data size: 43319925835 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col1 > 300.0D) (type: boolean)
-                  Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: bigint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: bigint)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: bigint)
-                      Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                Statistics: Num rows: 1 Data size: 1144 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col13,0)) (type: bigint), COALESCE(_col14,0) (type: double), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'DOUBLE' (type: string), _col17 (type: double), _col18 (type: double), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary), 'DOUBLE' (type: string), _col21 (type: double), _col22 (type: double), (_col2 - _col23) (type: bigint), COALESCE(ndv_compute_bit_vector(_col24),0) (type: bigint), _col24 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35
+                  Statistics: Num rows: 1 Data size: 1144 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1144 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -501,10 +528,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: c_name string, c_custkey bigint, o_orderkey bigint, o_orderdate string, o_totalprice double, _c5 double
+      name: tpch_test.q18_large_volume_customer_cached
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-      name: tpch_test.q18_large_volume_customer_cached
       table properties:
         transactional true
         transactional_properties default

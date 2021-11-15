@@ -1,0 +1,608 @@
+PREHOOK: query: create table if not exists loc_staging_n0 (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_staging_n0
+POSTHOOK: query: create table if not exists loc_staging_n0 (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_staging_n0
+PREHOOK: query: create table loc_orc_n0 like loc_staging_n0
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc_n0
+POSTHOOK: query: create table loc_orc_n0 like loc_staging_n0
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_orc_n0
+PREHOOK: query: alter table loc_orc_n0 set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@loc_orc_n0
+PREHOOK: Output: default@loc_orc_n0
+POSTHOOK: query: alter table loc_orc_n0 set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@loc_orc_n0
+POSTHOOK: Output: default@loc_orc_n0
+PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@loc_staging_n0
+POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@loc_staging_n0
+PREHOOK: query: insert overwrite table loc_orc_n0 select * from loc_staging_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_staging_n0
+PREHOOK: Output: default@loc_orc_n0
+POSTHOOK: query: insert overwrite table loc_orc_n0 select * from loc_staging_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_staging_n0
+POSTHOOK: Output: default@loc_orc_n0
+POSTHOOK: Lineage: loc_orc_n0.locid SIMPLE [(loc_staging_n0)loc_staging_n0.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n0.state SIMPLE [(loc_staging_n0)loc_staging_n0.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n0.year SIMPLE [(loc_staging_n0)loc_staging_n0.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n0.zip SIMPLE [(loc_staging_n0)loc_staging_n0.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: analyze table loc_orc_n0 compute statistics for columns state,locid,zip,year
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_n0
+PREHOOK: Output: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_n0 compute statistics for columns state,locid,zip,year
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_n0
+POSTHOOK: Output: default@loc_orc_n0
+#### A masked pattern was here ####
+PREHOOK: query: explain select * from loc_orc_n0 where locid < 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid < 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid > 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid > 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid <= 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid <= 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid >= 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid >= 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid < 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid < 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid < 6) (type: boolean)
+          Filter Operator
+            predicate: (locid < 6) (type: boolean)
+            Select Operator
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid > 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid > 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid <= 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid <= 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid >= 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid >= 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid >= 6) (type: boolean)
+          Filter Operator
+            predicate: (locid >= 6) (type: boolean)
+            Select Operator
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid < 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid < 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid > 1) (type: boolean)
+          Filter Operator
+            predicate: (locid > 1) (type: boolean)
+            Select Operator
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid <= 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid <= 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid <= 1) (type: boolean)
+          Filter Operator
+            predicate: (locid <= 1) (type: boolean)
+            Select Operator
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid >= 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid >= 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid IN (-4,5,30,40)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid IN (-4,5,30,40)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid = 5) (type: boolean)
+          Filter Operator
+            predicate: (locid = 5) (type: boolean)
+            Select Operator
+              expressions: state (type: string), 5 (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid IN (5,2,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid IN (5,2,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid) IN (5, 2, 3) (type: boolean)
+          Filter Operator
+            predicate: (locid) IN (5, 2, 3) (type: boolean)
+            Select Operator
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid IN (1,6,9)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid IN (1,6,9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          filterExpr: (locid) IN (1, 6) (type: boolean)
+          Filter Operator
+            predicate: (locid) IN (1, 6) (type: boolean)
+            Select Operator
+              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid IN (40,30)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid IN (40,30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table t_n7 ( s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n7
+POSTHOOK: query: create table t_n7 ( s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n7
+PREHOOK: query: insert into t_n7 values (null),(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n7
+POSTHOOK: query: insert into t_n7 values (null),(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n7
+POSTHOOK: Lineage: t_n7.s EXPRESSION []
+PREHOOK: query: analyze table t_n7 compute statistics for columns s
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@t_n7
+PREHOOK: Output: default@t_n7
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table t_n7 compute statistics for columns s
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@t_n7
+POSTHOOK: Output: default@t_n7
+#### A masked pattern was here ####
+PREHOOK: query: explain select * from t_n7 where s is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from t_n7 where s is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n7
+          Select Operator
+            expressions: s (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_n0
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: explain select * from t_n7 where s is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from t_n7 where s is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from loc_orc_n0 where locid is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from loc_orc_n0 where locid is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into t_n7 values ('val1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n7
+POSTHOOK: query: insert into t_n7 values ('val1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n7
+POSTHOOK: Lineage: t_n7.s SCRIPT []
+PREHOOK: query: analyze table t_n7 compute statistics for columns s
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@t_n7
+PREHOOK: Output: default@t_n7
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table t_n7 compute statistics for columns s
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@t_n7
+POSTHOOK: Output: default@t_n7
+#### A masked pattern was here ####
+PREHOOK: query: explain select * from t_n7 where s is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from t_n7 where s is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n7
+          filterExpr: s is not null (type: boolean)
+          Filter Operator
+            predicate: s is not null (type: boolean)
+            Select Operator
+              expressions: s (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select * from t_n7 where s is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from t_n7 where s is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n7
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_n7
+          filterExpr: s is null (type: boolean)
+          Filter Operator
+            predicate: s is null (type: boolean)
+            Select Operator
+              expressions: null (type: string)
+              outputColumnNames: _col0
+              ListSink
+

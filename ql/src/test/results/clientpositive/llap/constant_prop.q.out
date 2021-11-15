@@ -1,0 +1,67 @@
+PREHOOK: query: EXPLAIN
+SELECT NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ),
+       NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ).F2
+       FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ),
+       NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ).F2
+       FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: named_struct(if(array_contains(array(1,2), 3), 'F1', 'B1'),1,if(array_contains(map_keys(map('b':'x')), 'b'), 'F2', 'B2'),2) (type: struct<b1:int,f2:int>), named_struct(if(array_contains(array(1,2), 3), 'F1', 'B1'),1,if(array_contains(map_keys(map('b':'x')), 'b'), 'F2', 'B2'),2).f2 (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ),
+       NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ).F2
+       FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ),
+       NAMED_STRUCT(
+         IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
+         IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
+       ).F2
+       FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+{"b1":1,"f2":2}	2

@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -41,8 +42,8 @@ import org.datanucleus.NucleusContext;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
-import org.datanucleus.store.scostore.Store;
-import org.datanucleus.util.WeakValueMap;
+import org.datanucleus.util.ConcurrentReferenceHashMap;
+import org.datanucleus.store.types.scostore.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +89,7 @@ public class PersistenceManagerProvider {
   private static boolean forTwoMetastoreTesting;
   private static int retryLimit;
   private static long retryInterval;
+  private static com.google.common.base.Supplier<String> passwordProvider;
 
   static {
     Map<String, Class<?>> map = new HashMap<>();
@@ -251,7 +253,7 @@ public class PersistenceManagerProvider {
       LOG.info(
           "Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"{}\"",
           objTypes);
-      if (org.apache.commons.lang.StringUtils.isNotEmpty(objTypes)) {
+      if (org.apache.commons.lang3.StringUtils.isNotEmpty(objTypes)) {
         String[] typeTokens = objTypes.toLowerCase().split(",");
         for (String type : typeTokens) {
           type = type.trim();
@@ -259,7 +261,7 @@ public class PersistenceManagerProvider {
             dsc.pinAll(true, PINCLASSMAP.get(type));
           } else {
             LOG.warn("{} is not one of the pinnable object types: {}", type,
-                org.apache.commons.lang.StringUtils.join(PINCLASSMAP.keySet(), " "));
+                org.apache.commons.lang3.StringUtils.join(PINCLASSMAP.keySet(), " "));
           }
         }
       }
@@ -365,26 +367,26 @@ public class PersistenceManagerProvider {
   }
 
   private static void clearClr(ClassLoaderResolver clr) throws Exception {
-    if (clr != null) {
-      if (clr instanceof ClassLoaderResolverImpl) {
-        ClassLoaderResolverImpl clri = (ClassLoaderResolverImpl) clr;
-        long resourcesCleared = clearFieldMap(clri, "resources");
-        long loadedClassesCleared = clearFieldMap(clri, "loadedClasses");
-        long unloadedClassesCleared = clearFieldMap(clri, "unloadedClasses");
-        LOG.debug("Cleared ClassLoaderResolverImpl: {}, {}, {}", resourcesCleared,
-            loadedClassesCleared, unloadedClassesCleared);
-      }
+    if (clr instanceof ClassLoaderResolverImpl) {
+      ClassLoaderResolverImpl clri = (ClassLoaderResolverImpl) clr;
+      int resourcesCleared = clearFieldMap(clri, "resources");
+      int loadedClassesCleared = clearFieldMap(clri, "loadedClasses");
+      int unloadedClassesCleared = clearFieldMap(clri, "unloadedClasses");
+
+      LOG.debug(
+          "Cleared ClassLoaderResolverImpl: resources: {}, loaded classes: {}, unloaded classes: {}",
+          resourcesCleared, loadedClassesCleared, unloadedClassesCleared);
     }
   }
 
-  private static long clearFieldMap(ClassLoaderResolverImpl clri, String mapFieldName)
+  private static int clearFieldMap(ClassLoaderResolverImpl clri, String mapFieldName)
       throws Exception {
     Field mapField = ClassLoaderResolverImpl.class.getDeclaredField(mapFieldName);
     mapField.setAccessible(true);
 
-    Map<String, Class> map = (Map<String, Class>) mapField.get(clri);
-    long sz = map.size();
-    mapField.set(clri, Collections.synchronizedMap(new WeakValueMap()));
+    Map map = (Map) mapField.get(clri);
+    final int sz = map.size();
+    mapField.set(clri, new ConcurrentReferenceHashMap<>());
     return sz;
   }
 
@@ -450,16 +452,18 @@ public class PersistenceManagerProvider {
     */
 
     // Password may no longer be in the conf, use getPassword()
-    try {
-      String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
-      if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
-        // We can get away with the use of varname here because varname == hiveName for PWD
-        prop.setProperty(ConfVars.PWD.getVarname(), passwd);
+    passwordProvider = passwordProvider != null ? passwordProvider : Suppliers.memoize(() -> {
+      try {
+        return MetastoreConf.getPassword(conf, ConfVars.PWD);
+      } catch (IOException err) {
+        throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
       }
-    } catch (IOException err) {
-      throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
+    });
+    String passwd = passwordProvider.get();
+    if (org.apache.commons.lang3.StringUtils.isNotEmpty(passwd)) {
+      // We can get away with the use of varname here because varname == hiveName for PWD
+      prop.setProperty(ConfVars.PWD.getVarname(), passwd);
     }
-
     if (LOG.isDebugEnabled()) {
       for (Entry<Object, Object> e : prop.entrySet()) {
         if (MetastoreConf.isPrintable(e.getKey().toString())) {
@@ -483,6 +487,11 @@ public class PersistenceManagerProvider {
     final String autoStartKey = "datanucleus.autoStartMechanismMode";
     final String autoStartIgnore = "ignored";
     String currentAutoStartVal = conf.get(autoStartKey);
+    if (currentAutoStartVal == null) {
+      LOG.info("Configuration {} is not set. Defaulting to '{}'", autoStartKey,
+          autoStartIgnore);
+      currentAutoStartVal = autoStartIgnore;
+    }
     if (!autoStartIgnore.equalsIgnoreCase(currentAutoStartVal)) {
       LOG.warn("{} is set to unsupported value {} . Setting it to value: {}", autoStartKey,
           conf.get(autoStartKey), autoStartIgnore);

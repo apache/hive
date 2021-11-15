@@ -16,7 +16,6 @@ CREATE TABLE episodes_partitioned (
 PARTITIONED BY (doctor_pt INT)
 STORED AS AVRO;
 
-SET hive.exec.dynamic.partition.mode=nonstrict;
 INSERT OVERWRITE TABLE episodes_partitioned PARTITION (doctor_pt)
 SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes;
 

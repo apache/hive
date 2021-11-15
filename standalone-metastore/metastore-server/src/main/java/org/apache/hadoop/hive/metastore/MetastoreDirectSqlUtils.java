@@ -20,7 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -57,7 +58,14 @@ class MetastoreDirectSqlUtils {
   }
   @SuppressWarnings("unchecked")
   static <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
+    return (T)executeWithArray(query, params, sql, -1);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T> T executeWithArray(Query query, Object[] params, String sql, int limit) throws MetaException {
     try {
+      if (limit >= 0)
+        query.setRange(0, limit);
       return (T)((params == null) ? query.execute() : query.executeWithArray(params));
     } catch (Exception ex) {
       StringBuilder errorBuilder = new StringBuilder("Failed to execute [" + sql + "] with parameters [");
@@ -70,7 +78,7 @@ class MetastoreDirectSqlUtils {
       }
       LOG.warn(errorBuilder.toString() + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
-      throw new MetaException("See previous errors; " + ex.getMessage());
+      throw new MetaException("See previous errors; " + ex.getMessage() + errorBuilder.toString() + "]");
     }
   }
 
@@ -115,38 +123,46 @@ class MetastoreDirectSqlUtils {
       String queryText, Object[] parameters, int keyIndex, ApplyFunc<T> func) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
     long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    Object result = null;
-    if (parameters == null || parameters.length == 0) {
-      result = query.execute();
-    } else {
-      result = query.executeWithArray(parameters);
-    }
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    if (result == null) {
-      query.closeAll();
-      return 0;
-    }
-    List<Object[]> list = ensureList(result);
-    Iterator<Object[]> iter = list.iterator();
-    Object[] fields = null;
-    for (Map.Entry<Long, T> entry : tree.entrySet()) {
-      if (fields == null && !iter.hasNext()) break;
-      long id = entry.getKey();
-      while (fields != null || iter.hasNext()) {
-        if (fields == null) {
-          fields = iter.next();
-        }
-        long nestedId = extractSqlLong(fields[keyIndex]);
-        if (nestedId < id) throw new MetaException("Found entries for unknown ID " + nestedId);
-        if (nestedId > id) break; // fields belong to one of the next entries
-        func.apply(entry.getValue(), fields);
-        fields = null;
+    int rv = 0;
+    long queryTime = 0;
+    try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+      Object result = null;
+      if (parameters == null || parameters.length == 0) {
+        result = query.execute();
+      } else {
+        result = query.executeWithArray(parameters);
       }
-      Deadline.checkTimeout();
+      queryTime = doTrace ? System.nanoTime() : 0;
+      if (result == null) {
+        query.closeAll();
+        return 0;
+      }
+      List<Object[]> list = ensureList(result);
+      Iterator<Object[]> iter = list.iterator();
+      Object[] fields = null;
+      for (Map.Entry<Long, T> entry : tree.entrySet()) {
+        if (fields == null && !iter.hasNext())
+          break;
+        long id = entry.getKey();
+        while (fields != null || iter.hasNext()) {
+          if (fields == null) {
+            fields = iter.next();
+          }
+          long nestedId = extractSqlLong(fields[keyIndex]);
+          if (nestedId < id) {
+            throw new MetaException("Found entries for unknown ID " + nestedId);
+          }
+          if (nestedId > id)
+            break; // fields belong to one of the next entries
+          func.apply(entry.getValue(), fields);
+          fields = null;
+        }
+        Deadline.checkTimeout();
+      }
+      rv = list.size();
+    } catch (Exception e) {
+      throwMetaOrRuntimeException(e);
     }
-    int rv = list.size();
-    query.closeAll();
     timingTrace(doTrace, queryText, start, queryTime);
     return rv;
   }
@@ -161,7 +177,7 @@ class MetastoreDirectSqlUtils {
     loopJoinOrderedResult(pm, partitions, queryText, 0, new ApplyFunc<Partition>() {
       @Override
       public void apply(Partition t, Object[] fields) {
-        t.putToParameters((String)fields[1], extractSqlClob(fields[2]));
+        t.putToParameters(extractSqlClob(fields[1]), extractSqlClob(fields[2]));
       }});
     // Perform conversion of null map values
     for (Partition t : partitions.values()) {
@@ -500,7 +516,9 @@ class MetastoreDirectSqlUtils {
 
   /**
    * Convert a boolean value returned from the RDBMS to a Java Boolean object.
-   * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping.
+   * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping and Oracle DB
+   * doesn't supports boolean, so we have used Number to store the value,
+   * which maps to BigDecimal.
    *
    * @param value
    *          column value from the database
@@ -532,6 +550,16 @@ class MetastoreDirectSqlUtils {
         // NOOP
       }
     }
+
+    if (value instanceof BigDecimal) {
+      BigDecimal bigDecimal = (BigDecimal) value;
+      if (bigDecimal.intValue() == 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+    LOG.debug("Value is of type {}", value.getClass());
     throw new MetaException("Cannot extract boolean from column value " + value);
   }
 
@@ -576,5 +604,15 @@ class MetastoreDirectSqlUtils {
   @FunctionalInterface
   static interface ApplyFunc<Target> {
     void apply(Target t, Object[] fields) throws MetaException;
+  }
+
+  public static void throwMetaOrRuntimeException(Exception e) throws MetaException {
+    if (e instanceof MetaException) {
+      throw (MetaException) e;
+    } else if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    } else {
+      throw new RuntimeException(e);
+    }
   }
 }

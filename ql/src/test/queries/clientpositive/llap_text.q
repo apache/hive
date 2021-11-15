@@ -1,7 +1,6 @@
 --! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.fetch.task.conversion=none;
 
 SET hive.llap.io.enabled=false;
@@ -27,7 +26,8 @@ CREATE TABLE text_llap(
 row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
 -- stored as inputformat "org.apache.hadoop.hive.llap.io.decode.LlapTextInputFormat" 
- outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat";
+outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 insert into table text_llap
 select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
@@ -48,7 +48,8 @@ create table text_llap2(
 row format delimited fields terminated by '|'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
 -- stored as inputformat "org.apache.hadoop.hive.llap.io.decode.LlapTextInputFormat" 
-outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat";
+outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 load data local inpath '../../data/files/over10k.gz' into table text_llap2;
 

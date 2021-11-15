@@ -33,26 +33,28 @@ import java.util.List;
  */
 public class UpdateTableColStatHandler extends AbstractMessageHandler {
     @Override
-    public List<Task<? extends Serializable>> handle(Context context)
+    public List<Task<?>> handle(Context context)
             throws SemanticException {
         UpdateTableColumnStatMessage utcsm =
                 deserializer.getUpdateTableColumnStatMessage(context.dmd.getPayload());
 
         // Update tablename and database name in the statistics object
         ColumnStatistics colStats = utcsm.getColumnStatistics();
+        // In older version of hive, engine might not have set.
+        if (colStats.getEngine() == null) {
+            colStats.setEngine(org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE);
+        }
         ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
         colStatsDesc.setDbName(context.dbName);
-        if (!context.isTableNameEmpty()) {
-          colStatsDesc.setTableName(context.tableName);
-        }
         if (!context.isDbNameEmpty()) {
             updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName,
-                    context.tableName, null);
+                    colStatsDesc.getTableName(), null);
         }
 
         try {
             return ReplUtils.addTasksForLoadingColStats(colStats, context.hiveConf, updatedMetadata,
-                    utcsm.getTableObject(), utcsm.getWriteId());
+                    utcsm.getTableObject(), utcsm.getWriteId(), context.getDumpDirectory(),
+                    context.getMetricCollector());
         } catch(Exception e) {
             throw new SemanticException(e);
         }

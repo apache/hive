@@ -20,6 +20,7 @@ set hive.stats.fetch.column.stats=true;
 set hive.tez.bloom.filter.factor=1.0f;
 set hive.auto.convert.join=false;
 set hive.optimize.shared.work=false;
+set hive.stats.filter.range.uniform=false;
 
 
 create database tpch_test;

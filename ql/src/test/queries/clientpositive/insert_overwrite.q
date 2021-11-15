@@ -1,11 +1,16 @@
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.stats.column.autogather=false;
 set hive.stats.autogather=false;
 set hive.compute.query.using.stats=false;
 
+set hive.create.as.insert.only=true;
+set hive.default.fileformat.managed=ORC;
+set hive.strict.managed.tables=true;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
 CREATE EXTERNAL TABLE ext_non_part (col string);
 INSERT INTO ext_non_part VALUES ('first'), ('second');
-CREATE TABLE b LIKE ext_non_part;
+CREATE TABLE b (col string);
 
 INSERT OVERWRITE TABLE ext_non_part SELECT * FROM b;
 
@@ -13,6 +18,17 @@ INSERT OVERWRITE TABLE ext_non_part SELECT * FROM b;
 SELECT count(*) FROM ext_non_part;
 
 drop table ext_non_part;
+
+CREATE TABLE int_non_part (col string) STORED AS ORC TBLPROPERTIES ('transactional'='true');
+INSERT INTO int_non_part VALUES ('first'), ('second');
+
+INSERT OVERWRITE TABLE int_non_part SELECT * FROM b;
+
+-- should be 0
+SELECT count(*) FROM int_non_part;
+
+drop table int_non_part;
+
 
 CREATE TABLE int_non_part (col string);
 INSERT INTO int_non_part VALUES ('first'), ('second');
@@ -23,6 +39,22 @@ INSERT OVERWRITE TABLE int_non_part SELECT * FROM b;
 SELECT count(*) FROM int_non_part;
 
 drop table int_non_part;
+
+CREATE TABLE int_buck (col string)
+CLUSTERED BY (col) INTO 4 BUCKETS;
+
+INSERT INTO int_buck VALUES ('first'), ('second'), ('third'), ('fourth');
+
+-- should be 4
+SELECT count(*) FROM int_buck;
+
+INSERT OVERWRITE TABLE int_buck SELECT col FROM b;
+
+-- should be 0
+SELECT count(*) FROM int_buck;
+SELECT * FROM int_buck;
+
+drop table int_buck;
 drop table b;
 
 

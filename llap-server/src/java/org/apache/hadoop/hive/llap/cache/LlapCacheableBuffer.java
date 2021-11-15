@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.hadoop.hive.common.io.CacheTag;
+
 /**
  * Buffer that can be managed by LowLevelEvictionPolicy.
  * We want to have cacheable and non-allocator buffers, as well as allocator buffers with no
@@ -44,7 +46,7 @@ public abstract class LlapCacheableBuffer {
   public static final int INVALIDATE_OK = 0, INVALIDATE_FAILED = 1, INVALIDATE_ALREADY_INVALID = 2;
   protected abstract int invalidate();
   public abstract long getMemoryUsage();
-  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher);
+  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction);
 
   @Override
   public String toString() {
@@ -56,7 +58,24 @@ public abstract class LlapCacheableBuffer {
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
 
-  public abstract String getTag();
+  public abstract CacheTag getTag();
 
   protected abstract boolean isLocked();
+
+  /**
+   * Marks this buffer as eligible for proactive eviction.
+   * @return buffer size
+   */
+  public abstract long markForEviction();
+
+  /**
+   * Un-marks proactive eviction flag from this buffer.
+   */
+  public abstract void removeProactiveEvictionMark();
+
+  /**
+   * Checks if this buffer is marked for proactive eviction
+   * @return true if marked
+   */
+  public abstract boolean isMarkedForEviction();
 }

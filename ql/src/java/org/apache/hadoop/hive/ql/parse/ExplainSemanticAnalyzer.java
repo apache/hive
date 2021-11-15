@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator;
@@ -62,7 +62,6 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     config = new ExplainConfiguration();
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     final int childCount = ast.getChildCount();
@@ -124,6 +123,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setAst(true);
       } else if (explainOptions == HiveParser.KW_DEBUG) {
         config.setDebug(true);
+      } else if (explainOptions == HiveParser.KW_DDL) {
+        config.setDDL(true);
+        config.setCbo(true);
+        config.setVectorization(true);
       } else {
         // UNDONE: UNKNOWN OPTION?
       }
@@ -148,15 +151,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         runCtx = new Context(conf);
         // runCtx and ctx share the configuration, but not isExplainPlan()
         runCtx.setExplainConfig(config);
-        Driver driver = new Driver(conf, runCtx, queryState.getLineageState());
-        CommandProcessorResponse ret = driver.run(query);
-        if(ret.getResponseCode() == 0) {
-          // Note that we need to call getResults for simple fetch optimization.
-          // However, we need to skip all the results.
+        try (Driver driver = new Driver(conf, runCtx, queryState.getLineageState())) {
+          driver.run(query);
           while (driver.getResults(new ArrayList<String>())) {
           }
-        } else {
-          throw new SemanticException(ret.getErrorMessage(), ret.getException());
+        } catch (CommandProcessorException e) {
+          throw new SemanticException(e.getMessage(), e);
         }
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
@@ -189,9 +189,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask.getWork().initializeForFetch(ctx.getOpContext());
     }
 
-    ParseContext pCtx = null;
     if (sem instanceof SemanticAnalyzer) {
-      pCtx = ((SemanticAnalyzer)sem).getParseContext();
+      pCtx = sem.getParseContext();
     }
 
     config.setUserLevelExplain(!config.isExtended()
@@ -199,6 +198,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         && !config.isDependency()
         && !config.isCbo()
         && !config.isLogical()
+        && !config.isVectorization()
         && !config.isAuthorize()
         && (
              (
@@ -231,7 +231,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
-    fieldList = explTask.getResultSchema();
+    fieldList = ExplainTask.getResultSchema();
     rootTasks.add(explTask);
   }
 
@@ -282,7 +282,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Task<?>> rootTasks = getRootTasks();
     assert rootTasks != null && rootTasks.size() == 1;
     Task task = rootTasks.get(0);
-    return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();
+    if (task instanceof ExplainTask &&
+        ((ExplainTask)task).getWork().isAuthorize()) {
+      return true;
+    }
+    return super.skipAuthorization();
   }
-
 }

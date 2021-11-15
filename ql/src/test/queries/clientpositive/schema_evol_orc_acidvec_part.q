@@ -1,3 +1,4 @@
+--! qt:disabled:Disabled in HIVE-19509
 --! qt:dataset:part
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
@@ -11,7 +12,6 @@ SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.default.fileformat=orc;
 set hive.llap.io.enabled=false;
@@ -95,7 +95,9 @@ CREATE TABLE part_change_string_group_double_n3(insert_num int, c1 STRING, c2 CH
 insert into table part_change_string_group_double_n3 partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data_n14;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table part_change_string_group_double_n3 replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
+set hive.metastore.disallow.incompatible.col.type.changes=true;
 
 insert into table part_change_string_group_double_n3 partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data_n14 WHERE insert_num = 111;
 
