@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -282,7 +281,7 @@ public class TypeCheckProcFactory<T> {
       }
 
       ASTNode node = (ASTNode)nd;
-      String indexStr = ((ASTNode)(node)).getText();
+      String indexStr = (node).getText();
       int index = Integer.parseInt(indexStr);
       return exprFactory.createDynamicParamExpr(index);
     }
@@ -1073,9 +1072,9 @@ public class TypeCheckProcFactory<T> {
             fi = exprFactory.getFunctionInfo("not");
             expr = exprFactory.createFuncCallExpr(node.getTypeInfo(), fi, "not", Lists.newArrayList(expr));
           }
-        } else if (ctx.isFoldExpr() && genericUDF instanceof GenericUDFWhen && children.size() == 3) {
+        } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoIFFuncCallExpr(fi, children)) {
           // Rewrite CASE(C,A,B) into IF(C,A,B)
-          desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFIf(), children);
+          expr = exprFactory.createFuncCallExpr(node.getTypeInfo(), fi, "if", children);
         } else {
           TypeInfo t = (node.getTypeInfo() != null) ? node.getTypeInfo() : typeInfo;
           expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
