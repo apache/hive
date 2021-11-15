@@ -71,8 +71,7 @@ public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
     // only uses transactional (MM and ACID) tables
     if (rewriteEnable) {
       for (SourceTable sourceTable : materializedViewTable.getCreationMetadata().getTablesUsed()) {
-        Table table = getTable(sourceTable.getDbName(), sourceTable.getTableName(), true);
-        if (!AcidUtils.isTransactionalTable(table)) {
+        if (!AcidUtils.isTransactionalTable(sourceTable.getTable())) {
           throw new SemanticException("Automatic rewriting for materialized view cannot be enabled if the " +
               "materialized view uses non-transactional tables");
         }

@@ -1816,19 +1816,13 @@ end
 
 class SourceTable
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TABLENAME = 2
-  TABLEID = 3
-  INSERTONLY = 4
-  INSERTEDCOUNT = 5
-  UPDATEDCOUNT = 6
-  DELETEDCOUNT = 7
+  TABLE = 1
+  INSERTEDCOUNT = 2
+  UPDATEDCOUNT = 3
+  DELETEDCOUNT = 4
 
   FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId'},
-    INSERTONLY => {:type => ::Thrift::Types::BOOL, :name => 'insertOnly'},
+    TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
     INSERTEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertedCount'},
     UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
     DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
@@ -1837,10 +1831,7 @@ class SourceTable
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableId is unset!') unless @tableId
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertOnly is unset!') if @insertOnly.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertedCount is unset!') unless @insertedCount
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount

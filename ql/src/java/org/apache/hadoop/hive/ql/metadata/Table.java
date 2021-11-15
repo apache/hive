@@ -1318,10 +1318,7 @@ public class Table implements Serializable {
 
   public SourceTable asSourceTable() {
     SourceTable sourceTable = new SourceTable();
-    sourceTable.setTableId(getTTable().getId());
-    sourceTable.setDbName(getDbName());
-    sourceTable.setTableName(getTableName());
-    sourceTable.setInsertOnly(AcidUtils.isInsertOnlyTable(this));
+    sourceTable.setTable(this.tTable);
     return sourceTable;
   }
 };

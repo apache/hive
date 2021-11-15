@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
@@ -1901,8 +1902,11 @@ public class TestTxnHandler {
       validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
     }
 
+    Table table = new Table();
+    table.setDbName("default");
+    table.setTableName("t1");
     SourceTable sourceTable = new SourceTable();
-    sourceTable.setTableName("default.t1");
+    sourceTable.setTable(table);
     CreationMetadata creationMetadata = new CreationMetadata();
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");

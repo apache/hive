@@ -64,6 +64,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
+import javafx.scene.control.Tab;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -2514,7 +2515,8 @@ public class ObjectStore implements RawStore, Configurable {
     assert !m.isSetMaterializationTime();
     Set<MMVSource> tablesUsed = new HashSet<>();
     for (SourceTable sourceTable : m.getTablesUsed()) {
-      MTable mtbl = getMTable(m.getCatName(), sourceTable.getDbName(), sourceTable.getTableName(), false).mtbl;
+      Table table = sourceTable.getTable();
+      MTable mtbl = getMTable(m.getCatName(), table.getDbName(), table.getTableName(), false).mtbl;
       MMVSource source = new MMVSource();
       source.setTable(mtbl);
       source.setInsertedCount(sourceTable.getInsertedCount());
@@ -2527,13 +2529,13 @@ public class ObjectStore implements RawStore, Configurable {
         tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
   }
 
-  private CreationMetadata convertToCreationMetadata(MCreationMetadata s) {
+  private CreationMetadata convertToCreationMetadata(MCreationMetadata s) throws MetaException {
     if (s == null) {
       return null;
     }
     Set<SourceTable> tablesUsed = new HashSet<>();
     for (MMVSource mtbl : s.getTables()) {
-      tablesUsed.add(convertToSourceTable(mtbl));
+      tablesUsed.add(convertToSourceTable(mtbl, s.getCatalogName()));
     }
     CreationMetadata r = new CreationMetadata(s.getCatalogName(),
         s.getDbName(), s.getTblName(), tablesUsed);
@@ -2544,14 +2546,11 @@ public class ObjectStore implements RawStore, Configurable {
     return r;
   }
 
-  private SourceTable convertToSourceTable(MMVSource mmvSource) {
+  private SourceTable convertToSourceTable(MMVSource mmvSource, String catalogName) throws MetaException {
     SourceTable sourceTable = new SourceTable();
     MTable mTable = mmvSource.getTable();
-    sourceTable.setTableId(mTable.getId());
-    sourceTable.setDbName(mTable.getDatabase().getName());
-    sourceTable.setTableName(mTable.getTableName());
-    String transactionalProp = mTable.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    sourceTable.setInsertOnly("insert_only".equalsIgnoreCase(transactionalProp));
+    Table table = getTable(catalogName, mTable.getDatabase().getName(), mTable.getTableName());
+    sourceTable.setTable(table);
     sourceTable.setInsertedCount(mmvSource.getInsertedCount());
     sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());
     sourceTable.setDeletedCount(mmvSource.getDeletedCount());

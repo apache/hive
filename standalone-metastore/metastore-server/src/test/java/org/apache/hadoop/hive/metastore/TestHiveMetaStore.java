@@ -3027,11 +3027,7 @@ public abstract class TestHiveMetaStore {
 
   public static SourceTable createSourceTable(Table table) {
     SourceTable sourceTable = new SourceTable();
-    sourceTable.setTableId(table.getId());
-    sourceTable.setDbName(table.getDbName());
-    sourceTable.setTableName(table.getTableName());
-    sourceTable.setInsertOnly(
-        TxnUtils.isTransactionalTable(table.getParameters()) && !TxnUtils.isAcidTable(table.getParameters()));
+    sourceTable.setTable(table);
     sourceTable.setInsertedCount(0L);
     sourceTable.setUpdatedCount(0L);
     sourceTable.setDeletedCount(0L);

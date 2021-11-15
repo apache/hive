@@ -103,7 +103,8 @@ public class HiveMaterializedViewUtils {
       String validTxnsList, HiveTxnManager txnMgr,
       Set<SourceTable> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tables = tablesUsed.stream()
-        .map(sourceTable -> TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName()))
+        .map(sourceTable -> TableName.getDbTable(
+                sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
         .collect(Collectors.toList());
     ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tables, validTxnsList);
     if (currentTxnWriteIds == null) {
@@ -115,7 +116,8 @@ public class HiveMaterializedViewUtils {
     CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
     Set<String> storedTablesUsed =
         creationMetadata.getTablesUsed().stream()
-            .map(sourceTable -> TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName()))
+            .map(sourceTable -> TableName.getDbTable(
+                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
             .collect(Collectors.toSet());
     if (creationMetadata.getValidTxnList() == null ||
             creationMetadata.getValidTxnList().isEmpty()) {
@@ -126,12 +128,11 @@ public class HiveMaterializedViewUtils {
     boolean ignore = false;
     ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
             creationMetadata.getValidTxnList());
-    for (SourceTable sourceTable : tablesUsed) {
+    for (String fullyQualifiedTableName : tables) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
       // is produced in those cases, it is because that additional table is joined with the
       // existing tables with an append-columns only join, i.e., PK-FK + not null.
-      String fullyQualifiedTableName = TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName());
       if (!storedTablesUsed.contains(fullyQualifiedTableName)) {
         continue;
       }
@@ -148,7 +149,7 @@ public class HiveMaterializedViewUtils {
       if (tableWriteIds == null) {
         // This should not happen, but we ignore for safety
         LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as details about txn ids for table " + sourceTable +
+                " ignored for rewriting as details about txn ids for table " + fullyQualifiedTableName +
                 " could not be found in " + mvTxnWriteIds);
         ignore = true;
         break;

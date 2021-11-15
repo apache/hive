@@ -138,6 +138,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -2532,11 +2533,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private Boolean wasCompacted(CreationMetadata creationMetadata) throws MetaException {
+    Set<String> insertOnlyTables = new HashSet<>();
+    for (SourceTable sourceTable : creationMetadata.getTablesUsed()) {
+      Table table = sourceTable.getTable();
+      String transactionalProp = table.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      if (!"insert_only".equalsIgnoreCase(transactionalProp)) {
+        continue;
+      }
 
-    Set<String> insertOnlyTables = creationMetadata.getTablesUsed().stream()
-        .filter(SourceTable::isInsertOnly)
-        .map(sourceTable -> TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName()))
-        .collect(Collectors.toSet());
+      insertOnlyTables.add(
+              TableName.getDbTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()));
+    }
 
     if (insertOnlyTables.isEmpty()) {
       return false;

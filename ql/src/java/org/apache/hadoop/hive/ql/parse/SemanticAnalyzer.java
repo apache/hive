@@ -12195,7 +12195,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // When we are querying a materialized view directly, we check whether the source tables
           // do not apply any policies.
           for (SourceTable sourceTable : table.getCreationMetadata().getTablesUsed()) {
-            String qualifiedTableName = TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName());
+            String qualifiedTableName = TableName.getDbTable(
+                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
             try {
               table = getTableObjectByName(qualifiedTableName, true);
             } catch (HiveException e) {
@@ -12856,10 +12857,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!table.isMaterializedTable() && !table.isView()) {
         // Add to signature
         SourceTable sourceTable = new SourceTable();
-        sourceTable.setDbName(table.getDbName());
-        sourceTable.setTableName(table.getTableName());
-        sourceTable.setTableId(table.getTTable().getId());
-        sourceTable.setInsertOnly(AcidUtils.isInsertOnlyTable(table));
+        sourceTable.setTable(table.getTTable());
         sourceTable.setInsertedCount(0L);
         sourceTable.setUpdatedCount(0L);
         sourceTable.setDeletedCount(0L);
