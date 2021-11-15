@@ -55,8 +55,6 @@
     <test.warehouse.scheme>file://</test.warehouse.scheme>
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
-    <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests
-    </itest.jdbc.jars>
     <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
 
     <!-- Plugin versions -->

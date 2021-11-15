@@ -440,7 +440,6 @@
                     <additionalClasspathElements>
                         <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
                         <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
-                        <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
