@@ -179,9 +179,12 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * Compares two lists of columns to each other, by name and index, to find the column that was moved by the
-   * schema evolution update (i.e. a column which was either moved to the first position, or moved after some specified
-   * column).
+   * Compares two lists of columns to each other to find the (singular) column that was moved. This works ideally for
+   * identifying the column that was moved by an ALTER TABLE ... CHANGE COLUMN command.
+   *
+   * Note: This method is only suitable for finding a single reordered column.
+   * Consequently, this method is NOT suitable for handling scenarios where multiple column reorders are possible at the
+   * same time, such as ALTER TABLE ... REPLACE COLUMNS commands.
    *
    * @param updated The list of the columns after some updates have taken place (if any)
    * @param old The list of the original columns
@@ -206,8 +209,9 @@ public final class HiveSchemaUtil {
       String oldName = old.get(oldIndex).getName();
       Integer newIndex = nameToNewIndex.get(oldName);
       if (newIndex != null) {
-        if (maxIndexDiff < Math.abs(newIndex - oldIndex)) {
-          maxIndexDiff = Math.abs(newIndex - oldIndex);
+        int indexDiff = Math.abs(newIndex - oldIndex);
+        if (maxIndexDiff < indexDiff) {
+          maxIndexDiff = indexDiff;
           reorderedColName = oldName;
         }
       }
