@@ -1316,9 +1316,12 @@ public class Table implements Serializable {
     this.metaTable = metaTable;
   }
 
-  public SourceTable asSourceTable() {
+  public SourceTable createSourceTable() {
     SourceTable sourceTable = new SourceTable();
     sourceTable.setTable(this.tTable);
+    sourceTable.setInsertedCount(0L);
+    sourceTable.setUpdatedCount(0L);
+    sourceTable.setDeletedCount(0L);
     return sourceTable;
   }
 };

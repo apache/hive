@@ -80,8 +80,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -12855,13 +12853,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
       Table table = topOp.getConf().getTableMetadata();
       if (!table.isMaterializedTable() && !table.isView()) {
-        // Add to signature
-        SourceTable sourceTable = new SourceTable();
-        sourceTable.setTable(table.getTTable());
-        sourceTable.setInsertedCount(0L);
-        sourceTable.setUpdatedCount(0L);
-        sourceTable.setDeletedCount(0L);
-        tablesUsed.add(sourceTable);
+        tablesUsed.add(table.createSourceTable());
       }
     }
     return tablesUsed;

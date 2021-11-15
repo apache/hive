@@ -2119,7 +2119,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             Table hiveTableMD = extractTable(relOptMaterialization);
             if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
               Set<SourceTable> sourceTables = new HashSet<>(1);
-              sourceTables.add(hiveTableMD.asSourceTable());
+              sourceTables.add(hiveTableMD.createSourceTable());
               if (db.validateMaterializedViewsFromRegistry(
                       singletonList(hiveTableMD), sourceTables, getTxnMgr())) {
                 return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
@@ -2351,7 +2351,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
             Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
-            tablesUsed.add(hiveTableMD.asSourceTable());
+            tablesUsed.add(hiveTableMD.createSourceTable());
           }
           super.visit(node, ordinal, parent);
         }
