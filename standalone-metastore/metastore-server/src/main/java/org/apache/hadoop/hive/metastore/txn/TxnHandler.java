@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -83,7 +82,6 @@ import org.apache.hadoop.hive.metastore.LockTypeComparator;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
@@ -138,6 +136,7 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -1542,7 +1541,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (txnType.get() != TxnType.READ_ONLY && !isReplayedReplTxn) {
-          moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete, rqst.getRowsAffected());
+          moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
             String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));
@@ -1699,8 +1698,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return stmt.executeQuery(writeConflictQuery);
   }
 
-  private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete,
-                                            Set<AffectedRowCount> affectedRowsRequests) throws SQLException {
+  private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete) throws SQLException {
     // Move the record from txn_components into completed_txn_components so that the compactor
     // knows where to look to compact.
     String s = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
@@ -1710,31 +1708,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //we only track compactor activity in TXN_COMPONENTS to handle the case where the
         //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
         " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT;
+    LOG.debug("Going to execute insert <" + s + ">");
 
-    try {
-      stmt.addBatch(s);
-
-      if (affectedRowsRequests != null) {
-        for (AffectedRowCount affectedRowsRequest : affectedRowsRequests) {
-          stmt.addBatch("UPDATE \"MV_TABLES_USED\" " +
-              "SET \"INSERTED_COUNT\"=\"INSERTED_COUNT\"+" + affectedRowsRequest.getInsertCount() +
-              ",\"UPDATED_COUNT\"=\"UPDATED_COUNT\"+" + affectedRowsRequest.getUpdatedCount() +
-              ",\"DELETED_COUNT\"=\"DELETED_COUNT\"+" + affectedRowsRequest.getDeletedCount() +
-              "WHERE \"TBL_ID\"=" + affectedRowsRequest.getTableId());
-        }
-      }
-
-      LOG.debug("Going to execute insert <" + s + ">");
-      int[] results = stmt.executeBatch();
-
-      if (results[0] < 1) {
-        //this can be reasonable for an empty txn START/COMMIT or read-only txn
-        //also an IUD with DP that didn't match any rows.
-        LOG.info("Expected to move at least one record from txn_components to " +
-            "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
-      }
-    } finally {
-      stmt.clearBatch();
+    if ((stmt.executeUpdate(s)) < 1) {
+      //this can be reasonable for an empty txn START/COMMIT or read-only txn
+      //also an IUD with DP that didn't match any rows.
+      LOG.info("Expected to move at least one record from txn_components to " +
+              "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
     }
   }
 
@@ -2495,6 +2475,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     LOG.debug("MinOpenTxnIdWaterMark calculated with minOpenTxn {}, lowWaterMark {}", minOpenTxn, lowWaterMark);
     return Long.min(minOpenTxn, lowWaterMark + 1);
+  }
+
+  @Override
+  public void updateTransactionStatistics(UpdateTransactionalStatsRequest req) throws MetaException {
+    String queryText = "UPDATE \"MV_TABLES_USED\" " +
+            "SET \"INSERTED_COUNT\"=\"INSERTED_COUNT\"+?" +
+            ",\"UPDATED_COUNT\"=\"UPDATED_COUNT\"+?" +
+            ",\"DELETED_COUNT\"=\"DELETED_COUNT\"+?" +
+            " WHERE \"TBL_ID\"=?";
+    try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
+      try (PreparedStatement pstmt = dbConn.prepareStatement(queryText)) {
+        pstmt.setLong(1, req.getInsertCount());
+        pstmt.setLong(2, req.getUpdatedCount());
+        pstmt.setLong(3, req.getDeletedCount());
+        pstmt.setLong(4, req.getTableId());
+        LOG.debug("Going to execute query <{}>", queryText);
+        int res = pstmt.executeUpdate();
+        dbConn.commit();
+        LOG.debug("Updated {} records tblId={}", res, req.getTableId());
+      }
+    } catch (SQLException ex) {
+      LOG.warn("Unable to update transactional statistics tblId=" + req.getTableId(), ex);
+      throw new MetaException("Unable to update transactional statistics" + " " + StringUtils.stringifyException(ex));
+    }
   }
 
   /**

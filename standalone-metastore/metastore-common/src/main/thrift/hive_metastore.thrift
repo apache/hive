@@ -1100,7 +1100,7 @@ struct ReplLastIdInfo {
     5: optional list<string> partitionList,
 }
 
-struct AffectedRowCount {
+struct UpdateTransactionalStatsRequest {
     1: required i64 tableId,
     2: required i64 insertCount,
     3: required i64 updatedCount,
@@ -1118,7 +1118,6 @@ struct CommitTxnRequest {
     5: optional CommitTxnKeyValue keyValue,
     6: optional bool exclWriteEnabled = true,
     7: optional TxnType txn_type,
-    8: optional set<AffectedRowCount> rowsAffected,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -2752,6 +2751,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
   SetPartitionsStatsResponse update_partition_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
+  void update_transaction_statistics(1:UpdateTransactionalStatsRequest req)
 
 
   // get APIs return the column statistics corresponding to db_name, tbl_name, [part_name], col_name if

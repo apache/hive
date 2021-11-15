@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +24,8 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
@@ -44,8 +41,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 /**
  * An implementation HiveTxnManager that includes internal methods that all
  * transaction managers need to implement but that we don't want to expose to
@@ -54,7 +49,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
-  protected Map<Long, AffectedRowCount> rowsAffected = new HashMap<>();
 
   void setHiveConf(HiveConf c) {
     setConf(c);
@@ -69,27 +63,6 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   public Configuration getConf() {
     return conf;
   }
-
-  public long openTxn(Context ctx, String user) throws LockException {
-    rowsAffected.clear();
-    return onOpenTxn(ctx, user);
-  }
-
-  abstract protected long onOpenTxn(Context ctx, String user) throws LockException;
-
-  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
-    rowsAffected.clear();
-    return onOpenTxn(ctx, user, txnType);
-  }
-
-  abstract protected long onOpenTxn(Context ctx, String user, TxnType txnType) throws LockException;
-
-  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException {
-    rowsAffected.clear();
-    return onReplOpenTxn(replPolicy, srcTxnIds, user);
-  }
-
-  abstract protected List<Long> onReplOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException;
 
   abstract protected void destruct();
 
@@ -254,18 +227,5 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     // This is default implementation. Locking only works for incremental maintenance
     // which only works for DB transactional manager, thus we cannot acquire a lock.
     return new LockResponse(0L, LockState.NOT_ACQUIRED);
-  }
-
-  @Override
-  public void addAffectedRowCount(AffectedRowCount affectedRowCount) {
-    Long key = affectedRowCount.getTableId();
-    if (!rowsAffected.containsKey(key)) {
-      rowsAffected.put(key, affectedRowCount);
-      return;
-    }
-    AffectedRowCount stored = rowsAffected.get(affectedRowCount.getTableId());
-    stored.setInsertCount(stored.getInsertCount() + affectedRowCount.getInsertCount());
-    stored.setUpdatedCount(stored.getUpdatedCount() + affectedRowCount.getUpdatedCount());
-    stored.setDeletedCount(stored.getDeletedCount() + affectedRowCount.getDeletedCount());
   }
 }

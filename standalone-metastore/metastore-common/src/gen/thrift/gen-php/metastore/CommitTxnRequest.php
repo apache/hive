@@ -64,16 +64,6 @@ class CommitTxnRequest
             'type' => TType::I32,
             'class' => '\metastore\TxnType',
         ),
-        8 => array(
-            'var' => 'rowsAffected',
-            'isRequired' => false,
-            'type' => TType::SET,
-            'etype' => TType::STRUCT,
-            'elem' => array(
-                'type' => TType::STRUCT,
-                'class' => '\metastore\AffectedRowCount',
-                ),
-        ),
     );
 
     /**
@@ -104,10 +94,6 @@ class CommitTxnRequest
      * @var int
      */
     public $txn_type = null;
-    /**
-     * @var \metastore\AffectedRowCount[]
-     */
-    public $rowsAffected = null;
 
     public function __construct($vals = null)
     {
@@ -132,9 +118,6 @@ class CommitTxnRequest
             }
             if (isset($vals['txn_type'])) {
                 $this->txn_type = $vals['txn_type'];
-            }
-            if (isset($vals['rowsAffected'])) {
-                $this->rowsAffected = $vals['rowsAffected'];
             }
         }
     }
@@ -219,23 +202,6 @@ class CommitTxnRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 8:
-                    if ($ftype == TType::SET) {
-                        $this->rowsAffected = array();
-                        $_size667 = 0;
-                        $_etype670 = 0;
-                        $xfer += $input->readSetBegin($_etype670, $_size667);
-                        for ($_i671 = 0; $_i671 < $_size667; ++$_i671) {
-                            $elem672 = null;
-                            $elem672 = new \metastore\AffectedRowCount();
-                            $xfer += $elem672->read($input);
-                            $this->rowsAffected[] = $elem672;
-                        }
-                        $xfer += $input->readSetEnd();
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -266,8 +232,8 @@ class CommitTxnRequest
             }
             $xfer += $output->writeFieldBegin('writeEventInfos', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->writeEventInfos));
-            foreach ($this->writeEventInfos as $iter673) {
-                $xfer += $iter673->write($output);
+            foreach ($this->writeEventInfos as $iter667) {
+                $xfer += $iter667->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -296,18 +262,6 @@ class CommitTxnRequest
         if ($this->txn_type !== null) {
             $xfer += $output->writeFieldBegin('txn_type', TType::I32, 7);
             $xfer += $output->writeI32($this->txn_type);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->rowsAffected !== null) {
-            if (!is_array($this->rowsAffected)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('rowsAffected', TType::SET, 8);
-            $output->writeSetBegin(TType::STRUCT, count($this->rowsAffected));
-            foreach ($this->rowsAffected as $iter674 => $iter675) {
-                $xfer += $iter675->write($output);
-            }
-            $output->writeSetEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

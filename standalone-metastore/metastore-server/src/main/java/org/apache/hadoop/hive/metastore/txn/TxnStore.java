@@ -147,6 +147,8 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
+  void updateTransactionStatistics(UpdateTransactionalStatsRequest req) throws MetaException;
+
   /**
    * Get invalidation info for the materialization. Currently, the materialization information
    * only contains information about whether there was update/delete operations on the source

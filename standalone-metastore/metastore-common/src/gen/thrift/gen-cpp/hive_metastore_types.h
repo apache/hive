@@ -661,7 +661,7 @@ class WriteEventInfo;
 
 class ReplLastIdInfo;
 
-class AffectedRowCount;
+class UpdateTransactionalStatsRequest;
 
 class CommitTxnRequest;
 
@@ -8648,15 +8648,15 @@ void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
 std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj);
 
 
-class AffectedRowCount : public virtual ::apache::thrift::TBase {
+class UpdateTransactionalStatsRequest : public virtual ::apache::thrift::TBase {
  public:
 
-  AffectedRowCount(const AffectedRowCount&);
-  AffectedRowCount& operator=(const AffectedRowCount&);
-  AffectedRowCount() : tableId(0), insertCount(0), updatedCount(0), deletedCount(0) {
+  UpdateTransactionalStatsRequest(const UpdateTransactionalStatsRequest&);
+  UpdateTransactionalStatsRequest& operator=(const UpdateTransactionalStatsRequest&);
+  UpdateTransactionalStatsRequest() : tableId(0), insertCount(0), updatedCount(0), deletedCount(0) {
   }
 
-  virtual ~AffectedRowCount() noexcept;
+  virtual ~UpdateTransactionalStatsRequest() noexcept;
   int64_t tableId;
   int64_t insertCount;
   int64_t updatedCount;
@@ -8670,7 +8670,7 @@ class AffectedRowCount : public virtual ::apache::thrift::TBase {
 
   void __set_deletedCount(const int64_t val);
 
-  bool operator == (const AffectedRowCount & rhs) const
+  bool operator == (const UpdateTransactionalStatsRequest & rhs) const
   {
     if (!(tableId == rhs.tableId))
       return false;
@@ -8682,11 +8682,11 @@ class AffectedRowCount : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const AffectedRowCount &rhs) const {
+  bool operator != (const UpdateTransactionalStatsRequest &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const AffectedRowCount & ) const;
+  bool operator < (const UpdateTransactionalStatsRequest & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -8694,19 +8694,18 @@ class AffectedRowCount : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(AffectedRowCount &a, AffectedRowCount &b);
+void swap(UpdateTransactionalStatsRequest &a, UpdateTransactionalStatsRequest &b);
 
-std::ostream& operator<<(std::ostream& out, const AffectedRowCount& obj);
+std::ostream& operator<<(std::ostream& out, const UpdateTransactionalStatsRequest& obj);
 
 typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false), exclWriteEnabled(true), txn_type(false), rowsAffected(false) {}
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false), exclWriteEnabled(true), txn_type(false) {}
   bool replPolicy :1;
   bool writeEventInfos :1;
   bool replLastIdInfo :1;
   bool keyValue :1;
   bool exclWriteEnabled :1;
   bool txn_type :1;
-  bool rowsAffected :1;
 } _CommitTxnRequest__isset;
 
 class CommitTxnRequest : public virtual ::apache::thrift::TBase {
@@ -8729,7 +8728,6 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
    * @see TxnType
    */
   TxnType::type txn_type;
-  std::set<AffectedRowCount>  rowsAffected;
 
   _CommitTxnRequest__isset __isset;
 
@@ -8746,8 +8744,6 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   void __set_exclWriteEnabled(const bool val);
 
   void __set_txn_type(const TxnType::type val);
-
-  void __set_rowsAffected(const std::set<AffectedRowCount> & val);
 
   bool operator == (const CommitTxnRequest & rhs) const
   {
@@ -8776,10 +8772,6 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txn_type != rhs.__isset.txn_type)
       return false;
     else if (__isset.txn_type && !(txn_type == rhs.txn_type))
-      return false;
-    if (__isset.rowsAffected != rhs.__isset.rowsAffected)
-      return false;
-    else if (__isset.rowsAffected && !(rowsAffected == rhs.rowsAffected))
       return false;
     return true;
   }

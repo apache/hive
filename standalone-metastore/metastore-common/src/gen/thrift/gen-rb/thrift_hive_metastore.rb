@@ -2155,6 +2155,20 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_partition_column_statistics_req failed: unknown result')
     end
 
+    def update_transaction_statistics(req)
+      send_update_transaction_statistics(req)
+      recv_update_transaction_statistics()
+    end
+
+    def send_update_transaction_statistics(req)
+      send_message('update_transaction_statistics', Update_transaction_statistics_args, :req => req)
+    end
+
+    def recv_update_transaction_statistics()
+      result = receive_message(Update_transaction_statistics_result)
+      return
+    end
+
     def get_table_column_statistics(db_name, tbl_name, col_name)
       send_get_table_column_statistics(db_name, tbl_name, col_name)
       return recv_get_table_column_statistics()
@@ -6110,6 +6124,13 @@ module ThriftHiveMetastore
         result.o4 = o4
       end
       write_result(result, oprot, 'update_partition_column_statistics_req', seqid)
+    end
+
+    def process_update_transaction_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Update_transaction_statistics_args)
+      result = Update_transaction_statistics_result.new()
+      @handler.update_transaction_statistics(args.req)
+      write_result(result, oprot, 'update_transaction_statistics', seqid)
     end
 
     def process_get_table_column_statistics(seqid, iprot, oprot)
@@ -12505,6 +12526,37 @@ module ThriftHiveMetastore
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
       O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_transaction_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::UpdateTransactionalStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_transaction_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
     }
 
     def struct_fields; FIELDS; end

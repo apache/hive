@@ -90,14 +90,14 @@ class FireEventRequestData
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->insertDatas = array();
-                        $_size834 = 0;
-                        $_etype837 = 0;
-                        $xfer += $input->readListBegin($_etype837, $_size834);
-                        for ($_i838 = 0; $_i838 < $_size834; ++$_i838) {
-                            $elem839 = null;
-                            $elem839 = new \metastore\InsertEventRequestData();
-                            $xfer += $elem839->read($input);
-                            $this->insertDatas []= $elem839;
+                        $_size826 = 0;
+                        $_etype829 = 0;
+                        $xfer += $input->readListBegin($_etype829, $_size826);
+                        for ($_i830 = 0; $_i830 < $_size826; ++$_i830) {
+                            $elem831 = null;
+                            $elem831 = new \metastore\InsertEventRequestData();
+                            $xfer += $elem831->read($input);
+                            $this->insertDatas []= $elem831;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -132,8 +132,8 @@ class FireEventRequestData
             }
             $xfer += $output->writeFieldBegin('insertDatas', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->insertDatas));
-            foreach ($this->insertDatas as $iter840) {
-                $xfer += $iter840->write($output);
+            foreach ($this->insertDatas as $iter832) {
+                $xfer += $iter832->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -3348,6 +3348,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
+    client.update_transaction_statistics(req);
+  }
+
+  @Override
   public List<FieldSchema> getSchema(String db, String tableName) throws TException {
     return getSchema(getDefaultCatalog(conf), db, tableName);
   }

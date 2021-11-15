@@ -1041,6 +1041,10 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function update_partition_column_statistics_req(\metastore\SetPartitionsStatsRequest $req);
     /**
+     * @param \metastore\UpdateTransactionalStatsRequest $req
+     */
+    public function update_transaction_statistics(\metastore\UpdateTransactionalStatsRequest $req);
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param string $col_name

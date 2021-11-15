@@ -2830,6 +2830,8 @@ public interface IMetaStoreClient {
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
+  void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
+
   /**
    * @param role
    *          role object

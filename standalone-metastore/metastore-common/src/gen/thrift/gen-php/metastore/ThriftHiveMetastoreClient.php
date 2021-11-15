@@ -8353,6 +8353,62 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("update_partition_column_statistics_req failed: unknown result");
     }
 
+    public function update_transaction_statistics(\metastore\UpdateTransactionalStatsRequest $req)
+    {
+        $this->send_update_transaction_statistics($req);
+        $this->recv_update_transaction_statistics();
+    }
+
+    public function send_update_transaction_statistics(\metastore\UpdateTransactionalStatsRequest $req)
+    {
+        $args = new \metastore\ThriftHiveMetastore_update_transaction_statistics_args();
+        $args->req = $req;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'update_transaction_statistics',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('update_transaction_statistics', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_update_transaction_statistics()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_update_transaction_statistics_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_update_transaction_statistics_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        return;
+    }
+
     public function get_table_column_statistics($db_name, $tbl_name, $col_name)
     {
         $this->send_get_table_column_statistics($db_name, $tbl_name, $col_name);

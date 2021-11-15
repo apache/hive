@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.CommitTxnKeyValue;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -67,7 +66,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -213,7 +211,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  protected List<Long> onReplOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
     try {
       return getMS().replOpenTxn(replPolicy, srcTxnIds, user, TxnType.REPL_CREATED);
     } catch (TException e) {
@@ -222,12 +220,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  protected long onOpenTxn(Context ctx, String user) throws LockException {
+  public long openTxn(Context ctx, String user) throws LockException {
     return openTxn(ctx, user, TxnType.DEFAULT, 0);
   }
 
   @Override
-  protected long onOpenTxn(Context ctx, String user, TxnType txnType) throws LockException {
+  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
     return openTxn(ctx, user, txnType, 0);
   }
 
@@ -538,10 +536,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       if (replPolicy != null) {
         commitTxnRequest.setReplPolicy(replPolicy);
         commitTxnRequest.setTxn_type(TxnType.DEFAULT);
-      }
-      if (!rowsAffected.isEmpty()) {
-        commitTxnRequest.setRowsAffectedIsSet(true);
-        commitTxnRequest.setRowsAffected(new HashSet<>(rowsAffected.values()));
       }
       getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {

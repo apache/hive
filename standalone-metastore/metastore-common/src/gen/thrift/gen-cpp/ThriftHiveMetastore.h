@@ -152,6 +152,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool update_partition_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) = 0;
   virtual void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) = 0;
+  virtual void update_transaction_statistics(const UpdateTransactionalStatsRequest& req) = 0;
   virtual void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) = 0;
   virtual void get_partition_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) = 0;
   virtual void get_table_statistics_req(TableStatsResult& _return, const TableStatsRequest& request) = 0;
@@ -709,6 +710,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void update_partition_column_statistics_req(SetPartitionsStatsResponse& /* _return */, const SetPartitionsStatsRequest& /* req */) {
+    return;
+  }
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& /* req */) {
     return;
   }
   void get_table_column_statistics(ColumnStatistics& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */) {
@@ -17222,6 +17226,92 @@ class ThriftHiveMetastore_update_partition_column_statistics_req_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_update_transaction_statistics_args__isset {
+  _ThriftHiveMetastore_update_transaction_statistics_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_update_transaction_statistics_args__isset;
+
+class ThriftHiveMetastore_update_transaction_statistics_args {
+ public:
+
+  ThriftHiveMetastore_update_transaction_statistics_args(const ThriftHiveMetastore_update_transaction_statistics_args&);
+  ThriftHiveMetastore_update_transaction_statistics_args& operator=(const ThriftHiveMetastore_update_transaction_statistics_args&);
+  ThriftHiveMetastore_update_transaction_statistics_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_transaction_statistics_args() noexcept;
+  UpdateTransactionalStatsRequest req;
+
+  _ThriftHiveMetastore_update_transaction_statistics_args__isset __isset;
+
+  void __set_req(const UpdateTransactionalStatsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_update_transaction_statistics_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_transaction_statistics_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_transaction_statistics_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_transaction_statistics_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_transaction_statistics_pargs() noexcept;
+  const UpdateTransactionalStatsRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_transaction_statistics_result {
+ public:
+
+  ThriftHiveMetastore_update_transaction_statistics_result(const ThriftHiveMetastore_update_transaction_statistics_result&);
+  ThriftHiveMetastore_update_transaction_statistics_result& operator=(const ThriftHiveMetastore_update_transaction_statistics_result&);
+  ThriftHiveMetastore_update_transaction_statistics_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_transaction_statistics_result() noexcept;
+
+  bool operator == (const ThriftHiveMetastore_update_transaction_statistics_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_transaction_statistics_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_transaction_statistics_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_transaction_statistics_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_transaction_statistics_presult() noexcept;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_table_column_statistics_args__isset {
   _ThriftHiveMetastore_get_table_column_statistics_args__isset() : db_name(false), tbl_name(false), col_name(false) {}
   bool db_name :1;
@@ -33524,6 +33614,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req);
   void send_update_partition_column_statistics_req(const SetPartitionsStatsRequest& req);
   void recv_update_partition_column_statistics_req(SetPartitionsStatsResponse& _return);
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& req);
+  void send_update_transaction_statistics(const UpdateTransactionalStatsRequest& req);
+  void recv_update_transaction_statistics();
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void send_get_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void recv_get_table_column_statistics(ColumnStatistics& _return);
@@ -34077,6 +34170,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_update_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_partition_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_transaction_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -34346,6 +34440,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["update_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics;
     processMap_["update_table_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics_req;
     processMap_["update_partition_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics_req;
+    processMap_["update_transaction_statistics"] = &ThriftHiveMetastoreProcessor::process_update_transaction_statistics;
     processMap_["get_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_get_table_column_statistics;
     processMap_["get_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_get_partition_column_statistics;
     processMap_["get_table_statistics_req"] = &ThriftHiveMetastoreProcessor::process_get_table_statistics_req;
@@ -35729,6 +35824,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
     ifaces_[i]->update_partition_column_statistics_req(_return, req);
     return;
+  }
+
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_transaction_statistics(req);
+    }
+    ifaces_[i]->update_transaction_statistics(req);
   }
 
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
@@ -37462,6 +37566,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req);
   int32_t send_update_partition_column_statistics_req(const SetPartitionsStatsRequest& req);
   void recv_update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const int32_t seqid);
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& req);
+  int32_t send_update_transaction_statistics(const UpdateTransactionalStatsRequest& req);
+  void recv_update_transaction_statistics(const int32_t seqid);
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   int32_t send_get_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void recv_get_table_column_statistics(ColumnStatistics& _return, const int32_t seqid);

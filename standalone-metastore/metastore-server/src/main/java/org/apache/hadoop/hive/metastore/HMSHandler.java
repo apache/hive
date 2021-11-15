@@ -7265,6 +7265,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public void update_transaction_statistics(UpdateTransactionalStatsRequest req) throws TException {
+    getTxnHandler().updateTransactionStatistics(req);
+  }
+
+  @Override
   @Deprecated
   public List<Partition> get_partitions_by_filter(final String dbName, final String tblName,
                                                   final String filter, final short maxParts)

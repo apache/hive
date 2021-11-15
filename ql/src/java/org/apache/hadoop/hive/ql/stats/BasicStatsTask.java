@@ -37,9 +37,9 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -224,11 +224,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   }
 
   private static class TransactionalStatsProcessor {
-    private final HiveTxnManager txnManager;
+    private final Hive db;
     private final Partish partish;
 
-    private TransactionalStatsProcessor(HiveTxnManager txnManager, Partish partish) {
-      this.txnManager = txnManager;
+    private TransactionalStatsProcessor(Hive db, Partish partish) {
+      this.db = db;
       this.partish = partish;
     }
 
@@ -252,13 +252,12 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
 
         if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
-          AffectedRowCount affectedRowCount = new AffectedRowCount();
-          affectedRowCount.setTableId(partish.getTable().getTTable().getId());
-          affectedRowCount.setInsertCount(insertCount);
-          affectedRowCount.setUpdatedCount(updateCount);
-          affectedRowCount.setDeletedCount(deleteCount);
-
-          txnManager.addAffectedRowCount(affectedRowCount);
+          UpdateTransactionalStatsRequest request = new UpdateTransactionalStatsRequest();
+          request.setTableId(partish.getTable().getTTable().getId());
+          request.setInsertCount(insertCount);
+          request.setUpdatedCount(updateCount);
+          request.setDeletedCount(deleteCount);
+          db.updateTransactionalStatistics(request);
         }
       }
     }
@@ -306,7 +305,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
         db.alterTable(tableFullName, res, environmentContext, true);
 
-        TransactionalStatsProcessor transactionalStatsProcessor = new TransactionalStatsProcessor(txnManager, p);
+        TransactionalStatsProcessor transactionalStatsProcessor = new TransactionalStatsProcessor(db, p);
         transactionalStatsProcessor.process(statsAggregator);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
@@ -332,7 +331,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             Partish p;
             BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn), work, conf, followedColStats);
             processors.add(bsp);
-            transactionalStatsProcessors.add(new TransactionalStatsProcessor(txnManager, p));
+            transactionalStatsProcessors.add(new TransactionalStatsProcessor(db, p));
 
             futures.add(pool.submit(new Callable<Void>() {
               @Override
