@@ -227,7 +227,7 @@ public class WarehouseInstance implements Closeable {
       driver.getResults(lastResults);
     }
     // Split around the 'tab' character
-    return (lastResults.get(0).split("\\t"))[colNum];
+    return !lastResults.isEmpty() ? (lastResults.get(0).split("\\t"))[colNum] : "";
   }
 
   public WarehouseInstance run(String command) throws Throwable {
