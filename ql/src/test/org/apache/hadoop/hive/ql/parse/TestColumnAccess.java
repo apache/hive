@@ -41,6 +41,7 @@ public class TestColumnAccess {
     Driver driver = createDriver();
     driver.run("create table t1(id1 int, name1 string)");
     driver.run("create table t2(id2 int, id1 int, name2 string)");
+    driver.run("create table t3(id1 int) partitioned by (`date` int, p0 string)");
     driver.run("create view v1 as select * from t1");
   }
 
@@ -49,6 +50,7 @@ public class TestColumnAccess {
     Driver driver = createDriver();
     driver.run("drop table t1");
     driver.run("drop table t2");
+    driver.run("drop table t3");
     driver.run("drop view v1");
   }
 
@@ -64,16 +66,16 @@ public class TestColumnAccess {
     List<String> cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name1"));
 
     // check access columns from readEntity
     Map<String, List<String>> tableColsMap = getColsFromReadEntity(plan.getInputs());
     cols = tableColsMap.get("default@t1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name1"));
   }
 
   @Test
@@ -88,14 +90,14 @@ public class TestColumnAccess {
     List<String> cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name1"));
     cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t2");
     Assert.assertNotNull(cols);
     Assert.assertEquals(3, cols.size());
-    Assert.assertNotNull(cols.contains("id2"));
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id2"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name2"));
 
 
     // check access columns from readEntity
@@ -103,14 +105,14 @@ public class TestColumnAccess {
     cols = tableColsMap.get("default@t1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name1"));
     cols = tableColsMap.get("default@t2");
     Assert.assertNotNull(cols);
     Assert.assertEquals(3, cols.size());
-    Assert.assertNotNull(cols.contains("id2"));
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id2"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name2"));
   }
 
   @Test
@@ -129,14 +131,14 @@ public class TestColumnAccess {
     cols = columnAccessInfo.getTableToColumnAccessMap().get("default@v1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name1"));
     cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t2");
     Assert.assertNotNull(cols);
     Assert.assertEquals(3, cols.size());
-    Assert.assertNotNull(cols.contains("id2"));
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id2"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name2"));
 
 
     // check access columns from readEntity
@@ -146,14 +148,29 @@ public class TestColumnAccess {
     cols = tableColsMap.get("default@v1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name1"));
     cols = tableColsMap.get("default@t2");
     Assert.assertNotNull(cols);
     Assert.assertEquals(3, cols.size());
-    Assert.assertNotNull(cols.contains("id2"));
-    Assert.assertNotNull(cols.contains("id1"));
-    Assert.assertNotNull(cols.contains("name1"));
+    Assert.assertTrue(cols.contains("id2"));
+    Assert.assertTrue(cols.contains("id1"));
+    Assert.assertTrue(cols.contains("name2"));
+  }
+
+  @Test
+  public void testShowPartitions() throws Exception {
+    String query = "show partitions t3 where `date` > 20011113";
+    Driver driver = createDriver();
+    int rc = driver.compile(query, true);
+    Assert.assertEquals("Checking command success", 0, rc);
+    QueryPlan plan = driver.getPlan();
+    ColumnAccessInfo columnAccessInfo = plan.getColumnAccessInfo();
+    List<String> cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t3");
+
+    Assert.assertEquals(2, cols.size());
+    Assert.assertTrue(cols.contains("date"));
+    Assert.assertTrue(cols.contains("p0"));
   }
 
   private Map<String, List<String>> getColsFromReadEntity(Set<ReadEntity> inputs) {
