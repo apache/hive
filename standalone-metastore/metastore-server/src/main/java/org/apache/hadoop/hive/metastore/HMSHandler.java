@@ -9516,13 +9516,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private void startMetrics() throws MetaException {
-    if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
-      if (Metrics.initialize(conf)) {
-        LOG.info("Begin calculating metadata count metrics.");
-        Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getDatabaseCount());
-        Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getTableCount());
-        Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getPartitionCount());
-      }
+    if (!MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
+      return;
+    }
+    boolean onInit = Metrics.initialize(conf);
+    if (onInit) {
+      LOG.info("Begin calculating metadata count metrics.");
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getDatabaseCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getTableCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getPartitionCount());
     }
   }
 
