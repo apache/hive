@@ -101,12 +101,11 @@ public class HiveMaterializedViewUtils {
    */
   public static Boolean isOutdatedMaterializedView(
       String validTxnsList, HiveTxnManager txnMgr,
-      Set<SourceTable> tablesUsed, Table materializedViewTable) throws LockException {
-    List<String> tables = tablesUsed.stream()
-        .map(sourceTable -> TableName.getDbTable(
-                sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
+      Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
+    List<String> tablesUsedNames = tablesUsed.stream()
+        .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
-    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tables, validTxnsList);
+    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames, validTxnsList);
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");
@@ -128,7 +127,7 @@ public class HiveMaterializedViewUtils {
     boolean ignore = false;
     ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
             creationMetadata.getValidTxnList());
-    for (String fullyQualifiedTableName : tables) {
+    for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
       // is produced in those cases, it is because that additional table is joined with the
@@ -407,5 +406,14 @@ public class HiveMaterializedViewUtils {
           null, false, false);
     }
     return newScan;
+  }
+
+  public static Set<TableName> asTableNames(Set<SourceTable> sourceTables) {
+    return sourceTables.stream()
+            .map(sourceTable -> new TableName(
+                    sourceTable.getTable().getCatName(),
+                    sourceTable.getTable().getDbName(),
+                    sourceTable.getTable().getTableName()))
+            .collect(Collectors.toSet());
   }
 }

@@ -12848,12 +12848,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createVwDesc.setViewExpandedText(expandedText);
   }
 
-  private Set<SourceTable> getTablesUsed(ParseContext parseCtx) {
-    Set<SourceTable> tablesUsed = new HashSet<>();
+  private Set<TableName> getTablesUsed(ParseContext parseCtx) {
+    Set<TableName> tablesUsed = new HashSet<>();
     for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
       Table table = topOp.getConf().getTableMetadata();
       if (!table.isMaterializedTable() && !table.isView()) {
-        tablesUsed.add(table.createSourceTable());
+        tablesUsed.add(table.getFullTableName());
       }
     }
     return tablesUsed;

@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -312,6 +313,10 @@ public class Table implements Serializable {
 
   final public String getTableName() {
     return tTable.getTableName();
+  }
+
+  public TableName getFullTableName() {
+    return new TableName(getCatName(), getDbName(), getTableName());
   }
 
   final public Path getDataLocation() {

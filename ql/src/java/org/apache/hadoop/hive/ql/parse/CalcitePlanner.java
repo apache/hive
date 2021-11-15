@@ -131,12 +131,12 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -1970,7 +1970,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
               .equals("DUMMY");
       final RelNode calcitePreMVRewritingPlan = basePlan;
-      final Set<SourceTable> tablesUsedQuery = getTablesUsed(basePlan);
+      final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
 
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
@@ -2118,8 +2118,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           try {
             Table hiveTableMD = extractTable(relOptMaterialization);
             if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
-              Set<SourceTable> sourceTables = new HashSet<>(1);
-              sourceTables.add(hiveTableMD.createSourceTable());
+              Set<TableName> sourceTables = new HashSet<>(1);
+              sourceTables.add(hiveTableMD.getFullTableName());
               if (db.validateMaterializedViewsFromRegistry(
                       singletonList(hiveTableMD), sourceTables, getTxnMgr())) {
                 return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
@@ -2343,15 +2343,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return basePlan;
     }
 
-    protected Set<SourceTable> getTablesUsed(RelNode plan) {
-      Set<SourceTable> tablesUsed = new HashSet<>();
+    protected Set<TableName> getTablesUsed(RelNode plan) {
+      Set<TableName> tablesUsed = new HashSet<>();
       new RelVisitor() {
         @Override
         public void visit(RelNode node, int ordinal, RelNode parent) {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
             Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
-            tablesUsed.add(hiveTableMD.createSourceTable());
+            tablesUsed.add(hiveTableMD.getFullTableName());
           }
           super.visit(node, ordinal, parent);
         }
