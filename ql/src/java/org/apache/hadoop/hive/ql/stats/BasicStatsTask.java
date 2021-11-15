@@ -376,13 +376,14 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
         }
 
+        if (!updates.isEmpty()) {
+          db.alterPartitions(tableFullName, updates, environmentContext, true);
+        }
+
         for (TransactionalStatsProcessor transactionalStatsProcessor : transactionalStatsProcessors) {
           transactionalStatsProcessor.process(statsAggregator);
         }
 
-        if (!updates.isEmpty()) {
-          db.alterPartitions(tableFullName, updates, environmentContext, true);
-        }
         if (work.isStatsReliable() && updates.size() != processors.size()) {
           LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");
           ret = 1;
