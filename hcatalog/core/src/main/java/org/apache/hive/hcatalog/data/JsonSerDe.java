@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -661,12 +660,6 @@ public class JsonSerDe extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics yet
-    return null;
   }
 
 }

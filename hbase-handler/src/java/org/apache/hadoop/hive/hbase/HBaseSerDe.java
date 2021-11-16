@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -300,12 +299,6 @@ public class HBaseSerDe extends AbstractSerDe {
     } catch (Exception e) {
       throw new SerDeException(e);
     }
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
   public HBaseKeyFactory getKeyFactory() {

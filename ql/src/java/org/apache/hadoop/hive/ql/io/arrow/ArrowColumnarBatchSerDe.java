@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAssignRow;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -267,11 +266,6 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
       }
     }
     return serializer.serialize(obj, objInspector);
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   @Override

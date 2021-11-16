@@ -201,8 +201,4 @@ public final class OpenCSVSerde extends AbstractSerDe {
     return Text.class;
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
-  }
 }

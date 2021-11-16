@@ -230,10 +230,4 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
     return serializeCache;
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
-  }
-
 }
