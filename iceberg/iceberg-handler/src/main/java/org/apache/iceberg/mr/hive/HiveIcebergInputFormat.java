@@ -23,12 +23,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -55,7 +58,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
-    implements CombineHiveInputFormat.AvoidSplitCombination, VectorizedInputFormatInterface {
+    implements CombineHiveInputFormat.AvoidSplitCombination, VectorizedInputFormatInterface,
+    LlapCacheOnlyInputFormatInterface.VectorizedOnly {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergInputFormat.class);
   private static final String HIVE_VECTORIZED_RECORDREADER_CLASS =
@@ -93,6 +97,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     }
 
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    job.set(InputFormatConfig.AS_OF_TIMESTAMP, job.get(TableScanDesc.AS_OF_TIMESTAMP, "-1"));
+    job.set(InputFormatConfig.SNAPSHOT_ID, job.get(TableScanDesc.AS_OF_VERSION, "-1"));
 
     String location = job.get(InputFormatConfig.TABLE_LOCATION);
     return Arrays.stream(super.getSplits(job, numSplits))
@@ -114,7 +120,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
       IcebergSplit icebergSplit = ((IcebergSplitContainer) split).icebergSplit();
       // bogus cast for favouring code reuse over syntax
       return (RecordReader) HIVE_VECTORIZED_RECORDREADER_CTOR.newInstance(
-          new org.apache.iceberg.mr.mapreduce.IcebergInputFormat<>(),
+          new IcebergInputFormat<>(),
           icebergSplit,
           job,
           reporter);
@@ -131,6 +137,11 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   @Override
   public VectorizedSupport.Support[] getSupportedFeatures() {
     return new VectorizedSupport.Support[]{ VectorizedSupport.Support.DECIMAL_64 };
+  }
+
+  @Override
+  public void injectCaches(FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf) {
+    // no-op for Iceberg
   }
 
 }

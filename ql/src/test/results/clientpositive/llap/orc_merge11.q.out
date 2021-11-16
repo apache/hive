@@ -436,7 +436,7 @@ ________________________________________________________________________________
 PREHOOK: query: INSERT OVERWRITE DIRECTORY 'output' stored as orcfile select * from orc_split_elim_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_split_elim_n0
-PREHOOK: Output: output
+#### A masked pattern was here ####
 PREHOOK: query: DROP TABLE orc_split_elim_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_split_elim_n0

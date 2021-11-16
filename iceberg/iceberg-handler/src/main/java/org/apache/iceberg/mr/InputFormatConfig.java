@@ -51,9 +51,30 @@ public class InputFormatConfig {
   public static final String SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
   public static final String TABLE_CATALOG_PREFIX = "iceberg.mr.table.catalog.";
   public static final String LOCALITY = "iceberg.mr.locality";
+
+  /**
+   * @deprecated please use {@link #catalogPropertyConfigKey(String, String)}
+   * with config key {@link org.apache.iceberg.CatalogUtil#ICEBERG_CATALOG_TYPE} to specify the type of a catalog.
+   */
+  @Deprecated
   public static final String CATALOG = "iceberg.mr.catalog";
+
+  /**
+   * @deprecated please use {@link #catalogPropertyConfigKey(String, String)}
+   * with config key {@link org.apache.iceberg.CatalogProperties#WAREHOUSE_LOCATION}
+   * to specify the warehouse location of a catalog.
+   */
+  @Deprecated
   public static final String HADOOP_CATALOG_WAREHOUSE_LOCATION = "iceberg.mr.catalog.hadoop.warehouse.location";
+
+  /**
+   * @deprecated please use {@link #catalogPropertyConfigKey(String, String)}
+   * with config key {@link org.apache.iceberg.CatalogProperties#CATALOG_IMPL}
+   * to specify the implementation of a catalog.
+   */
+  @Deprecated
   public static final String CATALOG_LOADER_CLASS = "iceberg.mr.catalog.loader.class";
+
   public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
@@ -209,6 +230,18 @@ public class InputFormatConfig {
     }
 
     return readColumns.split(conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA)));
+  }
+
+  /**
+   * Get Hadoop config key of a catalog property based on catalog name
+   * @param catalogName catalog name
+   * @param catalogProperty catalog property, can be any custom property,
+   *                        a commonly used list of properties can be found
+   *                        at {@link org.apache.iceberg.CatalogProperties}
+   * @return Hadoop config key of a catalog property for the catalog name
+   */
+  public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
+    return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
   }
 
   private static Schema schema(Configuration conf, String key) {

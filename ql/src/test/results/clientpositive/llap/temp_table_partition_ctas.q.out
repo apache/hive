@@ -173,6 +173,7 @@ POSTHOOK: Output: default@partition_ctas_1_temp@key=291
 POSTHOOK: Output: default@partition_ctas_1_temp@key=292
 POSTHOOK: Output: default@partition_ctas_1_temp@key=296
 POSTHOOK: Output: default@partition_ctas_1_temp@key=298
+POSTHOOK: Lineage: partition_ctas_1_temp.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_1_temp PARTITION(key=201).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_1_temp PARTITION(key=202).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_ctas_1_temp PARTITION(key=203).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

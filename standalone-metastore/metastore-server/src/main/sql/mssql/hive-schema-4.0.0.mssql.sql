@@ -308,7 +308,7 @@ CREATE TABLE DBS
     CTLG_NAME nvarchar(256) DEFAULT 'hive',
     CREATE_TIME INT,
     DB_MANAGED_LOCATION_URI nvarchar(4000) NULL,
-    TYPE nvarchar(32) DEFAULT 'native' NOT NULL,
+    TYPE nvarchar(32) DEFAULT 'NATIVE' NOT NULL,
     DATACONNECTOR_NAME nvarchar(128) NULL,
     REMOTE_DBNAME nvarchar(128) NULL
 );
@@ -1367,7 +1367,8 @@ CREATE TABLE "REPLICATION_METRICS" (
   "RM_DUMP_EXECUTION_ID" bigint NOT NULL,
   "RM_METADATA" varchar(max),
   "RM_PROGRESS" varchar(max),
-  "RM_START_TIME" integer NOT NULL
+  "RM_START_TIME" integer NOT NULL,
+  "MESSAGE_FORMAT" nvarchar(16),
 );
 
 -- Create indexes for the replication metrics table

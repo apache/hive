@@ -28,7 +28,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.io.CacheTag;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.IllegalCacheConfigurationException;
@@ -56,6 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -285,7 +285,7 @@ public class VectorizedOrcAcidRowBatchReader
     deleteEventReaderOptions.range(0, Long.MAX_VALUE);
     deleteEventReaderOptions.searchArgument(null, null);
     keyInterval = findMinMaxKeys(orcSplit, conf, deleteEventReaderOptions);
-    fetchDeletedRows = conf.getBoolean(Constants.ACID_FETCH_DELETED_ROWS, false);
+    fetchDeletedRows = acidOperationalProperties.isFetchDeletedRows();
     DeleteEventRegistry der;
     try {
       // See if we can load all the relevant delete events from all the
@@ -586,7 +586,7 @@ public class VectorizedOrcAcidRowBatchReader
       maxKey = keyIndex[lastStripeIndex];
     } else {
       if(columnStatsPresent) {
-        maxKey = getKeyInterval(stats.get(firstStripeIndex).getColumnStatistics()).getMaxKey();
+        maxKey = getKeyInterval(stats.get(lastStripeIndex).getColumnStatistics()).getMaxKey();
       }
     }
     OrcRawRecordMerger.KeyInterval keyInterval =
@@ -857,8 +857,13 @@ public class VectorizedOrcAcidRowBatchReader
     return false;
   }
 
+  @Deprecated
+  static Path[] getDeleteDeltaDirsFromSplit(OrcSplit orcSplit) {
+    return getDeleteDeltaDirsFromSplit(orcSplit, null);
+  }
+
   static Path[] getDeleteDeltaDirsFromSplit(OrcSplit orcSplit,
-      Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData) throws IOException {
+      Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData) {
     Path path = orcSplit.getPath();
     Path root;
     if (orcSplit.hasBase()) {
@@ -1377,7 +1382,7 @@ public class VectorizedOrcAcidRowBatchReader
       /**
        * see {@link BucketCodec}
        */
-      private int bucketProperty; 
+      private int bucketProperty;
       private long rowId;
       DeleteRecordKey() {
         this.originalWriteId = -1;
@@ -1437,8 +1442,9 @@ public class VectorizedOrcAcidRowBatchReader
      */
     static class DeleteReaderValue {
 
+      // Produces column indices for all ACID columns, except for the last one, which is the ROW struct.
       private static final List<Integer> DELETE_DELTA_INCLUDE_COLUMNS =
-          IntStream.range(0, OrcInputFormat.getRootColumn(false)).boxed().collect(toList());
+          IntStream.range(0, OrcInputFormat.getRootColumn(false) - 1).boxed().collect(toList());
 
       private static final TypeDescription DELETE_DELTA_EMPTY_STRUCT =
           new TypeDescription(TypeDescription.Category.STRUCT);
@@ -1629,6 +1635,13 @@ public class VectorizedOrcAcidRowBatchReader
         c.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
         c.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
 
+        // Schema info in this job conf relates to the table schema without ACID cols. Unsetting them forces LLAP to
+        // use the file schema instead which is the correct way to handle delete delta files, as there's no such
+        // thing as logical schema for them.
+        HiveConf.setBoolVar(c, ConfVars.HIVE_SCHEMA_EVOLUTION, false);
+        c.unset(serdeConstants.LIST_COLUMNS);
+        c.unset(serdeConstants.LIST_COLUMN_TYPES);
+
         // Apply delete delta SARG if any
         SearchArgument deleteDeltaSarg = readerOptions.getSearchArgument();
         if (deleteDeltaSarg != null) {
@@ -1636,7 +1649,7 @@ public class VectorizedOrcAcidRowBatchReader
         }
         return wrapLlapVectorizedRecordReader(
             LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, deleteDeltaFile, tag,
-            DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE)
+            DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE, null)
         );
       }
 

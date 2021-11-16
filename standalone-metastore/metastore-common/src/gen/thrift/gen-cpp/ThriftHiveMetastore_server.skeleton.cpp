@@ -220,6 +220,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_check_constraint\n");
   }
 
+  void translate_table_dryrun(Table& _return, const Table& tbl) {
+    // Your implementation goes here
+    printf("translate_table_dryrun\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");
@@ -1040,6 +1045,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_write_notification_log\n");
   }
 
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log_in_batch\n");
+  }
+
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
     // Your implementation goes here
     printf("cm_recycle\n");
@@ -1328,6 +1338,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void drop_package(const DropPackageRequest& request) {
     // Your implementation goes here
     printf("drop_package\n");
+  }
+
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
+    // Your implementation goes here
+    printf("get_all_write_event_info\n");
   }
 
 };

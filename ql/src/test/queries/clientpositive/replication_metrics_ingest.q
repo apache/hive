@@ -28,6 +28,8 @@ alter scheduled query repl1 execute;
 
 !sleep 50;
 
+alter scheduled query repl1 disabled;
+
 create scheduled query repl2 every 15 minutes as repl load src into destination
 with ('hive.repl.rootdir'= '${system:test.tmp.dir}/repl');
 
@@ -35,8 +37,10 @@ alter scheduled query repl2 execute;
 
 !sleep 50;
 
+alter scheduled query repl2 disabled;
+
 show databases;
 
-select policy_name, dump_execution_id from sys.replication_metrics;
+select * from sys.replication_metrics;
 
-select count(*) from sys.replication_metrics where scheduled_execution_id > 0;
+select * from sys.replication_metrics_view order by dump_execution_id;

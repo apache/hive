@@ -209,7 +209,7 @@ class DirectSqlUpdateStat {
       try {
         pst = dbConn.prepareStatement(update);
         StatObjectConverter.initUpdatedColumnStatement(mPartitionColumnStatistics, pst);
-        LOG.info("Going to execute update " + update);
+        LOG.debug("Going to execute update " + update);
         int numUpdate = pst.executeUpdate();
         if (numUpdate != 1) {
           throw new MetaException("Invalid state of  PART_COL_STATS for PART_ID " + partId);
@@ -565,6 +565,14 @@ class DirectSqlUpdateStat {
     return partitionInfoMap;
   }
 
+  private void setAnsiQuotes(Connection dbConn) throws SQLException {
+    if (sqlGenerator.getDbProduct().isMYSQL()) {
+      try (Statement stmt = dbConn.createStatement()) {
+        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      }
+    }
+  }
+
   /**
    * Update the statistics for the given partitions. Add the notification logs also.
    * @return map of partition key to column stats if successful, null otherwise.
@@ -582,6 +590,8 @@ class DirectSqlUpdateStat {
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
 
+      setAnsiQuotes(dbConn);
+
       Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
 
       Map<String, Map<String, String>> result =
@@ -590,6 +600,8 @@ class DirectSqlUpdateStat {
       Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
       Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
       populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn);
+
+      LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
 
       if (insertMap.size() != 0) {
         insertIntoPartColStatTable(insertMap, csId, dbConn);
@@ -644,6 +656,8 @@ class DirectSqlUpdateStat {
       lockInternal();
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
+
+      setAnsiQuotes(dbConn);
 
       // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
       // We are not using any upsert operations as select for update and then update is required to make sure that

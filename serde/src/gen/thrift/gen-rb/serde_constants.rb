@@ -99,6 +99,10 @@ LIST_PARTITION_COLUMNS = %q"partition.columns"
 
 LIST_PARTITION_COLUMN_TYPES = %q"partition.columns.types"
 
+LIST_COLUMN_COMMENTS = %q"columns.comments"
+
+LIST_PARTITION_COLUMN_COMMENTS = %q"partition.columns.comments"
+
 TIMESTAMP_FORMATS = %q"timestamp.formats"
 
 COLUMN_NAME_DELIMITER = %q"column.name.delimiter"

@@ -69,14 +69,14 @@ class WMGetAllResourcePlanResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->resourcePlans = array();
-                        $_size1012 = 0;
-                        $_etype1015 = 0;
-                        $xfer += $input->readListBegin($_etype1015, $_size1012);
-                        for ($_i1016 = 0; $_i1016 < $_size1012; ++$_i1016) {
-                            $elem1017 = null;
-                            $elem1017 = new \metastore\WMResourcePlan();
-                            $xfer += $elem1017->read($input);
-                            $this->resourcePlans []= $elem1017;
+                        $_size1019 = 0;
+                        $_etype1022 = 0;
+                        $xfer += $input->readListBegin($_etype1022, $_size1019);
+                        for ($_i1023 = 0; $_i1023 < $_size1019; ++$_i1023) {
+                            $elem1024 = null;
+                            $elem1024 = new \metastore\WMResourcePlan();
+                            $xfer += $elem1024->read($input);
+                            $this->resourcePlans []= $elem1024;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class WMGetAllResourcePlanResponse
             }
             $xfer += $output->writeFieldBegin('resourcePlans', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->resourcePlans));
-            foreach ($this->resourcePlans as $iter1018) {
-                $xfer += $iter1018->write($output);
+            foreach ($this->resourcePlans as $iter1025) {
+                $xfer += $iter1025->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -24,9 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -48,11 +45,14 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Command authorization, new type.
  */
 final class CommandAuthorizerV2 {
+  private static final Logger LOG = LoggerFactory.getLogger(CommandAuthorizerV2.class.getName());
   private CommandAuthorizerV2() {
     throw new UnsupportedOperationException("CommandAuthorizerV2 should not be instantiated");
   }
@@ -71,8 +71,8 @@ final class CommandAuthorizerV2 {
     List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
     addPermanentFunctionEntities(ss, inputList);
 
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols);
+    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols, hiveOpType);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols, hiveOpType);
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
     authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
@@ -97,7 +97,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(List<? extends Entity> privObjects,
-      Map<String, List<String>> tableName2Cols) {
+      Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType) throws HiveException {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if (privObjects == null){
       return hivePrivobjs;
@@ -138,7 +138,7 @@ final class CommandAuthorizerV2 {
         continue;
       }
 
-      addHivePrivObject(privObject, tableName2Cols, hivePrivobjs);
+      addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);
     }
     return hivePrivobjs;
   }
@@ -147,7 +147,7 @@ final class CommandAuthorizerV2 {
    * A deferred authorization view is view created by non-super user like spark-user. This view contains a parameter "Authorized"
    * set to false, so ranger will not authorize it during view creation. When a select statement is issued, then the ranger authorizes
    * the under lying tables.
-   * @param Table t
+   * @param t the HMS table object
    * @return boolean value
    */
   private static boolean isDeferredAuthView(Table t){
@@ -170,7 +170,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,
-      List<HivePrivilegeObject> hivePrivObjs) {
+      List<HivePrivilegeObject> hivePrivObjs, HiveOperationType hiveOpType) throws HiveException {
     HivePrivilegeObjectType privObjType = AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
     HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
     HivePrivilegeObject hivePrivObject = null;
@@ -186,6 +186,21 @@ final class CommandAuthorizerV2 {
           tableName2Cols.get(Table.getCompleteName(table.getDbName(), table.getTableName()));
       hivePrivObject = new HivePrivilegeObject(privObjType, table.getDbName(), table.getTableName(),
           null, columns, actionType, null, null, table.getOwner(), table.getOwnerType());
+      if (table.getStorageHandler() != null) {
+        //TODO: add hive privilege object for storage based handlers for create and alter table commands.
+        if (hiveOpType == HiveOperationType.CREATETABLE ||
+                hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES ||
+                hiveOpType == HiveOperationType.CREATETABLE_AS_SELECT) {
+          try {
+            String storageUri = table.getStorageHandler().getURIForAuth(table.getTTable()).toString();
+            hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+                actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
+          } catch (Exception ex) {
+            LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);
+            throw new HiveException("Exception occurred while getting the URI from storage handler: " + ex.getMessage());
+          }
+        }
+      }
       break;
     case DFS_DIR:
     case LOCAL_DIR:
@@ -215,4 +230,5 @@ final class CommandAuthorizerV2 {
     }
     hivePrivObjs.add(hivePrivObject);
   }
+
 }

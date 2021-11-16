@@ -63,6 +63,7 @@ public class TestTxnUtils {
     //          The first query happens to have 2 full batches.
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_PARAMETERS, 2000);
     List<Long> inList = new ArrayList<>();
     for (long i = 1; i <= 189; i++) {
       inList.add(i);
@@ -150,10 +151,32 @@ public class TestTxnUtils {
     ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", false, false);
     Assert.assertEquals(3, queries.size());
     Assert.assertEquals(queries.size(), ret.size());
-    Assert.assertEquals(2255L, ret.get(0).longValue());
-    Assert.assertEquals(2033L, ret.get(1).longValue());
-    Assert.assertEquals(33L, ret.get(2).longValue());
+    Assert.assertEquals(2000L, ret.get(0).longValue());
+    Assert.assertEquals(2000L, ret.get(1).longValue());
+    Assert.assertEquals(321L, ret.get(2).longValue());
     runAgainstDerby(queries);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuildQueryWithNOTINClauseFailure() throws Exception {
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 10);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 100);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_PARAMETERS, 1000);
+    List<String> queries = new ArrayList<>();
+    List<Long> deleteSet = new ArrayList<>();
+    for (long i=0; i < 2000; i++) {
+      deleteSet.add(i+1);
+    }
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+
+    prefix.append("select count(*) from TXNS where ");
+
+    List<String> questions = new ArrayList<>(deleteSet.size());
+    for (int  i = 0; i < deleteSet.size(); i++) {
+      questions.add("?");
+    }
+    TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions, "cc_id", false, true);
   }
 
   /** Verify queries can run against Derby DB.

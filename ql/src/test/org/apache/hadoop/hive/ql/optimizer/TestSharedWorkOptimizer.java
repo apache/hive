@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -34,14 +35,17 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.SharedWorkOptimizerCache;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
-
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
@@ -198,6 +202,68 @@ public class TestSharedWorkOptimizer {
     ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udf, as);
     desc.setFilterExpr(f1);
     return ts;
+  }
+
+  private Operator<? extends OperatorDesc> getFilterOp(int constVal) {
+    ExprNodeDesc pred = new ExprNodeConstantDesc(constVal);
+    FilterDesc fd = new FilterDesc(pred, true);
+    Operator<? extends OperatorDesc> op = OperatorFactory.get(cCtx, fd);
+    return op;
+  }
+
+  @Test
+  public void testSharedWorkOptimizerCache() {
+
+    List<Operator<?>> ops = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      ops.add(getFilterOp(i));
+    }
+
+    SharedWorkOptimizerCache c = new SharedWorkOptimizerCache();
+
+    for (int i = 1; i < 10; i++) {
+      int u = 10 * i;
+      c.addWorkGroup(ops.subList(u, u + 10));
+    }
+
+    // unknowns
+    for (int i = 0; i < 10; i++) {
+      assertTrue(c.getWorkGroup(ops.get(i)).isEmpty());
+    }
+
+    // equiv group
+    for (int i = 40; i < 50; i++) {
+      assertEquals(c.getWorkGroup(ops.get(40)), c.getWorkGroup(ops.get(i)));
+    }
+
+    // non equiv
+    for (int i = 10; i < 100; i += 10) {
+      for (int j = i + 10; j < 100; j += 10) {
+        assertNotEquals(c.getWorkGroup(ops.get(i)), c.getWorkGroup(ops.get(j)));
+      }
+    }
+
+    c.removeOpAndCombineWork(ops.get(10), ops.get(20));
+    assertTrue(c.getWorkGroup(ops.get(10)).isEmpty());
+    assertEquals(19, c.getWorkGroup(ops.get(11)).size());
+    for (int i = 11; i < 20; i++) {
+      assertTrue(c.getWorkGroup(ops.get(11)).contains(ops.get(i)));
+    }
+
+    c.putIfWorkExists(ops.get(0), ops.get(1));
+    assertTrue(c.getWorkGroup(ops.get(0)).isEmpty());
+    assertTrue(c.getWorkGroup(ops.get(1)).isEmpty());
+
+    c.putIfWorkExists(ops.get(0), ops.get(30));
+    assertFalse(c.getWorkGroup(ops.get(0)).isEmpty());
+    assertTrue(c.getWorkGroup(ops.get(31)).contains(ops.get(0)));
+
+    c.removeOp(ops.get(1));
+
+    c.removeOp(ops.get(50));
+    assertTrue(c.getWorkGroup(ops.get(50)).isEmpty());
+    assertFalse(c.getWorkGroup(ops.get(51)).contains(ops.get(50)));
+
   }
 
 }

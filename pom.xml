@@ -111,20 +111,20 @@
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
-    <arrow.version>0.11.0</arrow.version>
+    <arrow.version>0.15.1</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
     <calcite.version>1.25.0</calcite.version>
-    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
-    <datanucleus-core.version>5.2.2</datanucleus-core.version>
-    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
+    <datanucleus-api-jdo.version>5.2.4</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.4</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
     <commons-cli.version>1.4</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-compress.version>1.19</commons-compress.version>
+    <commons-compress.version>1.21</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
@@ -182,9 +182,11 @@
     <libthrift.version>0.14.1</libthrift.version>
     <log4j2.version>2.13.2</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
+    <mysql.version>8.0.27</mysql.version>
     <postgres.version>42.2.14</postgres.version>
+    <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.6.8</orc.version>
+    <orc.version>1.6.9</orc.version>
     <mockito-core.version>3.4.4</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -209,7 +211,7 @@
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
-    <xerces.version>2.9.1</xerces.version>
+    <xerces.version>2.12.1</xerces.version>
     <xmlsec.version>2.2.1</xmlsec.version>
     <zookeeper.version>3.5.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
@@ -225,6 +227,8 @@
     <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
+    <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
+    <aws-java-sdk.version>1.11.901</aws-java-sdk.version>
   </properties>
 
   <repositories>
@@ -267,6 +271,28 @@
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-bundle</artifactId>
+        <version>${aws-java-sdk.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.amazonaws.secretsmanager</groupId>
+        <artifactId>aws-secretsmanager-caching-java</artifactId>
+        <version>${aws-secretsmanager-caching.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-secretsmanager</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <dependency>
         <groupId>com.esotericsoftware</groupId>
         <artifactId>kryo</artifactId>
@@ -1648,7 +1674,6 @@
 	    <exclude>**/*.m</exclude>
 	    <exclude>**/gen-java/**</exclude>
 	    <exclude>**/testdata/**</exclude>
-	    <exclude>**/ptest2/*.md</exclude>
 	    <exclude>**/test/org/apache/hadoop/hive/hbase/avro/**</exclude>
 	    <exclude>**/avro_test.avpr</exclude>
 	    <exclude>**/xmlReport.pl</exclude>

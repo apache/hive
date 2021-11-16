@@ -50,10 +50,11 @@ import org.apache.hive.common.util.TimestampParser;
  */
 @SerDeSpec(schemaProps = { serdeConstants.LIST_COLUMNS,
     serdeConstants.LIST_COLUMN_TYPES, serdeConstants.TIMESTAMP_FORMATS,
-    JsonSerDe.BINARY_FORMAT, JsonSerDe.IGNORE_EXTRA })
+    JsonSerDe.BINARY_FORMAT, JsonSerDe.IGNORE_EXTRA, JsonSerDe.STRINGIFY_COMPLEX })
 public class JsonSerDe extends AbstractSerDe {
 
   public static final String BINARY_FORMAT = "json.binary.format";
+  public static final String STRINGIFY_COMPLEX = "json.stringify.complex.fields";
   public static final String IGNORE_EXTRA = "text.ignore.extra.fields";
   public static final String NULL_EMPTY_LINES = "text.null.empty.line";
 
@@ -147,7 +148,12 @@ public class JsonSerDe extends AbstractSerDe {
 
     final String ignoreExtras = tbl.getProperty(IGNORE_EXTRA, "true");
     if (Boolean.parseBoolean(ignoreExtras)) {
-      this.jsonReader.enable(HiveJsonReader.Feature.IGNORE_UKNOWN_FIELDS);
+      this.jsonReader.enable(HiveJsonReader.Feature.IGNORE_UNKNOWN_FIELDS);
+    }
+
+    final String stringifyComplex = tbl.getProperty(STRINGIFY_COMPLEX, "true");
+    if (Boolean.parseBoolean(stringifyComplex)) {
+      this.jsonReader.enable(HiveJsonReader.Feature.STRINGIFY_COMPLEX_FIELDS);
     }
 
     log.debug("Initialized SerDe {}", this);

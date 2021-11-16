@@ -1,0 +1,400 @@
+PREHOOK: query: create transactional table test11 as select 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test11
+POSTHOOK: query: create transactional table test11 as select 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test11
+POSTHOOK: Lineage: test11._c0 SIMPLE []
+PREHOOK: query: show create table test11
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test11
+POSTHOOK: query: show create table test11
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test11
+CREATE TABLE `test11`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test11
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test11
+POSTHOOK: query: describe formatted test11
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test11
+# col_name            	data_type           	comment             
+_c0                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create transactional table test12 as select * from test11
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@test11
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test12
+POSTHOOK: query: create transactional table test12 as select * from test11
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@test11
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test12
+POSTHOOK: Lineage: test12._c0 SIMPLE [(test11)test11.FieldSchema(name:_c0, type:int, comment:null), ]
+PREHOOK: query: show create table test12
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test12
+POSTHOOK: query: show create table test12
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test12
+CREATE TABLE `test12`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test12
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test12
+POSTHOOK: query: describe formatted test12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test12
+# col_name            	data_type           	comment             
+_c0                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create managed table test21 as select 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test21
+POSTHOOK: query: create managed table test21 as select 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test21
+POSTHOOK: Lineage: test21._c0 SIMPLE []
+PREHOOK: query: show create table test21
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test21
+POSTHOOK: query: show create table test21
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test21
+CREATE TABLE `test21`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test21
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test21
+POSTHOOK: query: describe formatted test21
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test21
+# col_name            	data_type           	comment             
+_c0                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create managed table test22 as select * from test21
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@test21
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test22
+POSTHOOK: query: create managed table test22 as select * from test21
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@test21
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test22
+POSTHOOK: Lineage: test22._c0 SIMPLE [(test21)test21.FieldSchema(name:_c0, type:int, comment:null), ]
+PREHOOK: query: show create table test22
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test22
+POSTHOOK: query: show create table test22
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test22
+CREATE TABLE `test22`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test22
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test22
+POSTHOOK: query: describe formatted test22
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test22
+# col_name            	data_type           	comment             
+_c0                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table test31 as select 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test31
+POSTHOOK: query: create table test31 as select 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test31
+POSTHOOK: Lineage: test31._c0 SIMPLE []
+PREHOOK: query: show create table test31
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test31
+POSTHOOK: query: show create table test31
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test31
+CREATE TABLE `test31`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test31
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test31
+POSTHOOK: query: describe formatted test31
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test31
+# col_name            	data_type           	comment             
+_c0                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table test32 as select * from test31
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@test31
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test32
+POSTHOOK: query: create table test32 as select * from test31
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@test31
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test32
+POSTHOOK: Lineage: test32._c0 SIMPLE [(test31)test31.FieldSchema(name:_c0, type:int, comment:null), ]
+PREHOOK: query: show create table test32
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test32
+POSTHOOK: query: show create table test32
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test32
+CREATE TABLE `test32`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test32
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test32
+POSTHOOK: query: describe formatted test32
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test32
+# col_name            	data_type           	comment             
+_c0                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

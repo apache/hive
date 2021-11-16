@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.ImmutableList;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
@@ -321,5 +324,32 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean supportsTruncateOnNonNativeTables() {
     return false;
+  }
+
+  /**
+   * Should return true if the StorageHandler is able to handle time travel.
+   * @return True if time travel is allowed
+   */
+  default boolean isTimeTravelAllowed() {
+    return false;
+  }
+
+  default boolean isMetadataTableSupported() {
+    return false;
+  }
+
+  default boolean isValidMetadataTable(String metaTableName) {
+    return false;
+  }
+
+  /**
+   * Constructs a URI for authorization purposes using the HMS table object
+   * @param table The HMS table object
+   * @return the URI for authorization
+   */
+  default URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
+    return new URI(this.getClass().getSimpleName().toLowerCase() + "://" +
+        HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
   }
 }

@@ -686,6 +686,25 @@ module ThriftHiveMetastore
       return
     end
 
+    def translate_table_dryrun(tbl)
+      send_translate_table_dryrun(tbl)
+      return recv_translate_table_dryrun()
+    end
+
+    def send_translate_table_dryrun(tbl)
+      send_message('translate_table_dryrun', Translate_table_dryrun_args, :tbl => tbl)
+    end
+
+    def recv_translate_table_dryrun()
+      result = receive_message(Translate_table_dryrun_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'translate_table_dryrun failed: unknown result')
+    end
+
     def drop_table(dbname, name, deleteData)
       send_drop_table(dbname, name, deleteData)
       recv_drop_table()
@@ -3390,6 +3409,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_write_notification_log failed: unknown result')
     end
 
+    def add_write_notification_log_in_batch(rqst)
+      send_add_write_notification_log_in_batch(rqst)
+      return recv_add_write_notification_log_in_batch()
+    end
+
+    def send_add_write_notification_log_in_batch(rqst)
+      send_message('add_write_notification_log_in_batch', Add_write_notification_log_in_batch_args, :rqst => rqst)
+    end
+
+    def recv_add_write_notification_log_in_batch()
+      result = receive_message(Add_write_notification_log_in_batch_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_write_notification_log_in_batch failed: unknown result')
+    end
+
     def cm_recycle(request)
       send_cm_recycle(request)
       return recv_cm_recycle()
@@ -4351,6 +4385,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def get_all_write_event_info(request)
+      send_get_all_write_event_info(request)
+      return recv_get_all_write_event_info()
+    end
+
+    def send_get_all_write_event_info(request)
+      send_message('get_all_write_event_info', Get_all_write_event_info_args, :request => request)
+    end
+
+    def recv_get_all_write_event_info()
+      result = receive_message(Get_all_write_event_info_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_write_event_info failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -4904,6 +4954,23 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'add_check_constraint', seqid)
+    end
+
+    def process_translate_table_dryrun(seqid, iprot, oprot)
+      args = read_args(iprot, Translate_table_dryrun_args)
+      result = Translate_table_dryrun_result.new()
+      begin
+        result.success = @handler.translate_table_dryrun(args.tbl)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      rescue ::NoSuchObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'translate_table_dryrun', seqid)
     end
 
     def process_drop_table(seqid, iprot, oprot)
@@ -6886,6 +6953,13 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'add_write_notification_log', seqid)
     end
 
+    def process_add_write_notification_log_in_batch(seqid, iprot, oprot)
+      args = read_args(iprot, Add_write_notification_log_in_batch_args)
+      result = Add_write_notification_log_in_batch_result.new()
+      result.success = @handler.add_write_notification_log_in_batch(args.rqst)
+      write_result(result, oprot, 'add_write_notification_log_in_batch', seqid)
+    end
+
     def process_cm_recycle(seqid, iprot, oprot)
       args = read_args(iprot, Cm_recycle_args)
       result = Cm_recycle_result.new()
@@ -7604,6 +7678,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'drop_package', seqid)
+    end
+
+    def process_get_all_write_event_info(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_write_event_info_args)
+      result = Get_all_write_event_info_result.new()
+      begin
+        result.success = @handler.get_all_write_event_info(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_write_event_info', seqid)
     end
 
   end
@@ -9065,6 +9150,46 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Translate_table_dryrun_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBL = 1
+
+    FIELDS = {
+      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Translate_table_dryrun_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Table},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end
@@ -15144,6 +15269,38 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Add_write_notification_log_in_batch_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::WriteNotificationLogBatchRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_notification_log_in_batch_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WriteNotificationLogBatchResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Cm_recycle_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     REQUEST = 1
@@ -17178,6 +17335,40 @@ module ThriftHiveMetastore
     O1 = 1
 
     FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_write_event_info_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetAllWriteEventInfoRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_write_event_info_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

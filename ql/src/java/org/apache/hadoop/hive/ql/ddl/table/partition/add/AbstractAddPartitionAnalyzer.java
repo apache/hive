@@ -132,19 +132,4 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
   protected abstract void postProcess(TableName tableName, Table table, AlterTableAddPartitionDesc desc,
       Task<DDLWork> ddlTask) throws SemanticException;
 
-  // Equivalent to acidSinks, but for DDL operations that change data.
-  private DDLDescWithWriteId ddlDescWithWriteId;
-
-  protected void setAcidDdlDesc(DDLDescWithWriteId descWithWriteId) {
-    if (this.ddlDescWithWriteId != null) {
-      throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
-    }
-    this.ddlDescWithWriteId = descWithWriteId;
-  }
-
-  @Override
-  public DDLDescWithWriteId getAcidDdlDesc() {
-    return ddlDescWithWriteId;
-  }
-
 }

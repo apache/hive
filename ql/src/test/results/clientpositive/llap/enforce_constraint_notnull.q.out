@@ -3513,8 +3513,12 @@ POSTHOOK: Input: default@acid_uami_n1
 POSTHOOK: Output: default@acid_uami_n1
 PREHOOK: query: ALTER table acid_uami_n1 drop constraint nn1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@acid_uami_n1
+PREHOOK: Output: default@acid_uami_n1
 POSTHOOK: query: ALTER table acid_uami_n1 drop constraint nn1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@acid_uami_n1
+POSTHOOK: Output: default@acid_uami_n1
 PREHOOK: query: ALTER table acid_uami_n1 CHANGE i i int constraint nn0 not null enforced
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@acid_uami_n1
@@ -4421,11 +4425,12 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
         Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4446,7 +4451,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: t
@@ -4520,9 +4525,8 @@ STAGE PLANS:
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), '1' (type: string), _col3 (type: string)
+                        value expressions: _col1 (type: int), _col3 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -4590,6 +4594,23 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: enforce_constraint(_col1 is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                    Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: string)
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -4697,12 +4718,13 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
         Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4723,7 +4745,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 8 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: t
@@ -4797,9 +4819,8 @@ STAGE PLANS:
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), '1' (type: string), _col3 (type: string)
+                        value expressions: _col1 (type: int), _col3 (type: string)
                   Filter Operator
                     predicate: (_col5 = _col1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -4891,6 +4912,23 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: enforce_constraint(_col1 is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                    Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: string)
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -4903,7 +4941,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.masking_test_n4
                   Write Type: UPDATE
-        Reducer 7 
+        Reducer 8 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -5311,11 +5349,12 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -5336,7 +5375,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: t
@@ -5397,9 +5436,8 @@ STAGE PLANS:
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), '1' (type: string), _col3 (type: string)
+                        value expressions: _col1 (type: int), _col3 (type: string)
                   Filter Operator
                     predicate: (_col5 = _col1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -5475,6 +5513,23 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: enforce_constraint(_col1 is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                    Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: string)
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -5487,7 +5542,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.masking_test_n4
                   Write Type: UPDATE
-        Reducer 6 
+        Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -5890,8 +5945,12 @@ STAGE PLANS:
 
 PREHOOK: query: alter table table2_n3 drop constraint nn5
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table2_n3
+PREHOOK: Output: default@table2_n3
 POSTHOOK: query: alter table table2_n3 drop constraint nn5
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table2_n3
+POSTHOOK: Output: default@table2_n3
 PREHOOK: query: explain insert into table2_n3 values(2, 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

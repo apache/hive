@@ -46,7 +46,6 @@ import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -68,7 +67,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -100,8 +98,6 @@ import org.apache.hive.jdbc.saml.IJdbcBrowserClientFactory;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -120,8 +116,6 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -156,8 +150,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
  * HiveConnection.
  *
@@ -187,7 +179,7 @@ public class HiveConnection implements java.sql.Connection {
   private Properties clientInfo;
   private Subject loggedInSubject;
   private int maxRetries = 1;
-  private final IJdbcBrowserClient browserClient;
+  private IJdbcBrowserClient browserClient;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -284,11 +276,15 @@ public class HiveConnection implements java.sql.Connection {
     sessConfMap = null;
     isEmbeddedMode = true;
     initFetchSize = 0;
-    browserClient = null;
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     this(uri, info, HiveJdbcBrowserClientFactory.get());
+  }
+
+  @VisibleForTesting
+  protected int getNumRetries() {
+    return maxRetries;
   }
 
   @VisibleForTesting
@@ -348,8 +344,6 @@ public class HiveConnection implements java.sql.Connection {
       } catch (HiveJdbcBrowserException e) {
         throw new SQLException("");
       }
-    } else {
-      browserClient = null;
     }
     if (isEmbeddedMode) {
       client = EmbeddedCLIServicePortal.get(connParams.getHiveConfs());
@@ -696,7 +690,7 @@ public class HiveConnection implements java.sql.Connection {
         } else {
           for (final Class<? extends IOException> rejectException : this.nonRetriableClasses) {
             if (rejectException.isInstance(exception)) {
-              LOG.info("Not retrying as the class (" + exception.getClass() + ") is an instance of is non-retriable class.");;
+              LOG.info("Not retrying as the class (" + exception.getClass() + ") is an instance of is non-retriable class.");
               return false;
             }
           }
@@ -1075,33 +1069,58 @@ public class HiveConnection implements java.sql.Connection {
     //TODO This is a bit hacky. We piggy back on a dummy OpenSession call
     // to get the redirect response from the server. Instead its probably cleaner to
     // explicitly do a HTTP post request and get the response.
-    int numRetry = isBrowserAuthMode() ? 2 : 1;
-    for (int i=0; i<numRetry; i++) {
-      try {
-        openSession(openReq);
-      } catch (TException e) {
-        if (isSamlRedirect(e)) {
-          boolean success = doBrowserSSO();
-          if (!success) {
-            String msg = browserClient.getServerResponse() == null
-                || browserClient.getServerResponse().getMsg() == null ? ""
-                : browserClient.getServerResponse().getMsg();
+    try {
+      int numRetry = 1;
+      if (isBrowserAuthMode()) {
+        numRetry = 2;
+        browserClient.startListening();
+      }
+      for (int i=0; i<numRetry; i++) {
+        try {
+          openSession(openReq);
+        } catch (TException e) {
+          if (isSamlRedirect(e)) {
+            boolean success = doBrowserSSO();
+            if (!success) {
+              String msg = browserClient.getServerResponse() == null
+                  || browserClient.getServerResponse().getMsg() == null ? ""
+                  : browserClient.getServerResponse().getMsg();
+              throw new SQLException(
+                  "Could not establish connection to " + jdbcUriString + ": "
+                      + msg, " 08S01", e);
+            }
+          } else {
             throw new SQLException(
-                "Could not establish connection to " + jdbcUriString + ": "
-                    + msg, " 08S01", e);
+                "Could not establish connection to " + jdbcUriString + ": " + e
+                    .getMessage(), " 08S01", e);
           }
-        } else {
-          throw new SQLException(
-              "Could not establish connection to " + jdbcUriString + ": " + e
-                  .getMessage(), " 08S01", e);
+        }
+      }
+    } catch (HiveJdbcBrowserException e) {
+      throw new SQLException(
+          "Could not establish connection to " + jdbcUriString + ": " + e
+              .getMessage(), " 08S01", e);
+    } finally {
+      if (browserClient != null) {
+        try {
+          browserClient.close();
+        } catch (IOException e) {
+          LOG.error("Unable to close the browser SSO client : " + e.getMessage(), e);
         }
       }
     }
     isClosed = false;
   }
 
-  private boolean doBrowserSSO() throws SQLException {
+  @VisibleForTesting
+  protected void injectBrowserSSOError() throws Exception {
+    //no-op
+  }
+
+  @VisibleForTesting
+  protected boolean doBrowserSSO() throws SQLException {
     try {
+      injectBrowserSSOError();
       Preconditions.checkNotNull(browserClient);
       try (IJdbcBrowserClient bc = browserClient) {
         browserClient.doBrowserSSO();
@@ -1113,8 +1132,7 @@ public class HiveConnection implements java.sql.Connection {
       }
     } catch (Exception ex) {
       throw new SQLException("Browser based SSO failed: " + ex.getMessage(),
-          " 08S01",
-          ex);
+          " 08S01", ex);
     }
   }
 
@@ -1674,7 +1692,7 @@ public class HiveConnection implements java.sql.Connection {
     }
     boolean rc = false;
     try {
-      String productName = new HiveDatabaseMetaData(this, client, sessHandle)
+      new HiveDatabaseMetaData(this, client, sessHandle)
               .getDatabaseProductName();
       rc = true;
     } catch (SQLException e) {

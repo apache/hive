@@ -22,7 +22,7 @@ import java.util.Optional;
 public class PartitionTransformSpec {
 
   public enum TransformType {
-    IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET
+    IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
   }
 
   private String columnName;

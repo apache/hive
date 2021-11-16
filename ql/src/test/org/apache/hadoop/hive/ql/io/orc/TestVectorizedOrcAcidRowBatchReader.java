@@ -244,12 +244,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     //create 3 insert deltas so that we have 3 splits
     RecordUpdater updater = new OrcRecordUpdater(root, options);
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(1, 0, options.getMinimumWriteId(), bucket));
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(2, 1, options.getMinimumWriteId(), bucket));
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(3, 2, options.getMinimumWriteId(), bucket));
+
+    //In the first delta add 2000 recs to simulate recs in multiple stripes.
+    int numRows = 2000;
+    for (int i = 1; i <= numRows; i++) {
+      updater.insert(options.getMinimumWriteId(),
+              new DummyRow(i, i-1, options.getMinimumWriteId(), bucket));
+    }
     updater.close(false);
 
     options.minimumWriteId(2)
@@ -328,7 +329,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     if(filterOn) {
       assertEquals(new OrcRawRecordMerger.KeyInterval(
           new RecordIdentifier(1, bucketProperty, 0),
-          new RecordIdentifier(1, bucketProperty, 2)),
+          new RecordIdentifier(1, bucketProperty, numRows - 1)),
           keyInterval);
     }
     else {
@@ -384,6 +385,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
     testDeleteEventFiltering2();
+  }
+  @Test
+  public void testDeleteEventFilteringOnWithoutIdx3() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    conf.set("orc.stripe.size", "1000");
+    testDeleteEventFiltering();
   }
 
   private void testDeleteEventFiltering2() throws Exception {

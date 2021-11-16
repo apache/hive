@@ -57,7 +57,9 @@ public abstract class PreEventContext {
     ALTER_CATALOG,
     CREATE_DATACONNECTOR,
     DROP_DATACONNECTOR,
-    ALTER_DATACONNECTOR
+    ALTER_DATACONNECTOR,
+    CREATE_FUNCTION,
+    DROP_FUNCTION
   }
 
   private final PreEventType eventType;

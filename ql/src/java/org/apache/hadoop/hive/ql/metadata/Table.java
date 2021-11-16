@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -123,6 +124,19 @@ public class Table implements Serializable {
    */
   private boolean isTableConstraintsFetched=false;
 
+  private String metaTable;
+
+  /**
+   * The version of the table. For Iceberg tables this is the snapshotId.
+   */
+  private String asOfVersion = null;
+
+  /**
+   * The version of the table at the given timestamp. The format will be parsed with
+   * TimestampTZUtil.parse.
+   */
+  private String asOfTimestamp = null;
+
   /**
    * Used only for serialization.
    */
@@ -159,6 +173,11 @@ public class Table implements Serializable {
 
     // copy constraints
     newTab.copyConstraints(this);
+
+    newTab.setAsOfTimestamp(this.asOfTimestamp);
+    newTab.setAsOfVersion(this.asOfVersion);
+
+    newTab.setMetaTable(this.getMetaTable());
     return newTab;
   }
 
@@ -320,7 +339,7 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializerFromMetaStore(boolean skipConfError) {
     try {
-      return HiveMetaStoreUtils.getDeserializer(SessionState.getSessionConf(), tTable, skipConfError);
+      return HiveMetaStoreUtils.getDeserializer(SessionState.getSessionConf(), tTable, metaTable, skipConfError);
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -339,6 +358,10 @@ public class Table implements Serializable {
       throw new RuntimeException(e);
     }
     return storageHandler;
+  }
+
+  public void setStorageHandler(HiveStorageHandler sh){
+    storageHandler = sh;
   }
 
   public StorageHandlerInfo getStorageHandlerInfo() {
@@ -457,7 +480,7 @@ public class Table implements Serializable {
   }
 
   public String getProperty(String name) {
-    return tTable.getParameters().get(name);
+    return tTable.getParameters() != null ? tTable.getParameters().get(name) : null;
   }
 
   public boolean isImmutable(){
@@ -544,6 +567,12 @@ public class Table implements Serializable {
         return false;
       }
     } else if (!tTable.equals(other.tTable)) {
+      return false;
+    }
+    if (!Objects.equals(asOfTimestamp, other.asOfTimestamp)) {
+      return false;
+    }
+    if (!Objects.equals(asOfVersion, other.asOfVersion)) {
       return false;
     }
     return true;
@@ -1261,4 +1290,27 @@ public class Table implements Serializable {
     return result;
   }
 
+  public String getAsOfVersion() {
+    return asOfVersion;
+  }
+
+  public void setAsOfVersion(String asOfVersion) {
+    this.asOfVersion = asOfVersion;
+  }
+
+  public String getAsOfTimestamp() {
+    return asOfTimestamp;
+  }
+
+  public void setAsOfTimestamp(String asOfTimestamp) {
+    this.asOfTimestamp = asOfTimestamp;
+  }
+
+  public String getMetaTable() {
+    return metaTable;
+  }
+
+  public void setMetaTable(String metaTable) {
+    this.metaTable = metaTable;
+  }
 };

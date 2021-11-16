@@ -29,7 +29,7 @@
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
         <path.to.iceberg.root>.</path.to.iceberg.root>
-        <iceberg.version>0.11.0</iceberg.version>
+        <iceberg.version>0.12.0</iceberg.version>
         <kryo-shaded.version>4.0.2</kryo-shaded.version>
         <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
         <iceberg.avro.version>1.9.2</iceberg.avro.version>
@@ -38,6 +38,8 @@
         <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
         <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
         <google.errorprone.version>2.5.1</google.errorprone.version>
+        <assertj.version>3.19.0</assertj.version>
+        <junit.jupiter.version>5.7.2</junit.jupiter.version>
     </properties>
 
     <modules>
@@ -190,6 +192,17 @@
                 <classifier>tests</classifier>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.jupiter.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.esotericsoftware</groupId>

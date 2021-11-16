@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -184,19 +183,17 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
-  private static final Set<Integer> READ_TXN_TOKENS = new HashSet<Integer>();
+  private static final Set<Integer> READ_TXN_TOKENS = new HashSet<>();
 
   private static Cache<String, DirInfoValue> dirCache;
   private static AtomicBoolean dirCacheInited = new AtomicBoolean();
 
   static {
     READ_TXN_TOKENS.addAll(Arrays.asList(
-            HiveParser.TOK_DESCDATABASE,
-            HiveParser.TOK_DESCTABLE,
-            HiveParser.TOK_SHOWTABLES,
-            HiveParser.TOK_SHOW_TABLESTATUS,
-            HiveParser.TOK_SHOW_TBLPROPERTIES,
-            HiveParser.TOK_EXPLAIN
+      HiveParser.TOK_DESCDATABASE,
+      HiveParser.TOK_DESCTABLE,
+      HiveParser.TOK_EXPLAIN,
+      HiveParser.TOK_EXPLAIN_SQ_REWRITE
     ));
   }
 
@@ -689,7 +686,11 @@ public class AcidUtils {
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
     public static final int INSERT_ONLY_BIT = 0x04;
+    public static final int INSERT_ONLY_FETCH_BUCKET_ID_BIT = 0x08;
+    public static final int FETCH_DELETED_ROWS_BIT = 0x10;
     public static final String INSERT_ONLY_STRING = "insert_only";
+    public static final String INSERT_ONLY_FETCH_BUCKET_ID_STRING = "insert_only_fetch_bucket_id";
+    public static final String FETCH_DELETED_ROWS_STRING = "fetch_deleted_rows";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
     public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
@@ -771,6 +772,12 @@ public class AcidUtils {
       if ((properties & INSERT_ONLY_BIT) > 0) {
         obj.setInsertOnly(true);
       }
+      if ((properties & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0) {
+        obj.setInsertOnlyFetchBucketId(true);
+      }
+      if ((properties & FETCH_DELETED_ROWS_BIT) > 0) {
+        obj.setFetchDeletedRows(true);
+      }
       return obj;
     }
 
@@ -782,9 +789,7 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setSplitUpdate(boolean isSplitUpdate) {
-      description = (isSplitUpdate
-              ? (description | SPLIT_UPDATE_BIT) : (description & ~SPLIT_UPDATE_BIT));
-      return this;
+      return set(isSplitUpdate, SPLIT_UPDATE_BIT);
     }
 
     /**
@@ -794,14 +799,23 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setHashBasedMerge(boolean isHashBasedMerge) {
-      description = (isHashBasedMerge
-              ? (description | HASH_BASED_MERGE_BIT) : (description & ~HASH_BASED_MERGE_BIT));
-      return this;
+      return set(isHashBasedMerge, HASH_BASED_MERGE_BIT);
     }
 
     public AcidOperationalProperties setInsertOnly(boolean isInsertOnly) {
-      description = (isInsertOnly
-              ? (description | INSERT_ONLY_BIT) : (description & ~INSERT_ONLY_BIT));
+      return set(isInsertOnly, INSERT_ONLY_BIT);
+    }
+
+    public AcidOperationalProperties setInsertOnlyFetchBucketId(boolean fetchBucketId) {
+      return set(fetchBucketId, INSERT_ONLY_FETCH_BUCKET_ID_BIT);
+    }
+
+    public AcidOperationalProperties setFetchDeletedRows(boolean fetchDeletedRows) {
+      return set(fetchDeletedRows, FETCH_DELETED_ROWS_BIT);
+    }
+
+    private AcidOperationalProperties set(boolean value, int bit) {
+      description = (value ? (description | bit) : (description & ~bit));
       return this;
     }
 
@@ -815,6 +829,14 @@ public class AcidUtils {
 
     public boolean isInsertOnly() {
       return (description & INSERT_ONLY_BIT) > 0;
+    }
+
+    public boolean isFetchBucketId() {
+      return (description & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0;
+    }
+
+    public boolean isFetchDeletedRows() {
+      return (description & FETCH_DELETED_ROWS_BIT) > 0;
     }
 
     public int toInt() {
@@ -832,6 +854,12 @@ public class AcidUtils {
       }
       if (isInsertOnly()) {
         str.append("|" + INSERT_ONLY_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + INSERT_ONLY_FETCH_BUCKET_ID_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + FETCH_DELETED_ROWS_STRING);
       }
       return str.toString();
     }
@@ -1951,9 +1979,19 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
-  public static void setAcidOperationalProperties(
-      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
-    setAcidOperationalProperties(conf, isTxnTable, properties, false);
+  public static boolean isInsertOnlyFetchBucketId(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      return false;
+    }
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) {
+      return false;
+    }
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    if (!props.isInsertOnly()) {
+      return false;
+    }
+    return props.isFetchBucketId();
   }
 
   /**
@@ -1963,17 +2001,15 @@ public class AcidUtils {
    *                   we assume this is a full transactional table.
    */
   public static void setAcidOperationalProperties(
-      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties, boolean fetchDeletedRows) {
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
     if (isTxnTable) {
       HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isTxnTable);
       if (properties != null) {
         HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
       }
-      conf.setBoolean(Constants.ACID_FETCH_DELETED_ROWS, fetchDeletedRows);
     } else {
       conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
       conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
-      conf.unset(Constants.ACID_FETCH_DELETED_ROWS);
     }
   }
 
@@ -2460,8 +2496,7 @@ public class AcidUtils {
     }
 
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
-      try {
-        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+      try (Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()))) {
         /*
           acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed
@@ -2685,7 +2720,7 @@ public class AcidUtils {
         return (name.equals(baseDirName) && dpSpecs.contains(partitionSpec));
       }
       else {
-        return name.equals(baseDirName) 
+        return name.equals(baseDirName)
             || (isDeltaPrefix && (name.startsWith(deltaDirName) || name.startsWith(deleteDeltaDirName)))
             || (!isDeltaPrefix && (name.equals(deltaDirName) || name.equals(deleteDeltaDirName)));
       }
@@ -3062,12 +3097,10 @@ public class AcidUtils {
    * @param tree AST
    */
   public static TxnType getTxnType(Configuration conf, ASTNode tree) {
-    int tp = tree.getToken().getType();
     // check if read-only txn
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) && isReadOnlyTxn(tree)) {
       return TxnType.READ_ONLY;
     }
-
     // check if txn has a materialized view rebuild
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
@@ -3079,17 +3112,14 @@ public class AcidUtils {
     return TxnType.DEFAULT;
   }
 
-
   public static boolean isReadOnlyTxn(ASTNode tree) {
     final ASTSearcher astSearcher = new ASTSearcher();
-    return READ_TXN_TOKENS.contains(tree.getToken().getType()) || (tree.getToken().getType() == HiveParser.TOK_QUERY &&
-            Stream.of(
-                    new int[]{HiveParser.TOK_INSERT_INTO},
-                    new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
-                    .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
-
+    return READ_TXN_TOKENS.contains(tree.getToken().getType())
+      || (tree.getToken().getType() == HiveParser.TOK_QUERY && Stream.of(
+          new int[]{HiveParser.TOK_INSERT_INTO},
+          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+      .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
   }
-
 
   private static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {

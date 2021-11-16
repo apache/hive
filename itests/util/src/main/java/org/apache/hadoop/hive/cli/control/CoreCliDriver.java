@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,7 +52,7 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     String message = "Starting " + CoreCliDriver.class.getName() + " run at " + System.currentTimeMillis();
     LOG.info(message);
     System.err.println(message);
@@ -63,90 +62,35 @@ public class CoreCliDriver extends CliAdapter {
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
-        @Override
-        public QTestUtil invokeInternal() throws Exception {
-          return new QTestUtil(
-              QTestArguments.QTestArgumentsBuilder.instance()
-                .withOutDir(cliConfig.getResultsDir())
-                .withLogDir(cliConfig.getLogDir())
-                .withClusterType(miniMR)
-                .withConfDir(hiveConfDir)
-                .withInitScript(initScript)
-                .withCleanupScript(cleanupScript)
-                .withLlapIo(true)
-                .withFsType(cliConfig.getFsType())
-                .build());
-        }
-      }.invoke("QtestUtil instance created", LOG, true);
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization", e);
-    }
+    qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(true)
+            .withFsType(cliConfig.getFsType())
+            .build());
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      new ElapsedTimeLoggingWrapper<Void>() {
-        @Override
-        public Void invokeInternal() throws Exception {
-          qt.newSession();
-          return null;
-        }
-      }.invoke("PerTestSetup done.", LOG, false);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
 
   @Override
   @After
-  public void tearDown() {
-    try {
-      new ElapsedTimeLoggingWrapper<Void>() {
-        @Override
-        public Void invokeInternal() throws Exception {
-          qt.clearPostTestEffects();
-          qt.clearTestSideEffects();
-          return null;
-        }
-      }.invoke("PerTestTearDown done.", LOG, false);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
+    qt.clearTestSideEffects();
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      new ElapsedTimeLoggingWrapper<Void>() {
-        @Override
-        public Void invokeInternal() throws Exception {
-          qt.shutdown();
-          return null;
-        }
-      }.invoke("Teardown done.", LOG, false);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+  public void shutdown() throws Exception {
+    qt.shutdown();
   }
 
   @Override
@@ -163,18 +107,18 @@ public class CoreCliDriver extends CliAdapter {
       LOG.info("Begin query: " + fname);
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
       } catch (CommandProcessorException e) {
         failed = true;
         qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
       setupAdditionalPartialMasks();
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       resetAdditionalPartialMasks();
       if (result.getReturnCode() != 0) {
         failed = true;

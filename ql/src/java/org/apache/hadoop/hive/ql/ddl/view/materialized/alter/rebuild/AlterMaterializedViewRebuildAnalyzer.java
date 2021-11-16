@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagation
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregatePartitionIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveInsertOnlyScanWriteIdRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
@@ -75,6 +76,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Collections.singletonList;
 
@@ -266,6 +268,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
         RelNode incrementalRebuildPlan = applyRecordIncrementalRebuildPlan(
                 basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan, materialization);
+
         if (mvRebuildMode != MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
           return incrementalRebuildPlan;
         }
@@ -331,8 +334,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider, RelOptCluster optCluster,
             RelNode calcitePreMVRewritingPlan) {
       mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD;
-      basePlan = applyIncrementalRebuild(
-              basePlan, mdProvider, executorProvider, HiveAggregateInsertIncrementalRewritingRule.INSTANCE);
+      basePlan = applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
+              HiveInsertOnlyScanWriteIdRule.INSTANCE, HiveAggregateInsertIncrementalRewritingRule.INSTANCE);
 
       // Make a cost-based decision factoring the configuration property
       optCluster.invalidateMetadataQuery();
@@ -373,8 +376,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     private RelNode applyJoinInsertIncremental(
             RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
       mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_REBUILD;
-      return applyIncrementalRebuild(
-              basePlan, mdProvider, executorProvider, HiveJoinInsertIncrementalRewritingRule.INSTANCE);
+      return applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
+              HiveInsertOnlyScanWriteIdRule.INSTANCE, HiveJoinInsertIncrementalRewritingRule.INSTANCE);
     }
 
     private RelNode applyPartitionIncrementalRebuildPlan(
@@ -396,14 +399,14 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
       }
 
-      return applyIncrementalRebuild(
-              basePlan, mdProvider, executorProvider, HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
+      return applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
+              HiveInsertOnlyScanWriteIdRule.INSTANCE, HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
     }
 
-    private RelNode applyIncrementalRebuild(
-            RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider, RelOptRule rebuildRule) {
+    private RelNode applyIncrementalRebuild(RelNode basePlan, RelMetadataProvider mdProvider,
+                                            RexExecutor executorProvider, RelOptRule... rebuildRules) {
       HepProgramBuilder program = new HepProgramBuilder();
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, rebuildRule);
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, rebuildRules);
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
       return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
     }

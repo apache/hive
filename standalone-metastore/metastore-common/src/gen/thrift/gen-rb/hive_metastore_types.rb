@@ -241,6 +241,8 @@ class Version; end
 
 class FieldSchema; end
 
+class EnvironmentContext; end
+
 class SQLPrimaryKey; end
 
 class SQLForeignKey; end
@@ -370,8 +372,6 @@ class SetPartitionsStatsRequest; end
 class SetPartitionsStatsResponse; end
 
 class Schema; end
-
-class EnvironmentContext; end
 
 class PrimaryKeysRequest; end
 
@@ -570,6 +570,10 @@ class FireEventResponse; end
 class WriteNotificationLogRequest; end
 
 class WriteNotificationLogResponse; end
+
+class WriteNotificationLogBatchRequest; end
+
+class WriteNotificationLogBatchResponse; end
 
 class MetadataPpdResult; end
 
@@ -815,6 +819,8 @@ class ListPackageRequest; end
 
 class Package; end
 
+class GetAllWriteEventInfoRequest; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -873,6 +879,22 @@ class FieldSchema
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     TYPE => {:type => ::Thrift::Types::STRING, :name => 'type'},
     COMMENT => {:type => ::Thrift::Types::STRING, :name => 'comment'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class EnvironmentContext
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PROPERTIES = 1
+
+  FIELDS = {
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
   def struct_fields; FIELDS; end
@@ -2531,22 +2553,6 @@ class Schema
 
   FIELDS = {
     FIELDSCHEMAS => {:type => ::Thrift::Types::LIST, :name => 'fieldSchemas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
-    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class EnvironmentContext
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  PROPERTIES = 1
-
-  FIELDS = {
     PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
@@ -4615,15 +4621,13 @@ class FindNextCompactRequest
   WORKERVERSION = 2
 
   FIELDS = {
-    WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'},
-    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion'}
+    WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId', :optional => true},
+    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field workerId is unset!') unless @workerId
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field workerVersion is unset!') unless @workerVersion
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -4952,6 +4956,47 @@ class WriteNotificationLogRequest
 end
 
 class WriteNotificationLogResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WriteNotificationLogBatchRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATALOG = 1
+  DB = 2
+  TABLE = 3
+  REQUESTLIST = 4
+
+  FIELDS = {
+    CATALOG => {:type => ::Thrift::Types::STRING, :name => 'catalog'},
+    DB => {:type => ::Thrift::Types::STRING, :name => 'db'},
+    TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+    REQUESTLIST => {:type => ::Thrift::Types::LIST, :name => 'requestList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteNotificationLogRequest}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catalog is unset!') unless @catalog
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db is unset!') unless @db
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field requestList is unset!') unless @requestList
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WriteNotificationLogBatchResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
 
   FIELDS = {
@@ -7307,13 +7352,15 @@ class ReplicationMetrics
   DUMPEXECUTIONID = 3
   METADATA = 4
   PROGRESS = 5
+  MESSAGEFORMAT = 6
 
   FIELDS = {
     SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId'},
     POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy'},
     DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId'},
     METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :optional => true},
-    PROGRESS => {:type => ::Thrift::Types::STRING, :name => 'progress', :optional => true}
+    PROGRESS => {:type => ::Thrift::Types::STRING, :name => 'progress', :optional => true},
+    MESSAGEFORMAT => {:type => ::Thrift::Types::STRING, :name => 'messageFormat', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -7558,6 +7605,27 @@ class Package
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetAllWriteEventInfoRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNID = 1
+  DBNAME = 2
+  TABLENAME = 3
+
+  FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
   end
 
   ::Thrift::Struct.generate_accessors self

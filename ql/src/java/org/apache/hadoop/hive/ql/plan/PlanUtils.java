@@ -268,6 +268,8 @@ public final class PlanUtils {
           MetaStoreUtils.getColumnNamesFromFieldSchema(partCols));
       properties.setProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES,
           MetaStoreUtils.getColumnTypesFromFieldSchema(partCols, ":"));
+      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS,
+          MetaStoreUtils.getColumnCommentsFromFieldSchema(partCols));
     }
 
     if (lastColumnTakesRestOfTheLine) {

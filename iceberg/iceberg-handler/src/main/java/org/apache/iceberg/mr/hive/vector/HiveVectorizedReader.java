@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -45,6 +48,7 @@ import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Types;
 
 /**
  * Utility class to create vectorized readers for Hive.
@@ -60,7 +64,8 @@ public class HiveVectorizedReader {
 
   public static <D> CloseableIterable<D> reader(InputFile inputFile, FileScanTask task, Map<Integer, ?> idToConstant,
       TaskAttemptContext context) {
-    JobConf job = (JobConf) context.getConfiguration();
+    // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
+    JobConf job = new JobConf((JobConf) context.getConfiguration());
     Path path = new Path(inputFile.location());
     FileFormat format = task.file().format();
     Reporter reporter = ((MapredIcebergInputFormat.CompatibilityTaskAttemptContextImpl) context).getLegacyReporter();
@@ -71,23 +76,30 @@ public class HiveVectorizedReader {
     int[] partitionColIndices = null;
     Object[] partitionValues = null;
     PartitionSpec partitionSpec = task.spec();
+    List<Integer> readColumnIds = ColumnProjectionUtils.getReadColumnIDs(job);
 
     if (!partitionSpec.isUnpartitioned()) {
-      List<Integer> readColumnIds = ColumnProjectionUtils.getReadColumnIDs(job);
 
       List<PartitionField> fields = partitionSpec.fields();
       List<Integer> partitionColIndicesList = Lists.newLinkedList();
       List<Object> partitionValuesList = Lists.newLinkedList();
 
-      for (PartitionField field : fields) {
-        if (field.transform().isIdentity()) {
-          // Skip reading identity partition columns from source file...
-          int hiveColIndex = field.sourceId() - 1;
-          readColumnIds.remove((Integer) hiveColIndex);
+      for (PartitionField partitionField : fields) {
+        if (partitionField.transform().isIdentity()) {
 
-          // ...and use the corresponding constant value instead
-          partitionColIndicesList.add(hiveColIndex);
-          partitionValuesList.add(idToConstant.get(field.sourceId()));
+          // Get columns in read schema order (which matches those of readColumnIds) to find partition column indices
+          List<Types.NestedField> columns = task.spec().schema().columns();
+          for (int colIdx = 0; colIdx < columns.size(); ++colIdx) {
+            if (columns.get(colIdx).fieldId() == partitionField.sourceId()) {
+              // Skip reading identity partition columns from source file...
+              readColumnIds.remove((Integer) colIdx);
+
+              // ...and use the corresponding constant value instead
+              partitionColIndicesList.add(colIdx);
+              partitionValuesList.add(idToConstant.get(partitionField.sourceId()));
+              break;
+            }
+          }
         }
       }
 
@@ -103,13 +115,27 @@ public class HiveVectorizedReader {
           // Need to turn positional schema evolution off since we use column name based schema evolution for projection
           // and Iceberg will make a mapping between the file schema and the current reading schema.
           job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
-          VectorizedReadUtils.handleIcebergProjection(inputFile, task, job);
 
-          InputSplit split = new OrcSplit(path, null, task.start(), task.length(), (String[]) null, null,
-              false, false, com.google.common.collect.Lists.newArrayList(), 0, task.length(), path.getParent(), null);
+          // TODO: Iceberg currently does not track the last modification time of a file. Until that's added,
+          // we need to set Long.MIN_VALUE as last modification time in the fileId triplet.
+          SyntheticFileId fileId = new SyntheticFileId(path, task.file().fileSizeInBytes(), Long.MIN_VALUE);
+
+          VectorizedReadUtils.handleIcebergProjection(inputFile, task, job, fileId);
+
           RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
-          recordReader = new VectorizedOrcInputFormat().getRecordReader(split, job, reporter);
+          // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
+          if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
+              LlapProxy.getIo() != null) {
+            recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
+                job, task.start(), task.length(), reporter);
+          }
+
+          if (recordReader == null) {
+            InputSplit split = new OrcSplit(path, fileId, task.start(), task.length(), (String[]) null, null, false,
+                 false, com.google.common.collect.Lists.newArrayList(), 0, task.length(), path.getParent(), null);
+            recordReader = new VectorizedOrcInputFormat().getRecordReader(split, job, reporter);
+          }
           return createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
 
         default:

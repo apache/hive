@@ -225,7 +225,9 @@ public class WriteEntity extends Entity implements Serializable {
     case RENAME:
     case TRUNCATE:
     case MERGEFILES:
+    case ADD_CONSTRAINT:
     case DROP_CONSTRAINT:
+    case OWNER:
       return WriteType.DDL_EXCLUSIVE;
 
     case ADDPARTITION:

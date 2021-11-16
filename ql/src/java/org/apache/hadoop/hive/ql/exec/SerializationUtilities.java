@@ -31,15 +31,22 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
@@ -60,6 +67,7 @@ import com.esotericsoftware.kryo.Registration;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.annotations.VisibleForTesting;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 /**
@@ -111,8 +119,10 @@ public class SerializationUtilities {
   /**
    * Provides general-purpose hooks for specific types, as well as a global hook.
    */
-  private static class KryoWithHooks extends Kryo {
+  private static class KryoWithHooks extends Kryo implements Configurable {
     private Hook globalHook;
+    // this should be set on-the-fly after borrowing this instance and needs to be reset on release
+    private Configuration configuration;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static final class SerializerWithHook extends com.esotericsoftware.kryo.Serializer {
@@ -206,6 +216,17 @@ public class SerializationUtilities {
       T result = super.readObject(input, type, serializer);
       return ponderGlobalPostReadHook(hook, result);
     }
+
+    @Override
+    public void setConf(Configuration conf) {
+      this.configuration = conf;
+
+    }
+
+    @Override
+    public Configuration getConf() {
+      return configuration;
+    }
   }
 
   private static final Object FAKE_REFERENCE = new Object();
@@ -234,6 +255,7 @@ public class SerializationUtilities {
     kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
     kryo.register(new java.util.ArrayList().subList(0,0).getClass(), new ArrayListSubListSerializer());
     kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
+    kryo.register(MapWork.class, new MapWorkSerializer(kryo, MapWork.class));
     kryo.register(PartitionDesc.class, new PartitionDescSerializer(kryo, PartitionDesc.class));
 
     ((DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
@@ -254,8 +276,13 @@ public class SerializationUtilities {
    * @return kryo instance
    */
   public static Kryo borrowKryo() {
+    return borrowKryo(null);
+  }
+
+  public static Kryo borrowKryo(Configuration configuration) {
     Kryo kryo = kryoPool.obtain();
     kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+    ((KryoWithHooks) kryo).setConf(configuration);
     return kryo;
   }
 
@@ -265,6 +292,9 @@ public class SerializationUtilities {
    * @param kryo - kryo instance to be released
    */
   public static void releaseKryo(Kryo kryo) {
+    if (kryo != null){
+      ((KryoWithHooks) kryo).setConf(null);
+    }
     kryoPool.free(kryo);
   }
 
@@ -542,6 +572,70 @@ public class SerializationUtilities {
   }
 
   /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link MapWork} objects e.g. in
+   * order to remove useless properties in execution time.
+   */
+  private static class MapWorkSerializer extends FieldSerializer<MapWork> {
+
+    public MapWorkSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public void write(Kryo kryo, Output output, MapWork mapWork) {
+      filterMapworkProperties(kryo, mapWork);
+      super.write(kryo, output, mapWork);
+    }
+
+    private void filterMapworkProperties(Kryo kryo, MapWork mapWork) {
+      Configuration configuration = ((KryoWithHooks) kryo).getConf();
+      if (configuration == null || HiveConf
+          .getVar(configuration, HiveConf.ConfVars.HIVE_PLAN_MAPWORK_SERIALIZATION_SKIP_PROPERTIES).isEmpty()) {
+        return;
+      }
+      String[] filterProps =
+          HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_PLAN_MAPWORK_SERIALIZATION_SKIP_PROPERTIES).split(",");
+      for (String prop : filterProps) {
+        boolean isRegex = isRegex(prop);
+        Pattern pattern = Pattern.compile(prop);
+
+        LOG.debug("Trying to filter MapWork properties (regex: " + isRegex + "): " + prop);
+
+        for (Entry<Path, PartitionDesc> partDescEntry : mapWork.getPathToPartitionInfo().entrySet()) {
+          /*
+           * remove by regex, could be a bit more expensive because of iterating and matching regexes
+           * e.g.: in case of impala_intermediate_stats_chunk1, impala_intermediate_stats_chunk2, user only needs to
+           * configure impala_intermediate_stats_chunk.*
+           */
+          if (isRegex) {
+            Iterator<Entry<Object, Object>> itProps =
+                partDescEntry.getValue().getProperties().entrySet().iterator();
+            while (itProps.hasNext()) {
+              Map.Entry<Object, Object> entry = itProps.next();
+              String actualProp = (String) entry.getKey();
+              Matcher matcher = pattern.matcher(actualProp);
+
+              if (matcher.find()) {
+                LOG.debug("Removed '{}' from MapWork (partition: {})", actualProp, partDescEntry.getKey());
+                itProps.remove();
+              }
+            }
+          } else {
+            Object objRemoved = partDescEntry.getValue().getProperties().remove(prop);
+            if (objRemoved != null) {
+              LOG.debug("Removed '{}' from MapWork (partition: {})", prop, partDescEntry.getKey());
+            }
+          }
+        }
+      }
+    }
+
+    private boolean isRegex(String prop) {
+      return prop.contains("*");
+    }
+  }
+
+  /**
    * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link PartitionDesc} objects
    * in order to invoke any string interning code present in the "setter" methods. {@link
    * PartitionDesc} objects are usually stored by {@link MapWork} objects and contain duplicate info
@@ -573,31 +667,24 @@ public class SerializationUtilities {
    * @param out  The stream to write to.
    */
   public static void serializePlan(Object plan, OutputStream out) {
-    serializePlan(plan, out, false);
+    serializePlan(plan, out, null);
   }
 
-  public static void serializePlan(Kryo kryo, Object plan, OutputStream out) {
-    serializePlan(kryo, plan, out, false);
-  }
-
-  private static void serializePlan(Object plan, OutputStream out, boolean cloningPlan) {
-    Kryo kryo = borrowKryo();
+  @VisibleForTesting
+  static void serializePlan(Object plan, OutputStream out, Configuration configuration) {
+    Kryo kryo = borrowKryo(configuration);
     try {
-      serializePlan(kryo, plan, out, cloningPlan);
+      serializePlan(kryo, plan, out);
     } finally {
       releaseKryo(kryo);
     }
   }
 
-  private static void serializePlan(Kryo kryo, Object plan, OutputStream out, boolean cloningPlan) {
+  public static void serializePlan(Kryo kryo, Object plan, OutputStream out) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
     LOG.info("Serializing " + plan.getClass().getSimpleName() + " using kryo");
-    if (cloningPlan) {
-      serializeObjectByKryo(kryo, plan, out);
-    } else {
-      serializeObjectByKryo(kryo, plan, out);
-    }
+    serializeObjectByKryo(kryo, plan, out);
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
   }
 
@@ -609,35 +696,22 @@ public class SerializationUtilities {
    * @return The plan, such as QueryPlan, MapredWork, etc.
    */
   public static <T> T deserializePlan(InputStream in, Class<T> planClass) {
-    return deserializePlan(in, planClass, false);
-  }
-
-  public static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass) {
-    return deserializePlan(kryo, in, planClass, false);
-  }
-
-  private static <T> T deserializePlan(InputStream in, Class<T> planClass, boolean cloningPlan) {
     Kryo kryo = borrowKryo();
     T result = null;
     try {
-      result = deserializePlan(kryo, in, planClass, cloningPlan);
+      result = deserializePlan(kryo, in, planClass);
     } finally {
       releaseKryo(kryo);
     }
     return result;
   }
 
-  private static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass,
-      boolean cloningPlan) {
+  public static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     T plan;
     LOG.info("Deserializing " + planClass.getSimpleName() + " using kryo");
-    if (cloningPlan) {
-      plan = deserializeObjectByKryo(kryo, in, planClass);
-    } else {
-      plan = deserializeObjectByKryo(kryo, in, planClass);
-    }
+    plan = deserializeObjectByKryo(kryo, in, planClass);
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     return plan;
   }
@@ -654,9 +728,9 @@ public class SerializationUtilities {
     Operator<?> op = plan.getAnyOperator();
     CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(plan, baos, true);
+    serializePlan(plan, baos);
     MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        MapredWork.class, true);
+        MapredWork.class);
     // Restore the context.
     for (Operator<?> newOp : newPlan.getAllOperators()) {
       newOp.setCompilationOpContext(ctx);
@@ -676,11 +750,11 @@ public class SerializationUtilities {
     }
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     CompilationOpContext ctx = roots.get(0).getCompilationOpContext();
-    serializePlan(roots, baos, true);
+    serializePlan(roots, baos);
     @SuppressWarnings("unchecked")
     List<Operator<?>> result =
         deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass(), true);
+            roots.getClass());
     // Restore the context.
     LinkedList<Operator<?>> newOps = new LinkedList<>(result);
     while (!newOps.isEmpty()) {
@@ -705,9 +779,9 @@ public class SerializationUtilities {
     Operator<?> op = plan.getAnyRootOperator();
     CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(plan, baos, true);
+    serializePlan(plan, baos);
     BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        plan.getClass(), true);
+        plan.getClass());
     // Restore the context.
     for (Operator<?> newOp : newPlan.getAllOperators()) {
       newOp.setCompilationOpContext(ctx);

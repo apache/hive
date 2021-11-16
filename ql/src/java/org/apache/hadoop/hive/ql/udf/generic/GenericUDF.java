@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hive.common.util.DateParser;
 
 /**
  * A Generic User-defined function (GenericUDF) for the use with Hive.
@@ -408,19 +407,17 @@ public abstract class GenericUDF implements Closeable {
     case STRING:
     case VARCHAR:
     case CHAR:
-      outOi = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      break;
     case TIMESTAMP:
     case DATE:
     case VOID:
     case TIMESTAMPLOCALTZ:
-      outOi = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
       break;
     default:
       throw new UDFArgumentTypeException(i, getFuncName()
-          + " only takes STRING_GROUP or DATE_GROUP types as " + getArgOrder(i) + " argument, got "
+          + " only takes STRING_GROUP/DATE_GROUP/VOID_GROUP types as " + getArgOrder(i) + " argument, got "
           + inputType);
     }
+    outOi = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     converters[i] = ObjectInspectorConverters.getConverter(inOi, outOi);
     inputTypes[i] = inputType;
   }
@@ -437,10 +434,19 @@ public abstract class GenericUDF implements Closeable {
     case TIMESTAMP:
     case DATE:
     case TIMESTAMPLOCALTZ:
+    case INT:
+    case SHORT:
+    case LONG:
+    case DOUBLE:
+    case FLOAT:
+    case DECIMAL:
+    case VOID:
+    case BOOLEAN:
+    case BYTE:
       break;
     default:
       throw new UDFArgumentTypeException(i, getFuncName()
-          + " only takes STRING_GROUP or DATE_GROUP types as " + getArgOrder(i) + " argument, got "
+          + " only takes STRING_GROUP/DATE_GROUP/NUMERIC_GROUP/VOID_GROUP/BOOLEAN_GROUP types as " + getArgOrder(i) + " argument, got "
           + inputType);
     }
     outOi = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -490,32 +496,15 @@ public abstract class GenericUDF implements Closeable {
     return v;
   }
 
-  protected Date getDateValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
-                              Converter[] converters) throws HiveException {
+  protected Date getDateValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
     Object obj;
     if ((obj = arguments[i].get()) == null) {
       return null;
     }
+    Object writableValue = converters[i].convert(obj);
 
-    Date date;
-    switch (inputTypes[i]) {
-    case STRING:
-    case VARCHAR:
-    case CHAR:
-      String dateStr = converters[i].convert(obj).toString();
-      date = DateParser.parseDate(dateStr);
-      break;
-    case TIMESTAMP:
-    case DATE:
-    case TIMESTAMPLOCALTZ:
-      Object writableValue = converters[i].convert(obj);
-      date = ((DateWritableV2) writableValue).get();
-      break;
-    default:
-      throw new UDFArgumentTypeException(0, getFuncName()
-          + " only takes STRING_GROUP and DATE_GROUP types, got " + inputTypes[i]);
-    }
-    return date;
+    return writableValue == null ? null : ((DateWritableV2) writableValue).get();
   }
 
   protected Timestamp getTimestampValue(DeferredObject[] arguments, int i, Converter[] converters)
