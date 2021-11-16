@@ -17,49 +17,37 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
 
-import org.apache.commons.io.output.NullOutputStream;
-
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.IOException;
-import java.net.URI;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * abstractExternalDB is incharge of connect to and populate externaal database for qtest
+ * The class is in charge of connecting and populating dockerized databases for qtest.
+ * 
+ * The database should have at least one root user (admin/superuser) able to modify every aspect of the system. The user
+ * either exists by default when the database starts or must created right after startup.
  */
 public abstract class AbstractExternalDB {
-    protected static final Logger LOG = LoggerFactory.getLogger("AbstractExternalDB");
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractExternalDB.class);
 
-    protected static final String userName = "qtestuser";
-    protected static final String password = "qtestpassword";
     protected static final String dbName = "qtestDB";
 
-    public String externalDBType = "mysql"; // default: mysql
-    protected String url = "jdbc:mysql://localhost:3306/" + dbName; // default: mysql
-    protected String driver = "org.mariadb.jdbc.Driver"; // default: mysql
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
-    public static class ProcessResults {
+    protected static class ProcessResults {
         final String stdout;
         final String stderr;
         final int rc;
@@ -71,27 +59,8 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public static AbstractExternalDB initalizeExternalDB(String externalDBType) throws IOException {
-        AbstractExternalDB abstractExternalDB;
-        switch (externalDBType) {
-            case "mysql":
-                abstractExternalDB = new MySQLExternalDB();
-                break;
-            case "postgres":
-                abstractExternalDB = new PostgresExternalDB();
-                break;
-            default:
-                throw new IOException("unsupported external database type " + externalDBType);
-        }
-        return abstractExternalDB;
-    }
-
-    public AbstractExternalDB(String externalDBType) {
-        this.externalDBType = externalDBType;
-    }
-
-    protected String getDockerContainerName() {
-        return String.format("qtestExternalDB-%s", externalDBType);
+    private final String getDockerContainerName() {
+        return String.format("qtestExternalDB-%s", getClass().getSimpleName());
     }
 
     private String[] buildRunCmd() {
@@ -107,27 +76,17 @@ public abstract class AbstractExternalDB {
     }
 
     private String[] buildRmCmd() {
-        return buildArray(
-                "docker",
-                "rm",
-                "-f",
-                "-v",
-                getDockerContainerName()
-        );
+        return new String[] { "docker", "rm", "-f", "-v", getDockerContainerName() };
     }
 
     private String[] buildLogCmd() {
-        return buildArray(
-                "docker",
-                "logs",
-                getDockerContainerName()
-        );
+        return new String[] { "docker", "logs", getDockerContainerName() };
     }
 
 
     private ProcessResults runCmd(String[] cmd, long secondsToWait)
             throws IOException, InterruptedException {
-        LOG.info("Going to run: " + StringUtils.join(cmd, " "));
+        LOG.info("Going to run: " + String.join(" ", cmd));
         Process proc = Runtime.getRuntime().exec(cmd);
         if (!proc.waitFor(secondsToWait, TimeUnit.SECONDS)) {
             throw new RuntimeException(
@@ -152,7 +111,7 @@ public abstract class AbstractExternalDB {
     }
 
 
-    public void launchDockerContainer() throws Exception { //runDockerContainer
+    public void launchDockerContainer() throws Exception {
         runCmdAndPrintStreams(buildRmCmd(), 600);
         if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
             throw new RuntimeException("Unable to start docker container");
@@ -172,19 +131,14 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public void cleanupDockerContainer() { // stopAndRmDockerContainer
-        try {
-            if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
-                LOG.info("Unable to remove docker container");
-                throw new RuntimeException("Unable to remove docker container");
-            }
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
+    public void cleanupDockerContainer() throws IOException, InterruptedException {
+        if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+            throw new RuntimeException("Unable to remove docker container");
         }
     }
 
 
-    public final String getContainerHostAddress() {
+    protected final String getContainerHostAddress() {
         String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
         if (hostAddress != null) {
             return hostAddress;
@@ -193,96 +147,62 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public abstract void setJdbcUrl(String hostAddress);
-
-    public abstract void setJdbcDriver();
-
-    public abstract String getDockerImageName();
-
-    public abstract String[] getDockerAdditionalArgs();
-
-    public abstract boolean isContainerReady(ProcessResults pr);
-
-    protected String[] buildArray(String... strs) {
-        return strs;
+    /**
+     * Return the name of the root user.
+     * 
+     * Override the method if the name of the root user must be different than the default.
+     */
+    protected String getRootUser() {
+        return "qtestuser";
     }
 
-    public Connection getConnectionToExternalDB() throws SQLException, ClassNotFoundException {
-        try {
-            LOG.info("external database connection URL:\t " + url);
-            LOG.info("JDBC Driver :\t " + driver);
-            LOG.info("external database connection User:\t " + userName);
-            LOG.info("external database connection Password:\t " + password);
-
-            // load required JDBC driver
-            Class.forName(driver);
-
-            // Connect using the JDBC URL and user/password
-            Connection conn = DriverManager.getConnection(url, userName, password);
-            return conn;
-        } catch (SQLException e) {
-            LOG.error("Failed to connect to external databse", e);
-            throw new SQLException(e);
-        } catch (ClassNotFoundException e) {
-            LOG.error("Unable to find driver class", e);
-            throw new ClassNotFoundException("Unable to find driver class");
-        }
+    /**
+     * Return the password of the root user.
+     * 
+     * Override the method if the password must be different than the default.
+     */
+    protected String getRootPassword() {
+        return  "qtestpassword";
     }
+    
+    protected abstract String getJdbcUrl();
 
-    public void testConnectionToExternalDB() throws SQLException, ClassNotFoundException {
-        Connection conn = getConnectionToExternalDB();
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            LOG.error("Failed to close external database connection", e);
-        }
-    }
+    protected abstract String getJdbcDriver();
 
-    protected String[] SQLLineCmdBuild(String sqlScriptFile) throws IOException {
-        return new String[] {"-u", url,
-                            "-d", driver,
-                            "-n", userName,
-                            "-p", password,
+    protected abstract String getDockerImageName();
+
+    protected abstract String[] getDockerAdditionalArgs();
+
+    protected abstract boolean isContainerReady(ProcessResults pr);
+
+    private String[] SQLLineCmdBuild(String sqlScriptFile) {
+        return new String[] {"-u", getJdbcUrl(),
+                            "-d", getJdbcDriver(),
+                            "-n", getRootUser(),
+                            "-p", getRootPassword(),
                             "--isolation=TRANSACTION_READ_COMMITTED",
                             "-f", sqlScriptFile};
 
     }
 
-    protected void execSql(String sqlScriptFile) throws IOException {
-        // run the script using SqlLine
-        SqlLine sqlLine = new SqlLine();
-        ByteArrayOutputStream outputForLog = null;
-        OutputStream out;
-        if (LOG.isDebugEnabled()) {
-            out = outputForLog = new ByteArrayOutputStream();
-        } else {
-            out = new NullOutputStream();
-        }
-        sqlLine.setOutputStream(new PrintStream(out));
-        System.setProperty("sqlline.silent", "true");
-
-        SqlLine.Status status = sqlLine.begin(SQLLineCmdBuild(sqlScriptFile), null, false);
-        if (LOG.isDebugEnabled() && outputForLog != null) {
-            LOG.debug("Received following output from Sqlline:");
-            LOG.debug(outputForLog.toString("UTF-8"));
-        }
-        if (status != SqlLine.Status.OK) {
-            throw new IOException("external database script failed, errorcode " + status);
-        }
-    }
-
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
-        testConnectionToExternalDB();
-        LOG.info("Starting external database initialization to " + this.externalDBType);
-
-        try {
-            LOG.info("Initialization script " + script);
-            execSql(script);
-            LOG.info("Initialization script completed in external database");
-
-        } catch (IOException e) {
-            throw new IOException("initialization in external database FAILED!");
+        // Test we can connect to database
+        Class.forName(getJdbcDriver());
+        try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), getRootUser(), getRootPassword())) {
+            LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getRootUser(), getRootPassword());
         }
-
+        LOG.info("Starting {} initialization", getClass().getSimpleName());
+        SqlLine sqlLine = new SqlLine();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        sqlLine.setOutputStream(new PrintStream(out));
+        sqlLine.setErrorStream(new PrintStream(out));
+        System.setProperty("sqlline.silent", "true");
+        SqlLine.Status status = sqlLine.begin(SQLLineCmdBuild(script), null, false);
+        LOG.debug("Printing output from SQLLine:");
+        LOG.debug(out.toString());
+        if (status != SqlLine.Status.OK) {
+            throw new RuntimeException("Database script " + script + " failed with status " + status);
+        }
+        LOG.info("Completed {} initialization", getClass().getSimpleName());
     }
 }

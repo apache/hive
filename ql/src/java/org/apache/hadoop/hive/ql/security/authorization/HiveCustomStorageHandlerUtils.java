@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 
@@ -33,5 +36,16 @@ public class HiveCustomStorageHandlerUtils {
             }
         }
         return properties.toString();
+    }
+
+    /**
+     * @param table the HMS table
+     * @return a map of table properties combined with the serde properties, if any
+     */
+    public static Map<String, String> getTableProperties(Table table) {
+        Map<String, String> tblProps = new HashMap<>(table.getParameters());
+        Optional.ofNullable(table.getSd().getSerdeInfo().getParameters())
+            .ifPresent(tblProps::putAll);
+        return tblProps;
     }
 }

@@ -79,6 +79,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   @Before
   public void setUp() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, true);
     // re-initialize metrics
     Metrics.shutdown();
     Metrics.initialize(conf);
@@ -542,6 +543,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     String tblName = "dcamc";
     Table t = newTable(dbName, tblName, false);
 
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
     long start = System.currentTimeMillis();
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
     openTxn(TxnType.REPL_CREATED);
@@ -591,7 +593,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     txnHandler.cleanTxnToWriteIdTable();
     runAcidMetricService();
-    Assert.assertEquals(2,
+    Assert.assertEquals(3,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
     start = System.currentTimeMillis();

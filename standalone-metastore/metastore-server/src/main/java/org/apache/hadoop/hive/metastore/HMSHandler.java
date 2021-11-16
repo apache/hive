@@ -104,6 +104,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
@@ -112,7 +113,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -991,7 +991,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void shutdown() {
     cleanupRawStore();
     PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
-    ThreadPool.shutdown();
   }
 
   @Override
@@ -1362,7 +1361,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             });
             if (madeManagedDir) {
               LOG.info("Created database path in managed directory " + dbMgdPath);
-            } else {
+            } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
               throw new MetaException(
                   "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
             }
@@ -2241,6 +2240,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     throw new MetaException("Not yet implemented");
   }
 
+  @Override
+  public Table translate_table_dryrun(final Table tbl) throws AlreadyExistsException,
+          MetaException, InvalidObjectException, InvalidInputException {
+    Table transformedTbl = null;
+    if (!tbl.isSetCatName()) {
+      tbl.setCatName(getDefaultCatalog(conf));
+    }
+    if (transformer != null) {
+      transformedTbl = transformer.transformCreateTable(tbl, null, null);
+    }
+    return transformedTbl != null ? transformedTbl : tbl;
+  }
+
   private void create_table_core(final RawStore ms, final Table tbl,
                                  final EnvironmentContext envContext)
       throws AlreadyExistsException, MetaException,
@@ -2323,9 +2335,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
     }
 
+    if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
+      throw new AlreadyExistsException("Table " + getCatalogQualifiedTableName(tbl)
+          + " already exists");
+    }
+
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
+
     if (tbl.getParameters() != null) {
       tbl.getParameters().remove(TABLE_IS_CTAS);
     }

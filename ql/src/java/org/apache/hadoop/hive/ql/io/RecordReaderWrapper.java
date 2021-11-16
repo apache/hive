@@ -94,6 +94,11 @@ class RecordReaderWrapper extends LineRecordReader {
         LOG.info("Reader is compressed; offsets not supported");
         return new RecordReaderWrapper(split, jobConf, headerCount, footerCount);
       }
+      if (headerCount > 0 && split.getStart() == 0) {
+        // Skipping empty/null lines leading to Split start -1 being zero
+        LOG.info("Reader with blank head line(s)");
+        return new RecordReaderWrapper(split, jobConf, headerCount, footerCount);
+      }
     }
     return innerReader;
   }

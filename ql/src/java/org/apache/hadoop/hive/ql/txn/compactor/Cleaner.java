@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,6 +180,13 @@ public class Cleaner extends MetaStoreCompactorThread {
         txnHandler.markCleaned(ci);
         return;
       }
+      if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
+        // The table was marked no clean up true.
+        LOG.info("Skipping table " + ci.getFullTableName() + " clean up, as NO_CLEANUP set to true");
+        txnHandler.markCleaned(ci);
+        return;
+      }
+
       Partition p = null;
       if (ci.partName != null) {
         p = resolvePartition(ci);
@@ -186,6 +194,12 @@ public class Cleaner extends MetaStoreCompactorThread {
           // The partition was dropped before we got around to cleaning it.
           LOG.info("Unable to find partition " + ci.getFullPartitionName() +
               ", assuming it was dropped." + idWatermark(ci));
+          txnHandler.markCleaned(ci);
+          return;
+        }
+        if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
+          // The partition was marked no clean up true.
+          LOG.info("Skipping partition " + ci.getFullPartitionName() + " clean up, as NO_CLEANUP set to true");
           txnHandler.markCleaned(ci);
           return;
         }

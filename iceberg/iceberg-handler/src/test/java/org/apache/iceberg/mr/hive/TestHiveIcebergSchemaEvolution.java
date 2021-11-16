@@ -751,4 +751,38 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     rows = shell.executeStatement("SELECT * FROM types_table where id in(3, 4)");
     HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
   }
+
+  @Test
+  public void testSchemaEvolutionForMigratedTables() {
+    // create a standard Hive table w/ some records
+    TableIdentifier tableIdentifier = TableIdentifier.of("default", "customers");
+    shell.executeStatement(String.format(
+        "CREATE EXTERNAL TABLE customers (id bigint, first_name string, last_name string) STORED AS %s %s",
+        fileFormat, testTables.locationForCreateTableSQL(tableIdentifier)));
+    shell.executeStatement("INSERT INTO customers VALUES (11, 'Lisa', 'Truman')");
+
+    // migrate it to Iceberg
+    shell.executeStatement("ALTER TABLE customers SET TBLPROPERTIES " +
+        "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+
+    // try to perform illegal schema evolution operations
+    AssertHelpers.assertThrows("issuing a replace columns operation on a migrated Iceberg table should throw",
+        IllegalArgumentException.class, "Cannot perform REPLACE COLUMNS operation on a migrated Iceberg table",
+        () -> shell.executeStatement("ALTER TABLE customers REPLACE COLUMNS (id bigint, last_name string)"));
+
+    AssertHelpers.assertThrows("issuing a change column operation on a migrated Iceberg table should throw",
+        IllegalArgumentException.class, "Cannot perform CHANGE COLUMN operation on a migrated Iceberg table",
+        () -> shell.executeStatement("ALTER TABLE customers CHANGE COLUMN id customer_id bigint"));
+
+    // check if valid ops are still okay
+    shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    shell.executeStatement("ALTER TABLE customers ADD COLUMNS (date_joined timestamp)");
+
+    // double check if schema change worked safely
+    shell.executeStatement("INSERT INTO customers VALUES (22, 'Mike', 'Bloomfield', from_unixtime(unix_timestamp()))");
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers ORDER BY id");
+    Assert.assertEquals(2, result.size());
+    Assert.assertNull(result.get(0)[3]); // first record has null timestamp
+    Assert.assertNotNull(result.get(1)[3]); // second record has timestamp filled out
+  }
 }

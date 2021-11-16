@@ -16065,10 +16065,6 @@ class FindNextCompactRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.workerId is None:
-            raise TProtocolException(message='Required field workerId is unset!')
-        if self.workerVersion is None:
-            raise TProtocolException(message='Required field workerVersion is unset!')
         return
 
     def __repr__(self):
@@ -26764,16 +26760,18 @@ class ReplicationMetrics(object):
      - dumpExecutionId
      - metadata
      - progress
+     - messageFormat
 
     """
 
 
-    def __init__(self, scheduledExecutionId=None, policy=None, dumpExecutionId=None, metadata=None, progress=None,):
+    def __init__(self, scheduledExecutionId=None, policy=None, dumpExecutionId=None, metadata=None, progress=None, messageFormat=None,):
         self.scheduledExecutionId = scheduledExecutionId
         self.policy = policy
         self.dumpExecutionId = dumpExecutionId
         self.metadata = metadata
         self.progress = progress
+        self.messageFormat = messageFormat
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -26809,6 +26807,11 @@ class ReplicationMetrics(object):
                     self.progress = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.messageFormat = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -26838,6 +26841,10 @@ class ReplicationMetrics(object):
         if self.progress is not None:
             oprot.writeFieldBegin('progress', TType.STRING, 5)
             oprot.writeString(self.progress.encode('utf-8') if sys.version_info[0] == 2 else self.progress)
+            oprot.writeFieldEnd()
+        if self.messageFormat is not None:
+            oprot.writeFieldBegin('messageFormat', TType.STRING, 6)
+            oprot.writeString(self.messageFormat.encode('utf-8') if sys.version_info[0] == 2 else self.messageFormat)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31110,6 +31117,7 @@ ReplicationMetrics.thrift_spec = (
     (3, TType.I64, 'dumpExecutionId', None, None, ),  # 3
     (4, TType.STRING, 'metadata', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'progress', 'UTF8', None, ),  # 5
+    (6, TType.STRING, 'messageFormat', 'UTF8', None, ),  # 6
 )
 all_structs.append(ReplicationMetricList)
 ReplicationMetricList.thrift_spec = (

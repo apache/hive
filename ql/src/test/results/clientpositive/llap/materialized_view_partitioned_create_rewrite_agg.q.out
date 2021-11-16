@@ -31,14 +31,14 @@ POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
 POSTHOOK: Lineage: t1.c SCRIPT []
-PREHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only") AS
+PREHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') AS
 SELECT a, b, sum(c) sumc FROM t1 GROUP BY b, a
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
-POSTHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only") AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') AS
 SELECT a, b, sum(c) sumc FROM t1 GROUP BY b, a
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
@@ -48,6 +48,8 @@ POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1@a=1
 POSTHOOK: Output: default@mat1@a=2
 POSTHOOK: Output: default@mat1@a=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: mat1.b SIMPLE [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.sumc EXPRESSION [(t1)t1.FieldSchema(name:c, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1).b SIMPLE [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1).sumc EXPRESSION [(t1)t1.FieldSchema(name:c, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=2).b SIMPLE [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]

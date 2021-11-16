@@ -101,9 +101,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sort_array_by_table
-POSTHOOK: Lineage: sort_array_by_table.company EXPRESSION []
-POSTHOOK: Lineage: sort_array_by_table.country EXPRESSION []
-POSTHOOK: Lineage: sort_array_by_table.employee EXPRESSION []
+POSTHOOK: Lineage: sort_array_by_table.company SCRIPT []
+POSTHOOK: Lineage: sort_array_by_table.country SCRIPT []
+POSTHOOK: Lineage: sort_array_by_table.employee SCRIPT []
 PREHOOK: query: select company,country,sort_array_by(employee,'salary') as single_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table

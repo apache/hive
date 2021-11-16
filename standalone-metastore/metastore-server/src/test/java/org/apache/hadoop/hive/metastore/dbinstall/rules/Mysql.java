@@ -27,7 +27,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "mariadb:5.5";
+    return "mysql:5.7";
   }
 
   @Override
@@ -52,7 +52,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcDriver() {
-    return "org.mariadb.jdbc.Driver";
+    return "com.mysql.jdbc.Driver";
   }
 
   @Override

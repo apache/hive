@@ -290,6 +290,8 @@ public class Compiler {
        */
     case SHOWDATABASES:
     case SHOWTABLES:
+    case SHOW_TABLESTATUS:
+    case SHOW_TBLPROPERTIES:
     case SHOWCOLUMNS:
     case SHOWFUNCTIONS:
     case SHOWPARTITIONS:

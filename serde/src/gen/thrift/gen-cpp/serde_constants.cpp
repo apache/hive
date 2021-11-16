@@ -103,6 +103,10 @@ serdeConstants::serdeConstants() {
 
   LIST_PARTITION_COLUMN_TYPES = "partition.columns.types";
 
+  LIST_COLUMN_COMMENTS = "columns.comments";
+
+  LIST_PARTITION_COLUMN_COMMENTS = "partition.columns.comments";
+
   TIMESTAMP_FORMATS = "timestamp.formats";
 
   COLUMN_NAME_DELIMITER = "column.name.delimiter";

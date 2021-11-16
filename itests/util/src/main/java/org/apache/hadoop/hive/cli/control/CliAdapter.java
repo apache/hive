@@ -59,10 +59,10 @@ public abstract class CliAdapter {
   public abstract void beforeClass() throws Exception;
 
   // HIVE-14444 pending rename: before
-  public abstract void setUp();
+  public abstract void setUp() throws Exception;
 
   // HIVE-14444 pending rename: after
-  public abstract void tearDown();
+  public abstract void tearDown() throws Exception;
 
   // HIVE-14444 pending rename: afterClass
   public abstract void shutdown() throws Exception;

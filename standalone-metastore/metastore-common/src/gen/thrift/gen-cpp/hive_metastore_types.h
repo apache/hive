@@ -10598,6 +10598,11 @@ void swap(GetLatestCommittedCompactionInfoResponse &a, GetLatestCommittedCompact
 
 std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoResponse& obj);
 
+typedef struct _FindNextCompactRequest__isset {
+  _FindNextCompactRequest__isset() : workerId(false), workerVersion(false) {}
+  bool workerId :1;
+  bool workerVersion :1;
+} _FindNextCompactRequest__isset;
 
 class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -10611,15 +10616,21 @@ class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
   std::string workerId;
   std::string workerVersion;
 
+  _FindNextCompactRequest__isset __isset;
+
   void __set_workerId(const std::string& val);
 
   void __set_workerVersion(const std::string& val);
 
   bool operator == (const FindNextCompactRequest & rhs) const
   {
-    if (!(workerId == rhs.workerId))
+    if (__isset.workerId != rhs.__isset.workerId)
       return false;
-    if (!(workerVersion == rhs.workerVersion))
+    else if (__isset.workerId && !(workerId == rhs.workerId))
+      return false;
+    if (__isset.workerVersion != rhs.__isset.workerVersion)
+      return false;
+    else if (__isset.workerVersion && !(workerVersion == rhs.workerVersion))
       return false;
     return true;
   }
@@ -17629,9 +17640,10 @@ void swap(GetPartitionsPsWithAuthResponse &a, GetPartitionsPsWithAuthResponse &b
 std::ostream& operator<<(std::ostream& out, const GetPartitionsPsWithAuthResponse& obj);
 
 typedef struct _ReplicationMetrics__isset {
-  _ReplicationMetrics__isset() : metadata(false), progress(false) {}
+  _ReplicationMetrics__isset() : metadata(false), progress(false), messageFormat(false) {}
   bool metadata :1;
   bool progress :1;
+  bool messageFormat :1;
 } _ReplicationMetrics__isset;
 
 class ReplicationMetrics : public virtual ::apache::thrift::TBase {
@@ -17639,7 +17651,7 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
 
   ReplicationMetrics(const ReplicationMetrics&);
   ReplicationMetrics& operator=(const ReplicationMetrics&);
-  ReplicationMetrics() : scheduledExecutionId(0), policy(), dumpExecutionId(0), metadata(), progress() {
+  ReplicationMetrics() : scheduledExecutionId(0), policy(), dumpExecutionId(0), metadata(), progress(), messageFormat() {
   }
 
   virtual ~ReplicationMetrics() noexcept;
@@ -17648,6 +17660,7 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
   int64_t dumpExecutionId;
   std::string metadata;
   std::string progress;
+  std::string messageFormat;
 
   _ReplicationMetrics__isset __isset;
 
@@ -17660,6 +17673,8 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
   void __set_metadata(const std::string& val);
 
   void __set_progress(const std::string& val);
+
+  void __set_messageFormat(const std::string& val);
 
   bool operator == (const ReplicationMetrics & rhs) const
   {
@@ -17676,6 +17691,10 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
     if (__isset.progress != rhs.__isset.progress)
       return false;
     else if (__isset.progress && !(progress == rhs.progress))
+      return false;
+    if (__isset.messageFormat != rhs.__isset.messageFormat)
+      return false;
+    else if (__isset.messageFormat && !(messageFormat == rhs.messageFormat))
       return false;
     return true;
   }

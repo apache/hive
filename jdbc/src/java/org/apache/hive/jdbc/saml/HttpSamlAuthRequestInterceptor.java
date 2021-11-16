@@ -26,6 +26,8 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.CookieStore;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This implements the logic to intercept the HTTP requests from the Hive Jdbc connection
@@ -36,6 +38,8 @@ public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
 
   private final IJdbcBrowserClient browserClient;
   private static final String BEARER = "Bearer ";
+  private static final Logger LOG = LoggerFactory
+      .getLogger(HttpSamlAuthRequestInterceptor.class);
 
   public HttpSamlAuthRequestInterceptor(IJdbcBrowserClient browserClient, CookieStore cookieStore, String cn,
       boolean isSSL, Map<String, String> additionalHeaders,
@@ -56,6 +60,7 @@ public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
       httpRequest.addHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER, clientIdentifier);
       httpRequest.removeHeaders(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT);
     } else {
+      LOG.debug("Adding response port {}", port);
       httpRequest.addHeader(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT, port);
     }
   }

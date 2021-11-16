@@ -232,4 +232,8 @@ public class DeSerializer extends JSONMessageDeserializer {
   public DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody) {
     return super.getDeletePartitionColumnStatMessage(deCompress(messageBody));
   }
+
+  public String deSerializeGenericString(String messageBody) {
+    return deCompress(messageBody);
+  }
 }

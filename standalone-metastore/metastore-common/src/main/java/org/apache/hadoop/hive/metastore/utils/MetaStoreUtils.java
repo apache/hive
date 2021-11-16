@@ -680,7 +680,7 @@ public class MetaStoreUtils {
       if (!first) {
         colNameBuf.append(columnNameDelimiter);
         colTypeBuf.append(":");
-        colComment.append('\0');
+        colComment.append(ColumnType.COLUMN_COMMENTS_DELIMITER);
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
@@ -1081,7 +1081,7 @@ public class MetaStoreUtils {
   }
 
   public static TableName getTableNameFor(Table table) {
-    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName(), null);
+    return TableName.fromString(table.getTableName().toLowerCase(), table.getCatName().toLowerCase(), table.getDbName().toLowerCase(), null);
   }
 
   /**
@@ -1118,5 +1118,13 @@ public class MetaStoreUtils {
      * EndPoint to specify nature of database for which failover is initiated.
      */
     SOURCE, TARGET;
+  }
+
+  public static boolean isNoCleanUpSet(Map<String, String> parameters) {
+    String noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP);
+    if (noCleanUp == null) {
+      noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP.toUpperCase());
+    }
+    return noCleanUp != null && noCleanUp.equalsIgnoreCase("true");
   }
 }

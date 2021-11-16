@@ -12,7 +12,7 @@ INSERT INTO t1(a, b, c) VALUES
 (1, 3, 100),
 (null, 4, 200);
 
-CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only") AS
+CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') AS
 SELECT a, b, sum(c) sumc FROM t1 GROUP BY b, a;
 
 INSERT INTO t1(a, b, c) VALUES
