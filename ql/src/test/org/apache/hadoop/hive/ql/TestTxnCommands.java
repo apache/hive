@@ -108,7 +108,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, true);
+    HiveConf.setBoolVar(hiveConf,HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, true);
   }
 
 

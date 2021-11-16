@@ -560,6 +560,8 @@ public interface IMetaStoreClient {
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException;
 
+  void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException;
   /**
    * Truncate the table/partitions in the DEFAULT database.
    * @param catName catalog name

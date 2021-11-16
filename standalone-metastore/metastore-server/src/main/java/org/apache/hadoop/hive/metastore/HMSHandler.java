@@ -3410,12 +3410,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .map(Boolean::parseBoolean)
           .orElse(false);
 
-      if (!skipDataDeletion) {
-        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl)
-            || !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
-
-        if (truncateFiles) {
+      if (TxnUtils.isTransactionalTable(tbl) || !skipDataDeletion) {
+        if (!skipDataDeletion) {
           isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+          
           Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
           needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
         }
@@ -3423,7 +3421,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
             tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
-          if (truncateFiles) {
+          if (!skipDataDeletion) {
             truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
           } else {
             // For Acid tables we don't need to delete the old files, only write an empty baseDir.

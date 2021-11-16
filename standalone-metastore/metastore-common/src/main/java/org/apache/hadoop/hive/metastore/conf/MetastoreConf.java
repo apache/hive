@@ -1397,9 +1397,6 @@ public class MetastoreConf {
             " If org.apache.hive.hcatalog.listener.DbNotificationListener is configured along with other transactional event" +
             " listener implementation classes, make sure org.apache.hive.hcatalog.listener.DbNotificationListener is placed at" +
             " the end of the list."),
-    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", false,
-        "If enabled, truncate for transactional tables will not delete the data directories,\n" +
-        "rather create a new base directory with no datafiles."),
     TRY_DIRECT_SQL("metastore.try.direct.sql", "hive.metastore.try.direct.sql", true,
         "Whether the metastore should try to use direct SQL queries instead of the\n" +
             "DataNucleus for certain read paths. This can improve metastore performance when\n" +

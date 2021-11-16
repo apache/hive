@@ -80,7 +80,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
   @Override
   void initHiveConf() {
     super.initHiveConf();
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, true);
   }
 
   @Override
