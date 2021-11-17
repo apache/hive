@@ -19,8 +19,11 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -28,6 +31,8 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTable
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -37,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +51,8 @@ import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getLastReplicatedS
 
 public class OptimisedBootstrapUtils {
 
+  public static final String TABLE_SEPERATOR = "$#$#$#";
+  public static final String FILE_ENTRY_SEPERATOR = "###";
   private static Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
 
   /**   table diff file when in progress */
@@ -99,12 +107,34 @@ public class OptimisedBootstrapUtils {
    */
   public static HashSet<String> getTablesFromTableDiffFile(Path dumpPath, HiveConf conf) throws Exception {
     FileSystem fs = dumpPath.getFileSystem(conf);
-    Path eventAckFilePath = new Path(dumpPath, TABLE_DIFF_COMPLETE_FILE);
-    String entries = "";
-    try (FSDataInputStream stream = fs.open(eventAckFilePath);) {
-      entries = IOUtils.toString(stream, Charset.defaultCharset());
+    Path tableDiffPath = new Path(dumpPath, TABLE_DIFF_COMPLETE_FILE);
+    FileStatus[] list = fs.listStatus(tableDiffPath);
+    HashSet<String> tables = new HashSet<>();
+    for (FileStatus fStatus : list) {
+      tables.add(fStatus.getPath().getName());
     }
-    return new HashSet<>(Arrays.asList(entries.split(System.lineSeparator())));
+    return tables;
+  }
+
+  /**
+   * Extracts the recursive listing from the table file.
+   * @param file the name of table
+   * @param dumpPath the dump path
+   * @param conf the hive conf
+   * @return the list of paths in the table.
+   * @throws IOException
+   */
+  public static HashSet<String> getPathsFromTableFile(String file, Path dumpPath, HiveConf conf) throws IOException {
+    HashSet<String> paths = new HashSet<>();
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    Path tableDiffPath = new Path(dumpPath, TABLE_DIFF_COMPLETE_FILE);
+    Path filePath = new Path(tableDiffPath, file);
+    String allEntries;
+    try (FSDataInputStream stream = fs.open(filePath);) {
+      allEntries = IOUtils.toString(stream, Charset.defaultCharset());
+    }
+    paths.addAll(Arrays.asList(allEntries.split(System.lineSeparator())));
+    return paths;
   }
 
   /**
@@ -174,18 +204,63 @@ public class OptimisedBootstrapUtils {
         modifiedTables.add(event.getTableName());
       }
     }
-    String tables = "";
-    for (String table : modifiedTables) {
-      LOG.info("Added table {} to table diff", table);
-      tables += table + System.lineSeparator();
-    }
-    // Write entry to table_diff file
     Path dumpPath = new Path(work.dumpDirectory).getParent();
-    Utils.writeOutput(tables, new Path(dumpPath, TABLE_DIFF_INPROGRESS_FILE), conf);
-    LOG.info("Completed writing table diff progress file at {} with entries {}", dumpPath, tables);
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    Path diffFilePath = new Path(dumpPath, TABLE_DIFF_INPROGRESS_FILE);
+    fs.mkdirs(diffFilePath);
+    for (String table : modifiedTables) {
+      String tables = "";
+      LOG.info("Added table {} to table diff", table);
+      ArrayList<String> pathList = getListing(work.dbNameToLoadIn, table, hiveDb, conf);
+      tables += table + System.lineSeparator();
+      for (String path : pathList) {
+        tables += path + System.lineSeparator();
+      }
+      Utils.writeOutput(tables, new Path(diffFilePath, table), conf);
+    }
+    LOG.info("Completed writing table diff progress file at {} with entries {}", dumpPath, modifiedTables);
     // The operation is complete, we can rename to TABLE_DIFF_COMPLETE
-    new Path(work.dumpDirectory, TABLE_DIFF_INPROGRESS_FILE).getFileSystem(conf)
-        .rename(new Path(dumpPath, TABLE_DIFF_INPROGRESS_FILE), new Path(dumpPath, TABLE_DIFF_COMPLETE_FILE));
+    fs.rename(diffFilePath, new Path(dumpPath, TABLE_DIFF_COMPLETE_FILE));
     LOG.info("Completed renaming table diff progress file to table diff complete file.");
+  }
+
+  private static ArrayList<String> getListing(String dbNameToLoadIn, String tableName, Hive hiveDb, HiveConf conf)
+      throws HiveException, IOException {
+    ArrayList<String> paths = new ArrayList<>();
+    Table table = hiveDb.getTable(dbNameToLoadIn, tableName);
+    if (table == null) {
+      return new ArrayList<>();
+    }
+    Path tableLocation = new Path(table.getSd().getLocation());
+    paths.add(table.getSd().getLocation());
+    FileSystem tableFs = tableLocation.getFileSystem(conf);
+    buildListingForDirectory(paths, tableLocation, tableFs);
+    if (table.isPartitioned()) {
+      List<Partition> partitions = hiveDb.getPartitions(table);
+      for (Partition part : partitions) {
+        Path partPath = part.getDataLocation();
+        if (!FileUtils.isPathWithinSubtree(partPath, tableLocation)) {
+          buildListingForDirectory(paths, partPath, tableFs);
+        }
+      }
+    }
+    return paths;
+  }
+
+  private static void buildListingForDirectory(ArrayList<String> listing, Path tableLocation, FileSystem tableFs)
+      throws IOException {
+    if (!tableFs.exists(tableLocation)) {
+      return;
+    }
+    RemoteIterator<FileStatus> itr = tableFs.listStatusIterator(tableLocation);
+    while (itr.hasNext()) {
+      FileStatus fstatus = itr.next();
+      if (fstatus.isDirectory()) {
+        listing.add(fstatus.getPath().toString());
+        buildListingForDirectory(listing, fstatus.getPath(), tableFs);
+      } else {
+        listing.add(fstatus.getPath() + FILE_ENTRY_SEPERATOR + fstatus.getLen() + "###" + tableFs.getFileChecksum(fstatus.getPath()));
+      }
+    }
   }
 }

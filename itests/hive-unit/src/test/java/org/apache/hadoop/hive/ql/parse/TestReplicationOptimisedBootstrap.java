@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
 import org.junit.Before;
@@ -39,8 +38,10 @@ import java.util.List;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_FILE;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getPathsFromTableFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTablesFromTableDiffFile;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -125,9 +126,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_FILE).toString() + " doesn't exist",
         replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_FILE)));
 
-    // Check the table diff file has no entries, since we are in sync.
-    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(tuple.dumpLocation), conf);
-    assertTrue(tableDiffEntries.isEmpty());
+    // Check the table diff directory has no entries, since we are in sync.
+    assertEquals(0, replicaFs.listStatus(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_FILE)).length);
 
     // Do some changes on the database and see if we get entries in the table diff file.
     primary.run("use " + primaryDbName)
@@ -153,7 +153,18 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     // Check the event id is still the same post having changes on the database as well, since the event id is only
     // dependent on replication.
     String newEventID = getEventIdFromFile(new Path(tuple.dumpLocation), conf);
-    assertEquals("Earlier eventID "+ eventID + " is not same as new eventID " + newEventID,eventID,  newEventID);
+    assertEquals("Earlier eventID " + eventID + " is not same as new eventID " + newEventID, eventID, newEventID);
+
+    // Do a load, this should create a table_diff_complete file
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    // Table diff file should get created.
+    assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_FILE).toString() + " doesn't exist",
+        replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_FILE)));
+
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(tuple.dumpLocation), conf);
+    assertTrue("Table Diff Contains " + tableDiffEntries,
+        tableDiffEntries.containsAll(Arrays.asList("t1","t2", "t3", "t1_managed","t2_managed", "t3_managed")));
 
     // Clean up this and check if the failover is triggered after incremental.
     replicaFs.delete(newReplDir, true);
@@ -170,7 +181,6 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .run("show tables like 't3'")
         .verifyResult("t3")
         .verifyReplTargetProperty(replicatedDbName);
-
 
     // Do some modifications on original source cluster.
     primary.run("create database " + extraPrimaryDb)
@@ -225,6 +235,12 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         tableDiffEntries.containsAll(Arrays.asList("t4", "t2", "t4_managed", "t2_managed")));
     afterContentSummary = replicaFs.getContentSummary(new Path(tuple.dumpLocation).getParent());
     assertEquals(beforeContentSummary.getFileAndDirectoryCount(), afterContentSummary.getFileAndDirectoryCount());
+
+    // Check there are entries in the table files.
+    assertFalse(getPathsFromTableFile("t4", new Path(tuple.dumpLocation), conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t2", new Path(tuple.dumpLocation), conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t4_managed", new Path(tuple.dumpLocation), conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t2_managed", new Path(tuple.dumpLocation), conf).isEmpty());
 
     // Delete the reverse dump directory and do the normal A->B to make A & B in sync.
     replica.miniDFSCluster.getFileSystem().delete(newReplDir, true);
