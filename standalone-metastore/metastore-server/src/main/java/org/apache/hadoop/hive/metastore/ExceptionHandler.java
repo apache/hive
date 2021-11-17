@@ -81,25 +81,6 @@ public final class ExceptionHandler {
   }
 
   /**
-   * Throws if the input exception is the instance of the one in the input classes
-   */
-  public <T1 extends Exception,
-          T2 extends Exception,
-          T3 extends Exception,
-          T4 extends Exception>
-  ExceptionHandler throwIfInstance(
-      Class<T1> te1,
-      Class<T2> te2,
-      Class<T3> te3,
-      Class<T4> te4) throws T1, T2, T3, T4 {
-    throwIfInstance(te1);
-    throwIfInstance(te2);
-    throwIfInstance(te3);
-    throwIfInstance(te4);
-    return this;
-  }
-
-  /**
    * Converts the input exception to the target instance of class {@param target},
    * if the input exception is the instance of class {@param source}, throws the
    * converted target exception.

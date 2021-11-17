@@ -603,6 +603,7 @@ public class TestLlapTaskSchedulerService {
 
 
   @Test(timeout = 10000)
+  @org.junit.Ignore("HIVE-25713")
   public void testPreemption() throws InterruptedException, IOException {
 
     Priority priority1 = Priority.newInstance(1);
