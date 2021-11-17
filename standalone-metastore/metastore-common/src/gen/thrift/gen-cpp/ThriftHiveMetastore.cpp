@@ -32815,7 +32815,20 @@ uint32_t ThriftHiveMetastore_update_transaction_statistics_result::read(::apache
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -32830,6 +32843,11 @@ uint32_t ThriftHiveMetastore_update_transaction_statistics_result::write(::apach
 
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_update_transaction_statistics_result");
 
+  if (this->__isset.o1) {
+    xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->o1.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -32859,7 +32877,20 @@ uint32_t ThriftHiveMetastore_update_transaction_statistics_presult::read(::apach
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -71160,6 +71191,9 @@ void ThriftHiveMetastoreClient::recv_update_transaction_statistics()
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
 
+  if (result.__isset.o1) {
+    throw result.o1;
+  }
   return;
 }
 
@@ -87331,6 +87365,9 @@ void ThriftHiveMetastoreProcessor::process_update_transaction_statistics(int32_t
   ThriftHiveMetastore_update_transaction_statistics_result result;
   try {
     iface_->update_transaction_statistics(args.req);
+  } catch (MetaException &o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
       this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.update_transaction_statistics");
@@ -107161,6 +107198,10 @@ void ThriftHiveMetastoreConcurrentClient::recv_update_transaction_statistics(con
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();
 
+      if (result.__isset.o1) {
+        sentry.commit();
+        throw result.o1;
+      }
       sentry.commit();
       return;
     }

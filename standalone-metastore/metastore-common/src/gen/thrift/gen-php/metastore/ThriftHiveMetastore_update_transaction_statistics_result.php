@@ -21,11 +21,26 @@ class ThriftHiveMetastore_update_transaction_statistics_result
     static public $isValidate = false;
 
     static public $_TSPEC = array(
+        1 => array(
+            'var' => 'o1',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\MetaException',
+        ),
     );
 
+    /**
+     * @var \metastore\MetaException
+     */
+    public $o1 = null;
 
-    public function __construct()
+    public function __construct($vals = null)
     {
+        if (is_array($vals)) {
+            if (isset($vals['o1'])) {
+                $this->o1 = $vals['o1'];
+            }
+        }
     }
 
     public function getName()
@@ -47,6 +62,14 @@ class ThriftHiveMetastore_update_transaction_statistics_result
                 break;
             }
             switch ($fid) {
+                case 1:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o1 = new \metastore\MetaException();
+                        $xfer += $this->o1->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -61,6 +84,11 @@ class ThriftHiveMetastore_update_transaction_statistics_result
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_transaction_statistics_result');
+        if ($this->o1 !== null) {
+            $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+            $xfer += $this->o1->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
         $xfer += $output->writeFieldStop();
         $xfer += $output->writeStructEnd();
         return $xfer;

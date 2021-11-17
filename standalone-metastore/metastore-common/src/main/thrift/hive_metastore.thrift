@@ -2749,7 +2749,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   SetPartitionsStatsResponse update_partition_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
 
-  void update_transaction_statistics(1:UpdateTransactionalStatsRequest req)
+  void update_transaction_statistics(1:UpdateTransactionalStatsRequest req) throws (1:MetaException o1)
 
 
   // get APIs return the column statistics corresponding to db_name, tbl_name, [part_name], col_name if

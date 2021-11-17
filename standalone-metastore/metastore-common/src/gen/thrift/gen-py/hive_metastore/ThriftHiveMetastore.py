@@ -7099,6 +7099,8 @@ class Client(fb303.FacebookService.Client, Iface):
         result = update_transaction_statistics_result()
         result.read(iprot)
         iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
         return
 
     def get_table_column_statistics(self, db_name, tbl_name, col_name):
@@ -15960,6 +15962,9 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -40664,7 +40669,15 @@ update_transaction_statistics_args.thrift_spec = (
 
 
 class update_transaction_statistics_result(object):
+    """
+    Attributes:
+     - o1
 
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -40675,6 +40688,11 @@ class update_transaction_statistics_result(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -40685,6 +40703,10 @@ class update_transaction_statistics_result(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('update_transaction_statistics_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -40703,6 +40725,8 @@ class update_transaction_statistics_result(object):
         return not (self == other)
 all_structs.append(update_transaction_statistics_result)
 update_transaction_statistics_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 
 

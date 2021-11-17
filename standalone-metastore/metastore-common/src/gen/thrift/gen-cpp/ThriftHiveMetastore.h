@@ -17275,6 +17275,10 @@ class ThriftHiveMetastore_update_transaction_statistics_pargs {
 
 };
 
+typedef struct _ThriftHiveMetastore_update_transaction_statistics_result__isset {
+  _ThriftHiveMetastore_update_transaction_statistics_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_update_transaction_statistics_result__isset;
 
 class ThriftHiveMetastore_update_transaction_statistics_result {
  public:
@@ -17285,9 +17289,16 @@ class ThriftHiveMetastore_update_transaction_statistics_result {
   }
 
   virtual ~ThriftHiveMetastore_update_transaction_statistics_result() noexcept;
+  MetaException o1;
 
-  bool operator == (const ThriftHiveMetastore_update_transaction_statistics_result & /* rhs */) const
+  _ThriftHiveMetastore_update_transaction_statistics_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_transaction_statistics_result & rhs) const
   {
+    if (!(o1 == rhs.o1))
+      return false;
     return true;
   }
   bool operator != (const ThriftHiveMetastore_update_transaction_statistics_result &rhs) const {
@@ -17301,12 +17312,19 @@ class ThriftHiveMetastore_update_transaction_statistics_result {
 
 };
 
+typedef struct _ThriftHiveMetastore_update_transaction_statistics_presult__isset {
+  _ThriftHiveMetastore_update_transaction_statistics_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_update_transaction_statistics_presult__isset;
 
 class ThriftHiveMetastore_update_transaction_statistics_presult {
  public:
 
 
   virtual ~ThriftHiveMetastore_update_transaction_statistics_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_transaction_statistics_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 

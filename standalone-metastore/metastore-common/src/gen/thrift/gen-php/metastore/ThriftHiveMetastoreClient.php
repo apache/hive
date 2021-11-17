@@ -8406,6 +8406,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             $result->read($this->input_);
             $this->input_->readMessageEnd();
         }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
         return;
     }
 

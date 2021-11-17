@@ -2166,6 +2166,7 @@ module ThriftHiveMetastore
 
     def recv_update_transaction_statistics()
       result = receive_message(Update_transaction_statistics_result)
+      raise result.o1 unless result.o1.nil?
       return
     end
 
@@ -6129,7 +6130,11 @@ module ThriftHiveMetastore
     def process_update_transaction_statistics(seqid, iprot, oprot)
       args = read_args(iprot, Update_transaction_statistics_args)
       result = Update_transaction_statistics_result.new()
-      @handler.update_transaction_statistics(args.req)
+      begin
+        @handler.update_transaction_statistics(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
       write_result(result, oprot, 'update_transaction_statistics', seqid)
     end
 
@@ -12554,9 +12559,10 @@ module ThriftHiveMetastore
 
   class Update_transaction_statistics_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
 
     FIELDS = {
-
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
