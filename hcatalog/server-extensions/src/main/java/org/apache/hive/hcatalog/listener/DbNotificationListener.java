@@ -1415,6 +1415,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     private int ttl;
     private long sleepTime;
     private long waitInterval;
+    private boolean isInTest;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
@@ -1422,6 +1423,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       this.rs = Objects.requireNonNull(rs);
 
       boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      isInTest = conf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, false);
       ConfVars ttlConf = (isReplEnabled) ?  ConfVars.REPL_EVENT_DB_LISTENER_TTL : ConfVars.EVENT_DB_LISTENER_TTL;
       setTimeToLive(MetastoreConf.getTimeVar(conf, ttlConf, TimeUnit.SECONDS));
       setCleanupInterval(
@@ -1441,7 +1443,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           Thread.sleep(waitInterval);
         } catch (InterruptedException e) {
           LOG.error("Failed during the initial wait before start.", e);
-          Thread.currentThread().interrupt();
+          if(isInTest) {
+            Thread.currentThread().interrupt();
+          }
           return;
         }
         LOG.info("Completed Cleaner thread initial wait. Starting normal processing.");
