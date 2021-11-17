@@ -53,8 +53,8 @@ SELECT i.name, i.description, SUM(o.quantity) FROM llap_items i JOIN llap_orders
 --adding a column
 ALTER TABLE llap_items ADD COLUMNS (to60 float);
 INSERT INTO llap_items VALUES
-(7, 'Model X', 93000, 'SUV', 'Long range', 3.8),
-(7, 'Model X', 113000, 'SUV', 'Plaid', 2.5);
+(7, 'Model X', 93000, 'Long range', 'SUV', 3.8),
+(7, 'Model X', 113000, 'Plaid', 'SUV', 2.5);
 SELECT cat, min(to60) from llap_items group by cat;
 
 --removing a column
@@ -70,7 +70,7 @@ SELECT name, min(to60), max(cost) FROM llap_items WHERE itemid > 3 GROUP BY name
 ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER p2;
 ALTER TABLE llap_orders CHANGE p1 region string;
 INSERT INTO llap_orders VALUES
-(21, 21, 8, 'EU', timestamp('2000-01-04 19:55:46.129'), 'HU');
+(21, 21, 8, 'EU', 'HU', timestamp('2000-01-04 19:55:46.129'));
 SELECT region, min(ordertime), sum(quantity) FROM llap_orders WHERE itemid > 5 GROUP BY region;
 
 ALTER TABLE llap_orders CHANGE p2 state string;
@@ -79,25 +79,25 @@ SELECT region, state, min(ordertime), sum(quantity) FROM llap_orders WHERE itemi
 --adding new column
 ALTER TABLE llap_orders ADD COLUMNS (city string);
 INSERT INTO llap_orders VALUES
-(22, 99, 9, 'EU', timestamp('2021-01-04 19:55:46.129'), 'DE', 'München');
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München');
 SELECT state, max(city) from llap_orders WHERE region = 'EU' GROUP BY state;
 
 --making it a partition column
 ALTER TABLE llap_orders SET PARTITION SPEC (region, state, city);
 INSERT INTO llap_orders VALUES
-(23, 89, 6, 'EU', timestamp('2021-02-04 19:55:46.129'), 'IT', 'Venezia');
+(23, 89, 6, 'EU', 'IT', timestamp('2021-02-04 19:55:46.129'), 'Venezia');
 SELECT state, max(city), avg(itemid) from llap_orders WHERE region = 'EU' GROUP BY state;
 
 --de-partitioning a column
 ALTER TABLE llap_orders SET PARTITION SPEC (state, city);
 INSERT INTO llap_orders VALUES
-(24, 88, 5, 'EU', timestamp('2006-02-04 19:55:46.129'), 'UK', 'London');
+(24, 88, 5, 'EU', 'UK', timestamp('2006-02-04 19:55:46.129'), 'London');
 SELECT state, max(city), avg(itemid) from llap_orders WHERE region = 'EU' GROUP BY state;
 
 --removing a column from schema
-ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', state string COMMENT 'from deserializer', city string);
+ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', state string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', city string);
 INSERT INTO llap_orders VALUES
-(88, 5, 'EU', timestamp('2006-02-04 19:55:46.129'), 'FR', 'Paris');
+(88, 5, 'EU', 'FR', timestamp('2006-02-04 19:55:46.129'), 'Paris');
 SELECT state, max(city), avg(itemid) from llap_orders WHERE region = 'EU' GROUP BY state;
 
 
