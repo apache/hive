@@ -112,12 +112,21 @@ public class CopyUtils {
   void copyFilesBetweenFS(FileSystem sourceFs, Path[] paths, FileSystem destinationFs,
                                   Path finalDestination, boolean deleteSource, boolean overwrite) throws IOException {
     retryableFxn(() -> {
+      boolean shouldPreserveXAttrs = FileUtils.shouldPreserveXAttrs(hiveConf, sourceFs, destinationFs);
+      Map<Path, Map<String, byte[]>> XAttrsToDestMapping = null;
+      if (shouldPreserveXAttrs) {
+        XAttrsToDestMapping = new HashMap<>();
+        for (Path path : paths) {
+          FileUtils.fetchXAttrs(XAttrsToDestMapping, sourceFs, sourceFs.getFileStatus(path), finalDestination);
+        }
+      }
       boolean copied = FileUtil
               .copy(sourceFs, paths, destinationFs, finalDestination, deleteSource, overwrite, hiveConf);
-      if (copied && !deleteSource
-              && Utils.checkFileSystemXAttrSupport(sourceFs) && Utils.checkFileSystemXAttrSupport(destinationFs)) {
-        for (Path path: paths) {
-          FileUtils.copyXAttrs(sourceFs, sourceFs.getFileStatus(path), destinationFs, finalDestination);
+      if (copied && shouldPreserveXAttrs) {
+        for (Map.Entry<Path, Map<String, byte[]>> xAttrs : XAttrsToDestMapping.entrySet()) {
+          for (Map.Entry<String, byte[]> val : xAttrs.getValue().entrySet()) {
+            destinationFs.setXAttr(xAttrs.getKey(), val.getKey(), val.getValue());
+          }
         }
       }
       return null;

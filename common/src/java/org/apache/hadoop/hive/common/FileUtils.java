@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -662,26 +663,48 @@ public final class FileUtils {
       // is tried and it fails. We depend upon that behaviour in cases like replication,
       // wherein if distcp fails, there is good reason to not plod along with a trivial
       // implementation, and fail instead.
+      boolean shouldPreserveXAttrs = shouldPreserveXAttrs(conf, srcFS, dstFS);
+      Map<Path, Map<String, byte[]>> XAttrsToDestMapping = null;
+      if (shouldPreserveXAttrs) {
+        XAttrsToDestMapping = new HashMap<>();
+        fetchXAttrs(XAttrsToDestMapping, srcFS, srcFS.getFileStatus(src), dst);
+      }
       copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
-      if (copied && !deleteSource
-              && Utils.checkFileSystemXAttrSupport(srcFS) && Utils.checkFileSystemXAttrSupport(dstFS)) {
-        copyXAttrs(srcFS, srcFS.getFileStatus(src), dstFS, dst);
+      if (copied && shouldPreserveXAttrs) {
+        for (Map.Entry<Path, Map<String, byte[]>> xAttrs : XAttrsToDestMapping.entrySet()) {
+          for (Map.Entry<String, byte[]> val : xAttrs.getValue().entrySet()) {
+            dstFS.setXAttr(xAttrs.getKey(), val.getKey(), val.getValue());
+          }
+        }
       }
     }
     return copied;
   }
 
-  public static void copyXAttrs(FileSystem srcFS, FileStatus srcStatus, FileSystem dstFS, Path dst) throws IOException {
+  public static void fetchXAttrs(Map<Path, Map<String, byte[]>> xAttrs, FileSystem srcFS, FileStatus srcStatus, Path dst) throws IOException {
     Path src = srcStatus.getPath();
+    Path dstFile = new Path(dst, src.getName());
+    xAttrs.put(dstFile, srcFS.getXAttrs(src));
     if (srcStatus.isDirectory()) {
-      for(FileStatus content: srcFS.listStatus(src)) {
-        copyXAttrs(srcFS, content, dstFS, new Path(dst, content.getPath().getName()));
-      }
-    } else {
-      for(Map.Entry<String, byte[]> value : srcFS.getXAttrs(src).entrySet()) {
-        dstFS.setXAttr(new Path(dst, src.getName()), value.getKey(), value.getValue());
+      RemoteIterator<FileStatus> content = srcFS.listStatusIterator(src);
+      while(content.hasNext()) {
+        FileStatus file = content.next();
+        fetchXAttrs(xAttrs, srcFS, file, dstFile);
       }
     }
+  }
+
+  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS) throws IOException {
+    if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)){
+      return false;
+    }
+    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
+      String distCpOption = entry.getKey();
+      if (distCpOption.startsWith("p")) {
+        return distCpOption.contains("x");
+      }
+    }
+    return true;
   }
 
   public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,

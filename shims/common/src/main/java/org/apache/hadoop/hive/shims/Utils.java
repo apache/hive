@@ -53,6 +53,8 @@ public class Utils {
   private static final boolean IBM_JAVA = System.getProperty("java.vendor")
       .contains("IBM");
 
+  public static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
+
   public static UserGroupInformation getUGI() throws LoginException, IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
     if(doAs != null && doAs.length() > 0) {
