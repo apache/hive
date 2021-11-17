@@ -65,7 +65,7 @@ public class OptimisedBootstrapUtils {
    */
   public static boolean isFailover(String dbName, Hive hive) throws HiveException {
     Database database = hive.getDatabase(dbName);
-    return MetaStoreUtils.isTargetOfReplication(database);
+    return database != null ? MetaStoreUtils.isTargetOfReplication(database) : false;
   }
 
   public static boolean checkFileExists(Path dumpPath, HiveConf conf, String fileName) throws IOException {

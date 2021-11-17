@@ -1084,7 +1084,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResult(tuplePrimary.lastReplicationId)
             .run("show tblproperties t1('custom.property')")
             .verifyResults(new String[] { "custom.property\tcustom.value" })
-            .dumpFailure(replicatedDbName)
             .run("alter database " + replicatedDbName
                     + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
             .dumpFailure(replicatedDbName);   //can not dump the db before first successful incremental load is done.
@@ -1192,7 +1191,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             replica.getDatabase(replicatedDbName).getParameters());
     assertTrue(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
 
-    replica.dumpFailure(replicatedDbName);    //Cannot dump database which is target of replication.
   }
 
   @Test

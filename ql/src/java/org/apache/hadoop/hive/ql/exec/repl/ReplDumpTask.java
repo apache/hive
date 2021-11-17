@@ -243,7 +243,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
           }
           // The datacopy doesn't need to be initialised in case of optimised bootstrap first dump.
-          if (lastReplId > 0) {
+          if (lastReplId >= 0) {
             work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
             initiateDataCopyTasks();
           }
