@@ -12655,7 +12655,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      createVwDesc.setTablesUsed(getTablesUsed(pCtx));
+      createVwDesc.setTablesUsed(pCtx.getTablesUsed());
     }
 
     // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
@@ -12846,17 +12846,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Set schema and expanded text for the view
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
-  }
-
-  private Set<TableName> getTablesUsed(ParseContext parseCtx) {
-    Set<TableName> tablesUsed = new HashSet<>();
-    for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
-      Table table = topOp.getConf().getTableMetadata();
-      if (!table.isMaterializedTable() && !table.isView()) {
-        tablesUsed.add(table.getFullTableName());
-      }
-    }
-    return tablesUsed;
   }
 
   private List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
