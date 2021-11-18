@@ -126,7 +126,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_F
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
-import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getAndCreateEventAckFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
@@ -224,7 +224,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (isFailover) {
             LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
             String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
-            boolean isTableDiffFilePresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_FILE);
+            boolean isTableDiffFilePresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
             if (createEventMarker) {
               LOG.info("Creating event_ack file for failover.");
               lastReplId = getAndCreateEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, conf, work);
@@ -552,7 +552,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         throw new RuntimeException("Database event id changed post table diff generation.");
       } else {
         // Check table_diff_complete and Load_ACK
-        return checkFileExists(previousDumpPath.getParent(), conf, TABLE_DIFF_COMPLETE_FILE) && checkFileExists(previousDumpPath,
+        return checkFileExists(previousDumpPath.getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY) && checkFileExists(previousDumpPath,
             conf, LOAD_ACKNOWLEDGEMENT.toString());
       }
     } else {
