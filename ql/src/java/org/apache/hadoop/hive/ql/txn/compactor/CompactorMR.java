@@ -645,7 +645,13 @@ public class CompactorMR {
             Matcher matcher = isRawFormat ?
               AcidUtils.LEGACY_BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName())
               : AcidUtils.BUCKET_PATTERN.matcher(f.getPath().getName());
-            addFileToMap(matcher, f.getPath(), sawBase, splitToBucketMap);
+            if(f.getLen() > 0) {
+              addFileToMap(matcher, f.getPath(), sawBase, splitToBucketMap);
+            }
+            else {
+              LOG.warn("Deleting empty file before compaction at path {}", f.getPath());
+              fs.delete(f.getPath(), true);
+            }
           }
         } else {
           // Legacy file, see if it's a bucket file

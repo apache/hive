@@ -2282,6 +2282,7 @@ public class TestCompactor {
    * |--delta_0000002_0000002_0000
    *    |--000000_0
    *    |--000001_0
+   *    |--000003_0 (artificially created empty bucket)
    *
    * ..where comp3 table is not bucketed.
    *
@@ -2314,6 +2315,10 @@ public class TestCompactor {
 
     executeStatementOnDriver("load data inpath '" + path002.toString() + "' into table comp3", driver);
     executeStatementOnDriver("load data inpath '" + path002.getParent().toString() + "' into table comp3", driver);
+    Table table3 = hmsClient.getTable("default", "comp3");
+    Path delta2bucket0  = fs.globStatus(new Path(table3.getSd().getLocation(), "delta_0000002_0000002_0000/000000_0"))[0].getPath();
+    Path emptyBucket = new Path(delta2bucket0.toString().replace("000000_0", "000003_0"));
+    fs.create(emptyBucket, true);
 
     // Run compaction.
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
