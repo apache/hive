@@ -132,7 +132,7 @@ public abstract class DatabaseRule extends ExternalResource {
     ProcessResults pr;
     do {
       Thread.sleep(1000);
-      pr = runCmd(buildLogCmd(), 30);
+      pr = runCmd(buildLogCmd(), 5);
       if (pr.rc != 0) {
         throw new RuntimeException("Failed to get docker logs");
       }
@@ -185,7 +185,6 @@ public abstract class DatabaseRule extends ExternalResource {
     reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
     final StringBuilder errLines = new StringBuilder();
     reader.lines().forEach(s -> errLines.append(s).append('\n'));
-    LOG.info("Result size: " + lines.length() + ";" + errLines.length());
     return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
   }
 
