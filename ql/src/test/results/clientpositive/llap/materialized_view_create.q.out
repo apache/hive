@@ -70,6 +70,10 @@ Original Query:     	select a, b, c from cmv_basetable_n4
 Expanded Query:     	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n4	0/0/0               	 
 PREHOOK: query: select * from cmv_mat_view_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view_n4
@@ -134,6 +138,10 @@ Original Query:     	select a, c from cmv_basetable_n4
 Expanded Query:     	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n4	0/0/0               	 
 PREHOOK: query: select * from cmv_mat_view2_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n1
