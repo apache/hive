@@ -69,6 +69,11 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.stringifyValues;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.makeValuesClause;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
+
 /**
  * This class resides in itests to facilitate running query using Tez engine, since the jars are
  * fully loaded here, which is not the case if it stays in ql.
@@ -285,7 +290,7 @@ public class TestAcidOnTez {
     }
     //run Minor compaction
     runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " compact 'minor'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact minor:");
     for (String s : rs) {
@@ -315,7 +320,7 @@ public class TestAcidOnTez {
     }
     //run Major compaction
     runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact major:");
     for (String s : rs) {
@@ -423,7 +428,7 @@ public class TestAcidOnTez {
 
     //run Major compaction
     runStatementOnDriver("alter table " + Table.NONACIDPART + " partition (p=1) compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, p, INPUT__FILE__NAME from " + Table.NONACIDPART + " order by ROW__ID", confForTez);
     LOG.warn("after major compaction:");
     for (String s : rs) {
@@ -523,7 +528,7 @@ public class TestAcidOnTez {
     }
     //run Minor compaction
     runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'minor'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact minor:");
     for (String s : rs) {
@@ -553,7 +558,7 @@ public class TestAcidOnTez {
     }
     //run Major compaction
     runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact major:");
     for (String s : rs) {
@@ -614,11 +619,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     //make the table ACID
     runStatementOnDriver("alter table T SET TBLPROPERTIES ('transactional'='true')", confForTez);
     rs = runStatementOnDriver("select a,b from T order by a, b", confForTez);
-    Assert.assertEquals("After to Acid conversion", TestTxnCommands2.stringifyValues(values), rs);
+    Assert.assertEquals("After to Acid conversion", stringifyValues(values), rs);
 
     //run Major compaction
     runStatementOnDriver("alter table T compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID", confForTez);
     LOG.warn(testName.getMethodName() + ": after compact major of T:");
     for (String s : rs) {
@@ -703,7 +708,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("delete from " + Table.ACIDTBL, confForTez);
     //make sure both buckets are not empty
-    runStatementOnDriver("insert into " + Table.ACIDTBL + TestTxnCommands2.makeValuesClause(values), confForTez);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values), confForTez);
     runStatementOnDriver("drop table if exists T", confForTez);
     /*
     With bucketed target table Union All is not removed
@@ -953,12 +958,12 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
 
     // Perform compaction. Join result after compaction should still be the same
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
-    TestTxnCommands2.runCleaner(hiveConf);
+    runCleaner(hiveConf);
 
     runQueries(engine, joinType, confForTez, confForMR);
   }
@@ -991,7 +996,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
         }
         rs = runStatementOnDriver(query, confForMR);
       }
-      Assert.assertEquals("Join result incorrect", TestTxnCommands2.stringifyValues(expected), rs);
+      Assert.assertEquals("Join result incorrect", stringifyValues(expected), rs);
     }
   }
 
