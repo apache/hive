@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The class is in charge of connecting and populating dockerized databases for qtest.
@@ -94,12 +95,15 @@ public abstract class AbstractExternalDB {
         }
         BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         final StringBuilder lines = new StringBuilder();
-        reader.lines().forEach(s -> lines.append(s).append('\n'));
+        final AtomicInteger i=new AtomicInteger();
+        final AtomicInteger j=new AtomicInteger();
+        reader.lines().forEach(s -> { i.incrementAndGet();lines.append(s).append('\n');});
 
         reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         final StringBuilder errLines = new StringBuilder();
-        reader.lines().forEach(s -> errLines.append(s).append('\n'));
+        reader.lines().forEach(s -> { errLines.append(s).append('\n');j.incrementAndGet();});
         LOG.info("Result size: " + lines.length() + ";" + errLines.length());
+        LOG.info("Result lines: " + i.get() + ";" + j.get());
         return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
     }
 
