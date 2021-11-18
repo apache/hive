@@ -82,7 +82,7 @@ public class HiveRelColumnsAlignment implements ReflectiveVisitor {
 
   /**
    * Execute the logic in this class. In particular, make a top-down traversal of the tree
-   * and annotate and recreate appropiate operators.
+   * and annotate and recreate appropriate operators.
    */
   public RelNode align(RelNode root) {
     final RelNode newRoot = dispatchAlign(root, ImmutableList.<RelFieldCollation>of());

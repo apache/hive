@@ -352,7 +352,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     }
     internalColName.append(colExpr.getColumn());
 
-    // fetch table ablias
+    // fetch table alias
     ExprNodeDescUtils.ColumnOrigin columnOrigin =
             ExprNodeDescUtils.findColumnOrigin(exprNodeDesc, ctx.generator);
 

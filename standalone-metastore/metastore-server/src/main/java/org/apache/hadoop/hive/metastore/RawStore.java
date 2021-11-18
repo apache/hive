@@ -1560,7 +1560,7 @@ public interface RawStore extends Configurable {
   /**
    * @param fileIds List of file IDs from the filesystem.
    * @param metadata Metadata buffers corresponding to fileIds in the list.
-   * @param type The type; determines the class that can do additiona processing for metadata.
+   * @param type The type; determines the class that can do additional processing for metadata.
    */
   void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata,
       FileMetadataExprType type) throws MetaException;

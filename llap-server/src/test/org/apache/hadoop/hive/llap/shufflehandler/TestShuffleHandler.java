@@ -58,7 +58,7 @@ public class TestShuffleHandler {
       this.lastAddress = lastAddress;
     }
 
-    SocketAddress getSocketAddres() {
+    SocketAddress getSocketAddress() {
       return lastAddress;
     }
   }
@@ -192,7 +192,7 @@ public class TestShuffleHandler {
     byte[] buffer = new byte[1024];
     while (input.read(buffer) != -1) {
     }
-    SocketAddress firstAddress = lastSocketAddress.getSocketAddres();
+    SocketAddress firstAddress = lastSocketAddress.getSocketAddress();
     input.close();
 
     // For keepAlive via URL
@@ -211,7 +211,7 @@ public class TestShuffleHandler {
     header = new ShuffleHeader();
     header.readFields(input);
     input.close();
-    SocketAddress secondAddress = lastSocketAddress.getSocketAddres();
+    SocketAddress secondAddress = lastSocketAddress.getSocketAddress();
     Assert.assertNotNull("Initial shuffle address should not be null", firstAddress);
     Assert.assertNotNull("Keep-Alive shuffle address should not be null", secondAddress);
     Assert.assertEquals(

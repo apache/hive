@@ -430,7 +430,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   /**
    * Serialize the shuffle port into a ByteBuffer for use later on.
-   * @param port the port to be sent to the ApplciationMaster
+   * @param port the port to be sent to the ApplicationMaster
    * @return the serialized form of the port.
    */
   public static ByteBuffer serializeMetaData(int port) throws IOException {

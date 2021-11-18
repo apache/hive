@@ -3451,7 +3451,7 @@ public interface IMetaStoreClient {
 
   /**
    * Unlock a set of locks.  This can only be called when the locks are not
-   * assocaited with a transaction.
+   * associated with a transaction.
    * @param lockid lock id returned by
    * {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)}
    * @throws NoSuchLockException if the requested lockid does not exist.

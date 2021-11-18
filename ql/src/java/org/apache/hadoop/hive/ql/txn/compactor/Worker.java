@@ -166,7 +166,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     private StatsUpdater(CompactionInfo ci, List<String> columnListForStats,
         HiveConf conf, String userName, String compactionQueueName) {
       this.conf = new HiveConf(conf);
-      //so that Driver doesn't think it's arleady in a transaction
+      //so that Driver doesn't think it's already in a transaction
       this.conf.unset(ValidTxnList.VALID_TXNS_KEY);
       this.userName = userName;
       this.ci = ci;

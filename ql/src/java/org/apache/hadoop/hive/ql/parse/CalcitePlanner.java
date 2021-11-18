@@ -672,7 +672,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           this.ctx.setCboInfo(cboMsg);
 
-          // Determine if we should re-throw the exception OR if we try to mark plan as reAnayzeAST to retry
+          // Determine if we should re-throw the exception OR if we try to mark plan as reAnalyzeAST to retry
           // planning as non-CBO.
           if (fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
@@ -3643,7 +3643,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       if (gbChildProjLst.isEmpty()) {
-        // This will happen for count(*), in such cases we arbitarily pick
+        // This will happen for count(*), in such cases we arbitrarily pick
         // first element from srcRel
         gbChildProjLst.add(this.cluster.getRexBuilder().makeInputRef(srcRel, 0));
       }
@@ -4738,7 +4738,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               (srcRel.getInputs().size() == 1 && srcRel.getInput(0) instanceof HiveAggregate))) {
             // Likely a malformed query eg, select hash(distinct c1) from t1;
             throw new CalciteSemanticException("Distinct without an aggregation.",
-                    UnsupportedFeature.Distinct_without_an_aggreggation);
+                    UnsupportedFeature.Distinct_without_an_aggregation);
           } else {
             // Case when this is an expression
             TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR, cluster.getRexBuilder());
