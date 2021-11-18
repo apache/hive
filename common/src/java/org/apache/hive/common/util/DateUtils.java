@@ -73,7 +73,7 @@ public class DateUtils {
    * @param field the calendar field
    * @return the calendar field name
    * @exception IndexOutOfBoundsException if <code>field</code> is negative,
-   * equal to or greater then <code>FIELD_COUNT</code>.
+   * equal to or greater than <code>FIELD_COUNT</code>.
    */
   public static String getFieldName(int field) {
       return FIELD_NAME[field];
