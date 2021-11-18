@@ -118,7 +118,7 @@
     <datanucleus-core.version>5.2.4</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
-    <commons-cli.version>1.2</commons-cli.version>
+    <commons-cli.version>1.4</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-collections4.version>4.1</commons-collections4.version>
