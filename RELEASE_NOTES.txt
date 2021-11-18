@@ -831,7 +831,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-16125] - Split work between reducers.
     * [HIVE-16130] - Remove jackson classes from hive-jdbc standalone jar
     * [HIVE-16147] - Rename a partitioned table should not drop its partition columns stats
-    * [HIVE-16174] - Update MetricsConstant.WAITING_COMPILE_OPS metric when we aquire lock failed in Driver
+    * [HIVE-16174] - Update MetricsConstant.WAITING_COMPILE_OPS metric when we acquire lock failed in Driver
     * [HIVE-16177] - non Acid to acid conversion doesn't handle _copy_N files
     * [HIVE-16188] - beeline should block the connection if given invalid database name.
     * [HIVE-16193] - Hive show compactions not reflecting the status of the application
