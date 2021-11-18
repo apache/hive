@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The class is in charge of connecting and populating dockerized databases for qtest.
- * 
+ *
  * The database should have at least one root user (admin/superuser) able to modify every aspect of the system. The user
  * either exists by default when the database starts or must created right after startup.
  */
@@ -99,6 +99,7 @@ public abstract class AbstractExternalDB {
         reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         final StringBuilder errLines = new StringBuilder();
         reader.lines().forEach(s -> errLines.append(s).append('\n'));
+        LOG.info("Result size: " + lines.length() + ";" + errLines.length());
         return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
     }
 
@@ -149,7 +150,7 @@ public abstract class AbstractExternalDB {
 
     /**
      * Return the name of the root user.
-     * 
+     *
      * Override the method if the name of the root user must be different than the default.
      */
     protected String getRootUser() {
@@ -158,13 +159,13 @@ public abstract class AbstractExternalDB {
 
     /**
      * Return the password of the root user.
-     * 
+     *
      * Override the method if the password must be different than the default.
      */
     protected String getRootPassword() {
         return  "qtestpassword";
     }
-    
+
     protected abstract String getJdbcUrl();
 
     protected abstract String getJdbcDriver();
