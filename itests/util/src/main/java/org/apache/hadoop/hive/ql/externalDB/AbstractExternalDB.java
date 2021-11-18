@@ -121,7 +121,7 @@ public abstract class AbstractExternalDB {
         ProcessResults pr;
         do {
             Thread.sleep(1000);
-            pr = runCmd(buildLogCmd(), 5);
+            pr = runCmd(buildLogCmd(), 30);
             if (pr.rc != 0) {
                 throw new RuntimeException("Failed to get docker logs");
             }
