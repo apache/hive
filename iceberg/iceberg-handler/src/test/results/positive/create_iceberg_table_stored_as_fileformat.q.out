@@ -41,7 +41,7 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	write.format.default	ORC                 
 	 	 
@@ -104,7 +104,7 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	write.format.default	PARQUET             
 	 	 
@@ -167,7 +167,7 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	write.format.default	AVRO                
 	 	 
@@ -230,7 +230,7 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	write.format.default	AVRO                
 	 	 
@@ -290,7 +290,7 @@ Table Parameters:
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	write.format.default	ORC                 
 	 	 
