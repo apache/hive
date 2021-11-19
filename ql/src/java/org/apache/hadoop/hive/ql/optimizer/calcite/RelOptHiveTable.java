@@ -230,6 +230,17 @@ public class RelOptHiveTable implements RelOptTable {
         this.noColsMissingStats);
   }
 
+  public RelOptHiveTable setRowCount(double rowCount) {
+    RelOptHiveTable newRelOptHiveTable = new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, rowType,
+            this.hiveTblMetadata, hiveNonPartitionCols, hivePartitionCols, hiveVirtualCols,
+            this.hiveConf, this.db, this.tablesCache, this.partitionCache, this.colStatsCache,
+            this.noColsMissingStats);
+
+    newRelOptHiveTable.rowCount = rowCount;
+
+    return newRelOptHiveTable;
+  }
+
   // Given a key this method returns true if all of the columns in the key are not nullable
   public boolean isNonNullableKey(ImmutableBitSet columns) {
     for (ImmutableBitSet key : nonNullablekeys) {
