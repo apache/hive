@@ -165,9 +165,9 @@ order by s.operation, record_count
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-append	true	3	1	0	ORC	3	1
-append	true	3	1	0	ORC	3	1
-append	true	5	1	0	ORC	5	1
+append	true	3	1	0	ORC	3	#Masked#
+append	true	3	1	0	ORC	3	#Masked#
+append	true	5	1	0	ORC	5	#Masked#
 PREHOOK: query: select
     s.operation,
     h.is_current_ancestor,
@@ -242,9 +242,9 @@ order by s.operation, record_count
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-append	true	3	1	0	ORC	3	1
-append	true	3	1	0	ORC	3	1
-append	true	5	1	0	ORC	5	1
+append	true	3	1	0	ORC	3	#Masked#
+append	true	3	1	0	ORC	3	#Masked#
+append	true	5	1	0	ORC	5	#Masked#
 PREHOOK: query: drop table ice_meta_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_2
