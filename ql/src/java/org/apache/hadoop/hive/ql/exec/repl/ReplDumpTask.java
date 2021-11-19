@@ -233,7 +233,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             boolean isTableDiffDirectoryPresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
             if (createEventMarker) {
               LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
-              lastReplId = createAndGetEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, conf, work);
+              lastReplId = createAndGetEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, conf, work, getHive());
               finishRemainingTasks();
             } else {
               // We should be here only if TableDiff is Present.
@@ -548,7 +548,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         return true;
       }
       // Event_ACK file is present check if it contains correct value or not.
-      String fileEventId = getEventIdFromFile(previousDumpPath.getParent(), conf);
+      String fileEventId = getEventIdFromFile(previousDumpPath.getParent(), conf)[0];
       String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive()).trim();
       if (!dbEventId.equalsIgnoreCase(fileEventId)) {
         // In case the database event id changed post table_diff_complete generation, that means both forward &

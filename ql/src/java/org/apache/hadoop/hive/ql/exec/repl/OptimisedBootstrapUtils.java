@@ -25,8 +25,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.AlterDatabaseEventFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -34,6 +39,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -47,8 +53,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID;
 import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getLastReplicatedStateFromParameters;
 
 /**
@@ -58,7 +66,7 @@ public class OptimisedBootstrapUtils {
 
   /** Separator used to separate entries in the listing. */
   public static final String FILE_ENTRY_SEPARATOR = "#";
-  private static Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
 
   /** table diff directory when in progress */
   public static final String TABLE_DIFF_INPROGRESS_DIRECTORY = "table_diff";
@@ -87,20 +95,20 @@ public class OptimisedBootstrapUtils {
   }
 
   /**
-   * Gets the event id from the event ack file
+   * Gets the source & target event id  from the event ack file
    * @param dumpPath the dump path
    * @param conf the hive configuration
    * @return the event id from file.
    * @throws IOException
    */
-  public static String getEventIdFromFile(Path dumpPath, HiveConf conf) throws IOException {
+  public static String[] getEventIdFromFile(Path dumpPath, HiveConf conf) throws IOException {
     String lastEventId;
     Path eventAckFilePath = new Path(dumpPath, EVENT_ACK_FILE);
     FileSystem fs = eventAckFilePath.getFileSystem(conf);
     try (FSDataInputStream stream = fs.open(eventAckFilePath);) {
       lastEventId = IOUtils.toString(stream, Charset.defaultCharset());
     }
-    return lastEventId.replaceAll(System.lineSeparator(),"").trim();
+    return lastEventId.replaceAll(System.lineSeparator(), "").trim().split(FILE_ENTRY_SEPARATOR);
   }
 
   /**
@@ -178,16 +186,17 @@ public class OptimisedBootstrapUtils {
    * @param dbEventId the database event id to which we have to write in the file.
    * @param conf the hive configuraiton
    * @param work the repldump work
+   * @param hive the hive object.
    * @return the lastReplId denoting a fake dump(-1) always
    * @throws SemanticException
    */
   public static Long createAndGetEventAckFile(Path currentDumpPath, DumpMetaData dmd, Path cmRoot, String dbEventId,
-      HiveConf conf, ReplDumpWork work)
-      throws SemanticException {
+      HiveConf conf, ReplDumpWork work, Hive hive) throws Exception {
     // Keep an invalid value for lastReplId, to denote it isn't a actual dump.
     Long lastReplId = -1L;
     Path filePath = new Path(currentDumpPath, EVENT_ACK_FILE);
-    Utils.writeOutput(dbEventId, filePath, conf);
+    long targetEventId = getCorrespondingEventId(dbEventId, work.dbNameOrPattern, hive);
+    Utils.writeOutput(dbEventId + FILE_ENTRY_SEPARATOR + targetEventId, filePath, conf);
     LOG.info("Created event_ack file at {} with eventId {}", filePath, dbEventId);
     work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, -1L, false);
@@ -243,6 +252,78 @@ public class OptimisedBootstrapUtils {
     // The operation is complete, we can rename to TABLE_DIFF_COMPLETE
     fs.rename(diffFilePath, new Path(dumpPath, TABLE_DIFF_COMPLETE_DIRECTORY));
     LOG.info("Completed renaming table diff progress file to table diff complete file.");
+  }
+
+  /**
+   * Fetches the notification id from the target database
+   * @param eventId the source database event id
+   * @param dbName name of database
+   * @param hiveDb the hive object
+   * @return the corresponding notification event id from target database
+   * @throws Exception
+   */
+  public static long getCorrespondingEventId(String eventId, String dbName, Hive hiveDb) throws Exception {
+    // This can happen only in case someone explicitily does that, Replication doesn't either set the property or
+    // have a valid value in it. Added as a sanity check.
+    if (eventId == null || eventId.isEmpty()) {
+      LOG.warn("Event ID is null or empty for database {}", dbName);
+      return -1L;
+    }
+    // Fetch all the alter database events, and find the event where the last repl id was set to the eventId specified.
+    EventUtils.MSClientNotificationFetcher evFetcher = new EventUtils.MSClientNotificationFetcher(hiveDb);
+    IMetaStoreClient.NotificationFilter evFilter = new AlterDatabaseEventFilter(dbName);
+    EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(evFetcher, 0, 0, evFilter);
+    MessageDeserializer deserializer = null;
+    boolean checkFirstIncrPendingFlag = false;
+
+    while (evIter.hasNext()) {
+      NotificationEvent event = evIter.next();
+      if (deserializer == null) {
+        // Initializing deserializer only once relying the message format for all the events in the notification log
+        // table would be same.
+        deserializer = MessageFactory.getInstance(event.getMessageFormat()).getDeserializer();
+      }
+      LOG.debug("Analysing alter database event: {}", event.getEventId());
+
+      AlterDatabaseMessage alterDb = deserializer.getAlterDatabaseMessage(event.getMessage());
+      Map<String, String> dbAfterParams = alterDb.getDbObjAfter().getParameters();
+      Map<String, String> dbBeforeParams = alterDb.getDbObjBefore().getParameters();
+      String prevParams = dbBeforeParams.get(CURR_STATE_ID.toString());
+      String afterParams = dbAfterParams.get(CURR_STATE_ID.toString());
+      LOG.debug("Previous Database params: {}, After Database params: {} for event id: {}", dbBeforeParams,
+          dbAfterParams, event.getEventId());
+      if (checkFirstIncrPendingFlag) {
+        LOG.debug("Checking for first incremental flag removal event at event id: {}", event.getEventId());
+        if (dbBeforeParams.containsKey(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) && !dbAfterParams
+            .containsKey(ReplUtils.REPL_FIRST_INC_PENDING_FLAG)) {
+          return event.getEventId();
+        }
+        continue;
+      }
+
+      // Compare the after params with the before params, the after params should have the required eventId and the
+      // previous params shouldn't have that, this will denote that this is the event which has set the required event
+      // id.
+      if ((afterParams != null && afterParams.equalsIgnoreCase(eventId) && (prevParams == null || !prevParams
+          .equalsIgnoreCase(eventId)))) {
+        // We have got the required event id, check if the first incremental flag is present or not, if yes, we need
+        // to find the event which removed that flag. In that case the removal of first incremental pending would be
+        // the last event. The event should be present always because we don't allow reverse replication if first
+        // incremental replication is pending.
+        if (dbAfterParams.containsKey(ReplUtils.REPL_FIRST_INC_PENDING_FLAG)) {
+          LOG.info("The database {} has first incremental pending flag set at event id {}", dbName, event.getEventId());
+          checkFirstIncrPendingFlag = true;
+        } else {
+          LOG.info("Found the corresponding event id for database: {} for source event id: {} as : {}", dbName, eventId,
+              event.getEventId());
+          return event.getEventId();
+        }
+      }
+    }
+    // We have iterated over all the available events, we couldn't find the required event. Means the required event
+    // has expired. Throw a non-recoverable error.
+    LOG.error("Couldn't find corresponding notification id for database: {}, for source event id: {}", dbName, eventId);
+    throw new IllegalStateException("Notification events are missing in the meta store.");
   }
 
   private static ArrayList<String> getListing(String dbName, String tableName, Hive hiveDb, HiveConf conf)
