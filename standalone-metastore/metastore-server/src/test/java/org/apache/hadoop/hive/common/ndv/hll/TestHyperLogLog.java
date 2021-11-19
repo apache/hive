@@ -338,10 +338,19 @@ public class TestHyperLogLog {
   }
 
   @Test
-  public void testAbletoRetainAccuracyUpToSwitchThreshold() {
-    int maxThreshold = HyperLogLog.builder().setSizeOptimized().build().getEncodingSwitchThreshold();
+  public void testAbletoRetainAccuracyUpToSwitchThreshold70() {
     testRetainAccuracy(70);
+  }
+
+  @Test
+  public void testAbletoRetainAccuracyUpToSwitchThresholdMaxPer2() {
+    int maxThreshold = HyperLogLog.builder().setSizeOptimized().build().getEncodingSwitchThreshold();
     testRetainAccuracy(maxThreshold / 2);
+  }
+
+  @Test
+  public void testAbletoRetainAccuracyUpToSwitchThresholdMax() {
+    int maxThreshold = HyperLogLog.builder().setSizeOptimized().build().getEncodingSwitchThreshold();
     testRetainAccuracy(maxThreshold);
   }
 
