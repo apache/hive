@@ -209,7 +209,7 @@
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
-    <velocity.version>1.5</velocity.version>
+    <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.1</xerces.version>
     <xmlsec.version>2.2.1</xmlsec.version>
     <zookeeper.version>3.5.5</zookeeper.version>
@@ -596,7 +596,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.velocity</groupId>
-        <artifactId>velocity</artifactId>
+        <artifactId>velocity-engine-core</artifactId>
         <version>${velocity.version}</version>
       </dependency>
       <dependency>
