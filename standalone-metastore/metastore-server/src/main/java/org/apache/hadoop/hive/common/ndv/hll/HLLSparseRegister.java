@@ -151,10 +151,6 @@ public class HLLSparseRegister implements HLLRegister {
   }
 
   public Map<Integer, Byte> getSparseMap() {
-    return getMergedSparseMap();
-  }
-
-  private Map<Integer, Byte> getMergedSparseMap() {
     return sparseMap;
   }
 
