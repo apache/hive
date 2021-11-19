@@ -56,7 +56,6 @@ public class HLLSparseRegister implements HLLRegister {
 
     int encodedHash = encodeHash(hashcode);
 
-    //      int encodedHash = tempList[i];
     int key = encodedHash & pPrimeMask;
     byte value = (byte) (encodedHash >>> pPrime);
     byte nr = 0;
