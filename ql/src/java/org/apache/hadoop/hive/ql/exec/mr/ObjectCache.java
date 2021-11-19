@@ -44,7 +44,6 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   @Override
   public void release(String key) {
-    // nothing to do
     LOG.debug("{} no longer needed", key);
     cache.remove(key);
   }
