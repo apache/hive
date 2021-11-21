@@ -271,6 +271,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
+    rewrittenCtx.setMultiStatStage(true);
+    ctx.setMultiStatStage(true);
     ASTNode rewrittenTree = rr.rewrittenTree;
     rewrittenCtx.setOperation(Context.Operation.MERGE);
 

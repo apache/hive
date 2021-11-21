@@ -154,6 +154,9 @@ public class Context {
   // Identify whether the query involves an UPDATE, DELETE or MERGE
   private boolean isUpdateDeleteMerge;
 
+  //Identify that the query has multiple stat stages(in case for merge queries)
+  private boolean isMultiStatStage = false;
+
   // Whether the analyzer has been instantiated to read and load materialized view plans
   private boolean isLoadingMaterializedView;
 
@@ -213,6 +216,14 @@ public class Context {
 
   public String getReplPolicy() {
     return this.replPolicy;
+  }
+
+  public boolean isMultiStatStage() {
+    return this.isMultiStatStage;
+  }
+
+  public void setMultiStatStage(boolean multiStatStage) {
+    this.isMultiStatStage = multiStatStage;
   }
 
   /**

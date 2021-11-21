@@ -1481,7 +1481,7 @@ public final class GenMapRedUtils {
    *          HiveConf
    */
   public static void addStatsTask(FileSinkOperator nd, MoveTask mvTask,
-      Task<?> currTask, HiveConf hconf) {
+      Task<?> currTask, HiveConf hconf, boolean isMultiStatStage) {
 
     MoveWork mvWork = mvTask.getWork();
     BasicStatsWork statsWork = null;
@@ -1489,6 +1489,7 @@ public final class GenMapRedUtils {
     boolean truncate = false;
     if (mvWork.getLoadTableWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+      statsWork.setMultiStatStage(isMultiStatStage);
       truncate = mvWork.getLoadTableWork().getReplace();
       String tableName = mvWork.getLoadTableWork().getTable().getTableName();
       try {
@@ -1917,7 +1918,7 @@ public final class GenMapRedUtils {
    * Returns true iff the fsOp requires a merge
    */
   public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf,
-      FileSinkOperator fsOp, Task<?> currTask, boolean isInsertTable) {
+      FileSinkOperator fsOp, Task<?> currTask, boolean isInsertTable, boolean isMultiStatStage) {
     // Has the user enabled merging of files for map-only jobs or for all jobs
     if (mvTasks == null  || mvTasks.isEmpty()) {
       return false;
@@ -1935,7 +1936,7 @@ public final class GenMapRedUtils {
       fsOp.getConf().setGatherStats(true);
       fsOp.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
       if (mvTask != null && !mvTask.hasFollowingStatsTask()) {
-        GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf);
+        GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf, isMultiStatStage);
       }
     }
 

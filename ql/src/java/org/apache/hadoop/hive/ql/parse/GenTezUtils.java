@@ -470,7 +470,7 @@ public class GenTezUtils {
     HiveConf hconf = parseContext.getConf();
 
     boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
-        hconf, fileSink, context.currentTask, isInsertTable);
+        hconf, fileSink, context.currentTask, isInsertTable, context.parseContext.getContext().isMultiStatStage());
 
     Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
         chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);

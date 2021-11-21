@@ -99,7 +99,8 @@ public class GenMRFileSink1 implements SemanticNodeProcessor {
     // So, no need to attempt to merge the files again.
     if ((ctx.getSeenFileSinkOps() == null)
         || (!ctx.getSeenFileSinkOps().contains(nd))) {
-      chDir = GenMapRedUtils.isMergeRequired(ctx.getMvTask(), hconf, fsOp, currTask, isInsertTable);
+      chDir = GenMapRedUtils.isMergeRequired(ctx.getMvTask(), hconf, fsOp, currTask, isInsertTable,
+          ctx.getParseCtx().getContext().isMultiStatStage());
     }
 
     Path finalName = processFS(fsOp, stack, opProcCtx, chDir);

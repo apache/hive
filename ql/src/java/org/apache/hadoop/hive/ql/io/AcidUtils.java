@@ -2585,7 +2585,7 @@ public class AcidUtils {
   }
 
   public static List<FileStatus> getAcidFilesForStats(
-      Table table, Path dir, Configuration jc, FileSystem fs) throws IOException {
+      Table table, Path dir, Configuration jc, FileSystem fs, boolean isMultiStatStage) throws IOException {
     List<FileStatus> fileList = new ArrayList<>();
     ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
@@ -2601,7 +2601,9 @@ public class AcidUtils {
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
     AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
-    AcidUtils.trimDirectoryforUpdates(idList, acidInfo);
+    if(!isMultiStatStage) {
+      AcidUtils.trimDirectoryforUpdates(idList, acidInfo);
+    }
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
@@ -2621,6 +2623,11 @@ public class AcidUtils {
       LOG.warn(ftemp.toString());
     }
     return fileList;
+  }
+
+  public static List<FileStatus> getAcidFilesForStats(Table table, Path dir, Configuration jc, FileSystem fs)
+      throws IOException {
+    return getAcidFilesForStats(table, dir, jc, fs, false);
   }
 
   public static List<Path> getValidDataPaths(Path dataPath, Configuration conf, String validWriteIdStr)

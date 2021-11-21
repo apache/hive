@@ -168,7 +168,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       if (providedBasicStats == null) {
-        if(work.isTargetRewritten()){
+        if(work.isTargetRewritten() || p.getTable().isPartitioned() || work.isMultiStatStage()){
           MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
         }else {
           MetaStoreServerUtils.populateQuickStatsWithPrevStats(partfileStatus, parameters);
@@ -194,7 +194,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
         } else {
           Path path = new Path(partish.getPartSd().getLocation());
-          partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
+          partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf,
+                                                            null, work.isMultiStatStage());
           isMissingAcidState = true;
         }
       }

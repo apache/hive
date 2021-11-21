@@ -24,13 +24,15 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ConditionalStats.
  *
  */
 public class BasicStatsWork implements Serializable {
+  private Logger LOG = LoggerFactory.getLogger(BasicStatsWork.class.getName());
   private static final long serialVersionUID = 1L;
 
   private boolean isExplicitAnalyze;
@@ -55,6 +57,8 @@ public class BasicStatsWork implements Serializable {
 
   private boolean isNoScanAnalyzeCommand = false;
 
+  private boolean isMultiStatStage = false;
+
   // sourceTask for TS is not changed (currently) but that of FS might be changed
   // by various optimizers (auto.convert.join, for example)
   // so this is set by TaskQueue in runtime
@@ -69,14 +73,23 @@ public class BasicStatsWork implements Serializable {
   }
 
   public BasicStatsWork(TableSpec tableSpecs) {
+    for(StackTraceElement st : Thread.currentThread().getStackTrace()){
+      LOG.warn(st.toString());
+    }
     this.tableSpecs = tableSpecs;
   }
 
   public BasicStatsWork(LoadTableDesc loadTableDesc) {
+    for(StackTraceElement st : Thread.currentThread().getStackTrace()){
+      LOG.warn(st.toString());
+    }
     this.loadTableDesc = loadTableDesc;
   }
 
   public BasicStatsWork(LoadFileDesc loadFileDesc) {
+    for(StackTraceElement st : Thread.currentThread().getStackTrace()){
+      LOG.warn(st.toString());
+    }
     this.loadFileDesc = loadFileDesc;
   }
 
@@ -207,4 +220,11 @@ public class BasicStatsWork implements Serializable {
     this.isExplicitAnalyze = b;
   }
 
+  public boolean isMultiStatStage() {
+    return this.isMultiStatStage;
+  }
+
+  public void setMultiStatStage(boolean multiStatStage) {
+    this.isMultiStatStage = multiStatStage;
+  }
 }

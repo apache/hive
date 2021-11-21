@@ -514,6 +514,7 @@ public class MetaStoreServerUtils {
     }
     for (FileStatus status : fileStatus) {
       if (!status.isDir()) {
+        LOG.warn(status.toString());
         tableSize += status.getLen();
         numFiles += 1;
         if (status.isErasureCoded()) {

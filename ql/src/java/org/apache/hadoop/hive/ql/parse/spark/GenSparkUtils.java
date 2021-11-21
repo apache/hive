@@ -368,7 +368,7 @@ public class GenSparkUtils {
     HiveConf hconf = parseContext.getConf();
 
     boolean  chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
-         hconf, fileSink, context.currentTask, isInsertTable);
+         hconf, fileSink, context.currentTask, isInsertTable, context.parseContext.getContext().isMultiStatStage());
     // Set stats config for FileSinkOperators which are cloned from the fileSink
     List<FileSinkOperator> fileSinkList = context.fileSinkMap.get(fileSink);
     if (fileSinkList != null) {
