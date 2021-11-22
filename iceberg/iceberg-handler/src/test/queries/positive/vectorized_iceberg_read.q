@@ -42,7 +42,7 @@ insert into tbl_ice_orc_parted values
 -- query with projection of partition columns' subset
 select p1, a, min(b) from tbl_ice_orc_parted group by p1, a;
 
--- required for reordering between differnt types
+-- required for reordering between different types
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 
 -- move partition columns
@@ -59,7 +59,7 @@ describe tbl_ice_orc_parted;
 -- should yield to the same result as previously
 select p1, a, min(b) from tbl_ice_orc_parted group by p1, a;
 
-insert into tbl_ice_orc_parted values ('Europe', 3, 'cc', 'Austria');
+insert into tbl_ice_orc_parted values ('Europe', 'cc', 3, 'Austria');
 
 -- projecting all columns
 select p1, p2, a, min(b) from tbl_ice_orc_parted group by p1, p2, a;

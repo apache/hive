@@ -15,7 +15,7 @@
 -- limitations under the License.
 
 set hive.exec.dynamic.partition=true;
-set hive.stats.autogether=false;
+set hive.stats.autogather=false;
 set hive.error.on.empty.partition=true;
 
 create table dyn_err(key string, value string) partitioned by (ds string);

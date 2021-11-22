@@ -2378,10 +2378,10 @@ public class HiveConf extends Configuration {
         "we think the key as a skew join key. "),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000,
         "Determine the number of map task used in the follow up map join job for a skew join.\n" +
-        "It should be used together with hive.skewjoin.mapjoin.min.split to perform a fine grained control."),
+        "It should be used together with hive.skewjoin.mapjoin.min.split to perform a fine-grained control."),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L,
         "Determine the number of map task at most used in the follow up map join job for a skew join by specifying \n" +
-        "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine grained control."),
+        "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine-grained control."),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000,
         "Send a heartbeat after this interval - used by mapjoin and filter operators"),
@@ -2788,7 +2788,7 @@ public class HiveConf extends Configuration {
     HIVE_STATS_DEFAULT_PUBLISHER("hive.stats.default.publisher", "",
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
     /**
-     * @deprecated Use MetastoreConf.STATS_DEFAULT_AGGRETATOR
+     * @deprecated Use MetastoreConf.STATS_DEFAULT_AGGREGATOR
      */
     @Deprecated
     HIVE_STATS_DEFAULT_AGGREGATOR("hive.stats.default.aggregator", "",
@@ -2945,7 +2945,7 @@ public class HiveConf extends Configuration {
         "queries that read non-orc MM tables with original files will fail. The default in\n" +
         "Hive 3.0 is false."),
     HIVE_LOCK_FILE_MOVE_MODE("hive.lock.file.move.protect", "all", new StringSet("none", "dp", "all"),
-        "During file move operations acqueires a SEMI_SHARED lock at the table level."
+        "During file move operations acquires a SEMI_SHARED lock at the table level."
             + "none:never; dp: only in case of dynamic partitioning operations; all: all table operations"),
 
     // Zookeeper related configs
@@ -3467,6 +3467,9 @@ public class HiveConf extends Configuration {
         "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
+    HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS("hive.security.authorization.enabled.on.spark.views",true,
+            "The configuration is gives the flexibility to admin to user whether to turn on/off the authorization model" +
+                    "introduced in HIVE-24026"),
     HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME("hive.security.authorization.kerberos.use.shortname", true,
         "use short name in Kerberos cluster"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -3734,6 +3737,11 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER("hive.server2.proxy.trustheader", "", "This config " +
+            "indicates whether the connection is authenticated before the requests lands on HiveServer2, So that we can" +
+            "avoid the authentication is again in HS2. Default value is empty, if it's value is set to some header say " +
+            "'X-Trusted-Proxy-Auth-Header' then we need to look for this header in the connection string, if present " +
+            "we directly extarct the client name from header."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",

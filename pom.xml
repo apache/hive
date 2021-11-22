@@ -80,8 +80,6 @@
 
     <!-- Test Properties -->
     <test.extra.path></test.extra.path>
-    <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests
-    </itest.jdbc.jars>
     <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
@@ -120,11 +118,11 @@
     <datanucleus-core.version>5.2.4</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
-    <commons-cli.version>1.2</commons-cli.version>
+    <commons-cli.version>1.4</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-compress.version>1.19</commons-compress.version>
+    <commons-compress.version>1.21</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
@@ -182,6 +180,7 @@
     <libthrift.version>0.14.1</libthrift.version>
     <log4j2.version>2.13.2</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
+    <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.0.27</mysql.version>
     <postgres.version>42.2.14</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
@@ -585,11 +584,6 @@
           </exclusion>
         </exclusions>
      </dependency>
-      <dependency>
-        <groupId>org.apache.derby</groupId>
-        <artifactId>derby</artifactId>
-        <version>${derby.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
@@ -1274,6 +1268,49 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-common</artifactId>
         <version>${tez.version}</version>
+        </dependency>
+      <!-- JDBC drivers -->
+      <dependency>
+        <groupId>com.microsoft.sqlserver</groupId>
+        <artifactId>mssql-jdbc</artifactId>
+        <version>${mssql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc8</artifactId>
+        <version>${oracle.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>${derby.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
+        <version>${mariadb.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgres.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -1564,7 +1601,6 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
-            <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
           </additionalClasspathElements>
           <environmentVariables>
             <TZ>US/Pacific</TZ>

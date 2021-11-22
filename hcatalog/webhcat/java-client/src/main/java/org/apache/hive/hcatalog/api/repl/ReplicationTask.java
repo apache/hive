@@ -64,7 +64,7 @@ public abstract class ReplicationTask {
    * a) If a factory has already been instantiated, and is valid, use it.
    * b) If a factoryClassName has been provided, through .resetFactory(), attempt to instantiate that.
    * c) If a hive.repl.task.factory has been set in the default hive conf, use that.
-   * d) If none of the above methods work, instantiate an anoymous factory that will return an error
+   * d) If none of the above methods work, instantiate an anonymous factory that will return an error
    *    whenever called, till a user calls resetFactory.
    */
   private synchronized static void createFactoryInstance(HCatClient client) {

@@ -1,4 +1,8 @@
 -- SORT_QUERY_RESULTS
+-- Mask the file size values as it can have slight variability, causing test flakiness
+--! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
+--! qt:replace:/("total-files-size":)\d+/$1#Masked#/
+--! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+)\d+/$1#Masked#/
 
 set hive.vectorized.execution.enabled = false;
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;

@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-25719
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb

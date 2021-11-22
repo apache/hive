@@ -433,7 +433,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private WriteEntity acidAnalyzeTable;
 
   // A mapping from a tableName to a table object in metastore.
-  Map<String, Table> tabNameToTabObject;
+  QueryTables tabNameToTabObject;
 
   // The tokens we should ignore when we are trying to do table masking.
   private static final Set<Integer> IGNORED_TOKENS = Sets.newHashSet(HiveParser.TOK_GROUPBY,
@@ -500,7 +500,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     viewAliasToInput = new HashMap<String, ReadEntity>();
     mergeIsDirect = true;
     noscan = false;
-    tabNameToTabObject = new HashMap<>();
+    tabNameToTabObject = new QueryTables();
     defaultJoinMerge = !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
     defaultNullOrder = NullOrdering.defaultNullOrder(conf);
@@ -2693,7 +2693,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
-            ctx, db, tabNameToTabObject);
+            ctx, db);
         viewTree = parseResult.getTree();
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
@@ -12272,7 +12272,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
   private ParseResult rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
-                                                Context ctx, Hive db, Map<String, Table> tabNameToTabObject)
+                                                Context ctx, Hive db)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
@@ -12561,7 +12561,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
       ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
-          ctx, db, tabNameToTabObject);
+          ctx, db);
       ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
@@ -15181,7 +15181,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Check the query results cache to see if the query represented by the lookupInfo can be
    * answered using the results cache. If the cache contains a suitable entry, the semantic analyzer
-   * will be configured to use the found cache entry to anwer the query.
+   * will be configured to use the found cache entry to answer the query.
    */
   private boolean checkResultsCache(QueryResultsCache.LookupInfo lookupInfo, boolean needsReset) {
     if (lookupInfo == null) {

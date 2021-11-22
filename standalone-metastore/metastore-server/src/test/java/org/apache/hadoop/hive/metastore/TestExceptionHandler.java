@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-
 import org.junit.Test;
 
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -120,5 +119,4 @@ public class TestExceptionHandler {
       assertTrue(e.getMessage().equals(ix.getMessage()));
     }
   }
-
 }

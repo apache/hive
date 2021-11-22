@@ -16,31 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli.session;
+package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.Table;
+
 /**
- * HiveSessionHookContext.
- * Interface passed to the HiveServer2 session hook execution. This enables
- * the hook implementation to access session config, user and session handle
- */
-public interface HiveSessionHookContext {
+ * Interface to fetch hash map containing query tables.
+ **/
 
-  /**
-   * Retrieve session conf
-   * @return
-   */
-  public HiveConf getSessionConf();
-
-  /**
-   * The get the username starting the session
-   * @return
-   */
-  public String getSessionUser();
-
-  /**
-   * Retrieve handle for the session
-   * @return
-   */
-  public String getSessionHandle();
+public interface ParsedQueryTables {
+  public Table getParsedTable(String name);
 }

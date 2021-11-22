@@ -1959,7 +1959,7 @@ public final class GenMapRedUtils {
       // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
       // number of reducers are few, so the number of files anyway are small.
       // However, with this optimization, we are increasing the number of files
-      // possibly by a big margin. So, merge aggresively.
+      // possibly by a big margin. So, merge aggressively.
       return (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
           hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES));
     }
