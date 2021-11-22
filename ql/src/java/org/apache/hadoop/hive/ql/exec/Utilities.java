@@ -4998,12 +4998,8 @@ public final class Utilities {
    * @param job jonconf
    * @param ps array of paths
    */
-  public static void setToken(JobConf job, Path[] ps) {
-    try {
+  public static void setToken(JobConf job, Path[] ps) throws IOException {
       TokenCache.obtainTokensForNamenodes(job.getCredentials(),
           ps, job);
-    } catch (IOException ex) {
-      LOG.error("Error in setToken ", ex);
-    }
   }
 }
