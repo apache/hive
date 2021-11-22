@@ -41,3 +41,5 @@ settings.json
 kafka-handler/src/test/gen
 **/.vscode/
 /.recommenders/
+**/coverage-reports/**
+**/jacoco-ut/**

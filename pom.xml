@@ -83,7 +83,15 @@
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.projectKey>asolimando_hive</sonar.projectKey>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
-    
+    <!-- JaCoCo Properties -->
+    <jacoco.version>0.8.6</jacoco.version>
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      ${basedir}/jacoco-ut/*jacoco.xml
+    </sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.language>java</sonar.language>
+
     <!-- Test Properties -->
     <test.extra.path></test.extra.path>
     <!--suppress UnresolvedMavenProperty -->
@@ -1343,6 +1351,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>org.jacoco.core</artifactId>
+      <version>0.8.6</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -1602,7 +1616,7 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>
-          <argLine>${maven.test.jvm.args}</argLine>
+          <argLine>@{surefireArgLine} ${maven.test.jvm.args}</argLine>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
@@ -1727,6 +1741,7 @@
             <exclude>**/test/resources/**/*.ldif</exclude>
             <exclude>hcatalog/core/mapred/**/part-m*</exclude>
             <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
+        <exclude>**/jacoco-ut/**</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
@@ -1734,6 +1749,34 @@
         <groupId>org.jamon</groupId>
         <artifactId>jamon-maven-plugin</artifactId>
         <version>${jamon.plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.6</version>
+        <executions>
+          <execution>
+            <id>pre-unit-test</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${basedir}/coverage-reports/jacoco-ut.exec</destFile>
+              <propertyName>surefireArgLine</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-unit-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${basedir}/coverage-reports/jacoco-ut.exec</dataFile>
+              <outputDirectory>${basedir}/jacoco-ut</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
