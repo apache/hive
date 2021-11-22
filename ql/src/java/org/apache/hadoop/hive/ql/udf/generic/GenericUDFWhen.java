@@ -60,8 +60,7 @@ public class GenericUDFWhen extends GenericUDF {
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     for (int i = 0; i + 1 < arguments.length; i += 2) {
-      if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME) &&
-          !arguments[i].getTypeName().equals(serdeConstants.VOID_TYPE_NAME)) {
+      if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         throw new UDFArgumentTypeException(i, "\""
             + serdeConstants.BOOLEAN_TYPE_NAME + "\" is expected after WHEN, "
             + "but \"" + arguments[i].getTypeName() + "\" is found");
