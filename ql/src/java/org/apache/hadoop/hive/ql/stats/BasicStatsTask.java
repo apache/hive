@@ -132,6 +132,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
     }
 
+    public boolean canTrim(){
+      return !(work.isTargetRewritten() || partish.getTable().isPartitioned()
+          || work.isMultiStatStage() || !partish.isTransactionalTable());
+    }
+
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
@@ -168,7 +173,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       if (providedBasicStats == null) {
-        if(work.isTargetRewritten() || p.getTable().isPartitioned() || work.isMultiStatStage()){
+        if(!canTrim()){
           MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
         }else {
           MetaStoreServerUtils.populateQuickStatsWithPrevStats(partfileStatus, parameters);
@@ -195,7 +200,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         } else {
           Path path = new Path(partish.getPartSd().getLocation());
           partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf,
-                                                            null, work.isMultiStatStage());
+                                                            null, canTrim());
           isMissingAcidState = true;
         }
       }

@@ -506,7 +506,7 @@ public class MetaStoreServerUtils {
     }
     long tableSize = 0l;
     if(params.containsKey(StatsSetupConst.TOTAL_SIZE)){
-      Long.parseLong(params.get(StatsSetupConst.TOTAL_SIZE));
+      tableSize = Long.parseLong(params.get(StatsSetupConst.TOTAL_SIZE));
     }
     int numErasureCodedFiles = 0;
     if(params.containsKey(StatsSetupConst.NUM_ERASURE_CODED_FILES)){

@@ -2585,7 +2585,7 @@ public class AcidUtils {
   }
 
   public static List<FileStatus> getAcidFilesForStats(
-      Table table, Path dir, Configuration jc, FileSystem fs, boolean isMultiStatStage) throws IOException {
+      Table table, Path dir, Configuration jc, FileSystem fs, boolean canTrimFiles) throws IOException {
     List<FileStatus> fileList = new ArrayList<>();
     ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
@@ -2601,7 +2601,7 @@ public class AcidUtils {
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
     AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
-    if(!isMultiStatStage) {
+    if(canTrimFiles) {
       AcidUtils.trimDirectoryforUpdates(idList, acidInfo);
     }
     // Assume that for an MM table, or if there's only the base directory, we are good.
