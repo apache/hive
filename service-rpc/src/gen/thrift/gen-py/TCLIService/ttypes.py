@@ -6745,17 +6745,19 @@ class TProgressUpdateResp(object):
      - status
      - footerSummary
      - startTime
+     - meta
 
     """
 
 
-    def __init__(self, headerNames=None, rows=None, progressedPercentage=None, status=None, footerSummary=None, startTime=None,):
+    def __init__(self, headerNames=None, rows=None, progressedPercentage=None, status=None, footerSummary=None, startTime=None, meta=None,):
         self.headerNames = headerNames
         self.rows = rows
         self.progressedPercentage = progressedPercentage
         self.status = status
         self.footerSummary = footerSummary
         self.startTime = startTime
+        self.meta = meta
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6811,6 +6813,17 @@ class TProgressUpdateResp(object):
                     self.startTime = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.MAP:
+                    self.meta = {}
+                    (_ktype187, _vtype188, _size186) = iprot.readMapBegin()
+                    for _i190 in range(_size186):
+                        _key191 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        _val192 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.meta[_key191] = _val192
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6824,17 +6837,17 @@ class TProgressUpdateResp(object):
         if self.headerNames is not None:
             oprot.writeFieldBegin('headerNames', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.headerNames))
-            for iter186 in self.headerNames:
-                oprot.writeString(iter186.encode('utf-8') if sys.version_info[0] == 2 else iter186)
+            for iter193 in self.headerNames:
+                oprot.writeString(iter193.encode('utf-8') if sys.version_info[0] == 2 else iter193)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.rows is not None:
             oprot.writeFieldBegin('rows', TType.LIST, 2)
             oprot.writeListBegin(TType.LIST, len(self.rows))
-            for iter187 in self.rows:
-                oprot.writeListBegin(TType.STRING, len(iter187))
-                for iter188 in iter187:
-                    oprot.writeString(iter188.encode('utf-8') if sys.version_info[0] == 2 else iter188)
+            for iter194 in self.rows:
+                oprot.writeListBegin(TType.STRING, len(iter194))
+                for iter195 in iter194:
+                    oprot.writeString(iter195.encode('utf-8') if sys.version_info[0] == 2 else iter195)
                 oprot.writeListEnd()
             oprot.writeListEnd()
             oprot.writeFieldEnd()
@@ -6854,6 +6867,14 @@ class TProgressUpdateResp(object):
             oprot.writeFieldBegin('startTime', TType.I64, 6)
             oprot.writeI64(self.startTime)
             oprot.writeFieldEnd()
+        if self.meta is not None:
+            oprot.writeFieldBegin('meta', TType.MAP, 7)
+            oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.meta))
+            for kiter196, viter197 in self.meta.items():
+                oprot.writeString(kiter196.encode('utf-8') if sys.version_info[0] == 2 else kiter196)
+                oprot.writeString(viter197.encode('utf-8') if sys.version_info[0] == 2 else viter197)
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -6870,6 +6891,8 @@ class TProgressUpdateResp(object):
             raise TProtocolException(message='Required field footerSummary is unset!')
         if self.startTime is None:
             raise TProtocolException(message='Required field startTime is unset!')
+        if self.meta is None:
+            raise TProtocolException(message='Required field meta is unset!')
         return
 
     def __repr__(self):
@@ -7526,6 +7549,7 @@ TProgressUpdateResp.thrift_spec = (
     (4, TType.I32, 'status', None, None, ),  # 4
     (5, TType.STRING, 'footerSummary', 'UTF8', None, ),  # 5
     (6, TType.I64, 'startTime', None, None, ),  # 6
+    (7, TType.MAP, 'meta', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 7
 )
 all_structs.append(TGetQueryIdReq)
 TGetQueryIdReq.thrift_spec = (

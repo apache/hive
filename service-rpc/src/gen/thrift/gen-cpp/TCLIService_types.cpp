@@ -11010,6 +11010,10 @@ void TProgressUpdateResp::__set_footerSummary(const std::string& val) {
 void TProgressUpdateResp::__set_startTime(const int64_t val) {
   this->startTime = val;
 }
+
+void TProgressUpdateResp::__set_meta(const std::map<std::string, std::string> & val) {
+  this->meta = val;
+}
 std::ostream& operator<<(std::ostream& out, const TProgressUpdateResp& obj)
 {
   obj.printTo(out);
@@ -11035,6 +11039,7 @@ uint32_t TProgressUpdateResp::read(::apache::thrift::protocol::TProtocol* iprot)
   bool isset_status = false;
   bool isset_footerSummary = false;
   bool isset_startTime = false;
+  bool isset_meta = false;
 
   while (true)
   {
@@ -11130,6 +11135,29 @@ uint32_t TProgressUpdateResp::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_MAP) {
+          {
+            this->meta.clear();
+            uint32_t _size330;
+            ::apache::thrift::protocol::TType _ktype331;
+            ::apache::thrift::protocol::TType _vtype332;
+            xfer += iprot->readMapBegin(_ktype331, _vtype332, _size330);
+            uint32_t _i334;
+            for (_i334 = 0; _i334 < _size330; ++_i334)
+            {
+              std::string _key335;
+              xfer += iprot->readString(_key335);
+              std::string& _val336 = this->meta[_key335];
+              xfer += iprot->readString(_val336);
+            }
+            xfer += iprot->readMapEnd();
+          }
+          isset_meta = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11151,6 +11179,8 @@ uint32_t TProgressUpdateResp::read(::apache::thrift::protocol::TProtocol* iprot)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_startTime)
     throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_meta)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -11162,10 +11192,10 @@ uint32_t TProgressUpdateResp::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("headerNames", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->headerNames.size()));
-    std::vector<std::string> ::const_iterator _iter330;
-    for (_iter330 = this->headerNames.begin(); _iter330 != this->headerNames.end(); ++_iter330)
+    std::vector<std::string> ::const_iterator _iter337;
+    for (_iter337 = this->headerNames.begin(); _iter337 != this->headerNames.end(); ++_iter337)
     {
-      xfer += oprot->writeString((*_iter330));
+      xfer += oprot->writeString((*_iter337));
     }
     xfer += oprot->writeListEnd();
   }
@@ -11174,15 +11204,15 @@ uint32_t TProgressUpdateResp::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("rows", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->rows.size()));
-    std::vector<std::vector<std::string> > ::const_iterator _iter331;
-    for (_iter331 = this->rows.begin(); _iter331 != this->rows.end(); ++_iter331)
+    std::vector<std::vector<std::string> > ::const_iterator _iter338;
+    for (_iter338 = this->rows.begin(); _iter338 != this->rows.end(); ++_iter338)
     {
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter331).size()));
-        std::vector<std::string> ::const_iterator _iter332;
-        for (_iter332 = (*_iter331).begin(); _iter332 != (*_iter331).end(); ++_iter332)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter338).size()));
+        std::vector<std::string> ::const_iterator _iter339;
+        for (_iter339 = (*_iter338).begin(); _iter339 != (*_iter338).end(); ++_iter339)
         {
-          xfer += oprot->writeString((*_iter332));
+          xfer += oprot->writeString((*_iter339));
         }
         xfer += oprot->writeListEnd();
       }
@@ -11207,6 +11237,19 @@ uint32_t TProgressUpdateResp::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeI64(this->startTime);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("meta", ::apache::thrift::protocol::T_MAP, 7);
+  {
+    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->meta.size()));
+    std::map<std::string, std::string> ::const_iterator _iter340;
+    for (_iter340 = this->meta.begin(); _iter340 != this->meta.end(); ++_iter340)
+    {
+      xfer += oprot->writeString(_iter340->first);
+      xfer += oprot->writeString(_iter340->second);
+    }
+    xfer += oprot->writeMapEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11220,23 +11263,26 @@ void swap(TProgressUpdateResp &a, TProgressUpdateResp &b) {
   swap(a.status, b.status);
   swap(a.footerSummary, b.footerSummary);
   swap(a.startTime, b.startTime);
+  swap(a.meta, b.meta);
 }
 
-TProgressUpdateResp::TProgressUpdateResp(const TProgressUpdateResp& other333) {
-  headerNames = other333.headerNames;
-  rows = other333.rows;
-  progressedPercentage = other333.progressedPercentage;
-  status = other333.status;
-  footerSummary = other333.footerSummary;
-  startTime = other333.startTime;
+TProgressUpdateResp::TProgressUpdateResp(const TProgressUpdateResp& other341) {
+  headerNames = other341.headerNames;
+  rows = other341.rows;
+  progressedPercentage = other341.progressedPercentage;
+  status = other341.status;
+  footerSummary = other341.footerSummary;
+  startTime = other341.startTime;
+  meta = other341.meta;
 }
-TProgressUpdateResp& TProgressUpdateResp::operator=(const TProgressUpdateResp& other334) {
-  headerNames = other334.headerNames;
-  rows = other334.rows;
-  progressedPercentage = other334.progressedPercentage;
-  status = other334.status;
-  footerSummary = other334.footerSummary;
-  startTime = other334.startTime;
+TProgressUpdateResp& TProgressUpdateResp::operator=(const TProgressUpdateResp& other342) {
+  headerNames = other342.headerNames;
+  rows = other342.rows;
+  progressedPercentage = other342.progressedPercentage;
+  status = other342.status;
+  footerSummary = other342.footerSummary;
+  startTime = other342.startTime;
+  meta = other342.meta;
   return *this;
 }
 void TProgressUpdateResp::printTo(std::ostream& out) const {
@@ -11248,6 +11294,7 @@ void TProgressUpdateResp::printTo(std::ostream& out) const {
   out << ", " << "status=" << to_string(status);
   out << ", " << "footerSummary=" << to_string(footerSummary);
   out << ", " << "startTime=" << to_string(startTime);
+  out << ", " << "meta=" << to_string(meta);
   out << ")";
 }
 
@@ -11329,11 +11376,11 @@ void swap(TGetQueryIdReq &a, TGetQueryIdReq &b) {
   swap(a.operationHandle, b.operationHandle);
 }
 
-TGetQueryIdReq::TGetQueryIdReq(const TGetQueryIdReq& other335) {
-  operationHandle = other335.operationHandle;
+TGetQueryIdReq::TGetQueryIdReq(const TGetQueryIdReq& other343) {
+  operationHandle = other343.operationHandle;
 }
-TGetQueryIdReq& TGetQueryIdReq::operator=(const TGetQueryIdReq& other336) {
-  operationHandle = other336.operationHandle;
+TGetQueryIdReq& TGetQueryIdReq::operator=(const TGetQueryIdReq& other344) {
+  operationHandle = other344.operationHandle;
   return *this;
 }
 void TGetQueryIdReq::printTo(std::ostream& out) const {
@@ -11421,11 +11468,11 @@ void swap(TGetQueryIdResp &a, TGetQueryIdResp &b) {
   swap(a.queryId, b.queryId);
 }
 
-TGetQueryIdResp::TGetQueryIdResp(const TGetQueryIdResp& other337) {
-  queryId = other337.queryId;
+TGetQueryIdResp::TGetQueryIdResp(const TGetQueryIdResp& other345) {
+  queryId = other345.queryId;
 }
-TGetQueryIdResp& TGetQueryIdResp::operator=(const TGetQueryIdResp& other338) {
-  queryId = other338.queryId;
+TGetQueryIdResp& TGetQueryIdResp::operator=(const TGetQueryIdResp& other346) {
+  queryId = other346.queryId;
   return *this;
 }
 void TGetQueryIdResp::printTo(std::ostream& out) const {

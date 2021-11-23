@@ -176,7 +176,6 @@ public class LlapTaskReporter implements TaskReporterInterface {
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
     private final WmFragmentCounters wmCounters;
-
     /*
      * Keeps track of regular timed heartbeats. Is primarily used as a timing mechanism to send /
      * log counters.
@@ -290,8 +289,9 @@ public class LlapTaskReporter implements TaskReporterInterface {
       int fromEventId = task.getNextFromEventId();
       int fromPreRoutedEventId = task.getNextPreRoutedEventId();
       int maxEvents = Math.min(maxEventsToGet, task.getMaxEventsToHandle());
+      //usedMemory = 0: llap node will report through nodeHeartbeat
       TezHeartbeatRequest request = new TezHeartbeatRequest(requestId, events, fromPreRoutedEventId,
-          containerIdStr, task.getTaskAttemptID(), fromEventId, maxEvents);
+          containerIdStr, task.getTaskAttemptID(), fromEventId, maxEvents, 0);
       LOG.debug("Sending heartbeat to AM, request={}", request);
 
       maybeLogCounters();

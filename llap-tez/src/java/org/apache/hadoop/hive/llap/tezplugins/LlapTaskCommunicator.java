@@ -766,10 +766,12 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private static class PingingNodeInfo {
     final AtomicLong logTimestamp;
     final AtomicInteger pingCount;
+    final long usedMemory;
 
-    PingingNodeInfo(long currentTs) {
+    PingingNodeInfo(long currentTs, long usedMemory) {
       logTimestamp = new AtomicLong(currentTs);
       pingCount = new AtomicInteger(1);
+      this.usedMemory = usedMemory;
     }
   }
 
@@ -781,9 +783,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
   }
 
-  public void registerPingingNode(LlapNodeId nodeId, String uniqueId) {
+  public void registerPingingNode(LlapNodeId nodeId, String uniqueId, long usedMemory) {
     long currentTs = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
-    PingingNodeInfo ni = new PingingNodeInfo(currentTs);
+    PingingNodeInfo ni = new PingingNodeInfo(currentTs, usedMemory);
     PingingNodeInfo old = pingedNodeMap.put(nodeId, ni);
     if (old == null) {
       LOG.info("Added new pinging node: [{}] with uniqueId: {}", nodeId, uniqueId);
@@ -810,10 +812,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
 
   void nodePinged(String hostname, String uniqueId, int port,
-      TezAttemptArray tasks, BooleanArray guaranteed) {
+      TezAttemptArray tasks, BooleanArray guaranteed, long usedMemory) {
     // TODO: do we ever need the port? we could just do away with nodeId altogether.
     LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
-    registerPingingNode(nodeId, uniqueId);
+    registerPingingNode(nodeId, uniqueId, usedMemory);
     BiMap<ContainerId, TezTaskAttemptID> biMap =
         entityTracker.getContainerAttemptMapForNode(nodeId);
     if (biMap != null) {
@@ -949,11 +951,11 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     @Override
     public void nodeHeartbeat(Text hostname, Text uniqueId, int port,
-        TezAttemptArray aw, BooleanArray guaranteed) throws IOException {
+        TezAttemptArray aw, BooleanArray guaranteed, long usedMemory) throws IOException {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
       }
-      nodePinged(hostname.toString(), uniqueId.toString(), port, aw, guaranteed);
+      nodePinged(hostname.toString(), uniqueId.toString(), port, aw, guaranteed, usedMemory);
     }
 
     @Override
@@ -1162,5 +1164,16 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   public String getAmHostString() {
     return amHost;
+  }
+
+  /**
+   * Overrides TezTaskCommunicatorImpl.getTotalUsedMemory in order to provide correct aggregated memory usage.
+   * In LLAP, every container reports the whole used heap of the daemon they're running in, so we need to consider
+   * every usedMemory once per daemon.
+   * @return
+   */
+  @Override
+  public long getTotalUsedMemory() {
+    return pingedNodeMap.values().stream().mapToLong(c -> c.usedMemory).sum();
   }
 }

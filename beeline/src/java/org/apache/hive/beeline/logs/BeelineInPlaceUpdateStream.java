@@ -25,6 +25,7 @@ import org.apache.hive.service.rpc.thrift.TProgressUpdateResp;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 
 public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
   private InPlaceUpdate inPlaceUpdate;
@@ -73,6 +74,11 @@ public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
     @Override
     public List<List<String>> rows() {
       return response.getRows();
+    }
+
+    @Override
+    public Map<String, String> meta() {
+      return response.getMeta();
     }
 
     @Override

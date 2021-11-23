@@ -512,7 +512,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
 
     @Override
     public void nodeHeartbeat(Text hostname, Text uniqueId, int port, TezAttemptArray aw,
-        BooleanArray guaranteed) throws IOException {
+        BooleanArray guaranteed, long usedMemory) throws IOException {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Node heartbeat from " + hostname + ":" + port + ", " + uniqueId);
       }

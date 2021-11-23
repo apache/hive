@@ -62,6 +62,19 @@ class TProgressUpdateResp
             'isRequired' => true,
             'type' => TType::I64,
         ),
+        7 => array(
+            'var' => 'meta',
+            'isRequired' => true,
+            'type' => TType::MAP,
+            'ktype' => TType::STRING,
+            'vtype' => TType::STRING,
+            'key' => array(
+                'type' => TType::STRING,
+            ),
+            'val' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -88,6 +101,10 @@ class TProgressUpdateResp
      * @var int
      */
     public $startTime = null;
+    /**
+     * @var array
+     */
+    public $meta = null;
 
     public function __construct($vals = null)
     {
@@ -109,6 +126,9 @@ class TProgressUpdateResp
             }
             if (isset($vals['startTime'])) {
                 $this->startTime = $vals['startTime'];
+            }
+            if (isset($vals['meta'])) {
+                $this->meta = $vals['meta'];
             }
         }
     }
@@ -201,6 +221,25 @@ class TProgressUpdateResp
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::MAP) {
+                        $this->meta = array();
+                        $_size186 = 0;
+                        $_ktype187 = 0;
+                        $_vtype188 = 0;
+                        $xfer += $input->readMapBegin($_ktype187, $_vtype188, $_size186);
+                        for ($_i190 = 0; $_i190 < $_size186; ++$_i190) {
+                            $key191 = '';
+                            $val192 = '';
+                            $xfer += $input->readString($key191);
+                            $xfer += $input->readString($val192);
+                            $this->meta[$key191] = $val192;
+                        }
+                        $xfer += $input->readMapEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -221,8 +260,8 @@ class TProgressUpdateResp
             }
             $xfer += $output->writeFieldBegin('headerNames', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->headerNames));
-            foreach ($this->headerNames as $iter186) {
-                $xfer += $output->writeString($iter186);
+            foreach ($this->headerNames as $iter193) {
+                $xfer += $output->writeString($iter193);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -233,10 +272,10 @@ class TProgressUpdateResp
             }
             $xfer += $output->writeFieldBegin('rows', TType::LST, 2);
             $output->writeListBegin(TType::LST, count($this->rows));
-            foreach ($this->rows as $iter187) {
-                $output->writeListBegin(TType::STRING, count($iter187));
-                foreach ($iter187 as $iter188) {
-                    $xfer += $output->writeString($iter188);
+            foreach ($this->rows as $iter194) {
+                $output->writeListBegin(TType::STRING, count($iter194));
+                foreach ($iter194 as $iter195) {
+                    $xfer += $output->writeString($iter195);
                 }
                 $output->writeListEnd();
             }
@@ -261,6 +300,19 @@ class TProgressUpdateResp
         if ($this->startTime !== null) {
             $xfer += $output->writeFieldBegin('startTime', TType::I64, 6);
             $xfer += $output->writeI64($this->startTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->meta !== null) {
+            if (!is_array($this->meta)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('meta', TType::MAP, 7);
+            $output->writeMapBegin(TType::STRING, TType::STRING, count($this->meta));
+            foreach ($this->meta as $kiter196 => $viter197) {
+                $xfer += $output->writeString($kiter196);
+                $xfer += $output->writeString($viter197);
+            }
+            $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

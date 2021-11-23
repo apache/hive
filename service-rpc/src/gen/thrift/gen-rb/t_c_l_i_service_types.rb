@@ -2096,6 +2096,7 @@ class TProgressUpdateResp
   STATUS = 4
   FOOTERSUMMARY = 5
   STARTTIME = 6
+  META = 7
 
   FIELDS = {
     HEADERNAMES => {:type => ::Thrift::Types::LIST, :name => 'headerNames', :element => {:type => ::Thrift::Types::STRING}},
@@ -2103,7 +2104,8 @@ class TProgressUpdateResp
     PROGRESSEDPERCENTAGE => {:type => ::Thrift::Types::DOUBLE, :name => 'progressedPercentage'},
     STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::TJobExecutionStatus},
     FOOTERSUMMARY => {:type => ::Thrift::Types::STRING, :name => 'footerSummary'},
-    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'},
+    META => {:type => ::Thrift::Types::MAP, :name => 'meta', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
   def struct_fields; FIELDS; end
@@ -2115,6 +2117,7 @@ class TProgressUpdateResp
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field footerSummary is unset!') unless @footerSummary
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field startTime is unset!') unless @startTime
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field meta is unset!') unless @meta
     unless @status.nil? || ::TJobExecutionStatus::VALID_VALUES.include?(@status)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
     end

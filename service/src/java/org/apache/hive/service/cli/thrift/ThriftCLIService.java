@@ -821,7 +821,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           progressUpdate.progressedPercentage,
           executionStatus,
           progressUpdate.footerSummary,
-          progressUpdate.startTimeMillis
+          progressUpdate.startTimeMillis,
+          progressUpdate.meta()
       ));
       if (opException != null) {
         resp.setSqlState(opException.getSQLState());

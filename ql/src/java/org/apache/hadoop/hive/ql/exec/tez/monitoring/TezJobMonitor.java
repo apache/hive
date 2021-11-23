@@ -171,13 +171,14 @@ public class TezJobMonitor {
         }
 
         wmContext = context.getWmContext();
-        EnumSet<StatusGetOpts> opts = null;
+        EnumSet<StatusGetOpts> opts = EnumSet.noneOf(StatusGetOpts.class);
         if (wmContext != null) {
           Set<String> desiredCounters = wmContext.getSubscribedCounters();
           if (desiredCounters != null && !desiredCounters.isEmpty()) {
             opts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           }
         }
+        opts.add(StatusGetOpts.GET_MEMORY_USAGE);
 
         status = dagClient.getDAGStatus(opts, checkInterval);
 

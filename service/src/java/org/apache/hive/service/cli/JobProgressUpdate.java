@@ -20,6 +20,7 @@ package org.apache.hive.service.cli;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 
 import java.util.List;
+import java.util.Map;
 
 public class JobProgressUpdate {
   public final double progressedPercentage;
@@ -28,21 +29,23 @@ public class JobProgressUpdate {
   private final List<String> headers;
   private final List<List<String>> rows;
   public final String status;
+  private Map<String, String> meta;
 
 
   JobProgressUpdate(ProgressMonitor monitor) {
     this(monitor.headers(), monitor.rows(), monitor.footerSummary(), monitor.progressedPercentage(),
-        monitor.startTime(), monitor.executionStatus());
+        monitor.startTime(), monitor.executionStatus(), monitor.meta());
   }
 
   private JobProgressUpdate(List<String> headers, List<List<String>> rows, String footerSummary,
-      double progressedPercentage, long startTimeMillis, String status) {
+      double progressedPercentage, long startTimeMillis, String status, Map<String, String> meta) {
     this.progressedPercentage = progressedPercentage;
     this.footerSummary = footerSummary;
     this.startTimeMillis = startTimeMillis;
     this.headers = headers;
     this.rows = rows;
     this.status = status;
+    this.meta = meta;
   }
 
   public List<String> headers() {
@@ -51,5 +54,9 @@ public class JobProgressUpdate {
 
   public List<List<String>> rows() {
     return rows;
+  }
+
+  public Map<String, String> meta() {
+    return meta;
   }
 }

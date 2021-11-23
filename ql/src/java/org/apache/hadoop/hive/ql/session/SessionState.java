@@ -2149,6 +2149,11 @@ public class SessionState implements ISessionAuthState{
       }
 
       @Override
+      public Map<String, String> meta() {
+        return new HashMap<String, String>();
+      }
+
+      @Override
       public String footerSummary() {
         return null;
       }

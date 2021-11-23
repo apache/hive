@@ -17,6 +17,7 @@ package org.apache.hive.service.rpc.thrift;
   private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField FOOTER_SUMMARY_FIELD_DESC = new org.apache.thrift.protocol.TField("footerSummary", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField META_FIELD_DESC = new org.apache.thrift.protocol.TField("meta", org.apache.thrift.protocol.TType.MAP, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TProgressUpdateRespStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TProgressUpdateRespTupleSchemeFactory();
@@ -27,6 +28,7 @@ package org.apache.hive.service.rpc.thrift;
   private @org.apache.thrift.annotation.Nullable TJobExecutionStatus status; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String footerSummary; // required
   private long startTime; // required
+  private @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> meta; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -39,7 +41,8 @@ package org.apache.hive.service.rpc.thrift;
      */
     STATUS((short)4, "status"),
     FOOTER_SUMMARY((short)5, "footerSummary"),
-    START_TIME((short)6, "startTime");
+    START_TIME((short)6, "startTime"),
+    META((short)7, "meta");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -67,6 +70,8 @@ package org.apache.hive.service.rpc.thrift;
           return FOOTER_SUMMARY;
         case 6: // START_TIME
           return START_TIME;
+        case 7: // META
+          return META;
         default:
           return null;
       }
@@ -129,6 +134,10 @@ package org.apache.hive.service.rpc.thrift;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.META, new org.apache.thrift.meta_data.FieldMetaData("meta", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TProgressUpdateResp.class, metaDataMap);
   }
@@ -142,7 +151,8 @@ package org.apache.hive.service.rpc.thrift;
     double progressedPercentage,
     TJobExecutionStatus status,
     java.lang.String footerSummary,
-    long startTime)
+    long startTime,
+    java.util.Map<java.lang.String,java.lang.String> meta)
   {
     this();
     this.headerNames = headerNames;
@@ -153,6 +163,7 @@ package org.apache.hive.service.rpc.thrift;
     this.footerSummary = footerSummary;
     this.startTime = startTime;
     setStartTimeIsSet(true);
+    this.meta = meta;
   }
 
   /**
@@ -180,6 +191,10 @@ package org.apache.hive.service.rpc.thrift;
       this.footerSummary = other.footerSummary;
     }
     this.startTime = other.startTime;
+    if (other.isSetMeta()) {
+      java.util.Map<java.lang.String,java.lang.String> __this__meta = new java.util.HashMap<java.lang.String,java.lang.String>(other.meta);
+      this.meta = __this__meta;
+    }
   }
 
   public TProgressUpdateResp deepCopy() {
@@ -196,6 +211,7 @@ package org.apache.hive.service.rpc.thrift;
     this.footerSummary = null;
     setStartTimeIsSet(false);
     this.startTime = 0;
+    this.meta = null;
   }
 
   public int getHeaderNamesSize() {
@@ -378,6 +394,41 @@ package org.apache.hive.service.rpc.thrift;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __STARTTIME_ISSET_ID, value);
   }
 
+  public int getMetaSize() {
+    return (this.meta == null) ? 0 : this.meta.size();
+  }
+
+  public void putToMeta(java.lang.String key, java.lang.String val) {
+    if (this.meta == null) {
+      this.meta = new java.util.HashMap<java.lang.String,java.lang.String>();
+    }
+    this.meta.put(key, val);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Map<java.lang.String,java.lang.String> getMeta() {
+    return this.meta;
+  }
+
+  public void setMeta(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> meta) {
+    this.meta = meta;
+  }
+
+  public void unsetMeta() {
+    this.meta = null;
+  }
+
+  /** Returns true if field meta is set (has been assigned a value) and false otherwise */
+  public boolean isSetMeta() {
+    return this.meta != null;
+  }
+
+  public void setMetaIsSet(boolean value) {
+    if (!value) {
+      this.meta = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case HEADER_NAMES:
@@ -428,6 +479,14 @@ package org.apache.hive.service.rpc.thrift;
       }
       break;
 
+    case META:
+      if (value == null) {
+        unsetMeta();
+      } else {
+        setMeta((java.util.Map<java.lang.String,java.lang.String>)value);
+      }
+      break;
+
     }
   }
 
@@ -452,6 +511,9 @@ package org.apache.hive.service.rpc.thrift;
     case START_TIME:
       return getStartTime();
 
+    case META:
+      return getMeta();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -475,6 +537,8 @@ package org.apache.hive.service.rpc.thrift;
       return isSetFooterSummary();
     case START_TIME:
       return isSetStartTime();
+    case META:
+      return isSetMeta();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -546,6 +610,15 @@ package org.apache.hive.service.rpc.thrift;
         return false;
     }
 
+    boolean this_present_meta = true && this.isSetMeta();
+    boolean that_present_meta = true && that.isSetMeta();
+    if (this_present_meta || that_present_meta) {
+      if (!(this_present_meta && that_present_meta))
+        return false;
+      if (!this.meta.equals(that.meta))
+        return false;
+    }
+
     return true;
   }
 
@@ -572,6 +645,10 @@ package org.apache.hive.service.rpc.thrift;
       hashCode = hashCode * 8191 + footerSummary.hashCode();
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(startTime);
+
+    hashCode = hashCode * 8191 + ((isSetMeta()) ? 131071 : 524287);
+    if (isSetMeta())
+      hashCode = hashCode * 8191 + meta.hashCode();
 
     return hashCode;
   }
@@ -644,6 +721,16 @@ package org.apache.hive.service.rpc.thrift;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetMeta(), other.isSetMeta());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMeta()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.meta, other.meta);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -704,6 +791,14 @@ package org.apache.hive.service.rpc.thrift;
     sb.append("startTime:");
     sb.append(this.startTime);
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("meta:");
+    if (this.meta == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.meta);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -732,6 +827,10 @@ package org.apache.hive.service.rpc.thrift;
 
     if (!isSetStartTime()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'startTime' is unset! Struct:" + toString());
+    }
+
+    if (!isSetMeta()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'meta' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -851,6 +950,26 @@ package org.apache.hive.service.rpc.thrift;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // META
+            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+              {
+                org.apache.thrift.protocol.TMap _map199 = iprot.readMapBegin();
+                struct.meta = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map199.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key200;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val201;
+                for (int _i202 = 0; _i202 < _map199.size; ++_i202)
+                {
+                  _key200 = iprot.readString();
+                  _val201 = iprot.readString();
+                  struct.meta.put(_key200, _val201);
+                }
+                iprot.readMapEnd();
+              }
+              struct.setMetaIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -868,9 +987,9 @@ package org.apache.hive.service.rpc.thrift;
         oprot.writeFieldBegin(HEADER_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.headerNames.size()));
-          for (java.lang.String _iter199 : struct.headerNames)
+          for (java.lang.String _iter203 : struct.headerNames)
           {
-            oprot.writeString(_iter199);
+            oprot.writeString(_iter203);
           }
           oprot.writeListEnd();
         }
@@ -880,13 +999,13 @@ package org.apache.hive.service.rpc.thrift;
         oprot.writeFieldBegin(ROWS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.LIST, struct.rows.size()));
-          for (java.util.List<java.lang.String> _iter200 : struct.rows)
+          for (java.util.List<java.lang.String> _iter204 : struct.rows)
           {
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter200.size()));
-              for (java.lang.String _iter201 : _iter200)
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter204.size()));
+              for (java.lang.String _iter205 : _iter204)
               {
-                oprot.writeString(_iter201);
+                oprot.writeString(_iter205);
               }
               oprot.writeListEnd();
             }
@@ -911,6 +1030,19 @@ package org.apache.hive.service.rpc.thrift;
       oprot.writeFieldBegin(START_TIME_FIELD_DESC);
       oprot.writeI64(struct.startTime);
       oprot.writeFieldEnd();
+      if (struct.meta != null) {
+        oprot.writeFieldBegin(META_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.meta.size()));
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter206 : struct.meta.entrySet())
+          {
+            oprot.writeString(_iter206.getKey());
+            oprot.writeString(_iter206.getValue());
+          }
+          oprot.writeMapEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -930,20 +1062,20 @@ package org.apache.hive.service.rpc.thrift;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.headerNames.size());
-        for (java.lang.String _iter202 : struct.headerNames)
+        for (java.lang.String _iter207 : struct.headerNames)
         {
-          oprot.writeString(_iter202);
+          oprot.writeString(_iter207);
         }
       }
       {
         oprot.writeI32(struct.rows.size());
-        for (java.util.List<java.lang.String> _iter203 : struct.rows)
+        for (java.util.List<java.lang.String> _iter208 : struct.rows)
         {
           {
-            oprot.writeI32(_iter203.size());
-            for (java.lang.String _iter204 : _iter203)
+            oprot.writeI32(_iter208.size());
+            for (java.lang.String _iter209 : _iter208)
             {
-              oprot.writeString(_iter204);
+              oprot.writeString(_iter209);
             }
           }
         }
@@ -952,39 +1084,47 @@ package org.apache.hive.service.rpc.thrift;
       oprot.writeI32(struct.status.getValue());
       oprot.writeString(struct.footerSummary);
       oprot.writeI64(struct.startTime);
+      {
+        oprot.writeI32(struct.meta.size());
+        for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter210 : struct.meta.entrySet())
+        {
+          oprot.writeString(_iter210.getKey());
+          oprot.writeString(_iter210.getValue());
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, TProgressUpdateResp struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list205 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-        struct.headerNames = new java.util.ArrayList<java.lang.String>(_list205.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem206;
-        for (int _i207 = 0; _i207 < _list205.size; ++_i207)
+        org.apache.thrift.protocol.TList _list211 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+        struct.headerNames = new java.util.ArrayList<java.lang.String>(_list211.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem212;
+        for (int _i213 = 0; _i213 < _list211.size; ++_i213)
         {
-          _elem206 = iprot.readString();
-          struct.headerNames.add(_elem206);
+          _elem212 = iprot.readString();
+          struct.headerNames.add(_elem212);
         }
       }
       struct.setHeaderNamesIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list208 = iprot.readListBegin(org.apache.thrift.protocol.TType.LIST);
-        struct.rows = new java.util.ArrayList<java.util.List<java.lang.String>>(_list208.size);
-        @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _elem209;
-        for (int _i210 = 0; _i210 < _list208.size; ++_i210)
+        org.apache.thrift.protocol.TList _list214 = iprot.readListBegin(org.apache.thrift.protocol.TType.LIST);
+        struct.rows = new java.util.ArrayList<java.util.List<java.lang.String>>(_list214.size);
+        @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> _elem215;
+        for (int _i216 = 0; _i216 < _list214.size; ++_i216)
         {
           {
-            org.apache.thrift.protocol.TList _list211 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-            _elem209 = new java.util.ArrayList<java.lang.String>(_list211.size);
-            @org.apache.thrift.annotation.Nullable java.lang.String _elem212;
-            for (int _i213 = 0; _i213 < _list211.size; ++_i213)
+            org.apache.thrift.protocol.TList _list217 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+            _elem215 = new java.util.ArrayList<java.lang.String>(_list217.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _elem218;
+            for (int _i219 = 0; _i219 < _list217.size; ++_i219)
             {
-              _elem212 = iprot.readString();
-              _elem209.add(_elem212);
+              _elem218 = iprot.readString();
+              _elem215.add(_elem218);
             }
           }
-          struct.rows.add(_elem209);
+          struct.rows.add(_elem215);
         }
       }
       struct.setRowsIsSet(true);
@@ -996,6 +1136,19 @@ package org.apache.hive.service.rpc.thrift;
       struct.setFooterSummaryIsSet(true);
       struct.startTime = iprot.readI64();
       struct.setStartTimeIsSet(true);
+      {
+        org.apache.thrift.protocol.TMap _map220 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
+        struct.meta = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map220.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _key221;
+        @org.apache.thrift.annotation.Nullable java.lang.String _val222;
+        for (int _i223 = 0; _i223 < _map220.size; ++_i223)
+        {
+          _key221 = iprot.readString();
+          _val222 = iprot.readString();
+          struct.meta.put(_key221, _val222);
+        }
+      }
+      struct.setMetaIsSet(true);
     }
   }
 

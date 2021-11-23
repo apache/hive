@@ -4437,6 +4437,7 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   TJobExecutionStatus::type status;
   std::string footerSummary;
   int64_t startTime;
+  std::map<std::string, std::string>  meta;
 
   void __set_headerNames(const std::vector<std::string> & val);
 
@@ -4449,6 +4450,8 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   void __set_footerSummary(const std::string& val);
 
   void __set_startTime(const int64_t val);
+
+  void __set_meta(const std::map<std::string, std::string> & val);
 
   bool operator == (const TProgressUpdateResp & rhs) const
   {
@@ -4463,6 +4466,8 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
     if (!(footerSummary == rhs.footerSummary))
       return false;
     if (!(startTime == rhs.startTime))
+      return false;
+    if (!(meta == rhs.meta))
       return false;
     return true;
   }

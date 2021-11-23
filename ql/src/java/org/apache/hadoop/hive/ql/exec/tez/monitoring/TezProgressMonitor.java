@@ -149,6 +149,14 @@ public class TezProgressMonitor implements ProgressMonitor {
   }
 
   @Override
+  public Map<String, String> meta() {
+    Map<String, String> meta = new HashMap<>();
+    meta.put(ProgressMonitor.MONITOR_META_MEMORY_AM, Long.toString(status.getMemoryUsedByAM()));
+    meta.put(ProgressMonitor.MONITOR_META_MEMORY_TASKS, Long.toString(status.getMemoryUsedByTasks()));
+    return meta;
+  }
+
+  @Override
   public String executionStatus() {
     return this.status.getState().name();
   }

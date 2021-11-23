@@ -18,9 +18,14 @@
 package org.apache.hadoop.hive.common.log;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface ProgressMonitor {
+
+  public static String MONITOR_META_MEMORY_AM = "MEMORY_AM";
+  public static String MONITOR_META_MEMORY_TASKS = "MEMORY_TASKS";
 
   ProgressMonitor NULL = new ProgressMonitor() {
     @Override
@@ -52,6 +57,11 @@ public interface ProgressMonitor {
     public double progressedPercentage() {
       return 0;
     }
+
+    @Override
+    public Map<String, String> meta() {
+      return new HashMap<String, String>();
+    }
   };
 
   List<String> headers();
@@ -65,4 +75,7 @@ public interface ProgressMonitor {
   String executionStatus();
 
   double progressedPercentage();
+
+  // custom metadata, which can be rendered
+  Map<String, String> meta();
 }

@@ -26,6 +26,8 @@ import java.util.Set;
 import javax.net.SocketFactory;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -388,6 +390,10 @@ public class AMReporter extends AbstractService {
   private class AMHeartbeatCallable extends CallableWithNdc<Void> {
 
     final AMNodeInfo amNodeInfo;
+    private static final int HEAP_MEMORY_USAGE_UPDATE_INTERVAL = 5000; // 5 seconds
+    private final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    private long usedMemory = 0;
+    private long heapMemoryUsageUpdatedTime = System.currentTimeMillis() - HEAP_MEMORY_USAGE_UPDATE_INTERVAL;
 
     public AMHeartbeatCallable(AMNodeInfo amNodeInfo) {
       this.amNodeInfo = amNodeInfo;
@@ -412,10 +418,10 @@ public class AMReporter extends AbstractService {
           String hostname = amNodeInfo.amNodeId.getHostname();
           int externalClientCloudRpcPort = amNodeInfo.amNodeId.getPort();
           amNodeInfo.getUmbilical().nodeHeartbeat(new Text(hostname),
-                  new Text(daemonId.getUniqueNodeIdInCluster()), externalClientCloudRpcPort, aw, guaranteed);
+                  new Text(daemonId.getUniqueNodeIdInCluster()), externalClientCloudRpcPort, aw, guaranteed, getUsedMemory());
         } else {
           amNodeInfo.getUmbilical().nodeHeartbeat(new Text(nodeId.getHostname()),
-                  new Text(daemonId.getUniqueNodeIdInCluster()), nodeId.getPort(), aw, guaranteed);
+                  new Text(daemonId.getUniqueNodeIdInCluster()), nodeId.getPort(), aw, guaranteed, getUsedMemory());
         }
       } catch (IOException e) {
         QueryIdentifier currentQueryIdentifier = amNodeInfo.getQueryIdentifier();
@@ -430,6 +436,15 @@ public class AMReporter extends AbstractService {
       }
 
       return null;
+    }
+
+    private long getUsedMemory() {
+      long now = System.currentTimeMillis();
+      if (now - heapMemoryUsageUpdatedTime > HEAP_MEMORY_USAGE_UPDATE_INTERVAL) {
+        usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
+        heapMemoryUsageUpdatedTime = now;
+      }
+      return usedMemory;
     }
   }
 

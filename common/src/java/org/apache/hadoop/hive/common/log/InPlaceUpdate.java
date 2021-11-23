@@ -23,7 +23,9 @@ import org.fusesource.jansi.Ansi;
 
 import java.io.PrintStream;
 import java.io.StringWriter;
+import java.text.CharacterIterator;
 import java.text.DecimalFormat;
+import java.text.StringCharacterIterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -175,8 +177,31 @@ public class InPlaceUpdate {
     reprintLine(SEPARATOR);
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(SEPARATOR);
+    printMeta(monitor);
   }
 
+  private void printMeta(ProgressMonitor monitor) {
+    //AM memory:    703.4 MB
+    //Task memory:  100 GB
+    if (monitor.meta().containsKey(ProgressMonitor.MONITOR_META_MEMORY_AM)) {
+      reprintLine("AM memory:    "
+          + humanReadableByteCountSI(Long.parseLong(monitor.meta().get(ProgressMonitor.MONITOR_META_MEMORY_AM))));
+      reprintLine("Task memory:  "
+          + humanReadableByteCountSI(Long.parseLong(monitor.meta().get(ProgressMonitor.MONITOR_META_MEMORY_TASKS))));
+    }
+  }
+
+  public static String humanReadableByteCountSI(long bytes) {
+    if (-1000 < bytes && bytes < 1000) {
+      return bytes + " B";
+    }
+    CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    while (bytes <= -999_950 || bytes >= 999_950) {
+      bytes /= 1000;
+      ci.next();
+    }
+    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
+  }
 
   public static boolean canRenderInPlace(HiveConf conf) {
     String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);

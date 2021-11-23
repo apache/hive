@@ -52,7 +52,7 @@ public interface LlapTaskUmbilicalProtocol extends VersionedProtocol {
       throws IOException, TezException;
 
   public void nodeHeartbeat(Text hostname, Text uniqueId, int port,
-      TezAttemptArray aw, BooleanArray guaranteed) throws IOException;
+      TezAttemptArray aw, BooleanArray guaranteed, long usedMemory) throws IOException;
 
   public void taskKilled(TezTaskAttemptID taskAttemptId) throws IOException;
 

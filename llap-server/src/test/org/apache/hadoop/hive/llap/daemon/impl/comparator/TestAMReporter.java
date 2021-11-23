@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -101,7 +102,7 @@ public class TestAMReporter {
         }
       }).when(umbilical).nodeHeartbeat(any(Text.class), any(Text.class), anyInt(),
         any(LlapTaskUmbilicalProtocol.TezAttemptArray.class),
-        any(LlapTaskUmbilicalProtocol.BooleanArray.class));
+        any(LlapTaskUmbilicalProtocol.BooleanArray.class), anyLong());
       return umbilical;
     }
   }
