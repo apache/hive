@@ -88,11 +88,9 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   private HiveConf conf;
 
   protected transient LogHelper console;
-  private final HiveTxnManager txnManager;
 
-  public BasicStatsTask(HiveConf conf, BasicStatsWork work, HiveTxnManager txnManager) {
+  public BasicStatsTask(HiveConf conf, BasicStatsWork work) {
     super();
-    this.txnManager = txnManager;
     dpPartSpecs = null;
     this.conf = conf;
     console = new LogHelper(LOG);
