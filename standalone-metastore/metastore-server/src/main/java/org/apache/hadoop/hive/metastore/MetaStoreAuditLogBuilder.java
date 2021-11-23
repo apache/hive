@@ -147,4 +147,5 @@ public class MetaStoreAuditLogBuilder {
     }
     return result.toString();
   }
+
 }
