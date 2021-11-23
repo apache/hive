@@ -3741,7 +3741,7 @@ public class HiveConf extends Configuration {
             "indicates whether the connection is authenticated before the requests lands on HiveServer2, So that we can" +
             "avoid the authentication is again in HS2. Default value is empty, if it's value is set to some header say " +
             "'X-Trusted-Proxy-Auth-Header' then we need to look for this header in the connection string, if present " +
-            "we directly extarct the client name from header."),
+            "we directly extract the client name from header."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
