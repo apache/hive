@@ -88,7 +88,7 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.coverage.jacoco.xmlReportPaths>
-      ${basedir}/jacoco-ut/*jacoco.xml
+      ${basedir}/${hive.path.to.root}/target/jacoco-ut/*jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
     <sonar.language>java</sonar.language>
 
@@ -1761,8 +1761,9 @@
               <goal>prepare-agent</goal>
             </goals>
             <configuration>
-              <destFile>${basedir}/coverage-reports/jacoco-ut.exec</destFile>
+              <destFile>${basedir}/${hive.path.to.root}/target/coverage-reports/jacoco-ut.exec</destFile>
               <propertyName>surefireArgLine</propertyName>
+              <append>true</append>
             </configuration>
           </execution>
           <execution>
@@ -1772,8 +1773,8 @@
               <goal>report</goal>
             </goals>
             <configuration>
-              <dataFile>${basedir}/coverage-reports/jacoco-ut.exec</dataFile>
-              <outputDirectory>${basedir}/jacoco-ut</outputDirectory>
+              <dataFile>${basedir}/${hive.path.to.root}/target/coverage-reports/jacoco-ut.exec</dataFile>
+              <outputDirectory>${basedir}/${hive.path.to.root}/target/jacoco-ut</outputDirectory>
             </configuration>
           </execution>
         </executions>
