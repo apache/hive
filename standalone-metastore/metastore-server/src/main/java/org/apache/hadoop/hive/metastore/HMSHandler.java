@@ -102,7 +102,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
@@ -2007,7 +2006,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public boolean create_type(final Type type) throws AlreadyExistsException,
       MetaException, InvalidObjectException {
-    logAndAudit(functionName("create_type").typeName(type.toString()).build());
+    logAndAudit(functionName("create_type").typeName(type.getName()).build());
     boolean success = false;
     try {
       create_type_core(getMS(), type);
@@ -3666,7 +3665,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> tables = null;
     String[] parsedDbName = parseDbName(dbName, conf);
     logAndAudit(functionName("get_table_names_by_filter").catalogName(parsedDbName[CAT_NAME])
-        .dbName(parsedDbName[DB_NAME]).extraInfo(" filter=" + filter).build());
+        .dbName(parsedDbName[DB_NAME]).extraInfo("filter", filter).build());
     try {
       if (parsedDbName[CAT_NAME] == null || parsedDbName[CAT_NAME].isEmpty() ||
           parsedDbName[DB_NAME] == null || parsedDbName[DB_NAME].isEmpty()) {
@@ -5748,7 +5747,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           throws InvalidOperationException, MetaException {
 
     logAndAudit(functionName("alter_table").table(catName, dbname, name)
-        .extraInfo(" newtbl=" + newTable.getTableName()).build());
+        .extraInfo("newtbl", newTable.getTableName()).build());
     if (envContext == null) {
       envContext = new EnvironmentContext();
     }
@@ -6084,7 +6083,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public String get_config_value(String name, String defaultValue)
       throws TException {
     logAndAudit(functionName("get_config_value")
-        .extraInfo(" name=" + name).extraInfo(" defaultValue=" + defaultValue).build());
+        .extraInfo("name", name).extraInfo("defaultValue", defaultValue).build());
     try {
       if (name == null) {
         return defaultValue;
@@ -6169,7 +6168,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     String[] parsedDbName = parseDbName(db_name, conf);
     logAndAudit(functionName("get_partition_by_name")
-        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).extraInfo(" part=" + part_name).build());
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).part_name(part_name).build());
     Partition ret = null;
     try {
       ret = get_partition_by_name_core(getMS(), parsedDbName[CAT_NAME],
@@ -6193,7 +6192,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     logAndAudit(functionName("append_partition_by_name")
-        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).extraInfo(" part=" + part_name).build());
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).part_name(part_name).build());
     Partition ret = null;
     try {
       RawStore ms = getMS();
@@ -6236,7 +6235,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                                  final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     logAndAudit(functionName("drop_partition_by_name").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
-        .extraInfo(" part=" + part_name).build());
+        .part_name(part_name).build());
     boolean ret = false;
     try {
       ret = drop_partition_by_name_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
@@ -6420,7 +6419,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     tableName = tableName.toLowerCase();
     colName = colName.toLowerCase();
     logAndAudit(functionName("get_column_statistics_by_table").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).extraInfo(" column=" + colName).build());
+        parsedDbName[DB_NAME], tableName).column(colName).build());
     ColumnStatistics statsObj = null;
     try {
       statsObj = getMS().getTableColumnStatistics(
@@ -6477,8 +6476,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     colName = colName.toLowerCase();
     String convertedPartName = lowerCaseConvertPartName(partName);
     logAndAudit(functionName("get_column_statistics_by_partition").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).extraInfo(" partition=" + convertedPartName).
-        extraInfo(" column=" + colName).build());
+        parsedDbName[DB_NAME], tableName).part_name(convertedPartName).
+        column(colName).build());
     ColumnStatistics statsObj = null;
 
     try {
@@ -6628,7 +6627,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     ColumnStatisticsDesc csd = colStats.getStatsDesc();
     String catName = csd.getCatName(), dbName = csd.getDbName(), tableName = csd.getTableName();
     logAndAudit(functionName("write_partition_column_statistics")
-        .table(catName, dbName, tableName).extraInfo(" part=" + csd.getPartName()).build());
+        .table(catName, dbName, tableName).part_name(csd.getPartName()).build());
 
     Map<String, String> parameters;
     List<String> partVals;
@@ -6764,8 +6763,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     String convertedPartName = lowerCaseConvertPartName(partName);
     logAndAudit(functionName("delete_column_statistics_by_partition").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).extraInfo(" partition=" + convertedPartName)
-        .extraInfo(" column=" + colName).build());
+        parsedDbName[DB_NAME], tableName).part_name(convertedPartName)
+        .column(colName).build());
     boolean ret = false, committed = false;
 
     getMS().openTransaction();
@@ -6815,7 +6814,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       colName = colName.toLowerCase();
     }
     logAndAudit(functionName("delete_column_statistics_by_table").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).extraInfo(" column=" + colName).build());
+        parsedDbName[DB_NAME], tableName).column(colName).build());
     boolean ret = false, committed = false;
     getMS().openTransaction();
     try {
@@ -8077,7 +8076,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Function func = null;
     String[] parsedDbName = parseDbName(dbName, conf);
     logAndAudit(functionName("get_function").catalogName(parsedDbName[CAT_NAME])
-        .dbName(parsedDbName[DB_NAME]).extraInfo(" func=" + funcName).build());
+        .dbName(parsedDbName[DB_NAME]).extraInfo("func", funcName).build());
 
     try {
       func = ms.getFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName);
@@ -9065,9 +9064,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String parent_tbl_name = request.getParent_tbl_name();
     String foreign_db_name = request.getForeign_db_name();
     String foreign_tbl_name = request.getForeign_tbl_name();
-    logAndAudit(functionName("get_foreign_keys").extraInfo(" parentdb=" + parent_db_name)
-        .extraInfo(" parenttbl=" + parent_tbl_name).extraInfo(" foreigndb=" + foreign_db_name)
-        .extraInfo(" foreigntbl=" + foreign_tbl_name).build());
+    logAndAudit(functionName("get_foreign_keys").extraInfo("parentdb", parent_db_name)
+        .extraInfo("parenttbl", parent_tbl_name).extraInfo("foreigndb", foreign_db_name)
+        .extraInfo("foreigntbl", foreign_tbl_name).build());
     List<SQLForeignKey> ret = null;
     try {
       ret = getMS().getForeignKeys(request);
@@ -9411,7 +9410,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void create_ischema(ISchema schema) throws TException {
-    logAndAudit(functionName("create_ischema").extraInfo(" ischema=" + schema.getName()).build());
+    logAndAudit(functionName("create_ischema").ischema(schema.getName()).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9445,7 +9444,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void alter_ischema(AlterISchemaRequest rqst) throws TException {
-    logAndAudit(functionName("alter_ischema").extraInfo(" ischema=" + rqst).build());
+    logAndAudit(functionName("alter_ischema").request(rqst).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9482,7 +9481,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public ISchema get_ischema(ISchemaName schemaName) throws TException {
-    logAndAudit(functionName("get_ischema").extraInfo(" ischema=" + schemaName).build());
+    logAndAudit(functionName("get_ischema").ischema(schemaName).build());
     ISchema schema = null;
     try {
       schema = getMS().getISchema(schemaName);
@@ -9499,7 +9498,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void drop_ischema(ISchemaName schemaName) throws TException {
-    logAndAudit(functionName("drop_ischema").extraInfo(" ischema=" + schemaName).build());
+    logAndAudit(functionName("drop_ischema").ischema(schemaName).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9540,7 +9539,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void add_schema_version(SchemaVersion schemaVersion) throws TException {
-    logAndAudit(functionName("add_schema_version").extraInfo(" version=" + schemaVersion).build());
+    logAndAudit(functionName("add_schema_version").extraInfo("version", schemaVersion).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9578,7 +9577,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public SchemaVersion get_schema_version(SchemaVersionDescriptor version) throws TException {
-    logAndAudit(functionName("get_schema_version").extraInfo(" version=" + version).build());
+    logAndAudit(functionName("get_schema_version").extraInfo("version", version).build());
     SchemaVersion schemaVersion = null;
     try {
       schemaVersion = getMS().getSchemaVersion(version);
@@ -9595,7 +9594,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public SchemaVersion get_schema_latest_version(ISchemaName schemaName) throws TException {
-    logAndAudit(functionName("get_schema_latest_version").extraInfo(" schemaName=" + schemaName).build());
+    logAndAudit(functionName("get_schema_latest_version").ischema(schemaName).build());
     SchemaVersion schemaVersion = null;
     try {
       schemaVersion = getMS().getLatestSchemaVersion(schemaName);
@@ -9612,7 +9611,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public List<SchemaVersion> get_schema_all_versions(ISchemaName schemaName) throws TException {
-    logAndAudit(functionName("get_schema_all_versions").extraInfo(" schemaName=" + schemaName).build());
+    logAndAudit(functionName("get_schema_all_versions").ischema(schemaName).build());
     List<SchemaVersion> schemaVersions = null;
     try {
       schemaVersions = getMS().getAllSchemaVersion(schemaName);
@@ -9629,7 +9628,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void drop_schema_version(SchemaVersionDescriptor version) throws TException {
-    logAndAudit(functionName("drop_schema_version").extraInfo(" version=" + version).build());
+    logAndAudit(functionName("drop_schema_version").extraInfo("version", version).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9685,7 +9684,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void map_schema_version_to_serde(MapSchemaVersionToSerdeRequest rqst)
       throws TException {
-    logAndAudit(functionName("map_schema_version_to_serde").extraInfo(" request=" + rqst).build());
+    logAndAudit(functionName("map_schema_version_to_serde").request(rqst).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9729,7 +9728,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void set_schema_version_state(SetSchemaVersionStateRequest rqst) throws TException {
-    logAndAudit(functionName("set_schema_version_state").extraInfo(" request=" + rqst).build());
+    logAndAudit(functionName("set_schema_version_state").request(rqst).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9769,7 +9768,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void add_serde(SerDeInfo serde) throws TException {
-    logAndAudit(functionName("add_serde").extraInfo(" serde=" + serde.getName()).build());
+    logAndAudit(functionName("add_serde").serde(serde.getName()).build());
     boolean success = false;
     RawStore ms = getMS();
     try {
@@ -9788,7 +9787,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public SerDeInfo get_serde(GetSerdeRequest rqst) throws TException {
-    logAndAudit(functionName("add_serde").extraInfo(" serde=" + rqst.getSerdeName()).build());
+    logAndAudit(functionName("add_serde").serde(rqst.getSerdeName()).build());
     SerDeInfo serde = null;
     try {
       serde = getMS().getSerDeInfo(rqst.getSerdeName());

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
 
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.join;
 
 /**
@@ -38,6 +39,7 @@ public class MetaStoreAuditLogBuilder {
   }
 
   public static MetaStoreAuditLogBuilder functionName(String functionName) {
+    requireNonNull(functionName, "functionName is null");
     MetaStoreAuditLogBuilder builder = new MetaStoreAuditLogBuilder(functionName);
     return builder;
   }
@@ -77,8 +79,33 @@ public class MetaStoreAuditLogBuilder {
     return this;
   }
 
-  public MetaStoreAuditLogBuilder extraInfo(String extraInfo) {
-    builder.append(extraInfo).append(" ");
+  public MetaStoreAuditLogBuilder part_name(String part_name) {
+    builder.append("part=").append(part_name).append(" ");
+    return this;
+  }
+
+  public MetaStoreAuditLogBuilder column(String column) {
+    builder.append("column=").append(column).append(" ");
+    return this;
+  }
+
+  public MetaStoreAuditLogBuilder serde(String serde) {
+    builder.append("serde=").append(serde).append(" ");
+    return this;
+  }
+
+  public MetaStoreAuditLogBuilder request(Object value) {
+    builder.append("request=").append(value).append(" ");
+    return this;
+  }
+
+  public MetaStoreAuditLogBuilder ischema(Object value) {
+    builder.append("ischema=").append(value).append(" ");
+    return this;
+  }
+
+  public MetaStoreAuditLogBuilder extraInfo(String key, Object value) {
+    builder.append(key).append("=").append(value).append(" ");
     return this;
   }
 
@@ -120,5 +147,4 @@ public class MetaStoreAuditLogBuilder {
     }
     return result.toString();
   }
-  
 }
