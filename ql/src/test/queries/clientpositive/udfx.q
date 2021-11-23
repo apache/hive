@@ -1,0 +1,10 @@
+--! qt:dataset:src
+CREATE TABLE dest1_n60(c1 STRING) STORED AS TEXTFILE;
+
+FROM src INSERT OVERWRITE TABLE dest1_n60 SELECT '  abc  ' WHERE src.key = 86;
+
+EXPLAIN
+SELECT IF(NULL, 1, 2) FROM dest1_n60;
+
+SELECT IF(NULL, 1, 2) FROM dest1_n60;
+
