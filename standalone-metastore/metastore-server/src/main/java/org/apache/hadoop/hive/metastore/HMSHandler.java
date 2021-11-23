@@ -3030,10 +3030,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final EnvironmentContext envContext, boolean dropPartitions) throws MetaException, NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
     logAndAudit(functionName("drop_table").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name).build());
-    boolean success = false;
     try {
-      success =
-          drop_table_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, deleteData, envContext, null, dropPartitions);
+      drop_table_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, deleteData, envContext, null, dropPartitions);
     } catch (Exception e) {
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
           .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
