@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -31,6 +32,8 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -83,7 +86,7 @@ public class TestMetaStoreEndFunctionListener {
     listSize = DummyEndFunctionListener.funcNameList.size();
     String func_name = DummyEndFunctionListener.funcNameList.get(listSize-1);
     MetaStoreEndFunctionContext context = DummyEndFunctionListener.contextList.get(listSize-1);
-    assertEquals(func_name,"get_database");
+    assertEquals(func_name,"get_database_req");
     assertFalse(context.isSuccess());
     Exception e = context.getException();
     assertTrue((e!=null));
@@ -105,12 +108,12 @@ public class TestMetaStoreEndFunctionListener {
     listSize = DummyEndFunctionListener.funcNameList.size();
     func_name = DummyEndFunctionListener.funcNameList.get(listSize-1);
     context = DummyEndFunctionListener.contextList.get(listSize-1);
-    assertEquals(func_name,"get_table");
+    assertEquals(func_name,"get_table_req");
     assertFalse(context.isSuccess());
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), unknownTable);
+    assertEquals(((GetTableRequest)context.getfArgs()[0]).getTblName(), unknownTable);
 
     try {
       msc.getPartition("hive3524", tblName, "b=2012");
@@ -125,7 +128,7 @@ public class TestMetaStoreEndFunctionListener {
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), tblName);
+    assertEquals(context.getfArgs()[1], tblName);
     try {
       msc.dropTable(dbName, unknownTable);
     } catch (Exception e4) {
@@ -134,13 +137,19 @@ public class TestMetaStoreEndFunctionListener {
     listSize = DummyEndFunctionListener.funcNameList.size();
     func_name = DummyEndFunctionListener.funcNameList.get(listSize-1);
     context = DummyEndFunctionListener.contextList.get(listSize-1);
-    assertEquals(func_name,"get_table");
+    assertEquals(func_name,"get_table_req");
     assertFalse(context.isSuccess());
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), "UnknownTable");
+    assertEquals(((GetTableRequest)context.getfArgs()[0]).getTblName(), "UnknownTable");
 
+    // export counters
+    Map<String, Long> counters = msc.client.getCounters();
+    assertEquals(counters, DummyEndFunctionListener.functionCounters);
+    assertTrue(2l == DummyEndFunctionListener.functionCounters.get("get_table_req"));
+    assertTrue(1l == DummyEndFunctionListener.functionCounters.get("get_partition_by_name"));
+    assertTrue(1l == DummyEndFunctionListener.functionCounters.get("get_database_req"));
   }
 
 }

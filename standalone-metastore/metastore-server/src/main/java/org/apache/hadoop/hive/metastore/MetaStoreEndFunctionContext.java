@@ -30,15 +30,27 @@ public class MetaStoreEndFunctionContext {
   private final boolean success;
   private final Exception e;
   private final String inputTableName;
+  /**
+   * the input args of this method
+   */
+  private final Object[] fArgs;
 
   public MetaStoreEndFunctionContext(boolean success, Exception e, String inputTableName) {
     this.success = success;
     this.e = e;
     this.inputTableName = inputTableName;
+    this.fArgs = null;
   }
 
-  public MetaStoreEndFunctionContext(boolean success) {
-    this(success, null, null);
+  public MetaStoreEndFunctionContext(Throwable e, Object[] args) {
+    if (e instanceof Exception) {
+      this.e = (Exception) e;
+    } else {
+      this.e = new RuntimeException(e);
+    }
+    this.fArgs = args;
+    this.success = (e == null);
+    this.inputTableName = null;
   }
 
   /**
@@ -52,8 +64,16 @@ public class MetaStoreEndFunctionContext {
     return e;
   }
 
+  /**
+   * Use the method getfArgs to get the inputTableName
+   */
+  @Deprecated
   public String getInputTableName() {
     return inputTableName;
+  }
+
+  public Object[] getfArgs() {
+    return fArgs;
   }
 
 }

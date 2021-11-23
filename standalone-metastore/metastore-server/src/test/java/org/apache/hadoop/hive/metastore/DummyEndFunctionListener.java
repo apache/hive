@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -33,6 +35,7 @@ public class DummyEndFunctionListener extends MetaStoreEndFunctionListener{
   public static final List<String> funcNameList = new ArrayList<>();
   public static final List<MetaStoreEndFunctionContext> contextList =
     new ArrayList<>();
+  public static Map<String, Long> functionCounters;
 
   public DummyEndFunctionListener(Configuration config) {
     super(config);
@@ -44,4 +47,8 @@ public class DummyEndFunctionListener extends MetaStoreEndFunctionListener{
     contextList.add(context);
   }
 
+  @Override
+  public void exportCounters(AbstractMap<String, Long> counters) {
+    functionCounters = counters;
+  }
 }

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * PerfLogger.
@@ -186,24 +187,19 @@ public class PerfLogger {
   private transient Timer.Context totalApiCallsTimerContext = null;
 
   private void beginMetrics(String method) {
-    Timer timer = Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + method);
-    if (timer != null) {
-      timerContexts.put(method, timer.time());
-    }
-    timer = Metrics.getOrCreateTimer(MetricsConstants.TOTAL_API_CALLS);
-    if (timer != null) {
-      totalApiCallsTimerContext = timer.time();
-    }
+    Optional.ofNullable(Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + method))
+        .ifPresent(timer -> timerContexts.put(method, timer.time()));
+    Optional.ofNullable(Metrics.getOrCreateTimer(MetricsConstants.TOTAL_API_CALLS))
+        .ifPresent(timer -> {totalApiCallsTimerContext = timer.time();});
+    Optional.ofNullable(Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + method))
+        .ifPresent(counter -> counter.inc());
   }
 
   private void endMetrics(String method) {
-    Timer.Context context = timerContexts.remove(method);
-    if (context != null) {
-      context.close();
-    }
-    if (totalApiCallsTimerContext != null) {
-      totalApiCallsTimerContext.close();
-    }
+    Optional.ofNullable(timerContexts.remove(method)).ifPresent(timer -> timer.close());
+    Optional.ofNullable(Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + method))
+        .ifPresent(counter -> counter.dec());
+    Optional.ofNullable(totalApiCallsTimerContext).ifPresent(timer -> timer.close());
   }
 
   /**
