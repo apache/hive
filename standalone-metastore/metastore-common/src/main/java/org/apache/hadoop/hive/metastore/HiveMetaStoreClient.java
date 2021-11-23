@@ -104,7 +104,9 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
+  
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -1872,7 +1874,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     Table table = getTable(catName, dbName, tableName);
     HiveMetaHook hook = getHook(table);
     EnvironmentContext context = new EnvironmentContext();
-    context.putToProperties("truncateSkipDataDeletion", Boolean.toString(!deleteData));
+    context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     if (hook != null) {
       hook.preTruncateTable(table, context);
     }
