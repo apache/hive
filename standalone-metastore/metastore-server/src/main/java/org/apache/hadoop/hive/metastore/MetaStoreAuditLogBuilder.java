@@ -135,7 +135,7 @@ public class MetaStoreAuditLogBuilder {
   }
 
   public MetaStoreAuditLogBuilder token(String token_str_form) {
-    builder.append(" token=").append(token_str_form).append(" ");
+    builder.append("token=").append(token_str_form).append(" ");
     return this;
   }
 
