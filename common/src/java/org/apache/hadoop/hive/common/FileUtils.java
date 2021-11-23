@@ -673,34 +673,34 @@ public final class FileUtils {
                              boolean overwrite, boolean preserveXAttrs, Configuration conf) throws IOException {
     Path src = srcStatus.getPath();
     dst = checkDest(src.getName(), dstFS, dst, overwrite);
-    FileStatus[] contents;
     if (srcStatus.isDirectory()) {
       checkDependencies(srcFS, src, dstFS, dst);
       if (!dstFS.mkdirs(dst)) {
         return false;
       }
 
-      contents = srcFS.listStatus(src);
-      for(int i = 0; i < contents.length; ++i) {
-        copy(srcFS, contents[i], dstFS, new Path(dst, contents[i].getPath().getName()), deleteSource, overwrite, preserveXAttrs, conf);
+      RemoteIterator<FileStatus> fileIterator = srcFS.listStatusIterator(src);
+      while(fileIterator.hasNext()) {
+        FileStatus file = fileIterator.next();
+        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs, conf);
       }
       if (preserveXAttrs) {
         preserveXAttr(srcFS, src, dstFS, dst);
       }
     } else {
-      contents = null;
+      InputStream in = null;
       FSDataOutputStream out = null;
 
       try {
-        InputStream in = srcFS.open(src);
+        in = srcFS.open(src);
         out = dstFS.create(dst, overwrite);
         IOUtils.copyBytes(in, out, conf, true);
         if (preserveXAttrs) {
           preserveXAttr(srcFS, src, dstFS, dst);
         }
       } catch (IOException var11) {
+        IOUtils.closeStream(in);
         IOUtils.closeStream(out);
-        //IOUtils.closeStream(contents);
         throw var11;
       }
     }
