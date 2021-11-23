@@ -947,13 +947,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name_req failed: unknown result')
     end
 
-    def get_materialization_invalidation_info(creation_metadata, validTxnList)
-      send_get_materialization_invalidation_info(creation_metadata, validTxnList)
+    def get_materialization_invalidation_info(creation_metadata)
+      send_get_materialization_invalidation_info(creation_metadata)
       return recv_get_materialization_invalidation_info()
     end
 
-    def send_get_materialization_invalidation_info(creation_metadata, validTxnList)
-      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata, :validTxnList => validTxnList)
+    def send_get_materialization_invalidation_info(creation_metadata)
+      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata)
     end
 
     def recv_get_materialization_invalidation_info()
@@ -2153,6 +2153,21 @@ module ThriftHiveMetastore
       raise result.o3 unless result.o3.nil?
       raise result.o4 unless result.o4.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_partition_column_statistics_req failed: unknown result')
+    end
+
+    def update_transaction_statistics(req)
+      send_update_transaction_statistics(req)
+      recv_update_transaction_statistics()
+    end
+
+    def send_update_transaction_statistics(req)
+      send_message('update_transaction_statistics', Update_transaction_statistics_args, :req => req)
+    end
+
+    def recv_update_transaction_statistics()
+      result = receive_message(Update_transaction_statistics_result)
+      raise result.o1 unless result.o1.nil?
+      return
     end
 
     def get_table_column_statistics(db_name, tbl_name, col_name)
@@ -5150,7 +5165,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_materialization_invalidation_info_args)
       result = Get_materialization_invalidation_info_result.new()
       begin
-        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata, args.validTxnList)
+        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::InvalidOperationException => o2
@@ -6110,6 +6125,17 @@ module ThriftHiveMetastore
         result.o4 = o4
       end
       write_result(result, oprot, 'update_partition_column_statistics_req', seqid)
+    end
+
+    def process_update_transaction_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Update_transaction_statistics_args)
+      result = Update_transaction_statistics_result.new()
+      begin
+        @handler.update_transaction_statistics(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'update_transaction_statistics', seqid)
     end
 
     def process_get_table_column_statistics(seqid, iprot, oprot)
@@ -9744,11 +9770,9 @@ module ThriftHiveMetastore
   class Get_materialization_invalidation_info_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     CREATION_METADATA = 1
-    VALIDTXNLIST = 2
 
     FIELDS = {
-      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata},
-      VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
+      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata}
     }
 
     def struct_fields; FIELDS; end
@@ -12507,6 +12531,38 @@ module ThriftHiveMetastore
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
       O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_transaction_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::UpdateTransactionalStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_transaction_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

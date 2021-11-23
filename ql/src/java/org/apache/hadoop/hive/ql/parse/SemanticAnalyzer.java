@@ -80,8 +80,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -100,6 +98,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -12193,13 +12192,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (table.isMaterializedView()) {
           // When we are querying a materialized view directly, we check whether the source tables
           // do not apply any policies.
-          for (String qName : table.getCreationMetadata().getTablesUsed()) {
+          for (SourceTable sourceTable : table.getCreationMetadata().getTablesUsed()) {
+            String qualifiedTableName = TableName.getDbTable(
+                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
             try {
-              table = getTableObjectByName(qName, true);
+              table = getTableObjectByName(qualifiedTableName, true);
             } catch (HiveException e) {
               // This should not happen.
-              throw new SemanticException("Table " + qName + " not found when trying to obtain it to check masking/filtering " +
-                  "policies");
+              throw new SemanticException("Table " + qualifiedTableName +
+                  " not found when trying to obtain it to check masking/filtering policies");
             }
 
             List<String> colNames = new ArrayList<>();
@@ -12654,7 +12655,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      createVwDesc.setTablesUsed(getTablesUsed(pCtx));
+      createVwDesc.setTablesUsed(pCtx.getTablesUsed());
     }
 
     // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
@@ -12845,18 +12846,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Set schema and expanded text for the view
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
-  }
-
-  private Set<String> getTablesUsed(ParseContext parseCtx) {
-    Set<String> tablesUsed = new HashSet<>();
-    for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
-      Table table = topOp.getConf().getTableMetadata();
-      if (!table.isMaterializedTable() && !table.isView()) {
-        // Add to signature
-        tablesUsed.add(table.getFullyQualifiedName());
-      }
-    }
-    return tablesUsed;
   }
 
   private List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {

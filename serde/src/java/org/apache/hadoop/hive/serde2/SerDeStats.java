@@ -28,10 +28,16 @@ public class SerDeStats {
   // currently we support only raw data size stat
   private long rawDataSize;
   private long rowCount;
+  private long insertCount;
+  private long updateCount;
+  private long deleteCount;
 
   public SerDeStats() {
     rawDataSize = 0;
     rowCount = 0;
+    insertCount = 0;
+    updateCount = 0;
+    deleteCount = 0;
   }
 
   /**
@@ -66,4 +72,27 @@ public class SerDeStats {
     this.rowCount = rowCount;
   }
 
+  public long getInsertCount() {
+    return insertCount;
+  }
+
+  public void setInsertCount(long insertCount) {
+    this.insertCount = insertCount;
+  }
+
+  public long getUpdateCount() {
+    return updateCount;
+  }
+
+  public void setUpdateCount(long updateCount) {
+    this.updateCount = updateCount;
+  }
+
+  public long getDeleteCount() {
+    return deleteCount;
+  }
+
+  public void setDeleteCount(long deleteCount) {
+    this.deleteCount = deleteCount;
+  }
 }
