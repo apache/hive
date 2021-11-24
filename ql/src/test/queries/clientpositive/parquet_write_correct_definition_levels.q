@@ -6,7 +6,8 @@ STORED AS TEXTFILE;
 
 -- This inserts one NULL row
 INSERT OVERWRITE TABLE text_tbl
-SELECT NULL;
+SELECT IF(false, named_struct("b", named_struct("c", 1)), NULL)
+FROM src LIMIT 1;
 
 -- We test that parquet is written with a level 0 definition
 CREATE TABLE parq_tbl
