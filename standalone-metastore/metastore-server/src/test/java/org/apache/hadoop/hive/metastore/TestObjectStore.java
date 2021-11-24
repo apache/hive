@@ -1345,7 +1345,7 @@ public class TestObjectStore {
     creationMetadata.setCatName(db1.getCatalogName());
     creationMetadata.setDbName(matView1.getDbName());
     creationMetadata.setTblName(matView1.getTableName());
-    creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{ add(createSourceTable(tbl1)); }});
+    creationMetadata.setSourceTables(new HashSet<SourceTable>() {{ add(createSourceTable(tbl1)); }});
     matView1.setCreationMetadata(creationMetadata);
     objectStore.createTable(matView1);
 

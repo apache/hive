@@ -85,13 +85,13 @@ class RequestPartsSpec
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->names = array();
-                        $_size540 = 0;
-                        $_etype543 = 0;
-                        $xfer += $input->readListBegin($_etype543, $_size540);
-                        for ($_i544 = 0; $_i544 < $_size540; ++$_i544) {
-                            $elem545 = null;
-                            $xfer += $input->readString($elem545);
-                            $this->names []= $elem545;
+                        $_size548 = 0;
+                        $_etype551 = 0;
+                        $xfer += $input->readListBegin($_etype551, $_size548);
+                        for ($_i552 = 0; $_i552 < $_size548; ++$_i552) {
+                            $elem553 = null;
+                            $xfer += $input->readString($elem553);
+                            $this->names []= $elem553;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -101,14 +101,14 @@ class RequestPartsSpec
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->exprs = array();
-                        $_size546 = 0;
-                        $_etype549 = 0;
-                        $xfer += $input->readListBegin($_etype549, $_size546);
-                        for ($_i550 = 0; $_i550 < $_size546; ++$_i550) {
-                            $elem551 = null;
-                            $elem551 = new \metastore\DropPartitionsExpr();
-                            $xfer += $elem551->read($input);
-                            $this->exprs []= $elem551;
+                        $_size554 = 0;
+                        $_etype557 = 0;
+                        $xfer += $input->readListBegin($_etype557, $_size554);
+                        for ($_i558 = 0; $_i558 < $_size554; ++$_i558) {
+                            $elem559 = null;
+                            $elem559 = new \metastore\DropPartitionsExpr();
+                            $xfer += $elem559->read($input);
+                            $this->exprs []= $elem559;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -135,8 +135,8 @@ class RequestPartsSpec
             }
             $xfer += $output->writeFieldBegin('names', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->names));
-            foreach ($this->names as $iter552) {
-                $xfer += $output->writeString($iter552);
+            foreach ($this->names as $iter560) {
+                $xfer += $output->writeString($iter560);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -147,8 +147,8 @@ class RequestPartsSpec
             }
             $xfer += $output->writeFieldBegin('exprs', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->exprs));
-            foreach ($this->exprs as $iter553) {
-                $xfer += $iter553->write($output);
+            foreach ($this->exprs as $iter561) {
+                $xfer += $iter561->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

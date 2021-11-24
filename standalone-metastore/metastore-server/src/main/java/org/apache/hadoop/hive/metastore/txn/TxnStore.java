@@ -202,8 +202,11 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  Materialization getMaterializationInvalidationInfo(
-      final CreationMetadata cm)
+  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm)
+          throws MetaException;
+
+  @RetrySemantics.Idempotent
+  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm, String validTxnList)
           throws MetaException;
 
   @RetrySemantics.ReadOnly

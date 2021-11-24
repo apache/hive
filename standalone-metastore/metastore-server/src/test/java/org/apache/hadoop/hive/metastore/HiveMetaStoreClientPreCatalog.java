@@ -1601,7 +1601,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm);
+    return client.get_materialization_invalidation_info(cm, null);
+  }
+
+  @Deprecated
+  /**
+   * Use {@link HiveMetaStoreClientPreCatalog#getMaterializationInvalidationInfo(CreationMetadata)} instead.
+   */
+  @Override
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(cm, validTxnList);
   }
 
   /** {@inheritDoc} */

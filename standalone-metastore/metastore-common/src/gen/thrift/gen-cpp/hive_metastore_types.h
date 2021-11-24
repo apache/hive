@@ -3683,9 +3683,10 @@ void swap(SourceTable &a, SourceTable &b);
 std::ostream& operator<<(std::ostream& out, const SourceTable& obj);
 
 typedef struct _CreationMetadata__isset {
-  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
+  _CreationMetadata__isset() : validTxnList(false), materializationTime(false), sourceTables(false) {}
   bool validTxnList :1;
   bool materializationTime :1;
+  bool sourceTables :1;
 } _CreationMetadata__isset;
 
 class CreationMetadata : public virtual ::apache::thrift::TBase {
@@ -3700,9 +3701,10 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::string tblName;
-  std::set<SourceTable>  tablesUsed;
+  std::set<std::string>  tablesUsed;
   std::string validTxnList;
   int64_t materializationTime;
+  std::set<SourceTable>  sourceTables;
 
   _CreationMetadata__isset __isset;
 
@@ -3712,11 +3714,13 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
 
   void __set_tblName(const std::string& val);
 
-  void __set_tablesUsed(const std::set<SourceTable> & val);
+  void __set_tablesUsed(const std::set<std::string> & val);
 
   void __set_validTxnList(const std::string& val);
 
   void __set_materializationTime(const int64_t val);
+
+  void __set_sourceTables(const std::set<SourceTable> & val);
 
   bool operator == (const CreationMetadata & rhs) const
   {
@@ -3735,6 +3739,10 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
     if (__isset.materializationTime != rhs.__isset.materializationTime)
       return false;
     else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
+      return false;
+    if (__isset.sourceTables != rhs.__isset.sourceTables)
+      return false;
+    else if (__isset.sourceTables && !(sourceTables == rhs.sourceTables))
       return false;
     return true;
   }
