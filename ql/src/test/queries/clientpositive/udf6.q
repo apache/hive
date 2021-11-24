@@ -1,13 +1,12 @@
 --! qt:dataset:src
-drop table if exists dest1_n60;
 CREATE TABLE dest1_n60(c1 STRING) STORED AS TEXTFILE;
 
--- FROM src INSERT OVERWRITE TABLE dest1_n60 SELECT '  abc  ' WHERE src.key = 86;
+FROM src INSERT OVERWRITE TABLE dest1_n60 SELECT '  abc  ' WHERE src.key = 86;
 
 EXPLAIN
 SELECT IF(TRUE, 1, 2) FROM dest1_n60;
 
--- SELECT IF(TRUE, 1, 2) FROM dest1_n60;
+SELECT IF(TRUE, 1, 2) FROM dest1_n60;
 
 EXPLAIN
 SELECT IF(CAST(NULL AS BOOLEAN), 1, 2);

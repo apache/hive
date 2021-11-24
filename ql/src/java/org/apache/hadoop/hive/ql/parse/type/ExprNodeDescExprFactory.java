@@ -819,8 +819,8 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
   @Override
   protected boolean convertCASEIntoIFFuncCallExpr(FunctionInfo fi, List<ExprNodeDesc> inputs) {
     GenericUDF genericUDF = fi.getGenericUDF();
-    return genericUDF instanceof GenericUDFWhen && inputs.size() == 3;
-    //FIXME        && TypeInfoFactory.booleanTypeInfo.equals(inputs.get(0).getTypeInfo());
+    return genericUDF instanceof GenericUDFWhen && inputs.size() == 3
+        && TypeInfoFactory.booleanTypeInfo.equals(inputs.get(0).getTypeInfo());
   }
 
   /**
