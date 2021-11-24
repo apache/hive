@@ -3819,15 +3819,15 @@ public class TestInputOutputFormat {
       Reader.Options orcReaderOptions = new Reader.Options();
       orcReaderOptions.range(split.getStart(), split.getLength());
       OrcFile.ReaderOptions qlReaderOptions = OrcFile.readerOptions(conf).maxLength(split.getFileLength());
-      Reader reader = OrcFile.createReader(split.getPath(), qlReaderOptions);
-      RecordReader recordReader = reader.rowsOptions(orcReaderOptions);
-      for(int j = 0; recordReader.hasNext(); j++) {
-        long rowNum = (i * 5000) + j;
-        long rowNumActual = recordReader.getRowNumber();
-        assertEquals("rowNum=" + rowNum, rowNum, rowNumActual);
-        Object row = recordReader.next(null);
+      try (Reader reader = OrcFile.createReader(split.getPath(), qlReaderOptions)) {
+        RecordReader recordReader = reader.rowsOptions(orcReaderOptions);
+        for (int j = 0; recordReader.hasNext(); j++) {
+          long rowNum = (i * 5000) + j;
+          long rowNumActual = recordReader.getRowNumber();
+          assertEquals("rowNum=" + rowNum, rowNum, rowNumActual);
+          Object row = recordReader.next(null);
+        }
       }
-      recordReader.close();
     }
 
     // Reset the conf variable values that we changed for this test.
