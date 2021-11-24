@@ -207,9 +207,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       return false;
     }
     for (FileStatus file : files) {
-      try {
-        OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs));
+      try (Reader notUsed = OrcFile.createReader(file.getPath(), OrcFile.readerOptions(conf).filesystem(fs))) {
+        // We do not use the reader itself. We just check if we can open the file.
       } catch (IOException e) {
         return false;
       }
