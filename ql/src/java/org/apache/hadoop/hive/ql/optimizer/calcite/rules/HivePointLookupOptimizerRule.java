@@ -387,12 +387,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     private static boolean isColumnExpr(RexNode node) {
-      return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() > 0
+      return !node.getType().isStruct() && !HiveCalciteUtil.getInputRefs(node).isEmpty()
           && HiveCalciteUtil.isDeterministic(node);
     }
 
     private static boolean isConstExpr(RexNode node) {
-      return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() == 0
+      return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).isEmpty()
           && HiveCalciteUtil.isDeterministic(node);
     }
 
@@ -508,7 +508,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       for (Entry<Set<RexNodeRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
         // skip opaque
-        if (sa.getKey().size() == 0) {
+        if (sa.getKey().isEmpty()) {
           continue;
         }
         // not enough equalities should not be handled
@@ -593,6 +593,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       // into a null value.
       final Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs = LinkedHashMultimap.create();
       final List<RexNode> operands = new ArrayList<>(RexUtil.flattenAnd(call.getOperands()));
+
       for (int i = 0; i < operands.size(); i++) {
         RexNode operand = operands.get(i);
         if (operand.getKind() == SqlKind.IN) {
@@ -614,7 +615,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
                 inLHSExprToRHSNullableExprs.put(ref, constNode);
               }
             }
-            inLHSExprToRHSExprs.get(ref).retainAll(expressions);
+            Collection<RexNode> knownConstants = inLHSExprToRHSExprs.get(ref);
+            if (!shareSameType(knownConstants, expressions)) {
+              return call;
+            }
+            knownConstants.retainAll(expressions);
           } else {
             for (int j = 1; j < inCall.getOperands().size(); j++) {
               RexNode constNode = inCall.getOperands().get(j);
@@ -639,7 +644,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             inLHSExprToRHSNullableExprs.put(c.exprNode, c.constNode);
           }
           if (inLHSExprToRHSExprs.containsKey(c.exprNode)) {
-            inLHSExprToRHSExprs.get(c.exprNode).retainAll(Collections.singleton(c.constNode));
+            Collection<RexNode> knownConstants = inLHSExprToRHSExprs.get(c.exprNode);
+            Collection<RexNode> nextConstant = Collections.singleton(c.constNode);
+            if (!shareSameType(knownConstants, nextConstant)) {
+              return call;
+            }
+            knownConstants.retainAll(nextConstant);
           } else {
             inLHSExprToRHSExprs.put(c.exprNode, c.constNode);
           }
@@ -653,6 +663,26 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       newOperands.addAll(operands);
       // Return node
       return RexUtil.composeConjunction(rexBuilder, newOperands, false);
+    }
+
+    /**
+     * Check if the type of nodes in the two collections is homogeneous within the collections
+     * and identical between them.
+     * @param nodes1 the first collection of nodes
+     * @param nodes2 the second collection of nodes
+     * @return true if nodes in both collections is unique and identical, false otherwise
+     */
+    private static boolean shareSameType(Collection<RexNode> nodes1, Collection<RexNode> nodes2) {
+      Set<SqlTypeName> types1 = nodes1.stream()
+          .map(n -> n.getType().getSqlTypeName())
+          .collect(Collectors.toSet());
+
+      Set<SqlTypeName> types2 = nodes2.stream()
+          .map(n -> n.getType().getSqlTypeName())
+          .collect(Collectors.toSet());
+
+      return types1.size() == 1 && types2.size() == 1
+          && !Sets.intersection(types1, types2).isEmpty();
     }
 
     private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
