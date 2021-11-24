@@ -379,7 +379,13 @@ public class RexNodeConverter {
         newChildRexNodeLst.add(childRexNodeLst.get(childRexNodeLst.size()-1));
       }
     } else {
-      newChildRexNodeLst.addAll(childRexNodeLst);
+      for (int i = 0; i < childRexNodeLst.size(); i++) {
+        RexNode child = childRexNodeLst.get(i);
+        if (i % 2 == 0 && SqlTypeName.NULL.equals(child.getType().getSqlTypeName()) && RexUtil.isNull(child)) {
+          child = rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN));
+        }
+        newChildRexNodeLst.add(child);
+      }
     }
     // Calcite always needs the else clause to be defined explicitly
     if (newChildRexNodeLst.size() % 2 == 0) {
