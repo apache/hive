@@ -987,9 +987,9 @@ public class TypeCheckProcFactory<T> {
           }
         }
         if(funcText.equalsIgnoreCase("case")) {
-          ListMultimap<TypeInfo, T> expressions = getTypeInfoTListMultimap((List<T>) children);
+          ArrayList<T> expressions = getTypeInfoTListMultimapForCase((List<T>) children);
           children.clear();
-          children.addAll(expressions.asMap().values().iterator().next());
+          children.addAll(expressions);
         }
         // The "in" function is sometimes changed to an "or".  Later on, the "or"
         // function is processed a little differently.  We don't want to process this
@@ -1122,6 +1122,23 @@ public class TypeCheckProcFactory<T> {
         }
       }
       return expressions;
+    }
+
+    private ArrayList<T> getTypeInfoTListMultimapForCase(List<T> children) throws SemanticException {
+      ArrayList<T> children1 = new ArrayList<>();
+      if (children.size() > 0) {
+        children1.add(children.get(0));
+      }
+      for (int i = 1; i < children.size(); i++) {
+        T columnDesc = children.get(0);
+        T valueDesc = interpretNode(columnDesc, children.get(i));
+        if (valueDesc == null) {
+          children1.add(columnDesc);
+        } else {
+          children1.add(valueDesc);
+        }
+      }
+      return children1;
     }
 
     private TypeInfo getTypeInfo(ASTNode funcNameNode) throws SemanticException {
