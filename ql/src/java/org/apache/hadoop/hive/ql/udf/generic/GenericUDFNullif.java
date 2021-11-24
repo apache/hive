@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
@@ -38,7 +39,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 public class GenericUDFNullif extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
-  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient ObjectInspector oi0;
+  private transient ObjectInspector oi1;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -46,8 +48,8 @@ public class GenericUDFNullif extends GenericUDF {
     argumentOIs = arguments;
     checkArgsSize(arguments, 2, 2);
 
-    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
-    returnOIResolver.update(arguments[0]);
+    oi0 = arguments[0];
+    oi1 = arguments[1];
 
     boolean isPrimitive = (arguments[0] instanceof PrimitiveObjectInspector);
     if (isPrimitive)
@@ -78,28 +80,20 @@ public class GenericUDFNullif extends GenericUDF {
                 + "\" is expected but \"" + typeName1 + "\" is found");
       }
     }
-
-    return returnOIResolver.get();
+    return oi0;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object arg0 = arguments[0].get();
     Object arg1 = arguments[1].get();
-    Object value0 = null;
-    if (arg0 != null) {
-      value0 = returnOIResolver.convertIfNecessary(arg0, argumentOIs[0], false);
-    }
     if (arg0 == null || arg1 == null) {
-      return value0;
+      return arg0;
     }
-    PrimitiveObjectInspector compareOI = (PrimitiveObjectInspector) returnOIResolver.get();
-    if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
-        value0, compareOI,
-        returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false), compareOI)) {
+    if (ObjectInspectorUtils.compare(arg0, oi0, arg1, oi1) == 0) {
       return null;
     }
-    return value0;
+    return arg0;
   }
 
   @Override
