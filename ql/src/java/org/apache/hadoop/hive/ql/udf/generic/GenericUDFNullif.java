@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
@@ -73,7 +72,6 @@ public class GenericUDFNullif extends GenericUDF {
     } else {
       String typeName0 = arguments[0].getTypeName();
       String typeName1 = arguments[1].getTypeName();
-      ObjectInspectorUtils.compareTypes(arguments[0], arguments[1]);
       if (!typeName0.equals(typeName1)) {
         throw new UDFArgumentTypeException(1,
             "The expressions after NULLIF should all have the same type: \"" + typeName0
@@ -95,7 +93,9 @@ public class GenericUDFNullif extends GenericUDF {
     if (arg0 == null || arg1 == null) {
       return value0;
     }
-    if (ObjectInspectorUtils.compare(o1, oi1, o2, oi2)) {
+    PrimitiveObjectInspector compareOI = (PrimitiveObjectInspector) returnOIResolver.get();
+    if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
+        value0, compareOI,
         returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false), compareOI)) {
       return null;
     }
