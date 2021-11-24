@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -985,6 +986,11 @@ public class TypeCheckProcFactory<T> {
             children.set(constIdx, newChild);
           }
         }
+        if(funcText.equalsIgnoreCase("case")) {
+          ListMultimap<TypeInfo, T> expressions = getTypeInfoTListMultimap((List<T>) children);
+          children.clear();
+          children.addAll(expressions.asMap().values().iterator().next());
+        }
         // The "in" function is sometimes changed to an "or".  Later on, the "or"
         // function is processed a little differently.  We don't want to process this
         // new "or" function differently, so we track it with this variable.
@@ -996,25 +1002,7 @@ public class TypeCheckProcFactory<T> {
           // types in IN clauses differently and it is practically impossible
           // to find some correct implementation unless this is done.
           boolean hasNullValue = false;
-          ListMultimap<TypeInfo, T> expressions = ArrayListMultimap.create();
-          for (int i = 1; i < children.size(); i++) {
-            T columnDesc = children.get(0);
-            T valueDesc = interpretNode(columnDesc, children.get(i));
-            if (valueDesc == null) {
-              // Keep original
-              TypeInfo targetType = exprFactory.getTypeInfo(children.get(i));
-              if (!expressions.containsKey(targetType)) {
-                expressions.put(targetType, columnDesc);
-              }
-              expressions.put(targetType, children.get(i));
-            } else {
-              TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
-              if (!expressions.containsKey(targetType)) {
-                expressions.put(targetType, columnDesc);
-              }
-              expressions.put(targetType, valueDesc);
-            }
-          }
+          ListMultimap<TypeInfo, T> expressions = getTypeInfoTListMultimap(children);
 
           children.clear();
           List<T> newExprs = new ArrayList<>();
@@ -1110,6 +1098,30 @@ public class TypeCheckProcFactory<T> {
       }
       assert (expr != null);
       return expr;
+    }
+
+    @NotNull
+    private ListMultimap<TypeInfo, T> getTypeInfoTListMultimap(List<T> children) throws SemanticException {
+      ListMultimap<TypeInfo, T> expressions = ArrayListMultimap.create();
+      for (int i = 1; i < children.size(); i++) {
+        T columnDesc = children.get(0);
+        T valueDesc = interpretNode(columnDesc, children.get(i));
+        if (valueDesc == null) {
+          // Keep original
+          TypeInfo targetType = exprFactory.getTypeInfo(children.get(i));
+          if (!expressions.containsKey(targetType)) {
+            expressions.put(targetType, columnDesc);
+          }
+          expressions.put(targetType, children.get(i));
+        } else {
+          TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
+          if (!expressions.containsKey(targetType)) {
+            expressions.put(targetType, columnDesc);
+          }
+          expressions.put(targetType, valueDesc);
+        }
+      }
+      return expressions;
     }
 
     private TypeInfo getTypeInfo(ASTNode funcNameNode) throws SemanticException {
