@@ -1,0 +1,60 @@
+PREHOOK: query: create table t_smj_left (key string, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_smj_left
+POSTHOOK: query: create table t_smj_left (key string, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_smj_left
+PREHOOK: query: insert into t_smj_left values
+('key1', 1),
+('key1', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_smj_left
+POSTHOOK: query: insert into t_smj_left values
+('key1', 1),
+('key1', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_smj_left
+POSTHOOK: Lineage: t_smj_left.key SCRIPT []
+POSTHOOK: Lineage: t_smj_left.value SCRIPT []
+PREHOOK: query: create table t_smj_right (key string, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_smj_right
+POSTHOOK: query: create table t_smj_right (key string, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_smj_right
+PREHOOK: query: insert into t_smj_right values
+('key1', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_smj_right
+POSTHOOK: query: insert into t_smj_right values
+('key1', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_smj_right
+POSTHOOK: Lineage: t_smj_right.key SCRIPT []
+POSTHOOK: Lineage: t_smj_right.value SCRIPT []
+PREHOOK: query: select
+    t2.value
+from t_smj_left t1
+left join t_smj_right t2 on t1.key=t2.key and t1.value=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_smj_left
+PREHOOK: Input: default@t_smj_right
+#### A masked pattern was here ####
+POSTHOOK: query: select
+    t2.value
+from t_smj_left t1
+left join t_smj_right t2 on t1.key=t2.key and t1.value=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_smj_left
+POSTHOOK: Input: default@t_smj_right
+#### A masked pattern was here ####
+NULL
+1
