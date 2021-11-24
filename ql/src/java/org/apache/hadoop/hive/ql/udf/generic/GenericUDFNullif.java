@@ -39,8 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 public class GenericUDFNullif extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
-  private transient ObjectInspector oi0;
-  private transient ObjectInspector oi1;
+  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -48,8 +47,8 @@ public class GenericUDFNullif extends GenericUDF {
     argumentOIs = arguments;
     checkArgsSize(arguments, 2, 2);
 
-    oi0 = arguments[0];
-    oi1 = arguments[1];
+    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
+    returnOIResolver.update(arguments[0]);
 
     boolean isPrimitive = (arguments[0] instanceof PrimitiveObjectInspector);
     if (isPrimitive)
@@ -80,20 +79,24 @@ public class GenericUDFNullif extends GenericUDF {
                 + "\" is expected but \"" + typeName1 + "\" is found");
       }
     }
-    return oi0;
+
+    return returnOIResolver.get();
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object arg0 = arguments[0].get();
     Object arg1 = arguments[1].get();
+    Object value0 = returnOIResolver.convertIfNecessary(arg0, argumentOIs[0], false);
     if (arg0 == null || arg1 == null) {
-      return arg0;
+      return value0;
     }
-    if (ObjectInspectorUtils.compare(arg0, oi0, arg1, oi1) == 0) {
+    Object value1 = returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false);
+    ObjectInspector compareOI = returnOIResolver.get();
+    if (ObjectInspectorUtils.compare(value0, compareOI, value1, compareOI) == 0) {
       return null;
     }
-    return arg0;
+    return value0;
   }
 
   @Override

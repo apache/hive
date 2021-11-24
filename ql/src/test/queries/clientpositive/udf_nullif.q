@@ -28,5 +28,5 @@ select	nullif(a,b),
 	nullif(c,d),
 	nullif(d,a) from t0;
 
-
-SELECT NULLIF(array(1,2,3),array(1,2,3))
+SELECT NULLIF(array(1,2,3),array(1,2,3));
+SELECT NULLIF(array(1,2,3),array(3,2,1));
