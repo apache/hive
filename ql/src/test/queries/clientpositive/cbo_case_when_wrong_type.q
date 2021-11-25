@@ -1,34 +1,10 @@
-create external table test_case (row_seq smallint, row_desc string) stored as parquet;
-insert into test_case values (1, 'a');
-insert into test_case values (2, 'aa');
-insert into test_case values (6, 'aaaaaa');
+create table t (a smallint, b string);
+insert into t values (1, 'a');
+insert into t values (2, 'aa');
+insert into t values (6, 'aaaaaa');
 
-with base_t as (select row_seq, row_desc,
-  case row_seq
-    when 1 then '34'
-    when 6 then '35'
-    when 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34';
+select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end;
+explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end;
 
-explain cbo with base_t as (select row_seq, row_desc,
-  case row_seq
-    when 1 then '34'
-    when 6 then '35'
-    when 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34';
-
-with base_t as (select row_seq, row_desc,
-  case when row_seq = 1 then '34'
-       when row_seq = 6 then '35'
-       when row_seq = 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34';
-
-explain cbo with base_t as (select row_seq, row_desc,
-  case when row_seq = 1 then '34'
-       when row_seq = 6 then '35'
-       when row_seq = 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34';
+select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end;
+explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end;

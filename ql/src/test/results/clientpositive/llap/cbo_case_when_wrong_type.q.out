@@ -1,128 +1,84 @@
-PREHOOK: query: create external table test_case (row_seq smallint, row_desc string) stored as parquet
+PREHOOK: query: create table t (a smallint, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_case
-POSTHOOK: query: create external table test_case (row_seq smallint, row_desc string) stored as parquet
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a smallint, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_case
-PREHOOK: query: insert into test_case values (1, 'a')
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (1, 'a')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_case
-POSTHOOK: query: insert into test_case values (1, 'a')
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (1, 'a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_case
-POSTHOOK: Lineage: test_case.row_desc SCRIPT []
-POSTHOOK: Lineage: test_case.row_seq SCRIPT []
-PREHOOK: query: insert into test_case values (2, 'aa')
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: insert into t values (2, 'aa')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_case
-POSTHOOK: query: insert into test_case values (2, 'aa')
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (2, 'aa')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_case
-POSTHOOK: Lineage: test_case.row_desc SCRIPT []
-POSTHOOK: Lineage: test_case.row_seq SCRIPT []
-PREHOOK: query: insert into test_case values (6, 'aaaaaa')
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: insert into t values (6, 'aaaaaa')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_case
-POSTHOOK: query: insert into test_case values (6, 'aaaaaa')
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (6, 'aaaaaa')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_case
-POSTHOOK: Lineage: test_case.row_desc SCRIPT []
-POSTHOOK: Lineage: test_case.row_seq SCRIPT []
-PREHOOK: query: with base_t as (select row_seq, row_desc,
-  case row_seq
-    when 1 then '34'
-    when 6 then '35'
-    when 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_case
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: with base_t as (select row_seq, row_desc,
-  case row_seq
-    when 1 then '34'
-    when 6 then '35'
-    when 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+POSTHOOK: query: select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_case
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-2	aa	36
-6	aaaaaa	35
-PREHOOK: query: explain cbo with base_t as (select row_seq, row_desc,
-  case row_seq
-    when 1 then '34'
-    when 6 then '35'
-    when 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+1
+1
+PREHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_case
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: explain cbo with base_t as (select row_seq, row_desc,
-  case row_seq
-    when 1 then '34'
-    when 6 then '35'
-    when 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+POSTHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_case
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(row_seq=[$0], row_desc=[$1], zb=[CASE(=($0, 1), _UTF-16LE'34':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", =($0, 6), _UTF-16LE'35':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", =($0, 2), _UTF-16LE'36':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
-  HiveFilter(condition=[AND(IS NOT TRUE(=($0, 1)), IN($0, 2:SMALLINT, 6:SMALLINT))])
-    HiveTableScan(table=[[default, test_case]], table:alias=[test_case])
+HiveProject($f0=[1])
+  HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
 
-PREHOOK: query: with base_t as (select row_seq, row_desc,
-  case when row_seq = 1 then '34'
-       when row_seq = 6 then '35'
-       when row_seq = 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+PREHOOK: query: select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_case
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: with base_t as (select row_seq, row_desc,
-  case when row_seq = 1 then '34'
-       when row_seq = 6 then '35'
-       when row_seq = 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+POSTHOOK: query: select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_case
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-2	aa	36
-6	aaaaaa	35
-PREHOOK: query: explain cbo with base_t as (select row_seq, row_desc,
-  case when row_seq = 1 then '34'
-       when row_seq = 6 then '35'
-       when row_seq = 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+1
+1
+PREHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_case
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: explain cbo with base_t as (select row_seq, row_desc,
-  case when row_seq = 1 then '34'
-       when row_seq = 6 then '35'
-       when row_seq = 2 then '36'
-  end as zb from test_case where row_seq in (1,2,6))
-select row_seq, row_desc, zb from base_t where zb <> '34'
+POSTHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_case
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(row_seq=[$0], row_desc=[$1], zb=[CASE(=($0, 1), _UTF-16LE'34':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", =($0, 6), _UTF-16LE'35':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", =($0, 2), _UTF-16LE'36':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
-  HiveFilter(condition=[AND(IS NOT TRUE(=($0, 1)), IN($0, 2:SMALLINT, 6:SMALLINT))])
-    HiveTableScan(table=[[default, test_case]], table:alias=[test_case])
+HiveProject($f0=[1])
+  HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
 
