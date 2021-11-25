@@ -237,7 +237,7 @@ data_type           	tinyint
 min                 	-64                 
 max                 	62                  
 num_nulls           	3115                
-distinct_count      	130                 
+distinct_count      	127                 
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    

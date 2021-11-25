@@ -324,7 +324,7 @@ public class JoinUtil {
       int columnSize = valueCols.size();
       StringBuilder colNames = new StringBuilder();
       StringBuilder colTypes = new StringBuilder();
-      if (columnSize <= 0) {
+      if (columnSize <= 0 && noFilter) {
         continue;
       }
       for (int k = 0; k < columnSize; k++) {
@@ -341,9 +341,12 @@ public class JoinUtil {
         colTypes.append(TypeInfoFactory.shortTypeInfo.getTypeName());
         colTypes.append(',');
       }
-      // remove the last ','
-      colNames.setLength(colNames.length() - 1);
-      colTypes.setLength(colTypes.length() - 1);
+      if (colNames.length() > 0) {
+        // remove the last ','
+        colNames.setLength(colNames.length() - 1);
+        colTypes.setLength(colTypes.length() - 1);
+      }
+
       Properties props = new Properties();
       props.put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode);
       props.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames.toString());

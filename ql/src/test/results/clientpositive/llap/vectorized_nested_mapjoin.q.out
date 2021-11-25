@@ -29,7 +29,7 @@ STAGE PLANS:
                 TableScan
                   alias: v3
                   filterExpr: csmallint is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:csmallint, smallTablePos:1, keyRatio:0.010579427083333334
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:csmallint, smallTablePos:1, keyRatio:0.010335286458333334
                   Statistics: Num rows: 12288 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: csmallint is not null (type: boolean)
@@ -57,7 +57,7 @@ STAGE PLANS:
                           outputColumnNames: _col3
                           input vertices:
                             1 Map 3
-                          Statistics: Num rows: 782315 Data size: 6244648 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 800795 Data size: 6392488 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col3)
                             minReductionHashAggr: 0.99

@@ -213,3 +213,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
 1	2	3.1	4.1
+PREHOOK: query: SELECT NULLIF(array(1,2,3),array(1,2,3))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT NULLIF(array(1,2,3),array(1,2,3))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT NULLIF(array(1,2,3),array(3,2,1))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT NULLIF(array(1,2,3),array(3,2,1))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]

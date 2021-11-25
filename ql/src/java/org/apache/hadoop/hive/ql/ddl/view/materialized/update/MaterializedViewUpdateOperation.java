@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -59,6 +60,12 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
             mvTable.getDbName(), mvTable.getTableName(),
             ImmutableSet.copyOf(mvTable.getCreationMetadata().getTablesUsed()));
         cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+        // Reset source table stats
+        for (SourceTable sourceTable : cm.getTablesUsed()) {
+          sourceTable.setInsertedCount(0L);
+          sourceTable.setUpdatedCount(0L);
+          sourceTable.setDeletedCount(0L);
+        }
         context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), cm);
         mvTable.setCreationMetadata(cm);
         HiveMaterializedViewsRegistry.get().createMaterializedView(context.getDb().getConf(), mvTable);

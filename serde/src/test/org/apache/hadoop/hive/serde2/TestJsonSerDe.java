@@ -49,7 +49,7 @@ import org.junit.Test;
 public class TestJsonSerDe {
 
   @Test
-  public void testPrimativeDataTypes() throws Exception {
+  public void testPrimitiveDataTypes() throws Exception {
     Properties props = new Properties();
     props.setProperty(serdeConstants.LIST_COLUMNS,
         "name,height,weight,endangered,born");
@@ -168,7 +168,7 @@ public class TestJsonSerDe {
   /**
    * Test when a map has a key defined as a numeric value. Technically, JSON
    * does not support this because each key in a map must be a quoted string.
-   * Unquoted strings (hence an int value) is allowed by Javascript, but not by
+   * Unquoted strings (hence an int value) is allowed by JavaScript, but not by
    * JSON specification. For Hive, the int map key type is stored as a string
    * and must be converted back into an int type.
    */

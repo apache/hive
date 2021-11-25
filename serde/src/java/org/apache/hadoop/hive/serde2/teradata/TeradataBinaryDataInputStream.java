@@ -136,7 +136,7 @@ public class TeradataBinaryDataInputStream extends SwappedDataInputStream {
    * Read CHAR(N).
    * The representation of char in Teradata binary format is
    * the byte number to read is based on the [charLength] * [bytePerChar] &lt;- totalLength,
-   * bytePerChar is decided by the charset: LATAIN charset is 2 bytes per char and UNICODE charset is 3 bytes per char.
+   * bytePerChar is decided by the charset: LATIN charset is 2 bytes per char and UNICODE charset is 3 bytes per char.
    * the null char will use space to pad.
    *
    * @param totalLength the total length

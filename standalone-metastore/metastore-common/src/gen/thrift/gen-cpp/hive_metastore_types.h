@@ -499,6 +499,8 @@ class SkewedInfo;
 
 class StorageDescriptor;
 
+class SourceTable;
+
 class CreationMetadata;
 
 class BooleanColumnStatsData;
@@ -658,6 +660,8 @@ class CommitTxnKeyValue;
 class WriteEventInfo;
 
 class ReplLastIdInfo;
+
+class UpdateTransactionalStatsRequest;
 
 class CommitTxnRequest;
 
@@ -3627,6 +3631,57 @@ void swap(StorageDescriptor &a, StorageDescriptor &b);
 
 std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj);
 
+
+class SourceTable : public virtual ::apache::thrift::TBase {
+ public:
+
+  SourceTable(const SourceTable&);
+  SourceTable& operator=(const SourceTable&);
+  SourceTable() : insertedCount(0), updatedCount(0), deletedCount(0) {
+  }
+
+  virtual ~SourceTable() noexcept;
+  Table table;
+  int64_t insertedCount;
+  int64_t updatedCount;
+  int64_t deletedCount;
+
+  void __set_table(const Table& val);
+
+  void __set_insertedCount(const int64_t val);
+
+  void __set_updatedCount(const int64_t val);
+
+  void __set_deletedCount(const int64_t val);
+
+  bool operator == (const SourceTable & rhs) const
+  {
+    if (!(table == rhs.table))
+      return false;
+    if (!(insertedCount == rhs.insertedCount))
+      return false;
+    if (!(updatedCount == rhs.updatedCount))
+      return false;
+    if (!(deletedCount == rhs.deletedCount))
+      return false;
+    return true;
+  }
+  bool operator != (const SourceTable &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SourceTable & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SourceTable &a, SourceTable &b);
+
+std::ostream& operator<<(std::ostream& out, const SourceTable& obj);
+
 typedef struct _CreationMetadata__isset {
   _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
   bool validTxnList :1;
@@ -3645,7 +3700,7 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::string tblName;
-  std::set<std::string>  tablesUsed;
+  std::set<SourceTable>  tablesUsed;
   std::string validTxnList;
   int64_t materializationTime;
 
@@ -3657,7 +3712,7 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
 
   void __set_tblName(const std::string& val);
 
-  void __set_tablesUsed(const std::set<std::string> & val);
+  void __set_tablesUsed(const std::set<SourceTable> & val);
 
   void __set_validTxnList(const std::string& val);
 
@@ -8576,6 +8631,57 @@ class ReplLastIdInfo : public virtual ::apache::thrift::TBase {
 void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
 
 std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj);
+
+
+class UpdateTransactionalStatsRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  UpdateTransactionalStatsRequest(const UpdateTransactionalStatsRequest&);
+  UpdateTransactionalStatsRequest& operator=(const UpdateTransactionalStatsRequest&);
+  UpdateTransactionalStatsRequest() : tableId(0), insertCount(0), updatedCount(0), deletedCount(0) {
+  }
+
+  virtual ~UpdateTransactionalStatsRequest() noexcept;
+  int64_t tableId;
+  int64_t insertCount;
+  int64_t updatedCount;
+  int64_t deletedCount;
+
+  void __set_tableId(const int64_t val);
+
+  void __set_insertCount(const int64_t val);
+
+  void __set_updatedCount(const int64_t val);
+
+  void __set_deletedCount(const int64_t val);
+
+  bool operator == (const UpdateTransactionalStatsRequest & rhs) const
+  {
+    if (!(tableId == rhs.tableId))
+      return false;
+    if (!(insertCount == rhs.insertCount))
+      return false;
+    if (!(updatedCount == rhs.updatedCount))
+      return false;
+    if (!(deletedCount == rhs.deletedCount))
+      return false;
+    return true;
+  }
+  bool operator != (const UpdateTransactionalStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const UpdateTransactionalStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(UpdateTransactionalStatsRequest &a, UpdateTransactionalStatsRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const UpdateTransactionalStatsRequest& obj);
 
 typedef struct _CommitTxnRequest__isset {
   _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false), exclWriteEnabled(true), txn_type(false) {}

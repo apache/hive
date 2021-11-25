@@ -80,7 +80,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_tables_ext(GetTablesExtRequest req)')
     print('  GetTableResult get_table_req(GetTableRequest req)')
     print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
-    print('  Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata, string validTxnList)')
+    print('  Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata)')
     print('  void update_creation_metadata(string catName, string dbname, string tbl_name, CreationMetadata creation_metadata)')
     print('   get_table_names_by_filter(string dbname, string filter, i16 max_tables)')
     print('  void alter_table(string dbname, string tbl_name, Table new_tbl)')
@@ -150,6 +150,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
     print('  SetPartitionsStatsResponse update_table_column_statistics_req(SetPartitionsStatsRequest req)')
     print('  SetPartitionsStatsResponse update_partition_column_statistics_req(SetPartitionsStatsRequest req)')
+    print('  void update_transaction_statistics(UpdateTransactionalStatsRequest req)')
     print('  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)')
     print('  ColumnStatistics get_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)')
     print('  TableStatsResult get_table_statistics_req(TableStatsRequest request)')
@@ -718,10 +719,10 @@ elif cmd == 'get_table_objects_by_name_req':
     pp.pprint(client.get_table_objects_by_name_req(eval(args[0]),))
 
 elif cmd == 'get_materialization_invalidation_info':
-    if len(args) != 2:
-        print('get_materialization_invalidation_info requires 2 args')
+    if len(args) != 1:
+        print('get_materialization_invalidation_info requires 1 args')
         sys.exit(1)
-    pp.pprint(client.get_materialization_invalidation_info(eval(args[0]), args[1],))
+    pp.pprint(client.get_materialization_invalidation_info(eval(args[0]),))
 
 elif cmd == 'update_creation_metadata':
     if len(args) != 4:
@@ -1136,6 +1137,12 @@ elif cmd == 'update_partition_column_statistics_req':
         print('update_partition_column_statistics_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.update_partition_column_statistics_req(eval(args[0]),))
+
+elif cmd == 'update_transaction_statistics':
+    if len(args) != 1:
+        print('update_transaction_statistics requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.update_transaction_statistics(eval(args[0]),))
 
 elif cmd == 'get_table_column_statistics':
     if len(args) != 3:

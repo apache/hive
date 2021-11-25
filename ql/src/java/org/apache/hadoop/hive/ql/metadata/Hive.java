@@ -35,6 +35,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.CALCITE;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.asTableNames;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
@@ -103,6 +104,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -1865,7 +1868,7 @@ public class Hive {
    * @throws HiveException
    */
   public List<HiveRelOptMaterialization> getPreprocessedMaterializedViewsFromRegistry(
-      List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+      Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     // From cache
     List<HiveRelOptMaterialization> materializedViews =
         HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews();
@@ -1877,7 +1880,7 @@ public class Hive {
   }
 
   private List<HiveRelOptMaterialization> filterAugmentMaterializedViews(List<HiveRelOptMaterialization> materializedViews,
-        List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+        Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final boolean tryIncrementalRewriting =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL);
@@ -1925,7 +1928,7 @@ public class Hive {
    * This method checks invalidation time window defined in materialization.
    */
   public Boolean isOutdatedMaterializedView(
-          Table materializedViewTable, List<String> tablesUsed,
+          Table materializedViewTable, Set<TableName> tablesUsed,
           boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws LockException {
 
     String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
@@ -1973,7 +1976,7 @@ public class Hive {
     }
 
     return HiveMaterializedViewUtils.isOutdatedMaterializedView(
-            validTxnsList, txnManager, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), table);
+        validTxnsList, txnManager, asTableNames(table.getCreationMetadata().getTablesUsed()), table);
   }
 
   /**
@@ -1984,8 +1987,7 @@ public class Hive {
    * @throws HiveException
    */
   public boolean validateMaterializedViewsFromRegistry(List<Table> cachedMaterializedViewTables,
-      List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
-    final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     try {
       // Final result
       boolean result = true;
@@ -2021,7 +2023,7 @@ public class Hive {
               // Obtain additional information if we should try incremental rewriting / rebuild
               // We will not try partial rewriting if there were update/delete/compaction operations on source tables
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
-                  materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
+                  materializedViewTable.getCreationMetadata());
               if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
                   invalidationInfo.isSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
@@ -2053,7 +2055,7 @@ public class Hive {
    * @throws HiveException
    */
   public List<HiveRelOptMaterialization> getPreprocessedMaterializedViews(
-      List<String> tablesUsed, HiveTxnManager txnMgr)
+      Set<TableName> tablesUsed, HiveTxnManager txnMgr)
       throws HiveException {
     // From metastore
     List<Table> materializedViewTables =
@@ -2074,7 +2076,7 @@ public class Hive {
    * @throws HiveException
    */
   public HiveRelOptMaterialization getMaterializedViewForRebuild(String dbName, String materializedViewName,
-      List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+      Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     List<HiveRelOptMaterialization> validMaterializedViews = getValidMaterializedViews(
             ImmutableList.of(getTable(dbName, materializedViewName)), tablesUsed, true, false, txnMgr, ALL);
     if (validMaterializedViews.isEmpty()) {
@@ -2086,7 +2088,7 @@ public class Hive {
   }
 
   private List<HiveRelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
-      List<String> tablesUsed, boolean forceMVContentsUpToDate, boolean expandGroupingSets,
+      Set<TableName> tablesUsed, boolean forceMVContentsUpToDate, boolean expandGroupingSets,
       HiveTxnManager txnMgr, EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope)
       throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
@@ -2118,8 +2120,7 @@ public class Hive {
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
             // We will not try partial rewriting if there were update/delete/compaction operations on source tables
-            invalidationInfo = getMSC().getMaterializationInvalidationInfo(
-                creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+            invalidationInfo = getMSC().getMaterializationInvalidationInfo(creationMetadata);
             ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted();
           }
           if (ignore) {
@@ -2217,7 +2218,7 @@ public class Hive {
    * @throws HiveException - an exception is thrown during validation or unable to pull transaction ids
    */
   public List<HiveRelOptMaterialization> getMaterializedViewsBySql(
-          String querySql, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+          String querySql, Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
 
     List<HiveRelOptMaterialization> materializedViews =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(querySql);
@@ -5699,6 +5700,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new HiveException(e);
       }
     }
+
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws HiveException {
+    try {
+      getMSC().updateTransactionalStatistics(req);
+    } catch(Exception e) {
+      LOG.debug("Failed updateTransactionalStatistics", e);
+      throw new HiveException(e);
+    }
+  }
 
   public Table newTable(String tableName) throws HiveException {
     String[] names = Utilities.getDbTableName(tableName);
