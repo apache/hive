@@ -4171,13 +4171,17 @@ public class TestInputOutputFormat {
     long fileLength = fs.getFileStatus(testFilePath).getLen();
 
     // Find the last stripe.
-    Reader orcReader = OrcFile.createReader(fs, testFilePath);
-    List<StripeInformation> stripes = orcReader.getStripes();
+    List<StripeInformation> stripes;
+    RecordIdentifier[] keyIndex;
+    try (Reader orcReader = OrcFile.createReader(fs, testFilePath)) {
+      stripes = orcReader.getStripes();
+      keyIndex = OrcRecordUpdater.parseKeyIndex(orcReader);
+    }
+
     StripeInformation lastStripe = stripes.get(stripes.size() - 1);
     long lastStripeOffset = lastStripe.getOffset();
     long lastStripeLength = lastStripe.getLength();
 
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcReader);
     Assert.assertEquals("Index length doesn't match number of stripes",
         stripes.size(), keyIndex.length);
     Assert.assertEquals("1st Index entry mismatch",

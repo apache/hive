@@ -1666,10 +1666,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       } else {
         stripes = orcTail.getStripes();
         // Always convert To PROLEPTIC_GREGORIAN
-        org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+        try (org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
             org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(context.conf).getConfiguration())
-                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
-        stripeStats = dummyReader.getVariantStripeStatistics(null);
+                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail))) {
+          stripeStats = dummyReader.getVariantStripeStatistics(null);
+        }
       }
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
