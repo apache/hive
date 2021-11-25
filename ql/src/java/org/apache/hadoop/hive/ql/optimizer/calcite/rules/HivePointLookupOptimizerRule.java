@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -673,16 +674,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      * @return true if nodes in both collections is unique and identical, false otherwise
      */
     private static boolean shareSameType(Collection<RexNode> nodes1, Collection<RexNode> nodes2) {
-      Set<SqlTypeName> types1 = nodes1.stream()
+      return Stream.of(nodes1, nodes2).flatMap(Collection::stream)
           .map(n -> n.getType().getSqlTypeName())
-          .collect(Collectors.toSet());
-
-      Set<SqlTypeName> types2 = nodes2.stream()
-          .map(n -> n.getType().getSqlTypeName())
-          .collect(Collectors.toSet());
-
-      return types1.size() == 1 && types2.size() == 1
-          && !Sets.intersection(types1, types2).isEmpty();
+          .distinct()
+          .count() == 1;
     }
 
     private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
