@@ -718,10 +718,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
       lockId = res.getLockid();
 
-      long txnTimeout = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT);
+      long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
       Thread beater = new CompactionHeartbeater(this, TxnUtils.getFullTableName(ci.dbname, ci.tableName), conf);
       heartbeater = Executors.newSingleThreadScheduledExecutor();
-      heartbeater.scheduleAtFixedRate(beater, 0, txnTimeout / 2, TimeUnit.SECONDS);
+      heartbeater.scheduleAtFixedRate(beater, 0, txnTimeout / 2, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -748,14 +748,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     private void shutdownHeartbeater() {
-      heartbeater.shutdownNow();
-      try {
-        if (!heartbeater.awaitTermination(5, TimeUnit.SECONDS)) {
+      if (heartbeater != null) {
+        heartbeater.shutdownNow();
+        try {
+          if (!heartbeater.awaitTermination(5, TimeUnit.SECONDS)) {
+            heartbeater.shutdownNow();
+          }
+          LOG.debug("Successfully stopped heartbeating for transaction {}", this);
+        } catch (InterruptedException ex) {
           heartbeater.shutdownNow();
         }
-        LOG.debug("Successfully stopped heartbeating for transaction {}", this);
-      } catch (InterruptedException ex) {
-        heartbeater.shutdownNow();
       }
     }
 
