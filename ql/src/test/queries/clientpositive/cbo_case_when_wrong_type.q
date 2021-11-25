@@ -18,3 +18,17 @@ explain cbo with base_t as (select row_seq, row_desc,
     when 2 then '36'
   end as zb from test_case where row_seq in (1,2,6))
 select row_seq, row_desc, zb from base_t where zb <> '34';
+
+with base_t as (select row_seq, row_desc,
+  case when row_seq = 1 then '34'
+       when row_seq = 6 then '35'
+       when row_seq = 2 then '36'
+  end as zb from test_case where row_seq in (1,2,6))
+select row_seq, row_desc, zb from base_t where zb <> '34';
+
+explain cbo with base_t as (select row_seq, row_desc,
+  case when row_seq = 1 then '34'
+       when row_seq = 6 then '35'
+       when row_seq = 2 then '36'
+  end as zb from test_case where row_seq in (1,2,6))
+select row_seq, row_desc, zb from base_t where zb <> '34';
