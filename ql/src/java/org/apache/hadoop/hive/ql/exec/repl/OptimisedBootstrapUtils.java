@@ -53,7 +53,7 @@ import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getLastReplicatedS
 
 public class OptimisedBootstrapUtils {
 
-  public static final String FILE_ENTRY_SEPERATOR = "###";
+  public static final String FILE_ENTRY_SEPERATOR = "#";
   private static Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
 
   /** table diff directory when in progress */

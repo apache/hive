@@ -89,7 +89,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .run("create external table t2 (place string) partitioned by (country string)")
         .run("insert into table t2 partition(country='india') values ('chennai')")
         .run("insert into table t2 partition(country='us') values ('new york')")
-        .run("create  table t1_managed (id int)")
+        .run("create table t1_managed (id int)")
         .run("insert into table t1_managed values (10)")
         .run("insert into table t1_managed values (20),(31),(42)")
         .run("create table t2_managed (place string) partitioned by (country string)")
