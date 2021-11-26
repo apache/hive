@@ -486,11 +486,10 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_materialization_invalidation_info(self, creation_metadata, validTxnList):
+    def get_materialization_invalidation_info(self, creation_metadata):
         """
         Parameters:
          - creation_metadata
-         - validTxnList
 
         """
         pass
@@ -1146,6 +1145,14 @@ class Iface(fb303.FacebookService.Iface):
         pass
 
     def update_partition_column_statistics_req(self, req):
+        """
+        Parameters:
+         - req
+
+        """
+        pass
+
+    def update_transaction_statistics(self, req):
         """
         Parameters:
          - req
@@ -4296,21 +4303,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o3
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_table_objects_by_name_req failed: unknown result")
 
-    def get_materialization_invalidation_info(self, creation_metadata, validTxnList):
+    def get_materialization_invalidation_info(self, creation_metadata):
         """
         Parameters:
          - creation_metadata
-         - validTxnList
 
         """
-        self.send_get_materialization_invalidation_info(creation_metadata, validTxnList)
+        self.send_get_materialization_invalidation_info(creation_metadata)
         return self.recv_get_materialization_invalidation_info()
 
-    def send_get_materialization_invalidation_info(self, creation_metadata, validTxnList):
+    def send_get_materialization_invalidation_info(self, creation_metadata):
         self._oprot.writeMessageBegin('get_materialization_invalidation_info', TMessageType.CALL, self._seqid)
         args = get_materialization_invalidation_info_args()
         args.creation_metadata = creation_metadata
-        args.validTxnList = validTxnList
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -7065,6 +7070,38 @@ class Client(fb303.FacebookService.Client, Iface):
         if result.o4 is not None:
             raise result.o4
         raise TApplicationException(TApplicationException.MISSING_RESULT, "update_partition_column_statistics_req failed: unknown result")
+
+    def update_transaction_statistics(self, req):
+        """
+        Parameters:
+         - req
+
+        """
+        self.send_update_transaction_statistics(req)
+        self.recv_update_transaction_statistics()
+
+    def send_update_transaction_statistics(self, req):
+        self._oprot.writeMessageBegin('update_transaction_statistics', TMessageType.CALL, self._seqid)
+        args = update_transaction_statistics_args()
+        args.req = req
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_transaction_statistics(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_transaction_statistics_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
 
     def get_table_column_statistics(self, db_name, tbl_name, col_name):
         """
@@ -11994,6 +12031,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["update_partition_column_statistics"] = Processor.process_update_partition_column_statistics
         self._processMap["update_table_column_statistics_req"] = Processor.process_update_table_column_statistics_req
         self._processMap["update_partition_column_statistics_req"] = Processor.process_update_partition_column_statistics_req
+        self._processMap["update_transaction_statistics"] = Processor.process_update_transaction_statistics
         self._processMap["get_table_column_statistics"] = Processor.process_get_table_column_statistics
         self._processMap["get_partition_column_statistics"] = Processor.process_get_partition_column_statistics
         self._processMap["get_table_statistics_req"] = Processor.process_get_table_statistics_req
@@ -13806,7 +13844,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = get_materialization_invalidation_info_result()
         try:
-            result.success = self._handler.get_materialization_invalidation_info(args.creation_metadata, args.validTxnList)
+            result.success = self._handler.get_materialization_invalidation_info(args.creation_metadata)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -15910,6 +15948,32 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("update_partition_column_statistics_req", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_update_transaction_statistics(self, seqid, iprot, oprot):
+        args = update_transaction_statistics_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_transaction_statistics_result()
+        try:
+            self._handler.update_transaction_statistics(args.req)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_transaction_statistics", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -28354,14 +28418,12 @@ class get_materialization_invalidation_info_args(object):
     """
     Attributes:
      - creation_metadata
-     - validTxnList
 
     """
 
 
-    def __init__(self, creation_metadata=None, validTxnList=None,):
+    def __init__(self, creation_metadata=None,):
         self.creation_metadata = creation_metadata
-        self.validTxnList = validTxnList
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -28378,11 +28440,6 @@ class get_materialization_invalidation_info_args(object):
                     self.creation_metadata.read(iprot)
                 else:
                     iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.validTxnList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -28396,10 +28453,6 @@ class get_materialization_invalidation_info_args(object):
         if self.creation_metadata is not None:
             oprot.writeFieldBegin('creation_metadata', TType.STRUCT, 1)
             self.creation_metadata.write(oprot)
-            oprot.writeFieldEnd()
-        if self.validTxnList is not None:
-            oprot.writeFieldBegin('validTxnList', TType.STRING, 2)
-            oprot.writeString(self.validTxnList.encode('utf-8') if sys.version_info[0] == 2 else self.validTxnList)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28421,7 +28474,6 @@ all_structs.append(get_materialization_invalidation_info_args)
 get_materialization_invalidation_info_args.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'creation_metadata', [CreationMetadata, None], None, ),  # 1
-    (2, TType.STRING, 'validTxnList', 'UTF8', None, ),  # 2
 )
 
 
@@ -40550,6 +40602,131 @@ update_partition_column_statistics_req_result.thrift_spec = (
     (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
     (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
     (4, TType.STRUCT, 'o4', [InvalidInputException, None], None, ),  # 4
+)
+
+
+class update_transaction_statistics_args(object):
+    """
+    Attributes:
+     - req
+
+    """
+
+
+    def __init__(self, req=None,):
+        self.req = req
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.req = UpdateTransactionalStatsRequest()
+                    self.req.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_transaction_statistics_args')
+        if self.req is not None:
+            oprot.writeFieldBegin('req', TType.STRUCT, 1)
+            self.req.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_transaction_statistics_args)
+update_transaction_statistics_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'req', [UpdateTransactionalStatsRequest, None], None, ),  # 1
+)
+
+
+class update_transaction_statistics_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_transaction_statistics_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_transaction_statistics_result)
+update_transaction_statistics_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 
 

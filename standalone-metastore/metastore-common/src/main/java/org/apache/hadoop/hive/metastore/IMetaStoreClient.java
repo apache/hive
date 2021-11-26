@@ -806,7 +806,7 @@ public interface IMetaStoreClient {
   /**
    * Returns the invalidation information for the materialized views given as input.
    */
-  Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+  Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**
@@ -2830,6 +2830,8 @@ public interface IMetaStoreClient {
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
+  void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
+
   /**
    * @param role
    *          role object
@@ -3451,7 +3453,7 @@ public interface IMetaStoreClient {
 
   /**
    * Unlock a set of locks.  This can only be called when the locks are not
-   * assocaited with a transaction.
+   * associated with a transaction.
    * @param lockid lock id returned by
    * {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)}
    * @throws NoSuchLockException if the requested lockid does not exist.

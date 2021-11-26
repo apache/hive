@@ -244,7 +244,7 @@ public class RexNodeConverter {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         childRexNodeLst = rewriteCaseChildren(func.getFuncText(), childRexNodeLst, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a extract operator, we need to rewrite it
@@ -273,7 +273,7 @@ public class RexNodeConverter {
         // This allows to be further reduced to OR, if possible
         calciteOp = SqlStdOperatorTable.CASE;
         childRexNodeLst = rewriteCoalesceChildren(childRexNodeLst, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst, rexBuilder);

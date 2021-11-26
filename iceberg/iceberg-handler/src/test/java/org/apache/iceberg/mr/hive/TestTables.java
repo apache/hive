@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
@@ -50,6 +51,7 @@ import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestCatalogs;
 import org.apache.iceberg.mr.TestHelper;
@@ -98,6 +100,10 @@ abstract class TestTables {
     return tables;
   }
 
+  public String catalogName() {
+    return catalog;
+  }
+
   /**
    * The location string needed to be provided for CREATE TABLE ... commands,
    * like "LOCATION 'file:///tmp/warehouse/default/tablename'. Empty ("") if LOCATION is not needed.
@@ -108,8 +114,8 @@ abstract class TestTables {
 
   /**
    * The table properties string needed for the CREATE TABLE ... commands,
-   * like "TBLPROPERTIES('iceberg.catalog'='mycatalog')
-   * @return
+   * like {@code TBLPROPERTIES('iceberg.catalog'='mycatalog')}
+   * @return the tables properties string, such as {@code TBLPROPERTIES('iceberg.catalog'='mycatalog')}
    */
   public String propertiesForCreateTableSQL(Map<String, String> tableProperties) {
     Map<String, String> properties = new HashMap<>(tableProperties);
@@ -371,10 +377,9 @@ abstract class TestTables {
     @Override
     public Map<String, String> properties() {
       return ImmutableMap.of(
-              String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalog), "custom",
-              String.format(InputFormatConfig.CATALOG_CLASS_TEMPLATE, catalog),
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.CATALOG_IMPL),
               TestCatalogs.CustomHadoopCatalog.class.getName(),
-              String.format(InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE, catalog),
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
               warehouseLocation
       );
     }
@@ -403,8 +408,10 @@ abstract class TestTables {
     @Override
     public Map<String, String> properties() {
       return ImmutableMap.of(
-              String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalog), "hadoop",
-              String.format(InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE, catalog), warehouseLocation
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
+              CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP,
+              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
+              warehouseLocation
       );
     }
 
@@ -414,8 +421,8 @@ abstract class TestTables {
   }
 
   static class HadoopTestTables extends TestTables {
-    HadoopTestTables(Configuration conf, TemporaryFolder temp, String catalogName) {
-      super(new HadoopTables(conf), temp, catalogName);
+    HadoopTestTables(Configuration conf, TemporaryFolder temp) {
+      super(new HadoopTables(conf), temp, Catalogs.ICEBERG_HADOOP_TABLE_NAME);
     }
 
     @Override
@@ -430,7 +437,7 @@ abstract class TestTables {
       }
 
       Assert.assertTrue(location.delete());
-      return location.toString();
+      return "file://" + location;
     }
 
     @Override
@@ -454,7 +461,8 @@ abstract class TestTables {
 
     @Override
     public Map<String, String> properties() {
-      return ImmutableMap.of(String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalog), "hive");
+      return ImmutableMap.of(InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
+              CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE);
     }
 
     @Override
@@ -489,7 +497,7 @@ abstract class TestTables {
   enum TestTableType {
     HADOOP_TABLE {
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {
-        return new HadoopTestTables(conf, temporaryFolder, catalogName);
+        return new HadoopTestTables(conf, temporaryFolder);
       }
     },
     HADOOP_CATALOG {

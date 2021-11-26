@@ -1418,7 +1418,7 @@ public final class PrimitiveObjectInspectorUtils {
    * Based on the PrimitiveCategory of a type, return the PrimitiveGrouping
    * that the PrimitiveCategory belongs to (numeric, string, date, etc).
    * @param primitiveCategory Primitive category of the type
-   * @return PrimitveGrouping corresponding to the PrimitiveCategory,
+   * @return PrimitiveGrouping corresponding to the PrimitiveCategory,
    *         or UNKNOWN_GROUP if the type does not match to a grouping.
    */
   public static PrimitiveGrouping getPrimitiveGrouping(PrimitiveCategory primitiveCategory) {

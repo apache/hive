@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -159,7 +160,8 @@ final class CommandAuthorizerV2 {
     }
     if(isView){
       Map<String, String> params = t.getParameters();
-      if (params != null && params.containsKey(authorizedKeyword)) {
+      if (HiveConf.getBoolVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS)
+              && params != null && params.containsKey(authorizedKeyword)) {
         String authorizedValue = params.get(authorizedKeyword);
         if ("false".equalsIgnoreCase(authorizedValue)) {
           return true;

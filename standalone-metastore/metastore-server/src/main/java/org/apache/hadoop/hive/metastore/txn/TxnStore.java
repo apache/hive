@@ -147,17 +147,19 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
+  void updateTransactionStatistics(UpdateTransactionalStatsRequest req) throws MetaException;
+
   /**
    * Get invalidation info for the materialization. Currently, the materialization information
    * only contains information about whether there was update/delete operations on the source
-   * tables used by the materialization since it was created.
+   * tables and were any of the insert-only source tables compacted used by the materialization
+   * since it was created.
    * @param cm creation metadata for the materialization
-   * @param validTxnList valid transaction list for snapshot taken for current query
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
   Materialization getMaterializationInvalidationInfo(
-      final CreationMetadata cm, final String validTxnList)
+      final CreationMetadata cm)
           throws MetaException;
 
   @RetrySemantics.ReadOnly
@@ -539,7 +541,7 @@ public interface TxnStore extends Configurable {
   MutexAPI getMutexAPI();
 
   /**
-   * This is primarily designed to provide coarse grained mutex support to operations running
+   * This is primarily designed to provide coarse-grained mutex support to operations running
    * inside the Metastore (of which there could be several instances).  The initial goal is to
    * ensure that various sub-processes of the Compactor don't step on each other.
    *

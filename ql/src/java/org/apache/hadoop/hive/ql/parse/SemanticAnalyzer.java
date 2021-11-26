@@ -80,8 +80,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -100,6 +98,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -433,7 +432,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private WriteEntity acidAnalyzeTable;
 
   // A mapping from a tableName to a table object in metastore.
-  Map<String, Table> tabNameToTabObject;
+  QueryTables tabNameToTabObject;
 
   // The tokens we should ignore when we are trying to do table masking.
   private static final Set<Integer> IGNORED_TOKENS = Sets.newHashSet(HiveParser.TOK_GROUPBY,
@@ -500,7 +499,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     viewAliasToInput = new HashMap<String, ReadEntity>();
     mergeIsDirect = true;
     noscan = false;
-    tabNameToTabObject = new HashMap<>();
+    tabNameToTabObject = new QueryTables();
     defaultJoinMerge = !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
     defaultNullOrder = NullOrdering.defaultNullOrder(conf);
@@ -2693,7 +2692,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
-            ctx, db, tabNameToTabObject);
+            ctx, db);
         viewTree = parseResult.getTree();
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
@@ -12193,13 +12192,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (table.isMaterializedView()) {
           // When we are querying a materialized view directly, we check whether the source tables
           // do not apply any policies.
-          for (String qName : table.getCreationMetadata().getTablesUsed()) {
+          for (SourceTable sourceTable : table.getCreationMetadata().getTablesUsed()) {
+            String qualifiedTableName = TableName.getDbTable(
+                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
             try {
-              table = getTableObjectByName(qName, true);
+              table = getTableObjectByName(qualifiedTableName, true);
             } catch (HiveException e) {
               // This should not happen.
-              throw new SemanticException("Table " + qName + " not found when trying to obtain it to check masking/filtering " +
-                  "policies");
+              throw new SemanticException("Table " + qualifiedTableName +
+                  " not found when trying to obtain it to check masking/filtering policies");
             }
 
             List<String> colNames = new ArrayList<>();
@@ -12272,7 +12273,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
   private ParseResult rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
-                                                Context ctx, Hive db, Map<String, Table> tabNameToTabObject)
+                                                Context ctx, Hive db)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
@@ -12561,7 +12562,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
       ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
-          ctx, db, tabNameToTabObject);
+          ctx, db);
       ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
@@ -12654,7 +12655,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      createVwDesc.setTablesUsed(getTablesUsed(pCtx));
+      createVwDesc.setTablesUsed(pCtx.getTablesUsed());
     }
 
     // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
@@ -12845,18 +12846,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Set schema and expanded text for the view
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
-  }
-
-  private Set<String> getTablesUsed(ParseContext parseCtx) {
-    Set<String> tablesUsed = new HashSet<>();
-    for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
-      Table table = topOp.getConf().getTableMetadata();
-      if (!table.isMaterializedTable() && !table.isView()) {
-        // Add to signature
-        tablesUsed.add(table.getFullyQualifiedName());
-      }
-    }
-    return tablesUsed;
   }
 
   private List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
@@ -15181,7 +15170,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Check the query results cache to see if the query represented by the lookupInfo can be
    * answered using the results cache. If the cache contains a suitable entry, the semantic analyzer
-   * will be configured to use the found cache entry to anwer the query.
+   * will be configured to use the found cache entry to answer the query.
    */
   private boolean checkResultsCache(QueryResultsCache.LookupInfo lookupInfo, boolean needsReset) {
     if (lookupInfo == null) {

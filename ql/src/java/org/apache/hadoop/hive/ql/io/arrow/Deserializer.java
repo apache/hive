@@ -391,6 +391,7 @@ class Deserializer {
 
   private void readList(FieldVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo) {
     final int size = arrowVector.getValueCount();
+    hiveVector.ensureSize(size, false);
     final ArrowBuf offsets = arrowVector.getOffsetBuffer();
     final int OFFSET_WIDTH = 4;
 
@@ -412,6 +413,7 @@ class Deserializer {
 
   private void readMap(FieldVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo) {
     final int size = arrowVector.getValueCount();
+    hiveVector.ensureSize(size, false);
     final ListTypeInfo mapStructListTypeInfo = toStructListTypeInfo(typeInfo);
     final ListColumnVector mapStructListVector = toStructListVector(hiveVector);
     final StructColumnVector mapStructVector = (StructColumnVector) mapStructListVector.child;
@@ -430,6 +432,7 @@ class Deserializer {
 
   private void readStruct(FieldVector arrowVector, StructColumnVector hiveVector, StructTypeInfo typeInfo) {
     final int size = arrowVector.getValueCount();
+    hiveVector.ensureSize(size, false);
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
     final int fieldSize = arrowVector.getChildrenFromFields().size();
     for (int i = 0; i < fieldSize; i++) {

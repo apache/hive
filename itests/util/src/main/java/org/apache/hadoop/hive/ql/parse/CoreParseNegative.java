@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
@@ -95,10 +93,10 @@ public class CoreParseNegative extends CliAdapter{
     try {
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
-      ASTNode tree = qt.parseQuery(fname);
+      ASTNode tree = qt.parseQuery();
       qt.analyzeAST(tree);
       fail("Unexpected success for query: " + fname + QTestUtil.DEBUG_HINT);
     } catch (ParseException pe) {

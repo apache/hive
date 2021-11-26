@@ -61,6 +61,8 @@ class serdeConstants {
   std::string LIST_COLUMN_TYPES;
   std::string LIST_PARTITION_COLUMNS;
   std::string LIST_PARTITION_COLUMN_TYPES;
+  std::string LIST_COLUMN_COMMENTS;
+  std::string LIST_PARTITION_COLUMN_COMMENTS;
   std::string TIMESTAMP_FORMATS;
   std::string COLUMN_NAME_DELIMITER;
   std::set<std::string>  PrimitiveTypes;

@@ -991,7 +991,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void shutdown() {
     cleanupRawStore();
     PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
-    ThreadPool.shutdown();
   }
 
   @Override
@@ -2336,6 +2335,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
     }
 
+    if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
+      throw new AlreadyExistsException("Table " + getCatalogQualifiedTableName(tbl)
+          + " already exists");
+    }
+
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
@@ -3241,7 +3245,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
-      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException {
+      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException, NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
     startTableFunction("drop_table", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name);
 
@@ -3637,6 +3641,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       t = getMS().getTableMeta(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames, tblTypes);
       t = FilterUtils.filterTableMetasIfEnabled(isServerFilterEnabled, filterHook,
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], t);
+      t = filterReadableTables(parsedDbName[CAT_NAME], t);
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
@@ -3867,8 +3872,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Materialization get_materialization_invalidation_info(final CreationMetadata cm, final String validTxnList) throws MetaException {
-    return getTxnHandler().getMaterializationInvalidationInfo(cm, validTxnList);
+  public Materialization get_materialization_invalidation_info(final CreationMetadata cm) throws MetaException {
+    return getTxnHandler().getMaterializationInvalidationInfo(cm);
   }
 
   @Override
@@ -5186,8 +5191,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       PathAndDepth that = (PathAndDepth) o;
       return depth == that.depth && Objects.equals(path, that.path);
     }
@@ -5477,6 +5486,57 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       });
       firePreEvent(new PreReadTableEvent(tableSupplier, this));
+    }
+  }
+
+  /**
+   * filters out the table meta for which read database access is not granted
+   * @param catName catalog name
+   * @param tableMetas list of table metas
+   * @return filtered list of table metas
+   * @throws RuntimeException
+   * @throws NoSuchObjectException
+   */
+  private List<TableMeta> filterReadableTables(String catName, List<TableMeta> tableMetas)
+          throws RuntimeException, NoSuchObjectException {
+    List<TableMeta> finalT = new ArrayList<>();
+    Map<String, Boolean> databaseNames = new HashMap();
+    for (TableMeta tableMeta : tableMetas) {
+      String fullDbName = prependCatalogToDbName(catName, tableMeta.getDbName(), conf);
+      if (databaseNames.get(fullDbName) == null) {
+        boolean isExecptionThrown = false;
+        try {
+          fireReadDatabasePreEvent(fullDbName);
+        } catch (MetaException e) {
+          isExecptionThrown = true;
+        }
+        databaseNames.put(fullDbName, isExecptionThrown);
+      }
+      if (!databaseNames.get(fullDbName)) {
+        finalT.add(tableMeta);
+      }
+    }
+    return finalT;
+  }
+
+  /**
+   * Fire a pre-event for read database operation, if there are any
+   * pre-event listeners registered
+   */
+  private void fireReadDatabasePreEvent(final String name)
+          throws MetaException, RuntimeException, NoSuchObjectException {
+    if(preListeners.size() > 0) {
+      String[] parsedDbName = parseDbName(name, conf);
+      Database db = null;
+      try {
+        db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+        if (db == null) {
+          throw new NoSuchObjectException("Database: " + name + " not found");
+        }
+      } catch(MetaException | NoSuchObjectException e) {
+        throw new RuntimeException(e);
+      }
+      firePreEvent(new PreReadDatabaseEvent(db, this));
     }
   }
 
@@ -7202,6 +7262,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("delete_column_statistics_by_table", ret != false, null, tableName);
     }
     return ret;
+  }
+
+  @Override
+  public void update_transaction_statistics(UpdateTransactionalStatsRequest req) throws TException {
+    getTxnHandler().updateTransactionStatistics(req);
   }
 
   @Override

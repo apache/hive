@@ -638,7 +638,10 @@ public abstract class CompactorTest {
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact(new FindNextCompactRequest("fred", WORKER_VERSION));
+    FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+    findNextCompactRequest.setWorkerId("fred");
+    findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
+    CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
     ci.runAs = System.getProperty("user.name");
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci

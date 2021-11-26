@@ -357,6 +357,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     LOG.debug("Configuring JobConf for table {}.{}", tableDesc.getDbName(), tableDesc.getTableName());
     try {
+      HBaseConfiguration.addHbaseResources(jobConf);
       HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*
        * HIVE-6356

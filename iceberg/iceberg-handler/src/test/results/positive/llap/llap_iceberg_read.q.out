@@ -144,14 +144,14 @@ POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@llap_items
 POSTHOOK: Output: default@llap_items
 PREHOOK: query: INSERT INTO llap_items VALUES
-(7, 'Model X', 93000, 'SUV', 'Long range', 3.8),
-(7, 'Model X', 113000, 'SUV', 'Plaid', 2.5)
+(7, 'Model X', 93000, 'Long range', 'SUV', 3.8),
+(7, 'Model X', 113000, 'Plaid', 'SUV', 2.5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_items
 POSTHOOK: query: INSERT INTO llap_items VALUES
-(7, 'Model X', 93000, 'SUV', 'Long range', 3.8),
-(7, 'Model X', 113000, 'SUV', 'Plaid', 2.5)
+(7, 'Model X', 93000, 'Long range', 'SUV', 3.8),
+(7, 'Model X', 113000, 'Plaid', 'SUV', 2.5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_items
@@ -216,12 +216,12 @@ POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 PREHOOK: query: INSERT INTO llap_orders VALUES
-(21, 21, 8, 'EU', timestamp('2000-01-04 19:55:46.129'), 'HU')
+(21, 21, 8, 'EU', 'HU', timestamp('2000-01-04 19:55:46.129'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: INSERT INTO llap_orders VALUES
-(21, 21, 8, 'EU', timestamp('2000-01-04 19:55:46.129'), 'HU')
+(21, 21, 8, 'EU', 'HU', timestamp('2000-01-04 19:55:46.129'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders
@@ -264,12 +264,12 @@ POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 PREHOOK: query: INSERT INTO llap_orders VALUES
-(22, 99, 9, 'EU', timestamp('2021-01-04 19:55:46.129'), 'DE', 'München')
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: INSERT INTO llap_orders VALUES
-(22, 99, 9, 'EU', timestamp('2021-01-04 19:55:46.129'), 'DE', 'München')
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders
@@ -295,12 +295,12 @@ POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 PREHOOK: query: INSERT INTO llap_orders VALUES
-(23, 89, 6, 'EU', timestamp('2021-02-04 19:55:46.129'), 'IT', 'Venezia')
+(23, 89, 6, 'EU', 'IT', timestamp('2021-02-04 19:55:46.129'), 'Venezia')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: INSERT INTO llap_orders VALUES
-(23, 89, 6, 'EU', timestamp('2021-02-04 19:55:46.129'), 'IT', 'Venezia')
+(23, 89, 6, 'EU', 'IT', timestamp('2021-02-04 19:55:46.129'), 'Venezia')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders
@@ -326,12 +326,12 @@ POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 PREHOOK: query: INSERT INTO llap_orders VALUES
-(24, 88, 5, 'EU', timestamp('2006-02-04 19:55:46.129'), 'UK', 'London')
+(24, 88, 5, 'EU', 'UK', timestamp('2006-02-04 19:55:46.129'), 'London')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: INSERT INTO llap_orders VALUES
-(24, 88, 5, 'EU', timestamp('2006-02-04 19:55:46.129'), 'UK', 'London')
+(24, 88, 5, 'EU', 'UK', timestamp('2006-02-04 19:55:46.129'), 'London')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders
@@ -349,21 +349,21 @@ FR	NULL	2.75
 HU	NULL	7.0
 IT	Venezia	6.0
 UK	London	2.0
-PREHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', state string COMMENT 'from deserializer', city string)
+PREHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', state string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', city string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', state string COMMENT 'from deserializer', city string)
+POSTHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', state string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', city string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 PREHOOK: query: INSERT INTO llap_orders VALUES
-(88, 5, 'EU', timestamp('2006-02-04 19:55:46.129'), 'FR', 'Paris')
+(88, 5, 'EU', 'FR', timestamp('2006-02-04 19:55:46.129'), 'Paris')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: INSERT INTO llap_orders VALUES
-(88, 5, 'EU', timestamp('2006-02-04 19:55:46.129'), 'FR', 'Paris')
+(88, 5, 'EU', 'FR', timestamp('2006-02-04 19:55:46.129'), 'Paris')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders

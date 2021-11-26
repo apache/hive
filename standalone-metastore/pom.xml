@@ -55,8 +55,6 @@
     <test.warehouse.scheme>file://</test.warehouse.scheme>
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
-    <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests
-    </itest.jdbc.jars>
     <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
 
     <!-- Plugin versions -->
@@ -75,7 +73,11 @@
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
     <derby.version>10.14.1.0</derby.version>
+    <mariadb.version>2.5.0</mariadb.version>
+    <mssql.version>6.2.1.jre8</mssql.version>
+    <mysql.version>8.0.27</mysql.version>
     <postgres.version>42.2.14</postgres.version>
+    <oracle.version>21.3.0.0</oracle.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
@@ -185,11 +187,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons-lang3.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.derby</groupId>
-        <artifactId>derby</artifactId>
-        <version>${derby.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -331,15 +328,50 @@
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
-
-      <!-- test scope dependencies -->
-
+      <!-- JDBC drivers -->
       <dependency>
         <groupId>com.microsoft.sqlserver</groupId>
         <artifactId>mssql-jdbc</artifactId>
-        <version>6.2.1.jre8</version>
-        <scope>test</scope>
+        <version>${mssql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
       </dependency>
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc8</artifactId>
+        <version>${oracle.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>${derby.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
+        <version>${mariadb.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgres.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <!-- test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -375,12 +407,6 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>${mockito-core.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>${postgres.version}</version>
         <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->

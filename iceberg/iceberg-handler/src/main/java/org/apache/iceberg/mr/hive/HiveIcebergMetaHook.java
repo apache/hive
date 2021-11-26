@@ -101,6 +101,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
       FileFormat.AVRO.name().toLowerCase());
+  static final String MIGRATED_TO_ICEBERG = "MIGRATED_TO_ICEBERG";
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -166,7 +167,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
     catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
-    updateHmsTableProperties(hmsTable);
+    setCommonHmsTablePropertiesForIceberg(hmsTable);
   }
 
   @Override
@@ -251,7 +252,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // If the iceberg table does not exist, then this is an ALTER command aimed at migrating the table to iceberg
       // First we must check whether it's eligible for migration to iceberg
       // If so, we will create the iceberg table in commitAlterTable and go ahead with the migration
-      checkEligibilityForMigrationOrThrow(hmsTable);
+      assertTableCanBeMigrated(hmsTable);
       isTableMigration = true;
 
       StorageDescriptor sd = hmsTable.getSd();
@@ -278,15 +279,31 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       sd.setOutputFormat(HiveIcebergOutputFormat.class.getCanonicalName());
       sd.setSerdeInfo(new SerDeInfo("icebergSerde", HiveIcebergSerDe.class.getCanonicalName(),
           Collections.emptyMap()));
-      updateHmsTableProperties(hmsTable);
+      setCommonHmsTablePropertiesForIceberg(hmsTable);
+      // set an additional table prop to designate that this table has been migrated to Iceberg, i.e.
+      // all or some of its data files have not been written out using the Iceberg writer, and therefore those data
+      // files do not contain Iceberg field IDs. This makes certain schema evolution operations problematic, so we
+      // want to disable these ops for now using this new table prop
+      hmsTable.getParameters().put(MIGRATED_TO_ICEBERG, "true");
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       handleAddColumns(hmsTable);
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
+      assertNotMigratedTable(hmsTable.getParameters(), currentAlterTableOp.getName().toUpperCase());
       handleReplaceColumns(hmsTable);
     } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
+      // passing in the "CHANGE COLUMN" string instead, since RENAME COLUMN is not part of SQL syntax (not to mention
+      // that users can change data types or reorder columns too with this alter op type, so its name is misleading..)
+      assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
+    }
+  }
+
+  private void assertNotMigratedTable(Map<String, String> tblParams, String opType) {
+    if (Boolean.parseBoolean(tblParams.get(MIGRATED_TO_ICEBERG))) {
+      throw new UnsupportedOperationException(
+          String.format("Cannot perform %s operation on a migrated Iceberg table.", opType));
     }
   }
 
@@ -299,7 +316,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
    * @param hmsTable the table which should be migrated to iceberg, if eligible
    * @throws MetaException if the table is not eligible for migration due to violating one of the conditions above
    */
-  private void checkEligibilityForMigrationOrThrow(org.apache.hadoop.hive.metastore.api.Table hmsTable)
+  private void assertTableCanBeMigrated(org.apache.hadoop.hive.metastore.api.Table hmsTable)
       throws MetaException {
     StorageDescriptor sd = hmsTable.getSd();
     boolean hasCorrectTableType = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
@@ -429,7 +446,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  private void updateHmsTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  private void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     // Set the table type even for non HiveCatalog based tables
     hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
@@ -557,7 +574,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       schemaDifference.getMissingFromFirst().forEach(icebergCols::remove);
     }
 
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getReorderedColumn(
         hmsCols, icebergCols, ImmutableMap.of());
 
     // limit the scope of this operation to only dropping columns
@@ -595,8 +612,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           schemaDifference.getMissingFromSecond().get(0).getName(),
           schemaDifference.getMissingFromFirst().get(0).getName());
     }
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols,
-        renameMapping);
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getReorderedColumn(hmsCols, icebergCols, renameMapping);
 
     if (!schemaDifference.isEmpty() || outOfOrder != null) {
       transaction = icebergTable.newTransaction();

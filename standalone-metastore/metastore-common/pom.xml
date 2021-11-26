@@ -554,7 +554,6 @@
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
-            <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
           </additionalClasspathElements>
           <skipITs>${skipITests}</skipITs> <!-- set this to false to run these tests -->
         </configuration>

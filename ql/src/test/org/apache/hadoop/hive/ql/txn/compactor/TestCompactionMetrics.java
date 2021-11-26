@@ -178,6 +178,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
+  @org.junit.Ignore("HIVE-25716")
   public void testOldestReadyForCleaningAge() throws Exception {
     conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
 

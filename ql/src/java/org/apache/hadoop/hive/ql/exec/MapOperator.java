@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -340,10 +339,10 @@ public class MapOperator extends AbstractMapOperator {
   /**
    * For each source table, combine the nested column pruning information from all its
    * table scan descriptors and set it in a configuration copy. This is necessary since
-   * the configuration property "READ_NESTED_COLUMN_PATH_CONF_STR" is set on a per-table
-   * basis, so we can't just use a single configuration for all the tables.
+   * the configuration properties are set on a per-table basis, so we can't just use a
+   * single configuration for all the tables.
    */
-  private Map<String, Configuration> cloneConfsForNestedColPruning(Configuration hconf) {
+  private Map<String, Configuration> cloneConfsForColPruning(Configuration hconf) {
     Map<String, Configuration> tableNameToConf = new HashMap<>();
 
     for (Map.Entry<Path, List<String>> e : conf.getPathToAliases().entrySet()) {
@@ -369,10 +368,13 @@ public class MapOperator extends AbstractMapOperator {
         if (!tableNameToConf.containsKey(tableName)) {
           Configuration clonedConf = new Configuration(hconf);
           clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
           tableNameToConf.put(tableName, clonedConf);
         }
         Configuration newConf = tableNameToConf.get(tableName);
-        ColumnProjectionUtils.appendNestedColumnPaths(newConf, nestedColumnPaths);
+        ColumnProjectionUtils.appendReadColumns(newConf, tableScanDesc.getNeededColumnIDs(),
+            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths());
       }
     }
 
@@ -403,7 +405,7 @@ public class MapOperator extends AbstractMapOperator {
     throws SerDeException, Exception {
     setChildOperators(children);
 
-    Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
+    Map<String, Configuration> tableNameToConf = cloneConfsForColPruning(hconf);
 
     for (Operator<?> child : children) {
       TableScanOperator tsOp = (TableScanOperator) child;
@@ -426,7 +428,7 @@ public class MapOperator extends AbstractMapOperator {
     List<Operator<? extends OperatorDesc>> children =
         new ArrayList<Operator<? extends OperatorDesc>>();
 
-    Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
+    Map<String, Configuration> tableNameToConf = cloneConfsForColPruning(hconf);
     Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(tableNameToConf);
 
     for (Map.Entry<Path, List<String>> entry : conf.getPathToAliases().entrySet()) {

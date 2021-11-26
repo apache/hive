@@ -22,14 +22,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +51,7 @@ public final class MetricSink {
   private static volatile MetricSink instance;
   private boolean isInitialised = false;
   private HiveConf conf;
+  private static String RM_PROGRESS_COLUMN_WIDTH_EXCEEDS_MSG = "ERROR: RM_PROGRESS LIMIT EXCEEDED.";
 
   private MetricSink() {
     this.executorService = Executors.newSingleThreadScheduledExecutor();
@@ -103,6 +107,21 @@ public final class MetricSink {
       this.conf = conf;
     }
 
+    private String updateRMProgressIfLimitExceeds(Progress progress, MessageEncoder encoder) throws SemanticException {
+      try {
+        String progressJson = new ObjectMapper().writeValueAsString(progress);
+        String serializedProgress = encoder.getSerializer().serialize(progressJson);
+        if (serializedProgress.length() > ReplStatsTracker.RM_PROGRESS_LENGTH) {
+          LOG.warn("Error: RM_PROGRESS limit exceeded.\n" +
+                  "RM_PROGRESS: " + progressJson + " overwritten by " + RM_PROGRESS_COLUMN_WIDTH_EXCEEDS_MSG);
+          serializedProgress = encoder.getSerializer().serialize(RM_PROGRESS_COLUMN_WIDTH_EXCEEDS_MSG);
+        }
+        return serializedProgress;
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
+    }
+
     @Override
     public void run() {
       ReplicationMetricList metricList = new ReplicationMetricList();
@@ -116,14 +135,16 @@ public final class MetricSink {
           int totalMetricsSize = metrics.size();
           List<ReplicationMetrics> replicationMetricsList = new ArrayList<>(totalMetricsSize);
           ObjectMapper mapper = new ObjectMapper();
+          MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(conf);
           for (int index = 0; index < totalMetricsSize; index++) {
             ReplicationMetric metric = metrics.removeFirst();
             ReplicationMetrics persistentMetric = new ReplicationMetrics();
             persistentMetric.setDumpExecutionId(metric.getDumpExecutionId());
             persistentMetric.setScheduledExecutionId(metric.getScheduledExecutionId());
             persistentMetric.setPolicy(metric.getPolicy());
-            persistentMetric.setProgress(mapper.writeValueAsString(metric.getProgress()));
+            persistentMetric.setProgress(updateRMProgressIfLimitExceeds(metric.getProgress(), encoder));
             persistentMetric.setMetadata(mapper.writeValueAsString(metric.getMetadata()));
+            persistentMetric.setMessageFormat(encoder.getMessageFormat());
             LOG.debug("Metric to be persisted {} ", persistentMetric);
             replicationMetricsList.add(persistentMetric);
           }

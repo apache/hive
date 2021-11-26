@@ -68,7 +68,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs (cache only)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -185,7 +185,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col9 (type: float)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs (cache only)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -301,8 +301,8 @@ POSTHOOK: query: describe tbl_ice_orc_parted
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_ice_orc_parted
 p1                  	string              	from deserializer   
-a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
+a                   	int                 	from deserializer   
 p2                  	string              	from deserializer   
 	 	 
 # Partition Transform Information	 	 
@@ -319,11 +319,11 @@ POSTHOOK: Input: default@tbl_ice_orc_parted
 #### A masked pattern was here ####
 America	2	aa
 Europe	1	aa
-PREHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 3, 'cc', 'Austria')
+PREHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 'cc', 3, 'Austria')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_ice_orc_parted
-POSTHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 3, 'cc', 'Austria')
+POSTHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 'cc', 3, 'Austria')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_orc_parted

@@ -107,7 +107,7 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
     }
 
     DecimalTypeInfo dti = (DecimalTypeInfo)other;
-    // Make sure "this" has enough integer room to accomodate other's integer digits.
+    // Make sure "this" has enough integer room to accommodate other's integer digits.
     return this.precision() - this.scale() >= dti.precision() - dti.scale();
   }
 

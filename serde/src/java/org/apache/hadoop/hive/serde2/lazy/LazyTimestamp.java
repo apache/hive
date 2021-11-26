@@ -46,7 +46,7 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
   }
 
   /**
-   * Initilizes LazyTimestamp object by interpreting the input bytes
+   * Initializes LazyTimestamp object by interpreting the input bytes
    * as a JDBC timestamp string
    *
    * @param bytes

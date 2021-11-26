@@ -166,6 +166,7 @@ import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -186,6 +187,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -204,6 +206,7 @@ import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MISchema;
+import org.apache.hadoop.hive.metastore.model.MMVSource;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -287,6 +290,9 @@ public class ObjectStore implements RawStore, Configurable {
   */
   private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class);
+  private int RM_PROGRESS_COL_WIDTH = 10000;
+  private int RM_METADATA_COL_WIDTH = 4000;
+  private int ORACLE_DB_MAX_COL_WIDTH = 4000;
 
   private enum TXN_STATUS {
     NO_STATE, OPEN, COMMITED, ROLLBACK
@@ -1526,8 +1532,9 @@ public class ObjectStore implements RawStore, Configurable {
       while (iter.hasNext())
       {
         MCreationMetadata p = iter.next();
-        Set<MTable> tables = p.getTables();
-        for (MTable table : tables) {
+        Set<MMVSource> tables = p.getTables();
+        for (MMVSource sourceTable : tables) {
+          MTable table = sourceTable.getTable();
           if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
             LOG.info("Cannot drop table " + table.getTableName() +
                     " as it is being used by MView " + p.getTblName());
@@ -2505,25 +2512,29 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     assert !m.isSetMaterializationTime();
-    Set<MTable> tablesUsed = new HashSet<>();
-    for (String fullyQualifiedName : m.getTablesUsed()) {
-      String[] names =  fullyQualifiedName.split("\\.");
-      tablesUsed.add(getMTable(m.getCatName(), names[0], names[1], false).mtbl);
+    Set<MMVSource> tablesUsed = new HashSet<>();
+    for (SourceTable sourceTable : m.getTablesUsed()) {
+      Table table = sourceTable.getTable();
+      MTable mtbl = getMTable(m.getCatName(), table.getDbName(), table.getTableName(), false).mtbl;
+      MMVSource source = new MMVSource();
+      source.setTable(mtbl);
+      source.setInsertedCount(sourceTable.getInsertedCount());
+      source.setUpdatedCount(sourceTable.getUpdatedCount());
+      source.setDeletedCount(sourceTable.getDeletedCount());
+      tablesUsed.add(source);
     }
     return new MCreationMetadata(normalizeIdentifier(m.getCatName()),
             normalizeIdentifier(m.getDbName()), normalizeIdentifier(m.getTblName()),
         tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
   }
 
-  private CreationMetadata convertToCreationMetadata(MCreationMetadata s) {
+  private CreationMetadata convertToCreationMetadata(MCreationMetadata s) throws MetaException {
     if (s == null) {
       return null;
     }
-    Set<String> tablesUsed = new HashSet<>();
-    for (MTable mtbl : s.getTables()) {
-      tablesUsed.add(
-          Warehouse.getQualifiedName(
-              mtbl.getDatabase().getName(), mtbl.getTableName()));
+    Set<SourceTable> tablesUsed = new HashSet<>();
+    for (MMVSource mtbl : s.getTables()) {
+      tablesUsed.add(convertToSourceTable(mtbl, s.getCatalogName()));
     }
     CreationMetadata r = new CreationMetadata(s.getCatalogName(),
         s.getDbName(), s.getTblName(), tablesUsed);
@@ -2532,6 +2543,17 @@ public class ObjectStore implements RawStore, Configurable {
       r.setValidTxnList(s.getTxnList());
     }
     return r;
+  }
+
+  private SourceTable convertToSourceTable(MMVSource mmvSource, String catalogName) throws MetaException {
+    SourceTable sourceTable = new SourceTable();
+    MTable mTable = mmvSource.getTable();
+    Table table = getTable(catalogName, mTable.getDatabase().getName(), mTable.getTableName());
+    sourceTable.setTable(table);
+    sourceTable.setInsertedCount(mmvSource.getInsertedCount());
+    sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());
+    sourceTable.setDeletedCount(mmvSource.getDeletedCount());
+    return sourceTable;
   }
 
   @Override
@@ -14172,12 +14194,13 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
     ensureScheduledQueriesEnabled();
-    String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
-    try (QueryWrapper q = new QueryWrapper(pm.newQuery(MScheduledQuery.class,
-        "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null"))) {
+    Query q = null;
+    try {
       openTransaction();
+      q = pm.newQuery(MScheduledQuery.class,
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -14187,7 +14210,6 @@ public class ObjectStore implements RawStore, Configurable {
         return new ScheduledQueryPollResponse();
       }
       MScheduledQuery schq = results.get(0);
-      Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
 
       MScheduledExecution execution = new MScheduledExecution();
@@ -14209,12 +14231,8 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Caught jdo exception; exclusive", e);
       commited = false;
     } finally {
-      if (commited) {
-        return ret;
-      } else {
-        rollbackTransaction();
-        return new ScheduledQueryPollResponse();
-      }
+      rollbackAndCleanup(commited, q);
+      return commited ? ret : new ScheduledQueryPollResponse();
     }
   }
 
@@ -14364,17 +14382,22 @@ public class ObjectStore implements RawStore, Configurable {
           mReplicationMetrics.setStartTime((int) (System.currentTimeMillis()/1000));
         }
         if (!StringUtils.isEmpty(replicationMetric.getMetadata())) {
-          mReplicationMetrics.setMetadata(replicationMetric.getMetadata());
+          if (replicationMetric.getMetadata().length() > RM_METADATA_COL_WIDTH) {
+            mReplicationMetrics.setProgress("RM_Metadata limit exceeded to " + replicationMetric.getMetadata().length());
+          } else {
+            mReplicationMetrics.setMetadata(replicationMetric.getMetadata());
+          }
         }
         if (!StringUtils.isEmpty(replicationMetric.getProgress())) {
           // Check for the limit of RM_PROGRESS Column.
-          if ((dbType.isORACLE() && replicationMetric.getProgress().length() > 4000)
-              || replicationMetric.getProgress().length() > 24000) {
-            mReplicationMetrics.setProgress("RM_PROGRESS LIMIT EXCEEDED");
+          if ((dbType.isORACLE() && replicationMetric.getProgress().length() > ORACLE_DB_MAX_COL_WIDTH)
+              || replicationMetric.getProgress().length() > RM_PROGRESS_COL_WIDTH) {
+            mReplicationMetrics.setProgress("RM_Progress limit exceeded to " + replicationMetric.getProgress().length());
           } else {
             mReplicationMetrics.setProgress(replicationMetric.getProgress());
           }
         }
+        mReplicationMetrics.setMessageFormat(replicationMetric.getMessageFormat());
         mReplicationMetricsList.add(mReplicationMetrics);
       }
       pm.makePersistentAll(mReplicationMetricsList);

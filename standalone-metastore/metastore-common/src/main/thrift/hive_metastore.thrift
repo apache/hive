@@ -457,11 +457,18 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
+struct SourceTable {
+    1: required Table table,
+    2: required i64 insertedCount,
+    3: required i64 updatedCount,
+    4: required i64 deletedCount
+}
+
 struct CreationMetadata {
     1: required string catName
     2: required string dbName,
     3: required string tblName,
-    4: required set<string> tablesUsed,
+    4: required set<SourceTable> tablesUsed,
     5: optional string validTxnList,
     6: optional i64 materializationTime
 }
@@ -1090,6 +1097,13 @@ struct ReplLastIdInfo {
     5: optional list<string> partitionList,
 }
 
+struct UpdateTransactionalStatsRequest {
+    1: required i64 tableId,
+    2: required i64 insertCount,
+    3: required i64 updatedCount,
+    4: required i64 deletedCount,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
@@ -1331,8 +1345,8 @@ struct GetLatestCommittedCompactionInfoResponse {
 }
 
 struct FindNextCompactRequest {
-    1: required string workerId,
-    2: required string workerVersion
+    1: optional string workerId,
+    2: optional string workerVersion
 }
 
 struct AddDynamicPartitions {
@@ -2200,7 +2214,8 @@ struct ReplicationMetrics{
   2: required string policy,
   3: required i64 dumpExecutionId,
   4: optional string metadata,
-  5: optional string progress
+  5: optional string progress,
+  6: optional string messageFormat
 }
 
 struct ReplicationMetricList{
@@ -2453,7 +2468,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
-  Materialization get_materialization_invalidation_info(1:CreationMetadata creation_metadata, 2:string validTxnList)
+  Materialization get_materialization_invalidation_info(1:CreationMetadata creation_metadata)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   void update_creation_metadata(1: string catName, 2:string dbname, 3:string tbl_name, 4:CreationMetadata creation_metadata)
                    throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
@@ -2733,6 +2748,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
   SetPartitionsStatsResponse update_partition_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
+  void update_transaction_statistics(1:UpdateTransactionalStatsRequest req) throws (1:MetaException o1)
 
 
   // get APIs return the column statistics corresponding to db_name, tbl_name, [part_name], col_name if

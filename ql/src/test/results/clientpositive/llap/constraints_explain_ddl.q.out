@@ -932,7 +932,7 @@ ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_dayofweek SE
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_holidayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_holidayfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_id SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwdOOGICgsDA= 
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinmonthfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinmonthfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinweekfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
@@ -1124,7 +1124,7 @@ ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_dayofweek SE
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_holidayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_holidayfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_id SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwdOOGICgsDA= 
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinmonthfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinmonthfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinweekfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
@@ -1499,9 +1499,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1563,9 +1563,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1628,9 +1628,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1693,9 +1693,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1822,9 +1822,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1953,9 +1953,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2103,9 +2103,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2285,9 +2285,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2353,9 +2353,9 @@ TBLPROPERTIES (
 ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
 ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwpn6L//ZxBjBu6xiguL3TL2SiwGD3vHAAg== 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
 ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwP/4PQQgsbBowI= 
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2510,7 +2510,7 @@ TBLPROPERTIES (
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwpepZP/f7ASBwcWJBg== 
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
@@ -2639,7 +2639,7 @@ TBLPROPERTIES (
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwpepZP/f7ASBwcWJBg== 
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
@@ -2769,7 +2769,7 @@ TBLPROPERTIES (
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwpepZP/f7ASBwcWJBg== 
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
@@ -2898,7 +2898,7 @@ TBLPROPERTIES (
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwpepZP/f7ASBwcWJBg== 
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
@@ -3087,7 +3087,7 @@ TBLPROPERTIES (
 ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwpepZP/f7ASBwcWJBg== 
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
@@ -3555,8 +3555,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales
 PREHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@customer
+PREHOOK: Output: default@customer
 POSTHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@customer
+POSTHOOK: Output: default@customer
 PREHOOK: query: alter table customer change column c_customer_id c_customer_id string constraint cid_nn not null disable novalidate rely
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@customer
@@ -3567,16 +3571,28 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Output: default@customer
 PREHOOK: query: alter table customer add constraint uk1 UNIQUE(c_customer_id) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@customer
+PREHOOK: Output: default@customer
 POSTHOOK: query: alter table customer add constraint uk1 UNIQUE(c_customer_id) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@customer
+POSTHOOK: Output: default@customer
 PREHOOK: query: alter table store_sales add constraint pk_ss primary key (ss_item_sk, ss_ticket_number) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
 POSTHOOK: query: alter table store_sales add constraint pk_ss primary key (ss_item_sk, ss_ticket_number) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
 PREHOOK: query: alter table store_sales add constraint ss_c foreign key  (ss_customer_sk) references customer (c_customer_sk) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
 POSTHOOK: query: alter table store_sales add constraint ss_c foreign key  (ss_customer_sk) references customer (c_customer_sk) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
 PREHOOK: query: explain ddl
 select c_customer_id
 from customer
@@ -9718,32 +9734,60 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table2_n8
+PREHOOK: Output: default@table2_n8
 POSTHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table2_n8
+POSTHOOK: Output: default@table2_n8
 PREHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table3_n1
+PREHOOK: Output: default@table3_n1
 POSTHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table3_n1
+POSTHOOK: Output: default@table3_n1
 PREHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table4_n0
+PREHOOK: Output: default@table4_n0
 POSTHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table4_n0
+POSTHOOK: Output: default@table4_n0
 PREHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table6_n3
+PREHOOK: Output: default@table6_n3
 POSTHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table6_n3
+POSTHOOK: Output: default@table6_n3
 PREHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table8
+PREHOOK: Output: default@table8
 POSTHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table8
+POSTHOOK: Output: default@table8
 PREHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table16
+PREHOOK: Output: default@table16
 POSTHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table16
+POSTHOOK: Output: default@table16
 PREHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table18
+PREHOOK: Output: default@table18
 POSTHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table18
+POSTHOOK: Output: default@table18
 PREHOOK: query: explain ddl select * from table2_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2_n8
@@ -10508,20 +10552,36 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table2_n8
+PREHOOK: Output: default@table2_n8
 POSTHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table2_n8
+POSTHOOK: Output: default@table2_n8
 PREHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table3_n1
+PREHOOK: Output: default@table3_n1
 POSTHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table3_n1
+POSTHOOK: Output: default@table3_n1
 PREHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table6_n3
+PREHOOK: Output: default@table6_n3
 POSTHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table6_n3
+POSTHOOK: Output: default@table6_n3
 PREHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table8
+PREHOOK: Output: default@table8
 POSTHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table8
+POSTHOOK: Output: default@table8
 PREHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4_n0(x) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@table16
@@ -10532,8 +10592,12 @@ POSTHOOK: Input: default@table16
 POSTHOOK: Output: default@table16
 PREHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table18
+PREHOOK: Output: default@table18
 POSTHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table18
+POSTHOOK: Output: default@table18
 PREHOOK: query: explain ddl select * from table2_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2_n8
@@ -10992,8 +11056,12 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table12
+PREHOOK: Output: default@table12
 POSTHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table12
+POSTHOOK: Output: default@table12
 PREHOOK: query: explain ddl select * from table12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table12
@@ -11190,8 +11258,12 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: dbconstraint@table2
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: dbconstraint@table2
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
 PREHOOK: type: QUERY
 PREHOOK: Input: dbconstraint@table2
@@ -11305,8 +11377,12 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: dbconstraint@table2
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: dbconstraint@table2
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
 PREHOOK: type: QUERY
 PREHOOK: Input: dbconstraint@table2
@@ -11363,8 +11439,12 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: dbconstraint@table2
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: dbconstraint@table2
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
 PREHOOK: type: QUERY
 PREHOOK: Input: dbconstraint@table2
@@ -11429,12 +11509,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table23
 PREHOOK: query: ALTER TABLE table23 ADD CONSTRAINT fk23_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table23
+PREHOOK: Output: default@table23
 POSTHOOK: query: ALTER TABLE table23 ADD CONSTRAINT fk23_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table23
+POSTHOOK: Output: default@table23
 PREHOOK: query: ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table23
+PREHOOK: Output: default@table23
 POSTHOOK: query: ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table23
+POSTHOOK: Output: default@table23
 PREHOOK: query: explain ddl select * from table23
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table23

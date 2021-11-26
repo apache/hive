@@ -93,17 +93,18 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
-	numRows             	0                   
+	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1074                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
 	write.format.default	avro                
 	 	 
@@ -178,6 +179,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	true                

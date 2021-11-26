@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Test class to run DbTxnManager tests against different dbms types.
- * Example: mvn test -Dtest=ITestDbTxnManager -Dtest.metastore.db=postgres -Ditest.jdbc.jars=yourPathtoJdbcDriver
+ * Example: mvn test -Dtest=ITestDbTxnManager -Dtest.metastore.db=postgres
  */
 public class ITestDbTxnManager extends TestDbTxnManager2 {
 

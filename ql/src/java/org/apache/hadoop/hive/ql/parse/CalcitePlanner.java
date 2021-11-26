@@ -131,6 +131,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -672,7 +673,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           this.ctx.setCboInfo(cboMsg);
 
-          // Determine if we should re-throw the exception OR if we try to mark plan as reAnayzeAST to retry
+          // Determine if we should re-throw the exception OR if we try to mark plan as reAnalyzeAST to retry
           // planning as non-CBO.
           if (fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
@@ -1648,6 +1649,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
         calcitePlan = genLogicalPlan(getQB(), true, null, null);
+        // freeze the names in the hash map for objects that are only interested
+        // in the parsed tables in the original query.
+        tabNameToTabObject.markParsingCompleted();
         // if it is to create view, we do not use table alias
         resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan),
             (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
@@ -1966,7 +1970,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
               .equals("DUMMY");
       final RelNode calcitePreMVRewritingPlan = basePlan;
-      final List<String> tablesUsedQuery = getTablesUsed(basePlan);
+      final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
 
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
@@ -2114,10 +2118,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           try {
             Table hiveTableMD = extractTable(relOptMaterialization);
             if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
+              Set<TableName> sourceTables = new HashSet<>(1);
+              sourceTables.add(hiveTableMD.getFullTableName());
               if (db.validateMaterializedViewsFromRegistry(
-                      singletonList(hiveTableMD),
-                      singletonList(hiveTableMD.getFullyQualifiedName()),
-                      getTxnMgr())) {
+                      singletonList(hiveTableMD), sourceTables, getTxnMgr())) {
                 return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
               }
             } else {
@@ -2339,14 +2343,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return basePlan;
     }
 
-    protected List<String> getTablesUsed(RelNode plan) {
-      List<String> tablesUsed = new ArrayList<>();
+    protected Set<TableName> getTablesUsed(RelNode plan) {
+      Set<TableName> tablesUsed = new HashSet<>();
       new RelVisitor() {
         @Override
         public void visit(RelNode node, int ordinal, RelNode parent) {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
-            tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+            Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
+            tablesUsed.add(hiveTableMD.getFullTableName());
           }
           super.visit(node, ordinal, parent);
         }
@@ -3013,11 +3018,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String url = tabMetaData.getProperty(Constants.JDBC_URL);
             final String driver = tabMetaData.getProperty(Constants.JDBC_DRIVER);
             final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
-            String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
-            if (pswd == null) {
+            final String pswd;
+            if (tabMetaData.getProperty(Constants.JDBC_PASSWORD) != null) {
+              pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
+            } else if (tabMetaData.getProperty(Constants.JDBC_KEYSTORE) != null) {
               String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
               String key = tabMetaData.getProperty(Constants.JDBC_KEY);
               pswd = Utilities.getPasswdFromKeystore(keystore, key);
+            } else if (tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI) != null) {
+              pswd = Utilities.getPasswdFromUri(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI));
+            } else {
+              pswd = null;
+              LOG.warn("No password found for accessing {} table via JDBC", fullyQualifiedTabName);
             }
             final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
             final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
@@ -3068,7 +3080,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   || qb.getAliasInsideView().contains(tableAlias.toLowerCase()), tableScanTrait);
         }
 
-        if (!optTable.getReferentialConstraints().isEmpty()) {
+        if (optTable.hasReferentialConstraints()) {
           profilesCBO.add(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS);
         }
 
@@ -3633,7 +3645,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       if (gbChildProjLst.isEmpty()) {
-        // This will happen for count(*), in such cases we arbitarily pick
+        // This will happen for count(*), in such cases we arbitrarily pick
         // first element from srcRel
         gbChildProjLst.add(this.cluster.getRexBuilder().makeInputRef(srcRel, 0));
       }
@@ -4728,7 +4740,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               (srcRel.getInputs().size() == 1 && srcRel.getInput(0) instanceof HiveAggregate))) {
             // Likely a malformed query eg, select hash(distinct c1) from t1;
             throw new CalciteSemanticException("Distinct without an aggregation.",
-                    UnsupportedFeature.Distinct_without_an_aggreggation);
+                    UnsupportedFeature.Distinct_without_an_aggregation);
           } else {
             // Case when this is an expression
             TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR, cluster.getRexBuilder());

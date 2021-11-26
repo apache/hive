@@ -579,7 +579,7 @@ public class AcidUtils {
   }
 
   /**
-   * If the direct insert is on for ACID tables, the files will contain an "_attempID" postfix.
+   * If the direct insert is on for ACID tables, the files will contain an "_attemptID" postfix.
    * In order to be able to read the files from the delete deltas, we need to know which
    * attemptId belongs to which delta. To make this lookup easy, this method created a map
    * to link the deltas to the attemptId.
@@ -2520,8 +2520,7 @@ public class AcidUtils {
     }
 
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
-      try {
-        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+      try (Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()))) {
         /*
           acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed

@@ -27,8 +27,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import java.io.File;
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -88,16 +86,16 @@ public class CoreKuduCliDriver extends CliAdapter {
     try {
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
       } catch (CommandProcessorException e) {
         qt.failedQuery(e.getCause(), e.getResponseCode(), fname, null);
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
       }

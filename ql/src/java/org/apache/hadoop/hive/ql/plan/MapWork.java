@@ -311,7 +311,8 @@ public class MapWork extends BaseWork {
           } else {
             hasLlap = true;
           }
-        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass)) {
+        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass,
+            Utilities.getIsVectorized(conf, this))) {
           hasCacheOnly = true;
         } else {
           hasNonLlap = true;

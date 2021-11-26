@@ -696,7 +696,8 @@ public class HiveConf extends Configuration {
         + "attempted using the snapshot based approach. If disabled, the replication will fail in case the target is "
         + "modified."),
     REPL_STATS_TOP_EVENTS_COUNTS("hive.repl.stats.events.count", 5,
-        "Number of top costliest events that needs to maintained per event type for the replication statistics."),
+        "Number of topmost expensive events that needs to be maintained per event type for the replication statistics." +
+                " Maximum permissible limit is 10."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -2377,10 +2378,10 @@ public class HiveConf extends Configuration {
         "we think the key as a skew join key. "),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000,
         "Determine the number of map task used in the follow up map join job for a skew join.\n" +
-        "It should be used together with hive.skewjoin.mapjoin.min.split to perform a fine grained control."),
+        "It should be used together with hive.skewjoin.mapjoin.min.split to perform a fine-grained control."),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L,
         "Determine the number of map task at most used in the follow up map join job for a skew join by specifying \n" +
-        "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine grained control."),
+        "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine-grained control."),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000,
         "Send a heartbeat after this interval - used by mapjoin and filter operators"),
@@ -2787,7 +2788,7 @@ public class HiveConf extends Configuration {
     HIVE_STATS_DEFAULT_PUBLISHER("hive.stats.default.publisher", "",
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
     /**
-     * @deprecated Use MetastoreConf.STATS_DEFAULT_AGGRETATOR
+     * @deprecated Use MetastoreConf.STATS_DEFAULT_AGGREGATOR
      */
     @Deprecated
     HIVE_STATS_DEFAULT_AGGREGATOR("hive.stats.default.aggregator", "",
@@ -2944,7 +2945,7 @@ public class HiveConf extends Configuration {
         "queries that read non-orc MM tables with original files will fail. The default in\n" +
         "Hive 3.0 is false."),
     HIVE_LOCK_FILE_MOVE_MODE("hive.lock.file.move.protect", "all", new StringSet("none", "dp", "all"),
-        "During file move operations acqueires a SEMI_SHARED lock at the table level."
+        "During file move operations acquires a SEMI_SHARED lock at the table level."
             + "none:never; dp: only in case of dynamic partitioning operations; all: all table operations"),
 
     // Zookeeper related configs
@@ -3466,6 +3467,9 @@ public class HiveConf extends Configuration {
         "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
+    HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS("hive.security.authorization.enabled.on.spark.views",true,
+            "The configuration is gives the flexibility to admin to user whether to turn on/off the authorization model" +
+                    "introduced in HIVE-24026"),
     HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME("hive.security.authorization.kerberos.use.shortname", true,
         "use short name in Kerberos cluster"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -3733,6 +3737,11 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER("hive.server2.proxy.trustheader", "", "This config " +
+            "indicates whether the connection is authenticated before the requests lands on HiveServer2, So that we can" +
+            "avoid the authentication is again in HS2. Default value is empty, if it's value is set to some header say " +
+            "'X-Trusted-Proxy-Auth-Header' then we need to look for this header in the connection string, if present " +
+            "we directly extarct the client name from header."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
@@ -3919,6 +3928,11 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_OPERATION_LOG_CLEANUP_DELAY("hive.server2.operation.log.cleanup.delay", "300s",
       new TimeValidator(TimeUnit.SECONDS), "When a query is cancelled (via kill query, query timeout or triggers),\n" +
       " operation logs gets cleaned up after this delay"),
+    HIVE_SERVER2_OPERATION_LOG_PURGEPOLICY_TIMETOLIVE("hive.server2.operation.log.purgePolicy.timeToLive",
+        "60s", new TimeValidator(TimeUnit.SECONDS), 
+        "Number of seconds the appender, which has been dynamically created by Log4J framework for the " + 
+        "operation log, should survive without having any events sent to it. For more details, check " + 
+        "Log4J's IdlePurgePolicy."),
     HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED("hive.server2.historic.operation.log.enabled", false,
         "Keep the operation log for some time until the operation's query info is evicted from QueryInfoCache."),
     HIVE_SERVER2_HISTORIC_OPERATION_LOG_CHECK_INTERVAL("hive.server2.historic.operation.log.check.interval", "15m",

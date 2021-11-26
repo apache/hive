@@ -26,6 +26,7 @@ public class ReplicationMetric {
   private long dumpExecutionId;
   private Metadata metadata;
   private Progress progress;
+  private String messageFormat;
 
   public ReplicationMetric(long scheduledExecutionId, String policy, long dumpExecutionId, Metadata metadata){
     this.scheduledExecutionId = scheduledExecutionId;
@@ -70,5 +71,13 @@ public class ReplicationMetric {
 
   public void setProgress(Progress progress) {
     this.progress = progress;
+  }
+
+  public String getMessageFormat() {
+    return messageFormat;
+  }
+
+  public void setMessageFormat(String messageFormat) {
+    this.messageFormat = messageFormat;
   }
 }

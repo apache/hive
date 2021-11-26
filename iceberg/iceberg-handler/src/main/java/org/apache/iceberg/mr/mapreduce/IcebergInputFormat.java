@@ -29,6 +29,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -43,6 +46,7 @@ import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -66,6 +70,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.InputFile;
+import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
@@ -95,31 +100,40 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     return new InputFormatConfig.ConfigBuilder(job.getConfiguration());
   }
 
-  @Override
-  public List<InputSplit> getSplits(JobContext context) {
-    Configuration conf = context.getConfiguration();
-    Table table = Optional
-        .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
-        .orElseGet(() -> Catalogs.loadTable(conf));
-
+  private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan()
-            .caseSensitive(conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
+        .caseSensitive(conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
     long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }
+
     long asOfTime = conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1);
     if (asOfTime != -1) {
       scan = scan.asOfTime(asOfTime);
     }
+
     long splitSize = conf.getLong(InputFormatConfig.SPLIT_SIZE, 0);
     if (splitSize > 0) {
       scan = scan.option(TableProperties.SPLIT_SIZE, String.valueOf(splitSize));
     }
+
+    // In case of LLAP-based execution we ask Iceberg not to combine multiple fileScanTasks into one split.
+    // This is so that cache affinity can work, and each file(split) is executed/cached on always the same LLAP daemon.
+    MapWork mapWork = LlapHiveUtils.findMapWork((JobConf) conf);
+    if (mapWork != null && mapWork.getCacheAffinity()) {
+      // Iceberg splits logically consist of buckets, where the bucket size equals to openFileCost setting if the files
+      // assigned to such bucket are smaller. This is how Iceberg would combine multiple files into one split, so here
+      // we need to enforce the bucket size to be equal to split size to avoid file combination.
+      Long openFileCost = splitSize > 0 ? splitSize : TableProperties.SPLIT_SIZE_DEFAULT;
+      scan = scan.option(TableProperties.SPLIT_OPEN_FILE_COST, String.valueOf(openFileCost));
+    }
+
     String schemaStr = conf.get(InputFormatConfig.READ_SCHEMA);
     if (schemaStr != null) {
       scan.project(SchemaParser.fromJson(schemaStr));
     }
+
     String[] selectedColumns = conf.getStrings(InputFormatConfig.SELECTED_COLUMNS);
     if (selectedColumns != null) {
       scan.select(selectedColumns);
@@ -131,18 +145,31 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       scan = scan.filter(filter);
     }
 
+    return scan;
+  }
+
+  @Override
+  public List<InputSplit> getSplits(JobContext context) {
+    Configuration conf = context.getConfiguration();
+    Table table = Optional
+        .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
+        .orElseGet(() -> Catalogs.loadTable(conf));
+
+    TableScan scan = createTableScan(table, conf);
+
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);
     InputFormatConfig.InMemoryDataModel model = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
         InputFormatConfig.InMemoryDataModel.GENERIC);
     try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
+      Table serializableTable = SerializableTable.copyOf(table);
       tasksIterable.forEach(task -> {
         if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
             model == InputFormatConfig.InMemoryDataModel.PIG)) {
           // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
           checkResiduals(task);
         }
-        splits.add(new IcebergSplit(conf, task, table.io(), table.encryption()));
+        splits.add(new IcebergSplit(serializableTable, conf, task));
       });
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
@@ -190,6 +217,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private TaskAttemptContext context;
     private Schema tableSchema;
     private Schema expectedSchema;
+    private String nameMapping;
     private boolean reuseContainers;
     private boolean caseSensitive;
     private InputFormatConfig.InMemoryDataModel inMemoryDataModel;
@@ -205,10 +233,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
-      this.io = ((IcebergSplit) split).io();
-      this.encryptionManager = ((IcebergSplit) split).encryptionManager();
+      Table table = ((IcebergSplit) split).table();
+      this.io = table.io();
+      this.encryptionManager = table.encryption();
       this.tasks = task.files().iterator();
       this.tableSchema = InputFormatConfig.tableSchema(conf);
+      this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
       this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
       this.expectedSchema = readSchema(conf, tableSchema, caseSensitive);
       this.reuseContainers = conf.getBoolean(InputFormatConfig.REUSE_CONTAINERS, false);
@@ -333,6 +363,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (reuseContainers) {
         avroReadBuilder.reuseContainers();
       }
+      if (nameMapping != null) {
+        avroReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+      }
 
       switch (inMemoryDataModel) {
         case PIG:
@@ -357,6 +390,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (reuseContainers) {
         parquetReadBuilder.reuseContainers();
       }
+      if (nameMapping != null) {
+        parquetReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+      }
 
       switch (inMemoryDataModel) {
         case PIG:
@@ -380,8 +416,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       // ORC does not support reuse containers yet
       switch (inMemoryDataModel) {
         case PIG:
-          // TODO: implement value readers for Pig and Hive
-          throw new UnsupportedOperationException("ORC support not yet supported for Pig and Hive");
+          // TODO: implement value readers for Pig
+          throw new UnsupportedOperationException("ORC support not yet supported for Pig");
         case HIVE:
           if (MetastoreUtil.hive3PresentOnClasspath()) {
             orcIterator = HIVE_VECTORIZED_READER_BUILDER.invoke(inputFile, task, idToConstant, context);
@@ -398,6 +434,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           orcReadBuilder.createReaderFunc(
               fileSchema -> GenericOrcReader.buildReader(
                   readSchema, fileSchema, idToConstant));
+
+          if (nameMapping != null) {
+            orcReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+          }
           orcIterator = orcReadBuilder.build();
       }
 

@@ -712,9 +712,9 @@ public final class TypeInfoUtils {
         break;
       }
       case STRUCT: {
-        StructTypeInfo strucTypeInfo = (StructTypeInfo) typeInfo;
-        List<String> fieldNames = strucTypeInfo.getAllStructFieldNames();
-        List<TypeInfo> fieldTypeInfos = strucTypeInfo
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+        List<TypeInfo> fieldTypeInfos = structTypeInfo
             .getAllStructFieldTypeInfos();
         List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(
             fieldTypeInfos.size());

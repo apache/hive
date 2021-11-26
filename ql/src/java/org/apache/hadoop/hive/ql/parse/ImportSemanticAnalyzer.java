@@ -505,7 +505,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     //if Importing into existing table, FileFormat is checked by
-    // ImportSemanticAnalzyer.checked checkTable()
+    // ImportSemanticAnalyzer.checked checkTable()
     Task<?> loadTableTask = TaskFactory.get(moveWork, x.getConf());
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);

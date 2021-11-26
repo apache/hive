@@ -84,7 +84,7 @@
        |  need to be uploaded to a server, using the timestamp.
        |
        |  The default path is relative to the core webapp directory.
-       |  An asolute path can be used.
+       |  An absolute path can be used.
        +-->
    <!--   <checksums-uri>build/work/checksums</checksums-uri>-->
 

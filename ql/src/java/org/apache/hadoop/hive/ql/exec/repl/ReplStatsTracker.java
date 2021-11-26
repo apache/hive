@@ -22,7 +22,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.ObjectName;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -30,13 +29,17 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
+
 /**
  * Tracks the replication statistics per event type.
  */
 public class ReplStatsTracker {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ReplStatsTracker.class);
   // Maintains the length of the RM_Progress column in the RDBMS, which stores the ReplStats
-  public static int RM_PROGRESS_LENGTH = 24000;
+  public static int RM_PROGRESS_LENGTH = 10000;
+  public static int TOP_K_MAX = 10;
 
   // Maintains the descriptive statistics per event type.
   private ConcurrentHashMap<String, DescriptiveStatistics> descMap;
@@ -49,6 +52,11 @@ public class ReplStatsTracker {
   private String lastEventId;
 
   public ReplStatsTracker(int k) {
+    if (k > TOP_K_MAX) {
+      LOG.warn("Value for {} exceeded maximum permissible limit. Using Maximum of {}", REPL_STATS_TOP_EVENTS_COUNTS,
+              TOP_K_MAX);
+      k = TOP_K_MAX;
+    }
     this.k = k;
     descMap = new ConcurrentHashMap<>();
     topKEvents = new ConcurrentHashMap<>();
@@ -120,6 +128,10 @@ public class ReplStatsTracker {
    */
   public String getLastEventId() {
     return lastEventId;
+  }
+
+  public int getK() {
+    return k;
   }
 
   private String formatDouble(DecimalFormat dFormat, Double d) {
