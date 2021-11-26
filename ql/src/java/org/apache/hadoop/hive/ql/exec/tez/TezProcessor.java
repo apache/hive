@@ -312,6 +312,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
+      rproc.setAborted(true);
       originalThrowable = t;
     } finally {
       if (originalThrowable != null && (originalThrowable instanceof Error ||
