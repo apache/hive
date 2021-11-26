@@ -1157,6 +1157,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixUpdateStats
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixProperties
   ;
 
 alterStatementPartitionKeyType

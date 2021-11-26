@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -288,9 +289,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PARTCOLTYPE) {
         analyzeAlterTablePartColType(qualified, ast);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
-        analyzeAlterTableProps(qualified, null, ast, false, false);
+        analyzeAlterTableProps(qualified, partSpec, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPROPERTIES) {
-        analyzeAlterTableProps(qualified, null, ast, false, true);
+        analyzeAlterTableProps(qualified, partSpec, ast, false, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UPDATESTATS) {
         analyzeAlterTableProps(qualified, partSpec, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_SKEWED) {
@@ -1387,6 +1388,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("AlterTable UpdateStats " + entry.getKey()
               + " failed because the only valid keys are " + StatsSetupConst.ROW_COUNT + " and "
               + StatsSetupConst.RAW_DATA_SIZE);
+        }
+        if (!conf.getBoolVar(ConfVars.UPDATE_PARTITIONS_PROPERTIES) && (partSpec != null && !partSpec.isEmpty())) {
+          throw new SemanticException("Don't allowed user to set the partition's properties. "
+                  + "To turn this on set hive.update.partitions.properties.enabled=true");
         }
       }
 

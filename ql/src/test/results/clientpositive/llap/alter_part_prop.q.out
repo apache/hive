@@ -1,0 +1,140 @@
+PREHOOK: query: create table alter1(a int, b int) partitioned by (insertdate string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter1
+POSTHOOK: query: create table alter1(a int, b int) partitioned by (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter1
+PREHOOK: query: alter table alter1 add partition (insertdate='2008-01-01') location '2008/01/01'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 add partition (insertdate='2008-01-01') location '2008/01/01'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter1
+POSTHOOK: Output: default@alter1@insertdate=2008-01-01
+PREHOOK: query: desc formatted alter1 partition(insertdate='2008-01-01')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: desc formatted alter1 partition(insertdate='2008-01-01')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-01-01]        	 
+Database:           	default             	 
+Table:              	alter1              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter1 partition(insertdate='2008-01-01') set tblproperties ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1@insertdate=2008-01-01
+POSTHOOK: query: alter table alter1 partition(insertdate='2008-01-01') set tblproperties ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Input: default@alter1@insertdate=2008-01-01
+POSTHOOK: Output: default@alter1@insertdate=2008-01-01
+PREHOOK: query: desc formatted alter1 partition(insertdate='2008-01-01')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: desc formatted alter1 partition(insertdate='2008-01-01')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-01-01]        	 
+Database:           	default             	 
+Table:              	alter1              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	a                   	1                   
+	c                   	3                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter1 partition(insertdate='2008-01-01') unset tblproperties if exists ('c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1@insertdate=2008-01-01
+POSTHOOK: query: alter table alter1 partition(insertdate='2008-01-01') unset tblproperties if exists ('c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Input: default@alter1@insertdate=2008-01-01
+POSTHOOK: Output: default@alter1@insertdate=2008-01-01
+PREHOOK: query: desc formatted alter1 partition(insertdate='2008-01-01')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: desc formatted alter1 partition(insertdate='2008-01-01')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-01-01]        	 
+Database:           	default             	 
+Table:              	alter1              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	a                   	1                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
