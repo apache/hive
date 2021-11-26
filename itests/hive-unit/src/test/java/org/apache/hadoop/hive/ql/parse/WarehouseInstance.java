@@ -388,7 +388,7 @@ public class WarehouseInstance implements Closeable {
     List<String> lowerCaseData =
         Arrays.stream(data).map(String::toLowerCase).collect(Collectors.toList());
     assertEquals(data.length, filteredResults.size());
-    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected" + StringUtils
+    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected " + StringUtils
             .join(lowerCaseData, ","), filteredResults.containsAll(lowerCaseData));
     return this;
   }

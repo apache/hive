@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -55,7 +56,7 @@ public class OptimisedBootstrapUtils {
   public static final String FILE_ENTRY_SEPERATOR = "###";
   private static Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
 
-  /**   table diff directory when in progress */
+  /** table diff directory when in progress */
   public static final String TABLE_DIFF_INPROGRESS_DIRECTORY = "table_diff";
 
   /** table diff directory when complete */
@@ -149,6 +150,19 @@ public class OptimisedBootstrapUtils {
     Database database = hiveDb.getDatabase(dbName);
     String currentLastEventId = getLastReplicatedStateFromParameters(database.getParameters());
     return currentLastEventId;
+  }
+
+  /**
+   * Validates if the first incremental is done before starting optimised bootstrap
+   * @param dbName name of database
+   * @param hiveDb the hive object
+   * @throws HiveException
+   */
+  public static void isFirstIncrementalPending(String dbName, Hive hiveDb) throws HiveException {
+    Database database = hiveDb.getDatabase(dbName);
+    if (database == null || ReplUtils.isFirstIncPending(database.getParameters()))
+      throw new HiveException(
+          "Replication dump not allowed for replicated database with first incremental dump pending : " + dbName);
   }
 
   /**

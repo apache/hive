@@ -132,6 +132,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getAnd
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getReplEventIdFromDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFailover;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFirstIncrementalPending;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
@@ -223,15 +224,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
           if (isFailover) {
             LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
+            // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
+            // consistent state.
+            isFirstIncrementalPending(work.dbNameOrPattern, getHive());
+            // Get the last replicated event id from the database.
             String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
-            boolean isTableDiffFilePresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+            // Check if the tableDiff directory is present or not.
+            boolean isTableDiffDirectoryPresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
             if (createEventMarker) {
-              LOG.info("Creating event_ack file for failover.");
+              LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
               lastReplId = getAndCreateEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, conf, work);
               finishRemainingTasks();
             } else {
               // We should be here only if TableDiff is Present.
-              assert isTableDiffFilePresent;
+              assert isTableDiffDirectoryPresent;
               // TODO: Dump using TableDiff file & get lastReplId
               lastReplId = -1L;
             }
