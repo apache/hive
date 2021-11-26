@@ -1851,7 +1851,6 @@ public class AcidUtils {
       AcidDirectory directory, AcidUtils.HdfsDirSnapshot dirSnapshot, boolean canTrim)
       throws IOException {
     ParsedDelta delta = parsedDelta(deltadir, directory.getFs(), dirSnapshot, canTrim, writeIdList.getHighWatermark());
-    LOG.warn(canTrim + "from processDeltaDir");
     if(delta == null){
       return;
     }

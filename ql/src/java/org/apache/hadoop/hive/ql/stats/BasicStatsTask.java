@@ -136,6 +136,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
     }
 
+    public boolean canTrim(){
+      return !(work.isTargetRewritten() || partish.getTable().isPartitioned()
+          || work.isMultiStatStage() || !partish.isTransactionalTable());
+    }
+
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
@@ -172,8 +177,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       if (providedBasicStats == null) {
-        MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
-
+        if(!canTrim()){
+          MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
+        }else {
+          MetaStoreServerUtils.populateQuickStatsWithPrevStats(partfileStatus, parameters);
+        }
         if (statsAggregator != null) {
           // Update stats for transactional tables (MM, or full ACID with overwrite), even
           // though we are marking stats as not being accurate.
@@ -195,7 +203,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
         } else {
           Path path = new Path(partish.getPartSd().getLocation());
-          partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
+          partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf,
+              null, canTrim());
           isMissingAcidState = true;
         }
       }
