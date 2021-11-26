@@ -1232,12 +1232,17 @@ public class AcidUtils {
    * that for any dir, either all files are acid or all are not.
    */
   public static ParsedDelta parsedDelta(Path deltaDir, FileSystem fs) throws IOException {
-    return parsedDelta(deltaDir, fs, null);
+    return parsedDelta(deltaDir, fs, null, false, -1);
   }
 
-  private static ParsedDelta parsedDelta(Path deltaDir, FileSystem fs, HdfsDirSnapshot dirSnapshot)
+  private static ParsedDelta parsedDelta(Path deltaDir, FileSystem fs, HdfsDirSnapshot dirSnapshot,
+      boolean canTrim, long highWaterMark)
       throws IOException {
     ParsedDeltaLight deltaLight = ParsedDeltaLight.parse(deltaDir);
+    LOG.warn("Delta details:" + deltaDir.toString() + " " + deltaLight.minWriteId + " " + highWaterMark + " " + canTrim);
+    if(canTrim && !(deltaLight.minWriteId >= highWaterMark)){
+      return null;
+    }
     //small optimization - delete delta can't be in raw format
     boolean isRawFormat = !deltaLight.isDeleteDelta && MetaDataFile.isRawFormat(deltaDir, fs, dirSnapshot);
     List<HdfsFileStatusWithId> files = null;
@@ -1296,7 +1301,7 @@ public class AcidUtils {
    */
   public static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
-    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null, false);
   }
 
   /**
@@ -1314,23 +1319,20 @@ public class AcidUtils {
    */
   private static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
-      HdfsDirSnapshot> dirSnapshots) throws IOException {
+      HdfsDirSnapshot> dirSnapshots, boolean canTrim) throws IOException {
     ValidTxnList validTxnList = getValidTxnList(conf);
-
     FileSystem fs = fileSystem == null ? candidateDirectory.getFileSystem(conf) : fileSystem;
     AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds);
-
     List<HdfsFileStatusWithId> childrenWithId = HdfsUtils.tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, hiddenFileFilter);
-
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
-        getChildState(directory, child, writeIdList,validTxnList, ignoreEmptyFiles);
+        getChildState(directory, child, writeIdList,validTxnList, ignoreEmptyFiles,canTrim);
       }
     } else {
       if (dirSnapshots == null) {
         dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
       }
-      getChildState(directory, dirSnapshots, writeIdList, validTxnList, ignoreEmptyFiles);
+      getChildState(directory, dirSnapshots, writeIdList, validTxnList, ignoreEmptyFiles, canTrim);
     }
     // If we have a base, the original files are obsolete.
     if (directory.getBase() != null) {
@@ -1357,7 +1359,6 @@ public class AcidUtils {
     }
     // Filter out all delta directories that are shadowed by others
     findBestWorkingDeltas(writeIdList, directory);
-
     if(directory.getOldestBase() != null && directory.getBase() == null &&
         isCompactedBase(directory.getOldestBase(), fs, dirSnapshots)) {
       /*
@@ -1378,7 +1379,6 @@ public class AcidUtils {
         Long.toString(writeIdList.getHighWatermark()),
               minOpenWriteId, directory.getOldestBase().toString()));
     }
-
     Path basePath = directory.getBaseDirectory();
     if (basePath != null) {
       boolean isBaseInRawFormat = MetaDataFile.isRawFormat(basePath, fs, dirSnapshots != null ? dirSnapshots.get(basePath) : null);
@@ -1764,7 +1764,7 @@ public class AcidUtils {
   }
 
   private static void getChildState(AcidDirectory directory, HdfsFileStatusWithId childWithId, ValidWriteIdList writeIdList,
-      ValidTxnList validTxnList, boolean ignoreEmptyFiles) throws IOException {
+      ValidTxnList validTxnList, boolean ignoreEmptyFiles, boolean canTrim) throws IOException {
     Path childPath = childWithId.getFileStatus().getPath();
     String fn = childPath.getName();
     if (!childWithId.getFileStatus().isDirectory()) {
@@ -1774,7 +1774,7 @@ public class AcidUtils {
     } else if (fn.startsWith(BASE_PREFIX)) {
       processBaseDir(childPath, writeIdList, validTxnList, directory, null);
     } else if (fn.startsWith(DELTA_PREFIX) || fn.startsWith(DELETE_DELTA_PREFIX)) {
-      processDeltaDir(childPath, writeIdList, validTxnList, directory, null);
+      processDeltaDir(childPath, writeIdList, validTxnList, directory, null, canTrim);
     } else {
       // This is just the directory.  We need to recurse and find the actual files.  But don't
       // do this until we have determined there is no base.  This saves time.  Plus,
@@ -1785,7 +1785,8 @@ public class AcidUtils {
   }
 
   private static void getChildState(AcidDirectory directory, Map<Path, HdfsDirSnapshot> dirSnapshots,
-      ValidWriteIdList writeIdList, ValidTxnList validTxnList , boolean ignoreEmptyFiles) throws IOException {
+      ValidWriteIdList writeIdList, ValidTxnList validTxnList , boolean ignoreEmptyFiles, boolean canTrim)
+      throws IOException {
     for (HdfsDirSnapshot dirSnapshot : dirSnapshots.values()) {
       Path dirPath = dirSnapshot.getPath();
       String dirName = dirPath.getName();
@@ -1801,7 +1802,7 @@ public class AcidUtils {
       } else if (dirName.startsWith(BASE_PREFIX)) {
         processBaseDir(dirPath, writeIdList, validTxnList, directory, dirSnapshot);
       } else if (dirName.startsWith(DELTA_PREFIX) || dirName.startsWith(DELETE_DELTA_PREFIX)) {
-        processDeltaDir(dirPath, writeIdList, validTxnList, directory, dirSnapshot);
+        processDeltaDir(dirPath, writeIdList, validTxnList, directory, dirSnapshot, canTrim);
       } else {
         directory.getOriginalDirectories().add(dirPath);
         for (FileStatus stat : dirSnapshot.getFiles()) {
@@ -1846,9 +1847,14 @@ public class AcidUtils {
     }
   }
 
-  private static void processDeltaDir(Path deltadir, ValidWriteIdList writeIdList, ValidTxnList validTxnList, AcidDirectory directory, AcidUtils.HdfsDirSnapshot dirSnapshot)
+  private static void processDeltaDir(Path deltadir, ValidWriteIdList writeIdList, ValidTxnList validTxnList,
+      AcidDirectory directory, AcidUtils.HdfsDirSnapshot dirSnapshot, boolean canTrim)
       throws IOException {
-    ParsedDelta delta = parsedDelta(deltadir, directory.getFs(), dirSnapshot);
+    ParsedDelta delta = parsedDelta(deltadir, directory.getFs(), dirSnapshot, canTrim, writeIdList.getHighWatermark());
+    LOG.warn(canTrim + "from processDeltaDir");
+    if(delta == null){
+      return;
+    }
     if (!isDirUsable(deltadir, delta.getVisibilityTxnId(), directory.getAbortedDirectories(), validTxnList)) {
       return;
     }
@@ -2600,7 +2606,7 @@ public class AcidUtils {
     }
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
-    AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
+    AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots, canTrimFiles);
     if(canTrimFiles) {
       AcidUtils.trimDirectoryforUpdates(idList, acidInfo);
     }
