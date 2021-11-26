@@ -718,9 +718,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
       lockId = res.getLockid();
 
+      heartbeater = Executors.newSingleThreadScheduledExecutor();
       long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
       Thread beater = new CompactionHeartbeater(this, TxnUtils.getFullTableName(ci.dbname, ci.tableName), conf);
-      heartbeater = Executors.newSingleThreadScheduledExecutor();
       heartbeater.scheduleAtFixedRate(beater, 0, txnTimeout / 2, TimeUnit.MILLISECONDS);
     }
 
