@@ -138,7 +138,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     public boolean canTrim(){
       return !(work.isTargetRewritten() || partish.getTable().isPartitioned()
-          || work.isMultiStatStage() || !partish.isTransactionalTable());
+          || work.isMultiStatStage() || !partish.isTransactionalTable() || partish.getTable().isMaterializedView());
     }
 
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {

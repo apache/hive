@@ -1398,21 +1398,6 @@ public class AcidUtils {
     return directory;
   }
 
-  private static void trimDirectoryforUpdates(ValidWriteIdList writeIdList, AcidDirectory directory){
-    LOG.warn("Trimming:");
-    LOG.warn(writeIdList.writeToString());
-    List<ParsedDelta> trimmed = new ArrayList<>();
-    for(ParsedDelta next : directory.getCurrentDirectories()){
-      if(next.minWriteId >= writeIdList.getHighWatermark() ){
-        LOG.warn("Added:"+next.getPath().toString());
-        LOG.warn(next.minWriteId + " " + next.maxWriteId);
-        trimmed.add(next);
-      }
-    }
-    directory.getCurrentDirectories().clear();
-    directory.getCurrentDirectories().addAll(trimmed);
-  }
-
   private static void findBestWorkingDeltas(ValidWriteIdList writeIdList, AcidDirectory directory) {
     Collections.sort(directory.getCurrentDirectories());
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
@@ -2605,9 +2590,6 @@ public class AcidUtils {
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
     AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots, canTrimFiles);
-    if(canTrimFiles) {
-      AcidUtils.trimDirectoryforUpdates(idList, acidInfo);
-    }
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
