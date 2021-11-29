@@ -91,6 +91,7 @@ public class Initiator extends MetaStoreCompactorThread {
   private long checkInterval;
   private long prevStart = -1;
   private ExecutorService compactionExecutor;
+  private CycleUpdaterThread cycleUpdaterThread;
 
   @Override
   public void run() {
@@ -121,13 +122,16 @@ public class Initiator extends MetaStoreCompactorThread {
         // don't doom the entire thread.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+          startedAt = System.currentTimeMillis();
+          long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart) / 1000;
+          prevStart = startedAt;
+
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
+            stopCycleUpdaterThread();
+            cycleUpdaterThread = CycleUpdaterThreadFactory.getCycleUpdaterThreadForGauge(
+                MetricsConstants.COMPACTION_INITIATOR_CYCLE, startedAt);
           }
-          startedAt = System.currentTimeMillis();
-
-          long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
-          prevStart = startedAt;
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
@@ -192,6 +196,7 @@ public class Initiator extends MetaStoreCompactorThread {
           if (metricsEnabled) {
             perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
+          stopCycleUpdaterThread();
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
@@ -557,5 +562,12 @@ public class Initiator extends MetaStoreCompactorThread {
     name.append("-");
     name.append(threadId);
     return name.toString();
+  }
+
+  private void stopCycleUpdaterThread() {
+    if (cycleUpdaterThread != null) {
+      cycleUpdaterThread.interrupt();
+      cycleUpdaterThread = null;
+    }
   }
 }
