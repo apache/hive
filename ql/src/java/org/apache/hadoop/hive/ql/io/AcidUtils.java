@@ -1239,7 +1239,6 @@ public class AcidUtils {
       boolean canTrim, long highWaterMark)
       throws IOException {
     ParsedDeltaLight deltaLight = ParsedDeltaLight.parse(deltaDir);
-    LOG.warn("Delta details:" + deltaDir.toString() + " " + deltaLight.minWriteId + " " + highWaterMark + " " + canTrim);
     if(canTrim && !(deltaLight.minWriteId >= highWaterMark)){
       return null;
     }
@@ -1403,7 +1402,6 @@ public class AcidUtils {
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
     //and we want to end up with the best set containing all relevant data: delta_5_20 delta_51_60,
     //subject to list of 'exceptions' in 'writeIdList' (not show in above example).
-    LOG.warn("This is the valid writeidList:"+writeIdList);
     List<ParsedDelta> deltas = new ArrayList<>();
     long current = directory.getBase() == null ? 0 : directory.getBase().getWriteId();
     int lastStmtId = -1;
@@ -2578,7 +2576,6 @@ public class AcidUtils {
     List<FileStatus> fileList = new ArrayList<>();
     ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
-    LOG.warn(idList.toString());
     if (idList == null) {
       LOG.warn("Cannot get ACID state for " + table.getDbName() + "." + table.getTableName()
           + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
@@ -2603,10 +2600,6 @@ public class AcidUtils {
     }
     if (acidInfo.getBaseDirectory() != null) {
       fileList.addAll(hdfsDirSnapshots.get(acidInfo.getBaseDirectory()).getFiles());
-    }
-    LOG.warn("List of files from AcidUtils::");
-    for(FileStatus ftemp : fileList){
-      LOG.warn(ftemp.toString());
     }
     return fileList;
   }
