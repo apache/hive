@@ -58,7 +58,7 @@ public class GenericUDFNullif extends GenericUDF {
       break;
     case UNION:
     default:
-      throw new UDFArgumentTypeException(1, "Unsupported Argument type category: " + arguments[0].getCategory());
+      throw new UDFArgumentTypeException(0, "Unsupported Argument type category: " + arguments[0].getCategory());
     }
 
     boolean isPrimitive = (arguments[0] instanceof PrimitiveObjectInspector);

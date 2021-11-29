@@ -267,21 +267,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: SELECT assert_true(NULLIF(create_union(0,1,'2'),create_union(0,1,'2')) is null)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT assert_true(NULLIF(create_union(0,1,'2'),create_union(0,1,'2')) is null)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-NULL
-PREHOOK: query: SELECT assert_true(NULLIF(create_union(0,1,2),create_union(0,1,2)) is null)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT assert_true(NULLIF(create_union(0,1,2),create_union(0,1,2)) is null)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-NULL
