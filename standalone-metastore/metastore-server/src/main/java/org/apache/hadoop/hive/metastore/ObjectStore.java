@@ -5276,6 +5276,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     Query query = null;
+    Query query2 = null;
     boolean success = false;
     LOG.debug("execute removeUnusedColumnDescriptor");
     DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(MetaStoreDirectSql.getProductName(pm), conf);
@@ -5297,7 +5298,7 @@ public class ObjectStore implements RawStore, Configurable {
         List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, query);
         //if no other SD references this CD, we can throw it out.
         if (referencedSDs != null && referencedSDs.isEmpty()) {
-          removeConstraintsAndCd(oldCD);
+          query2 = removeConstraintsAndCd(oldCD);
         }
       } else {
         query = pm.newQuery(
@@ -5306,18 +5307,19 @@ public class ObjectStore implements RawStore, Configurable {
         long count = (Long) query.execute(oldCD);
         //if no other SD references this CD, we can throw it out.
         if (count == 0) {
-          removeConstraintsAndCd(oldCD);
+          query2 = removeConstraintsAndCd(oldCD);
         }
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackAndCleanup(success, query);
+      rollbackAndCleanup(success, query);
+      if (query2 != null) {
+        query2.closeAll();
       }
     }
   }
 
-  private void removeConstraintsAndCd(MColumnDescriptor oldCD) {
+  private Query removeConstraintsAndCd(MColumnDescriptor oldCD) {
     Query query = null;
     // First remove any constraints that may be associated with this CD
     query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
@@ -5330,6 +5332,7 @@ public class ObjectStore implements RawStore, Configurable {
     pm.retrieve(oldCD);
     pm.deletePersistent(oldCD);
     LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
+    return query;
   }
 
   /**
