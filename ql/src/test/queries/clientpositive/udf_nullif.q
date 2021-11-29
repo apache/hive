@@ -28,5 +28,18 @@ select	nullif(a,b),
 	nullif(c,d),
 	nullif(d,a) from t0;
 
-SELECT NULLIF(array(1,2,3),array(1,2,3));
-SELECT NULLIF(array(1,2,3),array(3,2,1));
+SELECT assert_true(NULLIF(array(1,2,3),array(1,2,3)) is null);
+SELECT assert_true(NULLIF(array(1,2,3),array(3,2,1)) is not null);
+
+SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 1)) is null);
+SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 2)) is not null);
+
+SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',2)) is null);
+SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',3)) is not null);
+
+SELECT assert_true(NULLIF(create_union(0,1,'2'),create_union(0,1,'2')) is null);
+SELECT assert_true(NULLIF(create_union(0,1,2),create_union(0,1,2)) is null);
+
+-- HIVE-25748
+-- SELECT assert_true(NULLIF(create_union(0,1,2),create_union(0,1,3)) is not null);
+-- SELECT assert_true(NULLIF(create_union(0,1,2),create_union(1,2,1)) is not null);
