@@ -457,6 +457,9 @@ public class MetastoreConf {
     DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE("metastore.direct.sql.max.elements.values.clause",
         "hive.direct.sql.max.elements.values.clause",
         1000, "The maximum number of values in a VALUES clause for INSERT statement."),
+    DIRECT_SQL_MAX_PARAMETERS("metastore.direct.sql.max.parameters",
+        "hive.direct.sql.max.parameters", 1000, "The maximum query parameters \n" +
+            "backend sql engine can support."),
     DIRECT_SQL_MAX_QUERY_LENGTH("metastore.direct.sql.max.query.length",
         "hive.direct.sql.max.query.length", 100, "The maximum\n" +
         " size of a query string (in KB)."),
