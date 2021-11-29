@@ -627,9 +627,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           return false;
         }
       }
-      try {
-        OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()));
+      try (Reader notUsed = OrcFile.createReader(file.getPath(),
+            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()))) {
+        // We do not use the reader itself. We just check if we can open the file.
       } catch (IOException e) {
         return false;
       }
@@ -1651,24 +1651,26 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // object contains the orc tail from the cache then we can skip creating orc reader avoiding
       // filesystem calls.
       if (orcTail == null) {
-        Reader orcReader = OrcFile.createReader(file.getPath(),
+        try (Reader orcReader = OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(context.conf)
                 .filesystem(fs)
-                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()));
-        orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
-            file.getModificationTime());
-        if (context.cacheStripeDetails) {
-          context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
+                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()))) {
+          orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
+              file.getModificationTime());
+          if (context.cacheStripeDetails) {
+            context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
+          }
+          stripes = orcReader.getStripes();
+          stripeStats = orcReader.getStripeStatistics();
         }
-        stripes = orcReader.getStripes();
-        stripeStats = orcReader.getStripeStatistics();
       } else {
         stripes = orcTail.getStripes();
         // Always convert To PROLEPTIC_GREGORIAN
-        org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+        try (org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
             org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(context.conf).getConfiguration())
-                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
-        stripeStats = dummyReader.getVariantStripeStatistics(null);
+                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail))) {
+          stripeStats = dummyReader.getVariantStripeStatistics(null);
+        }
       }
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);

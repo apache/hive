@@ -321,6 +321,7 @@ public class TestOrcSerDeStats {
     assertEquals(5000, reader.getNumberOfRows());
     assertEquals(430040000, reader.getRawDataSize());
     assertEquals(430020000, reader.getRawDataSizeOfColumns(Lists.newArrayList("list1")));
+    reader.close();
   }
 
   @Test
@@ -353,6 +354,7 @@ public class TestOrcSerDeStats {
     assertEquals(1000, reader.getNumberOfRows());
     assertEquals(958000, reader.getRawDataSize());
     assertEquals(954000, reader.getRawDataSizeOfColumns(Lists.newArrayList("map1")));
+    reader.close();
   }
 
   @Test
@@ -387,6 +389,7 @@ public class TestOrcSerDeStats {
     assertEquals(1500, reader.getRawDataSizeOfColumns(Lists.newArrayList("bytes1")));
     assertEquals(43000, reader.getRawDataSizeOfColumns(Lists.newArrayList("string1")));
     assertEquals(44500, reader.getRawDataSizeOfColumns(Lists.newArrayList("bytes1", "string1")));
+    reader.close();
   }
 
   @Test
@@ -479,6 +482,7 @@ public class TestOrcSerDeStats {
         stats[7].toString());
 
     assertEquals("count: 2 hasNull: false bytesOnDisk: 14 min: bye max: hi sum: 5", stats[9].toString());
+    reader.close();
   }
 
   @Test
@@ -578,6 +582,7 @@ public class TestOrcSerDeStats {
     assertEquals("hi", ((StringColumnStatistics) stats[9]).getMaximum());
     assertEquals(5, ((StringColumnStatistics) stats[9]).getSum());
     assertEquals("count: 2 hasNull: false bytesOnDisk: 20 min: bye max: hi sum: 5", stats[9].toString());
+    reader.close();
   }
 
   @Test(expected = ClassCastException.class)
@@ -647,6 +652,7 @@ public class TestOrcSerDeStats {
     // this should throw ClassCastException
     assertEquals(5, ((BinaryColumnStatistics) stats[8]).getSum());
 
+    reader.close();
   }
 
 }

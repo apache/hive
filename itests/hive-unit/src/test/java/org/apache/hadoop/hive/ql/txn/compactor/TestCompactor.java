@@ -2148,9 +2148,10 @@ public class TestCompactor {
       + tblName1, driver, "Find Orc File bufer default");
     Assert.assertTrue("empty rs?", rs != null && rs.size() > 0);
     Path p = new Path(rs.get(0));
-    Reader orcReader = OrcFile.createReader(p.getFileSystem(conf), p);
-    Assert.assertEquals("Expected default compression size",
-      2700, orcReader.getCompressionSize());
+    try (Reader orcReader = OrcFile.createReader(p.getFileSystem(conf), p)) {
+      Assert.assertEquals("Expected default compression size",
+          2700, orcReader.getCompressionSize());
+    }
     //make sure 2700 is not the default so that we are testing if tblproperties indeed propagate
     Assert.assertNotEquals("Unexpected default compression size", 2700,
       OrcConf.BUFFER_SIZE.getDefaultValue());
@@ -2201,9 +2202,10 @@ public class TestCompactor {
       driver, "Find Compacted Orc File");
     Assert.assertTrue("empty rs?", rs != null && rs.size() > 0);
     p = new Path(rs.get(0));
-    orcReader = OrcFile.createReader(p.getFileSystem(conf), p);
-    Assert.assertEquals("File written with wrong buffer size",
-      3141, orcReader.getCompressionSize());
+    try (Reader orcReader = OrcFile.createReader(p.getFileSystem(conf), p)){
+      Assert.assertEquals("File written with wrong buffer size",
+          3141, orcReader.getCompressionSize());
+    }
   }
 
   @Test
