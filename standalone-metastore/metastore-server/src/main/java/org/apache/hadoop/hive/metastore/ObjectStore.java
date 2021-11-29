@@ -5275,36 +5275,61 @@ public class ObjectStore implements RawStore, Configurable {
       return;
     }
 
-    boolean success = false;
     Query query = null;
+    boolean success = false;
+    LOG.debug("execute removeUnusedColumnDescriptor");
+    DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(MetaStoreDirectSql.getProductName(pm), conf);
 
+    /**
+     * In order to workaround oracle not supporting limit statement caused performance issue, HIVE-9447 makes
+     * all the backend DB run select count(1) from SDS where SDS.CD_ID=? to check if the specific CD_ID is
+     * referenced in SDS table before drop a partition. This select count(1) statement does not scale well in
+     * Postgres, and there is no index for CD_ID column in SDS table.
+     * For a SDS table with with 1.5 million rows, select count(1) has average 700ms without index, while in
+     * 10-20ms with index. But the statement before
+     * HIVE-9447( SELECT * FROM "SDS" "A0" WHERE "A0"."CD_ID" = $1 limit 1) uses less than 10ms .
+     */
     try {
       openTransaction();
-      LOG.debug("execute removeUnusedColumnDescriptor");
-
-      query = pm.newQuery("select count(1) from " +
-        "org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
-      query.declareParameters("MColumnDescriptor inCD");
-      long count = ((Long)query.execute(oldCD)).longValue();
-
-      //if no other SD references this CD, we can throw it out.
-      if (count == 0) {
-        // First remove any constraints that may be associated with this CD
-        query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
+      if (dbProduct.isPOSTGRES() || dbProduct.isMYSQL()) {
+        query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
         query.declareParameters("MColumnDescriptor inCD");
-        List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldCD);
-        if (CollectionUtils.isNotEmpty(mConstraintsList)) {
-          pm.deletePersistentAll(mConstraintsList);
+        List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, query);
+        //if no other SD references this CD, we can throw it out.
+        if (referencedSDs != null && referencedSDs.isEmpty()) {
+          removeConstraintsAndCd(oldCD);
         }
-        // Finally remove CD
-        pm.retrieve(oldCD);
-        pm.deletePersistent(oldCD);
+      } else {
+        query = pm.newQuery(
+            "select count(1) from org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
+        query.declareParameters("MColumnDescriptor inCD");
+        long count = (Long) query.execute(oldCD);
+        //if no other SD references this CD, we can throw it out.
+        if (count == 0) {
+          removeConstraintsAndCd(oldCD);
+        }
       }
       success = commitTransaction();
-      LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
     } finally {
-      rollbackAndCleanup(success, query);
+      if (!success) {
+        rollbackAndCleanup(success, query);
+      }
     }
+  }
+
+  private void removeConstraintsAndCd(MColumnDescriptor oldCD) {
+    Query query = null;
+    // First remove any constraints that may be associated with this CD
+    query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
+    query.declareParameters("MColumnDescriptor inCD");
+    List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldCD);
+    if (CollectionUtils.isNotEmpty(mConstraintsList)) {
+      pm.deletePersistentAll(mConstraintsList);
+    }
+    // Finally remove CD
+    pm.retrieve(oldCD);
+    pm.deletePersistent(oldCD);
+    LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
   }
 
   /**
@@ -5324,6 +5349,23 @@ public class ObjectStore implements RawStore, Configurable {
     // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
+  }
+
+  /**
+   * Get a list of storage descriptors that reference a particular Column Descriptor
+   * @param oldCD the column descriptor to get storage descriptors for
+   * @return a list of storage descriptors
+   */
+  private List<MStorageDescriptor> listStorageDescriptorsWithCD(MColumnDescriptor oldCD, Query query) {
+    List<MStorageDescriptor> sds = null;
+    LOG.debug("Executing listStorageDescriptorsWithCD");
+    // User specified a row limit, set it on the Query
+    query.setRange(0L, 1L);
+    sds = (List<MStorageDescriptor>) query.execute(oldCD);
+    LOG.debug("Done executing query for listStorageDescriptorsWithCD");
+    pm.retrieveAll(sds);
+    LOG.debug("Done retrieving all objects for listStorageDescriptorsWithCD");
+    return sds;
   }
 
   private static MFieldSchema getColumnFromTableColumns(List<MFieldSchema> cols, String col) {
