@@ -1345,12 +1345,14 @@ public class TestObjectStore {
     creationMetadata.setCatName(db1.getCatalogName());
     creationMetadata.setDbName(matView1.getDbName());
     creationMetadata.setTblName(matView1.getTableName());
-    creationMetadata.setSourceTables(new HashSet<SourceTable>() {{ add(createSourceTable(tbl1)); }});
+    creationMetadata.setTablesUsed(Collections.singleton(tbl1.getDbName() + "." + tbl1.getTableName()));
+    creationMetadata.setSourceTables(Collections.singleton(createSourceTable(tbl1)));
     matView1.setCreationMetadata(creationMetadata);
     objectStore.createTable(matView1);
 
     CreationMetadata newCreationMetadata = new CreationMetadata(matView1.getCatName(), matView1.getDbName(),
             matView1.getTableName(), ImmutableSet.copyOf(creationMetadata.getTablesUsed()));
+    newCreationMetadata.setSourceTables(Collections.unmodifiableSet(creationMetadata.getSourceTables()));
     objectStore.updateCreationMetadata(matView1.getCatName(), matView1.getDbName(), matView1.getTableName(), newCreationMetadata);
 
     assertThat(creationMetadata.getMaterializationTime(), is(not(0)));
