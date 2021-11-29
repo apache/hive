@@ -46,6 +46,7 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTI
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_WORKERS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_WORKING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_STATUS_PREFIX;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.NUM_ABORTED_TXNS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS;
@@ -268,15 +269,24 @@ public class AcidMetricService implements MetastoreTaskThread {
   public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse, Configuration conf) {
     Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
     long oldestEnqueueTime = Long.MAX_VALUE;
+    long oldestWorkingTime = Long.MAX_VALUE;
 
     // Get the last compaction for each db/table/partition
     for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
       String key = element.getDbname() + "/" + element.getTablename() +
           (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
+
       // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
       lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
-      if (TxnStore.INITIATED_RESPONSE.equals(element.getState()) && oldestEnqueueTime > element.getEnqueueTime()) {
+
+      // find the oldest elements with initiated and working states
+      String state = element.getState();
+      if (TxnStore.INITIATED_RESPONSE.equals(state) && (oldestEnqueueTime > element.getEnqueueTime())) {
         oldestEnqueueTime = element.getEnqueueTime();
+      }
+
+      if (TxnStore.WORKING_RESPONSE.equals(state) && (oldestWorkingTime > element.getStart())) {
+        oldestWorkingTime = element.getStart();
       }
     }
 
@@ -304,24 +314,17 @@ public class AcidMetricService implements MetastoreTaskThread {
       LOG.warn("Many compactions are failing. Check root cause of failed/not initiated compactions.");
     }
 
-    if (oldestEnqueueTime == Long.MAX_VALUE) {
-      Metrics.getOrCreateGauge(COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
-    } else {
-      int oldestEnqueueAge = (int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L);
-      Metrics.getOrCreateGauge(COMPACTION_OLDEST_ENQUEUE_AGE)
-          .set(oldestEnqueueAge);
-      if (oldestEnqueueAge >= MetastoreConf.getTimeVar(conf,
-          MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING, TimeUnit.SECONDS) &&
-          oldestEnqueueAge < MetastoreConf.getTimeVar(conf,
-              MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR, TimeUnit.SECONDS)) {
-        LOG.warn("Found compaction entry in compaction queue with an age of " + oldestEnqueueAge + " seconds. " +
-            "Consider increasing the number of worker threads.");
-      } else if (oldestEnqueueAge >= MetastoreConf.getTimeVar(conf,
-          MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR, TimeUnit.SECONDS)) {
-        LOG.error("Found compaction entry in compaction queue with an age of " + oldestEnqueueAge + " seconds. " +
-            "Consider increasing the number of worker threads");
-      }
-    }
+    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, oldestEnqueueTime, conf,
+        "Found compaction entry in compaction queue with an age of {} seconds. " +
+            "Consider increasing the number of worker threads.",
+        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING,
+        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR);
+
+    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, oldestWorkingTime, conf,
+        "Found working compaction with an age of {} seconds. " +
+            "Consider <a meaningful action here>.",
+        MetastoreConf.ConfVars.COMPACTOR_OLDEST_WORKING_COMPACTION_TIME_THRESHOLD_WARNING,
+        MetastoreConf.ConfVars.COMPACTOR_OLDEST_WORKING_COMPACTION_TIME_THRESHOLD_ERROR);
 
     long initiatorsCount = lastElements.values().stream()
         //manually initiated compactions don't count
@@ -338,6 +341,25 @@ public class AcidMetricService implements MetastoreTaskThread {
     long workerVersionsCount = lastElements.values().stream()
         .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
     Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
+  }
+
+  private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf,
+      String logMessage, MetastoreConf.ConfVars warningThreshold, MetastoreConf.ConfVars errorThreshold) {
+    if (oldestTime == Long.MAX_VALUE) {
+      Metrics.getOrCreateGauge(metricName)
+          .set(0);
+      return;
+    }
+
+    int oldestAge = (int) ((System.currentTimeMillis() - oldestTime) / 1000L);
+    Metrics.getOrCreateGauge(metricName)
+        .set(oldestAge);
+
+    if (oldestAge >= MetastoreConf.getTimeVar(conf, errorThreshold, TimeUnit.SECONDS)) {
+      LOG.error(logMessage, oldestAge);
+    } else if (oldestAge >= MetastoreConf.getTimeVar(conf, warningThreshold, TimeUnit.SECONDS)) {
+      LOG.warn(logMessage, oldestAge);
+    }
   }
 
   @Override

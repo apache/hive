@@ -494,6 +494,18 @@ public class MetastoreConf {
         12, TimeUnit.HOURS,
         "Age of oldest initiated compaction in the compaction queue after which an error will be logged. " +
             "Default time unit is: hours"),
+    COMPACTOR_OLDEST_WORKING_COMPACTION_TIME_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.working.compaction.time.threshold.warning",
+        "hive.compactor.oldest.working.compaction.time.threshold.warning",
+        1, TimeUnit.HOURS,
+        "Age of oldest working compaction after which a warning will be logged. " +
+            "Default time unit is: hours"),
+    COMPACTOR_OLDEST_WORKING_COMPACTION_TIME_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.working.compaction.time.threshold.error",
+        "hive.compactor.oldest.initiated.compaction.time.threshold.error",
+        12, TimeUnit.HOURS,
+        "Age of oldest working compaction after which an error will be logged. " +
+            "Default time unit is: hours"),
     COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_WARNING(
         "metastore.compactor.completed.txn.components.record.threshold.warning",
         "hive.compactor.completed.txn.components.record.threshold.warning",
