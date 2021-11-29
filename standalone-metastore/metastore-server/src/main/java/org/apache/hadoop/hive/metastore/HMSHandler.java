@@ -102,12 +102,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.metastore.MetaStoreAuditLog.logAndAudit;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.throwMetaException;
-import static org.apache.hadoop.hive.metastore.MetastoreAuditLogBuilder.method;
+import static org.apache.hadoop.hive.metastore.MetaStoreAuditLog.method;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
@@ -173,7 +174,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       RawStore rs = getRawStore();
       if (rs != null) {
-        logAuditEvent("Cleaning up thread local RawStore...");
+        logAndAudit("Cleaning up thread local RawStore...");
         rs.shutdown();
       }
     } finally {
@@ -185,7 +186,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       threadLocalConf.remove();
       threadLocalModifiedConfig.remove();
       removeRawStore();
-      logAuditEvent("Done cleaning up thread local RawStore");
+      logAndAudit("Done cleaning up thread local RawStore");
     }
   }
 
@@ -214,29 +215,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       };
 
   private static ExecutorService threadPool;
-
-  static final Logger auditLog = LoggerFactory.getLogger(
-      HiveMetaStore.class.getName() + ".audit");
-
-  private static void logAuditEvent(String cmd) {
-    if (cmd == null) {
-      return;
-    }
-
-    UserGroupInformation ugi;
-    try {
-      ugi = SecurityUtils.getUGI();
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-
-    String address = getIPAddress();
-    if (address == null) {
-      address = "unknown-ip-addr";
-    }
-
-    auditLog.info("ugi={}	ip={}	cmd={}	", ugi.getUserName(), address, cmd);
-  }
 
   public static String getIPAddress() {
     if (HiveMetaStore.useSasl) {
@@ -306,7 +284,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           notifyMetaListeners(key, oldVal, currVal);
         }
       }
-      logAuditEvent("Meta listeners shutdown notification completed.");
+      logAndAudit("Meta listeners shutdown notification completed.");
     } catch (MetaException e) {
       LOG.error("Failed to notify meta listeners on shutdown: ", e);
     }
@@ -894,12 +872,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         LOG.debug(userName + " already in admin role", e);
       }
     }
-  }
-
-  private static void logAndAudit(MetastoreAuditLogBuilder auditLogBuilder) {
-    String message = auditLogBuilder.build();
-    LOG.debug("{}: {}", threadLocalId.get(), message);
-    logAuditEvent(message);
   }
 
   @Override

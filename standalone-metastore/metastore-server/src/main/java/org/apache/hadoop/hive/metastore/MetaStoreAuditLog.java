@@ -20,7 +20,12 @@ package org.apache.hadoop.hive.metastore;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -28,113 +33,146 @@ import static org.apache.commons.lang3.StringUtils.join;
 /**
  * Generate the audit log in a builder manner.
  */
-public class MetastoreAuditLogBuilder {
+public class MetaStoreAuditLog {
+
+  static final Logger auditLog = LoggerFactory.getLogger(
+      HiveMetaStore.class.getName() + ".audit");
+
+  private static void logAuditEvent(String cmd) {
+    if (cmd == null) {
+      return;
+    }
+
+    UserGroupInformation ugi;
+    try {
+      ugi = SecurityUtils.getUGI();
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
+
+    String address = HMSHandler.getIPAddress();
+    if (address == null) {
+      address = "unknown-ip-addr";
+    }
+
+    auditLog.info("ugi={}	ip={}	cmd={}	", ugi.getUserName(), address, cmd);
+  }
+
+  static void logAndAudit(MetaStoreAuditLog logBuilder) {
+    logAndAudit(logBuilder.build());
+  }
+
+  static void logAndAudit(String message) {
+    HMSHandler.LOG.debug("{}: {}", HMSHandler.get(), message);
+    logAuditEvent(message);
+  }
+
   // the method name
   private final String methodName;
   private final StringBuilder builder;
 
-  private MetastoreAuditLogBuilder(String methodName) {
+  private MetaStoreAuditLog(String methodName) {
     this.methodName = methodName;
     this.builder = new StringBuilder();
   }
 
-  public static MetastoreAuditLogBuilder method(String methodName) {
+  public static MetaStoreAuditLog method(String methodName) {
     requireNonNull(methodName, "methodName is null");
-    MetastoreAuditLogBuilder builder = new MetastoreAuditLogBuilder(methodName);
+    MetaStoreAuditLog builder = new MetaStoreAuditLog(methodName);
     return builder;
   }
 
-  public MetastoreAuditLogBuilder connectorName(String connectorName) {
+  public MetaStoreAuditLog connectorName(String connectorName) {
     builder.append("connector=").append(connectorName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder catalogName(String catalogName) {
+  public MetaStoreAuditLog catalogName(String catalogName) {
     builder.append("catName=").append(catalogName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder dbName(String dbName) {
+  public MetaStoreAuditLog dbName(String dbName) {
     builder.append("db=").append(dbName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder tableName(String tableName) {
+  public MetaStoreAuditLog tableName(String tableName) {
     builder.append("tbl=").append(tableName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder packageName(String packageName) {
+  public MetaStoreAuditLog packageName(String packageName) {
     builder.append("package=").append(packageName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder typeName(String typeName) {
+  public MetaStoreAuditLog typeName(String typeName) {
     builder.append("type=").append(typeName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder pattern(String pattern) {
+  public MetaStoreAuditLog pattern(String pattern) {
     builder.append("pat=").append(pattern).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder part_name(String part_name) {
+  public MetaStoreAuditLog part_name(String part_name) {
     builder.append("part=").append(part_name).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder column(String column) {
+  public MetaStoreAuditLog column(String column) {
     builder.append("column=").append(column).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder serde(String serde) {
+  public MetaStoreAuditLog serde(String serde) {
     builder.append("serde=").append(serde).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder request(Object value) {
+  public MetaStoreAuditLog request(Object value) {
     builder.append("request=").append(value).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder ischema(Object value) {
+  public MetaStoreAuditLog ischema(Object value) {
     builder.append("ischema=").append(value).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder extraInfo(String key, Object value) {
+  public MetaStoreAuditLog extraInfo(String key, Object value) {
     builder.append(key).append("=").append(value).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder tableNames(List<String> tableNames) {
+  public MetaStoreAuditLog tableNames(List<String> tableNames) {
     builder.append("tbls=").append(join(tableNames, ",")).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder partVals(List<String> partVals) {
+  public MetaStoreAuditLog partVals(List<String> partVals) {
     builder.append("partVals=").append(join(partVals, ",")).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder partNames(Map<String, String> partNames) {
+  public MetaStoreAuditLog partNames(Map<String, String> partNames) {
     builder.append("partition=").append(partNames).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder constraintName(String constraintName) {
+  public MetaStoreAuditLog constraintName(String constraintName) {
     builder.append("constraint=").append(constraintName).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder table(String catName, String dbName, String tblName) {
+  public MetaStoreAuditLog table(String catName, String dbName, String tblName) {
     builder.append("tbl=").append(TableName.getQualified(catName, dbName, tblName)).append(" ");
     return this;
   }
 
-  public MetastoreAuditLogBuilder token(String token_str_form) {
+  public MetaStoreAuditLog token(String token_str_form) {
     builder.append("token=").append(token_str_form).append(" ");
     return this;
   }
