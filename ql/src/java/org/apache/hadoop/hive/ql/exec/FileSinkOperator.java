@@ -922,7 +922,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private void createDpDir(final Path dpPath) throws IOException {
     boolean dirCreated = fs.mkdirs(dpPath);
     LOG.debug("dpPath: {} created: {}", dpPath, dirCreated);
-    if (reporter != null) {
+    if (dirCreated && reporter != null) {
       reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
     }
   }
