@@ -234,15 +234,21 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     private final CompactionTxn compactionTxn;
     private final String tableName;
     private final HiveConf conf;
+    private final AtomicBoolean shouldLogError;
 
     public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
       this.tableName = Objects.requireNonNull(tableName);
       this.compactionTxn = Objects.requireNonNull(compactionTxn);
       this.conf = Objects.requireNonNull(conf);
+      this.shouldLogError = new AtomicBoolean(true);
 
       setDaemon(true);
       setPriority(MIN_PRIORITY);
       setName("CompactionHeartbeater-" + compactionTxn.getTxnId());
+    }
+
+    public void shouldLogError(boolean shouldLogError) {
+      this.shouldLogError.set(shouldLogError);
     }
 
     @Override
@@ -255,7 +261,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         msc.heartbeat(compactionTxn.getTxnId(), compactionTxn.getLockId());
         LOG.debug("Successfully heartbeated for transaction {}", this.compactionTxn);
       } catch (Exception e) {
-        LOG.error("Error while heartbeating txn {}", compactionTxn, e);
+        if (shouldLogError.get()) {
+          LOG.error("Error while heartbeating txn {}", compactionTxn, e);
+        }
       } finally {
         if (msc != null) {
           msc.close();
@@ -697,7 +705,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
     private TxnStatus status = TxnStatus.UNKNOWN;
     private boolean succeessfulCompaction = false;
-    private ScheduledExecutorService heartbeater;
+    private CompactionHeartbeater heartbeater;
+    private ScheduledExecutorService heartbeatExecutor;
 
     /**
      * Try to open a new txn.
@@ -718,10 +727,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
       lockId = res.getLockid();
 
-      heartbeater = Executors.newSingleThreadScheduledExecutor();
+      heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
       long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-      Thread beater = new CompactionHeartbeater(this, TxnUtils.getFullTableName(ci.dbname, ci.tableName), conf);
-      heartbeater.scheduleAtFixedRate(beater, 0, txnTimeout / 2, TimeUnit.MILLISECONDS);
+      heartbeater = new CompactionHeartbeater(this, TxnUtils.getFullTableName(ci.dbname, ci.tableName), conf);
+      heartbeatExecutor.scheduleAtFixedRate(heartbeater, txnTimeout / 4, txnTimeout / 2, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -736,27 +745,29 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      * @throws Exception
      */
     @Override public void close() throws Exception {
-      shutdownHeartbeater();
       if (status == TxnStatus.UNKNOWN) {
         return;
       }
+      // turn off error logging in heartbeater in case of race condition between commit/abort and heartbeating
+      heartbeater.shouldLogError(false);
       if (succeessfulCompaction) {
         commit();
       } else {
         abort();
       }
+      shutdownHeartbeater();
     }
 
     private void shutdownHeartbeater() {
-      if (heartbeater != null) {
-        heartbeater.shutdownNow();
+      if (heartbeatExecutor != null) {
+        heartbeatExecutor.shutdownNow();
         try {
-          if (!heartbeater.awaitTermination(5, TimeUnit.SECONDS)) {
-            heartbeater.shutdownNow();
+          if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+            heartbeatExecutor.shutdownNow();
           }
           LOG.debug("Successfully stopped heartbeating for transaction {}", this);
         } catch (InterruptedException ex) {
-          heartbeater.shutdownNow();
+          heartbeatExecutor.shutdownNow();
         }
       }
     }
