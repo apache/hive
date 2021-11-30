@@ -1022,14 +1022,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetCatalogsResponse get_catalogs() throws MetaException {
     logAndAudit(method("get_catalogs"));
-    List<String> ret = null;
-    try {
-      ret = getMS().getCatalogs();
-    } catch (Exception e) {
-      throw e;
-    }
+    List<String> ret = getMS().getCatalogs();
     return new GetCatalogsResponse(ret == null ? Collections.emptyList() : ret);
-
   }
 
   @Override
@@ -2200,7 +2194,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             || tbl.getSd().getLocation().isEmpty()) {
           tblPath = wh.getDefaultTablePath(db, tbl);
         } else {
-          if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
+          if (!MetaStoreUtils.isExternalTable(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
             LOG.warn("Location: " + tbl.getSd().getLocation()
                 + " specified for non-external table:" + tbl.getTableName());
           }
@@ -2802,9 +2796,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
-    if (deleteData && isExternal(tbl)) {
+    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
       // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
-      return isExternalTablePurge(tbl);
+      return MetaStoreUtils.isExternalTablePurge(tbl);
     }
     return deleteData;
   }
@@ -3224,21 +3218,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(status.getPath(), true, isSkipTrash, needCmRecycle);
       }
     }
-  }
-
-  /**
-   * Is this an external table?
-   *
-   * @param table
-   *          Check if this table is external.
-   * @return True if the table is external, otherwise false.
-   */
-  private boolean isExternal(Table table) {
-    return MetaStoreUtils.isExternalTable(table);
-  }
-
-  private boolean isExternalTablePurge(Table table) {
-    return MetaStoreUtils.isExternalTablePurge(table);
   }
 
   @Override
@@ -5359,7 +5338,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         parsedDbName[DB_NAME], tableName));
 
     List<PartitionSpec> partitionSpecs = null;
-    try {
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
       // get_partitions will parse out the catalog and db names itself
       List<Partition> partitions = get_partitions(db_name, tableName, (short) max_parts);
@@ -5379,9 +5357,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       return partitionSpecs;
-    } finally {
-      // no op
-    }
   }
 
   @Override
@@ -6394,7 +6369,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     logAndAudit(method("get_column_statistics_by_table").table(parsedDbName[CAT_NAME],
         parsedDbName[DB_NAME], tableName).column(colName));
     ColumnStatistics statsObj = null;
-    try {
       statsObj = getMS().getTableColumnStatistics(
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, Lists.newArrayList(colName),
           "hive", null);
@@ -6402,9 +6376,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         assert statsObj.getStatsObjSize() <= 1;
       }
       return statsObj;
-    } finally {
-      // no op
-    }
   }
 
   @Override
@@ -6419,7 +6390,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     for (String colName : request.getColNames()) {
       lowerCaseColNames.add(colName.toLowerCase());
     }
-    try {
       ColumnStatistics cs = getMS().getTableColumnStatistics(
           catName, dbName, tblName, lowerCaseColNames,
           request.getEngine(), request.getValidWriteIdList());
@@ -6431,9 +6401,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       result = new TableStatsResult((cs == null || cs.getStatsObj() == null
           || (cs.isSetIsStatsCompliant() && !cs.isIsStatsCompliant()))
           ? Lists.newArrayList() : cs.getStatsObj());
-    } finally {
-      // no op
-    }
     return result;
   }
 
@@ -6453,7 +6420,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         column(colName));
     ColumnStatistics statsObj = null;
 
-    try {
       List<ColumnStatistics> list = getMS().getPartitionColumnStatistics(
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
           Lists.newArrayList(convertedPartName), Lists.newArrayList(colName),
@@ -6465,9 +6431,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new MetaException(list.size() + " statistics for single column and partition");
       }
       statsObj = list.get(0);
-    } finally {
-      // no op
-    }
     return statsObj;
   }
 
@@ -6488,7 +6451,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     for (String partName : request.getPartNames()) {
       lowerCasePartNames.add(lowerCaseConvertPartName(partName));
     }
-    try {
       List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
           catName, dbName, tblName, lowerCasePartNames, lowerCaseColNames,
           request.getEngine(), request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
@@ -6507,9 +6469,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
       result = new PartitionsStatsResult(map);
-    } finally {
-      // no op
-    }
     return result;
   }
 
@@ -6857,7 +6816,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     logAndAudit(method("get_partitions_by_filter_pspec").table(parsedDbName[CAT_NAME],
         parsedDbName[DB_NAME], tblName));
     List<PartitionSpec> partitionSpecs = null;
-    try {
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
       // Don't pass the parsed db name, as get_partitions_by_filter will parse it itself
       List<Partition> partitions = get_partitions_by_filter(dbName, tblName, filter, (short) maxParts);
@@ -6877,9 +6835,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       return partitionSpecs;
-    } finally {
-      // no op
-    }
   }
 
   @Override
@@ -7116,8 +7071,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private PrincipalPrivilegeSet get_connector_privilege_set(String catName, final String connectorName,
                                                             final String userName, final List<String> groupNames) throws TException {
-    incrementCounter("get_connector_privilege_set");
-
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
@@ -8475,14 +8428,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     AggrStats aggrStats = null;
 
-    try {
       aggrStats = getMS().get_aggr_stats_for(catName, dbName, tblName,
           lowerCasePartNames, lowerCaseColNames, request.getEngine(), request.getValidWriteIdList());
       return aggrStats;
-    } finally {
-      // no op
-    }
-
   }
 
   @Override
