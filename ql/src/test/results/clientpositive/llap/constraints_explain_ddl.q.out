@@ -10678,7 +10678,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-
+ALTER TABLE default.table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES default.table2_n8(a) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table3_n1;

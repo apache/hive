@@ -5,7 +5,7 @@ CREATE TABLE TEST(
   col4 decimal NOT NULL,
   col5 varchar(100),
   primary key(col1, col2) disable novalidate rely,
-  constraint c3_c4_check CHECK((col3 + col4)/(col3 - col4) > 3),
+  constraint c3_c4_check CHECK((col3 + col4)/(col3 - col4) > 3) enable novalidate norely,
   constraint c4_unique UNIQUE(col4) disable novalidate rely)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
@@ -29,7 +29,7 @@ CREATE TABLE TEST3(
   col2 timestamp,
   col3 varchar(100),
   foreign key(col1, col2) references TEST(col1, col2) disable novalidate rely,
-  foreign key(col3) references TEST2(col) disable novalidate rely)
+  foreign key(col3) references TEST2(col) disable novalidate norely)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT

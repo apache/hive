@@ -640,9 +640,6 @@ public class DDLPlanUtils {
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
     for (String key : all.keySet()) {
       for (ForeignKeyInfo.ForeignKeyCol fkc : all.get(key)) {
-        if (!allTableNames.contains(fkc.parentTableName)) {
-          continue;
-        }
         ST command = new ST(ALTER_TABLE_ADD_FOREIGN_KEY);
         command.add(CHILD_TABLE_NAME, fr.getChildTableName());
         command.add(DATABASE_NAME, fr.getChildDatabaseName());
