@@ -102,6 +102,10 @@ public class StatsSetupConst {
 
   public static final String RUN_TIME_ROW_COUNT = "runTimeNumRows";
 
+  public static final String INSERT_COUNT = "insertCount";
+  public static final String UPDATE_COUNT = "updateCount";
+  public static final String DELETE_COUNT = "deleteCount";
+
   /**
    * The name of the statistic Raw Data Size to be published or gathered.
    */

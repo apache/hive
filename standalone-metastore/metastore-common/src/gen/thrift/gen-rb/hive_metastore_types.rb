@@ -317,6 +317,8 @@ class SkewedInfo; end
 
 class StorageDescriptor; end
 
+class SourceTable; end
+
 class CreationMetadata; end
 
 class BooleanColumnStatsData; end
@@ -476,6 +478,8 @@ class CommitTxnKeyValue; end
 class WriteEventInfo; end
 
 class ReplLastIdInfo; end
+
+class UpdateTransactionalStatsRequest; end
 
 class CommitTxnRequest; end
 
@@ -1810,6 +1814,32 @@ class StorageDescriptor
   ::Thrift::Struct.generate_accessors self
 end
 
+class SourceTable
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLE = 1
+  INSERTEDCOUNT = 2
+  UPDATEDCOUNT = 3
+  DELETEDCOUNT = 4
+
+  FIELDS = {
+    TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
+    INSERTEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertedCount'},
+    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
+    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertedCount is unset!') unless @insertedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CreationMetadata
   include ::Thrift::Struct, ::Thrift::Struct_Union
   CATNAME = 1
@@ -1823,7 +1853,7 @@ class CreationMetadata
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
+    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SourceTable}},
     VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
     MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true}
   }
@@ -3796,6 +3826,32 @@ class ReplLastIdInfo
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field database is unset!') unless @database
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lastReplId is unset!') unless @lastReplId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class UpdateTransactionalStatsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLEID = 1
+  INSERTCOUNT = 2
+  UPDATEDCOUNT = 3
+  DELETEDCOUNT = 4
+
+  FIELDS = {
+    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId'},
+    INSERTCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertCount'},
+    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
+    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableId is unset!') unless @tableId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertCount is unset!') unless @insertCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
   end
 
   ::Thrift::Struct.generate_accessors self

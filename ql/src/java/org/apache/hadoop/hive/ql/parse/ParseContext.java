@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.collect.Multimap;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -316,6 +317,17 @@ public class ParseContext {
    */
   public Map<String, TableScanOperator> getTopOps() {
     return topOps;
+  }
+
+  public Set<TableName> getTablesUsed() {
+    Set<TableName> tablesUsed = new HashSet<>();
+    for (TableScanOperator topOp : topOps.values()) {
+      Table table = topOp.getConf().getTableMetadata();
+      if (!table.isMaterializedTable() && !table.isView()) {
+        tablesUsed.add(table.getFullTableName());
+      }
+    }
+    return tablesUsed;
   }
 
   /**

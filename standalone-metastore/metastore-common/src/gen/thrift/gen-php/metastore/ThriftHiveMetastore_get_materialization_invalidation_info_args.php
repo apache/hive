@@ -27,30 +27,18 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_args
             'type' => TType::STRUCT,
             'class' => '\metastore\CreationMetadata',
         ),
-        2 => array(
-            'var' => 'validTxnList',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
     );
 
     /**
      * @var \metastore\CreationMetadata
      */
     public $creation_metadata = null;
-    /**
-     * @var string
-     */
-    public $validTxnList = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['creation_metadata'])) {
                 $this->creation_metadata = $vals['creation_metadata'];
-            }
-            if (isset($vals['validTxnList'])) {
-                $this->validTxnList = $vals['validTxnList'];
             }
         }
     }
@@ -82,13 +70,6 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_args
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 2:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->validTxnList);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -109,11 +90,6 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_args
             }
             $xfer += $output->writeFieldBegin('creation_metadata', TType::STRUCT, 1);
             $xfer += $this->creation_metadata->write($output);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->validTxnList !== null) {
-            $xfer += $output->writeFieldBegin('validTxnList', TType::STRING, 2);
-            $xfer += $output->writeString($this->validTxnList);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

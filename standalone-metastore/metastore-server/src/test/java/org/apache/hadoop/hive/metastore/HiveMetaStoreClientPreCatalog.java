@@ -1599,9 +1599,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
-  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm, validTxnList);
+    return client.get_materialization_invalidation_info(cm);
   }
 
   /** {@inheritDoc} */
@@ -1977,6 +1977,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     InvalidInputException
   {
     return client.delete_table_column_statistics(dbName, tableName, colName, engine);
+  }
+
+  @Override
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
+    client.update_transaction_statistics(req);
   }
 
   /**
@@ -3868,6 +3873,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void truncateTable(String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void truncateTable(String dbName, String tableName, 
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData) 
       throws TException {
     throw new UnsupportedOperationException();
   }
