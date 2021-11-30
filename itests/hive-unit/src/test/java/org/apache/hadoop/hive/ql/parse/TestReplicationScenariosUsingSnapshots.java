@@ -730,9 +730,6 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
             .verifyResults(new String[] {"1", "2", "3"});
 
     replica.run("use " + replicatedDbName)
-            .run("drop table table1")
-            .run("drop table table2")
-            .run("drop table table3")
             .run("drop database "+ replicatedDbName + " cascade");
 
     Path dumpDirectoryRebootstrap = new Path("/" + testName.getMethodName() + "/dumpDir/");

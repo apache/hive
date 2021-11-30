@@ -122,6 +122,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
@@ -1177,6 +1178,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (isSnapshotEnabled) {
             FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
                     new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD));
+            if(!conf.getBoolVar(REPL_REUSE_SNAPSHOTS)) {
+              FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
+                      new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT));
+            }
             // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
             if (snapPathFileList.hasNext()) {

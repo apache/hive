@@ -265,23 +265,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
     if(isBootstrap && conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
       // in case of bootstrap replication from B to A (reverse replication), rename snapshots in A
       // as they might have been renamed during dump in B
-      FileStatus[] listing = targetFs.listStatus(new Path(targetPath, ".snapshot"));
-      for (FileStatus elem : listing) {
-        String snapShotName = elem.getPath().getName();
-        String prefix;
-        if (snapShotName.contains(OLD_SNAPSHOT)) {
-          prefix = snapShotName.substring(0, snapShotName.lastIndexOf(OLD_SNAPSHOT));
-          if (!prefix.equals(snapPrefix)) {
-            targetFs.renameSnapshot(targetPath, firstSnapshot(prefix), firstSnapshot(snapPrefix));
-          }
-        }
-        if (snapShotName.contains(NEW_SNAPSHOT)) {
-          prefix = snapShotName.substring(0, snapShotName.lastIndexOf(NEW_SNAPSHOT));
-          if (!prefix.equals(snapPrefix)) {
-            targetFs.renameSnapshot(targetPath, secondSnapshot(prefix), secondSnapshot(snapPrefix));
-          }
-        }
-      }
+      SnapshotUtils.renamePrefixIfExists(targetFs, targetPath, snapPrefix, conf);
     }
 
     boolean secondSnapAvailable =

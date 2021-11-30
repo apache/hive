@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
@@ -302,6 +303,37 @@ public class SnapshotUtils {
           }
         }
       }
+    }
+  }
+
+  /**
+   *  Renames prefixes of snapshots in a given path if they do not match a given prefix.
+   * @param fs the filesystem
+   * @param snapshotPath path where to locate and rename snapshots
+   * @param prefix prefix to be renamed with.
+   * @param conf the Hive Configuration.
+   */
+  public static void renamePrefixIfExists(FileSystem fs, Path snapshotPath, String prefix, HiveConf conf) throws IOException {
+    try {
+      FileStatus[] listing = fs.listStatus(new Path(snapshotPath, ".snapshot"));
+      for (FileStatus elem : listing) {
+        String snapShotName = elem.getPath().getName();
+        String existingPrefix;
+        if (snapShotName.contains(OLD_SNAPSHOT)) {
+          existingPrefix = snapShotName.substring(0, snapShotName.lastIndexOf(OLD_SNAPSHOT));
+          if(!existingPrefix.equals(prefix)) {
+            SnapshotUtils.renameSnapshot(fs, snapshotPath, firstSnapshot(existingPrefix), firstSnapshot(prefix), conf);
+          }
+        }
+        if (snapShotName.contains(NEW_SNAPSHOT)) {
+          existingPrefix = snapShotName.substring(0, snapShotName.lastIndexOf(NEW_SNAPSHOT));
+          if(!existingPrefix.equals(prefix)) {
+            SnapshotUtils.renameSnapshot(fs, snapshotPath, secondSnapshot(existingPrefix), secondSnapshot(prefix), conf);
+          }
+        }
+      }
+    } catch (SnapshotException e) {
+      //dir not snapshottable, continue
     }
   }
 

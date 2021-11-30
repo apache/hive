@@ -319,7 +319,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInPrimaryDb = new HashMap<>();
     tablesInPrimaryDb.put("t1", (long) numTxnsForPrimaryDb + 1);
     tablesInPrimaryDb.put("t2", (long) numTxnsForPrimaryDb + 1);
-    List<Long> lockIdsForPrimaryDb = allocateWriteIdsForTablesAndAquireLocks(primaryDbName,
+    List<Long> lockIdsForPrimaryDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName,
             tablesInPrimaryDb, txnHandler, txnsForPrimaryDb, primaryConf);
 
     //Open 1 txn with no hive locks acquired
@@ -1122,8 +1122,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
     Path srcDbPath = new Path(primary.getDatabase(primaryDbName).getLocationUri());
-    Path replicaDbPath = new Path(primary.getDatabase(replicatedDbName).getLocationUri());
-    verifyXAttrsPreserved(srcDbPath.getFileSystem(conf), srcDbPath, replicaDbPath);
+    Path replicaDbPath = new Path(replica.getDatabase(replicatedDbName).getLocationUri());
+    verifyXAttrsPreserved(srcDbPath.getFileSystem(conf), replicaDbPath.getFileSystem(replicaConf), srcDbPath, replicaDbPath);
   }
 
   private void setXAttrsRecursive(FileSystem fs, Path path, boolean isParent) throws Exception {
@@ -1138,21 +1138,21 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     }
   }
 
-  private void verifyXAttrsPreserved(FileSystem fs, Path src, Path dst) throws Exception {
-    FileStatus srcStatus = fs.getFileStatus(src);
-    FileStatus dstStatus = fs.getFileStatus(dst);
+  private void verifyXAttrsPreserved(FileSystem srcFs, FileSystem replicaFs, Path src, Path dst) throws Exception {
+    FileStatus srcStatus = srcFs.getFileStatus(src);
+    FileStatus dstStatus = replicaFs.getFileStatus(dst);
     if (srcStatus.isDirectory()) {
       assertTrue(dstStatus.isDirectory());
-      for(FileStatus srcContent: fs.listStatus(src)) {
+      for(FileStatus srcContent: srcFs.listStatus(src)) {
         Path dstContent = new Path(dst, srcContent.getPath().getName());
-        assertTrue(fs.exists(dstContent));
-        verifyXAttrsPreserved(fs, srcContent.getPath(), dstContent);
+        assertTrue(replicaFs.exists(dstContent));
+        verifyXAttrsPreserved(srcFs, replicaFs, srcContent.getPath(), dstContent);
       }
     } else {
       assertFalse(dstStatus.isDirectory());
     }
-    Map<String, byte[]> values = fs.getXAttrs(dst);
-    for(Map.Entry<String, byte[]> value : fs.getXAttrs(src).entrySet()) {
+    Map<String, byte[]> values = replicaFs.getXAttrs(dst);
+    for(Map.Entry<String, byte[]> value : srcFs.getXAttrs(src).entrySet()) {
       assertEquals(new String(value.getValue()), new String(values.get(value.getKey())));
     }
   }

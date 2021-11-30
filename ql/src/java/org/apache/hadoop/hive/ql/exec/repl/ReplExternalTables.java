@@ -173,7 +173,7 @@ public class ReplExternalTables {
     Path basePath = getExternalTableBaseDir(conf);
     Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
     SnapshotUtils.SnapshotCopyMode copyMode =
-        createSnapshotsAtSource(sourcePath, targetPath, snapshotPrefix, createSnapshot, conf, replSnapshotCount, snapPathFileList,
+        createSnapshotsAtSource(sourcePath, snapshotPrefix, createSnapshot, conf, replSnapshotCount, snapPathFileList,
             prevSnaps, isBootstrap);
     //Here, when src and target are HA clusters with same NS, then sourcePath would have the correct host
     //whereas the targetPath would have an host that refers to the target cluster. This is fine for
@@ -194,9 +194,10 @@ public class ReplExternalTables {
     fileList.add(new DirCopyWork(tableName, sourcePath, targetPath, copyMode, snapshotPrefix, isBootstrap).convertToString());
   }
 
-  SnapshotUtils.SnapshotCopyMode createSnapshotsAtSource(Path sourcePath, Path targetPath, String snapshotPrefix,
-                                                                              boolean isSnapshotEnabled, HiveConf conf, SnapshotUtils.ReplSnapshotCount replSnapshotCount, FileList snapPathFileList,
-                                                                              ArrayList<String> prevSnaps, boolean isBootstrap) throws IOException {
+  SnapshotUtils.SnapshotCopyMode createSnapshotsAtSource(Path sourcePath, String snapshotPrefix, boolean isSnapshotEnabled,
+                                                         HiveConf conf, SnapshotUtils.ReplSnapshotCount replSnapshotCount,
+                                                         FileList snapPathFileList, ArrayList<String> prevSnaps,
+                                                         boolean isBootstrap) throws IOException {
     if (!isSnapshotEnabled) {
       LOG.info("Snapshot copy not enabled for path {} Will use normal distCp for copying data.", sourcePath);
       return FALLBACK_COPY;
@@ -204,27 +205,7 @@ public class ReplExternalTables {
     DistributedFileSystem sourceDfs = SnapshotUtils.getDFS(sourcePath, conf);
     try {
       if(isBootstrap && conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
-        try {
-          FileStatus[] listing = sourceDfs.listStatus(new Path(sourcePath, ".snapshot"));
-          for (FileStatus elem : listing) {
-            String snapShotName = elem.getPath().getName();
-            String prefix;
-            if (snapShotName.contains(OLD_SNAPSHOT)) {
-              prefix = snapShotName.substring(0, snapShotName.lastIndexOf(OLD_SNAPSHOT));
-              if(!prefix.equals(snapshotPrefix)) {
-                sourceDfs.renameSnapshot(sourcePath, firstSnapshot(prefix), firstSnapshot(snapshotPrefix));
-              }
-            }
-            if (snapShotName.contains(NEW_SNAPSHOT)) {
-              prefix = snapShotName.substring(0, snapShotName.lastIndexOf(NEW_SNAPSHOT));
-              if(!prefix.equals(snapshotPrefix)) {
-                sourceDfs.renameSnapshot(sourcePath, secondSnapshot(prefix), secondSnapshot(snapshotPrefix));
-              }
-            }
-          }
-        } catch (SnapshotException e) {
-          //dir not snapshottable, continue
-        }
+        SnapshotUtils.renamePrefixIfExists(sourceDfs, sourcePath, snapshotPrefix, conf);
       }
       boolean firstSnapAvailable =
               SnapshotUtils.isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf);
@@ -241,8 +222,7 @@ public class ReplExternalTables {
         SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
         replSnapshotCount.incrementNumCreated();
         snapPathFileList.add(sourcePath.toString());
-        return SnapshotUtils
-                .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
+        return firstSnapAvailable ? DIFF_COPY : INITIAL_COPY;
       }
 
       //for bootstrap and forward replication
@@ -255,8 +235,7 @@ public class ReplExternalTables {
           SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
           snapPathFileList.add(sourcePath.toString());
           replSnapshotCount.incrementNumCreated();
-          return SnapshotUtils
-                  .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
+          return firstSnapAvailable ? DIFF_COPY : INITIAL_COPY;
         } else {
           // for normal bootstrap, use initial_copy
           if(SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, firstSnapshot(snapshotPrefix), conf)) {
@@ -300,7 +279,7 @@ public class ReplExternalTables {
           return DIFF_COPY;
         } else {
           //only new snapshot exists
-          sourceDfs.renameSnapshot(sourcePath, secondSnapshot(snapshotPrefix), firstSnapshot(snapshotPrefix));
+          SnapshotUtils.renameSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), firstSnapshot(snapshotPrefix), conf);
           SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
           replSnapshotCount.incrementNumCreated();
           snapPathFileList.add(sourcePath.toString());
