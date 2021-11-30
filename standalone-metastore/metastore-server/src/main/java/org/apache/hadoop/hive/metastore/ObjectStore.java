@@ -5292,6 +5292,7 @@ public class ObjectStore implements RawStore, Configurable {
      */
     try {
       openTransaction();
+      // Fix performance regression for postgres caused by HIVE-9447
       if (dbProduct.isPOSTGRES() || dbProduct.isMYSQL()) {
         query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
         query.declareParameters("MColumnDescriptor inCD");
