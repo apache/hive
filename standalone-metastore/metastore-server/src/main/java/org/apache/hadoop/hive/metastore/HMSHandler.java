@@ -1035,13 +1035,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("Can not drop " + DEFAULT_CATALOG_NAME + " catalog");
     }
 
-    try {
       dropCatalogCore(catName);
-    } catch (Exception e) {
-      throw handleException(e)
-          .throwIfInstance(NoSuchObjectException.class, InvalidOperationException.class, MetaException.class)
-          .defaultMetaException();
-    }
   }
 
   private void dropCatalogCore(String catName)
@@ -1311,7 +1305,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (!db.isSetCatalogName()) {
       db.setCatalogName(getDefaultCatalog(conf));
     }
-    try {
       try {
         if (null != get_database_core(db.getCatalogName(), db.getName())) {
           throw new AlreadyExistsException("Database " + db.getName() + " already exists");
@@ -1329,11 +1322,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         Deadline.checkTimeout();
       }
       create_database_core(getMS(), db);
-    } catch (Exception e) {
-      throw handleException(e)
-          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
-          .defaultMetaException();
-    }
   }
 
   @Override
