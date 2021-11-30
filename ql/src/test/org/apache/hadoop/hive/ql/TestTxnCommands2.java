@@ -864,6 +864,7 @@ public class TestTxnCommands2 {
     // 2 original files, 2 delta directories, 1 delete_delta directory and 2 base directories
     Assert.assertEquals(7, status.length);
     runCleaner(hiveConf);
+    runCleaner(hiveConf);
     // There should be only 1 directory left: base_0000001.
     // Original bucket files, delta directories and previous base directory should have been cleaned up.
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
@@ -2111,6 +2112,7 @@ public class TestTxnCommands2 {
     Assert.assertEquals(stringifyValues(resultData), rs);
 
     // 5. Run Cleaner. It should remove the 2 delta dirs and 1 old base dir.
+    runCleaner(hiveConf);
     runCleaner(hiveConf);
     // There should be only 1 directory left: base_xxxxxxx.
     // The delta dirs should have been cleaned up.

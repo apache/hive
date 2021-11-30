@@ -1621,6 +1621,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 2);
     verifyHasBase(table.getSd(), fs, "base_0000005_v0000016");
     runCleaner(conf);
+    runCleaner(conf);
     verifyDeltaCount(table.getSd(), fs, 0);
   }
 

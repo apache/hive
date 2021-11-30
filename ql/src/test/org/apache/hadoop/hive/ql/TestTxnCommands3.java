@@ -369,7 +369,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     T3 is still running and cannot see anything compactor produces with v0000019 suffix
     so it may be reading delta_1_1 & delta_2_2 and so cleaner cannot delete any files
      at this point*/
-    TestTxnCommands2.runCleaner(hiveConf);
+    runCleaner(hiveConf);
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     checkExpectedFiles(actualList, expectedList, warehousePath.toString());
@@ -388,6 +388,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     at this point delta_0000001_0000003_v0000020 is visible to everyone
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
+    runCleaner(hiveConf);
     runCleaner(hiveConf);
 
     expectedList = new String[] {
