@@ -330,6 +330,18 @@ public class TestCompactionTxnHandler {
     CompactionInfoStruct lci2 = response.getCompactions().stream().
         filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
     assertEquals(3, lci2.getId());
+
+    // check the result is correct without setting partition names
+    rqst.unsetPartitionnames();
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record for each partition", 2, response.getCompactionsSize());
+    lci1 = response.getCompactions().stream()
+        .filter(c -> c.getPartitionname().equals(partitionName)).findFirst().get();
+    assertEquals(1, lci1.getId());
+    lci2 = response.getCompactions().stream().
+        filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
+    assertEquals(3, lci2.getId());
   }
 
   @Test
@@ -363,6 +375,33 @@ public class TestCompactionTxnHandler {
     assertEquals("Expecting the last compaction record waiting for cleaning", 3, lci.getId());
     assertEquals(partitionName, lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
+  @Test
+  public void testGetLatestCompactionWithIdFilter() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    rqst.addToPartitionnames(partitionName);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single record", 1, response.getCompactionsSize());
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    assertEquals("Expecting the second succeeded compaction record", 2, lci.getId());
+    assertEquals(partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    // response should only include compaction with id > 2
+    rqst.setLastCompactionId(2);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+    assertNotNull(response);
+    assertEquals("Expecting no record", 0, response.getCompactionsSize());
   }
 
   @Test

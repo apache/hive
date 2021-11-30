@@ -28149,6 +28149,11 @@ void GetLatestCommittedCompactionInfoRequest::__set_partitionnames(const std::ve
   this->partitionnames = val;
 __isset.partitionnames = true;
 }
+
+void GetLatestCommittedCompactionInfoRequest::__set_lastCompactionId(const int64_t val) {
+  this->lastCompactionId = val;
+__isset.lastCompactionId = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoRequest& obj)
 {
   obj.printTo(out);
@@ -28215,6 +28220,14 @@ uint32_t GetLatestCommittedCompactionInfoRequest::read(::apache::thrift::protoco
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->lastCompactionId);
+          this->__isset.lastCompactionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -28257,6 +28270,11 @@ uint32_t GetLatestCommittedCompactionInfoRequest::write(::apache::thrift::protoc
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.lastCompactionId) {
+    xfer += oprot->writeFieldBegin("lastCompactionId", ::apache::thrift::protocol::T_I64, 4);
+    xfer += oprot->writeI64(this->lastCompactionId);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28267,20 +28285,23 @@ void swap(GetLatestCommittedCompactionInfoRequest &a, GetLatestCommittedCompacti
   swap(a.dbname, b.dbname);
   swap(a.tablename, b.tablename);
   swap(a.partitionnames, b.partitionnames);
+  swap(a.lastCompactionId, b.lastCompactionId);
   swap(a.__isset, b.__isset);
 }
 
-GetLatestCommittedCompactionInfoRequest::GetLatestCommittedCompactionInfoRequest(const GetLatestCommittedCompactionInfoRequest& other1007) {
-  dbname = other1007.dbname;
-  tablename = other1007.tablename;
-  partitionnames = other1007.partitionnames;
-  __isset = other1007.__isset;
+GetLatestCommittedCompactionInfoRequest::GetLatestCommittedCompactionInfoRequest(const GetLatestCommittedCompactionInfoRequest& other1000) {
+  dbname = other1000.dbname;
+  tablename = other1000.tablename;
+  partitionnames = other1000.partitionnames;
+  lastCompactionId = other1000.lastCompactionId;
+  __isset = other1000.__isset;
 }
-GetLatestCommittedCompactionInfoRequest& GetLatestCommittedCompactionInfoRequest::operator=(const GetLatestCommittedCompactionInfoRequest& other1008) {
-  dbname = other1008.dbname;
-  tablename = other1008.tablename;
-  partitionnames = other1008.partitionnames;
-  __isset = other1008.__isset;
+GetLatestCommittedCompactionInfoRequest& GetLatestCommittedCompactionInfoRequest::operator=(const GetLatestCommittedCompactionInfoRequest& other1001) {
+  dbname = other1001.dbname;
+  tablename = other1001.tablename;
+  partitionnames = other1001.partitionnames;
+  lastCompactionId = other1001.lastCompactionId;
+  __isset = other1001.__isset;
   return *this;
 }
 void GetLatestCommittedCompactionInfoRequest::printTo(std::ostream& out) const {
@@ -28289,6 +28310,7 @@ void GetLatestCommittedCompactionInfoRequest::printTo(std::ostream& out) const {
   out << "dbname=" << to_string(dbname);
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "partitionnames="; (__isset.partitionnames ? (out << to_string(partitionnames)) : (out << "<null>"));
+  out << ", " << "lastCompactionId="; (__isset.lastCompactionId ? (out << to_string(lastCompactionId)) : (out << "<null>"));
   out << ")";
 }
 
