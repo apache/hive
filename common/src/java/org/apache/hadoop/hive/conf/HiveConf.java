@@ -3060,8 +3060,15 @@ public class HiveConf extends Configuration {
         "Creates an _orc_acid_version file along with acid files, to store the version data"),
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
-      "Enables read-only transaction classification and related optimizations"),
+        "Enables read-only transaction classification and related optimizations"),
 
+    HIVE_ACID_LOCKLESS_READS_ENABLED("hive.acid.lockless.reads.enabled", false,
+        "Enables lockless reads"),
+    
+    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
+        "If enabled, truncate for transactional tables will not delete the data directories,\n" +
+        "rather create a new base directory with no datafiles."),
+    
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
     HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,

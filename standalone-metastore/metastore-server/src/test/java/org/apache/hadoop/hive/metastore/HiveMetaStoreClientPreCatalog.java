@@ -3878,6 +3878,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void truncateTable(String dbName, String tableName, 
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData) 
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
       throws TException {
     throw new UnsupportedOperationException();

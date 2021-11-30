@@ -104,6 +104,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
@@ -153,7 +154,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @VisibleForTesting
   static long testTimeoutValue = -1;
 
-  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
 
@@ -3410,12 +3410,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .map(Boolean::parseBoolean)
           .orElse(false);
 
-      if (!skipDataDeletion) {
-        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl)
-            || !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
-
-        if (truncateFiles) {
+      if (TxnUtils.isTransactionalTable(tbl) || !skipDataDeletion) {
+        if (!skipDataDeletion) {
           isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+          
           Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
           needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
         }
@@ -3423,7 +3421,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
             tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
-          if (truncateFiles) {
+          if (!skipDataDeletion) {
             truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
           } else {
             // For Acid tables we don't need to delete the old files, only write an empty baseDir.

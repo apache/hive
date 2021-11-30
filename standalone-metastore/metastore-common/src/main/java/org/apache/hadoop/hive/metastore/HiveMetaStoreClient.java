@@ -104,7 +104,9 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
+  
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -1843,37 +1845,45 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException {
+    truncateTableInternal(getDefaultCatalog(conf),
+        dbName, tableName, partNames, validWriteIds, writeId, deleteData);
+  }
+  
+  @Override
+  public void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException {
     truncateTableInternal(getDefaultCatalog(conf),
-        dbName, tableName, partNames, validWriteIds, writeId);
+        dbName, tableName, partNames, validWriteIds, writeId, true);
   }
 
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames) throws TException {
-    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, null, -1);
+    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, null, -1, true);
   }
 
   @Override
   public void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws TException {
-    truncateTableInternal(catName, dbName, tableName, partNames, null, -1);
+    truncateTableInternal(catName, dbName, tableName, partNames, null, -1, true);
   }
 
   private void truncateTableInternal(String catName, String dbName, String tableName,
-      List<String> partNames, String validWriteIds, long writeId)
-          throws MetaException, TException {
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
+          throws TException {
     Table table = getTable(catName, dbName, tableName);
     HiveMetaHook hook = getHook(table);
-    EnvironmentContext envContext = new EnvironmentContext();
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     if (hook != null) {
-      hook.preTruncateTable(table, envContext);
+      hook.preTruncateTable(table, context);
     }
     TruncateTableRequest req = new TruncateTableRequest(
         prependCatalogToDbName(catName, dbName, conf), tableName);
     req.setPartNames(partNames);
     req.setValidWriteIdList(validWriteIds);
     req.setWriteId(writeId);
-    req.setEnvironmentContext(envContext);
+    req.setEnvironmentContext(context);
     client.truncate_table_req(req);
   }
 
