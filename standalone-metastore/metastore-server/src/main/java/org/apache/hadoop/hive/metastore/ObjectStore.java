@@ -5290,22 +5290,24 @@ public class ObjectStore implements RawStore, Configurable {
       if (dbProduct.isPOSTGRES() || dbProduct.isMYSQL()) {
         query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
         query.declareParameters("MColumnDescriptor inCD");
-        List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, query);
+        List<MStorageDescriptor> referencedSDs = null;
+        LOG.debug("Executing listStorageDescriptorsWithCD");
+        // User specified a row limit, set it on the Query
+        query.setRange(0L, 1L);
+        referencedSDs = (List<MStorageDescriptor>) query.execute(oldCD);
+        LOG.debug("Done executing query for listStorageDescriptorsWithCD");
+        pm.retrieveAll(referencedSDs);
+        LOG.debug("Done retrieving all objects for listStorageDescriptorsWithCD");
         //if no other SD references this CD, we can throw it out.
-        if (referencedSDs != null && referencedSDs.isEmpty()) {
-          return false;
-        }
+        return referencedSDs != null && !referencedSDs.isEmpty();
       } else {
         query = pm.newQuery(
                 "select count(1) from org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
         query.declareParameters("MColumnDescriptor inCD");
         long count = (Long) query.execute(oldCD);
         //if no other SD references this CD, we can throw it out.
-        if (count == 0) {
-          return false;
-        }
+        return count != 0;
       }
-      return true;
     } finally {
       if (query != null) {
         query.closeAll();
@@ -5365,24 +5367,6 @@ public class ObjectStore implements RawStore, Configurable {
     // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
-  }
-
-  /**
-   * Get a list of storage descriptors that reference a particular Column Descriptor
-   * @param oldCD the column descriptor to get storage descriptors for
-   * @param query The Query object to execute the command.
-   * @return a list of storage descriptors
-   */
-  private List<MStorageDescriptor> listStorageDescriptorsWithCD(MColumnDescriptor oldCD, Query query) {
-    List<MStorageDescriptor> sds = null;
-    LOG.debug("Executing listStorageDescriptorsWithCD");
-    // User specified a row limit, set it on the Query
-    query.setRange(0L, 1L);
-    sds = (List<MStorageDescriptor>) query.execute(oldCD);
-    LOG.debug("Done executing query for listStorageDescriptorsWithCD");
-    pm.retrieveAll(sds);
-    LOG.debug("Done retrieving all objects for listStorageDescriptorsWithCD");
-    return sds;
   }
 
   private static MFieldSchema getColumnFromTableColumns(List<MFieldSchema> cols, String col) {
