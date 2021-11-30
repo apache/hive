@@ -453,8 +453,12 @@ public final class ParseUtils {
         if (selExpr.getType() == HiveParser.QUERY_HINT) continue;
         assert selExpr.getType() == HiveParser.TOK_SELEXPR;
         assert selExpr.getChildCount() > 0;
-        // There could be multiple aliases (e.g. explode(map(x, y)) as (key, val)), so let's examine all children
-        for (int j = 0; j < selExpr.getChildCount(); ++j) {
+        // we can have functions which generate multiple aliases (e.g. explode(map(x, y)) as (key, val))
+        boolean isFunctionWithMultipleParameters =
+            selExpr.getChild(0).getType() == HiveParser.TOK_FUNCTION && selExpr.getChildCount() > 2;
+        // if so let's skip the function token buth then examine all its parameters - otherwise check only the last item
+        int start = isFunctionWithMultipleParameters ? 1 : selExpr.getChildCount() - 1;
+        for (int j = start; j < selExpr.getChildCount(); ++j) {
           Tree child = selExpr.getChild(j);
           switch (child.getType()) {
             case HiveParser.TOK_SETCOLREF:
@@ -491,9 +495,6 @@ public final class ParseUtils {
               }
               break;
             }
-            case HiveParser.TOK_FUNCTION:
-              // e.g. explode/map function - we can just break as the arguments should be in the other children
-              break;
             default:
               // Not really sure how to refer to this (or if we can).
               // TODO: We could find a different from branch for the union, that might have an alias?
