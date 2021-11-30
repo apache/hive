@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint.DefaultConstraintCol
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -795,7 +796,7 @@ public class DDLPlanUtils {
   }
 
 
-  public String getCreateTableCommand(Table table, boolean isRelative) {
+  public String getCreateTableCommand(Table table, boolean isRelative) throws HiveException {
     ST command = new ST(CREATE_TABLE_TEMPLATE);
 
     if (!isRelative) {
@@ -825,7 +826,7 @@ public class DDLPlanUtils {
     return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
   }
 
-  private String getColumns(Table table) {
+  private String getColumns(Table table) throws HiveException {
     List<String> columnDescs = new ArrayList<String>();
     for (FieldSchema column : table.getCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
@@ -841,7 +842,7 @@ public class DDLPlanUtils {
   /**
    * Struct fields are identifiers, need to be put between ``.
    */
-  private String formatType(TypeInfo typeInfo) {
+  private String formatType(TypeInfo typeInfo) throws HiveException {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         return typeInfo.getTypeName();
@@ -855,6 +856,7 @@ public class DDLPlanUtils {
           }
 
           String structElementName = structTypeInfo.getAllStructFieldNames().get(i);
+          structElementName = HiveUtils.unparseIdentifier(structElementName, Hive.get().getConf());
           String structElementType = formatType(structTypeInfo.getAllStructFieldTypeInfos().get(i));
 
           structFormattedType.append("`" + structElementName + "`:" + structElementType);
