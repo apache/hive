@@ -4644,11 +4644,13 @@ class GetLatestCommittedCompactionInfoRequest
   DBNAME = 1
   TABLENAME = 2
   PARTITIONNAMES = 3
+  LASTCOMPACTIONID = 4
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
-    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    LASTCOMPACTIONID => {:type => ::Thrift::Types::I64, :name => 'lastCompactionId', :optional => true}
   }
 
   def struct_fields; FIELDS; end

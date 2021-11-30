@@ -40,6 +40,11 @@ class GetLatestCommittedCompactionInfoRequest
                 'type' => TType::STRING,
                 ),
         ),
+        4 => array(
+            'var' => 'lastCompactionId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -54,6 +59,10 @@ class GetLatestCommittedCompactionInfoRequest
      * @var string[]
      */
     public $partitionnames = null;
+    /**
+     * @var int
+     */
+    public $lastCompactionId = null;
 
     public function __construct($vals = null)
     {
@@ -66,6 +75,9 @@ class GetLatestCommittedCompactionInfoRequest
             }
             if (isset($vals['partitionnames'])) {
                 $this->partitionnames = $vals['partitionnames'];
+            }
+            if (isset($vals['lastCompactionId'])) {
+                $this->lastCompactionId = $vals['lastCompactionId'];
             }
         }
     }
@@ -119,6 +131,13 @@ class GetLatestCommittedCompactionInfoRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 4:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->lastCompactionId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -153,6 +172,11 @@ class GetLatestCommittedCompactionInfoRequest
                 $xfer += $output->writeString($iter777);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->lastCompactionId !== null) {
+            $xfer += $output->writeFieldBegin('lastCompactionId', TType::I64, 4);
+            $xfer += $output->writeI64($this->lastCompactionId);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

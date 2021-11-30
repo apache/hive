@@ -1342,6 +1342,7 @@ struct GetLatestCommittedCompactionInfoRequest {
     1: required string dbname,
     2: required string tablename,
     3: optional list<string> partitionnames,
+    4: optional i64 lastCompactionId,
 }
 
 struct GetLatestCommittedCompactionInfoResponse {
