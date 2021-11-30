@@ -91,7 +91,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private long checkInterval;
   private long prevStart = -1;
   private ExecutorService compactionExecutor;
-  private CycleUpdaterThread cycleUpdaterThread;
 
   @Override
   public void run() {
@@ -128,9 +127,17 @@ public class Initiator extends MetaStoreCompactorThread {
 
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
-            stopCycleUpdaterThread();
-            cycleUpdaterThread = CycleUpdaterThreadFactory.getCycleUpdaterThreadForGauge(
-                MetricsConstants.COMPACTION_INITIATOR_CYCLE, startedAt);
+            stopCycleUpdater();
+            startCycleUpdater(HiveConf.getTimeVar(conf,
+                    HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_DURATION_UPDATE_INTERVAL, TimeUnit.MILLISECONDS),
+                new InitiatorCycleUpdater(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION,
+                    startedAt,
+                    MetastoreConf.getTimeVar(conf,
+                        MetastoreConf.ConfVars.COMPACTOR_LONG_RUNNING_INITIATOR_THRESHOLD_WARNING,
+                        TimeUnit.MILLISECONDS),
+                    MetastoreConf.getTimeVar(conf,
+                        MetastoreConf.ConfVars.COMPACTOR_LONG_RUNNING_INITIATOR_THRESHOLD_ERROR,
+                        TimeUnit.MILLISECONDS)));
           }
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
@@ -195,8 +202,9 @@ public class Initiator extends MetaStoreCompactorThread {
           }
           if (metricsEnabled) {
             perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
+            updateCycleDurationMetric(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION, startedAt);
           }
-          stopCycleUpdaterThread();
+          stopCycleUpdater();
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
@@ -564,10 +572,37 @@ public class Initiator extends MetaStoreCompactorThread {
     return name.toString();
   }
 
-  private void stopCycleUpdaterThread() {
-    if (cycleUpdaterThread != null) {
-      cycleUpdaterThread.interrupt();
-      cycleUpdaterThread = null;
+  private static class InitiatorCycleUpdater implements Runnable {
+    private final String metric;
+    private final long startedAt;
+    private final long warningThreshold;
+    private final long errorThreshold;
+
+    private boolean errorReported;
+    private boolean warningReported;
+
+    InitiatorCycleUpdater(String metric, long startedAt,
+        long warningThreshold, long errorThreshold) {
+      this.metric = metric;
+      this.startedAt = startedAt;
+      this.warningThreshold = warningThreshold;
+      this.errorThreshold = errorThreshold;
+    }
+
+    @Override
+    public void run() {
+      long elapsed = updateCycleDurationMetric(metric, startedAt);
+      if (elapsed >= errorThreshold) {
+        if (!errorReported) {
+          LOG.error("Long running Initiator has been detected, duration {}", elapsed);
+          errorReported = true;
+        }
+      } else if (elapsed >= warningThreshold) {
+        if (!warningReported && !errorReported) {
+          warningReported = true;
+          LOG.warn("Long running Initiator has been detected, duration {}", elapsed);
+        }
+      }
     }
   }
 }

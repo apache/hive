@@ -487,8 +487,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(1, "db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE, 1L),
         generateElement(5, "db", "tb3", "p1", CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE, 2L),
-        generateElement(9, "db2", "tb", null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE, 3L),
-        generateElement(14, "db3", "tb4", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE, 4L)
+        generateElement(9, "db2", "tb", null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE, 3L)
     );
 
     ShowCompactResponse scr = new ShowCompactResponse();
@@ -498,6 +497,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     // Check that it is not set
     Assert.assertEquals(0, Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue());
     Assert.assertEquals(0, Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_WORKING_AGE).intValue());
+    Assert.assertEquals(0, Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE).intValue());
   }
 
   @Test
@@ -534,6 +534,26 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     // Check that we have at least 1s old compaction age, but not more than expected
     int age = Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_WORKING_AGE).intValue();
+    Assert.assertTrue(age <= diff);
+    Assert.assertTrue(age >= 1);
+  }
+
+  @Test
+  public void testCleaningAgeMetrics() {
+    ShowCompactResponse scr = new ShowCompactResponse();
+
+    long start = System.currentTimeMillis() - 1000L;
+    List<ShowCompactResponseElement> elements = ImmutableList.of(
+        generateElement(19, "db3", "tb7", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
+            System.currentTimeMillis(), true, "4.0.0", "4.0.0", -1L, start)
+    );
+
+    scr.setCompacts(elements);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    long diff = (System.currentTimeMillis() - start) / 1000;
+
+    // Check that we have at least 1s old compaction age, but not more than expected
+    int age = Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE).intValue();
     Assert.assertTrue(age <= diff);
     Assert.assertTrue(age >= 1);
   }
@@ -598,6 +618,37 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     // Check that the age is older than 20s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_WORKING_AGE).intValue() > 20);
+  }
+
+  @Test
+  public void testCleaningAgeMetricsOrder() {
+    ShowCompactResponse scr = new ShowCompactResponse();
+    long start = System.currentTimeMillis();
+
+    List<ShowCompactResponseElement> elements = ImmutableList.of(
+        generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
+            start, false, "4.0.0", "4.0.0", -1L, start - 1_000L),
+        generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
+            start, false, "4.0.0", "4.0.0", -1L, start - 15_000L)
+    );
+
+    scr.setCompacts(elements);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    // Check that the age is older than 10s
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE).intValue() > 10);
+
+    // Check the reverse order
+    elements = ImmutableList.of(
+        generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
+            start, false, "4.0.0", "4.0.0", -1L, start - 25_000L),
+        generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
+            start, false, "4.0.0", "4.0.0", -1L, start - 1_000L)
+    );
+    scr.setCompacts(elements);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+
+    // Check that the age is older than 20s
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE).intValue() > 20);
   }
 
   @Test
@@ -809,6 +860,13 @@ public class TestCompactionMetrics  extends CompactorTest {
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
           CompactionType type, String state, long enqueueTime, boolean manuallyInitiatedCompaction,
           String initiatorVersion, String workerVersion, long startTime) {
+    return generateElement(id, db, table, partition, type, state, enqueueTime, manuallyInitiatedCompaction,
+        initiatorVersion, workerVersion, startTime, -1L);
+  }
+
+  private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
+          CompactionType type, String state, long enqueueTime, boolean manuallyInitiatedCompaction,
+          String initiatorVersion, String workerVersion, long startTime, long cleanerStartTime) {
     ShowCompactResponseElement element = new ShowCompactResponseElement(db, table, type, state);
     element.setId(id);
     element.setPartitionname(partition);
@@ -827,6 +885,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     element.setInitiatorVersion(initiatorVersion);
     element.setWorkerVersion(workerVersion);
     element.setStart(startTime);
+    element.setCleanerStart(cleanerStartTime);
     return element;
   }
 

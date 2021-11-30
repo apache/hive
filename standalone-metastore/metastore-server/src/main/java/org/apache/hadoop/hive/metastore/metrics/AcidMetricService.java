@@ -45,6 +45,7 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTI
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_WORKERS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_WORKING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_STATUS_PREFIX;
@@ -270,6 +271,7 @@ public class AcidMetricService implements MetastoreTaskThread {
     Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
     long oldestEnqueueTime = Long.MAX_VALUE;
     long oldestWorkingTime = Long.MAX_VALUE;
+    long oldestCleaningTime = Long.MAX_VALUE;
 
     // Get the last compaction for each db/table/partition
     for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
@@ -285,8 +287,16 @@ public class AcidMetricService implements MetastoreTaskThread {
         oldestEnqueueTime = element.getEnqueueTime();
       }
 
-      if (TxnStore.WORKING_RESPONSE.equals(state) && (oldestWorkingTime > element.getStart())) {
-        oldestWorkingTime = element.getStart();
+      if (element.isSetStart()) {
+        if (TxnStore.WORKING_RESPONSE.equals(state) && (oldestWorkingTime > element.getStart())) {
+          oldestWorkingTime = element.getStart();
+        }
+      }
+
+      if (element.isSetCleanerStart()) {
+        if (TxnStore.CLEANING_RESPONSE.equals(state) && (oldestCleaningTime > element.getCleanerStart())) {
+          oldestCleaningTime = element.getCleanerStart();
+        }
       }
     }
 
@@ -319,12 +329,8 @@ public class AcidMetricService implements MetastoreTaskThread {
             "Consider increasing the number of worker threads.",
         MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING,
         MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR);
-
-    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, oldestWorkingTime, conf,
-        "Found working compaction with an age of {} seconds. " +
-            "Consider <a meaningful action here>.",
-        MetastoreConf.ConfVars.COMPACTOR_OLDEST_WORKING_COMPACTION_TIME_THRESHOLD_WARNING,
-        MetastoreConf.ConfVars.COMPACTOR_OLDEST_WORKING_COMPACTION_TIME_THRESHOLD_ERROR);
+    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, oldestWorkingTime, conf);
+    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, oldestCleaningTime, conf);
 
     long initiatorsCount = lastElements.values().stream()
         //manually initiated compactions don't count
@@ -343,6 +349,10 @@ public class AcidMetricService implements MetastoreTaskThread {
     Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
   }
 
+  private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf) {
+    updateOldestCompactionMetric(metricName, oldestTime, conf, null, null, null);
+  }
+
   private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf,
       String logMessage, MetastoreConf.ConfVars warningThreshold, MetastoreConf.ConfVars errorThreshold) {
     if (oldestTime == Long.MAX_VALUE) {
@@ -354,11 +364,12 @@ public class AcidMetricService implements MetastoreTaskThread {
     int oldestAge = (int) ((System.currentTimeMillis() - oldestTime) / 1000L);
     Metrics.getOrCreateGauge(metricName)
         .set(oldestAge);
-
-    if (oldestAge >= MetastoreConf.getTimeVar(conf, errorThreshold, TimeUnit.SECONDS)) {
-      LOG.error(logMessage, oldestAge);
-    } else if (oldestAge >= MetastoreConf.getTimeVar(conf, warningThreshold, TimeUnit.SECONDS)) {
-      LOG.warn(logMessage, oldestAge);
+    if (logMessage != null) {
+      if (oldestAge >= MetastoreConf.getTimeVar(conf, errorThreshold, TimeUnit.SECONDS)) {
+        LOG.error(logMessage, oldestAge);
+      } else if (oldestAge >= MetastoreConf.getTimeVar(conf, warningThreshold, TimeUnit.SECONDS)) {
+        LOG.warn(logMessage, oldestAge);
+      }
     }
   }
 

@@ -3190,6 +3190,22 @@ public class HiveConf extends Configuration {
         "has had a transaction done on it since the last major compaction. So decreasing this\n" +
         "value will increase the load on the NameNode."),
 
+    HIVE_COMPACTOR_INITIATOR_DURATION_UPDATE_INTERVAL("hive.compactor.initiator.duration.update.interval", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Time in seconds that drives the update interval of compaction_initiator_duration metric.\n" +
+            "Smaller value results in a fine grained metric update.\n" +
+            "This updater can be turned off if its value less than or equals to zero.\n"+
+            "In this case the above metric will be update only after the initiator completed one cycle.\n" +
+            "The hive.compactor.initiator.on must be turned on (true) in-order to enable the Initiator,\n" +
+            "otherwise this setting has no effect."),
+
+    HIVE_COMPACTOR_CLEANER_DURATION_UPDATE_INTERVAL("hive.compactor.cleaner.duration.update.interval", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Time in seconds that drives the update interval of compaction_cleaner_duration metric.\n" +
+            "Smaller value results in a fine grained metric update.\n" +
+            "This updater can be turned off if its value less than or equals to zero.\n"+
+            "In this case the above metric will be update only after the cleaner completed one cycle."),
+
     HIVE_COMPACTOR_REQUEST_QUEUE("hive.compactor.request.queue", 1,
         "Enables parallelization of the checkForCompaction operation, that includes many file metadata checks\n" +
         "and may be expensive"),

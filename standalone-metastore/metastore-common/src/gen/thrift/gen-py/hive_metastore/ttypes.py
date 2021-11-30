@@ -15751,11 +15751,12 @@ class ShowCompactResponseElement(object):
      - workerVersion
      - initiatorId
      - initiatorVersion
+     - cleanerStart
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -15774,6 +15775,7 @@ class ShowCompactResponseElement(object):
         self.workerVersion = workerVersion
         self.initiatorId = initiatorId
         self.initiatorVersion = initiatorVersion
+        self.cleanerStart = cleanerStart
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15874,6 +15876,11 @@ class ShowCompactResponseElement(object):
                     self.initiatorVersion = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 19:
+                if ftype == TType.I64:
+                    self.cleanerStart = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15955,6 +15962,10 @@ class ShowCompactResponseElement(object):
         if self.initiatorVersion is not None:
             oprot.writeFieldBegin('initiatorVersion', TType.STRING, 18)
             oprot.writeString(self.initiatorVersion.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorVersion)
+            oprot.writeFieldEnd()
+        if self.cleanerStart is not None:
+            oprot.writeFieldBegin('cleanerStart', TType.I64, 19)
+            oprot.writeI64(self.cleanerStart)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30425,6 +30436,7 @@ ShowCompactResponseElement.thrift_spec = (
     (16, TType.STRING, 'workerVersion', 'UTF8', None, ),  # 16
     (17, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 17
     (18, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 18
+    (19, TType.I64, 'cleanerStart', None, None, ),  # 19
 )
 all_structs.append(ShowCompactResponse)
 ShowCompactResponse.thrift_spec = (

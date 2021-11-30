@@ -4578,6 +4578,7 @@ class ShowCompactResponseElement
   WORKERVERSION = 16
   INITIATORID = 17
   INITIATORVERSION = 18
+  CLEANERSTART = 19
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4597,7 +4598,8 @@ class ShowCompactResponseElement
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
     WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
-    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
+    CLEANERSTART => {:type => ::Thrift::Types::I64, :name => 'cleanerStart', :optional => true}
   }
 
   def struct_fields; FIELDS; end
