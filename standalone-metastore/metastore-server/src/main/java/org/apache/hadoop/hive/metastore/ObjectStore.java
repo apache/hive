@@ -5267,19 +5267,13 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Checks if a column descriptor has any remaining references by storage descriptors
-   * in the db.  If it does not, then delete the CD.  If it does, then do nothing.
-   * @param oldCD the column descriptor to delete if it is no longer referenced anywhere
+   * in the db.
+   * @param oldCD the column descriptor to check if it has references or not
+   * @return true if has references
    */
-  private void removeUnusedColumnDescriptor(MColumnDescriptor oldCD) {
-    if (oldCD == null) {
-      return;
-    }
-
+  private boolean hasRemainingCDReference(MColumnDescriptor oldCD) {
+    assert oldCD != null;
     Query query = null;
-    Query query2 = null;
-    boolean success = false;
-    LOG.debug("execute removeUnusedColumnDescriptor");
-    DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(MetaStoreDirectSql.getProductName(pm), conf);
 
     /**
      * In order to workaround oracle not supporting limit statement caused performance issue, HIVE-9447 makes
@@ -5291,49 +5285,67 @@ public class ObjectStore implements RawStore, Configurable {
      * HIVE-9447( SELECT * FROM "SDS" "A0" WHERE "A0"."CD_ID" = $1 limit 1) uses less than 10ms .
      */
     try {
-      openTransaction();
-      // Fix performance regression for postgres caused by HIVE-9447
+      // HIVE-21075: Fix Postgres performance regression caused by HIVE-9447
+      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(MetaStoreDirectSql.getProductName(pm), conf);
       if (dbProduct.isPOSTGRES() || dbProduct.isMYSQL()) {
         query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
         query.declareParameters("MColumnDescriptor inCD");
         List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, query);
         //if no other SD references this CD, we can throw it out.
         if (referencedSDs != null && referencedSDs.isEmpty()) {
-          query2 = removeConstraintsAndCd(oldCD);
+          return false;
         }
       } else {
         query = pm.newQuery(
-            "select count(1) from org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
+                "select count(1) from org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
         query.declareParameters("MColumnDescriptor inCD");
         long count = (Long) query.execute(oldCD);
         //if no other SD references this CD, we can throw it out.
         if (count == 0) {
-          query2 = removeConstraintsAndCd(oldCD);
+          return false;
         }
       }
-      success = commitTransaction();
+      return true;
     } finally {
-      rollbackAndCleanup(success, query);
-      if (query2 != null) {
-        query2.closeAll();
+      if (query != null) {
+        query.closeAll();
       }
     }
   }
 
-  private Query removeConstraintsAndCd(MColumnDescriptor oldCD) {
-    Query query = null;
-    // First remove any constraints that may be associated with this CD
-    query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
-    query.declareParameters("MColumnDescriptor inCD");
-    List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldCD);
-    if (CollectionUtils.isNotEmpty(mConstraintsList)) {
-      pm.deletePersistentAll(mConstraintsList);
+  /**
+   * Checks if a column descriptor has any remaining references by storage descriptors
+   * in the db.  If it does not, then delete the CD.  If it does, then do nothing.
+   * @param oldCD the column descriptor to delete if it is no longer referenced anywhere
+   */
+  private void removeUnusedColumnDescriptor(MColumnDescriptor oldCD) {
+    if (oldCD == null) {
+      return;
     }
-    // Finally remove CD
-    pm.retrieve(oldCD);
-    pm.deletePersistent(oldCD);
-    LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
-    return query;
+    Query query = null;
+    boolean success = false;
+    LOG.debug("execute removeUnusedColumnDescriptor");
+
+    try {
+      openTransaction();
+      if (!hasRemainingCDReference(oldCD)) {
+        // First remove any constraints that may be associated with this CD
+        query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
+        query.declareParameters("MColumnDescriptor inCD");
+        List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldCD);
+        if (CollectionUtils.isNotEmpty(mConstraintsList)) {
+          pm.deletePersistentAll(mConstraintsList);
+        }
+        // Finally remove CD
+        pm.retrieve(oldCD);
+        pm.deletePersistent(oldCD);
+        LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
+
+      }
+      success = commitTransaction();
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
   }
 
   /**
@@ -5358,6 +5370,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
    * Get a list of storage descriptors that reference a particular Column Descriptor
    * @param oldCD the column descriptor to get storage descriptors for
+   * @param query The Query object to execute the command.
    * @return a list of storage descriptors
    */
   private List<MStorageDescriptor> listStorageDescriptorsWithCD(MColumnDescriptor oldCD, Query query) {
