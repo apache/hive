@@ -22,7 +22,7 @@ properties([
     // do not run multiple testruns on the same branch
     disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '5', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
@@ -297,6 +297,13 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
         try {
           stage('Test') {
             buildHive("-pl common -am org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+            withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+              sh '''#!/bin/bash -e
+              sw java 11 && . /etc/profile.d/java.sh
+              export MAVEN_OPTS=-Xmx5G
+              mvn sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=`find $PWD -name jacoco.xml|tr '\n' ','` -pl common -am
+              '''
+            }
           }
         } finally {
           stage('PostProcess') {
