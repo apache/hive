@@ -1651,8 +1651,9 @@ struct TableMeta {
   1: required string dbName;
   2: required string tableName;
   3: required string tableType;
-  4: optional string comments;
-  5: optional string catName;
+  4: required map<string, string> parameters;
+  5: optional string comments;
+  6: optional string catName;
 }
 
 struct Materialization {
