@@ -35,6 +35,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -95,11 +96,11 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     RelNode rChild = join.getRight();
 
     Set<String> leftPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 0));
-    List<RexNode> leftPreds = getValidPreds(join.getCluster(), lChild,
-            leftPushedPredicates, preds.leftInferredPredicates, lChild.getRowType());
+    List<RexNode> leftPreds = getValidPreds(lChild, leftPushedPredicates,
+        preds.leftInferredPredicates, lChild.getRowType());
     Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
-    List<RexNode> rightPreds = getValidPreds(join.getCluster(), rChild,
-            rightPushedPredicates, preds.rightInferredPredicates, rChild.getRowType());
+    List<RexNode> rightPreds = getValidPreds(rChild, rightPushedPredicates,
+        preds.rightInferredPredicates, rChild.getRowType());
 
     RexNode newLeftPredicate = RexUtil.composeConjunction(rB, leftPreds, false);
     RexNode newRightPredicate = RexUtil.composeConjunction(rB, rightPreds, false);
@@ -107,15 +108,24 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
       return;
     }
 
+    final RelOptCluster cluster = join.getCluster();
+    final RexSimplify rexSimplify = new RexSimplify(cluster.getRexBuilder(),
+        RelOptPredicateList.EMPTY, join.getCluster().getPlanner().getExecutor());
+
+    newLeftPredicate = rexSimplify.simplify(newLeftPredicate);
+    newRightPredicate = rexSimplify.simplify(newRightPredicate);
+
     if (!newLeftPredicate.isAlwaysTrue()) {
       RelNode curr = lChild;
-      lChild = filterFactory.createFilter(lChild, newLeftPredicate.accept(new RexReplacer(lChild)), ImmutableSet.of());
+      lChild = filterFactory.createFilter(lChild,
+          newLeftPredicate.accept(new RexReplacer(lChild)), ImmutableSet.of());
       call.getPlanner().onCopy(curr, lChild);
     }
 
     if (!newRightPredicate.isAlwaysTrue()) {
       RelNode curr = rChild;
-      rChild = filterFactory.createFilter(rChild, newRightPredicate.accept(new RexReplacer(rChild)), ImmutableSet.of());
+      rChild = filterFactory.createFilter(rChild,
+          newRightPredicate.accept(new RexReplacer(rChild)), ImmutableSet.of());
       call.getPlanner().onCopy(curr, rChild);
     }
 
@@ -130,10 +140,10 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     call.transformTo(newRel);
   }
 
-  private ImmutableList<RexNode> getValidPreds(RelOptCluster cluster, RelNode child,
-      Set<String> predicatesToExclude, List<RexNode> rexs, RelDataType rType) {
+  private ImmutableList<RexNode> getValidPreds(
+      RelNode child, Set<String> predicatesToExclude, List<RexNode> rexs, RelDataType rType) {
     InputRefValidator validator = new InputRefValidator(rType.getFieldList());
-    List<RexNode> valids = new ArrayList<RexNode>(rexs.size());
+    List<RexNode> valids = new ArrayList<>(rexs.size());
     for (RexNode rex : rexs) {
       try {
         rex.accept(validator);
@@ -145,26 +155,7 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
     // We need to filter i) those that have been pushed already as stored in the join,
     // and ii) those that were already in the subtree rooted at child
-    ImmutableList<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude,
-            child, valids);
-    return toPush;
-  }
-
-  private RexNode getTypeSafePred(RelOptCluster cluster, RexNode rex, RelDataType rType) {
-    RexNode typeSafeRex = rex;
-    if ((typeSafeRex instanceof RexCall) && HiveCalciteUtil.isComparisonOp((RexCall) typeSafeRex)) {
-      RexBuilder rb = cluster.getRexBuilder();
-      List<RexNode> fixedPredElems = new ArrayList<RexNode>();
-      RelDataType commonType = cluster.getTypeFactory().leastRestrictive(
-          RexUtil.types(((RexCall) rex).getOperands()));
-      for (RexNode rn : ((RexCall) rex).getOperands()) {
-        fixedPredElems.add(rb.ensureType(commonType, rn, true));
-      }
-
-      typeSafeRex = rb.makeCall(((RexCall) typeSafeRex).getOperator(), fixedPredElems);
-    }
-
-    return typeSafeRex;
+    return HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids);
   }
 
   private static class InputRefValidator extends RexVisitorImpl<Void> {
@@ -177,13 +168,14 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
     @Override
     public Void visitCall(RexCall call) {
+      final String isNotNullOperatorName =
+          AnnotationUtils.getAnnotation(GenericUDFOPNotNull.class, Description.class).name();
 
-      if(AnnotationUtils.getAnnotation(GenericUDFOPNotNull.class, Description.class).name().equals(call.getOperator().getName())) {
-        if(call.getOperands().get(0) instanceof RexInputRef &&
-            !types.get(((RexInputRef)call.getOperands().get(0)).getIndex()).getType().isNullable()) {
-          // No need to add not null filter for a constant.
+      if(isNotNullOperatorName.equals(call.getOperator().getName())
+          && call.getOperands().get(0) instanceof RexInputRef
+          && !types.get(((RexInputRef) call.getOperands().get(0)).getIndex()).getType().isNullable()) {
+          // No need to add not null filter for a constant
           throw new Util.FoundOne(call);
-        }
       }
       return super.visitCall(call);
     }
