@@ -3178,7 +3178,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   private void testTruncate(boolean useBaseDir) throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, useBaseDir);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, useBaseDir);
     dropTable(new String[] {"T"});
     driver.run("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     driver.run("insert into T values(0,2),(1,4)");

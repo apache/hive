@@ -1433,8 +1433,10 @@ public class Hive {
       if (snapshot == null) {
         getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
       } else {
+        boolean truncateUseBase = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE)
+          || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
         getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames,
-            snapshot.getValidWriteIdList(), snapshot.getWriteId());
+            snapshot.getValidWriteIdList(), snapshot.getWriteId(), !truncateUseBase);
       }
     } catch (Exception e) {
       throw new HiveException(e);

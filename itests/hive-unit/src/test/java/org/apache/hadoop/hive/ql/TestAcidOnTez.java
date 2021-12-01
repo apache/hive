@@ -909,10 +909,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
       LocatedFileStatus lf = lfs.next();
       Path file = lf.getPath();
       if (!file.getName().startsWith(".") && !file.getName().startsWith("_")) {
-        Reader reader = OrcFile.createReader(file, OrcFile.readerOptions(new Configuration()));
-        OrcProto.Footer footer = reader.getFileTail().getFooter();
-        assertEquals("Reader based original check", expected, OrcInputFormat.isOriginal(reader));
-        assertEquals("Footer based original check", expected, OrcInputFormat.isOriginal(footer));
+        try (Reader reader = OrcFile.createReader(file, OrcFile.readerOptions(new Configuration()))) {
+          OrcProto.Footer footer = reader.getFileTail().getFooter();
+          assertEquals("Reader based original check", expected, OrcInputFormat.isOriginal(reader));
+          assertEquals("Footer based original check", expected, OrcInputFormat.isOriginal(footer));
+        }
         foundAnyFile = true;
       }
     }
