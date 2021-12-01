@@ -1761,9 +1761,7 @@
               <goal>prepare-agent</goal>
             </goals>
             <configuration>
-              <destFile>${basedir}/${hive.path.to.root}/target/coverage-reports/jacoco-ut.exec</destFile>
               <propertyName>surefireArgLine</propertyName>
-              <append>true</append>
             </configuration>
           </execution>
           <execution>
@@ -1772,12 +1770,8 @@
             <goals>
               <goal>report</goal>
             </goals>
-            <configuration>
-              <dataFile>${basedir}/${hive.path.to.root}/target/coverage-reports/jacoco-ut.exec</dataFile>
-              <outputDirectory>${basedir}/${hive.path.to.root}/target/jacoco-ut</outputDirectory>
-            </configuration>
           </execution>
-        </executions>
+         </executions>
       </plugin>
     </plugins>
   </build>
