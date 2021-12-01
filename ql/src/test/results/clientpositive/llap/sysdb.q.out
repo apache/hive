@@ -248,10 +248,10 @@ sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-sys	replication_metrics_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
-sys	replication_metrics_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
-sys	replication_metrics_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
-sys	replication_metrics_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics_table			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics_table			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics_table			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics_table			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -716,16 +716,16 @@ partitions	part_name
 partitions	sd_id
 partitions	tbl_id
 replication_metrics	dump_execution_id
-replication_metrics	message_format
 replication_metrics	metadata
 replication_metrics	policy_name
 replication_metrics	progress
 replication_metrics	scheduled_execution_id
-replication_metrics_view	dump_execution_id
-replication_metrics_view	metadata
-replication_metrics_view	policy_name
-replication_metrics_view	progress
-replication_metrics_view	scheduled_execution_id
+replication_metrics_table	dump_execution_id
+replication_metrics_table	message_format
+replication_metrics_table	metadata
+replication_metrics_table	policy_name
+replication_metrics_table	progress
+replication_metrics_table	scheduled_execution_id
 role_map	add_time
 role_map	grant_option
 role_map	grantor
@@ -1632,8 +1632,8 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	replication_metrics	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	replication_metrics_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	replication_metrics_table	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	scheduled_executions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1757,7 +1757,7 @@ information_schema	views
 sys	compactions
 sys	locks
 sys	partition_stats_view
-sys	replication_metrics_view
+sys	replication_metrics
 sys	table_stats_view
 sys	transactions
 sys	version

@@ -1270,7 +1270,7 @@ CREATE TABLE "REPLICATION_METRICS" (
   "RM_METADATA" varchar2(4000),
   "RM_PROGRESS" varchar2(4000),
   "RM_START_TIME" integer NOT NULL,
-  "MESSAGE_FORMAT" VARCHAR(16)
+  "MESSAGE_FORMAT" VARCHAR(16) DEFAULT 'plain',
 );
 
 --Create indexes for the replication metrics table

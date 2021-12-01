@@ -1,9 +1,6 @@
---! qt:disabled:HIVE-25719
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb
-
-set hive.repl.rootdir=${system:test.tmp.dir}/repl;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/repl/sentinel;
 dfs -rmr  ${system:test.tmp.dir}/repl;
@@ -42,6 +39,7 @@ alter scheduled query repl2 disabled;
 
 show databases;
 
-select * from sys.replication_metrics;
+select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
+from sys.replication_metrics_table order by dump_execution_id;
 
-select * from sys.replication_metrics_view order by dump_execution_id;
+select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id;
