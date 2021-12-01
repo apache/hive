@@ -27,7 +27,6 @@
 
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
-    <sonar.skip>true</sonar.skip>
   </properties>
 
   <dependencies>

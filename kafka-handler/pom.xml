@@ -30,7 +30,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <sonar.skip>true</sonar.skip>
   </properties>
 
   <artifactId>kafka-handler</artifactId>
