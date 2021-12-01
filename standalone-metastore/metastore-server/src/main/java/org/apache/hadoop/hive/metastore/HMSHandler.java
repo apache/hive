@@ -100,6 +100,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.metastore.MetaStoreAuditLog.logAndAudit;
@@ -3312,8 +3313,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     Table t = null;
-    logAndAudit(method("get_table").table(getTableRequest.getCatName(),
-        getTableRequest.getDbName(), getTableRequest.getTblName()));
+    logAndAudit(method("get_table")
+        .table(getTableRequest.getCatName(), getTableRequest.getDbName(), getTableRequest.getTblName()));
     try {
       t = get_table_core(getTableRequest);
       if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
@@ -3350,8 +3351,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws MetaException, NoSuchObjectException {
     List<TableMeta> t = null;
     String[] parsedDbName = parseDbName(dbnames, conf);
-    logAndAudit(method("get_table_metas").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tblNames));
+    logAndAudit(method("get_table_metas").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames));
     try {
       t = getMS().getTableMeta(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames, tblTypes);
       t = FilterUtils.filterTableMetasIfEnabled(isServerFilterEnabled, filterHook,
@@ -3614,8 +3614,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws MetaException, InvalidOperationException, UnknownDBException {
     List<String> tables = null;
     String[] parsedDbName = parseDbName(dbName, conf);
-    logAndAudit(method("get_table_names_by_filter").catalogName(parsedDbName[CAT_NAME])
-        .dbName(parsedDbName[DB_NAME]).extraInfo("filter", filter));
+    logAndAudit(method("get_table_names_by_filter")
+        .catalogName(parsedDbName[CAT_NAME]).dbName(parsedDbName[DB_NAME]).extraInfo("filter", filter));
     try {
       if (parsedDbName[CAT_NAME] == null || parsedDbName[CAT_NAME].isEmpty() ||
           parsedDbName[DB_NAME] == null || parsedDbName[DB_NAME].isEmpty()) {
@@ -3761,8 +3761,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("The partition values must not be null or empty.");
     }
     String[] parsedDbName = parseDbName(dbName, conf);
-    logAndAudit(method("append_partition").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).partVals(part_vals));
+    logAndAudit(method("append_partition")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName).partVals(part_vals));
     Partition ret = null;
     try {
       ret = append_partition_common(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals, envContext);
@@ -4496,8 +4496,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (part == null) {
       throw new MetaException("Partition cannot be null.");
     }
-    logAndAudit(method("add_partition").table(part.getCatName(),
-        part.getDbName(), part.getTableName()));
+    logAndAudit(method("add_partition").table(part.getCatName(), part.getDbName(), part.getTableName()));
     Partition ret = null;
     try {
       ret = add_partition_core(getMS(), part, envContext);
@@ -5077,9 +5076,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                          final EnvironmentContext envContext)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    logAndAudit(method("drop_partition").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-        tbl_name).partVals(part_vals));
-    LOG.info("Partition values:" + part_vals);
+    logAndAudit(method("drop_partition").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
+    LOG.info("Partition values: {}", part_vals);
 
     boolean ret = false;
     try {
@@ -5101,8 +5099,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public Partition get_partition(final String db_name, final String tbl_name,
                                  final List<String> part_vals) throws MetaException, NoSuchObjectException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    logAndAudit(method("get_partition").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
+    logAndAudit(method("get_partition")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
     Partition ret = null;
     try {
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
@@ -5209,8 +5207,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                            final String user_name, final List<String> group_names)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    logAndAudit(method("get_partition_with_auth").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
+    logAndAudit(method("get_partition_with_auth")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     Partition ret = null;
     try {
@@ -5270,8 +5268,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                   final String tblName, final short maxParts, final String userName,
                                                   final List<String> groupNames) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    logAndAudit(method("get_partitions_with_auth").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tblName));
+    logAndAudit(method("get_partitions_with_auth").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName));
     List<Partition> ret = null;
     try {
       checkLimitNumberOfPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
@@ -5332,8 +5329,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     String[] parsedDbName = parseDbName(db_name, conf);
     String tableName = tbl_name.toLowerCase();
-    logAndAudit(method("get_partitions_pspec").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName));
+    logAndAudit(method("get_partitions_pspec").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName));
 
     List<PartitionSpec> partitionSpecs = null;
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
@@ -5370,8 +5366,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // if catName is not provided in the request use the catName parsed from the dbName
       catName = parsedDbName[CAT_NAME];
     }
-    logAndAudit(method("get_partitions_with_specs")
-        .table(catName, parsedDbName[DB_NAME], tableName));
+    logAndAudit(method("get_partitions_with_specs").table(catName, parsedDbName[DB_NAME], tableName));
     GetPartitionsResponse response = null;
     try {
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
@@ -5587,9 +5582,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     logAndAudit(method("alter_partitions").table(catName, db_name, tbl_name));
     if (LOG.isInfoEnabled()) {
-      for (Partition tmpPart : new_parts) {
-        LOG.info("New partition values:" + tmpPart.getValues());
-      }
+      String partValues = new_parts.stream().map(part -> part.getValues().toString()).collect(Collectors.joining(", "));
+      LOG.info("New partition values: {}", partValues);
     }
     // all partitions are altered atomically
     // all prehooks are fired together followed by all post hooks
@@ -5692,8 +5686,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                 EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities, String processorId)
           throws InvalidOperationException, MetaException {
 
-    logAndAudit(method("alter_table").table(catName, dbname, name)
-        .extraInfo("newtbl", newTable.getTableName()));
+    logAndAudit(method("alter_table").table(catName, dbname, name).extraInfo("newtbl", newTable.getTableName()));
     if (envContext == null) {
       envContext = new EnvironmentContext();
     }
@@ -6028,8 +6021,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public String get_config_value(String name, String defaultValue)
       throws TException {
-    logAndAudit(method("get_config_value")
-        .extraInfo("name", name).extraInfo("defaultValue", defaultValue));
+    logAndAudit(method("get_config_value").extraInfo("name", name).extraInfo("defaultValue", defaultValue));
     try {
       if (name == null) {
         return defaultValue;
@@ -6199,8 +6191,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                            final String tbl_name, final List<String> part_vals,
                                            final short max_parts) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    logAndAudit(method("get_partitions_ps").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
-        .partVals(part_vals));
+    logAndAudit(method("get_partitions_ps")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
     List<Partition> ret = null;
     try {
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
@@ -6226,8 +6218,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                      final short max_parts, final String userName,
                                                      final List<String> groupNames) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    logAndAudit(method("get_partitions_ps_with_auth").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
+    logAndAudit(method("get_partitions_ps_with_auth")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<Partition> ret = null;
     try {
@@ -6269,8 +6261,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                              final String tbl_name, final List<String> part_vals, final short max_parts)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    logAndAudit(method("get_partition_names_ps").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
+    logAndAudit(method("get_partition_names_ps")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name).partVals(part_vals));
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<String> ret = null;
     try {
@@ -6364,8 +6356,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     parsedDbName[DB_NAME] = parsedDbName[DB_NAME].toLowerCase();
     tableName = tableName.toLowerCase();
     colName = colName.toLowerCase();
-    logAndAudit(method("get_column_statistics_by_table").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).column(colName));
+    logAndAudit(method("get_column_statistics_by_table")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName).column(colName));
     ColumnStatistics statsObj = null;
       statsObj = getMS().getTableColumnStatistics(
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, Lists.newArrayList(colName),
@@ -6413,9 +6405,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     tableName = tableName.toLowerCase();
     colName = colName.toLowerCase();
     String convertedPartName = lowerCaseConvertPartName(partName);
-    logAndAudit(method("get_column_statistics_by_partition").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).part_name(convertedPartName).
-        column(colName));
+    logAndAudit(method("get_column_statistics_by_partition")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName).part_name(convertedPartName)
+        .column(colName));
     ColumnStatistics statsObj = null;
 
       List<ColumnStatistics> list = getMS().getPartitionColumnStatistics(
@@ -6497,8 +6489,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                  String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     normalizeColStatsInput(colStats);
-    logAndAudit(method("write_column_statistics").table(
-        colStats.getStatsDesc().getCatName(), colStats.getStatsDesc().getDbName(),
+    logAndAudit(method("write_column_statistics")
+        .table(colStats.getStatsDesc().getCatName(), colStats.getStatsDesc().getDbName(),
         colStats.getStatsDesc().getTableName()));
     Map<String, String> parameters = null;
     getMS().openTransaction();
@@ -6692,8 +6684,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       colName = colName.toLowerCase();
     }
     String convertedPartName = lowerCaseConvertPartName(partName);
-    logAndAudit(method("delete_column_statistics_by_partition").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).part_name(convertedPartName)
+    logAndAudit(method("delete_column_statistics_by_partition")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName).part_name(convertedPartName)
         .column(colName));
     boolean ret = false, committed = false;
 
@@ -6743,8 +6735,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (colName != null) {
       colName = colName.toLowerCase();
     }
-    logAndAudit(method("delete_column_statistics_by_table").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tableName).column(colName));
+    logAndAudit(method("delete_column_statistics_by_table")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName).column(colName));
     boolean ret = false, committed = false;
     getMS().openTransaction();
     try {
@@ -6790,8 +6782,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                   final String filter, final short maxParts)
       throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    logAndAudit(method("get_partitions_by_filter").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tblName));
+    logAndAudit(method("get_partitions_by_filter").table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName));
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
     List<Partition> ret = null;
     try {
@@ -6816,8 +6807,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
 
     String[] parsedDbName = parseDbName(dbName, conf);
-    logAndAudit(method("get_partitions_by_filter_pspec").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tblName));
+    logAndAudit(method("get_partitions_by_filter_pspec")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName));
     List<PartitionSpec> partitionSpecs = null;
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
       // Don't pass the parsed db name, as get_partitions_by_filter will parse it itself
@@ -6892,8 +6883,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (parsedDbName[DB_NAME] == null || tblName == null) {
       throw new MetaException("The DB and table name cannot be null.");
     }
-    logAndAudit(method("get_num_partitions_by_filter").table(parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tblName));
+    logAndAudit(method("get_num_partitions_by_filter")
+        .table(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName));
     int ret = -1;
     try {
       ret = getMS().getNumPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
