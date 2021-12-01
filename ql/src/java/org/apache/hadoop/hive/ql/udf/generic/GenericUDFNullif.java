@@ -50,6 +50,17 @@ public class GenericUDFNullif extends GenericUDF {
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
     returnOIResolver.update(arguments[0]);
 
+    switch (arguments[0].getCategory()) {
+    case LIST:
+    case MAP:
+    case STRUCT:
+    case PRIMITIVE:
+      break;
+    case UNION:
+    default:
+      throw new UDFArgumentTypeException(0, "Unsupported Argument type category: " + arguments[0].getCategory());
+    }
+
     boolean isPrimitive = (arguments[0] instanceof PrimitiveObjectInspector);
     if (isPrimitive)
     {
