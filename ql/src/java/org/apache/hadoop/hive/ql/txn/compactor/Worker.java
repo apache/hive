@@ -234,13 +234,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     private final CompactionTxn compactionTxn;
     private final String tableName;
     private final HiveConf conf;
-    private final AtomicBoolean shouldLogError;
+    private final AtomicBoolean errorLogEnabled;
 
     public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
       this.tableName = Objects.requireNonNull(tableName);
       this.compactionTxn = Objects.requireNonNull(compactionTxn);
       this.conf = Objects.requireNonNull(conf);
-      this.shouldLogError = new AtomicBoolean(true);
+      this.errorLogEnabled = new AtomicBoolean(true);
 
       setDaemon(true);
       setPriority(MIN_PRIORITY);
@@ -248,7 +248,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     public void shouldLogError(boolean shouldLogError) {
-      this.shouldLogError.set(shouldLogError);
+      this.errorLogEnabled.set(shouldLogError);
     }
 
     @Override
@@ -259,10 +259,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         // Create a metastore client for each thread since it is not thread safe
         msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
         msc.heartbeat(compactionTxn.getTxnId(), compactionTxn.getLockId());
-        LOG.debug("Successfully heartbeated for transaction {}", this.compactionTxn);
       } catch (Exception e) {
-        if (shouldLogError.get()) {
-          LOG.error("Error while heartbeating txn {}", compactionTxn, e);
+        if (errorLogEnabled.get()) {
+          LOG.error("Error while heartbeating transaction id {} for table: {}", compactionTxn, tableName, e);
         }
       } finally {
         if (msc != null) {
@@ -745,15 +744,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      * @throws Exception
      */
     @Override public void close() throws Exception {
-      if (status == TxnStatus.UNKNOWN) {
-        return;
-      }
-      // turn off error logging in heartbeater in case of race condition between commit/abort and heartbeating
-      heartbeater.shouldLogError(false);
-      if (succeessfulCompaction) {
-        commit();
-      } else {
-        abort();
+      if (status != TxnStatus.UNKNOWN) {
+        // turn off error logging in heartbeater in case of race condition between commit/abort and heartbeating
+        heartbeater.shouldLogError(false);
+        if (succeessfulCompaction) {
+          commit();
+        } else {
+          abort();
+        }
       }
       shutdownHeartbeater();
     }
