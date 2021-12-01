@@ -178,10 +178,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } finally {
       HMSHandler handler = HMSHandlerContextMap.getLocalHMSHandlerOrNull();
-      HMSHandlerContextMap.clear();
       if (handler != null) {
         handler.notifyMetaListenersOnShutDown();
       }
+      HMSHandlerContextMap.clear();
       logAndAudit("Done cleaning up thread local RawStore");
     }
   }

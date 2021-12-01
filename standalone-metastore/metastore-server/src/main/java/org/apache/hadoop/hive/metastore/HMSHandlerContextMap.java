@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.metastore;
 
 import java.util.HashMap;
@@ -29,10 +28,11 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 public final class HMSHandlerContextMap {
 
   private static final String KEY_RAWSTORE = "raw_store";
+
   private static final String KEY_TXNSTORE = "txn_store";
   // Thread local configuration is needed as many threads could make changes
   // to the conf using the connection hook
-  private static final String KEY_CONFIGURARTION = "configuration";
+  private static final String KEY_CONFIGURATION = "configuration";
   /**
    * Thread local HMSHandler used during shutdown to notify meta listeners
    */
@@ -40,12 +40,13 @@ public final class HMSHandlerContextMap {
   /**
    * Thread local Map to keep track of modified meta conf keys
    */
-  private static final String KEY_MODIFIEDCONF = "modified_config";
-  private static final String KEY_THREADID = "thread_id";
+  private static final String KEY_MODIFIED_CONF = "modified_config";
+
+  private static final String KEY_THREAD_ID = "thread_id";
   // This will only be set if the metastore is being accessed from a metastore Thrift server,
   // not if it is from the CLI. Also, only if the TTransport being used to connect is an
   // instance of TSocket. This is also not set when kerberos is used.
-  private static final String KEY_IPADDR = "ipAddress";
+  private static final String KEY_IPADDRESS = "ip_address";
 
   private static final AtomicInteger nextSerialNum = new AtomicInteger();
   private static final ThreadLocal<Map<String, Object>> localMap = new ThreadLocal<>();
@@ -71,11 +72,11 @@ public final class HMSHandlerContextMap {
   }
 
   public static Configuration getLocalConfigurationOrNull() {
-    return (Configuration) get(KEY_CONFIGURARTION);
+    return (Configuration) get(KEY_CONFIGURATION);
   }
 
   public static Map<String, String> getLocalModifiedConfigNotNull() {
-    Map<String, String> configs = (Map<String, String>) get(KEY_MODIFIEDCONF);
+    Map<String, String> configs = (Map<String, String>) get(KEY_MODIFIED_CONF);
     if (configs == null) {
       configs = new HashMap<>();
       setLocalModifiedConfig(configs);
@@ -84,7 +85,7 @@ public final class HMSHandlerContextMap {
   }
 
   public static Integer getLocalThreadIdNotNull() {
-    Integer id = (Integer) get(KEY_THREADID);
+    Integer id = (Integer) get(KEY_THREAD_ID);
     if (id == null) {
       id = nextSerialNum.getAndIncrement();
       setLocalThreadId(id);
@@ -93,7 +94,7 @@ public final class HMSHandlerContextMap {
   }
 
   public static String getLocalIpAddressOrNull() {
-    return (String) get(KEY_IPADDR);
+    return (String) get(KEY_IPADDRESS);
   }
 
   private static Object get(String key) {
@@ -117,19 +118,19 @@ public final class HMSHandlerContextMap {
   }
 
   public static void setLocalConfiguration(Configuration conf) {
-    set(KEY_CONFIGURARTION, conf);
+    set(KEY_CONFIGURATION, conf);
   }
 
   public static void setLocalModifiedConfig(Map<String, String> modifiedConfig) {
-    set(KEY_MODIFIEDCONF, modifiedConfig);
+    set(KEY_MODIFIED_CONF, modifiedConfig);
   }
 
   public static void setLocalThreadId(Integer id) {
-    set(KEY_THREADID, id);
+    set(KEY_THREAD_ID, id);
   }
 
   public static void setLocalIpAddress(String ipAddress) {
-    set(KEY_IPADDR, ipAddress);
+    set(KEY_IPADDRESS, ipAddress);
   }
 
   private static void set(String key, Object value) {
