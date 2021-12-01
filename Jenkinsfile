@@ -22,7 +22,7 @@ properties([
     // do not run multiple testruns on the same branch
     disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '5', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
@@ -232,7 +232,7 @@ git merge origin/target
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
-        buildHive("install -Dtest=noMatches")
+        buildHive("install -pl common -am -Dtest=noMatches")
       }
       checkPrHead()
       stage('Upload') {
@@ -296,7 +296,7 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
         }
         try {
           stage('Test') {
-            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+            buildHive("-pl common -am org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
           }
         } finally {
           stage('PostProcess') {
