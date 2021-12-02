@@ -853,7 +853,6 @@ public class DDLPlanUtils {
           }
 
           String structElementName = structTypeInfo.getAllStructFieldNames().get(i);
-          structElementName = HiveUtils.unparseIdentifier(structElementName, Hive.get().getConf());
           String structElementType = formatType(structTypeInfo.getAllStructFieldTypeInfos().get(i));
 
           structFormattedType.append("`" + structElementName + "`:" + structElementType);
