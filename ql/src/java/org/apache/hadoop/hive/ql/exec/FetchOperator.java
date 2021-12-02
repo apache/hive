@@ -568,11 +568,13 @@ public class FetchOperator implements Serializable {
            * If file contains footer, used FooterBuffer to cache and remove footer
            * records at the end of the file.
            */
-          headerCount = Utilities.getHeaderCount(currDesc.getTableDesc());
-          footerCount = Utilities.getFooterCount(currDesc.getTableDesc(), job);
+	  if (currRecReader.getPos() == 0) {
+            headerCount = Utilities.getHeaderCount(currDesc.getTableDesc());
+            // Skip header lines.
+            opNotEOF = Utilities.skipHeader(currRecReader, headerCount, key, value);
+	  }
 
-          // Skip header lines.
-          opNotEOF = Utilities.skipHeader(currRecReader, headerCount, key, value);
+	  footerCount = Utilities.getFooterCount(currDesc.getTableDesc(), job);
 
           // Initialize footer buffer.
           if (opNotEOF && footerCount > 0) {
