@@ -5286,8 +5286,8 @@ public class ObjectStore implements RawStore, Configurable {
      */
     try {
       // HIVE-21075: Fix Postgres performance regression caused by HIVE-9447
-      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(MetaStoreDirectSql.getProductName(pm), conf);
-      if (dbProduct.isPOSTGRES() || dbProduct.isMYSQL()) {
+      LOG.debug("The dbType is {} ", dbType.getHiveSchemaPostfix());
+      if (dbType.isPOSTGRES() || dbType.isMYSQL()) {
         query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
         query.declareParameters("MColumnDescriptor inCD");
         List<MStorageDescriptor> referencedSDs = null;
