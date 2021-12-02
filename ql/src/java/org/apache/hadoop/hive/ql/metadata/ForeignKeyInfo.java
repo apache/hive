@@ -143,7 +143,7 @@ public class ForeignKeyInfo implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isForeignKeyInfoNotEmpty(ForeignKeyInfo info) {
+  public static boolean isNotEmpty(ForeignKeyInfo info) {
     return info != null && !info.getForeignKeys().isEmpty();
   }
 }

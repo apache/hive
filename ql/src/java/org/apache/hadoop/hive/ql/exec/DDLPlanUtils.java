@@ -619,7 +619,7 @@ public class DDLPlanUtils {
   }
 
   public String getAlterTableStmtPrimaryKeyConstraint(PrimaryKeyInfo pr) {
-    if (!PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(pr)) {
+    if (!PrimaryKeyInfo.isNotEmpty(pr)) {
       return null;
     }
     ST command = new ST(ALTER_TABLE_ADD_PRIMARY_KEY);
@@ -634,7 +634,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints, Set<String> allTableNames) {
-    if (!ForeignKeyInfo.isForeignKeyInfoNotEmpty(fr)) {
+    if (!ForeignKeyInfo.isNotEmpty(fr)) {
       return;
     }
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
@@ -657,7 +657,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtUniqueConstraint(UniqueConstraint uq, List<String> constraints) {
-    if (!UniqueConstraint.isUniqueConstraintNotEmpty(uq)) {
+    if (!UniqueConstraint.isNotEmpty(uq)) {
       return;
     }
     Map<String, List<UniqueConstraint.UniqueConstraintCol>> uniqueConstraints = uq.getUniqueConstraints();
@@ -679,7 +679,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtDefaultConstraint(DefaultConstraint dc, Table tb, List<String> constraints) {
-    if (!DefaultConstraint.isCheckConstraintNotEmpty(dc)) {
+    if (!DefaultConstraint.isNotEmpty(dc)) {
       return;
     }
     Map<String, String> colType = getTableColumnsToType(tb);
@@ -702,7 +702,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtCheckConstraint(CheckConstraint ck, List<String> constraints) {
-    if (!CheckConstraint.isCheckConstraintNotEmpty(ck)) {
+    if (!CheckConstraint.isNotEmpty(ck)) {
       return;
     }
     Map<String, List<CheckConstraint.CheckConstraintCol>> checkConstraints = ck.getCheckConstraints();
@@ -726,7 +726,7 @@ public class DDLPlanUtils {
 
 
   public void getAlterTableStmtNotNullConstraint(NotNullConstraint nc, Table tb, List<String> constraints) {
-    if (!NotNullConstraint.isNotNullConstraintNotEmpty(nc)) {
+    if (!NotNullConstraint.isNotEmpty(nc)) {
       return;
     }
     Map<String, String> colType = getTableColumnsToType(tb);

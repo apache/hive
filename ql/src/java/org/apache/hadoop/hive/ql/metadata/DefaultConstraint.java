@@ -128,7 +128,7 @@ public class DefaultConstraint implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isCheckConstraintNotEmpty(DefaultConstraint info) {
+  public static boolean isNotEmpty(DefaultConstraint info) {
     return info != null && !info.getDefaultConstraints().isEmpty();
   }
 }

@@ -389,27 +389,27 @@ class TextDescTableFormatter extends DescTableFormatter {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
-    if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
+    if (PrimaryKeyInfo.isNotEmpty(table.getPrimaryKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Primary Key").append(LINE_DELIM);
       getPrimaryKeyInformation(constraintsInfo, table.getPrimaryKeyInfo());
     }
-    if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(table.getForeignKeyInfo())) {
+    if (ForeignKeyInfo.isNotEmpty(table.getForeignKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Foreign Keys").append(LINE_DELIM);
       getForeignKeysInformation(constraintsInfo, table.getForeignKeyInfo());
     }
-    if (UniqueConstraint.isUniqueConstraintNotEmpty(table.getUniqueKeyInfo())) {
+    if (UniqueConstraint.isNotEmpty(table.getUniqueKeyInfo())) {
       constraintsInfo.append(LINE_DELIM).append("# Unique Constraints").append(LINE_DELIM);
       getUniqueConstraintsInformation(constraintsInfo, table.getUniqueKeyInfo());
     }
-    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+    if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
       getNotNullConstraintsInformation(constraintsInfo, table.getNotNullConstraint());
     }
-    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+    if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
       getDefaultConstraintsInformation(constraintsInfo, table.getDefaultConstraint());
     }
-    if (CheckConstraint.isCheckConstraintNotEmpty(table.getCheckConstraint())) {
+    if (CheckConstraint.isNotEmpty(table.getCheckConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Check Constraints").append(LINE_DELIM);
       getCheckConstraintsInformation(constraintsInfo, table.getCheckConstraint());
     }
@@ -559,27 +559,27 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (table.getTableConstraintsInfo().isTableConstraintsInfoNotEmpty()) {
       out.write(("Constraints").getBytes(StandardCharsets.UTF_8));
       out.write(Utilities.tabCode);
-      if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
+      if (PrimaryKeyInfo.isNotEmpty(table.getPrimaryKeyInfo())) {
         out.write(table.getPrimaryKeyInfo().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(table.getForeignKeyInfo())) {
+      if (ForeignKeyInfo.isNotEmpty(table.getForeignKeyInfo())) {
         out.write(table.getForeignKeyInfo().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (UniqueConstraint.isUniqueConstraintNotEmpty(table.getUniqueKeyInfo())) {
+      if (UniqueConstraint.isNotEmpty(table.getUniqueKeyInfo())) {
         out.write(table.getUniqueKeyInfo().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+      if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
         out.write(table.getNotNullConstraint().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+      if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
         out.write(table.getDefaultConstraint().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }
-      if (CheckConstraint.isCheckConstraintNotEmpty(table.getCheckConstraint())) {
+      if (CheckConstraint.isNotEmpty(table.getCheckConstraint())) {
         out.write(table.getCheckConstraint().toString().getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.newLineCode);
       }

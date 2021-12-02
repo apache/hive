@@ -149,7 +149,7 @@ public class CheckConstraint implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isCheckConstraintNotEmpty(CheckConstraint info) {
+  public static boolean isNotEmpty(CheckConstraint info) {
     return info != null && !info.getCheckConstraints().isEmpty();
   }
 }
