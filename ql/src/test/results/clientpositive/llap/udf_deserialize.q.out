@@ -32,24 +32,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 test
-PREHOOK: query: SELECT deserialize("test", "")
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT deserialize("test", "")
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-test
-PREHOOK: query: SELECT deserialize("test", "plain")
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT deserialize("test", "plain")
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-test
 PREHOOK: query: SELECT deserialize("{unitTest:'udf-deserialize'}", "json-0.2")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

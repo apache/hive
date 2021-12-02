@@ -42,8 +42,6 @@ public abstract class MessageFactory {
 
   private static final Map<String, Method> registry = new HashMap<>();
 
-  public static String plainTextFormat = "plain";
-
   public static void register(String messageFormat, Class clazz) {
     Method method = requiredMethod(clazz);
     registry.put(messageFormat, method);

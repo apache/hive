@@ -40,6 +40,6 @@ alter scheduled query repl2 disabled;
 show databases;
 
 select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
-from sys.replication_metrics_table order by dump_execution_id;
+from sys.replication_metrics_orig order by dump_execution_id;
 
 select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id;
