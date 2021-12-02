@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TABLE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("tableType", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField COMMENTS_FIELD_DESC = new org.apache.thrift.protocol.TField("comments", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.MAP, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableMetaStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableMetaTupleSchemeFactory();
@@ -25,6 +26,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String tableType; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String comments; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> parameters; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)2, "tableName"),
     TABLE_TYPE((short)3, "tableType"),
     COMMENTS((short)4, "comments"),
-    CAT_NAME((short)5, "catName");
+    CAT_NAME((short)5, "catName"),
+    PARAMETERS((short)6, "parameters");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
           return COMMENTS;
         case 5: // CAT_NAME
           return CAT_NAME;
+        case 6: // PARAMETERS
+          return PARAMETERS;
         default:
           return null;
       }
@@ -99,7 +104,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.COMMENTS,_Fields.CAT_NAME};
+  private static final _Fields optionals[] = {_Fields.COMMENTS,_Fields.CAT_NAME,_Fields.PARAMETERS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -113,6 +118,10 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableMeta.class, metaDataMap);
   }
@@ -150,6 +159,10 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
+    if (other.isSetParameters()) {
+      java.util.Map<java.lang.String,java.lang.String> __this__parameters = new java.util.HashMap<java.lang.String,java.lang.String>(other.parameters);
+      this.parameters = __this__parameters;
+    }
   }
 
   public TableMeta deepCopy() {
@@ -163,6 +176,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.tableType = null;
     this.comments = null;
     this.catName = null;
+    this.parameters = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -285,6 +299,41 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public int getParametersSize() {
+    return (this.parameters == null) ? 0 : this.parameters.size();
+  }
+
+  public void putToParameters(java.lang.String key, java.lang.String val) {
+    if (this.parameters == null) {
+      this.parameters = new java.util.HashMap<java.lang.String,java.lang.String>();
+    }
+    this.parameters.put(key, val);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Map<java.lang.String,java.lang.String> getParameters() {
+    return this.parameters;
+  }
+
+  public void setParameters(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> parameters) {
+    this.parameters = parameters;
+  }
+
+  public void unsetParameters() {
+    this.parameters = null;
+  }
+
+  /** Returns true if field parameters is set (has been assigned a value) and false otherwise */
+  public boolean isSetParameters() {
+    return this.parameters != null;
+  }
+
+  public void setParametersIsSet(boolean value) {
+    if (!value) {
+      this.parameters = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -327,6 +376,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case PARAMETERS:
+      if (value == null) {
+        unsetParameters();
+      } else {
+        setParameters((java.util.Map<java.lang.String,java.lang.String>)value);
+      }
+      break;
+
     }
   }
 
@@ -347,6 +404,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case CAT_NAME:
       return getCatName();
+
+    case PARAMETERS:
+      return getParameters();
 
     }
     throw new java.lang.IllegalStateException();
@@ -369,6 +429,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetComments();
     case CAT_NAME:
       return isSetCatName();
+    case PARAMETERS:
+      return isSetParameters();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -431,6 +493,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_parameters = true && this.isSetParameters();
+    boolean that_present_parameters = true && that.isSetParameters();
+    if (this_present_parameters || that_present_parameters) {
+      if (!(this_present_parameters && that_present_parameters))
+        return false;
+      if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
     return true;
   }
 
@@ -457,6 +528,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
     if (isSetCatName())
       hashCode = hashCode * 8191 + catName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetParameters()) ? 131071 : 524287);
+    if (isSetParameters())
+      hashCode = hashCode * 8191 + parameters.hashCode();
 
     return hashCode;
   }
@@ -515,6 +590,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetCatName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetParameters(), other.isSetParameters());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetParameters()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.parameters, other.parameters);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -580,6 +665,16 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.catName);
+      }
+      first = false;
+    }
+    if (isSetParameters()) {
+      if (!first) sb.append(", ");
+      sb.append("parameters:");
+      if (this.parameters == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.parameters);
       }
       first = false;
     }
@@ -678,6 +773,26 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // PARAMETERS
+            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+              {
+                org.apache.thrift.protocol.TMap _map1124 = iprot.readMapBegin();
+                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1124.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key1125;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val1126;
+                for (int _i1127 = 0; _i1127 < _map1124.size; ++_i1127)
+                {
+                  _key1125 = iprot.readString();
+                  _val1126 = iprot.readString();
+                  struct.parameters.put(_key1125, _val1126);
+                }
+                iprot.readMapEnd();
+              }
+              struct.setParametersIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -720,6 +835,21 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.parameters != null) {
+        if (struct.isSetParameters()) {
+          oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
+          {
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
+            for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1128 : struct.parameters.entrySet())
+            {
+              oprot.writeString(_iter1128.getKey());
+              oprot.writeString(_iter1128.getValue());
+            }
+            oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -747,12 +877,25 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCatName()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetParameters()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetComments()) {
         oprot.writeString(struct.comments);
       }
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetParameters()) {
+        {
+          oprot.writeI32(struct.parameters.size());
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1129 : struct.parameters.entrySet())
+          {
+            oprot.writeString(_iter1129.getKey());
+            oprot.writeString(_iter1129.getValue());
+          }
+        }
       }
     }
 
@@ -765,7 +908,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTableNameIsSet(true);
       struct.tableType = iprot.readString();
       struct.setTableTypeIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.comments = iprot.readString();
         struct.setCommentsIsSet(true);
@@ -773,6 +916,21 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TMap _map1130 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
+          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1130.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key1131;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val1132;
+          for (int _i1133 = 0; _i1133 < _map1130.size; ++_i1133)
+          {
+            _key1131 = iprot.readString();
+            _val1132 = iprot.readString();
+            struct.parameters.put(_key1131, _val1132);
+          }
+        }
+        struct.setParametersIsSet(true);
       }
     }
   }

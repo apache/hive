@@ -46,6 +46,19 @@ class TableMeta
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'parameters',
+            'isRequired' => false,
+            'type' => TType::MAP,
+            'ktype' => TType::STRING,
+            'vtype' => TType::STRING,
+            'key' => array(
+                'type' => TType::STRING,
+            ),
+            'val' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -68,6 +81,10 @@ class TableMeta
      * @var string
      */
     public $catName = null;
+    /**
+     * @var array
+     */
+    public $parameters = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +103,9 @@ class TableMeta
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['parameters'])) {
+                $this->parameters = $vals['parameters'];
             }
         }
     }
@@ -144,6 +164,25 @@ class TableMeta
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::MAP) {
+                        $this->parameters = array();
+                        $_size991 = 0;
+                        $_ktype992 = 0;
+                        $_vtype993 = 0;
+                        $xfer += $input->readMapBegin($_ktype992, $_vtype993, $_size991);
+                        for ($_i995 = 0; $_i995 < $_size991; ++$_i995) {
+                            $key996 = '';
+                            $val997 = '';
+                            $xfer += $input->readString($key996);
+                            $xfer += $input->readString($val997);
+                            $this->parameters[$key996] = $val997;
+                        }
+                        $xfer += $input->readMapEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +220,19 @@ class TableMeta
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 5);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->parameters !== null) {
+            if (!is_array($this->parameters)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('parameters', TType::MAP, 6);
+            $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
+            foreach ($this->parameters as $kiter998 => $viter999) {
+                $xfer += $output->writeString($kiter998);
+                $xfer += $output->writeString($viter999);
+            }
+            $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

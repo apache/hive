@@ -12864,9 +12864,10 @@ void swap(CmRecycleResponse &a, CmRecycleResponse &b);
 std::ostream& operator<<(std::ostream& out, const CmRecycleResponse& obj);
 
 typedef struct _TableMeta__isset {
-  _TableMeta__isset() : comments(false), catName(false) {}
+  _TableMeta__isset() : comments(false), catName(false), parameters(false) {}
   bool comments :1;
   bool catName :1;
+  bool parameters :1;
 } _TableMeta__isset;
 
 class TableMeta : public virtual ::apache::thrift::TBase {
@@ -12883,6 +12884,7 @@ class TableMeta : public virtual ::apache::thrift::TBase {
   std::string tableType;
   std::string comments;
   std::string catName;
+  std::map<std::string, std::string>  parameters;
 
   _TableMeta__isset __isset;
 
@@ -12895,6 +12897,8 @@ class TableMeta : public virtual ::apache::thrift::TBase {
   void __set_comments(const std::string& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
 
   bool operator == (const TableMeta & rhs) const
   {
@@ -12911,6 +12915,10 @@ class TableMeta : public virtual ::apache::thrift::TBase {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
       return false;
     return true;
   }
