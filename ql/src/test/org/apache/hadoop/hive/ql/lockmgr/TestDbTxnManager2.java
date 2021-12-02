@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -1203,6 +1204,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
    */
   @Test
   public void testWriteSetTracking5() throws Exception {
+    Assume.assumeTrue(minHistoryLevel);   //skip execution for disabled TXN_USE_MIN_HISTORY_LEVEL
     dropTable(new String[] {"TAB_PART"});
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
     driver.run("create table if not exists TAB_PART (a int, b int) " +
@@ -2061,6 +2063,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   @Test
   public void testMergeUnpartitioned() throws Exception {
+    Assume.assumeTrue(minHistoryLevel);     //skip execution for disabled TXN_USE_MIN_HISTORY_LEVEL
     testMergeUnpartitioned(false, false);
   }
   @Test
@@ -2606,10 +2609,12 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   @Test
   public void testMergePartitioned() throws Exception {
+    Assume.assumeTrue(minHistoryLevel);     //skip execution for disabled TXN_USE_MIN_HISTORY_LEVEL
     testMergePartitioned(false, false);
   }
   @Test
   public void testMergePartitionedConflict() throws Exception {
+    Assume.assumeTrue(minHistoryLevel);     //skip execution for disabled TXN_USE_MIN_HISTORY_LEVEL
     testMergePartitioned(true, false);
   }
   @Test
@@ -3300,12 +3305,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
-  public void testInsertSnapshotIsolationMinHistoryDisabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
-    testInsertSnapshotIsolation();
-  }
-
-  @Test
   public void testInsertSnapshotIsolation() throws Exception {
     dropTable(new String[] {"tab_acid"});
 
@@ -3326,12 +3325,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<String> res = new ArrayList<>();
     driver2.getFetchTask().fetch(res);
     Assert.assertEquals(0, res.size());
-  }
-
-  @Test
-  public void testUpdateSnapshotIsolationMinHistoryDisabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
-    testUpdateSnapshotIsolation();
   }
 
   @Test

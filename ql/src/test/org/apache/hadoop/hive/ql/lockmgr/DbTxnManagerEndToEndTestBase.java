@@ -30,33 +30,43 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Base class for "end-to-end" tests for DbTxnManager and simulate concurrent queries.
  */
+@RunWith(Parameterized.class)
 public abstract class DbTxnManagerEndToEndTestBase {
 
-  protected static HiveConf conf = new HiveConf(Driver.class);
+  protected static HiveConf conf;
   protected HiveTxnManager txnMgr;
   protected Context ctx;
   protected Driver driver, driver2;
   protected TxnStore txnHandler;
 
-  public DbTxnManagerEndToEndTestBase() {
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    conf.setBoolVar(HiveConf.ConfVars.TXN_MERGE_INSERT_X_LOCK, true);
-    TestTxnDbUtil.setConfValues(conf);
-  }
-  @BeforeClass
-  public static void setUpDB() throws Exception{
-    TestTxnDbUtil.prepDb(conf);
+  @Parameterized.Parameter
+  public boolean minHistoryLevel;
+
+  @Parameterized.Parameters(name = "minHistoryLevel = {0}")
+  public static Collection<Object[]> generateParameters() {
+    return Arrays.asList(new Object[][] { { true }, { false } });
   }
 
   @Before
   public void setUp() throws Exception {
+    conf = new HiveConf(Driver.class);
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_MERGE_INSERT_X_LOCK, true);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, minHistoryLevel);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
+
     // set up metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
       HiveMetaStoreClientWithLocalCache.init(conf);
@@ -65,18 +75,16 @@ public abstract class DbTxnManagerEndToEndTestBase {
     ctx = new Context(conf);
     driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
     driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, true);
-    TestTxnDbUtil.cleanDb(conf);
     SessionState ss = SessionState.get();
     ss.initTxnMgr(conf);
     txnMgr = ss.getTxnMgr();
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
     txnHandler = TxnUtils.getTxnStore(conf);
-
   }
+
   @After
   public void tearDown() throws Exception {
+    TestTxnDbUtil.cleanDb(conf);
     driver.close();
     driver2.close();
     if (txnMgr != null) {
