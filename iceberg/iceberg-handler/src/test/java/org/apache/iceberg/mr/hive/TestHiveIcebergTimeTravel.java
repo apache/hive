@@ -49,8 +49,8 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
     Assert.assertEquals(4, rows.size());
 
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Cannot find a snapshot older than 1970-01-01 00:00:00", () -> {
-          shell.executeStatement("SELECT * FROM customers FOR SYSTEM_TIME AS OF '1970-01-01 00:00:00'");
+        "java.lang.IllegalArgumentException: Cannot find a snapshot older than 1970-01-01", () -> {
+        shell.executeStatement("SELECT * FROM customers FOR SYSTEM_TIME AS OF '1970-01-01 00:00:00.000'");
         });
   }
 
