@@ -339,6 +339,11 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       final RexNode filterCondition = simplify.simplify(filter.getCondition());
 
       final Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(newCondition);
+      // if the new IS NOT NULL has no input ref, there is redundancy here, bail out
+      if (inputRefs.isEmpty()) {
+        return;
+      }
+
       final RexInputRef rexInputRef =
           rexBuilder.makeInputRef(filter.getInput(), inputRefs.iterator().next());
       final RexNode baseCondition = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexInputRef);
