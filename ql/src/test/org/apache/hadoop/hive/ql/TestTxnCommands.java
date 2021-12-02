@@ -1351,7 +1351,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }, 5000);
     long start = System.currentTimeMillis();
-    runStatementOnDriver("alter table "+ Table.ACIDTBL +" compact 'major' AND WAIT");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'major' AND WAIT");
     //no Worker so it stays in initiated state
     //w/o AND WAIT the above alter table retunrs almost immediately, so the test here to check that
     //> 2 seconds pass, i.e. that the command in Driver actually blocks before cancel is fired
@@ -1396,7 +1396,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
 
     //run Compaction
-    runStatementOnDriver("alter table "+ Table.NONACIDORCTBL +" compact 'major'");
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " compact 'major'");
     runWorker(hiveConf);
 
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "

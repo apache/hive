@@ -952,7 +952,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals("Insert overwrite partition failed", stringifyValues(updatedData), rs2);
     //insert overwrite not supported for ACID tables
   }
-  private void checkCompactionState(CompactionsByState expected, CompactionsByState actual) {
+  
+  private static void checkCompactionState(CompactionsByState expected, CompactionsByState actual) {
     Assert.assertEquals(TxnStore.DID_NOT_INITIATE_RESPONSE, expected.didNotInitiate, actual.didNotInitiate);
     Assert.assertEquals(TxnStore.FAILED_RESPONSE, expected.failed, actual.failed);
     Assert.assertEquals(TxnStore.INITIATED_RESPONSE, expected.initiated, actual.initiated);
@@ -1114,7 +1115,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       this.total = total;
     }
   }
-  private CompactionsByState countCompacts(TxnStore txnHandler) throws MetaException {
+  
+  private static CompactionsByState countCompacts(TxnStore txnHandler) throws MetaException {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     CompactionsByState compactionsByState = new CompactionsByState();
     compactionsByState.total = resp.getCompactsSize();
@@ -2892,7 +2894,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
    */
-  private List<String> stringifyValuesNoSort(int[][] rowsIn) {
+  private static List<String> stringifyValuesNoSort(int[][] rowsIn) {
     assert rowsIn.length > 0;
     int[][] rows = rowsIn.clone();
     List<String> rs = new ArrayList<String>();
@@ -2932,7 +2934,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals("Duplicate ROW__ID: " + r.toString(), 0, r.size());
   }
 
-  private String quoteString(String input) {
+  private static String quoteString(String input) {
     return "'" + input + "'";
   }
 }
