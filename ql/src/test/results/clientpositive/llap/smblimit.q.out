@@ -42,9 +42,9 @@ POSTHOOK: Lineage: btl.c SIMPLE [(hlp1)hlp1.FieldSchema(name:c, type:string, com
 PREHOOK: query: select 1 from btl join btl t1 on btl.c=t1.c limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@btl
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from btl join btl t1 on btl.c=t1.c limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@btl
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
