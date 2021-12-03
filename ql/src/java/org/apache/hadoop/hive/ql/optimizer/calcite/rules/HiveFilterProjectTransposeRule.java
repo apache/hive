@@ -339,7 +339,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       final RexNode filterCondition = simplify.simplify(filter.getCondition());
 
       final Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(newCondition);
-      // if the new IS NOT NULL has no input ref, there is redundancy here, bail out
+      // if the new IS NOT NULL has no input ref, there is no redundancy here, bail out
       if (inputRefs.isEmpty()) {
         return;
       }
