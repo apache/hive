@@ -105,7 +105,10 @@ public class Executor {
 
       preExecutionActions();
       preExecutionCacheActions();
+      // Disable HMS cache so any metadata calls during execution get fresh responses.
+      driverContext.getQueryState().disableHMSCache();
       runTasks(noName);
+      driverContext.getQueryState().enableHMSCache();
       postExecutionCacheActions();
       postExecutionActions();
     } catch (CommandProcessorException cpe) {
@@ -118,6 +121,7 @@ public class Executor {
       handleException(hookContext, e);
     } finally {
       cleanUp(noName, hookContext, executionError);
+      driverContext.getQueryState().enableHMSCache();
     }
   }
 
