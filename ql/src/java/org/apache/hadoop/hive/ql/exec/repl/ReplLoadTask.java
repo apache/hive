@@ -686,7 +686,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
 
-    // Check if it is a optimise bootstrap failover.
+    // Check if it is a optimised bootstrap failover.
     if (work.isFailover) {
       // Check it should be marked as target of replication & not source of replication.
       if (MetaStoreUtils.isTargetOfReplication(targetDb)) {
@@ -707,8 +707,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
         createReplLoadCompleteAckTask();
         return 0;
-      } else {
-        // TODO : Load using table_diff
       }
     }
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {

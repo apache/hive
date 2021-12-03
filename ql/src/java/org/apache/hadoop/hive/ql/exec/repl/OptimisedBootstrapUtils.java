@@ -51,9 +51,13 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getLastReplicatedStateFromParameters;
 
+/**
+ * Utility class for handling operations regarding optimised bootstrap in case of replication.
+ */
 public class OptimisedBootstrapUtils {
 
-  public static final String FILE_ENTRY_SEPERATOR = "#";
+  /** Separator used to separate entries in the listing. */
+  public static final String FILE_ENTRY_SEPARATOR = "#";
   private static Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
 
   /** table diff directory when in progress */
@@ -177,7 +181,7 @@ public class OptimisedBootstrapUtils {
    * @return the lastReplId denoting a fake dump(-1) always
    * @throws SemanticException
    */
-  public static Long getAndCreateEventAckFile(Path currentDumpPath, DumpMetaData dmd, Path cmRoot, String dbEventId,
+  public static Long createAndGetEventAckFile(Path currentDumpPath, DumpMetaData dmd, Path cmRoot, String dbEventId,
       HiveConf conf, ReplDumpWork work)
       throws SemanticException {
     // Keep an invalid value for lastReplId, to denote it isn't a actual dump.
@@ -282,7 +286,7 @@ public class OptimisedBootstrapUtils {
         listing.add(fstatus.getPath().toString());
         buildListingForDirectory(listing, fstatus.getPath(), tableFs);
       } else {
-        listing.add(fstatus.getPath() + FILE_ENTRY_SEPERATOR + fstatus.getLen() + FILE_ENTRY_SEPERATOR + tableFs
+        listing.add(fstatus.getPath() + FILE_ENTRY_SEPARATOR + fstatus.getLen() + FILE_ENTRY_SEPARATOR + tableFs
             .getFileChecksum(fstatus.getPath()));
       }
     }

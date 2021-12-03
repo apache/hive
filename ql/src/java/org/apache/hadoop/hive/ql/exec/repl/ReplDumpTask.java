@@ -128,7 +128,7 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyId
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
-import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getAndCreateEventAckFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.createAndGetEventAckFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getReplEventIdFromDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFailover;
@@ -233,7 +233,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             boolean isTableDiffDirectoryPresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
             if (createEventMarker) {
               LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
-              lastReplId = getAndCreateEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, conf, work);
+              lastReplId = createAndGetEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, conf, work);
               finishRemainingTasks();
             } else {
               // We should be here only if TableDiff is Present.
@@ -419,7 +419,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
     work.getMetricCollector().reportEnd(isFailoverInProgress ? Status.FAILOVER_READY : Status.SUCCESS);
-      deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
+    deleteAllPreviousDumpMeta(work.getCurrentDumpPath());
   }
 
   private void prepareReturnValues(List<String> values) throws SemanticException {

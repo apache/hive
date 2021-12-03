@@ -163,11 +163,12 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     // Check in case the dump isn't consumed, and we attempt a dump again, that gets skipped and the dump directory
     // doesn't change, without any errors.
 
-    ContentSummary beforeContentSummary = replicaFs.getContentSummary(new Path(tuple.dumpLocation).getParent());
+    Path dumpPath = new Path(tuple.dumpLocation);
+    ContentSummary beforeContentSummary = replicaFs.getContentSummary(dumpPath.getParent());
     WarehouseInstance.Tuple emptyTuple = replica.dump(replicatedDbName, withClause);
     assertTrue(emptyTuple.dumpLocation.isEmpty());
     assertTrue(emptyTuple.lastReplicationId.isEmpty());
-    ContentSummary afterContentSummary = replicaFs.getContentSummary(new Path(tuple.dumpLocation).getParent());
+    ContentSummary afterContentSummary = replicaFs.getContentSummary(dumpPath.getParent());
     assertEquals(beforeContentSummary.getFileAndDirectoryCount(), afterContentSummary.getFileAndDirectoryCount());
 
     // Check the event ack file stays intact, despite having a skipped dump.
@@ -182,27 +183,27 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
 
     // Check the table diff has all the modified table, including the dropped and empty ones
-    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(new Path(tuple.dumpLocation), conf);
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(dumpPath, conf);
     assertTrue("Table Diff Contains " + tableDiffEntries, tableDiffEntries
         .containsAll(Arrays.asList("t4", "t2", "t4_managed", "t2_managed", "t5_managed", "t6_managed")));
 
     // Do a load again and see, nothing changes as this load isn't consumed.
-    beforeContentSummary = replicaFs.getContentSummary(new Path(tuple.dumpLocation).getParent());
+    beforeContentSummary = replicaFs.getContentSummary(dumpPath.getParent());
     primary.load(primaryDbName, replicatedDbName, withClause);
     assertTrue("Table Diff Contains " + tableDiffEntries, tableDiffEntries
         .containsAll(Arrays.asList("t4", "t2", "t4_managed", "t2_managed", "t5_managed", "t6_managed")));
-    afterContentSummary = replicaFs.getContentSummary(new Path(tuple.dumpLocation).getParent());
+    afterContentSummary = replicaFs.getContentSummary(dumpPath.getParent());
     assertEquals(beforeContentSummary.getFileAndDirectoryCount(), afterContentSummary.getFileAndDirectoryCount());
 
     // Check there are entries in the table files.
-    assertFalse(getPathsFromTableFile("t4", new Path(tuple.dumpLocation), conf).isEmpty());
-    assertFalse(getPathsFromTableFile("t2", new Path(tuple.dumpLocation), conf).isEmpty());
-    assertFalse(getPathsFromTableFile("t4_managed", new Path(tuple.dumpLocation), conf).isEmpty());
-    assertFalse(getPathsFromTableFile("t2_managed", new Path(tuple.dumpLocation), conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t4", dumpPath, conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t2", dumpPath, conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t4_managed", dumpPath, conf).isEmpty());
+    assertFalse(getPathsFromTableFile("t2_managed", dumpPath, conf).isEmpty());
 
     // Check the dropped and empty tables.
-    assertTrue(getPathsFromTableFile("t5_managed", new Path(tuple.dumpLocation), conf).isEmpty());
-    assertTrue(getPathsFromTableFile("t6_managed", new Path(tuple.dumpLocation), conf).size() == 1);
+    assertTrue(getPathsFromTableFile("t5_managed", dumpPath, conf).isEmpty());
+    assertTrue(getPathsFromTableFile("t6_managed", dumpPath, conf).size() == 1);
   }
 
   @Test
@@ -298,8 +299,24 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
       replica.dump(replicatedDbName, withClause);
     } catch (HiveException he) {
       assertTrue(he.getMessage()
-          .contains("Replication dump not allowed for replicated database with first incremental dump pending "));
+          .contains("Replication dump not allowed for replicated database with first incremental dump pending : " + replicatedDbName));
     }
+
+    // Do a incremental cycle and check we don't get this exception.
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Retrigger reverse dump, this time it should be successful and event ack should get created.
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check event ack file should get created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+        replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
   }
 
   @Test
@@ -361,14 +378,28 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     } catch (Exception e) {
       // Ignore it is expected due to Quota violation.
     }
+    // Check the event_ack file doesn't exist.
+    assertFalse("event ack file exists despite quota violation", replicaFs.listFiles(newReplDir, true).hasNext());
 
-    // Remove the quota, i.e solve the reason for failure and retry dump.
+    // Set the quota to a value that makes sure event ack file gets created and then fails
+    replicaFs.setQuota(newReplDir, replicaFs.getQuotaUsage(newReplDir).getFileAndDirectoryCount() + 3, QUOTA_RESET);
+    try {
+      tuple = replica.dump(replicatedDbName, withClause);
+      fail("Should have failed due to quota violation");
+    } catch (Exception e) {
+      // Ignore it is expected due to Quota violation.
+    }
+
+    // Check the event ack file got created despite exception and failure.
+    assertEquals("event_ack", replicaFs.listFiles(newReplDir, true).next().getPath().getName());
+
+    // Remove quota for a successful dump
     replicaFs.setQuota(newReplDir, QUOTA_RESET, QUOTA_RESET);
 
     // Retry Dump
     tuple = replica.dump(replicatedDbName, withClause);
 
-    // Check event ack file now gets created.
+    // Check event ack file is there.
     assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
         replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
 
@@ -389,7 +420,20 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     assertFalse(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY).toString() + " exist",
         replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
 
-    // Fix the quota issue and re-attempt.
+    // Set Quota to a value so that table diff complete gets created and we fail post that.
+    replicaFs.setQuota(newReplDir, replicaFs.getQuotaUsage(newReplDir).getFileAndDirectoryCount() + 1, QUOTA_RESET);
+    try {
+      primary.load(primaryDbName, replicatedDbName, withClause);
+      fail("Expected failure due to quota violation");
+    } catch (Exception e) {
+      // Ignore, expected due to quota violation.
+    }
+
+    // Check table diff complete directory gets created.
+    assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY).toString() + " doesn't exist",
+        replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+
+    // Remove the quota and see everything recovers.
     replicaFs.setQuota(newReplDir, QUOTA_RESET, QUOTA_RESET);
     primary.load(primaryDbName, replicatedDbName, withClause);
 
