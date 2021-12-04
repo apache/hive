@@ -187,7 +187,6 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -2280,9 +2279,9 @@ public class ObjectStore implements RawStore, Configurable {
     PrincipalType ownerPrincipalType = tbl.getOwnerType();
     String ownerType = (ownerPrincipalType == null) ? PrincipalType.USER.name() : ownerPrincipalType.name();
 
-    // A new table is always created with a new column descriptor
+    // A new table is always created with a new column descriptor and a new serde info
     return new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
-        convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), ownerType, tbl
+        convertToMStorageDescriptor(tbl.getSd(), null), tbl.getOwner(), ownerType, tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
@@ -2472,32 +2471,36 @@ public class ObjectStore implements RawStore, Configurable {
    * @param sd the storage descriptor to wrap in a db-backed object
    * @return the storage descriptor db-backed object
    */
-  private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd)
+  private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd, MSerDeInfo msdi)
       throws MetaException {
     if (sd == null) {
       return null;
     }
     MColumnDescriptor mcd = createNewMColumnDescriptor(convertToMFieldSchemas(sd.getCols()));
-    return convertToMStorageDescriptor(sd, mcd);
+    return convertToMStorageDescriptor(sd, mcd, msdi);
   }
 
   /**
    * Converts a storage descriptor to a db-backed storage descriptor.  It points the
    * storage descriptor's column descriptor to the one passed as an argument,
-   * so it does not create a new mcolumn descriptor object.
+   * so it does not create a new mcolumn descriptor object. If the serde info passed in is not null,
+   * it points the storage descriptor's serde info to the one. Otherwise, it creates a new MSerDeInfo
+   * object.
    * @param sd the storage descriptor to wrap in a db-backed object
    * @param mcd the db-backed column descriptor
+   * @param msdi the db-backed serde info
    * @return the db-backed storage descriptor object
    */
   private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd,
-      MColumnDescriptor mcd) throws MetaException {
+      MColumnDescriptor mcd, MSerDeInfo msdi) throws MetaException {
     if (sd == null) {
       return null;
     }
     return new MStorageDescriptor(mcd, sd
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
-        .isCompressed(), sd.getNumBuckets(), convertToMSerDeInfo(sd
-        .getSerdeInfo()), sd.getBucketCols(),
+        .isCompressed(), sd.getNumBuckets(),
+        (msdi == null) ? convertToMSerDeInfo(sd.getSerdeInfo()) : msdi,
+        sd.getBucketCols(),
         convertToMOrders(sd.getSortCols()), sd.getParameters(),
         (null == sd.getSkewedInfo()) ? null
             : sd.getSkewedInfo().getSkewedColNames(),
@@ -2578,7 +2581,7 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException("Partition does not belong to target table "
               + dbName + "." + tblName + ": " + part);
         }
-        MPartition mpart = convertToMPart(part, table, true);
+        MPartition mpart = convertToMPart(part, table, true, true);
 
         toPersist.add(mpart);
         int now = (int) (System.currentTimeMillis() / 1000);
@@ -2655,7 +2658,7 @@ public class ObjectStore implements RawStore, Configurable {
         Partition part = iterator.next();
 
         if (isValidPartition(part, partitionKeys, ifNotExists)) {
-          MPartition mpart = convertToMPart(part, table, true);
+          MPartition mpart = convertToMPart(part, table, true, true);
           pm.makePersistent(mpart);
           if (tabGrants != null) {
             for (MTablePrivilege tab : tabGrants) {
@@ -2703,7 +2706,7 @@ public class ObjectStore implements RawStore, Configurable {
         tabColumnGrants = this.listTableAllColumnGrants(
             catName, part.getDbName(), part.getTableName());
       }
-      MPartition mpart = convertToMPart(part, table, true);
+      MPartition mpart = convertToMPart(part, table, true, true);
       pm.makePersistent(mpart);
 
       int now = (int) (System.currentTimeMillis() / 1000);
@@ -2891,7 +2894,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param useTableCD whether to try to use the parent table's column descriptor.
    * @return the model partition object, and null if the input partition is null.
    */
-  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD, boolean useTableSerDeInfo)
       throws InvalidObjectException, MetaException {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
@@ -2905,17 +2908,22 @@ public class ObjectStore implements RawStore, Configurable {
 
     // If this partition's set of columns is the same as the parent table's,
     // use the parent table's, so we do not create a duplicate column descriptor,
-    // thereby saving space
+    // thereby saving space. Similarly, we can also reuse the parent table's serde info.
     MStorageDescriptor msd;
+    MSerDeInfo tblSerDeInfo = null;
+    if (useTableSerDeInfo && mt.getSd() != null && mt.getSd().getSerDeInfo() != null && part.getSd() != null &&
+        convertToSerDeInfo(mt.getSd().getSerDeInfo(), false).equals(part.getSd().getSerdeInfo())) {
+      tblSerDeInfo = mt.getSd().getSerDeInfo();
+    }
     if (useTableCD &&
         mt.getSd() != null && mt.getSd().getCD() != null &&
         mt.getSd().getCD().getCols() != null &&
         part.getSd() != null &&
         convertToFieldSchemas(mt.getSd().getCD().getCols()).
         equals(part.getSd().getCols())) {
-      msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
+      msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD(), tblSerDeInfo);
     } else {
-      msd = convertToMStorageDescriptor(part.getSd());
+      msd = convertToMStorageDescriptor(part.getSd(), tblSerDeInfo);
     }
 
     return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
@@ -3033,6 +3041,10 @@ public class ObjectStore implements RawStore, Configurable {
           // CDs are reused; go try partition SDs, detach all CDs from SDs, then remove unused CDs.
           for (MColumnDescriptor mcd : detachCdsFromSdsNoTxn(catName, dbName, tblName, input)) {
             removeUnusedColumnDescriptor(mcd);
+          }
+          // SerDeInfos are reused, so we need to detach all SerDeInfos from SDs, then remove unused ones.
+          for (MSerDeInfo msdi : detachSerDeInfosFromSdsNoTxn(catName, dbName, tblName, input)) {
+            removeUnusedSerDeInfo(msdi);
           }
           dropPartitionsNoTxn(catName, dbName, tblName, input);
           return Collections.emptyList();
@@ -4152,6 +4164,24 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private Set<MSerDeInfo> detachSerDeInfosFromSdsNoTxn(String catName, String dbName, String tblName,
+      List<String> partNames) {
+    Pair<Query, Map<String, String>> queryWithParams = getPartQueryWithParams(catName, dbName, tblName, partNames);
+    try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
+      query.setClass(MPartition.class);
+      query.setResult("sd");
+      List<MStorageDescriptor> sds = query.setNamedParameters(queryWithParams.getRight()).executeResultList();
+      Set<MSerDeInfo> candidateSerDeInfos = new HashSet<>();
+      for (MStorageDescriptor sd : sds) {
+        if (sd != null && sd.getSerDeInfo() != null) {
+          candidateSerDeInfos.add(sd.getSerDeInfo());
+          sd.setSerDeInfo(null);
+        }
+      }
+      return candidateSerDeInfos;
+    }
+  }
+
   private String getJDOFilterStrForPartitionNames(String catName, String dbName, String tblName,
       List<String> partNames, Map params) {
     StringBuilder sb = new StringBuilder("table.tableName == t1 && table.database.name == t2 &&" +
@@ -4891,13 +4921,20 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setOwnerType(newt.getOwnerType());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
-      MColumnDescriptor oldCD = null;
       MStorageDescriptor oldSD = oldt.getSd();
+      MColumnDescriptor oldCD = null;
+      MSerDeInfo oldSerDeInfo = null;
       if (oldSD != null) {
         oldCD = oldSD.getCD();
+        oldSerDeInfo = oldSD.getSerDeInfo();
       }
       copyMSD(newt.getSd(), oldt.getSd());
-      removeUnusedColumnDescriptor(oldCD);
+      if (oldSD != null && oldSD.getCD() != oldCD) {
+        removeUnusedColumnDescriptor(oldCD);
+      }
+      if (oldSD != null && oldSD.getSerDeInfo() != oldSerDeInfo) {
+        removeUnusedSerDeInfo(oldSerDeInfo);
+      }
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
       oldt.setTableType(newt.getTableType());
@@ -5000,31 +5037,31 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Alters an existing partition. Initiates copy of SD. Returns the old CD.
-   * @param part_vals Partition values (of the original partition instance)
+   * @param partVals Partition values (of the original partition instance)
    * @param newPart Partition object containing new information
    */
   private Partition alterPartitionNoTxn(String catName, String dbname, String name,
-      List<String> part_vals, Partition newPart, String validWriteIds, Ref<MColumnDescriptor> oldCd)
-      throws InvalidObjectException, MetaException {
+      List<String> partVals, Partition newPart, String validWriteIds, Ref<MColumnDescriptor> oldCdRef,
+      Ref<MSerDeInfo> oldSerDeInfoRef) throws InvalidObjectException, MetaException {
     MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
-    MPartition oldp = getMPartition(catName, dbname, name, part_vals, table);
+    MPartition oldp = getMPartition(catName, dbname, name, partVals, table);
     return alterPartitionNoTxn(catName, dbname, name, oldp, newPart,
-        validWriteIds, oldCd, table);
+        validWriteIds, oldCdRef, oldSerDeInfoRef, table);
   }
 
-  private Partition alterPartitionNoTxn(String catName, String dbname,
-      String name, MPartition oldp, Partition newPart,
-      String validWriteIds,
-      Ref<MColumnDescriptor> oldCd, MTable table)
+  private Partition alterPartitionNoTxn(String catName, String dbname, String name, MPartition oldp, Partition newPart,
+      String validWriteIds, Ref<MColumnDescriptor> oldCdRef, Ref<MSerDeInfo> oldSerDeInfoRef, MTable table)
       throws InvalidObjectException, MetaException {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
-    MPartition newp = convertToMPart(newPart, table, false);
-    MColumnDescriptor oldCD = null;
+    MPartition newp = convertToMPart(newPart, table, false, false);
     MStorageDescriptor oldSD = oldp.getSd();
+    MColumnDescriptor oldCD = null;
+    MSerDeInfo oldSerDeInfo = null;
     if (oldSD != null) {
       oldCD = oldSD.getCD();
+      oldSerDeInfo = oldSD.getSerDeInfo();
     }
     if (newp == null) {
       throw new InvalidObjectException("partition does not exist.");
@@ -5043,7 +5080,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
     oldp.setParameters(newPart.getParameters());
     if (!TableType.VIRTUAL_VIEW.name().equals(oldp.getTable().getTableType())) {
+      Ref<Boolean> cdChanged = new Ref<>();
+      Ref<Boolean> serdeChanged = new Ref<>();
       copyMSD(newp.getSd(), oldp.getSd());
+      if (oldSD != null && oldSD.getCD() != oldCD) {
+        oldCdRef.t = oldCD;
+      }
+      if (oldSD != null && oldSD.getSerDeInfo() != oldSerDeInfo) {
+        oldSerDeInfoRef.t = oldSerDeInfo;
+      }
     }
     if (newp.getCreateTime() != oldp.getCreateTime()) {
       oldp.setCreateTime(newp.getCreateTime());
@@ -5068,7 +5113,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
-    oldCd.t = oldCD;
     return convertToPart(oldp, false);
   }
 
@@ -5083,9 +5127,11 @@ public class ObjectStore implements RawStore, Configurable {
       if (newPart.isSetWriteId()) {
         LOG.warn("Alter partitions with write ID called without transaction information");
       }
-      Ref<MColumnDescriptor> oldCd = new Ref<>();
-      result = alterPartitionNoTxn(catName, dbname, name, part_vals, newPart, validWriteIds, oldCd);
-      removeUnusedColumnDescriptor(oldCd.t);
+      Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+      Ref<MSerDeInfo> oldSerDeInfoRef = new Ref<>();
+      result = alterPartitionNoTxn(catName, dbname, name, part_vals, newPart, validWriteIds, oldCdRef, oldSerDeInfoRef);
+      removeUnusedColumnDescriptor(oldCdRef.t);
+      removeUnusedSerDeInfo(oldSerDeInfoRef.t);
       // commit the changes
       success = commitTransaction();
     } catch (Throwable exception) {
@@ -5141,7 +5187,7 @@ public class ObjectStore implements RawStore, Configurable {
         pm.retrieveAll(mPartitionList);
 
         if (mPartitionList.size() > newParts.size()) {
-          throw new MetaException("Expecting only one partition but more than one partitions are found.");
+          throw new MetaException("Expecting " + newParts.size() + " partitions but more partitions are found.");
         }
 
         Map<List<String>, MPartition> mPartsMap = new HashMap();
@@ -5150,7 +5196,9 @@ public class ObjectStore implements RawStore, Configurable {
         }
 
         Set<MColumnDescriptor> oldCds = new HashSet<>();
+        Set<MSerDeInfo> oldSerDeInfos = new HashSet<>();
         Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+        Ref<MSerDeInfo> oldSerDeInfoRef = new Ref<>();
         for (Partition tmpPart : newParts) {
           if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
             throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
@@ -5164,15 +5212,22 @@ public class ObjectStore implements RawStore, Configurable {
             tmpPart.setWriteId(writeId);
           }
           oldCdRef.t = null;
+          oldSerDeInfoRef.t = null;
           Partition result = alterPartitionNoTxn(catName, dbName, tblName, mPartsMap.get(tmpPart.getValues()),
-                  tmpPart, queryWriteIdList, oldCdRef, table);
+              tmpPart, queryWriteIdList, oldCdRef, oldSerDeInfoRef, table);
           results.add(result);
           if (oldCdRef.t != null) {
             oldCds.add(oldCdRef.t);
           }
+          if (oldSerDeInfoRef.t != null) {
+            oldSerDeInfos.add(oldSerDeInfoRef.t);
+          }
         }
         for (MColumnDescriptor oldCd : oldCds) {
           removeUnusedColumnDescriptor(oldCd);
+        }
+        for (MSerDeInfo oldSerDeInfo : oldSerDeInfos) {
+          removeUnusedSerDeInfo(oldSerDeInfo);
         }
       }
       // commit the changes
@@ -5224,7 +5279,8 @@ public class ObjectStore implements RawStore, Configurable {
         // If we find it, we will change the reference for the CD.
         // If we do not find it, i.e., the column will be deleted, we do not change it
         // and we let the logic in removeUnusedColumnDescriptor take care of it
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD"))) {
+        try (QueryWrapper query = new QueryWrapper(
+            pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD"))) {
           query.declareParameters("MColumnDescriptor inCD");
           List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldSd.getCD());
           pm.retrieveAll(mConstraintsList);
@@ -5250,16 +5306,25 @@ public class ObjectStore implements RawStore, Configurable {
         oldSd.setCD(newSd.getCD());
       }
     }
+    // If the serde info of the old SD != the serde info of the new one,
+    // then we set the serde info of the old SD as the new serde info.
+    SerDeInfo oldSerDeInfo = null;
+    SerDeInfo newSerDeInfo = null;
+    try {
+      oldSerDeInfo = convertToSerDeInfo(oldSd.getSerDeInfo(), true);
+      newSerDeInfo = convertToSerDeInfo(newSd.getSerDeInfo(), true);
+    } catch (MetaException e) {
+      LOG.debug("convertToSerDeInfo shouldn't throw MetaException when allowNull is set to true");
+    }
+    if (oldSerDeInfo == null || !oldSerDeInfo.equals(newSerDeInfo)) {
+      oldSd.setSerDeInfo(newSd.getSerDeInfo());
+    }
 
     oldSd.setBucketCols(newSd.getBucketCols());
     oldSd.setIsCompressed(newSd.isCompressed());
     oldSd.setInputFormat(newSd.getInputFormat());
     oldSd.setOutputFormat(newSd.getOutputFormat());
     oldSd.setNumBuckets(newSd.getNumBuckets());
-    oldSd.getSerDeInfo().setName(newSd.getSerDeInfo().getName());
-    oldSd.getSerDeInfo().setSerializationLib(
-        newSd.getSerDeInfo().getSerializationLib());
-    oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
     oldSd.setSkewedColNames(newSd.getSkewedColNames());
     oldSd.setSkewedColValues(newSd.getSkewedColValues());
     oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
@@ -5354,6 +5419,55 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
+   * Checks if a serde info has any remaining references by storage descriptors
+   * in the db.  If it does not, then delete the SerDe info. If it does, then do nothing.
+   * @param oldSerDeInfo the serde info to delete if it is no longer referenced anywhere
+   */
+  private void removeUnusedSerDeInfo(MSerDeInfo oldSerDeInfo) {
+    if (oldSerDeInfo == null) {
+      return;
+    }
+    LOG.debug("execute removeUnusedSerDeInfo");
+    boolean committed = false;
+
+    try {
+      openTransaction();
+      if (!hasRemainingSerDeReference(oldSerDeInfo)) {
+        pm.deletePersistent(oldSerDeInfo);
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private boolean hasRemainingSerDeReference(MSerDeInfo oldSerDeInfo) {
+    Preconditions.checkArgument(oldSerDeInfo != null);
+    Query query = null;
+    try {
+      if (dbType.isPOSTGRES() || dbType.isMYSQL()) {
+        query = pm.newQuery(MStorageDescriptor.class, "this.serDeInfo == inSerDeInfo");
+        query.declareParameters("MSerDeInfo inSerDeInfo");
+        query.setRange(0L, 1L);
+        List<MStorageDescriptor> referencedSDIs = query.setParameters(oldSerDeInfo).executeList();
+        return referencedSDIs != null && !referencedSDIs.isEmpty();
+      } else {
+        query = pm.newQuery("select count(1) from org.apache.hadoop.hive.metastore.model.MStorageDescriptor " +
+            "where this.serDeInfo == inSerDeInfo");
+        query.declareParameters("MSerDeInfo inSerDeInfo");
+        long count = (long) query.execute(oldSerDeInfo);
+        return count != 0;
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
+  /**
    * Called right before an action that would drop a storage descriptor.
    * This function makes the SD's reference to a CD null, and then deletes the CD
    * if it no longer is referenced in the table.
@@ -5370,6 +5484,10 @@ public class ObjectStore implements RawStore, Configurable {
     // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
+
+    MSerDeInfo msdi = msd.getSerDeInfo();
+    msd.setSerDeInfo(null);
+    removeUnusedSerDeInfo(msdi);
   }
 
   private static MFieldSchema getColumnFromTableColumns(List<MFieldSchema> cols, String col) {
