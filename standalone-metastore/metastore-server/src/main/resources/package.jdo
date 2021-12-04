@@ -330,6 +330,7 @@
         <column name="SLIB" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="parameters" table="SERDE_PARAMS">
+        <foreign-key name="SERDE_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="SERDE_ID"/>
@@ -433,7 +434,7 @@
       <field name="numBuckets">
         <column name="NUM_BUCKETS" jdbc-type="integer"/>
       </field>
-      <field name="serDeInfo" dependent="true">
+      <field name="serDeInfo">
         <column name="SERDE_ID"/>
       </field>
       <field name="bucketCols" table="BUCKETING_COLS">

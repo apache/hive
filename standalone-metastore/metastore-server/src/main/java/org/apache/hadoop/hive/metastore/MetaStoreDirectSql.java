@@ -2625,8 +2625,8 @@ class MetaStoreDirectSql {
             + "WHERE " + PARTITIONS + ".\"PART_ID\" in (" + partitionIds + ")";
 
     List<Object> sdIdList = new ArrayList<>(partitionIdList.size());
-    List<Long> columnDescriptorIdList = new ArrayList<>(1);
-    List<Object> serdeIdList = new ArrayList<>(partitionIdList.size());
+    Set<Long> columnDescriptorIdSet = new HashSet<>(1);
+    Set<Long> serdeIdSet = new HashSet<>(1);
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       List<Object[]> sqlResult = MetastoreDirectSqlUtils
           .ensureList(executeWithArray(query, null, queryText));
@@ -2635,10 +2635,9 @@ class MetaStoreDirectSql {
         for (Object[] fields : sqlResult) {
           sdIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
           Long colId = MetastoreDirectSqlUtils.extractSqlLong(fields[1]);
-          if (!columnDescriptorIdList.contains(colId)) {
-            columnDescriptorIdList.add(colId);
-          }
-          serdeIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[2]));
+          columnDescriptorIdSet.add(colId);
+          Long serdeId = MetastoreDirectSqlUtils.extractSqlLong(fields[2]);
+          serdeIdSet.add(serdeId);
         }
       }
     }
@@ -2681,10 +2680,10 @@ class MetaStoreDirectSql {
     dropStorageDescriptors(sdIdList);
     Deadline.checkTimeout();
 
-    dropSerdes(serdeIdList);
+    dropDanglingSerDeInfos(serdeIdSet);
     Deadline.checkTimeout();
 
-    dropDanglingColumnDescriptors(columnDescriptorIdList);
+    dropDanglingColumnDescriptors(Arrays.asList(columnDescriptorIdSet.toArray()));
   }
 
   /**
@@ -2782,7 +2781,7 @@ class MetaStoreDirectSql {
    * @throws MetaException If there is an SQL exception during the execution it converted to
    * MetaException
    */
-  private void dropSerdes(List<Object> serdeIdList) throws MetaException {
+  private void dropSerdes(Collection<Long> serdeIdList) throws MetaException {
     String queryText;
     if (serdeIdList.isEmpty()) {
       return;
@@ -2853,6 +2852,39 @@ class MetaStoreDirectSql {
         throw new MetaException("Encountered error while dropping col descriptions");
       }
     }
+  }
+
+  /**
+   * Checks if the serde infos still have references for other SD-s. If not, then removes
+   * them. Should be called with the list short enough to not trip up Oracle/etc.
+   * @param serdeInfoIds The serde identifiers
+   * @throws MetaException If there is an SQL exception during the execution, it is converted to MetaException
+   */
+  private void dropDanglingSerDeInfos(Collection<Long> serdeInfoIds) throws MetaException {
+    if (serdeInfoIds.isEmpty()) {
+      return;
+    }
+    String queryText;
+    String serdeIds = getIdListForIn(serdeInfoIds);
+
+    // Drop column descriptor, if no relation left
+    queryText =
+        "SELECT " + SDS + ".\"SERDE_ID\" "
+            + "from " + SDS + " "
+            + "WHERE " + SDS + ".\"SERDE_ID\" in (" + serdeIds + ") "
+            + "GROUP BY " + SDS + ".\"SERDE_ID\"";
+    Set<Long> danglingSerdeInfoIdSet = new HashSet<>(serdeInfoIds);
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Long> sqlResult = executeWithArray(query, null, queryText);
+
+      if (!sqlResult.isEmpty()) {
+        for (Long serdeId : sqlResult) {
+          // the returned serde is not dangling, so remove it from the set
+          danglingSerdeInfoIdSet.remove(serdeId);
+        }
+      }
+    }
+    dropSerdes(danglingSerdeInfoIdSet);
   }
 
   public final static Object[] STATS_TABLE_TYPES = new Object[] {

@@ -750,6 +750,7 @@ public class TestObjectStore {
             .addCol("test_bucket_col", "int", "test bucket col comment")
             .addCol("test_skewed_col", "int", "test skewed col comment")
             .addCol("test_sort_col", "int", "test sort col comment")
+            .addSerdeParam("serdeParam", "serdeParamValue")
             .build(conf);
     try (AutoCloseable c = deadline()) {
       objectStore.createTable(tbl1);
@@ -760,7 +761,6 @@ public class TestObjectStore {
       Partition part = new PartitionBuilder()
                            .inTable(tbl1)
                            .addValue("a" + i)
-                           .addSerdeParam("serdeParam", "serdeParamValue")
                            .addStorageDescriptorParam("sdParam", "sdParamValue")
                            .addBucketCol("test_bucket_col")
                            .addSkewedColName("test_skewed_col")
@@ -1481,6 +1481,109 @@ public class TestObjectStore {
     result = objectStore.listPackages(req);
     assertThat(result, hasItems("pkg1"));
     Assert.assertEquals(1, result.size());
+  }
+
+  @Test
+  public void testSerDeCreatedOnDemand() throws Exception {
+    createPartitionedTable(true, true);
+    // Partitions should reuse table's serde info
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("SERDES", 1);
+    checkBackendTableSize("SERDE_PARAMS", 1);
+    Table tbl;
+    Partition newPart;
+    // Alters table's serde info
+    try (AutoCloseable c = deadline()) {
+      tbl = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      Table newTbl = tbl.deepCopy();
+      newTbl.getSd().getSerdeInfo().setDescription("To test SerDe is created on demand");
+      objectStore.alterTable(DEFAULT_CATALOG_NAME, DB1, TABLE1, newTbl, null);
+    }
+    // A new SERDE should be created
+    checkBackendTableSize("SERDES", 2);
+    checkBackendTableSize("SERDE_PARAMS", 2);
+    // Alter a partition's serde info
+    List<String> partVals = Collections.singletonList("a0");
+    try (AutoCloseable c = deadline()) {
+      Partition part = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals);
+      newPart = part.deepCopy();
+      newPart.getSd().getSerdeInfo().setDescription("To test SerDe is created on demand");
+      objectStore.alterPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals, newPart, null);
+    }
+    // A new SERDE should be created
+    checkBackendTableSize("SERDES", 3);
+    checkBackendTableSize("SERDE_PARAMS", 3);
+    // Adds a partition with different serde
+    newPart.setValues(Collections.singletonList("a3"));
+    newPart.getSd().getSerdeInfo().setDescription("To test adding a partition with different SerDe");
+    objectStore.addPartition(newPart);
+    // A new SERDE should be created
+    checkBackendTableSize("SERDES", 4);
+    checkBackendTableSize("SERDE_PARAMS", 4);
+  }
+
+  @Test
+  public void testSerDesCleanup() throws Exception {
+    createPartitionedTable(true, true);
+    // Partitions should reuse table's serde info
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("SERDES", 1);
+    checkBackendTableSize("SERDE_PARAMS", 1);
+    // Alters a partition's serde info
+    List<String> partVals = Collections.singletonList("a0");
+    Partition newPart;
+    try (AutoCloseable c = deadline()) {
+      Partition part = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals);
+      newPart = part.deepCopy();
+      newPart.getSd().getSerdeInfo().setDescription("To test SerDe is created on demand");
+      objectStore.alterPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals, newPart, null);
+    }
+    // checks if one more serde info is created
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("SERDES", 2);
+    checkBackendTableSize("SERDE_PARAMS", 2);
+    // drops the partition via direct sql
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.singletonList("test_part_col=a0"), true, false);
+    }
+    // the serde info associated to the partition should be deleted
+    checkBackendTableSize("PARTITIONS", 2);
+    checkBackendTableSize("SERDES", 1);
+    checkBackendTableSize("SERDE_PARAMS", 1);
+    // adds back the partition
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(newPart);
+    }
+    // checks if one more serde info is created
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("SERDES", 2);
+    checkBackendTableSize("SERDE_PARAMS", 2);
+    // drops the partition via JDO
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.singletonList("test_part_col=a0"), false, true);
+    }
+    // the serde info associated to the partition should be deleted
+    checkBackendTableSize("PARTITIONS", 2);
+    checkBackendTableSize("SERDES", 1);
+    checkBackendTableSize("SERDE_PARAMS", 1);
+
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.singletonList("test_part_col=a1"), true, false);
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.singletonList("test_part_col=a2"), false, true);
+    }
+    checkBackendTableSize("PARTITIONS", 0);
+    checkBackendTableSize("SERDES", 1);
+    checkBackendTableSize("SERDE_PARAMS", 1);
+    // checks if all serde info is deleted after the table is dropped
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    }
+    checkBackendTableSize("SERDES", 0);
+    checkBackendTableSize("SERDE_PARAMS", 0);
   }
 
   /**

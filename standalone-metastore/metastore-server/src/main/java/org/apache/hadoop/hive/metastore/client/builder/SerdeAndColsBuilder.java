@@ -121,4 +121,15 @@ abstract class SerdeAndColsBuilder<T> {
     this.serdeType = serdeType;
     return child;
   }
+
+  public T setSerdeInfo(SerDeInfo serdeInfo) {
+    setSerdeName(serdeInfo.getName());
+    setSerdeLib(serdeInfo.getSerializationLib());
+    setSerdeParams(serdeInfo.getParameters());
+    setSerdeDescription(serdeInfo.getDescription());
+    setSerdeSerializerClass(serdeInfo.getSerializerClass());
+    setSerdeDeserializerClass(serdeInfo.getDeserializerClass());
+    setSerdeType(serdeInfo.getSerdeType());
+    return child;
+  }
 }
