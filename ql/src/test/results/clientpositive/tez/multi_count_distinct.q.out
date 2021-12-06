@@ -686,3 +686,34 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_count
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+PREHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63) from test_count
+group by c0,c64
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63) from test_count
+group by c0,c64
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
