@@ -99,5 +99,5 @@ select count (distinct c0), count(distinct c1), count(distinct c2), count(distin
        count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
        count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
        count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
-       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63) from test_count
-group by c0,c64;
+       count(distinct c62), count(distinct c61) from test_count
+group by c64,c0||c1,c0||c2,c0||c3,c0||c4,c0||c5,c0||c6;
