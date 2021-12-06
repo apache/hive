@@ -89,11 +89,11 @@ public class TableConstraintsInfo {
   }
 
   public boolean isTableConstraintsInfoNotEmpty() {
-    return PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(this.getPrimaryKeyInfo()) || ForeignKeyInfo
-        .isForeignKeyInfoNotEmpty(this.getForeignKeyInfo()) || UniqueConstraint
-        .isUniqueConstraintNotEmpty(this.getUniqueConstraint()) || NotNullConstraint
-        .isNotNullConstraintNotEmpty(this.getNotNullConstraint()) || CheckConstraint
-        .isCheckConstraintNotEmpty(this.getCheckConstraint()) || DefaultConstraint
-        .isCheckConstraintNotEmpty(this.getDefaultConstraint());
+    return PrimaryKeyInfo.isNotEmpty(this.getPrimaryKeyInfo()) ||
+      ForeignKeyInfo.isNotEmpty(this.getForeignKeyInfo()) ||
+      UniqueConstraint.isNotEmpty(this.getUniqueConstraint()) ||
+      NotNullConstraint.isNotEmpty(this.getNotNullConstraint()) ||
+      CheckConstraint.isNotEmpty(this.getCheckConstraint()) ||
+      DefaultConstraint.isNotEmpty(this.getDefaultConstraint());
   }
 }
