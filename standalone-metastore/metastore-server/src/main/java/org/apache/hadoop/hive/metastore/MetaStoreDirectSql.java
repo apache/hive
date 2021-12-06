@@ -29,6 +29,7 @@ import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -153,7 +154,7 @@ class MetaStoreDirectSql {
    * @return The concatenated list
    * @throws MetaException If the list contains wrong data
    */
-  public static <T> String getIdListForIn(List<T> objectIds) throws MetaException {
+  public static <T> String getIdListForIn(Collection<T> objectIds) throws MetaException {
     return objectIds.stream()
                .map(i -> i.toString())
                .collect(Collectors.joining(","));
@@ -2837,7 +2838,7 @@ class MetaStoreDirectSql {
     }
     if (!danglingColumnDescriptorIdSet.isEmpty()) {
       try {
-        String danglingCDIds = getIdListForIn(Arrays.asList(danglingColumnDescriptorIdSet.toArray()));
+        String danglingCDIds = getIdListForIn(danglingColumnDescriptorIdSet);
 
         // Drop the columns_v2
         queryText = "delete from " + COLUMNS_V2 + " where \"CD_ID\" in (" + danglingCDIds + ")";
