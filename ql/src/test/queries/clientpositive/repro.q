@@ -1,3 +1,5 @@
+set hive.cbo.fallback.strategy=CONSERVATIVE;
+
 create table dst(
 col1 string,
 col2 string,
