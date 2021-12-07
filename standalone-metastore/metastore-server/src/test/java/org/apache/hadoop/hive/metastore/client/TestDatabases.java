@@ -338,6 +338,33 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertFalse("The data file should not exist", metaStore.isPathExists(dataFile));
   }
 
+  @Test
+  public void testDropDatabaseExistingManagedLocation() throws Exception {
+    String databaseName = "test_managed_location";
+    Database database =
+            new DatabaseBuilder().setName(databaseName).create(client, metaStore.getConf());
+    Database createdDatabase = client.getDatabase(database.getName());
+
+    String managedLocationUri = createdDatabase.getLocationUri() + "/managed";
+    Path managedPath = new Path(managedLocationUri);
+    Database database1 = new DatabaseBuilder().setName("test_managed_location1").
+            setManagedLocation(managedLocationUri).create(client, metaStore.getConf());
+
+    Assert.assertTrue("The managed path should still exist", metaStore.isPathExists(managedPath));
+
+    // Create database with same managed location
+    Database database2 = new DatabaseBuilder().setName("test_managed_location2").
+            setManagedLocation(managedLocationUri).create(client, metaStore.getConf());
+
+    // Delete the data
+    client.dropDatabase(database.getName(), true, false);
+    client.dropDatabase(database1.getName(), true, false);
+    client.dropDatabase(database2.getName(), true, false);
+
+    // Check that the data is removed
+    Assert.assertFalse("The managed path should not exist", metaStore.isPathExists(managedPath));
+  }
+
   @Test(expected = NoSuchObjectException.class)
   public void testDropDatabaseIgnoreUnknownFalse() throws Exception {
     // No such database
