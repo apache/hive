@@ -224,7 +224,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(dataAll), rs);
 
     runStatementOnDriver("alter table T compact 'major'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     //check status of compaction job
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -340,7 +340,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     txnMgr2 = swapTxnManager(txnMgr1);
     driver2 = swapDrivers(driver1);
     runStatementOnDriver("alter table T compact 'minor'");//T4
-    TestTxnCommands2.runWorker(hiveConf);//makes delta_1_2
+    runWorker(hiveConf);//makes delta_1_2
          /* Now we should have
      target/warehouse/t/
      ├── delta_0000001_0000001_0000
@@ -369,7 +369,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     T3 is still running and cannot see anything compactor produces with v0000019 suffix
     so it may be reading delta_1_1 & delta_2_2 and so cleaner cannot delete any files
      at this point*/
-    TestTxnCommands2.runCleaner(hiveConf);
+    runCleaner(hiveConf);
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     checkExpectedFiles(actualList, expectedList, warehousePath.toString());
@@ -586,7 +586,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test public void testNotEnoughToCompact() throws Exception {
     int[][] tableData = {{1, 2}, {3, 4}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
-    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
 
     runWorker(hiveConf);
     assertTableIsEmpty("TXN_COMPONENTS");
@@ -605,7 +605,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver(
         "insert overwrite table " + Table.ACIDTBL + " " + makeValuesClause(tableData));
 
-    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
 
     runWorker(hiveConf);
     assertTableIsEmpty("TXN_COMPONENTS");
