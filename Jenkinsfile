@@ -234,7 +234,7 @@ git merge origin/target
       }
       }
       stage('Compile') {
-        buildHive("install -pl common -am -Dtest=noMatches")
+        buildHive("install -Dtest=noMatches")
       }
       checkPrHead()
       stage('Upload') {
