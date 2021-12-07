@@ -1621,6 +1621,9 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 2);
     verifyHasBase(table.getSd(), fs, "base_0000005_v0000016");
     runCleaner(conf);
+    // in case when we have # of accumulated entries for the same table/partition - we need to process them one-by-one in ASC order of write_id's,
+    // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle, 
+    // so that they are not processed by multiple threads concurrently. 
     runCleaner(conf);
     verifyDeltaCount(table.getSd(), fs, 0);
   }
