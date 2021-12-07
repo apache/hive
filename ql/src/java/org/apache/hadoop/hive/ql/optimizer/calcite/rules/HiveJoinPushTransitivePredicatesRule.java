@@ -108,12 +108,12 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
       return;
     }
 
-    final RelOptCluster cluster = join.getCluster();
-    final RexSimplify rexSimplify = new RexSimplify(cluster.getRexBuilder(),
-        RelOptPredicateList.EMPTY, join.getCluster().getPlanner().getExecutor());
+    final RexSimplify rexSimplify = new RexSimplify(
+        join.getCluster().getRexBuilder(), RelOptPredicateList.EMPTY,
+        Util.first(join.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR));
 
-    newLeftPredicate = rexSimplify.simplify(newLeftPredicate);
-    newRightPredicate = rexSimplify.simplify(newRightPredicate);
+    newLeftPredicate = rexSimplify.simplifyUnknownAsFalse(newLeftPredicate);
+    newRightPredicate = rexSimplify.simplifyUnknownAsFalse(newRightPredicate);
 
     if (!newLeftPredicate.isAlwaysTrue()) {
       RelNode curr = lChild;
