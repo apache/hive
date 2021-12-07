@@ -113,7 +113,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     final Aggregate aggregate = call.rel(0);
     int numCountDistinct = getNumCountDistinctCall(aggregate);
 
-    if (numCountDistinct == 0 || numCountDistinct /*+ aggregate.getGroupCount() */ >= Long.SIZE
+    if (numCountDistinct == 0 || numCountDistinct + aggregate.getGroupCount() >= Long.SIZE
         || aggregate.getGroupType() != Group.SIMPLE) {
       return;
     }
