@@ -38,10 +38,14 @@ PREHOOK: query: update acid_iud set b = 'fred'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_iud
 PREHOOK: Output: default@acid_iud
+PREHOOK: Output: default@acid_iud
 POSTHOOK: query: update acid_iud set b = 'fred'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_iud
 POSTHOOK: Output: default@acid_iud
+POSTHOOK: Output: default@acid_iud
+POSTHOOK: Lineage: acid_iud.a SIMPLE [(acid_iud)acid_iud.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_iud.b EXPRESSION []
 PREHOOK: query: select a,b from acid_iud order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_iud

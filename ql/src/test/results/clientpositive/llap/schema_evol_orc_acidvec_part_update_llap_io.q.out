@@ -123,6 +123,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1_n0
 PREHOOK: Input: default@partitioned_update_1_n0@part=1
 PREHOOK: Input: default@partitioned_update_1_n0@part=2
+PREHOOK: Output: default@partitioned_update_1_n0
 PREHOOK: Output: default@partitioned_update_1_n0@part=1
 PREHOOK: Output: default@partitioned_update_1_n0@part=2
 POSTHOOK: query: update partitioned_update_1_n0 set c=99
@@ -130,9 +131,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned_update_1_n0
 POSTHOOK: Input: default@partitioned_update_1_n0@part=1
 POSTHOOK: Input: default@partitioned_update_1_n0@part=2
+POSTHOOK: Output: default@partitioned_update_1_n0
+POSTHOOK: Output: default@partitioned_update_1_n0@part=1
 POSTHOOK: Output: default@partitioned_update_1_n0@part=1
 POSTHOOK: Output: default@partitioned_update_1_n0@part=2
-row__id	insert_num	a	b	_c4	d	part
+POSTHOOK: Output: default@partitioned_update_1_n0@part=2
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=1).a SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=1).b SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=1).c SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=1).d SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=1).insert_num SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).a SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).b SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).c SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).d SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).insert_num SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:insert_num, type:int, comment:null), ]
+s.insert_num	s.a	s.b	_c3	s.d	s.part
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1_n0

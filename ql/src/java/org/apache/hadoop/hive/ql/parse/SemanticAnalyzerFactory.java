@@ -94,6 +94,9 @@ public final class SemanticAnalyzerFactory {
         return new ColumnStatsSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_UPDATE_TABLE:
+        if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE)) {
+          return new SplitUpdateSemanticAnalyzer(queryState);
+        }
       case HiveParser.TOK_DELETE_FROM:
         return new UpdateDeleteSemanticAnalyzer(queryState);
 

@@ -211,8 +211,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     if (hasHint) {
       hintStr = " /*+ " + qHint.getText() + " */ ";
     }
-    final boolean splitUpdateEarly =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
+    final boolean splitUpdateEarly = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE) ||
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
     /**
      * We allow at most 2 WHEN MATCHED clause, in which case 1 must be Update the other Delete
      * If we have both update and delete, the 1st one (in SQL code) must have "AND <extra predicate>"
@@ -296,7 +296,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
           Update of that partition since that update by definition cannot be of the same row.
           If we ever enforce unique constraints we may have to have I+I be in conflict*/
           rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
-          rewrittenCtx.addDestNamePrefix(++insClauseIdx, Context.DestClausePrefix.DELETE);
+          rewrittenCtx.addDeleteOfUpdateDestNamePrefix(++insClauseIdx, Context.DestClausePrefix.DELETE);
         }
         break;
       case HiveParser.TOK_DELETE:
