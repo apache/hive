@@ -303,6 +303,7 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
               sh '''#!/bin/bash -e
               sw java 11 && . /etc/profile.d/java.sh
               export MAVEN_OPTS=-Xmx5G
+              echo `find $PWD -name jacoco.xml|tr '\n' ','`
               mvn sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=`find $PWD -name jacoco.xml|tr '\n' ','` -pl '!accumulo-handler,!vector-code-gen,!beeline,!cli,!contrib,!druid-handler,!hbase-handler,!jdbc-handler,!hplsql,!jdbc,!parser,!udf,!ql,!serde,!service-rpc,!service,!streaming,!llap-common,!llap-client,!llap-ext-client,!llap-tez,!llap-server,!spark-client,!kryo-registrator,!kudu-handler,!testutils,!packaging,!kafka-handler'
               '''
             }
