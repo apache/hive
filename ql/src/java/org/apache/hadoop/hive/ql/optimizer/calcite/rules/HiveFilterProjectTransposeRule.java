@@ -323,7 +323,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
       final RexSimplify simplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY,
           Util.first(cluster.getPlanner().getExecutor(), RexUtil.EXECUTOR));
-      final RexNode newCondition = simplify.simplify(filter2newConditionMap.get(filter));
+      final RexNode newCondition = simplify.simplifyUnknownAsFalse(filter2newConditionMap.get(filter));
 
       // if the condition simplifies to a literal, bail out
       if (RexUtil.isLiteral(newCondition, true)) {
@@ -336,7 +336,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
         return;
       }
 
-      final RexNode filterCondition = simplify.simplify(filter.getCondition());
+      final RexNode filterCondition = simplify.simplifyUnknownAsFalse(filter.getCondition());
 
       final Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(newCondition);
       final RexInputRef rexInputRef =
