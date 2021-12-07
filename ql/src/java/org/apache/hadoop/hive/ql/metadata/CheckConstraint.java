@@ -34,13 +34,40 @@ import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 @SuppressWarnings("serial")
 public class CheckConstraint implements Serializable {
 
-  public class CheckConstraintCol {
-    public String colName;
-    public String checkExpression;
+  public static class CheckConstraintCol {
+    private final String colName;
+    private final String checkExpression;
+    private final String enable;
+    private final String validate;
+    private final String rely;
 
-    public CheckConstraintCol(String colName, String checkExpression) {
+    public CheckConstraintCol(String colName, String checkExpression, String enable,
+                              String validate, String rely) {
       this.colName = colName;
-      this.checkExpression= checkExpression;
+      this.checkExpression = checkExpression;
+      this.enable = enable;
+      this.validate = validate;
+      this.rely = rely;
+    }
+
+    public String getColName() {
+      return colName;
+    }
+
+    public String getCheckExpression() {
+      return checkExpression;
+    }
+
+    public String getEnable() {
+      return enable;
+    }
+
+    public String getValidate() {
+      return validate;
+    }
+
+    public String getRely() {
+      return rely;
     }
   }
 
@@ -56,7 +83,7 @@ public class CheckConstraint implements Serializable {
   public CheckConstraint() {}
 
   public CheckConstraint(List<SQLCheckConstraint> checkConstraintsList) {
-    checkConstraints = new TreeMap<String, List<CheckConstraintCol>>();
+    checkConstraints = new TreeMap<>();
     checkExpressionList = new ArrayList<>();
     if (checkConstraintsList == null) {
       return;
@@ -65,13 +92,16 @@ public class CheckConstraint implements Serializable {
       this.tableName = checkConstraintsList.get(0).getTable_name();
       this.databaseName= checkConstraintsList.get(0).getTable_db();
     }
-    for (SQLCheckConstraint uk : checkConstraintsList) {
-      String colName = uk.getColumn_name();
-      String check_expression = uk.getCheck_expression();
+    for (SQLCheckConstraint constraint : checkConstraintsList) {
+      String colName = constraint.getColumn_name();
+      String check_expression = constraint.getCheck_expression();
+      String enable = constraint.isEnable_cstr()? "ENABLE": "DISABLE";
+      String validate = constraint.isValidate_cstr()? "VALIDATE": "NOVALIDATE";
+      String rely = constraint.isRely_cstr()? "RELY": "NORELY";
       checkExpressionList.add(check_expression);
       CheckConstraintCol currCol = new CheckConstraintCol(
-          colName, check_expression);
-      String constraintName = uk.getDc_name();
+        colName, check_expression, enable, validate, rely);
+      String constraintName = constraint.getDc_name();
       if (checkConstraints.containsKey(constraintName)) {
         checkConstraints.get(constraintName).add(currCol);
       } else {
@@ -119,7 +149,7 @@ public class CheckConstraint implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isCheckConstraintNotEmpty(CheckConstraint info) {
+  public static boolean isNotEmpty(CheckConstraint info) {
     return info != null && !info.getCheckConstraints().isEmpty();
   }
 }

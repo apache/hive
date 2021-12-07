@@ -43,14 +43,20 @@ public class ForeignKeyInfo implements Serializable {
     public String parentColName;
     public String childColName;
     public Integer position;
+    public String enable;
+    public String validate;
+    public String rely;
 
     public ForeignKeyCol(String parentTableName, String parentDatabaseName, String parentColName,
-      String childColName, Integer position) {
+      String childColName, Integer position, String enable, String validate, String rely) {
       this.parentTableName = parentTableName;
       this.parentDatabaseName = parentDatabaseName;
       this.parentColName = parentColName;
       this.childColName = childColName;
       this.position = position;
+      this.enable = enable;
+      this.validate = validate;
+      this.rely = rely;
     }
   }
 
@@ -64,15 +70,18 @@ public class ForeignKeyInfo implements Serializable {
   public ForeignKeyInfo(List<SQLForeignKey> fks, String childTableName, String childDatabaseName) {
     this.childTableName = childTableName;
     this.childDatabaseName = childDatabaseName;
-    foreignKeys = new TreeMap<String, List<ForeignKeyCol>>();
+    foreignKeys = new TreeMap<>();
     if (fks == null) {
       return;
     }
     for (SQLForeignKey fk : fks) {
       if (fk.getFktable_db().equalsIgnoreCase(childDatabaseName) &&
           fk.getFktable_name().equalsIgnoreCase(childTableName)) {
+        String enable = fk.isEnable_cstr()? "ENABLE": "DISABLE";
+        String validate = fk.isValidate_cstr()? "VALIDATE": "NOVALIDATE";
+        String rely = fk.isRely_cstr()? "RELY": "NORELY";
         ForeignKeyCol currCol = new ForeignKeyCol(fk.getPktable_name(), fk.getPktable_db(),
-          fk.getPkcolumn_name(), fk.getFkcolumn_name(), fk.getKey_seq());
+          fk.getPkcolumn_name(), fk.getFkcolumn_name(), fk.getKey_seq(), enable, validate, rely);
         String constraintName = fk.getFk_name();
         if (foreignKeys.containsKey(constraintName)) {
           foreignKeys.get(constraintName).add(currCol);
@@ -134,7 +143,7 @@ public class ForeignKeyInfo implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isForeignKeyInfoNotEmpty(ForeignKeyInfo info) {
+  public static boolean isNotEmpty(ForeignKeyInfo info) {
     return info != null && !info.getForeignKeys().isEmpty();
   }
 }
