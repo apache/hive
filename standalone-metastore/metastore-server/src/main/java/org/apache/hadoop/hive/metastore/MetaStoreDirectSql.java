@@ -1034,16 +1034,15 @@ class MetaStoreDirectSql {
           sd.setCols(cols);
         }
 
-        // We assume each SD has an unique serde.
-        SerDeInfo serde = new SerDeInfo();
-        SerDeInfo oldSerde = serdes.put(serdeId, serde);
-        if (oldSerde != null) {
-          throw new MetaException("SDs reuse serdes; we don't expect that");
+        SerDeInfo serde = serdes.get(serdeId);
+        if (serde == null) {
+          serde = new SerDeInfo();
+          serdes.put(serdeId, serde);
+          serde.setParameters(new HashMap<String, String>());
+          serde.setName((String) fields[12]);
+          serde.setSerializationLib((String) fields[13]);
+          serdeSb.append(serdeId).append(",");
         }
-        serde.setParameters(new HashMap<String, String>());
-        serde.setName((String) fields[12]);
-        serde.setSerializationLib((String) fields[13]);
-        serdeSb.append(serdeId).append(",");
         sd.setSerdeInfo(serde);
 
         Deadline.checkTimeout();
