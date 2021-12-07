@@ -26,12 +26,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 
 import org.apache.calcite.linq4j.Linq4j;
 import org.apache.calcite.linq4j.Ord;
-import org.apache.calcite.linq4j.function.Predicate1;
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
@@ -54,6 +55,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
+import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -61,12 +63,12 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BitSets;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 
-import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -117,12 +119,14 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
    * </ol>
    */
   public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
-
-    RelNode child = project.getInput();
+    final RelNode child = project.getInput();
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
+    final RexSimplify rexSimplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY,
+        Util.first(project.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR));
+
     RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
 
-    List<RexNode> projectPullUpPredicates = new ArrayList<RexNode>();
+    List<RexNode> projectPullUpPredicates = new ArrayList<>();
     HashMultimap<Integer, Integer> inpIndxToOutIndxMap = HashMultimap.create();
 
     ImmutableBitSet.Builder columnsMappedBuilder = ImmutableBitSet.builder();
@@ -145,6 +149,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       ImmutableBitSet rCols = RelOptUtil.InputFinder.bits(r);
       if (columnsMapped.contains(rCols)) {
         r = r.accept(new RexPermuteInputsShuttle(m, child));
+        r = rexSimplify.simplifyPreservingType(r);
         projectPullUpPredicates.add(r);
       }
     }
@@ -152,16 +157,22 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     // Project can also generate constants. We need to include them.
     for (Ord<RexNode> expr : Ord.zip(project.getProjects())) {
       if (RexLiteral.isNullLiteral(expr.e)) {
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
-            rexBuilder.makeInputRef(project, expr.i)));
+        RexNode r = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
+            rexBuilder.makeInputRef(project, expr.i));
+        r = rexSimplify.simplifyPreservingType(r);
+        projectPullUpPredicates.add(r);
       } else if (expr.e instanceof RexLiteral) {
         final RexLiteral literal = (RexLiteral) expr.e;
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), literal));
+        RexNode r = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
+            rexBuilder.makeInputRef(project, expr.i), literal);
+        r = rexSimplify.simplifyPreservingType(r);
+        projectPullUpPredicates.add(r);
       } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
       //TODO: Move this to calcite
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), expr.e));
+        RexNode r = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
+            rexBuilder.makeInputRef(project, expr.i), expr.e);
+        r = rexSimplify.simplifyPreservingType(r);
+        projectPullUpPredicates.add(r);
       }
     }
     return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
@@ -182,7 +193,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
             RexUtil.composeConjunction(rB, rightInfo.pulledUpPredicates,
                 false));
 
-    return jI.inferPredicates(false);
+    return jI.inferPredicates(join.getCluster(), false);
   }
 
   /**
@@ -202,6 +213,8 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     final RelOptPredicateList inputInfo = mq.getPulledUpPredicates(input);
     final List<RexNode> aggPullUpPredicates = new ArrayList<>();
     final RexBuilder rexBuilder = agg.getCluster().getRexBuilder();
+    final RexSimplify rexSimplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY,
+        Util.first(agg.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR));
 
     ImmutableBitSet groupKeys = agg.getGroupSet();
     Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION,
@@ -216,6 +229,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       ImmutableBitSet rCols = RelOptUtil.InputFinder.bits(r);
       if (!rCols.isEmpty() && groupKeys.contains(rCols)) {
         r = r.accept(new RexPermuteInputsShuttle(m, input));
+        r = rexSimplify.simplify(r);
         aggPullUpPredicates.add(r);
       }
     }
@@ -226,7 +240,9 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
    * Infers predicates for a Union.
    */
   public RelOptPredicateList getPredicates(Union union, RelMetadataQuery mq) {
-    RexBuilder rB = union.getCluster().getRexBuilder();
+    final RexBuilder rB = union.getCluster().getRexBuilder();
+    final RexSimplify rexSimplify = new RexSimplify(rB, RelOptPredicateList.EMPTY,
+        Util.first(union.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR));
 
     Map<String, RexNode> finalPreds = new HashMap<>();
     List<RexNode> finalResidualPreds = new ArrayList<>();
@@ -257,8 +273,10 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         if (!preds.containsKey(e.getKey())) {
           // This node was in previous union inputs, but it is not in this one
           for (int j = 0; j < i; j++) {
-            finalResidualPreds.set(j, RexUtil.composeConjunction(rB, Lists.newArrayList(
-                    finalResidualPreds.get(j), e.getValue()), false));
+            RexNode r = RexUtil.composeConjunction(rB, Lists.newArrayList(
+                finalResidualPreds.get(j), e.getValue()), false);
+            r = rexSimplify.simplifyPreservingType(r);
+            finalResidualPreds.set(j, r);
           }
         }
       }
@@ -268,6 +286,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
 
     List<RexNode> preds = new ArrayList<>(finalPreds.values());
     RexNode disjPred = RexUtil.composeDisjunction(rB, finalResidualPreds, false);
+    disjPred = rexSimplify.simplifyPreservingType(disjPred);
     if (!disjPred.isAlwaysTrue()) {
       preds.add(disjPred);
     }
@@ -315,7 +334,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
 
     public JoinConditionBasedPredicateInference(Join joinRel,
             RexNode lPreds, RexNode rPreds) {
-      this(joinRel, ((Join) joinRel).isSemiJoin(), lPreds, rPreds);
+      this(joinRel, joinRel.isSemiJoin(), lPreds, rPreds);
     }
 
     private JoinConditionBasedPredicateInference(Join joinRel, boolean isSemiJoin,
@@ -336,6 +355,10 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       exprFields = Maps.newHashMap();
       allExprsDigests = new HashSet<>();
 
+      final RexSimplify rexSimplify = new RexSimplify(
+          joinRel.getCluster().getRexBuilder(), RelOptPredicateList.EMPTY,
+          Util.first(joinRel.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR));
+
       if (lPreds == null) {
         leftChildPredicates = null;
       } else {
@@ -345,6 +368,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
             new RexPermuteInputsShuttle(leftMapping, joinRel.getInput(0)));
 
         for (RexNode r : RelOptUtil.conjunctions(leftChildPredicates)) {
+          r = rexSimplify.simplifyUnknownAsFalse(r);
           exprFields.put(r.toString(), RelOptUtil.InputFinder.bits(r));
           allExprsDigests.add(r.toString());
         }
@@ -359,6 +383,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
             new RexPermuteInputsShuttle(rightMapping, joinRel.getInput(1)));
 
         for (RexNode r : RelOptUtil.conjunctions(rightChildPredicates)) {
+          r = rexSimplify.simplifyUnknownAsFalse(r);
           exprFields.put(r.toString(), RelOptUtil.InputFinder.bits(r));
           allExprsDigests.add(r.toString());
         }
@@ -379,13 +404,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
               compose(rexBuilder, ImmutableList.of(joinRel.getCondition())));
 
       final EquivalenceFinder eF = new EquivalenceFinder();
-      new ArrayList<>(
-          Lists.transform(exprs,
-              new Function<RexNode, Void>() {
-                public Void apply(RexNode input) {
-                  return input.accept(eF);
-                }
-              }));
+      new ArrayList<>(Lists.transform(exprs, input -> input.accept(eF)));
 
       equivalence = BitSets.closure(equivalence);
     }
@@ -404,7 +423,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
      * </ol>
      */
     public RelOptPredicateList inferPredicates(
-        boolean includeEqualityInference) {
+        RelOptCluster cluster, boolean includeEqualityInference) {
       final List<RexNode> inferredPredicates = new ArrayList<>();
       final List<RexNode> nonFieldsPredicates = new ArrayList<>();
       final Set<String> allExprsDigests = new HashSet<>(this.allExprsDigests);
@@ -417,7 +436,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       case LEFT:
       case SEMI:
       case ANTI:
-        infer(leftPreds, allExprsDigests, inferredPredicates,
+        infer(cluster, leftPreds, allExprsDigests, inferredPredicates,
             nonFieldsPredicates, includeEqualityInference,
             joinType == JoinRelType.LEFT ? rightFieldsBitSet
                 : allFieldsBitSet);
@@ -427,7 +446,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       case INNER:
       case RIGHT:
       case SEMI:
-        infer(rightPreds, allExprsDigests, inferredPredicates,
+        infer(cluster, rightPreds, allExprsDigests, inferredPredicates,
             nonFieldsPredicates, includeEqualityInference,
             joinType == JoinRelType.RIGHT ? leftFieldsBitSet
                 : allFieldsBitSet);
@@ -458,9 +477,9 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       if ((joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI) &&
               !nonFieldsPredicates.isEmpty()) {
         // Predicates without field references can be pushed to both inputs
-        final Set<String> leftPredsSet = new HashSet<String>(
+        final Set<String> leftPredsSet = new HashSet<>(
                 Lists.transform(leftPreds, HiveCalciteUtil.REX_STR_FN));
-        final Set<String> rightPredsSet = new HashSet<String>(
+        final Set<String> rightPredsSet = new HashSet<>(
                 Lists.transform(rightPreds, HiveCalciteUtil.REX_STR_FN));
         for (RexNode iP : nonFieldsPredicates) {
           if (!leftPredsSet.contains(iP.toString())) {
@@ -502,10 +521,16 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       return rightChildPredicates;
     }
 
-    private void infer(List<RexNode> predicates, Set<String> allExprsDigests,
+    private void infer(RelOptCluster cluster, List<RexNode> predicates, Set<String> allExprsDigests,
         List<RexNode> inferedPredicates, List<RexNode> nonFieldsPredicates,
         boolean includeEqualityInference, ImmutableBitSet inferringFields) {
+
+      final RexSimplify rexSimplify = new RexSimplify(
+          cluster.getRexBuilder(), RelOptPredicateList.EMPTY,
+          Util.first(joinRel.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR));
+
       for (RexNode r : predicates) {
+        r = rexSimplify.simplifyUnknownAsFalse(r);
         if (!includeEqualityInference
             && equalityPredicates.contains(r.toString())) {
           continue;
@@ -516,6 +541,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
             RexNode tr = r.accept(
                 new RexPermuteInputsShuttle(m, joinRel.getInput(0),
                     joinRel.getInput(1)));
+            tr = rexSimplify.simplifyUnknownAsFalse(tr);
             if (inferringFields.contains(RelOptUtil.InputFinder.bits(tr))
                 && !allExprsDigests.contains(tr.toString())
                 && !isAlwaysTrue(tr)) {
@@ -532,14 +558,12 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     }
 
     Iterable<Mapping> mappings(final RexNode predicate) {
-      return new Iterable<Mapping>() {
-        public Iterator<Mapping> iterator() {
-          ImmutableBitSet fields = exprFields.get(predicate.toString());
-          if (fields.cardinality() == 0) {
-            return Collections.emptyIterator();
-          }
-          return new ExprsItr(fields);
+      return () -> {
+        ImmutableBitSet fields = exprFields.get(predicate.toString());
+        if (fields.cardinality() == 0) {
+          return Collections.emptyIterator();
         }
+        return new ExprsItr(fields);
       };
     }
 
@@ -552,11 +576,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     }
 
     RexNode compose(RexBuilder rexBuilder, Iterable<RexNode> exprs) {
-      exprs = Linq4j.asEnumerable(exprs).where(new Predicate1<RexNode>() {
-        public boolean apply(RexNode expr) {
-          return expr != null;
-        }
-      });
+      exprs = Linq4j.asEnumerable(exprs).where(Objects::nonNull);
       return RexUtil.composeConjunction(rexBuilder, exprs, false);
     }
 
