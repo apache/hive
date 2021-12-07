@@ -227,6 +227,7 @@ public class TestJdbcDriver2 {
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
         "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    stmt.execute("drop table if exists transactional_crud");
     stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
         "tblproperties('transactional'='true', 'transactional_properties'='default')");
     int count = stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6)");
@@ -249,6 +250,44 @@ public class TestJdbcDriver2 {
     pStmt.setInt(3, 3);
     count = pStmt.executeUpdate();
     assertEquals("1 row PreparedStatement update", 1, count);
+  }
+
+  @Test
+  public void testExceucteMergeCounts() throws Exception {
+    testExceucteMergeCounts(true);
+  }
+
+  @Test
+  public void testExceucteMergeCountsNoSplitUpdate() throws Exception {
+    testExceucteMergeCounts(false);
+  }
+
+  private void testExceucteMergeCounts(boolean splitUpdateEarly) throws Exception {
+
+    Statement stmt =  con.createStatement();
+    stmt.execute("set " + ConfVars.MERGE_SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
+    stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+    stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+        "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+
+    stmt.execute("drop table if exists transactional_crud");
+    stmt.execute("drop table if exists source");
+
+    stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
+        "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6),(7,8),(9,10)");
+
+    stmt.execute("create table source (a int, b int) stored as orc " +
+            "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    stmt.executeUpdate("insert into source values(1,12),(3,14),(9,19),(100,100)");
+
+    int count = stmt.executeUpdate("    MERGE INTO transactional_crud as t using source as s ON t.a = s.a\n" +
+            "    WHEN MATCHED AND s.a > 7 THEN DELETE\n" +
+            "    WHEN MATCHED AND s.a <= 8 THEN UPDATE set b = 100\n" +
+            "    WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+    stmt.close();
+
+    assertEquals("Statement merge", 4, count);
   }
 
   @AfterClass

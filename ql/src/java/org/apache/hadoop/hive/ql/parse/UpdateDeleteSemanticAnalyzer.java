@@ -152,7 +152,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr, null);
+    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
 
@@ -222,24 +222,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    // Patch up the projection list for updates, putting back the original set expressions.
     if (updating() && setColExprs != null) {
-      // Walk through the projection list and replace the column names with the
-      // expressions from the original update.  Under the TOK_SELECT (see above) the structure
-      // looks like:
-      // TOK_SELECT -> TOK_SELEXPR -> expr
-      //           \-> TOK_SELEXPR -> expr ...
-      ASTNode rewrittenSelect = (ASTNode)rewrittenInsert.getChildren().get(1);
-      assert rewrittenSelect.getToken().getType() == HiveParser.TOK_SELECT :
-          "Expected TOK_SELECT as second child of TOK_INSERT but found " +
-              rewrittenSelect.getName();
-      for (Map.Entry<Integer, ASTNode> entry : setColExprs.entrySet()) {
-        ASTNode selExpr = (ASTNode)rewrittenSelect.getChildren().get(entry.getKey());
-        assert selExpr.getToken().getType() == HiveParser.TOK_SELEXPR :
-            "Expected child of TOK_SELECT to be TOK_SELEXPR but was " + selExpr.getName();
-        // Now, change it's child
-        selExpr.setChild(0, entry.getValue());
-      }
+      patchProjectionForUpdate(rewrittenInsert, setColExprs);
     }
 
     try {

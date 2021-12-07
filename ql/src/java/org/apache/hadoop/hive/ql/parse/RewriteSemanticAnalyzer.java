@@ -76,20 +76,40 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   /**
    * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
-   * @param target target table
    */
-  protected void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr,
-                                        ASTNode target) throws SemanticException {
-    String targetName = target != null ? getSimpleTableName(target) : null;
-
+  protected void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr)
+          throws SemanticException {
     // If the table is partitioned, we need to select the partition columns as well.
     if (partCols != null) {
       for (FieldSchema fschema : partCols) {
         rewrittenQueryStr.append(", ");
-        //would be nice if there was a way to determine if quotes are needed
-        if (targetName != null) {
-          rewrittenQueryStr.append(targetName).append('.');
-        }
+        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
+      }
+    }
+  }
+
+  /**
+   * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
+   * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
+   * @param target target table
+   */
+  protected void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr,
+                                        ASTNode target) throws SemanticException {
+    addPartitionColsToSelect(partCols, rewrittenQueryStr, getSimpleTableName(target));
+  }
+
+  /**
+   * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
+   * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
+   * @param alias table name or alias
+   */
+  protected void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr,
+                                        String alias) throws SemanticException {
+    // If the table is partitioned, we need to select the partition columns as well.
+    if (partCols != null) {
+      for (FieldSchema fschema : partCols) {
+        rewrittenQueryStr.append(", ");
+        rewrittenQueryStr.append(alias).append('.');
         rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
       }
     }
@@ -423,4 +443,24 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       rewrittenCtx = c;
     }
   }
+
+  // Patch up the projection list for updates, putting back the original set expressions.
+  // Walk through the projection list and replace the column names with the
+  // expressions from the original update.  Under the TOK_SELECT (see above) the structure
+  // looks like:
+  // TOK_SELECT -> TOK_SELEXPR -> expr
+  //           \-> TOK_SELEXPR -> expr ...
+  protected void patchProjectionForUpdate(ASTNode insertBranch, Map<Integer, ASTNode> setColExprs) {
+    ASTNode rewrittenSelect = (ASTNode) insertBranch.getChildren().get(1);
+    assert rewrittenSelect.getToken().getType() == HiveParser.TOK_SELECT :
+            "Expected TOK_SELECT as second child of TOK_INSERT but found " + rewrittenSelect.getName();
+    for (Map.Entry<Integer, ASTNode> entry : setColExprs.entrySet()) {
+      ASTNode selExpr = (ASTNode) rewrittenSelect.getChildren().get(entry.getKey());
+      assert selExpr.getToken().getType() == HiveParser.TOK_SELEXPR :
+              "Expected child of TOK_SELECT to be TOK_SELEXPR but was " + selExpr.getName();
+      // Now, change it's child
+      selExpr.setChild(0, entry.getValue());
+    }
+  }
+
 }

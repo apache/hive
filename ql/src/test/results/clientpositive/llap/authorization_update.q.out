@@ -50,7 +50,11 @@ PREHOOK: query: update t_auth_up set j = 0 where i > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_auth_up
 PREHOOK: Output: default@t_auth_up
+PREHOOK: Output: default@t_auth_up
 POSTHOOK: query: update t_auth_up set j = 0 where i > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_auth_up
 POSTHOOK: Output: default@t_auth_up
+POSTHOOK: Output: default@t_auth_up
+POSTHOOK: Lineage: t_auth_up.i SIMPLE [(t_auth_up)t_auth_up.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: t_auth_up.j SIMPLE []

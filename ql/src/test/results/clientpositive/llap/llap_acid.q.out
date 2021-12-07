@@ -239,6 +239,7 @@ PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
 PREHOOK: Input: default@orc_llap_n1@csmallint=3
+PREHOOK: Output: default@orc_llap_n1
 PREHOOK: Output: default@orc_llap_n1@csmallint=1
 PREHOOK: Output: default@orc_llap_n1@csmallint=2
 PREHOOK: Output: default@orc_llap_n1@csmallint=3
@@ -249,6 +250,7 @@ POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2
 POSTHOOK: Input: default@orc_llap_n1@csmallint=3
+POSTHOOK: Output: default@orc_llap_n1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=2
 POSTHOOK: Output: default@orc_llap_n1@csmallint=3
@@ -257,16 +259,20 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -281,14 +287,36 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [5, 2, 3, 4]
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
-                            keyColumns: 5:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+<<<<<<< HEAD
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumns: 9:int
                             valueColumns: 7:int, 8:bigint, 2:float, 3:double, 4:smallint
                             valueExpressions: ConstantVectorExpression(val 1) -> 7:int, ConstantVectorExpression(val 2) -> 8:bigint
+=======
+                            projectedOutputColumnNums: [5, 4]
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 5:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 9:int
+                              valueColumns: 4:smallint
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [7, 8, 2, 3, 4]
+                            selectExpressions: ConstantVectorExpression(val 1) -> 7:int, ConstantVectorExpression(val 2) -> 8:bigint
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 7:int
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 7:int
+                              valueColumns: 8:bigint, 2:float, 3:double, 4:smallint
+>>>>>>> HIVE-21160: Rewrite Update statement as Multi-insert and do Update split early
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -319,24 +347,101 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 6
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:int, VALUE._col1:bigint, VALUE._col2:float, VALUE._col3:double, VALUE._col4:smallint
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:smallint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
+                    projectedOutputColumnNums: [0, 1]
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:bigint, VALUE._col1:float, VALUE._col2:double, VALUE._col3:smallint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                    Group By Vectorization:
+                        aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:int) -> bigint, VectorUDAFCount(col 0:int) -> bigint, VectorUDAFComputeBitVectorLong(col 0:int) -> binary, VectorUDAFMinLong(col 1:bigint) -> bigint, VectorUDAFMaxLong(col 1:bigint) -> bigint, VectorUDAFCount(col 1:bigint) -> bigint, VectorUDAFComputeBitVectorLong(col 1:bigint) -> binary, VectorUDAFMinDouble(col 2:float) -> float, VectorUDAFMaxDouble(col 2:float) -> float, VectorUDAFCount(col 2:float) -> bigint, VectorUDAFComputeBitVectorDouble(col 2:float) -> binary, VectorUDAFMinDouble(col 3:double) -> double, VectorUDAFMaxDouble(col 3:double) -> double, VectorUDAFCount(col 3:double) -> bigint, VectorUDAFComputeBitVectorDouble(col 3:double) -> binary
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: col 4:smallint
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: 0:smallint
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 1:int, 2:int, 3:bigint, 4:bigint, 5:binary, 6:bigint, 7:bigint, 8:bigint, 9:binary, 10:float, 11:float, 12:bigint, 13:binary, 14:double, 15:double, 16:bigint, 17:binary
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 18
+                    dataColumns: KEY._col0:smallint, VALUE._col0:int, VALUE._col1:int, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:bigint, VALUE._col6:bigint, VALUE._col7:bigint, VALUE._col8:binary, VALUE._col9:float, VALUE._col10:float, VALUE._col11:bigint, VALUE._col12:binary, VALUE._col13:double, VALUE._col14:double, VALUE._col15:bigint, VALUE._col16:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 1:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 5:binary) -> binary, VectorUDAFMinLong(col 6:bigint) -> bigint, VectorUDAFMaxLong(col 7:bigint) -> bigint, VectorUDAFCountMerge(col 8:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 9:binary) -> binary, VectorUDAFMinDouble(col 10:float) -> float, VectorUDAFMaxDouble(col 11:float) -> float, VectorUDAFCountMerge(col 12:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 13:binary) -> binary, VectorUDAFMinDouble(col 14:double) -> double, VectorUDAFMaxDouble(col 15:double) -> double, VectorUDAFCountMerge(col 16:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 17:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:smallint
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [18, 1, 2, 19, 22, 5, 23, 6, 7, 24, 27, 9, 28, 10, 11, 29, 32, 13, 33, 14, 15, 34, 37, 17, 0]
+                      selectExpressions: ConstantVectorExpression(val LONG) -> 18:string, LongColSubtractLongColumn(col 3:bigint, col 4:bigint) -> 19:bigint, VectorCoalesce(columns [20, 21])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col5)) -> 20:bigint, ConstantVectorExpression(val 0) -> 21:bigint) -> 22:bigint, ConstantVectorExpression(val LONG) -> 23:string, LongColSubtractLongColumn(col 3:bigint, col 8:bigint) -> 24:bigint, VectorCoalesce(columns [25, 26])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col9)) -> 25:bigint, ConstantVectorExpression(val 0) -> 26:bigint) -> 27:bigint, ConstantVectorExpression(val DOUBLE) -> 28:string, LongColSubtractLongColumn(col 3:bigint, col 12:bigint) -> 29:bigint, VectorCoalesce(columns [30, 31])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col13)) -> 30:bigint, ConstantVectorExpression(val 0) -> 31:bigint) -> 32:bigint, ConstantVectorExpression(val DOUBLE) -> 33:string, LongColSubtractLongColumn(col 3:bigint, col 16:bigint) -> 34:bigint, VectorCoalesce(columns [35, 36])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col17)) -> 35:bigint, ConstantVectorExpression(val 0) -> 36:bigint) -> 37:bigint
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
-  Stage: Stage-2
+  Stage: Stage-3
 
   Stage: Stage-0
 
-  Stage: Stage-3
+  Stage: Stage-4
+
+  Stage: Stage-1
+
+  Stage: Stage-5
 
 PREHOOK: query: update orc_llap_n1 set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
@@ -344,6 +449,7 @@ PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
 PREHOOK: Input: default@orc_llap_n1@csmallint=3
+PREHOOK: Output: default@orc_llap_n1
 PREHOOK: Output: default@orc_llap_n1@csmallint=1
 PREHOOK: Output: default@orc_llap_n1@csmallint=2
 PREHOOK: Output: default@orc_llap_n1@csmallint=3
@@ -353,9 +459,15 @@ POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2
 POSTHOOK: Input: default@orc_llap_n1@csmallint=3
+POSTHOOK: Output: default@orc_llap_n1
+POSTHOOK: Output: default@orc_llap_n1@csmallint=1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=2
 POSTHOOK: Output: default@orc_llap_n1@csmallint=3
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cbigint EXPRESSION []
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cdouble SIMPLE [(orc_llap_n1)orc_llap_n1.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cfloat SIMPLE [(orc_llap_n1)orc_llap_n1.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cint SIMPLE []
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
