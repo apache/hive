@@ -266,7 +266,14 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
       responseText =
           "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/>"
               + "<title>SAML Response Received</title></head>"
-              + "<body>Successfully authenticated. You may close this window.</body></html>";
+                  + "<body onload=\"waitAndClose()\">Successfully authenticated. You may close this window.</body>" +
+                  "<script>" +
+                  "  function waitAndClose() {" +
+                  "    setTimeout(function() {" +
+                  "      window.close()" +
+                  "    }, 5000);" +
+                  "  }" +
+                  "</script>"+"</html>";
     } else {
       responseText =
           "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/>"
