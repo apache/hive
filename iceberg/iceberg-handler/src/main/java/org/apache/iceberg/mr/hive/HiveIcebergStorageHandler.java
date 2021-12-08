@@ -467,17 +467,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
     Table table = IcebergTableUtil.getTable(configuration, props);
-
-    // check and throw if we're insert overwriting a bucket transform table
-    if ("true".equalsIgnoreCase(props.getProperty(Constants.IS_INSERT_OVERWRITE_QUERY))) {
-      boolean isBucketed = table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
-      if (isBucketed) {
-        throw new IllegalStateException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
-      }
-      // remove the key as we won't need it any longer
-      props.remove(Constants.IS_INSERT_OVERWRITE_QUERY);
-    }
-
+    assertNotInsertOverwriteWithBucketedTable(props, table);
     String schemaJson = SchemaParser.toJson(table.schema());
 
     Maps.fromProperties(props).entrySet().stream()
@@ -501,6 +491,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+  }
+
+  private static void assertNotInsertOverwriteWithBucketedTable(Properties props, Table table) {
+    // check and throw if we're insert overwriting a bucket transform table
+    if ("true".equalsIgnoreCase(props.getProperty(Constants.IS_INSERT_OVERWRITE_QUERY))) {
+      boolean isBucketed = table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
+      if (isBucketed) {
+        throw new IllegalStateException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
+      }
+    }
+    // remove the key as we won't need it any longer
+    props.remove(Constants.IS_INSERT_OVERWRITE_QUERY);
   }
 
   /**
