@@ -43,7 +43,6 @@ PREHOOK: Input: default@masking_acid_no_masking
 PREHOOK: Input: default@nonacid_n0
 PREHOOK: Output: default@masking_acid_no_masking
 PREHOOK: Output: default@masking_acid_no_masking
-PREHOOK: Output: default@masking_acid_no_masking
 PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: MERGE INTO masking_acid_no_masking as t using nonacid_n0 as s ON t.key = s.key
 WHEN MATCHED AND s.key < 5 THEN DELETE
@@ -54,8 +53,9 @@ POSTHOOK: Input: default@masking_acid_no_masking
 POSTHOOK: Input: default@nonacid_n0
 POSTHOOK: Output: default@masking_acid_no_masking
 POSTHOOK: Output: default@masking_acid_no_masking
-POSTHOOK: Output: default@masking_acid_no_masking
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE [(nonacid_n0)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE [(nonacid_n0)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE [(nonacid_n0)s.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE [(nonacid_n0)s.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(masking_acid_no_masking)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
