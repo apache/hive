@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.Path;
 
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -1617,8 +1618,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   @Override
   public void augmentPlan() {
-    PlanUtils.configureOutputJobPropertiesForStorageHandler(
-        getConf().getTableInfo());
+    TableDesc tableDesc = getConf().getTableInfo();
+    // add some extra details about the write, so that storage handlers can make more informed decisions
+    if (tableDesc != null && tableDesc.getProperties() != null) {
+      tableDesc.getProperties().setProperty(Constants.IS_INSERT_OVERWRITE_QUERY,
+          String.valueOf(getConf().getInsertOverwrite()));
+    }
+    PlanUtils.configureOutputJobPropertiesForStorageHandler(tableDesc);
   }
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
