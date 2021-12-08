@@ -389,6 +389,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
     runCleaner(hiveConf);
+    runCleaner(hiveConf);
 
     expectedList = new String[] {
         "/t/delta_0000001_0000003_v0000020"
