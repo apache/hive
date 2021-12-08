@@ -1193,6 +1193,22 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptn_data_1, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptn_data_2, driverMirror);
+
+    // Perform 2 incremental replications with 0 events and ensure lastReplId is never null, verify it's the
+    // last loaded eventId for each run with 0 events.
+    int numZeroEventRepl = 0;
+    String errorReplIdString = "\"lastReplId\":\"null\"";
+    String correctReplIdString = "\"lastReplId\":\"17\"";
+    String logStr = appender.getOutput();
+    int numCorrectOccurencesInitial = StringUtils.countMatches(logStr, correctReplIdString);
+    do {
+      incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+      numZeroEventRepl++;
+      logStr = appender.getOutput();
+      assertFalse(logStr.contains(errorReplIdString));
+      //for every repl, there are 2 new entries : one for dump and one for load
+      assertTrue(StringUtils.countMatches(logStr, correctReplIdString) == numCorrectOccurencesInitial + 2 * numZeroEventRepl);
+    } while (numZeroEventRepl == 2);
     appender.removeFromLogger(logger.getName());
     verifySetupSteps = false;
   }

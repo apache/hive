@@ -169,6 +169,10 @@ public class IncrementalLoadTasksBuilder {
       lastReplayedEvent = eventDmd.getEventTo();
     }
 
+    if(lastReplayedEvent == null) {
+      lastReplayedEvent = getLastEventIdFromDbParams(dbName);
+    }
+
     if (!hasMoreWork()) {
       ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName);
       Task<?> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc,
@@ -193,6 +197,22 @@ public class IncrementalLoadTasksBuilder {
 
   public boolean hasMoreWork() {
     return iterator.hasNext();
+  }
+
+  private Long getLastEventIdFromDbParams(String dbName) {
+    try {
+      Database database = Hive.get().getDatabase(dbName);
+      if (database != null) {
+        Map<String, String> dbParams = database.getParameters();
+        if (dbParams != null && dbParams.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString())) {
+          return Long.parseLong(dbParams.get(ReplicationSpec.KEY.CURR_STATE_ID.toString()));
+        }
+      }
+    } catch (HiveException e) {
+      // Maybe the db is getting created in this load
+      log.debug("Failed to get the database " + dbName);
+    }
+    return null;
   }
 
   private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {
