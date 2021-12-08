@@ -200,6 +200,7 @@ public class TestDbTxnManagerIsolationProperties extends DbTxnManagerEndToEndTes
 
   @Test
   public void testRebuildMVWhenOpenTxnPresents() throws Exception {
+    driver.run(("drop materialized view if exists mat1"));
     driver.run(("drop table if exists t1"));
     driver.run("create table t1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into t1 values(1,2),(2,2)");
