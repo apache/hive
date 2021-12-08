@@ -86,7 +86,7 @@
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.18.0</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
-    <orc.version>1.6.9</orc.version>
+    <orc.version>1.7.1</orc.version>
     <protobuf.version>3.21.4</protobuf.version>
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
