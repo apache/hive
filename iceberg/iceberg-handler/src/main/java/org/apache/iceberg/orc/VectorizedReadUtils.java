@@ -20,6 +20,7 @@
 package org.apache.iceberg.orc;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,8 +33,8 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hive.iceberg.org.apache.orc.Reader;
 import org.apache.hive.iceberg.org.apache.orc.TypeDescription;
+import org.apache.hive.iceberg.org.apache.orc.impl.OrcTail;
 import org.apache.hive.iceberg.org.apache.orc.impl.ReaderImpl;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.Schema;
@@ -46,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utilities that rely on Iceberg code from org.apache.iceberg.orc package.
+ * Utilities that rely on Iceberg code from org.apache.iceberg.orc package and are required for ORC vectorization.
  */
 public class VectorizedReadUtils {
 
@@ -56,9 +57,17 @@ public class VectorizedReadUtils {
 
   }
 
-  private static TypeDescription getSchemaForFile(InputFile inputFile, SyntheticFileId fileId, JobConf job)
+  /**
+   * Opens the ORC inputFile and reads the metadata information to construct a byte buffer with OrcTail content.
+   * @param inputFile - the original ORC file - this needs to be accessed to retrieve the original schema for mapping
+   * @param job - JobConf instance to adjust
+   * @param fileId - FileID for the input file, serves as cache key in an LLAP setup
+   * @throws IOException - errors relating to accessing the ORC file
+   */
+  public static ByteBuffer getSerializedOrcTail(InputFile inputFile, SyntheticFileId fileId, JobConf job)
       throws IOException {
-    TypeDescription schema = null;
+
+    ByteBuffer result = null;
 
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null) {
@@ -76,7 +85,7 @@ public class VectorizedReadUtils {
         // Iceberg expects org.apache.hive.iceberg.org.apache.orc.TypeDescription as it shades ORC, while LLAP provides
         // the unshaded org.apache.orc.TypeDescription type.
         BufferChunk tailBuffer = LlapProxy.getIo().getOrcTailFromCache(path, job, cacheTag, fileId).getTailBuffer();
-        schema = ReaderImpl.extractFileTail(tailBuffer.getData()).getSchema();
+        result = tailBuffer.getData();
       } catch (IOException ioe) {
         LOG.warn("LLAP is turned on but was unable to get file metadata information through its cache for {}",
             path, ioe);
@@ -85,32 +94,47 @@ public class VectorizedReadUtils {
     }
 
     // Fallback to simple ORC reader file opening method in lack of or failure of LLAP.
-    if (schema == null) {
-      try (Reader orcFileReader = ORC.newFileReader(inputFile, job)) {
-        schema = orcFileReader.getSchema();
+    if (result == null) {
+      try (ReaderImpl orcFileReader = (ReaderImpl) ORC.newFileReader(inputFile, job)) {
+        result = orcFileReader.getSerializedFileFooter();
       }
     }
 
-    return schema;
+    return result;
+  }
 
+  /**
+   * Returns an unshaded version of the OrcTail of the supplied input file. Used by Hive classes.
+   * @param serializedTail - ByteBuffer containing the tail bytes
+   * @throws IOException - errors relating to deserialization
+   */
+  public static org.apache.orc.impl.OrcTail deserializeToOrcTail(ByteBuffer serializedTail) throws IOException {
+    return org.apache.orc.impl.ReaderImpl.extractFileTail(serializedTail);
+  }
+
+  /**
+   * Returns an Iceberg-shaded version of the OrcTail of the supplied input file. Used by Iceberg classes.
+   * @param serializedTail - ByteBuffer containing the tail bytes
+   * @throws IOException - errors relating to deserialization
+   */
+  public static OrcTail deserializeToShadedOrcTail(ByteBuffer serializedTail) throws IOException {
+    return ReaderImpl.extractFileTail(serializedTail);
   }
 
   /**
    * Adjusts the jobConf so that column reorders and renames that might have happened since this ORC file was written
    * are properly mapped to the schema of the original file.
-   * @param inputFile - the original ORC file - this needs to be accessed to retrieve the original schema for mapping
    * @param task - Iceberg task - required for
    * @param job - JobConf instance to adjust
-   * @param fileId - FileID for the input file, serves as cache key in an LLAP setup
+   * @param fileSchema - ORC file schema of the input file
    * @throws IOException - errors relating to accessing the ORC file
    */
-  public static void handleIcebergProjection(InputFile inputFile, FileScanTask task, JobConf job,
-      SyntheticFileId fileId) throws IOException {
+  public static void handleIcebergProjection(FileScanTask task, JobConf job, TypeDescription fileSchema)
+      throws IOException {
 
     // We need to map with the current (i.e. current Hive table columns) full schema (without projections),
     // as OrcInputFormat will take care of the projections by the use of an include boolean array
     Schema currentSchema = task.spec().schema();
-    TypeDescription fileSchema = getSchemaForFile(inputFile, fileId, job);
 
     TypeDescription readOrcSchema;
     if (ORCSchemaUtil.hasIds(fileSchema)) {

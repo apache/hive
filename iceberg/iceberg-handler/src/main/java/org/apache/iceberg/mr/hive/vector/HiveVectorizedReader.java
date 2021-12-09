@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.vector;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
@@ -49,6 +50,7 @@ import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
+import org.apache.orc.impl.OrcTail;
 
 /**
  * Utility class to create vectorized readers for Hive.
@@ -120,20 +122,29 @@ public class HiveVectorizedReader {
           // we need to set Long.MIN_VALUE as last modification time in the fileId triplet.
           SyntheticFileId fileId = new SyntheticFileId(path, task.file().fileSizeInBytes(), Long.MIN_VALUE);
 
-          VectorizedReadUtils.handleIcebergProjection(inputFile, task, job, fileId);
+          // Metadata information has to be passed along in the OrcSplit. Without specifying this, the vectorized
+          // reader will assume that the ORC file ends at the task's start + length, and might fail reading the tail..
+          ByteBuffer serializedOrcTail = VectorizedReadUtils.getSerializedOrcTail(inputFile, fileId, job);
+          OrcTail orcTail = VectorizedReadUtils.deserializeToOrcTail(serializedOrcTail);
+
+          VectorizedReadUtils.handleIcebergProjection(task, job,
+              VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema());
 
           RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
+
+          long start = task.start();
+          long length = task.length();
 
           // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
           if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
               LlapProxy.getIo() != null) {
             recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
-                job, task.start(), task.length(), reporter);
+                job, start, length, reporter);
           }
 
           if (recordReader == null) {
-            InputSplit split = new OrcSplit(path, fileId, task.start(), task.length(), (String[]) null, null, false,
-                 false, com.google.common.collect.Lists.newArrayList(), 0, task.length(), path.getParent(), null);
+            InputSplit split = new OrcSplit(path, fileId, start, length, (String[]) null, orcTail,
+                false, false, com.google.common.collect.Lists.newArrayList(), 0, length, path.getParent(), null);
             recordReader = new VectorizedOrcInputFormat().getRecordReader(split, job, reporter);
           }
           return createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
