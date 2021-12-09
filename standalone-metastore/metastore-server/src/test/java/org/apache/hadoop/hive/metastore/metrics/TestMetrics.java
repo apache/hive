@@ -20,14 +20,10 @@ package org.apache.hadoop.hive.metastore.metrics;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Counter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -188,56 +184,7 @@ public class TestMetrics {
     Assert.assertEquals(2, Metrics.getReporters().size());
   }
 
-  // Stolen from Hive's MetricsTestUtils.  Probably should break it out into it's own class.
-  private static class MetricsTestUtils {
 
-    static final MetricsCategory COUNTER = new MetricsCategory("counters", "count");
-    static final MetricsCategory TIMER = new MetricsCategory("timers", "count");
-    static final MetricsCategory GAUGE = new MetricsCategory("gauges", "value");
-    static final MetricsCategory METER = new MetricsCategory("meters", "count");
-
-    static class MetricsCategory {
-      String category;
-      String metricsHandle;
-      MetricsCategory(String category, String metricsHandle) {
-        this.category = category;
-        this.metricsHandle = metricsHandle;
-      }
-    }
-
-    static void verifyMetricsJson(String json, MetricsCategory category, String metricsName,
-        Object expectedValue) throws Exception {
-      JsonNode jsonNode = getJsonNode(json, category, metricsName);
-      Assert.assertTrue(String.format("%s.%s.%s should not be empty", category.category,
-          metricsName, category.metricsHandle), !jsonNode.asText().isEmpty());
-
-      if (expectedValue != null) {
-        Assert.assertEquals(expectedValue.toString(), jsonNode.asText());
-      }
-    }
-
-    static void verifyMetricsJson(String json, MetricsCategory category, String metricsName)
-        throws Exception {
-      verifyMetricsJson(json, category, metricsName, null);
-    }
-
-    static JsonNode getJsonNode(String json, MetricsCategory category, String metricsName) throws Exception {
-      ObjectMapper objectMapper = new ObjectMapper();
-      JsonNode rootNode = objectMapper.readTree(json);
-      JsonNode categoryNode = rootNode.path(category.category);
-      JsonNode metricsNode = categoryNode.path(metricsName);
-      return metricsNode.path(category.metricsHandle);
-    }
-
-    static byte[] getFileData(String path, int timeoutInterval, int tries) throws Exception {
-      File file = new File(path);
-      do {
-        Thread.sleep(timeoutInterval);
-        tries--;
-      } while (tries > 0 && !file.exists());
-      return Files.readAllBytes(Paths.get(path));
-    }
-  }
 
   private void initializeMetrics(Configuration conf) throws Exception {
     Field field = Metrics.class.getDeclaredField("self");

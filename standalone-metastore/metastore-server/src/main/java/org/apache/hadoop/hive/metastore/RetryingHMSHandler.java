@@ -43,7 +43,7 @@ import org.datanucleus.exceptions.NucleusException;
 public class RetryingHMSHandler implements InvocationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryingHMSHandler.class);
-  private static final String CLASS_NAME = RetryingHMSHandler.class.getName();
+  private static final String CLASS_NAME = RetryingHMSHandler.class.getSimpleName();
 
   private static class Result {
     private final Object result;
@@ -102,8 +102,9 @@ public class RetryingHMSHandler implements InvocationHandler {
     int retryCount = -1;
     int threadId = baseHandler.getThreadId();
     boolean error = true;
+    String methodName = getMethodName(method);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.perfLogBegin(CLASS_NAME, method.getName());
+    perfLogger.perfLogBegin(CLASS_NAME, methodName);
     try {
       Result result = invokeInternal(proxy, method, args);
       retryCount = result.numRetries;
@@ -113,8 +114,13 @@ public class RetryingHMSHandler implements InvocationHandler {
       StringBuilder additionalInfo = new StringBuilder();
       additionalInfo.append("threadId=").append(threadId).append(" retryCount=").append(retryCount)
         .append(" error=").append(error);
-      perfLogger.perfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
+      perfLogger.perfLogEnd(CLASS_NAME, methodName, additionalInfo.toString());
     }
+  }
+
+  private String getMethodName(Method method) {
+    // to isolate metrics related to this retrying handler from base handler.
+    return CLASS_NAME + "." + method.getName();
   }
 
   public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
