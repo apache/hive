@@ -115,6 +115,9 @@ ALTER TABLE "DBS" ADD "DATACONNECTOR_NAME" character varying(128);
 ALTER TABLE "DBS" ADD "REMOTE_DBNAME" character varying(128);
 UPDATE "DBS" SET "TYPE"= 'NATIVE' WHERE "TYPE" IS NULL;
 
+-- HIVE-25737
+ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_CLEANER_START" bigint;
+
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0';

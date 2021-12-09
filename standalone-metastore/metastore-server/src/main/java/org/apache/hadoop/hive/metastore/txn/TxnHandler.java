@@ -3703,6 +3703,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return Character.toString(s);
     }
   }
+
   @RetrySemantics.ReadOnly
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
@@ -3712,15 +3713,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "SELECT \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_WORKER_ID\", " +
-          //-1 because 'null' literal doesn't work for all DBs...
-          "\"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\", \"CQ_ERROR_MESSAGE\", " +
-          "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" " +
-          "FROM \"COMPACTION_QUEUE\" UNION ALL " +
-          "SELECT \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
-          "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\", " +
-          "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\" " +
-          " FROM \"COMPLETED_COMPACTIONS\""; //todo: sort by cq_id?
+        String s = "" +
+            //-1 because 'null' literal doesn't work for all DBs...
+            "SELECT " +
+            "  \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_WORKER_ID\", " +
+            "  \"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\", \"CQ_ERROR_MESSAGE\", " +
+            "  \"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", " +
+            "  \"CQ_CLEANER_START\"" +
+            "FROM " +
+            "  \"COMPACTION_QUEUE\" " +
+            "UNION ALL " +
+            "SELECT " +
+            "  \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
+            "  \"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\", " +
+            "  \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", " +
+            "  -1 " +
+            "FROM " +
+            "  \"COMPLETED_COMPACTIONS\""; //todo: sort by cq_id?
         //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
         //to sort so that currently running jobs are at the end of the list (bottom of screen)
         //and currently running ones are in sorted by start time
@@ -3740,11 +3749,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           e.setWorkerid(rs.getString(6));
           long start = rs.getLong(7);
-          if(!rs.wasNull()) {
+          if (!rs.wasNull()) {
             e.setStart(start);
           }
           long endTime = rs.getLong(8);
-          if(endTime != -1) {
+          if (endTime != -1) {
             e.setEndTime(endTime);
           }
           e.setRunAs(rs.getString(9));
@@ -3752,18 +3761,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setId(rs.getLong(11));
           e.setErrorMessage(rs.getString(12));
           long enqueueTime = rs.getLong(13);
-          if(!rs.wasNull()) {
+          if (!rs.wasNull()) {
             e.setEnqueueTime(enqueueTime);
           }
           e.setWorkerVersion(rs.getString(14));
           e.setInitiatorId(rs.getString(15));
           e.setInitiatorVersion(rs.getString(16));
+          long cleanerStart = rs.getLong(17);
+          if (!rs.wasNull() && (cleanerStart != -1)) {
+            e.setCleanerStart(cleanerStart);
+          }
           response.addToCompacts(e);
         }
       } catch (SQLException e) {
         checkRetryable(e, "showCompact(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
-          StringUtils.stringifyException(e));
+            StringUtils.stringifyException(e));
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
