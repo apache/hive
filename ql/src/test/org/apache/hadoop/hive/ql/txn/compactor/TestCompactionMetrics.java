@@ -179,41 +179,49 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  @org.junit.Ignore("HIVE-25716")
   public void testOldestReadyForCleaningAge() throws Exception {
     conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
 
-    long oldStart = System.currentTimeMillis();
-    Table old = newTable("default", "old_rfc", true);
-    Partition oldP = newPartition(old, "part");
+    final String DB_NAME = "default";
+    final String OLD_TABLE_NAME = "old_rfc";
+    final String OLD_PARTITION_NAME = "part";
+    final String YOUNG_TABLE_NAME = "young_rfc";
+    final String YOUNG_PARTITION_NAME = "part";
+
+    long oldTableStart = System.currentTimeMillis();
+    Table old = newTable(DB_NAME, OLD_TABLE_NAME, true);
+    Partition oldP = newPartition(old, OLD_PARTITION_NAME);
     addBaseFile(old, oldP, 20L, 20);
     addDeltaFile(old, oldP, 21L, 22L, 2);
     addDeltaFile(old, oldP, 23L, 24L, 2);
-    burnThroughTransactions("default", "old_rfc", 25);
-    CompactionRequest rqst = new CompactionRequest("default", "old_rfc", CompactionType.MINOR);
-    rqst.setPartitionname("ds=part");
-    txnHandler.compact(rqst);
-    startWorker();
+    burnThroughTransactions(DB_NAME, OLD_TABLE_NAME, 25);
+    doCompaction(DB_NAME, OLD_TABLE_NAME, OLD_PARTITION_NAME, CompactionType.MINOR);
+    long oldTableEnd = System.currentTimeMillis();
 
-    long youngStart = System.currentTimeMillis();
-    Table young = newTable("default", "young_rfc", true);
-    Partition youngP = newPartition(young, "part");
+    Table young = newTable(DB_NAME, YOUNG_TABLE_NAME, true);
+    Partition youngP = newPartition(young, YOUNG_PARTITION_NAME);
     addBaseFile(young, youngP, 20L, 20);
     addDeltaFile(young, youngP, 21L, 22L, 2);
     addDeltaFile(young, youngP, 23L, 24L, 2);
-    burnThroughTransactions("default", "young_rfc", 25);
-    rqst = new CompactionRequest("default", "young_rfc", CompactionType.MINOR);
-    rqst.setPartitionname("ds=part");
-    txnHandler.compact(rqst);
-    startWorker();
+    burnThroughTransactions(DB_NAME, YOUNG_TABLE_NAME, 25);
+    doCompaction(DB_NAME, YOUNG_TABLE_NAME, YOUNG_PARTITION_NAME, CompactionType.MINOR);
 
+    long acidMetricsStart = System.currentTimeMillis();
     runAcidMetricService();
-    long oldDiff = (System.currentTimeMillis() - oldStart)/1000;
-    long youngDiff = (System.currentTimeMillis() - youngStart)/1000;
+    long now = System.currentTimeMillis();
+    long acidMetricsDuration = now - acidMetricsStart;
 
-    long threshold = 1000;
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE).intValue() <= oldDiff + threshold);
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE).intValue() >= youngDiff);
+    int oldestAgeInSeconds = Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE)
+        .intValue();
+
+    long ageInMillies = oldestAgeInSeconds * 1000L;
+
+    long DB_ROUNDING_DOWN_ERROR = 1000L;
+    long readError = acidMetricsDuration + DB_ROUNDING_DOWN_ERROR;
+
+    long oldStartShiftedToNow = oldTableStart + ageInMillies;
+    long oldEndShiftedToNow = (oldTableEnd + ageInMillies) + readError;
+    Assert.assertTrue((oldStartShiftedToNow < now) && (now < oldEndShiftedToNow));
   }
 
   @Test
@@ -898,6 +906,14 @@ public class TestCompactionMetrics  extends CompactorTest {
     });
     t.setDaemon(true);
     t.start();
+  }
+
+  private void doCompaction(String dbName, String tableName, String partitionName, CompactionType type)
+      throws Exception {
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    rqst.setPartitionname("ds=" + partitionName);
+    txnHandler.compact(rqst);
+    startWorker();
   }
 
   @Override

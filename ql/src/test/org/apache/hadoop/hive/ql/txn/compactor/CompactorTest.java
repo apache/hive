@@ -292,7 +292,8 @@ public abstract class CompactorTest {
     burnThroughTransactions(dbName, tblName, num, open, aborted, null);
   }
 
-  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted, LockRequest lockReq)
+  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted,
+      LockRequest lockReq)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
@@ -300,14 +301,15 @@ public abstract class CompactorTest {
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {
-      assert(awiResp.getTxnToWriteIds().get(i++).getTxnId() == tid);
-      if(lockReq != null) {
+      assert (awiResp.getTxnToWriteIds().get(i).getTxnId() == tid);
+      ++i;
+      if (lockReq != null) {
         lockReq.setTxnid(tid);
         txnHandler.lock(lockReq);
       }
       if (aborted != null && aborted.contains(tid)) {
         txnHandler.abortTxn(new AbortTxnRequest(tid));
-      } else if (open == null || (open != null && !open.contains(tid))) {
+      } else if (open == null || !open.contains(tid)) {
         txnHandler.commitTxn(new CommitTxnRequest(tid));
       }
     }
