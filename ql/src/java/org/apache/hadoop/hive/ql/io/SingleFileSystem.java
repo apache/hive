@@ -115,7 +115,7 @@ public abstract class SingleFileSystem extends FileSystem {
     case LEAF_FILE:
       return info.lowerTargetPath.getFileSystem(conf).open(info.lowerTargetPath, bufferSize);
     case NONEXISTENT:
-      throw new FileNotFoundException(upperPath.toString());
+      throw newFileNotFoundException(upperPath.toString());
     default:
       throw unsupported("open:" + upperPath);
     }
@@ -132,7 +132,7 @@ public abstract class SingleFileSystem extends FileSystem {
     case SINGLEFILE_DIR:
       return makeDirFileStatus(upperPath, info.lowerTargetPath);
     case NONEXISTENT:
-      throw new FileNotFoundException(upperPath.toString());
+      throw newFileNotFoundException(upperPath.toString());
     default:
       throw unsupported("fileStatus:" + upperPath);
     }
@@ -148,7 +148,7 @@ public abstract class SingleFileSystem extends FileSystem {
     case SINGLEFILE_DIR:
       return new FileStatus[] { makeFileStatus(info.upperTargetPath, info.lowerTargetPath) };
     case NONEXISTENT:
-      throw new FileNotFoundException(upperPath.toString());
+      throw newFileNotFoundException(upperPath.toString());
     default:
       throw unsupported("listStatus: " + upperPath);
     }
@@ -349,6 +349,8 @@ public abstract class SingleFileSystem extends FileSystem {
   private IOException unsupportedReadOnly(String opName, Path path) throws IOException {
     SfsInfo sfsInfo = new SfsInfo(path);
     if (sfsInfo.type == SfsInodeType.SINGLEFILE_DIR || sfsInfo.type == SfsInodeType.LEAF_FILE) {
+      // Try to access the the underlying file if possible; as the lower fs may provide a more
+      // specific exception (like: FileNotFoundException)
       FileSystem fs = sfsInfo.lowerTargetPath.getFileSystem(conf);
       fs.getFileStatus(sfsInfo.lowerTargetPath);
     }
@@ -358,4 +360,9 @@ public abstract class SingleFileSystem extends FileSystem {
   private IOException unsupported(String str) {
     return new IOException("Unsupported SFS filesystem operation! (" + str + ")");
   }
+
+  private IOException newFileNotFoundException(String path) {
+    return new FileNotFoundException("File " + path + " does not exists!");
+  }
+
 }
