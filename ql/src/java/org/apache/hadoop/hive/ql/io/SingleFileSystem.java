@@ -342,7 +342,7 @@ public abstract class SingleFileSystem extends FileSystem {
 
   private IOException unsupportedReadOnly(String opName, Path path) throws IOException {
     SfsInfo sfsInfo = new SfsInfo(path);
-    if (sfsInfo.type == SfsInodeType.DIR_MODE || sfsInfo.type == SfsInodeType.LEAF_FILE) {
+    if (sfsInfo.type == SfsInodeType.SINGLEFILE_DIR || sfsInfo.type == SfsInodeType.LEAF_FILE) {
       FileSystem fs = sfsInfo.lowerTargetPath.getFileSystem(conf);
       fs.getFileStatus(sfsInfo.lowerTargetPath);
     }

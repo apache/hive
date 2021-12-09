@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Input: sfs+FILE:///.../nonexistent/path/f1.txt/#SINGLEFILE#
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1s
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Got exception: java.io.IOException SFS is readonly hence mkdirs is not supported! (sfs+FILE:///.../nonexistent/path/f1.txt/#SINGLEFILE#))
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Got exception: java.io.FileNotFoundException File FILE:///.../nonexistent/path/f1.txt does not exist)
