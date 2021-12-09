@@ -298,14 +298,15 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
         }
         try {
           stage('Test') {
-            buildHive("-pl '!accumulo-handler,!vector-code-gen,!beeline,!cli,!contrib,!druid-handler,!hbase-handler,!jdbc-handler,!hplsql,!jdbc,!parser,!udf,!ql,!serde,!service-rpc,!service,!streaming,!llap-common,!llap-client,!llap-ext-client,!llap-tez,!llap-server,!spark-client,!kryo-registrator,!kudu-handler,!testutils,!packaging,!kafka-handler,!metastore,!shims,!standalone-metastore,!hcatalog,!common' org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+            buildHive("-pl classification -pl cli org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
               sh '''#!/bin/bash -e
               sw java 11 && . /etc/profile.d/java.sh
               export MAVEN_OPTS=-Xmx5G
-              jacoco=`find $PWD -name jacoco.xml|tr '\n' ','`
+              jacoco=`find / -name jacoco.xml|tr '\n' ','`
+              ls */target/site/jacoco
               echo find coverage: ${jacoco%?}
-              mvn sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco%?} -pl '!accumulo-handler,!vector-code-gen,!beeline,!cli,!contrib,!druid-handler,!hbase-handler,!jdbc-handler,!hplsql,!jdbc,!parser,!udf,!ql,!serde,!service-rpc,!service,!streaming,!llap-common,!llap-client,!llap-ext-client,!llap-tez,!llap-server,!spark-client,!kryo-registrator,!kudu-handler,!testutils,!packaging,!kafka-handler,!metastore,!shims,!standalone-metastore,!hcatalog,!common'
+              mvn sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco%?} -pl classification -pl cli
               '''
             }
           }
