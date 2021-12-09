@@ -114,8 +114,10 @@ public abstract class SingleFileSystem extends FileSystem {
     switch (info.type) {
     case LEAF_FILE:
       return info.lowerTargetPath.getFileSystem(conf).open(info.lowerTargetPath, bufferSize);
+    case NONEXISTENT:
+      throw new FileNotFoundException(upperPath.toString());
     default:
-      throw unsupported0("open:" + upperPath);
+      throw unsupported("open:" + upperPath);
     }
   }
 
@@ -129,8 +131,10 @@ public abstract class SingleFileSystem extends FileSystem {
       return makeDirFileStatus(upperPath, removeSfsScheme(upperPath));
     case SINGLEFILE_DIR:
       return makeDirFileStatus(upperPath, info.lowerTargetPath);
+    case NONEXISTENT:
+      throw new FileNotFoundException(upperPath.toString());
     default:
-      throw unsupported0("fileStatus:" + upperPath);
+      throw unsupported("fileStatus:" + upperPath);
     }
   }
 
@@ -143,8 +147,10 @@ public abstract class SingleFileSystem extends FileSystem {
     case LEAF_FILE:
     case SINGLEFILE_DIR:
       return new FileStatus[] { makeFileStatus(info.upperTargetPath, info.lowerTargetPath) };
+    case NONEXISTENT:
+      throw new FileNotFoundException(upperPath.toString());
     default:
-      throw unsupported0("listStatus: " + upperPath);
+      throw unsupported("listStatus: " + upperPath);
     }
   }
 
@@ -349,7 +355,7 @@ public abstract class SingleFileSystem extends FileSystem {
     return new IOException("SFS is readonly hence " + opName + " is not supported! (" + path + ")");
   }
 
-  private IOException unsupported0(String str) {
+  private IOException unsupported(String str) {
     return new IOException("Unsupported SFS filesystem operation! (" + str + ")");
   }
 }
