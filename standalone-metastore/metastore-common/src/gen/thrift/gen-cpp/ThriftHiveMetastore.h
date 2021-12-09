@@ -66,7 +66,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_not_null_constraint(const AddNotNullConstraintRequest& req) = 0;
   virtual void add_default_constraint(const AddDefaultConstraintRequest& req) = 0;
   virtual void add_check_constraint(const AddCheckConstraintRequest& req) = 0;
-  virtual void translate_table_dryrun(Table& _return, const Table& tbl) = 0;
+  virtual void translate_table_dryrun(Table& _return, const CreateTableRequest& request) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
@@ -443,7 +443,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void add_check_constraint(const AddCheckConstraintRequest& /* req */) {
     return;
   }
-  void translate_table_dryrun(Table& /* _return */, const Table& /* tbl */) {
+  void translate_table_dryrun(Table& /* _return */, const CreateTableRequest& /* request */) {
     return;
   }
   void drop_table(const std::string& /* dbname */, const std::string& /* name */, const bool /* deleteData */) {
@@ -6007,8 +6007,8 @@ class ThriftHiveMetastore_add_check_constraint_presult {
 };
 
 typedef struct _ThriftHiveMetastore_translate_table_dryrun_args__isset {
-  _ThriftHiveMetastore_translate_table_dryrun_args__isset() : tbl(false) {}
-  bool tbl :1;
+  _ThriftHiveMetastore_translate_table_dryrun_args__isset() : request(false) {}
+  bool request :1;
 } _ThriftHiveMetastore_translate_table_dryrun_args__isset;
 
 class ThriftHiveMetastore_translate_table_dryrun_args {
@@ -6020,15 +6020,15 @@ class ThriftHiveMetastore_translate_table_dryrun_args {
   }
 
   virtual ~ThriftHiveMetastore_translate_table_dryrun_args() noexcept;
-  Table tbl;
+  CreateTableRequest request;
 
   _ThriftHiveMetastore_translate_table_dryrun_args__isset __isset;
 
-  void __set_tbl(const Table& val);
+  void __set_request(const CreateTableRequest& val);
 
   bool operator == (const ThriftHiveMetastore_translate_table_dryrun_args & rhs) const
   {
-    if (!(tbl == rhs.tbl))
+    if (!(request == rhs.request))
       return false;
     return true;
   }
@@ -6049,7 +6049,7 @@ class ThriftHiveMetastore_translate_table_dryrun_pargs {
 
 
   virtual ~ThriftHiveMetastore_translate_table_dryrun_pargs() noexcept;
-  const Table* tbl;
+  const CreateTableRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -33374,8 +33374,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_check_constraint(const AddCheckConstraintRequest& req);
   void send_add_check_constraint(const AddCheckConstraintRequest& req);
   void recv_add_check_constraint();
-  void translate_table_dryrun(Table& _return, const Table& tbl);
-  void send_translate_table_dryrun(const Table& tbl);
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request);
+  void send_translate_table_dryrun(const CreateTableRequest& request);
   void recv_translate_table_dryrun(Table& _return);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
@@ -35008,13 +35008,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_check_constraint(req);
   }
 
-  void translate_table_dryrun(Table& _return, const Table& tbl) {
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->translate_table_dryrun(_return, tbl);
+      ifaces_[i]->translate_table_dryrun(_return, request);
     }
-    ifaces_[i]->translate_table_dryrun(_return, tbl);
+    ifaces_[i]->translate_table_dryrun(_return, request);
     return;
   }
 
@@ -37326,8 +37326,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_check_constraint(const AddCheckConstraintRequest& req);
   int32_t send_add_check_constraint(const AddCheckConstraintRequest& req);
   void recv_add_check_constraint(const int32_t seqid);
-  void translate_table_dryrun(Table& _return, const Table& tbl);
-  int32_t send_translate_table_dryrun(const Table& tbl);
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request);
+  int32_t send_translate_table_dryrun(const CreateTableRequest& request);
   void recv_translate_table_dryrun(Table& _return, const int32_t seqid);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   int32_t send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);

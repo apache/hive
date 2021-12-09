@@ -349,10 +349,10 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def translate_table_dryrun(self, tbl):
+    def translate_table_dryrun(self, request):
         """
         Parameters:
-         - tbl
+         - request
 
         """
         pass
@@ -3727,19 +3727,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def translate_table_dryrun(self, tbl):
+    def translate_table_dryrun(self, request):
         """
         Parameters:
-         - tbl
+         - request
 
         """
-        self.send_translate_table_dryrun(tbl)
+        self.send_translate_table_dryrun(request)
         return self.recv_translate_table_dryrun()
 
-    def send_translate_table_dryrun(self, tbl):
+    def send_translate_table_dryrun(self, request):
         self._oprot.writeMessageBegin('translate_table_dryrun', TMessageType.CALL, self._seqid)
         args = translate_table_dryrun_args()
-        args.tbl = tbl
+        args.request = request
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -13404,7 +13404,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = translate_table_dryrun_result()
         try:
-            result.success = self._handler.translate_table_dryrun(args.tbl)
+            result.success = self._handler.translate_table_dryrun(args.request)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -25942,13 +25942,13 @@ add_check_constraint_result.thrift_spec = (
 class translate_table_dryrun_args(object):
     """
     Attributes:
-     - tbl
+     - request
 
     """
 
 
-    def __init__(self, tbl=None,):
-        self.tbl = tbl
+    def __init__(self, request=None,):
+        self.request = request
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -25961,8 +25961,8 @@ class translate_table_dryrun_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.tbl = Table()
-                    self.tbl.read(iprot)
+                    self.request = CreateTableRequest()
+                    self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
             else:
@@ -25975,9 +25975,9 @@ class translate_table_dryrun_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('translate_table_dryrun_args')
-        if self.tbl is not None:
-            oprot.writeFieldBegin('tbl', TType.STRUCT, 1)
-            self.tbl.write(oprot)
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -25998,7 +25998,7 @@ class translate_table_dryrun_args(object):
 all_structs.append(translate_table_dryrun_args)
 translate_table_dryrun_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'tbl', [Table, None], None, ),  # 1
+    (1, TType.STRUCT, 'request', [CreateTableRequest, None], None, ),  # 1
 )
 
 

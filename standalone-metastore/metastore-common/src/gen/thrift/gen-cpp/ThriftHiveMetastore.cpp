@@ -9684,8 +9684,8 @@ uint32_t ThriftHiveMetastore_translate_table_dryrun_args::read(::apache::thrift:
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->tbl.read(iprot);
-          this->__isset.tbl = true;
+          xfer += this->request.read(iprot);
+          this->__isset.request = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -9707,8 +9707,8 @@ uint32_t ThriftHiveMetastore_translate_table_dryrun_args::write(::apache::thrift
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_translate_table_dryrun_args");
 
-  xfer += oprot->writeFieldBegin("tbl", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += this->tbl.write(oprot);
+  xfer += oprot->writeFieldBegin("request", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->request.write(oprot);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -9726,8 +9726,8 @@ uint32_t ThriftHiveMetastore_translate_table_dryrun_pargs::write(::apache::thrif
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_translate_table_dryrun_pargs");
 
-  xfer += oprot->writeFieldBegin("tbl", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += (*(this->tbl)).write(oprot);
+  xfer += oprot->writeFieldBegin("request", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += (*(this->request)).write(oprot);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -65523,19 +65523,19 @@ void ThriftHiveMetastoreClient::recv_add_check_constraint()
   return;
 }
 
-void ThriftHiveMetastoreClient::translate_table_dryrun(Table& _return, const Table& tbl)
+void ThriftHiveMetastoreClient::translate_table_dryrun(Table& _return, const CreateTableRequest& request)
 {
-  send_translate_table_dryrun(tbl);
+  send_translate_table_dryrun(request);
   recv_translate_table_dryrun(_return);
 }
 
-void ThriftHiveMetastoreClient::send_translate_table_dryrun(const Table& tbl)
+void ThriftHiveMetastoreClient::send_translate_table_dryrun(const CreateTableRequest& request)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("translate_table_dryrun", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_translate_table_dryrun_pargs args;
-  args.tbl = &tbl;
+  args.request = &request;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -82157,7 +82157,7 @@ void ThriftHiveMetastoreProcessor::process_translate_table_dryrun(int32_t seqid,
 
   ThriftHiveMetastore_translate_table_dryrun_result result;
   try {
-    iface_->translate_table_dryrun(result.success, args.tbl);
+    iface_->translate_table_dryrun(result.success, args.request);
     result.__isset.success = true;
   } catch (AlreadyExistsException &o1) {
     result.o1 = o1;
@@ -99098,20 +99098,20 @@ void ThriftHiveMetastoreConcurrentClient::recv_add_check_constraint(const int32_
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::translate_table_dryrun(Table& _return, const Table& tbl)
+void ThriftHiveMetastoreConcurrentClient::translate_table_dryrun(Table& _return, const CreateTableRequest& request)
 {
-  int32_t seqid = send_translate_table_dryrun(tbl);
+  int32_t seqid = send_translate_table_dryrun(request);
   recv_translate_table_dryrun(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_translate_table_dryrun(const Table& tbl)
+int32_t ThriftHiveMetastoreConcurrentClient::send_translate_table_dryrun(const CreateTableRequest& request)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
   oprot_->writeMessageBegin("translate_table_dryrun", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_translate_table_dryrun_pargs args;
-  args.tbl = &tbl;
+  args.request = &request;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
