@@ -108,6 +108,12 @@ public class TestSingleFileSystem {
     assertEquals(targetSfsPath + "f1", list[0].getPath().toString());
   }
 
+  @Test(expected = FileNotFoundException.class)
+  public void testListSingleFileDirOfNonExistentFile() throws Exception {
+    String targetSfsPath = "sfs+" + f1path + "nonExistent/#SINGLEFILE#/";
+    fs.listStatus(new Path(targetSfsPath));
+  }
+
   @Test
   public void testListStatusTargetFile() throws Exception {
     String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#/f1";
