@@ -27547,6 +27547,11 @@ void ShowCompactResponseElement::__set_initiatorVersion(const std::string& val) 
   this->initiatorVersion = val;
 __isset.initiatorVersion = true;
 }
+
+void ShowCompactResponseElement::__set_cleanerStart(const int64_t val) {
+  this->cleanerStart = val;
+__isset.cleanerStart = true;
+}
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponseElement& obj)
 {
   obj.printTo(out);
@@ -27725,6 +27730,14 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 19:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->cleanerStart);
+          this->__isset.cleanerStart = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -27836,6 +27849,11 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeString(this->initiatorVersion);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.cleanerStart) {
+    xfer += oprot->writeFieldBegin("cleanerStart", ::apache::thrift::protocol::T_I64, 19);
+    xfer += oprot->writeI64(this->cleanerStart);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -27861,6 +27879,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.workerVersion, b.workerVersion);
   swap(a.initiatorId, b.initiatorId);
   swap(a.initiatorVersion, b.initiatorVersion);
+  swap(a.cleanerStart, b.cleanerStart);
   swap(a.__isset, b.__isset);
 }
 
@@ -27883,6 +27902,7 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   workerVersion = other984.workerVersion;
   initiatorId = other984.initiatorId;
   initiatorVersion = other984.initiatorVersion;
+  cleanerStart = other984.cleanerStart;
   __isset = other984.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other985) {
@@ -27904,6 +27924,7 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   workerVersion = other985.workerVersion;
   initiatorId = other985.initiatorId;
   initiatorVersion = other985.initiatorVersion;
+  cleanerStart = other985.cleanerStart;
   __isset = other985.__isset;
   return *this;
 }
@@ -27928,6 +27949,7 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "workerVersion="; (__isset.workerVersion ? (out << to_string(workerVersion)) : (out << "<null>"));
   out << ", " << "initiatorId="; (__isset.initiatorId ? (out << to_string(initiatorId)) : (out << "<null>"));
   out << ", " << "initiatorVersion="; (__isset.initiatorVersion ? (out << to_string(initiatorVersion)) : (out << "<null>"));
+  out << ", " << "cleanerStart="; (__isset.cleanerStart ? (out << to_string(cleanerStart)) : (out << "<null>"));
   out << ")";
 }
 

@@ -34,9 +34,8 @@ public class TestTxnCommands2WithSplitUpdateAndVectorization extends TestTxnComm
   }
 
   @Override
-  @Before
-  public void setUp() throws Exception {
-    setUpWithTableProperties("'transactional'='true','transactional_properties'='default'");
+  void initHiveConf() {
+    super.initHiveConf();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
 

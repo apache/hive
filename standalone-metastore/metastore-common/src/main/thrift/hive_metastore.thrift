@@ -1327,7 +1327,8 @@ struct ShowCompactResponseElement {
     15: optional i64 enqueueTime,
     16: optional string workerVersion,
     17: optional string initiatorId,
-    18: optional string initiatorVersion
+    18: optional string initiatorVersion,
+    19: optional i64 cleanerStart
 }
 
 struct ShowCompactResponse {
