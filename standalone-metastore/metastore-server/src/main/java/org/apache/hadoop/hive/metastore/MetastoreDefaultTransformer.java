@@ -671,14 +671,16 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           // should we check tbl directory existence?
         }
       } else { // ACID table
-        if (processorCapabilities == null || processorCapabilities.isEmpty()) {
-          throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
-        }
-
+        // if the property 'EXTERNAL_TABLES_ONLY'='true' is set on the database, then creating managed/ACID tables are prohibited. See HIVE-25724 for more details.
         if (db.getParameters().containsKey(EXTERNALTABLESONLY) &&
                 db.getParameters().get(EXTERNALTABLESONLY).equalsIgnoreCase("true")) {
           throw new MetaException("Creation of ACID table is not allowed when the property 'EXTERNAL_TABLES_ONLY'='TRUE' is set on the database.");
         }
+
+        if (processorCapabilities == null || processorCapabilities.isEmpty()) {
+          throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
+        }
+
 
         newTable = validateTablePaths(table);
         if (isInsertAcid) { // MICRO_MANAGED Tables
