@@ -1479,6 +1479,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0</version>
         <dependencies>
           <dependency>
             <groupId>de.skuzzle.enforcer</groupId>
@@ -1539,6 +1540,19 @@
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-java</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[1.8.0,1.9.0)</version>
+                </requireJavaVersion>
+              </rules>
             </configuration>
           </execution>
           <execution>
