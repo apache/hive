@@ -271,7 +271,7 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
                   "  function waitAndClose() {" +
                   "    setTimeout(function() {" +
                   "      window.close()" +
-                  "    }, 5000);" +
+                  "    }, 100);" +
                   "  }" +
                   "</script>"+"</html>";
     } else {
