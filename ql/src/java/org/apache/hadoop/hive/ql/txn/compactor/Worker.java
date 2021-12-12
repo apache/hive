@@ -722,7 +722,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       LockRequest lockRequest = createLockRequest(ci, txnId);
       LockResponse res = msc.lock(lockRequest);
       if (res.getState() != LockState.ACQUIRED) {
-        throw new TException("Unable to acquire lock(S) on " + ci.getFullPartitionName());
+        throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()
+            + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
       }
       lockId = res.getLockid();
 
