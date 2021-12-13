@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -38,8 +39,13 @@ import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
+import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
 
 
 /**
@@ -74,24 +80,46 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent)  throws MetaException {
-    if (TxnUtils.isTransactionalTable(partitionEvent.getTable())) {
+    Table table = partitionEvent.getTable();
+    EnvironmentContext context = partitionEvent.getEnvironmentContext();
+
+    if (TxnUtils.isTransactionalTable(table)) {
       txnHandler = getTxnHandler();
-      txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
-          partitionEvent.getPartitionIterator());
-      
+      txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, table, partitionEvent.getPartitionIterator());
+
       if (!partitionEvent.getDeleteData()) {
-        CompactionRequest rqst = new CompactionRequest(
-            partitionEvent.getTable().getDbName(), partitionEvent.getTable().getTableName(), CompactionType.MAJOR);
-        
-        Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
-        while (partitionIterator.hasNext()) {
-          Partition p = partitionIterator.next();
-          
-          List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
-          List<String> partVals = p.getValues();
-          
-          rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
-          txnHandler.compact(rqst);
+        long currentTxn = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("txnId")).map(Long::parseLong)
+          .orElse(0L);
+
+        long writeId = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("writeId")).map(Long::parseLong)
+          .orElse(0L);
+
+        try {
+          if (currentTxn > 0) {
+            CompactionRequest rqst = new CompactionRequest(
+                table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
+
+            Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
+            while (partitionIterator.hasNext()) {
+              Partition p = partitionIterator.next();
+              
+              List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
+              List<String> partVals = p.getValues();
+              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
+              rqst.putToProperties("location", p.getSd().getLocation());
+              
+              txnHandler.submitForCleanup(rqst, writeId, currentTxn);
+            }
+          }
+        } catch ( InterruptedException | IOException e) {
+          throw handleException(e)
+            .convertIfInstance(IOException.class, MetaException.class)
+            .convertIfInstance(InterruptedException.class, MetaException.class)
+            .defaultMetaException();
         }
       }
     }

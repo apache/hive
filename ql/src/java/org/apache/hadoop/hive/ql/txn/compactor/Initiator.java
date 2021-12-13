@@ -262,7 +262,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
     String user = cache.get(fullTableName);
     if (user == null) {
-      user = findUserToRunAs(sd.getLocation(), t);
+      user = TxnUtils.findUserToRunAs(sd.getLocation(), t, conf);
       cache.put(fullTableName, user);
     }
     return user;

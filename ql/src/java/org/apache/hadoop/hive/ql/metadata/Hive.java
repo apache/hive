@@ -59,6 +59,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -3816,6 +3817,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (snapshot != null) {
           dropOptions.setWriteId(snapshot.getWriteId());
         }
+        long txnId = Optional.ofNullable(SessionState.get())
+          .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+        dropOptions.setTxnId(txnId);
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
           partitionExpressions, dropOptions);

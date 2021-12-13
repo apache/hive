@@ -5135,7 +5135,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return true;
   }
 
-  private static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
+  static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
     // Data needs deletion. Check if trash may be skipped.
     // Trash may be skipped iff:
     //  1. deleteData == true, obviously.

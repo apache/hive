@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -31,9 +34,13 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -494,5 +501,65 @@ public class TxnUtils {
     String dbProduct = conn.getMetaData().getDatabaseProductName();
     DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
     stmt.execute(databaseProduct.getTxnSeedFn(seedTxnId));
+  }
+
+  /**
+   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be
+   * returned; if not: the the owner of the directory to be compacted.
+   * It is asserted that either the user running the hive metastore or the table
+   * owner must be able to stat the directory and determine the owner.
+   * @param location directory that will be read or written to.
+   * @param t metastore table object
+   * @return metastore.compactor.run.as.user value; or if that is not set: username of the owner of the location.
+   * @throws java.io.IOException if neither the hive metastore user nor the table owner can stat
+   * the location.
+   */
+  public static String findUserToRunAs(String location, Table t, Configuration conf)
+    throws IOException, InterruptedException {
+    LOG.debug("Determining who to run the job as.");
+
+    // check if a specific user is set in config
+    String runUserAs = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER);
+    if (runUserAs != null && !"".equals(runUserAs)) {
+      return runUserAs;
+    }
+    // get table directory owner
+    Path p = new Path(location);
+    FileSystem fs = p.getFileSystem(conf);
+
+    try {
+      FileStatus stat = fs.getFileStatus(p);
+      LOG.debug("Running job as " + stat.getOwner());
+      return stat.getOwner();
+    } catch (AccessControlException e) {
+      // TODO not sure this is the right exception
+      LOG.debug("Unable to stat file as current user, trying as table owner");
+
+      // Now, try it as the table owner and see if we get better luck.
+      List<String> wrapper = new ArrayList<>(1);
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
+        UserGroupInformation.getLoginUser());
+
+      ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+        // need to use a new filesystem object here to have the correct ugi
+        FileSystem proxyFs = p.getFileSystem(conf);
+        FileStatus stat = proxyFs.getFileStatus(p);
+        wrapper.add(stat.getOwner());
+        return null;
+      });
+
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+      }
+      if (wrapper.size() == 1) {
+        LOG.debug("Running job as " + wrapper.get(0));
+        return wrapper.get(0);
+      }
+    }
+    LOG.error("Unable to stat file " + p + " as either current user(" +
+      UserGroupInformation.getLoginUser() + ") or table owner(" + t.getOwner() + "), giving up");
+    throw new IOException("Unable to stat file: " + p);
   }
 }

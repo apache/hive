@@ -615,16 +615,18 @@ int _kTxnTypeValues[] = {
   TxnType::REPL_CREATED,
   TxnType::READ_ONLY,
   TxnType::COMPACTION,
-  TxnType::MATER_VIEW_REBUILD
+  TxnType::MATER_VIEW_REBUILD,
+  TxnType::SOFT_DELETE
 };
 const char* _kTxnTypeNames[] = {
   "DEFAULT",
   "REPL_CREATED",
   "READ_ONLY",
   "COMPACTION",
-  "MATER_VIEW_REBUILD"
+  "MATER_VIEW_REBUILD",
+  "SOFT_DELETE"
 };
-const std::map<int, const char*> _TxnType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kTxnTypeValues, _kTxnTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _TxnType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(6, _kTxnTypeValues, _kTxnTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const TxnType::type& val) {
   std::map<int, const char*>::const_iterator it = _TxnType_VALUES_TO_NAMES.find(val);

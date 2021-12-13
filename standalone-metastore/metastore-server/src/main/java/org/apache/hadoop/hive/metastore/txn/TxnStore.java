@@ -343,6 +343,9 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
+  @RetrySemantics.Idempotent
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException;
+
   /**
    * Show list of current compactions.
    * @param rqst info on which compactions to show

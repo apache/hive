@@ -1763,6 +1763,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
       context.putToProperties("writeId", options.writeId.toString());
     }
+    if (options.txnId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", options.txnId.toString());
+    }
     req.setEnvironmentContext(context);
     
     return client.drop_partitions_req(req).getPartitions();

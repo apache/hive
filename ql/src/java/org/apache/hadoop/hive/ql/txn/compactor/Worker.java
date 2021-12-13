@@ -438,7 +438,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
 
       if (ci.runAs == null) {
-        ci.runAs = findUserToRunAs(sd.getLocation(), t);
+        ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), t, conf);
       }
 
       checkInterrupt();

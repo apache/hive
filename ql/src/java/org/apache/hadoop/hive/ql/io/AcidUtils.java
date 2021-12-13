@@ -3109,6 +3109,12 @@ public class AcidUtils {
     if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
       return TxnType.COMPACTION;
     }
+    // check if soft delete
+    if (tree.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS
+        && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))) {
+      return TxnType.SOFT_DELETE;
+    }
     return TxnType.DEFAULT;
   }
 

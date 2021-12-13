@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -899,7 +900,7 @@ public class TestInitiator extends CompactorTest {
   }
 
   /**
-   * Tests org.apache.hadoop.hive.ql.txn.compactor.CompactorThread#findUserToRunAs(java.lang.String, org.apache.hadoop
+   * Tests org.apache.hadoop.hive.metastore.txn.#findUserToRunAs(java.lang.String, org.apache.hadoop
    * .hive.metastore.api.Table).
    * Used by Worker and Initiator.
    * Initiator caches this via Initiator#resolveUserToRunAs.
@@ -917,13 +918,13 @@ public class TestInitiator extends CompactorTest {
     // user set in config
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
     initiator.setConf(conf);
-    Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+    Assert.assertEquals(userFromConf, TxnUtils.findUserToRunAs(t.getSd().getLocation(), t, conf));
 
     // table dir owner (is probably not "randomUser123")
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
     // simulate restarting Initiator
     initiator.setConf(conf);
-    Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+    Assert.assertNotEquals(userFromConf, TxnUtils.findUserToRunAs(t.getSd().getLocation(), t, conf));
   }
 
   /**
