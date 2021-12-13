@@ -236,7 +236,7 @@
     <dependency>
       <groupId>org.apache.arrow</groupId>
       <artifactId>arrow-memory-netty</artifactId>
-      <version>2.0.0</version>
+      <version>${arrow.version}</version>
     </dependency>
     <!-- test intra-project -->
     <dependency>
