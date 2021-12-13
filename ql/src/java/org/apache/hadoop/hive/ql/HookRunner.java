@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HiveHooks;
 import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
+import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
@@ -121,19 +122,29 @@ public class HookRunner {
   }
 
   /**
-  * Dispatches {@link QueryLifeTimeHook#afterCompile(QueryLifeTimeHookContext, boolean)}.
-  *
-  * @param command the Hive command that is being run
-  * @param compileError true if there was an error while compiling the command, false otherwise
-  */
-  void runAfterCompilationHook(String command, boolean compileError) {
+   * Dispatches {@link QueryLifeTimeHook#afterCompile(QueryLifeTimeHookContext, boolean)}.
+   *
+   * @param driverContext the DriverContext used for generating the HookContext
+   * @param analyzerContext the SemanticAnalyzer context for this query
+   * @param compileException the exception if one was thrown during the compilation
+   * @throws Exception during {@link PrivateHookContext} creation
+   */
+  void runAfterCompilationHook(DriverContext driverContext, Context analyzerContext, Throwable compileException)
+      throws Exception {
     List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
+      HookContext hookContext = new PrivateHookContext(driverContext, analyzerContext);
+      hookContext.setException(compileException);
+
       QueryLifeTimeHookContext qhc =
-          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
+          new QueryLifeTimeHookContextImpl.Builder()
+              .withHiveConf(conf)
+              .withCommand(analyzerContext.getCmd())
+              .withHookContext(hookContext)
+              .build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
-        hook.afterCompile(qhc, compileError);
+        hook.afterCompile(qhc, compileException != null);
       }
     }
   }

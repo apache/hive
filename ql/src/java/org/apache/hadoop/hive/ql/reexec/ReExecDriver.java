@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -115,6 +116,7 @@ public class ReExecDriver implements IDriver {
     }
   }
 
+  // I think this should be used only in tests
   public int compile(String command, boolean resetTaskIds) {
     return coreDriver.compile(command, resetTaskIds);
   }
@@ -122,7 +124,40 @@ public class ReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse compileAndRespond(String statement) throws CommandProcessorException {
     currentQuery = statement;
-    return coreDriver.compileAndRespond(statement);
+
+    int compileIndex = 0;
+    int maxCompilations = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_RECOMPILATION_COUNT);
+    while (true) {
+      compileIndex++;
+
+      final int currentIndex = compileIndex;
+      plugins.forEach(p -> p.beforeCompile(currentIndex));
+
+      LOG.info("Compile #{} of query", compileIndex);
+      CommandProcessorResponse cpr = null;
+      CommandProcessorException cpe = null;
+      try {
+        cpr = coreDriver.compileAndRespond(statement);
+      } catch (CommandProcessorException e) {
+        cpe = e;
+      }
+
+      final boolean success = cpe == null;
+      plugins.forEach(p -> p.afterCompile(success));
+
+      // If the compilation was successful return the result
+      if (success) {
+        return cpr;
+      }
+
+      if (compileIndex >= maxCompilations || !plugins.stream().anyMatch(p -> p.shouldReCompile(currentIndex))) {
+        // If we do not have to recompile, return the last error
+        throw cpe;
+      }
+
+      // Prepare for the recompile and start the next loop
+      plugins.forEach(IReExecutionPlugin::prepareToReCompile);
+    }
   }
 
   @Override
@@ -148,11 +183,11 @@ public class ReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
-    int maxExecutuions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
-
+    int maxExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
 
     while (true) {
       executionIndex++;
+
       for (IReExecutionPlugin p : plugins) {
         p.beforeExecute(executionIndex, explainReOptimization);
       }
@@ -167,12 +202,13 @@ public class ReExecDriver implements IDriver {
       }
 
       PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
-      afterExecute(oldPlanMapper, cpr != null);
+      boolean success = cpr != null;
+      plugins.forEach(p -> p.afterExecute(oldPlanMapper, success));
 
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
-      shouldReExecute |= cpr == null && shouldReExecute();
+      shouldReExecute |= cpr == null && plugins.stream().anyMatch(p -> p.shouldReExecute(executionIndex));
 
-      if (executionIndex >= maxExecutuions || !shouldReExecute) {
+      if (executionIndex >= maxExecutions || !shouldReExecute) {
         if (cpr != null) {
           return cpr;
         } else {
@@ -180,7 +216,8 @@ public class ReExecDriver implements IDriver {
         }
       }
       LOG.info("Preparing to re-execute query");
-      prepareToReExecute();
+      plugins.forEach(IReExecutionPlugin::prepareToReExecute);
+
       try {
         coreDriver.compileAndRespond(currentQuery);
       } catch (CommandProcessorException e) {
@@ -190,7 +227,8 @@ public class ReExecDriver implements IDriver {
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
-      if (!explainReOptimization && !shouldReExecuteAfterCompile(oldPlanMapper, newPlanMapper)) {
+      if (!explainReOptimization &&
+          !plugins.stream().anyMatch(p -> p.shouldReExecuteAfterCompile(executionIndex, oldPlanMapper, newPlanMapper))) {
         LOG.info("re-running the query would probably not yield better results; returning with last error");
         // FIXME: retain old error; or create a new one?
         return cpr;
@@ -198,42 +236,10 @@ public class ReExecDriver implements IDriver {
     }
   }
 
-  private void afterExecute(PlanMapper planMapper, boolean success) {
-    for (IReExecutionPlugin p : plugins) {
-      p.afterExecute(planMapper, success);
-    }
-  }
-
-  private boolean shouldReExecuteAfterCompile(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    boolean ret = false;
-    for (IReExecutionPlugin p : plugins) {
-      boolean shouldReExecute = p.shouldReExecute(executionIndex, oldPlanMapper, newPlanMapper);
-      LOG.debug("{}.shouldReExecuteAfterCompile = {}", p, shouldReExecute);
-      ret |= shouldReExecute;
-    }
-    return ret;
-  }
-
-  private boolean shouldReExecute() {
-    boolean ret = false;
-    for (IReExecutionPlugin p : plugins) {
-      boolean shouldReExecute = p.shouldReExecute(executionIndex);
-      LOG.debug("{}.shouldReExecute = {}", p, shouldReExecute);
-      ret |= shouldReExecute;
-    }
-    return ret;
-  }
-
   @Override
   public CommandProcessorResponse run(String command) throws CommandProcessorException {
     compileAndRespond(command);
     return run();
-  }
-
-  private void prepareToReExecute() {
-    for (IReExecutionPlugin p : plugins) {
-      p.prepareToReExecute();
-    }
   }
 
   @Override

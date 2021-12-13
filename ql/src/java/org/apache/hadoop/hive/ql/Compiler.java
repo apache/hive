@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -94,7 +95,7 @@ public class Compiler {
   public QueryPlan compile(String rawCommand, boolean deferClose) throws CommandProcessorException {
     initialize(rawCommand);
 
-    boolean compileError = false;
+    Throwable compileException = null;
     boolean parsed = false;
     QueryPlan plan = null;
     try {
@@ -111,15 +112,15 @@ public class Compiler {
       authorize(sem);
       explainOutput(sem, plan);
     } catch (CommandProcessorException cpe) {
-      compileError = true;
+      compileException = cpe.getCause();
       throw cpe;
     } catch (Exception e) {
-      compileError = true;
+      compileException = e;
       DriverUtils.checkInterrupted(driverState, driverContext, "during query compilation: " + e.getMessage(), null,
           null);
       handleException(e);
     } finally {
-      cleanUp(compileError, parsed, deferClose);
+      cleanUp(compileException, parsed, deferClose);
     }
 
     return plan;
@@ -477,12 +478,12 @@ public class Compiler {
         e);
   }
 
-  private void cleanUp(boolean compileError, boolean parsed, boolean deferClose) {
+  private void cleanUp(Throwable compileException, boolean parsed, boolean deferClose) {
     // Trigger post compilation hook. Note that if the compilation fails here then
     // before/after execution hook will never be executed.
     if (parsed) {
       try {
-        driverContext.getHookRunner().runAfterCompilationHook(context.getCmd(), compileError);
+        driverContext.getHookRunner().runAfterCompilationHook(driverContext, context, compileException);
       } catch (Exception e) {
         LOG.warn("Failed when invoking query after-compilation hook.", e);
       }
@@ -497,7 +498,7 @@ public class Compiler {
       LOG.info("Compiling command(queryId={}) has been interrupted after {} seconds", driverContext.getQueryId(),
           duration);
     } else {
-      driverState.compilationFinishedWithLocking(compileError);
+      driverState.compilationFinishedWithLocking(compileException != null);
       LOG.info("Completed compiling command(queryId={}); Time taken: {} seconds", driverContext.getQueryId(),
           duration);
     }
