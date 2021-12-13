@@ -244,7 +244,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     }
 
     synchronized (this) {
-      boolean limitReached = checkLimitReached();
+      boolean limitReached = LimitOperator.checkLimitReached(jobConf);
       if (limitReached) {
         LOG.info(
             "TezProcessor exits early as query limit already reached, vertex: {}, task: {}, attempt: {}",
@@ -277,23 +277,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       initializeAndRunProcessor(inputs, outputs);
     }
     // TODO HIVE-14042. In case of an abort request, throw an InterruptedException
-  }
-
-  private boolean checkLimitReached() {
-    String queryId = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
-    String limitReachedKey = LimitOperator.getLimitReachedKey(jobConf);
-
-    try {
-      return ObjectCacheFactory.getCache(jobConf, queryId, false, true)
-          .retrieve(limitReachedKey, new Callable<AtomicBoolean>() {
-            @Override
-            public AtomicBoolean call() {
-              return new AtomicBoolean(false);
-            }
-          }).get();
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   protected void initializeAndRunProcessor(Map<String, LogicalInput> inputs,

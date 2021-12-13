@@ -15361,28 +15361,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void startAnalysis() {
-    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
-    SessionState ss = SessionState.get();
-    if (ss == null) {
-      LOG.info("No current SessionState, skipping metadata query-level caching for: {}", queryId);
-      return;
-    }
     if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
-      LOG.info("Starting caching scope for: {}", queryId);
-      ss.startScope(queryId);
-    }
-  }
-
-  @Override
-  public void endAnalysis() {
-    SessionState ss = SessionState.get();
-    if (ss == null) {
-      return;
-    }
-    if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
-      String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
-      LOG.info("Ending caching scope for: {}", queryId);
-      ss.endScope(queryId);
+      queryState.createHMSCache();
     }
   }
 }
