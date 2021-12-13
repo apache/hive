@@ -525,11 +525,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @Override
   @SuppressWarnings("rawtypes")
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
-    Operator sinkOp = null;
-    boolean skipCalcitePlan = false;
+    final Operator sinkOp;
 
     if (!runCBO) {
-      skipCalcitePlan = true;
+      sinkOp = super.genOPTree(ast, plannerCtx);
     } else {
       PreCboCtx cboCtx = (PreCboCtx) plannerCtx;
       List<ASTNode> oldHints = new ArrayList<>();
@@ -556,7 +555,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         profilesCBO = obtainCBOProfiles(queryProperties);
 
         disableJoinMerge = true;
-        boolean reAnalyzeAST = false;
         final boolean materializedView = getQB().isMaterializedView();
 
         try {
@@ -674,8 +672,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           this.ctx.setCboInfo(cboMsg);
 
-          // Determine if we should re-throw the exception OR if we try to mark plan as reAnalyzeAST to retry
-          // planning as non-CBO.
+          // Determine if we should re-throw the exception OR if we try to mark the query to retry as non-CBO.
           if (fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
               // These types of exceptions do not need wrapped
@@ -690,14 +687,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           runCBO = false;
           disableJoinMerge = defaultJoinMerge;
           disableSemJoinReordering = false;
-          if (reAnalyzeAST) {
-            init(true);
-            prunedPartitions.clear();
-            // Assumption: At this point Parse Tree gen & resolution will always
-            // be true (since we started out that way).
-            super.genResolvedParseTree(ast, new PlannerContext());
-            skipCalcitePlan = true;
-          }
         }
       } else {
         String msg;
@@ -707,12 +696,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           msg = "Plan not optimized by CBO.";
         }
         this.ctx.setCboInfo(msg);
-        skipCalcitePlan = true;
+        sinkOp = super.genOPTree(ast, plannerCtx);
       }
-    }
-
-    if (skipCalcitePlan) {
-      sinkOp = super.genOPTree(ast, plannerCtx);
     }
 
     return sinkOp;

@@ -32,9 +32,10 @@ import org.junit.Test;
 
 public class TestCBOReCompilation {
 
-  private static final String QUERY_FAILING_WITH_CBO = "explain from ff1 as a join cc1 as b " +
-      "insert overwrite table aa1 select   stf_id GROUP BY b.stf_id " +
-      "insert overwrite table bb1 select b.stf_id GROUP BY b.stf_id";
+  private static final String DROP_TABLE = "drop table if exists part3";
+  private static final String CREATE_TABLE = "CREATE TABLE part3(p_partkey INT, p_type STRING)";
+  private static final String QUERY_FAILING_WITH_CBO =
+      "explain select * from part3 where p_type = ALL(select max(p_type) from part3)";
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
@@ -42,39 +43,23 @@ public class TestCBOReCompilation {
   @BeforeClass
   public static void beforeClass() throws Exception {
     try (IDriver driver = createDriver()) {
-      dropTables(driver);
-      String[] cmds = {
-          // @formatter:off
-          "create table aa1 ( stf_id string)",
-          "create table bb1 ( stf_id string)",
-          "create table cc1 ( stf_id string)",
-          "create table ff1 ( x string)"
-          // @formatter:on
-      };
-      for (String cmd : cmds) {
-        driver.run(cmd);
-      }
+      driver.run(DROP_TABLE);
+      driver.run(CREATE_TABLE);
     }
   }
 
   @AfterClass
   public static void afterClass() throws Exception {
     try (IDriver driver = createDriver()) {
-      dropTables(driver);
-    }
-  }
-
-  public static void dropTables(IDriver driver) throws Exception {
-    String[] tables = new String[] {"aa1", "bb1", "cc1", "ff1" };
-    for (String t : tables) {
-      driver.run("drop table if exists " + t);
+      driver.run(DROP_TABLE);
     }
   }
 
   @Test
-  public void testReExecutedOnConservative() throws Exception {
+  public void testReExecutedOnConservative() {
     try (IDriver driver = createDriver("CONSERVATIVE")) {
-      driver.run(QUERY_FAILING_WITH_CBO);
+      Assert.assertThrows("Plan not optimized by CBO", CommandProcessorException.class,
+          () -> driver.run(QUERY_FAILING_WITH_CBO));
     }
   }
 
@@ -86,7 +71,7 @@ public class TestCBOReCompilation {
   }
 
   @Test
-  public void testFailOnTest() throws Exception {
+  public void testFailOnTest() {
     try (IDriver driver = createDriver("TEST")) {
       Assert.assertThrows("Plan not optimized by CBO", CommandProcessorException.class,
           () -> driver.run(QUERY_FAILING_WITH_CBO));
@@ -94,7 +79,7 @@ public class TestCBOReCompilation {
   }
 
   @Test
-  public void testFailOnNever() throws Exception {
+  public void testFailOnNever() {
     try (IDriver driver = createDriver("NEVER")) {
       Assert.assertThrows("Plan not optimized by CBO", CommandProcessorException.class,
           () -> driver.run(QUERY_FAILING_WITH_CBO));
@@ -118,6 +103,7 @@ public class TestCBOReCompilation {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
     conf.setBoolVar(ConfVars.HIVE_CBO_ENABLED, true);
+    conf.setBoolVar(ConfVars.HIVESTATSAUTOGATHER, false);
     conf.setVar(ConfVars.HIVE_CBO_FALLBACK_STRATEGY, strategy);
     SessionState.start(conf);
 
