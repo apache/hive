@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -473,7 +474,9 @@ public class Compiler {
       errorMessage += ". Failed command: " + driverContext.getQueryString();
     }
 
-    CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+    if (!(e instanceof ReCompileException)) {
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+    }
     throw DriverUtils.createProcessorException(driverContext, error.getErrorCode(), errorMessage, error.getSQLState(),
         e);
   }
