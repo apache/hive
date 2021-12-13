@@ -1273,7 +1273,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
               return true;
             } else {
               LOG.error("Copy failed with full distcp for source: {} to target: {}  snapshot:"
-                      + "{} params: {}. Return code: {}", srcPaths, dst, newSnapshot, returnCode);
+                      + "{} . Return code: {}", srcPaths, dst, newSnapshot, returnCode);
               return false;
             }
           }

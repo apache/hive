@@ -697,7 +697,7 @@ public class HiveConf extends Configuration {
     REPL_REUSE_SNAPSHOTS("hive.repl.reuse.snapshots", false,
         "If enabled,reusing snapshots is attempted in case of controlled failover(B->A) when same paths are"
         + "used for external table replication on src and target. Also in cases of failed incremental where re-bootstrap is required."
-        + "If set to true and snapshots exist in some paths, it creates/reuses new snapshots in those paths using the same name as exisiting snapshots."),
+        + "If set to true and snapshots exist in some paths, it creates/reuses new snapshots in those paths using the same name as existing snapshots."),
     REPL_STATS_TOP_EVENTS_COUNTS("hive.repl.stats.events.count", 5,
         "Number of topmost expensive events that needs to be maintained per event type for the replication statistics." +
                 " Maximum permissible limit is 10."),
