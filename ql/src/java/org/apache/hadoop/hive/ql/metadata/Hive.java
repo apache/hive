@@ -3067,6 +3067,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           entry.getValue().hasOldPartition = true;
         });
       }
+
       // no need to fetch partition again in tasks since we have already fetched partitions
       // info in getPartitionsByNames()
       fetchPartitionInfo = false;
@@ -3076,7 +3077,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
 
     for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
-      boolean getPartitionFromHms = fetchPartitionInfo;
+      final boolean getPartitionFromHms = fetchPartitionInfo;
       tasks.add(() -> {
         PartitionDetails partitionDetails = entry.getValue();
         Map<String, String> fullPartSpec = partitionDetails.fullSpec;
