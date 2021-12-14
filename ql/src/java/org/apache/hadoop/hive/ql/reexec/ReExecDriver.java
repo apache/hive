@@ -57,68 +57,32 @@ import com.google.common.annotations.VisibleForTesting;
  * Covers the IDriver interface, handles query re-execution; and asks clear questions from the underlying re-execution plugins.
  */
 public class ReExecDriver implements IDriver {
-
-  private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
-
-    @Override
-    public ASTNode preAnalyze(HiveSemanticAnalyzerHookContext context, ASTNode ast) throws SemanticException {
-      if (ast.getType() == HiveParser.TOK_EXPLAIN) {
-        int childCount = ast.getChildCount();
-        for (int i = 1; i < childCount; i++) {
-          if (ast.getChild(i).getType() == HiveParser.KW_REOPTIMIZATION) {
-            explainReOptimization = true;
-            ast.deleteChild(i);
-            break;
-          }
-        }
-        if (explainReOptimization && firstExecution()) {
-          Tree execTree = ast.getChild(0);
-          execTree.setParent(ast.getParent());
-          ast.getParent().setChild(0, execTree);
-          return (ASTNode) execTree;
-        }
-      }
-      return ast;
-    }
-
-    @Override
-    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<?>> rootTasks)
-        throws SemanticException {
-    }
-  }
-
   private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver.class);
+
+  private final Driver coreDriver;
+  private final QueryState queryState;
+  private final List<IReExecutionPlugin> plugins;
+
   private boolean explainReOptimization;
-  private Driver coreDriver;
-  private QueryState queryState;
   private String currentQuery;
   private int executionIndex;
 
-  private ArrayList<IReExecutionPlugin> plugins;
-
-  @Override
-  public HiveConf getConf() {
-    return queryState.getConf();
-  }
-
-  private boolean firstExecution() {
-    return executionIndex == 0;
-  }
-
-  public ReExecDriver(QueryState queryState, QueryInfo queryInfo, ArrayList<IReExecutionPlugin> plugins) {
+  public ReExecDriver(QueryState queryState, QueryInfo queryInfo, List<IReExecutionPlugin> plugins) {
     this.queryState = queryState;
-    coreDriver = new Driver(queryState, queryInfo, null);
-    coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
+    this.coreDriver = new Driver(queryState, queryInfo, null);
     this.plugins = plugins;
 
-    for (IReExecutionPlugin p : plugins) {
-      p.initialize(coreDriver);
-    }
+    coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
+    plugins.forEach(p -> p.initialize(coreDriver));
   }
 
   // I think this should be used only in tests
   public int compile(String command, boolean resetTaskIds) {
     return coreDriver.compile(command, resetTaskIds);
+  }
+
+  private boolean firstExecution() {
+    return executionIndex == 0;
   }
 
   @Override
@@ -158,6 +122,11 @@ public class ReExecDriver implements IDriver {
       // Prepare for the recompile and start the next loop
       plugins.forEach(IReExecutionPlugin::prepareToReCompile);
     }
+  }
+
+  @Override
+  public HiveConf getConf() {
+    return queryState.getConf();
   }
 
   @Override
@@ -300,4 +269,33 @@ public class ReExecDriver implements IDriver {
     return explainReOptimization || coreDriver.hasResultSet();
   }
 
+
+  private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
+
+    @Override
+    public ASTNode preAnalyze(HiveSemanticAnalyzerHookContext context, ASTNode ast) throws SemanticException {
+      if (ast.getType() == HiveParser.TOK_EXPLAIN) {
+        int childCount = ast.getChildCount();
+        for (int i = 1; i < childCount; i++) {
+          if (ast.getChild(i).getType() == HiveParser.KW_REOPTIMIZATION) {
+            explainReOptimization = true;
+            ast.deleteChild(i);
+            break;
+          }
+        }
+        if (explainReOptimization && firstExecution()) {
+          Tree execTree = ast.getChild(0);
+          execTree.setParent(ast.getParent());
+          ast.getParent().setChild(0, execTree);
+          return (ASTNode) execTree;
+        }
+      }
+      return ast;
+    }
+
+    @Override
+    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<?>> rootTasks)
+        throws SemanticException {
+    }
+  }
 }

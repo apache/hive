@@ -515,6 +515,7 @@ public class Driver implements IDriver {
   }
 
   private void prepareContext() throws CommandProcessorException {
+    String originalCboInfo = context != null ? context.cboInfo : null;
     if (context != null && context.getExplainAnalyze() != AnalyzeState.RUNNING) {
       // close the existing ctx etc before compiling a new query, but does not destroy driver
       closeInProcess(false);
@@ -522,7 +523,8 @@ public class Driver implements IDriver {
 
     if (context == null) {
       context = new Context(driverContext.getConf());
-      }
+      context.setCboInfo(originalCboInfo);
+    }
 
     context.setHiveTxnManager(driverContext.getTxnManager());
     context.setStatsSource(driverContext.getStatsSource());

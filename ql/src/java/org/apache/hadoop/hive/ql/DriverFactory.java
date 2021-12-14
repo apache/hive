@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -53,7 +54,7 @@ public final class DriverFactory {
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
     strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
-    ArrayList<IReExecutionPlugin> plugins = new ArrayList<>();
+    List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
