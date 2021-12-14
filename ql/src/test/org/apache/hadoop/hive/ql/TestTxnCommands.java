@@ -1601,16 +1601,16 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testDropWithBaseOnePartition() throws Exception {
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
-
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='a') values (1,2),(3,4)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (5,5),(4,4)");
-    runStatementOnDriver("alter table " + Table.ACIDTBLPART + " drop partition (p='a')");
+
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
+    runStatementOnDriver("alter table " + Table.ACIDTBLPART + " drop partition (p='b')");
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
       fs.listStatus(new Path(getWarehouseDir(),
-          Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+          Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
         AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1619,7 +1619,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals("base_0000003", name);
     stat =
       fs.listStatus(new Path(getWarehouseDir(),
-          Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+          Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
         AcidUtils.baseFileFilter);
     if (0 != stat.length) {
       Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1627,27 +1627,48 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     
     List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
     Assert.assertEquals(2, r.size());
+    
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertTrue(resp.getCompacts().stream().anyMatch(
+        ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && "p=b".equals(ci.getPartitionname())));
+    
+    runCleaner(hiveConf);
+    
+    stat =
+      fs.listStatus(new Path(getWarehouseDir(),
+          Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+        AcidUtils.deltaFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting 0 delta and found " + stat.length + " files " + Arrays.toString(stat));
+    }
   }
 
   @Test
   public void testDropWithBaseMultiplePartitions() throws Exception {
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='a', p3='a') values (1,1),(2,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='a', p3='b') values (3,3),(4,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='b', p3='c') values (7,7),(8,8)");
+    
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
-
-    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
-      + " partition (p1='a', p2='a', p3='a') values (1,1),(2,2)");
-    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
-      + " partition (p1='a', p2='a', p3='b') values (3,3),(4,4)");
-    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
-      + " partition (p1='a', p2='b', p3='c') values (7,7),(8,8)");
     runStatementOnDriver("alter table " + Table.ACIDTBLNESTEDPART + " drop partition (p2='a')");
-
+    
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat;
 
     for (char p : Arrays.asList('a', 'b')) {
+      String partName = "p1=a/p2=a/p3=" + p;
+      Assert.assertTrue(resp.getCompacts().stream().anyMatch(
+          ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && partName.equals(ci.getPartitionname())));
       stat =
         fs.listStatus(new Path(getWarehouseDir(),
-            Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a/p3=" + p),
+            Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/" + partName),
           AcidUtils.baseFileFilter);
       if (1 != stat.length) {
         Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
@@ -1665,5 +1686,17 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     
     List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLNESTEDPART);
     Assert.assertEquals(2, r.size());
+    
+    runCleaner(hiveConf);
+
+    for (char p : Arrays.asList('a', 'b')) {
+      stat =
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a/p3=" + p),
+          AcidUtils.deltaFileFilter);
+      if (0 != stat.length) {
+        Assert.fail("Expecting 0 delta and found " + stat.length + " files " + Arrays.toString(stat));
+      }
+    }
   }
 }

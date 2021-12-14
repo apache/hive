@@ -366,6 +366,7 @@ class CompactionTxnHandler extends TxnHandler {
             info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
             info.runAs = rs.getString(6);
             info.highestWriteId = rs.getLong(7);
+            info.properties = rs.getString(8);
             if (LOG.isDebugEnabled()) {
               LOG.debug("Found ready to clean: " + info.toString());
             }
