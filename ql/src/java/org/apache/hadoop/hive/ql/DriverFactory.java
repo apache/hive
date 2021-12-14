@@ -75,7 +75,7 @@ public final class DriverFactory {
     if ("reexecute_lost_am".equals(name)) {
       return new ReExecuteLostAMQueryPlugin();
     }
-    if ("reexecute_cbo".equals(name)) {
+    if ("recompile_without_cbo".equals(name)) {
       return new ReExecutionCBOPlugin();
     }
     if (name.equals("dagsubmit")) {

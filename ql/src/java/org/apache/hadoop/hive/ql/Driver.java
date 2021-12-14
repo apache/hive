@@ -474,6 +474,7 @@ public class Driver implements IDriver {
    * @param resetTaskIds Resets taskID counter if true.
    * @return 0 for ok
    */
+  @VisibleForTesting
   public int compile(String command, boolean resetTaskIds) {
     try {
       compile(command, resetTaskIds, false);

@@ -89,7 +89,6 @@ public class HookContext {
     public String getDescription() {
       return this.description;
     }
-
   }
 
   private QueryPlan queryPlan;

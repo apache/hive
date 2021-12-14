@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.reexec;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -76,7 +74,7 @@ public class ReExecDriver implements IDriver {
     plugins.forEach(p -> p.initialize(coreDriver));
   }
 
-  // I think this should be used only in tests
+  @VisibleForTesting
   public int compile(String command, boolean resetTaskIds) {
     return coreDriver.compile(command, resetTaskIds);
   }
