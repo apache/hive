@@ -31,6 +31,7 @@ import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
@@ -88,7 +89,9 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
     for (int i = 0; i < count ; i++) {
       RexNode expr = rexBuilder.makeInputRef(union, i);
       if (conditionsExtracted.containsKey(expr)) {
-        constants.put(expr, conditionsExtracted.get(expr));
+        RexNode literal = rexBuilder.makeLiteral(
+            ((RexLiteral) conditionsExtracted.get(expr)).getValue(), expr.getType(), true);
+        constants.put(expr, literal);
       }
     }
 
