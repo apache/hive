@@ -22,10 +22,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -43,11 +40,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -229,46 +221,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       txnHandler.markCleanerStart(ci);
       
       StorageDescriptor sd = resolveStorageDescriptor(t, p);
-      ValidTxnList validTxnList =
-          TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
-      //save it so that getAcidState() sees it
-      conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
-      /**
-       * {@code validTxnList} is capped by minOpenTxnGLB so if
-       * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
-       * produced by a compactor, that means every reader that could be active right now see it
-       * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
-       * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
-       *
-       *
-       * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
-       * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
-       * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
-       * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
-       * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
-       * writeId:17.  Compactor will produce base_17_c160.
-       * Suppose txnid:149 writes delta_18_18
-       * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
-       * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
-       * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
-       * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
-       * metadata that says that 18 is aborted.
-       * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
-       * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
-       * it (since it has nothing but aborted data).  But we can't tell which actually happened
-       * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
-       *
-       * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
-       * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
-       * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
-       * useful if there is all of a sudden a flood of aborted txns.  (For another day).
-       */
-      
-      // Creating 'reader' list since we are interested in the set of 'obsolete' files
-      ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
-      cleanUpTask = () -> removeFiles(Optional.ofNullable(location)
-          .orElse(sd.getLocation()), validWriteIdList, ci);
-      LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
+      cleanUpTask = () -> removeFiles(Optional.ofNullable(location).orElse(sd.getLocation()), 
+          minOpenTxnGLB, ci, location != null);
     
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
@@ -338,6 +292,80 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
 
+  private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean softDelete)
+      throws MetaException, IOException, NoSuchObjectException, NoSuchTxnException {
+    
+    if (softDelete) {
+      LockRequest lockRequest = createLockRequest(ci, 0);
+      LockResponse res = null;
+      
+      try {
+        res = txnHandler.lock(lockRequest);
+        if (res.getState() == LockState.ACQUIRED) {
+          Path path = new Path(location);
+          StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
+
+          boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
+            .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
+
+          return remove(location, ci, Collections.singletonList(path), ifPurge,
+            path.getFileSystem(conf), extraDebugInfo);
+        }
+      } catch (NoSuchTxnException | TxnAbortedException e) {
+        LOG.error(e.getMessage());
+      } finally {
+        if (res != null && res.getState() != LockState.NOT_ACQUIRED) {
+          UnlockRequest unlockRequest = new UnlockRequest(res.getLockid());
+          try {
+            txnHandler.unlock(unlockRequest);
+          } catch (NoSuchLockException | TxnOpenException e) {
+            LOG.error(e.getMessage());
+          }
+        }
+      }
+    }
+      
+    ValidTxnList validTxnList =
+      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+    //save it so that getAcidState() sees it
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    /**
+     * {@code validTxnList} is capped by minOpenTxnGLB so if
+     * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
+     * produced by a compactor, that means every reader that could be active right now see it
+     * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
+     * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
+     *
+     *
+     * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
+     * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
+     * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
+     * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
+     * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
+     * writeId:17.  Compactor will produce base_17_c160.
+     * Suppose txnid:149 writes delta_18_18
+     * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
+     * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
+     * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
+     * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
+     * metadata that says that 18 is aborted.
+     * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
+     * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
+     * it (since it has nothing but aborted data).  But we can't tell which actually happened
+     * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
+     *
+     * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
+     * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
+     * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
+     * useful if there is all of a sudden a flood of aborted txns.  (For another day).
+     */
+
+    // Creating 'reader' list since we are interested in the set of 'obsolete' files
+    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+    LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
+    
+    return removeFiles(location, validWriteIdList, ci);
+  }
   /**
    * @return true if any files were removed
    */

@@ -44,8 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
 
 /**
@@ -116,10 +116,7 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
             }
           }
         } catch ( InterruptedException | IOException e) {
-          throw handleException(e)
-            .convertIfInstance(IOException.class, MetaException.class)
-            .convertIfInstance(InterruptedException.class, MetaException.class)
-            .defaultMetaException();
+          throwMetaException(e);
         }
       }
     }
