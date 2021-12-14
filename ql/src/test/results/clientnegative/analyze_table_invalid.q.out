@@ -1,0 +1,103 @@
+PREHOOK: query: create table tbl (fld int) partitioned by (fld1 int, fld2 int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
+POSTHOOK: query: create table tbl (fld int) partitioned by (fld1 int, fld2 int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl
+PREHOOK: query: insert into tbl values (1, 2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl
+POSTHOOK: query: insert into tbl values (1, 2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=2/fld2=3
+POSTHOOK: Lineage: tbl PARTITION(fld1=2,fld2=3).fld SCRIPT []
+PREHOOK: query: insert into tbl values (11, 12, 13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl
+POSTHOOK: query: insert into tbl values (11, 12, 13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=12/fld2=13
+POSTHOOK: Lineage: tbl PARTITION(fld1=12,fld2=13).fld SCRIPT []
+PREHOOK: query: analyze table tbl partition (fld1 = 2) COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl@fld1=2/fld2=3
+PREHOOK: Output: default@tbl
+PREHOOK: Output: default@tbl@fld1=2/fld2=3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table tbl partition (fld1 = 2) COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl@fld1=2/fld2=3
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=2/fld2=3
+#### A masked pattern was here ####
+PREHOOK: query: analyze table tbl partition (fld2 = 13) COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl@fld1=12/fld2=13
+PREHOOK: Output: default@tbl
+PREHOOK: Output: default@tbl@fld1=12/fld2=13
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table tbl partition (fld2 = 13) COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl@fld1=12/fld2=13
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=12/fld2=13
+#### A masked pattern was here ####
+PREHOOK: query: analyze table tbl partition (fld1 = 12, fld2 = 13) COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl@fld1=12/fld2=13
+PREHOOK: Output: default@tbl
+PREHOOK: Output: default@tbl@fld1=12/fld2=13
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table tbl partition (fld1 = 12, fld2 = 13) COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl@fld1=12/fld2=13
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=12/fld2=13
+#### A masked pattern was here ####
+PREHOOK: query: analyze table tbl partition (fld1 = 2, fld2 = 3) COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl@fld1=2/fld2=3
+PREHOOK: Output: default@tbl
+PREHOOK: Output: default@tbl@fld1=2/fld2=3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table tbl partition (fld1 = 2, fld2 = 3) COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl@fld1=2/fld2=3
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=2/fld2=3
+#### A masked pattern was here ####
+PREHOOK: query: analyze table tbl COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl@fld1=12/fld2=13
+PREHOOK: Input: default@tbl@fld1=2/fld2=3
+PREHOOK: Output: default@tbl
+PREHOOK: Output: default@tbl@fld1=12/fld2=13
+PREHOOK: Output: default@tbl@fld1=2/fld2=3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table tbl COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl@fld1=12/fld2=13
+POSTHOOK: Input: default@tbl@fld1=2/fld2=3
+POSTHOOK: Output: default@tbl
+POSTHOOK: Output: default@tbl@fld1=12/fld2=13
+POSTHOOK: Output: default@tbl@fld1=2/fld2=3
+#### A masked pattern was here ####
+FAILED: SemanticException [Error 30007]: Invalid partitioning key/value specified in ANALYZE statement : {fld1=100}

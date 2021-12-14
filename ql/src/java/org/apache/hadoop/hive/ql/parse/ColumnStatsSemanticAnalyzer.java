@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -115,20 +123,53 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
+  private boolean doesPartitionExists(Map<String, String> partSpec) {
+    GetPartitionsRequest request = new GetPartitionsRequest();
+
+    request.setTblName(tbl.getTableName());
+    request.setDbName(tbl.getDbName());
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
+    projectSpec.setFieldList(Arrays.asList("tableName"));
+    request.setProjectionSpec(projectSpec);
+
+    GetPartitionsFilterSpec filterSpec = new GetPartitionsFilterSpec();
+    filterSpec.setFilterMode(PartitionFilterMode.BY_EXPR);
+
+    int partValsSpecified = 0;
+    StringBuilder sb = new StringBuilder();
+    for (String partKey : partSpec.keySet()) {
+      if (partSpec.get(partKey) != null) {
+        if (partValsSpecified > 0) {
+          sb.append(" AND ");
+        }
+        sb.append(partKey + " = " + partSpec.get(partKey));
+        partValsSpecified++;
+      }
+    }
+    
+    // If none of the values are given, then compute stats for whole table.
+    if (partValsSpecified == 0) {
+      return true;
+    }
+
+    filterSpec.setFilters(Arrays.asList(sb.toString()));
+    request.setFilterSpec(filterSpec);
+
+    try {
+      GetPartitionsResponse response = db.getMSC().getPartitionsWithSpecs(request);
+      return !response.getPartitionSpec().isEmpty();
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
   private void handlePartialPartitionSpec(Map<String, String> partSpec, ColumnStatsAutoGatherContext context) throws
     SemanticException {
-
-    // If user has fully specified partition, validate that partition exists
-    int partValsSpecified = 0;
-    for (String partKey : partSpec.keySet()) {
-      partValsSpecified += partSpec.get(partKey) == null ? 0 : 1;
-    }
     try {
       // for static partition, it may not exist when HIVESTATSCOLAUTOGATHER is
       // set to true
       if (context == null) {
-        if ((partValsSpecified == tbl.getPartitionKeys().size())
-            && (db.getPartition(tbl, partSpec, false, null, false) == null)) {
+        if (partSpec.size() != 0 && !doesPartitionExists(partSpec)) {
           throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_PARTITION.getMsg()
               + " : " + partSpec);
         }
