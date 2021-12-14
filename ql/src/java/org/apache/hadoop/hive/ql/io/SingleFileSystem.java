@@ -343,7 +343,8 @@ public abstract class SingleFileSystem extends FileSystem {
   }
 
   private static FsPermission addExecute(FsPermission permission) {
-    return new FsPermission(permission.toShort() | 1 | (1 << 3) | (1 << 6));
+    short mode = (short) (permission.toShort() | 1 | (1 << 3) | (1 << 6));
+    return new FsPermission(mode);
   }
 
   private IOException unsupportedReadOnly(String opName, Path path) throws IOException {
