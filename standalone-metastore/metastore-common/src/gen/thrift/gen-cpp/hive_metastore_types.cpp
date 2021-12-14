@@ -27926,51 +27926,6 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other984) {
-  dbname = other984.dbname;
-  tablename = other984.tablename;
-  partitionname = other984.partitionname;
-  type = other984.type;
-  state = other984.state;
-  workerid = other984.workerid;
-  start = other984.start;
-  runAs = other984.runAs;
-  hightestTxnId = other984.hightestTxnId;
-  metaInfo = other984.metaInfo;
-  endTime = other984.endTime;
-  hadoopJobId = other984.hadoopJobId;
-  id = other984.id;
-  errorMessage = other984.errorMessage;
-  enqueueTime = other984.enqueueTime;
-  workerVersion = other984.workerVersion;
-  initiatorId = other984.initiatorId;
-  initiatorVersion = other984.initiatorVersion;
-  cleanerStart = other984.cleanerStart;
-  __isset = other984.__isset;
-}
-ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other985) {
-  dbname = other985.dbname;
-  tablename = other985.tablename;
-  partitionname = other985.partitionname;
-  type = other985.type;
-  state = other985.state;
-  workerid = other985.workerid;
-  start = other985.start;
-  runAs = other985.runAs;
-  hightestTxnId = other985.hightestTxnId;
-  metaInfo = other985.metaInfo;
-  endTime = other985.endTime;
-  hadoopJobId = other985.hadoopJobId;
-  id = other985.id;
-  errorMessage = other985.errorMessage;
-  enqueueTime = other985.enqueueTime;
-  workerVersion = other985.workerVersion;
-  initiatorId = other985.initiatorId;
-  initiatorVersion = other985.initiatorVersion;
-  cleanerStart = other985.cleanerStart;
-  __isset = other985.__isset;
-=======
 ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other991) {
   dbname = other991.dbname;
   tablename = other991.tablename;
@@ -27990,6 +27945,7 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   workerVersion = other991.workerVersion;
   initiatorId = other991.initiatorId;
   initiatorVersion = other991.initiatorVersion;
+  cleanerStart = other991.cleanerStart;
   __isset = other991.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other992) {
@@ -28011,8 +27967,8 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   workerVersion = other992.workerVersion;
   initiatorId = other992.initiatorId;
   initiatorVersion = other992.initiatorVersion;
+  cleanerStart = other992.cleanerStart;
   __isset = other992.__isset;
->>>>>>> HIVE-25744: Support backward compatibility of thrift struct CreationMetadata
   return *this;
 }
 void ShowCompactResponseElement::printTo(std::ostream& out) const {
