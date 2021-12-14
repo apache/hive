@@ -21,7 +21,7 @@ insert into t2(a, b) values ('sum0', 0);
 
 -- Aggregate with count(*): incremental rebuild should be triggered even if there were deletes from source table
 create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as
-select t1.a, sum(t1.b), count(*) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a;
 
@@ -72,12 +72,8 @@ select t1.a, sum(t1.b) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a;
 
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a;
 
 drop materialized view mat1;
-
-select t1.a, sum(t1.b) from t1
-join t2 on (t1.a = t2.a)
-group by t1.a;
