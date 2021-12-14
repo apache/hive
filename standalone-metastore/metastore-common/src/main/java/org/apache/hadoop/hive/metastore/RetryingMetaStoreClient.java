@@ -239,16 +239,12 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         Throwable t = e.getCause();
         if (t instanceof TApplicationException) {
           TApplicationException tae = (TApplicationException)t;
-          if(tae.getMessage().contains("Internal error processing")){
-            LOG.debug("Probably a genuine error, will bail out(" + e.getMessage() + "). Retries made:"+
-                retriesMade + " out of:" + retryLimit);
-            throw tae;
-          }
           switch (tae.getType()) {
           case TApplicationException.UNSUPPORTED_CLIENT_TYPE:
           case TApplicationException.UNKNOWN_METHOD:
           case TApplicationException.WRONG_METHOD_NAME:
           case TApplicationException.INVALID_PROTOCOL:
+          case TApplicationException.INTERNAL_ERROR:
             throw t;
           default:
             // TODO: most other options are probably unrecoverable... throw?
