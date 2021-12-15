@@ -17,29 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
-import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
-import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
-import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -55,18 +33,16 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -90,7 +66,27 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Compaction related unit tests.
@@ -340,9 +336,8 @@ public class TestCompactor {
    * 1. create a bucketed ORC backed table (Orc is currently required by ACID)
    * 2. populate 2 partitions with data
    * 3. compute stats
-   * 4. insert some data into the table using StreamingAPI
-   * 5. Trigger major compaction (which should update stats)
-   * 6. check that stats have been updated
+   * 4. Trigger major compaction (which should update stats)
+   * 5. check that stats have been updated
    *
    * @throws Exception todo:
    *                   2. add non-partitioned test
@@ -351,9 +346,9 @@ public class TestCompactor {
   @Test
   public void testStatsAfterCompactionPartTbl() throws Exception {
     //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
+    String dbName = "default";
     String tblName = "compaction_test";
     String tblNameStg = tblName + "_stg";
-    List<String> colNames = Arrays.asList("a", "b");
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("drop table if exists " + tblNameStg, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
@@ -379,109 +374,58 @@ public class TestCompactor {
       tblName + " after load:");
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    //compute stats before compaction
     CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);
     Table table = msClient.getTable("default", tblName);
-    LOG.debug("List of stats columns before analyze Part1: " + txnHandler.findColumnsWithStats(ci));
-    Worker.StatsUpdater su = Worker.StatsUpdater.init(ci, colNames, conf,
-      System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
-    su.gatherStats();//compute stats before compaction
-    LOG.debug("List of stats columns after analyze Part1: " + txnHandler.findColumnsWithStats(ci));
+    Worker.StatsUpdater.gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+    ci = new CompactionInfo("default", tblName, "bkt=1", CompactionType.MAJOR);
+    Worker.StatsUpdater.gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
-    CompactionInfo ciPart2 = new CompactionInfo("default", tblName, "bkt=1", CompactionType.MAJOR);
-    LOG.debug("List of stats columns before analyze Part2: " + txnHandler.findColumnsWithStats(ci));
-    su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"),
-        CompactorUtil.getCompactorJobQueueName(conf, ciPart2, table));
-    su.gatherStats();//compute stats before compaction
-    LOG.debug("List of stats columns after analyze Part2: " + txnHandler.findColumnsWithStats(ci));
+    executeStatementOnDriver("describe extended " + tblName, driver);
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    String tableDescription = res.get(8).toString();
 
-    //now make sure we get the stats we expect for partition we are going to add data to later
-    Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(ci.dbname,
-      ci.tableName, Arrays.asList(ci.partName), colNames, Constants.HIVE_ENGINE);
-    List<ColumnStatisticsObj> colStats = stats.get(ci.partName);
-    assertNotNull("No stats found for partition " + ci.partName, colStats);
-    Assert.assertEquals("Expected column 'a' at index 0", "a", colStats.get(0).getColName());
-    Assert.assertEquals("Expected column 'b' at index 1", "b", colStats.get(1).getColName());
-    LongColumnStatsData colAStats = colStats.get(0).getStatsData().getLongStats();
-    Assert.assertEquals("lowValue a", 1, colAStats.getLowValue());
-    Assert.assertEquals("highValue a", 1, colAStats.getHighValue());
-    Assert.assertEquals("numNulls a", 0, colAStats.getNumNulls());
-    Assert.assertEquals("numNdv a", 1, colAStats.getNumDVs());
-    StringColumnStatsData colBStats = colStats.get(1).getStatsData().getStringStats();
-    Assert.assertEquals("maxColLen b", 3, colBStats.getMaxColLen());
-    Assert.assertEquals("avgColLen b", 3.0, colBStats.getAvgColLen(), 0.01);
-    Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
-    Assert.assertEquals("nunDVs", 3, colBStats.getNumDVs());
+    Matcher numFiles = Pattern.compile("numFiles=([0-9]+),").matcher(tableDescription);
+    Matcher numRows = Pattern.compile("numRows=([0-9]+),").matcher(tableDescription);
+    Matcher totalSize = Pattern.compile("totalSize=([0-9]+),").matcher(tableDescription);
+    numFiles.find();
+    numRows.find();
+    totalSize.find();
 
-    //now save stats for partition we won't modify
-    stats = msClient.getPartitionColumnStatistics(ciPart2.dbname,
-      ciPart2.tableName, Arrays.asList(ciPart2.partName), colNames, Constants.HIVE_ENGINE);
-    colStats = stats.get(ciPart2.partName);
-    LongColumnStatsData colAStatsPart2 = colStats.get(0).getStatsData().getLongStats();
-    StringColumnStatsData colBStatsPart2 = colStats.get(1).getStatsData().getStringStats();
+    Assert.assertEquals("The number of files is differing from the expected", "3", numFiles.group(1));
+    Assert.assertEquals("The number of rows is differing from the expected", "9", numRows.group(1));
+    Assert.assertEquals("The total table size is differing from the expected", "2195", totalSize.group(1));
 
-    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
-      .withFieldDelimiter(',')
-      .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
-      .withDatabase(ci.dbname)
-      .withTable(ci.tableName)
-      .withStaticPartitionValues(Arrays.asList("0"))
-      .withAgentInfo("UT_" + Thread.currentThread().getName())
-      .withHiveConf(conf)
-      .withRecordWriter(writer)
-      .connect();
-    connection.beginTransaction();
-    connection.write("50,Kiev".getBytes());
-    connection.write("51,St. Petersburg".getBytes());
-    connection.write("44,Boston".getBytes());
-    connection.commitTransaction();
 
-    connection.beginTransaction();
-    connection.write("52,Tel Aviv".getBytes());
-    connection.write("53,Atlantis".getBytes());
-    connection.write("53,Boston".getBytes());
-    connection.commitTransaction();
-    connection.close();
-    execSelectAndDumpData("select * from " + ci.getFullTableName(), driver, ci.getFullTableName());
-
-    //so now we have written some new data to bkt=0 and it shows up
-    CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, CompactionType.MAJOR);
-    rqst.setPartitionname(ci.partName);
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
     txnHandler.compact(rqst);
     runWorker(conf);
+
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     if (1 != compacts.size()) {
-      Assert.fail("Expecting 1 file and found " + compacts.size() + " files " + compacts.toString());
+      Assert.fail("Expecting 1 file and found " + compacts.size() + " files " + compacts);
     }
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
-    stats = msClient.getPartitionColumnStatistics(ci.dbname, ci.tableName,
-      Arrays.asList(ci.partName), colNames, Constants.HIVE_ENGINE);
-    colStats = stats.get(ci.partName);
-    assertNotNull("No stats found for partition " + ci.partName, colStats);
-    Assert.assertEquals("Expected column 'a' at index 0", "a", colStats.get(0).getColName());
-    Assert.assertEquals("Expected column 'b' at index 1", "b", colStats.get(1).getColName());
-    colAStats = colStats.get(0).getStatsData().getLongStats();
-    Assert.assertEquals("lowValue a", 1, colAStats.getLowValue());
-    Assert.assertEquals("highValue a", 53, colAStats.getHighValue());
-    Assert.assertEquals("numNulls a", 0, colAStats.getNumNulls());
-    Assert.assertEquals("numNdv a", 6, colAStats.getNumDVs());
-    colBStats = colStats.get(1).getStatsData().getStringStats();
-    Assert.assertEquals("maxColLen b", 14, colBStats.getMaxColLen());
-    //cast it to long to get rid of periodic decimal
-    Assert.assertEquals("avgColLen b", (long) 6.1111111111, (long) colBStats.getAvgColLen());
-    Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
-    Assert.assertEquals("nunDVs", 8, colBStats.getNumDVs());
+    executeStatementOnDriver("describe extended " + tblName, driver);
+    res.clear();
+    driver.getFetchTask().fetch(res);
+    tableDescription = res.get(8).toString();
 
-    //now check that stats for partition we didn't modify did not change
-    stats = msClient.getPartitionColumnStatistics(ciPart2.dbname, ciPart2.tableName,
-      Arrays.asList(ciPart2.partName), colNames, Constants.HIVE_ENGINE);
-    colStats = stats.get(ciPart2.partName);
-    Assert.assertEquals("Expected stats for " + ciPart2.partName + " to stay the same",
-      colAStatsPart2, colStats.get(0).getStatsData().getLongStats());
-    Assert.assertEquals("Expected stats for " + ciPart2.partName + " to stay the same",
-      colBStatsPart2, colStats.get(1).getStatsData().getStringStats());
+    numFiles = Pattern.compile("numFiles=([0-9]+),").matcher(tableDescription);
+    numRows = Pattern.compile("numRows=([0-9]+),").matcher(tableDescription);
+    totalSize = Pattern.compile("totalSize=([0-9]+),").matcher(tableDescription);
+    numFiles.find();
+    numRows.find();
+    totalSize.find();
+
+    Assert.assertEquals("The number of files is differing from the expected", "3", numFiles.group(1));
+    Assert.assertEquals("The number of rows is differing from the expected", "9", numRows.group(1));
+    Assert.assertEquals("The total table size is differing from the expected", "2195", totalSize.group(1));
   }
 
   @Test
@@ -770,7 +714,7 @@ public class TestCompactor {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000004_v0000008", name);
+      Assert.assertEquals("base_0000005_v0000009", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
               1);
@@ -815,11 +759,11 @@ public class TestCompactor {
     runMajorCompaction(dbName, tblName);
 
     List<String> matchesNotFound = new ArrayList<>(5);
-    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(3, 4) + VISIBILITY_PATTERN);
-    matchesNotFound.add(AcidUtils.deltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(4, 5) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deltaSubdir(4, 5) + VISIBILITY_PATTERN);
     matchesNotFound.add(AcidUtils.deleteDeltaSubdir(5, 5, 0));
     matchesNotFound.add(AcidUtils.deltaSubdir(5, 5, 1));
-    matchesNotFound.add(AcidUtils.baseDir(5) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.baseDir(6) + VISIBILITY_PATTERN);
 
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1204,9 +1148,9 @@ public class TestCompactor {
     verifyDeltaCount(p1.getSd(), fs, 0);
     verifyHasBase(p1.getSd(), fs, "base_0000002_v0000010");
     verifyDeltaCount(p2.getSd(), fs, 0);
-    verifyHasBase(p2.getSd(), fs, "base_0000004_v0000011");
+    verifyHasBase(p2.getSd(), fs, "base_0000004_v0000012");
     verifyDeltaCount(p3.getSd(), fs, 0);
-    verifyHasBase(p3.getSd(), fs, "base_0000007_v0000012");
+    verifyHasBase(p3.getSd(), fs, "base_0000007_v0000014");
   }
 
   @Test
@@ -1619,7 +1563,7 @@ public class TestCompactor {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000005_v0000016");
+    verifyHasBase(table.getSd(), fs, "base_0000006_v0000017");
     runCleaner(conf);
     // in case when we have # of accumulated entries for the same table/partition - we need to process them one-by-one in ASC order of write_id's,
     // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle, 
@@ -1688,7 +1632,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 3);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000014");
+    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
 
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
@@ -1699,7 +1643,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 4);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000008_v0000023");
+    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
 
   }
 
@@ -2057,22 +2001,10 @@ public class TestCompactor {
 
     txnHandler.compact(new CompactionRequest(dbName, tableName, CompactionType.MAJOR));
     runWorker(conf);
-    // Make sure the statistics is updated for the table
+    // Make sure the statistics is NOT updated for the table (compaction triggers only a basic stats gathering)
     colStats = msClient.getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
     assertEquals("Stats should be there", 1, colStats.size());
-    assertEquals("Value should contain new data", 2, colStats.get(0).getStatsData().getLongStats().getHighValue());
-    assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
-
-    executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(3)", driver);
-    HiveConf workerConf = new HiveConf(conf);
-    workerConf.setBoolVar(ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS, false);
-
-    txnHandler.compact(new CompactionRequest(dbName, tableName, CompactionType.MAJOR));
-    runWorker(workerConf);
-    // Make sure the statistics is NOT updated for the table
-    colStats = msClient.getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
-    assertEquals("Stats should be there", 1, colStats.size());
-    assertEquals("Value should contain new data", 2, colStats.get(0).getStatsData().getLongStats().getHighValue());
+    assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getHighValue());
     assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
   }
 
@@ -2380,7 +2312,7 @@ public class TestCompactor {
     files = fs.listStatus(new Path(table.getSd().getLocation()));
     // base dir
     assertEquals(1, files.length);
-    assertEquals("base_0000003_v0000015", files[0].getPath().getName());
+    assertEquals("base_0000004_v0000016", files[0].getPath().getName());
     files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
     // files
     assertEquals(2, files.length);

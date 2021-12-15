@@ -17,14 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,7 +28,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -68,10 +59,16 @@ import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -346,10 +343,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionToday));
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000005_v0000013"),
+        Collections.singletonList("base_0000006_v0000014"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionTomorrow));
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000005_v0000017"),
+        Collections.singletonList("base_0000007_v0000019"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionYesterday));
     // Check base dir contents
     List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
@@ -358,17 +355,17 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             .getBucketFileNames(fs, table, partitionToday, "base_0000005_v0000009"));
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionTomorrow, "base_0000005_v0000013"));
+            .getBucketFileNames(fs, table, partitionTomorrow, "base_0000006_v0000014"));
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionYesterday, "base_0000005_v0000017"));
+            .getBucketFileNames(fs, table, partitionYesterday, "base_0000007_v0000019"));
     // Check buckets contents
     Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
     // Check bucket file contents
     checkBucketIdAndRowIdInAcidFile(fs, new Path(todayPath, "base_0000005_v0000009"), 0);
-    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000005_v0000013"), 0);
-    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000005_v0000017"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000006_v0000014"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000007_v0000019"), 0);
 
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
         conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE), new String[] { AcidUtils.BASE_PREFIX});
@@ -432,14 +429,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     verifySuccessfulCompaction( 3);
     // Verify base directories after compaction in each partition
     String expectedBaseToday = "base_0000005_v0000011";
-    String expectedBaseTomorrow = "base_0000005_v0000015";
-    String expectedBaseYesterday = "base_0000005_v0000019";
+    String expectedBaseTomorrow = "base_0000006_v0000016";
+    String expectedBaseYesterday = "base_0000007_v0000021";
     List<String> baseDeltasInToday =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionToday);
     Assert.assertEquals("Delta directories does not match after compaction",
         Collections.singletonList(expectedBaseToday), baseDeltasInToday);
     List<String> baseDeltasInTomorrow =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionTomorrow);
+
     Assert.assertEquals("Delta directories does not match after compaction",
         Collections.singletonList(expectedBaseTomorrow), baseDeltasInTomorrow);
     List<String> baseDeltasInYesterday =
@@ -1351,10 +1349,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories do not match after major compaction",
-        Collections.singletonList("delta_0000006_0000010_v0000020"),
+        Collections.singletonList("delta_0000007_0000011_v0000021"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     Assert.assertEquals("Delete delta directories does not match after minor compaction",
-        Collections.singletonList("delete_delta_0000006_0000010_v0000020"),
+        Collections.singletonList("delete_delta_0000007_0000011_v0000021"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);

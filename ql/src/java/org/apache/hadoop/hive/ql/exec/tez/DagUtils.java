@@ -1297,18 +1297,20 @@ public class DagUtils {
   }
 
   // the api that finds the jar being used by this class on disk
-  public String getExecJarPathLocal(Configuration configuration) throws URISyntaxException {
-    // returns the location on disc of the jar of this class.
-
-    URI uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
-      if (new File(uri.getPath()).isDirectory()) {
-        // IDE support for running tez jobs
-        uri = createEmptyArchive();
+  public String getExecJarPathLocal(Configuration configuration) {
+    try {
+      // returns the location on disc of the jar of this class.
+      String uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
+      if (uri.endsWith(".jar")) {
+        return uri;
       }
+    } catch (URISyntaxException ignored) {}
+    //Fall back to hive config, if the uri could not get, or it does not point to a .jar file
+    String jar = configuration.get(ConfVars.HIVEJAR.varname);
+    if (!StringUtils.isBlank(jar)) {
+      return jar;
     }
-    return uri.toString();
-
+    throw new RuntimeException("Could not get hive-exec local path");
   }
 
   /**

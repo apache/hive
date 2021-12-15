@@ -833,10 +833,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
     Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
-
-    //now check that stats were updated
-    map = hms.getPartitionColumnStatistics("default","T", partNames, colNames, Constants.HIVE_ENGINE);
-    Assert.assertEquals("", 5, map.get(partNames.get(0)).get(0).getStatsData().getLongStats().getHighValue());
   }
   @Test
   public void testDefault() throws Exception {
