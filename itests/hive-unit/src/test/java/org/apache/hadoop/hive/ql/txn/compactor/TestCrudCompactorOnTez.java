@@ -70,6 +70,8 @@ import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -1711,13 +1713,13 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     // Verify contents of bucket files.
     List<String> expectedRsBucket0 = Arrays.asList("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t4\tvalue_4",
-        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t6\tvalue_6",
-        "{\"writeid\":2,\"bucketid\":536870913,\"rowid\":2}\t3\tnewvalue_3",
-        "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t8\tvalue_8",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t5\tnewestvalue_5",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":1}\t7\tnewestvalue_7",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t1\tnewestvalue_1",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t2\tnewestvalue_2");
+    "{\"writeid\":2,\"bucketid\":536870913,\"rowid\":2}\t3\tnewvalue_3",
+    "{\"writeid\":2,\"bucketid\":536870914,\"rowid\":0}\t6\tvalue_6",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t1\tnewestvalue_1",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":1}\t2\tnewestvalue_2",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t5\tnewestvalue_5",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t7\tnewestvalue_7",
+    "{\"writeid\":3,\"bucketid\":536870914,\"rowid\":0}\t8\tvalue_8");
     List<String> rsBucket0 = executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tableName, driver);
     Assert.assertEquals(expectedRsBucket0, rsBucket0);
     // Verify all contents
@@ -1789,21 +1791,21 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     // Verify contents of bucket files.
     List<String> expectedRsBucket0 =
-        Arrays.asList("{\"writeid\":4,\"bucketid\":536870913,\"rowid\":2}\t1\tlatestvalue_1",
-            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t2\tnewestvalue_2",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t3\tvalue_3",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":5}\t4\tlatestvalue_4",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":0}\t5\tlatestvalue_5",
-            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":4}\t6\tnewestvalue_6",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t7\tvalue_7",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":7}\t8\tvalue_8",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":1}\t9\tlatestvalue_9",
-            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t10\tnewestvalue_10",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":4}\t11\tlatestvalue_11",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":3}\t12\tvalue_12",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":3}\t13\tlatestvalue_13",
-            "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t14\tvalue_14",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t15\tvalue_15");
+            Arrays.asList("{\"writeid\":4,\"bucketid\":536870913,\"rowid\":0}\t1\tlatestvalue_1",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tnewestvalue_2",
+    "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t3\tvalue_3",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":1}\t4\tlatestvalue_4",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":2}\t5\tlatestvalue_5",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t6\tnewestvalue_6",
+    "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t7\tvalue_7",
+    "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":7}\t8\tvalue_8",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":3}\t9\tlatestvalue_9",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t10\tnewestvalue_10",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":4}\t11\tlatestvalue_11",
+    "{\"writeid\":2,\"bucketid\":536870914,\"rowid\":3}\t12\tvalue_12",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":5}\t13\tlatestvalue_13",
+    "{\"writeid\":3,\"bucketid\":536870914,\"rowid\":1}\t14\tvalue_14",
+    "{\"writeid\":4,\"bucketid\":536870914,\"rowid\":0}\t15\tvalue_15");
     List<String> rsBucket0 =
         executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tableName + " order by id", driver);
     Assert.assertEquals(expectedRsBucket0, rsBucket0);
