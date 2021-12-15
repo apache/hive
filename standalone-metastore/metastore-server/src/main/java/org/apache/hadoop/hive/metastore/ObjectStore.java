@@ -1947,16 +1947,17 @@ public class ObjectStore implements RawStore, Configurable {
       }
       query.setResult(result_string);
       List<Object[]> tables = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[0]));
-      Map<String, String> param_map = new HashMap<>();
       for (Object[] table : tables) {
-        param_map.clear();
+        Map<String, String> param_map = new HashMap<>();
         TableMeta metaData = new TableMeta(table[0].toString(), table[1].toString(), table[2].toString());
         metaData.setCatName(catName);
         if (table[3] != null) {
           metaData.setComments(table[3].toString());
         }
         for(int i=0; i<ls_params.length;i++){
-          param_map.put(ls_params[i], table[i+4].toString());
+          if(table[i+4] != null){
+            param_map.put(ls_params[i], table[i+4].toString());
+          }
         }
         metaData.setParameters(param_map);
         metas.add(metaData);
