@@ -106,13 +106,13 @@ class FileMetadata
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->data = array();
-                        $_size248 = 0;
-                        $_etype251 = 0;
-                        $xfer += $input->readListBegin($_etype251, $_size248);
-                        for ($_i252 = 0; $_i252 < $_size248; ++$_i252) {
-                            $elem253 = null;
-                            $xfer += $input->readString($elem253);
-                            $this->data []= $elem253;
+                        $_size256 = 0;
+                        $_etype259 = 0;
+                        $xfer += $input->readListBegin($_etype259, $_size256);
+                        for ($_i260 = 0; $_i260 < $_size256; ++$_i260) {
+                            $elem261 = null;
+                            $xfer += $input->readString($elem261);
+                            $this->data []= $elem261;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -149,8 +149,8 @@ class FileMetadata
             }
             $xfer += $output->writeFieldBegin('data', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->data));
-            foreach ($this->data as $iter254) {
-                $xfer += $output->writeString($iter254);
+            foreach ($this->data as $iter262) {
+                $xfer += $output->writeString($iter262);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

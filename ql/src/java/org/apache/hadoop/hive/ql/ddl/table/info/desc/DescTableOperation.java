@@ -65,8 +65,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.collect.Lists;
 
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.asTableNames;
-
 /**
  * Operation process of describing a table.
  */
@@ -299,7 +297,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
               table,
-              asTableNames(table.getCreationMetadata().getTablesUsed()),
+              table.getMVMetadata().getSourceTableNames(),
               false,
               SessionState.get().getTxnMgr()));
     }

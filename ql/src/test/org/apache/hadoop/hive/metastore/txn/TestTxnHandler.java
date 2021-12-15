@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1914,10 +1915,52 @@ public class TestTxnHandler {
     CreationMetadata creationMetadata = new CreationMetadata();
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");
-    creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{ add(sourceTable); }});
+    creationMetadata.setSourceTables(new HashSet<SourceTable>() {{ add(sourceTable); }});
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
 
     Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdListWhenTableHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdListWhenCurrentTxnListHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  private void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+          ValidReadTxnList currentValidTxnList, ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
+    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    }
+
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
+    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+            creationMetadata, currentValidTxnList.toString());
     assertFalse(materialization.isSourceTablesUpdateDeleteModified());
   }
 

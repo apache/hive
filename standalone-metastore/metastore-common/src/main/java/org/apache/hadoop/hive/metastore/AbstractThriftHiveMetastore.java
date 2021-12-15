@@ -353,7 +353,7 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
-    public Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata)
+    public Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata, String validTxnList)
             throws MetaException, InvalidOperationException, UnknownDBException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
