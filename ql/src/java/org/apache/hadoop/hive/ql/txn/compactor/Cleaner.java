@@ -185,7 +185,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       
       Callable<Boolean> cleanUpTask;
       Table t = resolveTable(ci);
-      Partition p = null;
+      Partition p = resolvePartition(ci);
 
       if (location == null) {
         if (t == null) {
@@ -202,7 +202,6 @@ public class Cleaner extends MetaStoreCompactorThread {
           return;
         }
         if (ci.partName != null) {
-          p = resolvePartition(ci);
           if (p == null) {
             // The partition was dropped before we got around to cleaning it.
             LOG.info("Unable to find partition " + ci.getFullPartitionName() +
@@ -222,8 +221,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       
       StorageDescriptor sd = resolveStorageDescriptor(t, p);
       cleanUpTask = () -> removeFiles(Optional.ofNullable(location).orElse(sd.getLocation()), 
-          minOpenTxnGLB, ci, location != null);
-    
+          minOpenTxnGLB, ci, ci.partName != null && p == null);
+
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
         removedFiles.value = cleanUpTask.call();
@@ -292,32 +291,33 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
 
-  private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean softDelete)
+  private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean dropPartition)
       throws MetaException, IOException, NoSuchObjectException, NoSuchTxnException {
-    
-    if (softDelete) {
-      LockRequest lockRequest = createLockRequest(ci, 0);
+
+    if (dropPartition) {
+      LockRequest lockRequest = createLockRequest(ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
       LockResponse res = null;
       
       try {
         res = txnHandler.lock(lockRequest);
         if (res.getState() == LockState.ACQUIRED) {
-          Path path = new Path(location);
-          StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
+          if (resolvePartition(ci) == null) {
+            Path path = new Path(location);
+            StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
 
-          boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
-            .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
+            boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
+              .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
 
-          return remove(location, ci, Collections.singletonList(path), ifPurge,
-            path.getFileSystem(conf), extraDebugInfo);
+            return remove(location, ci, Collections.singletonList(path), ifPurge,
+              path.getFileSystem(conf), extraDebugInfo);
+          }
         }
       } catch (NoSuchTxnException | TxnAbortedException e) {
         LOG.error(e.getMessage());
       } finally {
         if (res != null && res.getState() != LockState.NOT_ACQUIRED) {
-          UnlockRequest unlockRequest = new UnlockRequest(res.getLockid());
           try {
-            txnHandler.unlock(unlockRequest);
+            txnHandler.unlock(new UnlockRequest(res.getLockid()));
           } catch (NoSuchLockException | TxnOpenException e) {
             LOG.error(e.getMessage());
           }

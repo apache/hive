@@ -1639,10 +1639,10 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     
     stat =
       fs.listStatus(new Path(getWarehouseDir(),
-          Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
-        AcidUtils.deltaFileFilter);
+          Table.ACIDTBLPART.toString().toLowerCase()),
+        path -> path.getName().equals("p=b"));
     if (0 != stat.length) {
-      Assert.fail("Expecting 0 delta and found " + stat.length + " files " + Arrays.toString(stat));
+      Assert.fail("Expecting partition data to be removed from FS");
     }
   }
 
@@ -1692,10 +1692,10 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     for (char p : Arrays.asList('a', 'b')) {
       stat =
         fs.listStatus(new Path(getWarehouseDir(),
-            Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a/p3=" + p),
-          AcidUtils.deltaFileFilter);
+            Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a"),
+          path -> path.getName().equals("p3=" + p));
       if (0 != stat.length) {
-        Assert.fail("Expecting 0 delta and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting partition data to be removed from FS");
       }
     }
   }

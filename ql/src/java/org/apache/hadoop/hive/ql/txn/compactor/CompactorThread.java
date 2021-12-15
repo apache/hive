@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -185,16 +186,16 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected String getRuntimeVersion() {
     return this.getClass().getPackage().getImplementationVersion();
   }
-
-  protected LockRequest createLockRequest(CompactionInfo ci, long txnId) {
+  
+  protected LockRequest createLockRequest(CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
     String agentInfo = Thread.currentThread().getName();
     LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
     requestBuilder.setUser(ci.runAs);
     requestBuilder.setTransactionId(txnId);
 
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-      .setSharedRead()
-      .setOperationType(DataOperationType.SELECT)
+      .setLock(lockType)
+      .setOperationType(opType)
       .setDbName(ci.dbname)
       .setTableName(ci.tableName)
       .setIsTransactional(true);
