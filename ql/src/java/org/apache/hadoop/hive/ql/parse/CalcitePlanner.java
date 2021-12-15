@@ -681,11 +681,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // Wrap all other errors (Should only hit in tests)
             throw new SemanticException(e);
           } else {
-            String strategies = conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-            if (strategies == null || !Arrays.stream(strategies.split(",")).anyMatch("recompile_without_cbo"::equals)) {
-              throw new SemanticException("Invalid configuration. If fallbackStrategy is set to " + fallbackStrategy.name() +
-                  " then " + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + " should contain 'recompile_without_cbo'");
-            }
             throw new ReCompileException(this.ctx.getCboInfo());
           }
         } finally {

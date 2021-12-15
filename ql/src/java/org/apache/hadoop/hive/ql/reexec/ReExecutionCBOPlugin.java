@@ -22,11 +22,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Re-compiles the query without CBO
  */
 public class ReExecutionCBOPlugin implements IReExecutionPlugin {
+  private static final Logger LOG = LoggerFactory.getLogger(ReExecutionCBOPlugin.class);
+
 
   private Driver driver;
   private boolean retryPossible;
@@ -44,6 +48,7 @@ public class ReExecutionCBOPlugin implements IReExecutionPlugin {
         Throwable throwable = ctx.getHookContext().getException();
         retryPossible = throwable != null && throwable instanceof ReCompileException;
         cboMsg = retryPossible ? ((ReCompileException) throwable).getCboMessage() : null;
+        LOG.debug("Recompile check result {} with CBO message {}", retryPossible, cboMsg);
       } else {
         retryPossible = false;
       }

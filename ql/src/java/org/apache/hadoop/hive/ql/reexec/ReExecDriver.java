@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.reexec;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.runtime.tree.Tree;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.CBOFallbackStrategy;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +59,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class ReExecDriver implements IDriver {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver.class);
+  private static final SessionState.LogHelper CONSOLE = new SessionState.LogHelper(LOG);
 
   private final Driver coreDriver;
   private final QueryState queryState;
@@ -83,9 +87,24 @@ public class ReExecDriver implements IDriver {
     return executionIndex == 0;
   }
 
+  private void checkHookConfig() throws CommandProcessorException {
+    String strategies = coreDriver.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
+    CBOFallbackStrategy fallbackStrategy =
+        CBOFallbackStrategy.valueOf(coreDriver.getConf().getVar(ConfVars.HIVE_CBO_FALLBACK_STRATEGY));
+    if (fallbackStrategy.allowsRetry() &&
+        (strategies == null || !Arrays.stream(strategies.split(",")).anyMatch("recompile_without_cbo"::equals))) {
+      String errorMsg = "Invalid configuration. If fallbackStrategy is set to " + fallbackStrategy.name() + " then " +
+          ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + " should contain 'recompile_without_cbo'";
+      CONSOLE.printError(errorMsg);
+      throw new CommandProcessorException(errorMsg);
+    }
+  }
+
   @Override
   public CommandProcessorResponse compileAndRespond(String statement) throws CommandProcessorException {
     currentQuery = statement;
+
+    checkHookConfig();
 
     int compileIndex = 0;
     int maxCompilations = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_RECOMPILATION_COUNT);
@@ -266,7 +285,6 @@ public class ReExecDriver implements IDriver {
   public boolean hasResultSet() {
     return explainReOptimization || coreDriver.hasResultSet();
   }
-
 
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
 
