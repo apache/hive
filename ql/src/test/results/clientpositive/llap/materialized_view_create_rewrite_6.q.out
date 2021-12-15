@@ -109,7 +109,7 @@ POSTHOOK: Lineage: mat1._c3 EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, com
 POSTHOOK: Lineage: mat1._c4 EXPRESSION [(t1)t1.null, (t2)t2.null, ]
 POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:char(15), comment:null), ]
 PREHOOK: query: explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
 PREHOOK: type: QUERY
@@ -118,7 +118,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
 POSTHOOK: type: QUERY
@@ -127,8 +127,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], _c1=[$1])
-  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: delete from t1 where b = 1
 PREHOOK: type: QUERY
@@ -204,7 +203,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
 PREHOOK: query: explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
 PREHOOK: type: QUERY
@@ -212,7 +211,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
 POSTHOOK: type: QUERY
@@ -220,14 +219,15 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[sum($1)])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(a=[$0], b=[$1])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, t1]], table:alias=[t1])
-    HiveProject(a=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, t2]], table:alias=[t2])
+HiveProject(a=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[/(CAST($1):DOUBLE, $2)], _o__c4=[$3])
+  HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[count($1)], agg#2=[count()])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(a=[$0], b=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+      HiveProject(a=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, t2]], table:alias=[t2])
 
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
@@ -619,7 +619,7 @@ POSTHOOK: Lineage: mat1._c3 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c1,
 POSTHOOK: Lineage: mat1._c4 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c4, type:bigint, comment:null), (t1)t1.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), (t2)t2.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), ]
 POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:char(15), comment:null), ]
 PREHOOK: query: explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
 PREHOOK: type: QUERY
@@ -628,7 +628,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
 POSTHOOK: type: QUERY
@@ -637,8 +637,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], _c1=[$1])
-  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)

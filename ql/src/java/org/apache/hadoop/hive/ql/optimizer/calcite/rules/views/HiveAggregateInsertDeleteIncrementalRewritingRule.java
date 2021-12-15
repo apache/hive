@@ -145,7 +145,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
             argument = relBuilder.literal(1);
           } else {
             // count(<column_name>)
-            argument = genArgumentForCountColumn(relBuilder, rexBuilder, aggInput, aggregateCall);
+            argument = genArgumentForCountColumn(relBuilder, aggInput, aggregateCall.getArgList().get(0));
           }
           break;
         case SUM:
@@ -178,8 +178,8 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
             countIdx);
   }
 
-  private RexNode genArgumentForCountColumn(RelBuilder relBuilder, RexBuilder rexBuilder, RelNode aggInput, AggregateCall aggregateCall) {
-    Integer argumentIdx = aggregateCall.getArgList().get(0);
+  private RexNode genArgumentForCountColumn(RelBuilder relBuilder, RelNode aggInput, int argumentIdx) {
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
     RexNode countArg = rexBuilder.makeInputRef(
             aggInput.getRowType().getFieldList().get(argumentIdx).getType(), argumentIdx);
     RexNode isNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, countArg);

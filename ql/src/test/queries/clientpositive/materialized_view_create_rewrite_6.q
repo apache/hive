@@ -27,7 +27,7 @@ group by t1.a;
 
 
 explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a;
 
@@ -54,7 +54,7 @@ delete from t1 where a like '%add/remove';
 
 -- view can not be used
 explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a;
 
@@ -68,7 +68,7 @@ alter materialized view mat1 rebuild;
 
 -- the view should be up to date and used
 explain cbo
-select t1.a, sum(t1.b) from t1
+select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a;
 
