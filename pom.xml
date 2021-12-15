@@ -186,7 +186,7 @@
     <orc.version>1.5.8</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.17.Final</netty.version>
+    <netty.version>4.1.69.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <parquet.version>1.10.0</parquet.version>
     <pig.version>0.16.0</pig.version>
