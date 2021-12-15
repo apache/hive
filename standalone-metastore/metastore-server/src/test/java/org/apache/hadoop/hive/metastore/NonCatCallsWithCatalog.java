@@ -73,6 +73,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -508,6 +509,7 @@ public abstract class NonCatCallsWithCatalog {
       client.createTable(table);
       TableMeta tableMeta = new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name());
       tableMeta.setCatName(expectedCatalog());
+      tableMeta.setParameters(new HashMap<>());
       expected.add(tableMeta);
     }
 

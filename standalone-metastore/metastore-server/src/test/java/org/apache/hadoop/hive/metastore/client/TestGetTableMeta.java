@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +55,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -64,6 +67,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
 public class TestGetTableMeta extends MetaStoreClientTest {
+  private static final Logger LOG = LoggerFactory.getLogger(TestGetTableMeta.class.getName());
   private AbstractMetaStoreService metaStore;
   private Configuration conf;
   private IMetaStoreClient client;
@@ -166,6 +170,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     TableMeta tableMeta = new TableMeta(dbName, tableName, table.getTableType());
     tableMeta.setComments(comment);
     tableMeta.setCatName("hive");
+    tableMeta.setParameters(new HashMap<>());
     return tableMeta;
   }
 
@@ -176,6 +181,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     table = client.getTable(dbName, tableName);
     TableMeta tableMeta = new TableMeta(dbName, tableName, table.getTableType());
     tableMeta.setCatName("hive");
+    tableMeta.setParameters(new HashMap<>());
     return tableMeta;
   }
 
@@ -192,6 +198,12 @@ public class TestGetTableMeta extends MetaStoreClientTest {
         " tableMeta(s)", expected.length, actual.size());
 
     Set<TableMeta> metas = new HashSet<>(actual);
+    for(TableMeta tblmeta: actual){
+      LOG.warn(tblmeta.toString());
+    }
+    for(TableMeta tblmeta: fullExpected){
+      LOG.warn(tblmeta.toString());
+    }
     for (int i : expected){
       assertTrue("Missing " + fullExpected.get(i), metas.remove(fullExpected.get(i)));
     }
@@ -320,6 +332,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
       Table table = client.getTable(catName, dbName, tableNames[i]);
       TableMeta tableMeta = new TableMeta(dbName, tableNames[i], table.getTableType());
       tableMeta.setCatName(catName);
+      tableMeta.setParameters(new HashMap<>());
       expected.add(tableMeta);
     }
 
