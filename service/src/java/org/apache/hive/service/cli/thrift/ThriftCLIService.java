@@ -22,8 +22,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.SparkProgressMonitorStatusMapper;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -66,56 +64,7 @@ import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.TezProgressMonitorStatusMapper;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
-import org.apache.hive.service.rpc.thrift.TCLIService;
-import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
-import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenResp;
-import org.apache.hive.service.rpc.thrift.TCancelOperationReq;
-import org.apache.hive.service.rpc.thrift.TCancelOperationResp;
-import org.apache.hive.service.rpc.thrift.TCloseOperationReq;
-import org.apache.hive.service.rpc.thrift.TCloseOperationResp;
-import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
-import org.apache.hive.service.rpc.thrift.TCloseSessionResp;
-import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
-import org.apache.hive.service.rpc.thrift.TExecuteStatementResp;
-import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
-import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
-import org.apache.hive.service.rpc.thrift.TGetCatalogsReq;
-import org.apache.hive.service.rpc.thrift.TGetCatalogsResp;
-import org.apache.hive.service.rpc.thrift.TGetColumnsReq;
-import org.apache.hive.service.rpc.thrift.TGetColumnsResp;
-import org.apache.hive.service.rpc.thrift.TGetCrossReferenceReq;
-import org.apache.hive.service.rpc.thrift.TGetCrossReferenceResp;
-import org.apache.hive.service.rpc.thrift.TGetDelegationTokenReq;
-import org.apache.hive.service.rpc.thrift.TGetDelegationTokenResp;
-import org.apache.hive.service.rpc.thrift.TGetFunctionsReq;
-import org.apache.hive.service.rpc.thrift.TGetFunctionsResp;
-import org.apache.hive.service.rpc.thrift.TGetInfoReq;
-import org.apache.hive.service.rpc.thrift.TGetInfoResp;
-import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
-import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
-import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysReq;
-import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysResp;
-import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
-import org.apache.hive.service.rpc.thrift.TGetQueryIdResp;
-import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataReq;
-import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataResp;
-import org.apache.hive.service.rpc.thrift.TGetSchemasReq;
-import org.apache.hive.service.rpc.thrift.TGetSchemasResp;
-import org.apache.hive.service.rpc.thrift.TGetTableTypesReq;
-import org.apache.hive.service.rpc.thrift.TGetTableTypesResp;
-import org.apache.hive.service.rpc.thrift.TGetTablesReq;
-import org.apache.hive.service.rpc.thrift.TGetTablesResp;
-import org.apache.hive.service.rpc.thrift.TGetTypeInfoReq;
-import org.apache.hive.service.rpc.thrift.TGetTypeInfoResp;
-import org.apache.hive.service.rpc.thrift.TJobExecutionStatus;
-import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
-import org.apache.hive.service.rpc.thrift.TOpenSessionResp;
-import org.apache.hive.service.rpc.thrift.TProgressUpdateResp;
-import org.apache.hive.service.rpc.thrift.TProtocolVersion;
-import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
-import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
-import org.apache.hive.service.rpc.thrift.TStatus;
-import org.apache.hive.service.rpc.thrift.TStatusCode;
+import org.apache.hive.service.rpc.thrift.*;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;
 import org.slf4j.Logger;
@@ -957,6 +906,45 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       // If concurrently the query is closed before we fetch queryID.
       return new TGetQueryIdResp("");
     }
+  }
+
+  @Override
+  public TUploadDataResp UploadData(TUploadDataReq req) throws TException {
+    TUploadDataResp resp = new TUploadDataResp();
+    try {
+      SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
+      OperationHandle operationHandle = cliService.uploadData(
+          sessionHandle,
+          req.bufferForValues(),
+          req.getTableName(),
+          req.getPath());
+      resp.setOperationHandle(operationHandle.toTOperationHandle());
+      resp.setStatus(OK_STATUS);
+    } catch (Exception e) {
+      LOG.warn("Error UploadData: ", e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
+  }
+
+  @Override
+  public TDownloadDataResp DownloadData(TDownloadDataReq req) throws TException {
+    TDownloadDataResp resp = new TDownloadDataResp();
+    try {
+      SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
+      OperationHandle operationHandle = cliService.downloadData(
+          sessionHandle,
+          req.getTableName(),
+          req.getQuery(),
+          req.getFormat(),
+          req.getDownloadOptions());
+      resp.setOperationHandle(operationHandle.toTOperationHandle());
+      resp.setStatus(OK_STATUS);
+    } catch (Exception e) {
+      LOG.warn("Error download data: ", e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
   }
 
   @Override

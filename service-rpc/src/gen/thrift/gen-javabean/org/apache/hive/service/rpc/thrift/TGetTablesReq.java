@@ -687,13 +687,13 @@ package org.apache.hive.service.rpc.thrift;
           case 5: // TABLE_TYPES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list182 = iprot.readListBegin();
-                struct.tableTypes = new java.util.ArrayList<java.lang.String>(_list182.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem183;
-                for (int _i184 = 0; _i184 < _list182.size; ++_i184)
+                org.apache.thrift.protocol.TList _list192 = iprot.readListBegin();
+                struct.tableTypes = new java.util.ArrayList<java.lang.String>(_list192.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem193;
+                for (int _i194 = 0; _i194 < _list192.size; ++_i194)
                 {
-                  _elem183 = iprot.readString();
-                  struct.tableTypes.add(_elem183);
+                  _elem193 = iprot.readString();
+                  struct.tableTypes.add(_elem193);
                 }
                 iprot.readListEnd();
               }
@@ -746,9 +746,9 @@ package org.apache.hive.service.rpc.thrift;
           oprot.writeFieldBegin(TABLE_TYPES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tableTypes.size()));
-            for (java.lang.String _iter185 : struct.tableTypes)
+            for (java.lang.String _iter195 : struct.tableTypes)
             {
-              oprot.writeString(_iter185);
+              oprot.writeString(_iter195);
             }
             oprot.writeListEnd();
           }
@@ -799,9 +799,9 @@ package org.apache.hive.service.rpc.thrift;
       if (struct.isSetTableTypes()) {
         {
           oprot.writeI32(struct.tableTypes.size());
-          for (java.lang.String _iter186 : struct.tableTypes)
+          for (java.lang.String _iter196 : struct.tableTypes)
           {
-            oprot.writeString(_iter186);
+            oprot.writeString(_iter196);
           }
         }
       }
@@ -828,13 +828,13 @@ package org.apache.hive.service.rpc.thrift;
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list187 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.tableTypes = new java.util.ArrayList<java.lang.String>(_list187.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem188;
-          for (int _i189 = 0; _i189 < _list187.size; ++_i189)
+          org.apache.thrift.protocol.TList _list197 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.tableTypes = new java.util.ArrayList<java.lang.String>(_list197.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem198;
+          for (int _i199 = 0; _i199 < _list197.size; ++_i199)
           {
-            _elem188 = iprot.readString();
-            struct.tableTypes.add(_elem188);
+            _elem198 = iprot.readString();
+            struct.tableTypes.add(_elem198);
           }
         }
         struct.setTableTypesIsSet(true);
