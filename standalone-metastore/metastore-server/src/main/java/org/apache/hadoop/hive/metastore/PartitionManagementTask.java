@@ -137,9 +137,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
               continue;
             }
             LOG.warn("Checking meta for: "+tableMeta.getTableName());
-            Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-            if (partitionDiscoveryEnabled(table.getParameters())) {
-              LOG.warn("Table added: " + table.getTableName());
+            if (partitionDiscoveryEnabled(tableMeta.getParameters())) {
+              Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
               candidateTables.add(table);
             }
           } catch (NoSuchObjectException e) {
