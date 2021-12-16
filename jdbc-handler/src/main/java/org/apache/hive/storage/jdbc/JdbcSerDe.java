@@ -129,6 +129,38 @@ public class JdbcSerDe extends AbstractSerDe {
         inspector =
             ObjectInspectorFactory.getStandardStructObjectInspector(Arrays.asList(hiveColumnNames), fieldInspectors);
         row = new ArrayList<>(hiveColumnNames.length);
+      } else { // CTLT query which is based on JdbcSerde deserializer
+        if (properties.containsKey(serdeConstants.LIST_COLUMNS)) {
+          hiveColumnNames = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ?
+                  properties.getProperty(serdeConstants.LIST_COLUMNS).split(properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)):
+                  properties.getProperty(serdeConstants.LIST_COLUMNS).split(",");
+        }
+        if (hiveColumnNames.length == 0) {
+          throw new SerDeException("Received an empty Hive column name definition");
+        }
+        List<TypeInfo> hiveColumnTypesList = new ArrayList<>();
+        if (properties.containsKey(serdeConstants.LIST_COLUMN_TYPES)) {
+          hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES));
+        }
+        if (hiveColumnTypesList.size() == 0) {
+          throw new SerDeException("Received an empty Hive column type definition");
+        }
+        // Populate column types and inspector
+        hiveColumnTypes = new PrimitiveTypeInfo[hiveColumnTypesList.size()];
+        List<ObjectInspector> fieldInspectors = new ArrayList<>(hiveColumnNames.length);
+        for (int i = 0; i < hiveColumnNames.length; i++) {
+          TypeInfo ti = hiveColumnTypesList.get(i);
+          if (ti.getCategory() != Category.PRIMITIVE) {
+            throw new SerDeException("Non primitive types not supported yet");
+          }
+          hiveColumnTypes[i] = (PrimitiveTypeInfo) ti;
+          fieldInspectors.add(
+                  PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(hiveColumnTypes[i]));
+        }
+        inspector =
+                ObjectInspectorFactory.getStandardStructObjectInspector(Arrays.asList(hiveColumnNames),
+                        fieldInspectors);
+        row = new ArrayList<>(hiveColumnNames.length);
       }
     } catch (Exception e) {
       throw new SerDeException("Caught exception while initializing the SqlSerDe", e);

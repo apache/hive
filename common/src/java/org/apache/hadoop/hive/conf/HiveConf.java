@@ -1519,6 +1519,10 @@ public class HiveConf extends Configuration {
         "Default property values for newly created tables"),
     DDL_CTL_PARAMETERS_WHITELIST("hive.ddl.createtablelike.properties.whitelist", "",
         "Table Properties to copy over when executing a Create Table Like."),
+    DDL_CTL_METATABLESTORAGE_WHITELIST("hive.ddl.createtablelike.metatable.storage.whitelist",false,
+            "This config specifies whether to copy the meta table storage property if present in the create table like operation. " +
+                    "By default this value is false which means storage handler property is not copied, if the user wants to retain storage handler" +
+                    "property then they'll have to turn on this config."),
     /**
      * @deprecated Use MetastoreConf.RAW_STORE_IMPL
      */

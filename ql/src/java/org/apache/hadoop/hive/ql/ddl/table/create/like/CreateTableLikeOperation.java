@@ -124,6 +124,12 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     if (desc.isUserStorageFormat()) {
       setStorage(table);
     }
+    if (table.getTTable().getSd().getInputFormat() == null) {
+      table.getTTable().getSd().setInputFormat(desc.getDefaultInputFormat());
+    }
+    if (table.getTTable().getSd().getOutputFormat() == null) {
+      table.getTTable().getSd().setOutputFormat(desc.getDefaultOutputFormat());
+    }
 
     table.getTTable().setTemporary(desc.isTemporary());
     table.getTTable().unsetId();
@@ -158,8 +164,10 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     // We should copy only those table parameters that are specified in the config.
     SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
 
-    // for non-native table, property storage_handler should be retained
-    retainer.add(META_TABLE_STORAGE);
+    // for CTLT operation, we need not retain the property storage_handler
+    if (context.getConf().getBoolVar(HiveConf.ConfVars.DDL_CTL_METATABLESTORAGE_WHITELIST)) {
+      retainer.add(META_TABLE_STORAGE);
+    }
     if (spec != null && spec.schemaProps() != null) {
       retainer.addAll(Arrays.asList(spec.schemaProps()));
     }
@@ -184,8 +192,16 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
   private void setStorage(Table table) throws HiveException {
     table.setInputFormatClass(desc.getDefaultInputFormat());
     table.setOutputFormatClass(desc.getDefaultOutputFormat());
-    table.getTTable().getSd().setInputFormat(table.getInputFormatClass().getName());
-    table.getTTable().getSd().setOutputFormat(table.getOutputFormatClass().getName());
+    if (table.getInputFormatClass() != null) {
+      table.getTTable().getSd().setInputFormat(table.getInputFormatClass().getName());
+    } else {
+      table.getTTable().getSd().setInputFormat(desc.getDefaultInputFormat());
+    }
+    if (table.getInputFormatClass() != null) {
+      table.getTTable().getSd().setOutputFormat(table.getOutputFormatClass().getName());
+    } else {
+      table.getTTable().getSd().setOutputFormat(desc.getDefaultOutputFormat());
+    }
 
     if (desc.getDefaultSerName() == null) {
       LOG.info("Default to LazySimpleSerDe for table {}", desc.getTableName());
