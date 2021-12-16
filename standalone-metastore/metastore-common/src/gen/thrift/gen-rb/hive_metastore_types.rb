@@ -5561,13 +5561,15 @@ class TableMeta
   TABLETYPE = 3
   COMMENTS = 4
   CATNAME = 5
+  PARAMETERS = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     COMMENTS => {:type => ::Thrift::Types::STRING, :name => 'comments', :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

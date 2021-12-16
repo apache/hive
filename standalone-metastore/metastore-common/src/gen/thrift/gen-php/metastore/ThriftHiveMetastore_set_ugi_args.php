@@ -87,13 +87,13 @@ class ThriftHiveMetastore_set_ugi_args
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->group_names = array();
-                        $_size1741 = 0;
-                        $_etype1744 = 0;
-                        $xfer += $input->readListBegin($_etype1744, $_size1741);
-                        for ($_i1745 = 0; $_i1745 < $_size1741; ++$_i1745) {
-                            $elem1746 = null;
-                            $xfer += $input->readString($elem1746);
-                            $this->group_names []= $elem1746;
+                        $_size1750 = 0;
+                        $_etype1753 = 0;
+                        $xfer += $input->readListBegin($_etype1753, $_size1750);
+                        for ($_i1754 = 0; $_i1754 < $_size1750; ++$_i1754) {
+                            $elem1755 = null;
+                            $xfer += $input->readString($elem1755);
+                            $this->group_names []= $elem1755;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -125,8 +125,8 @@ class ThriftHiveMetastore_set_ugi_args
             }
             $xfer += $output->writeFieldBegin('group_names', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->group_names));
-            foreach ($this->group_names as $iter1747) {
-                $xfer += $output->writeString($iter1747);
+            foreach ($this->group_names as $iter1756) {
+                $xfer += $output->writeString($iter1756);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
