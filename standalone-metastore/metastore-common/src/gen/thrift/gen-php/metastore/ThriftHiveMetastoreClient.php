@@ -2623,16 +2623,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function translate_table_dryrun(\metastore\Table $tbl)
+    public function translate_table_dryrun(\metastore\CreateTableRequest $request)
     {
-        $this->send_translate_table_dryrun($tbl);
+        $this->send_translate_table_dryrun($request);
         return $this->recv_translate_table_dryrun();
     }
 
-    public function send_translate_table_dryrun(\metastore\Table $tbl)
+    public function send_translate_table_dryrun(\metastore\CreateTableRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_translate_table_dryrun_args();
-        $args->tbl = $tbl;
+        $args->request = $request;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(

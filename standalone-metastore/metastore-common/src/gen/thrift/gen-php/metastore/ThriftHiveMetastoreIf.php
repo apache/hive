@@ -313,14 +313,14 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_check_constraint(\metastore\AddCheckConstraintRequest $req);
     /**
-     * @param \metastore\Table $tbl
+     * @param \metastore\CreateTableRequest $request
      * @return \metastore\Table
      * @throws \metastore\AlreadyExistsException
      * @throws \metastore\InvalidObjectException
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
      */
-    public function translate_table_dryrun(\metastore\Table $tbl);
+    public function translate_table_dryrun(\metastore\CreateTableRequest $request);
     /**
      * @param string $dbname
      * @param string $name

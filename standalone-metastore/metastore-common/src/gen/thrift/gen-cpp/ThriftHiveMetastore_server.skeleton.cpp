@@ -220,7 +220,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_check_constraint\n");
   }
 
-  void translate_table_dryrun(Table& _return, const Table& tbl) {
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
     // Your implementation goes here
     printf("translate_table_dryrun\n");
   }

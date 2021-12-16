@@ -686,13 +686,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def translate_table_dryrun(tbl)
-      send_translate_table_dryrun(tbl)
+    def translate_table_dryrun(request)
+      send_translate_table_dryrun(request)
       return recv_translate_table_dryrun()
     end
 
-    def send_translate_table_dryrun(tbl)
-      send_message('translate_table_dryrun', Translate_table_dryrun_args, :tbl => tbl)
+    def send_translate_table_dryrun(request)
+      send_message('translate_table_dryrun', Translate_table_dryrun_args, :request => request)
     end
 
     def recv_translate_table_dryrun()
@@ -4975,7 +4975,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Translate_table_dryrun_args)
       result = Translate_table_dryrun_result.new()
       begin
-        result.success = @handler.translate_table_dryrun(args.tbl)
+        result.success = @handler.translate_table_dryrun(args.request)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::InvalidObjectException => o2
@@ -9188,10 +9188,10 @@ module ThriftHiveMetastore
 
   class Translate_table_dryrun_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    TBL = 1
+    REQUEST = 1
 
     FIELDS = {
-      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CreateTableRequest}
     }
 
     def struct_fields; FIELDS; end
