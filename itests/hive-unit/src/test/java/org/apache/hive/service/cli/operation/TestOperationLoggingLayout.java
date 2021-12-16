@@ -188,7 +188,7 @@ public class TestOperationLoggingLayout {
     Map<String, Appender> appendersMap = loggerConfig.getAppenders();
     RoutingAppender routingAppender = (RoutingAppender) appendersMap.get(routingAppenderName);
     Assert.assertNotNull(msg + "could not find routingAppender " + routingAppenderName, routingAppender);
-    Field defaultsField = RoutingAppender.class.getDeclaredField("appenders");
+    Field defaultsField = RoutingAppender.class.getDeclaredField("createdAppenders");
     defaultsField.setAccessible(true);
     ConcurrentHashMap appenders = (ConcurrentHashMap) defaultsField.get(routingAppender);
     AppenderControl appenderControl = (AppenderControl) appenders.get(queryId);
@@ -219,7 +219,7 @@ public class TestOperationLoggingLayout {
     Map<String, Appender> appendersMap = loggerConfig.getAppenders();
     RoutingAppender routingAppender = (RoutingAppender) appendersMap.get(routingAppenderName);
     Assert.assertNotNull("could not find routingAppender " + routingAppenderName, routingAppender);
-    Field defaultsField = RoutingAppender.class.getDeclaredField("appenders");
+    Field defaultsField = RoutingAppender.class.getDeclaredField("createdAppenders");
     defaultsField.setAccessible(true);
     ConcurrentHashMap appenders = (ConcurrentHashMap) defaultsField.get(routingAppender);
     AppenderControl appenderControl = (AppenderControl) appenders.get(queryId);
