@@ -392,21 +392,22 @@ class Deserializer {
   private void readList(FieldVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo) {
     final int size = arrowVector.getValueCount();
     hiveVector.ensureSize(size, false);
-    final ArrowBuf offsets = arrowVector.getOffsetBuffer();
-    final int OFFSET_WIDTH = 4;
+    try (final ArrowBuf offsets = arrowVector.getOffsetBuffer()) {
+      final int OFFSET_WIDTH = 4;
 
-    read(arrowVector.getChildrenFromFields().get(0),
+      read(arrowVector.getChildrenFromFields().get(0),
         hiveVector.child,
         typeInfo.getListElementTypeInfo());
 
-    for (int i = 0; i < size; i++) {
-      if (arrowVector.isNull(i)) {
-        VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
-      } else {
-        hiveVector.isNull[i] = false;
-        final int offset = offsets.getInt(i * OFFSET_WIDTH);
-        hiveVector.offsets[i] = offset;
-        hiveVector.lengths[i] = offsets.getInt((i + 1) * OFFSET_WIDTH) - offset;
+      for (int i = 0; i < size; i++) {
+        if (arrowVector.isNull(i)) {
+          VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
+        } else {
+          hiveVector.isNull[i] = false;
+          final int offset = offsets.getInt(i * OFFSET_WIDTH);
+          hiveVector.offsets[i] = offset;
+          hiveVector.lengths[i] = offsets.getInt((i + 1) * OFFSET_WIDTH) - offset;
+        }
       }
     }
   }
