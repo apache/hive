@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Re-compiles the query without CBO
  */
-public class ReExecutionCBOPlugin implements IReExecutionPlugin {
-  private static final Logger LOG = LoggerFactory.getLogger(ReExecutionCBOPlugin.class);
+public class ReCompileWithoutCBOPlugin implements IReExecutionPlugin {
+  private static final Logger LOG = LoggerFactory.getLogger(ReCompileWithoutCBOPlugin.class);
 
 
   private Driver driver;
@@ -68,7 +68,7 @@ public class ReExecutionCBOPlugin implements IReExecutionPlugin {
   @Override
   public void initialize(Driver driver) {
     this.driver = driver;
-    driver.getHookRunner().addLifeTimeHook(new ReExecutionCBOPlugin.LocalHook());
+    driver.getHookRunner().addLifeTimeHook(new ReCompileWithoutCBOPlugin.LocalHook());
   }
 
   @Override

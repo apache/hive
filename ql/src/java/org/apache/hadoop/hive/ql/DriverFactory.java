@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.reexec.ReExecuteLostAMQueryPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReExecutionCBOPlugin;
+import org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionDagSubmitPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
@@ -76,7 +76,7 @@ public final class DriverFactory {
       return new ReExecuteLostAMQueryPlugin();
     }
     if ("recompile_without_cbo".equals(name)) {
-      return new ReExecutionCBOPlugin();
+      return new ReCompileWithoutCBOPlugin();
     }
     if (name.equals("dagsubmit")) {
       return new ReExecutionDagSubmitPlugin();

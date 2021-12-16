@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.reexec;
 
 /**
  * This exception is thrown when CBO failed and we would like to try to recompile the query with CBO off.
- * For more details see: {@link ReExecDriver}, {@link ReExecutionCBOPlugin}
+ * For more details see: {@link ReExecDriver}, {@link ReCompileWithoutCBOPlugin}
  */
 public class ReCompileException extends RuntimeException {
   private final String cboMessage;
