@@ -451,7 +451,8 @@ public class SQLOperation extends ExecuteStatementOperation {
   public TableSchema getResultSetSchema() throws HiveSQLException {
     // Since compilation is always a blocking RPC call, and schema is ready after compilation,
     // we can return when are in the RUNNING state.
-    assertState(Arrays.asList(OperationState.RUNNING, OperationState.FINISHED));
+    assertState(Arrays.asList(OperationState.RUNNING, OperationState.FINISHED,
+        OperationState.ERROR));
     if (!resultSchema.isPresent()) {
       resultSchema = Optional.of(new TableSchema(driver.getSchema()));
     }
