@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -167,6 +168,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     TableMeta tableMeta = new TableMeta(dbName, tableName, table.getTableType());
     tableMeta.setComments(comment);
     tableMeta.setCatName("hive");
+    tableMeta.setParameters(new HashMap<>());
     return tableMeta;
   }
 
@@ -177,6 +179,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     table = client.getTable(dbName, tableName);
     TableMeta tableMeta = new TableMeta(dbName, tableName, table.getTableType());
     tableMeta.setCatName("hive");
+    tableMeta.setParameters(new HashMap<>());
     return tableMeta;
   }
 
@@ -321,6 +324,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
       Table table = client.getTable(catName, dbName, tableNames[i]);
       TableMeta tableMeta = new TableMeta(dbName, tableNames[i], table.getTableType());
       tableMeta.setCatName(catName);
+      tableMeta.setParameters(new HashMap<>());
       expected.add(tableMeta);
     }
 

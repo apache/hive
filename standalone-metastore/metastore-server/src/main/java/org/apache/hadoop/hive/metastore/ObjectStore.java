@@ -1940,14 +1940,26 @@ public class ObjectStore implements RawStore, Configurable {
       // tables in all databases, essentially a full dump)
       pm.getFetchPlan().addGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
-      query.setResult("database.name, tableName, tableType, parameters.get(\"comment\")");
+      String[] ls_params = {"discover.partitions", "partition.retention.period"};
+      String result_string = "database.name, tableName, tableType, parameters.get(\"comment\")";
+      for(String p : ls_params){
+        result_string += ", parameters.get(\"" + p + "\")";
+      }
+      query.setResult(result_string);
       List<Object[]> tables = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[0]));
       for (Object[] table : tables) {
+        Map<String, String> param_map = new HashMap<>();
         TableMeta metaData = new TableMeta(table[0].toString(), table[1].toString(), table[2].toString());
         metaData.setCatName(catName);
         if (table[3] != null) {
           metaData.setComments(table[3].toString());
         }
+        for(int i=0; i<ls_params.length;i++){
+          if(table[i+4] != null){
+            param_map.put(ls_params[i], table[i+4].toString());
+          }
+        }
+        metaData.setParameters(param_map);
         metas.add(metaData);
       }
       commited = commitTransaction();
