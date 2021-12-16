@@ -133,14 +133,18 @@ public class HiveInBetweenExpandRule {
    * If any call is modified, the modified flag will be set to
    * true after its execution.
    */
-  private static final class RexInBetweenExpander extends RexShuttle {
+  static final class RexInBetweenExpander extends RexShuttle {
 
     private final RexBuilder rexBuilder;
     private boolean modified;
 
-    private RexInBetweenExpander(RexBuilder rexBuilder) {
+    RexInBetweenExpander(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
       this.modified = false;
+    }
+
+    public boolean isModified() {
+      return modified;
     }
 
     @Override

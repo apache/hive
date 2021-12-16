@@ -406,7 +406,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /**
    * Transforms OR clauses into IN clauses, when possible.
    */
-  protected static class RexTransformIntoInClause extends RexShuttle {
+  static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
     private final int minNumORClauses;
 
@@ -488,7 +488,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
     }
 
-    private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RexNode condition,
+    static RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RexNode condition,
             int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
@@ -517,7 +517,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           continue;
         }
 
-        allNodes.add(new ConstraintGroup(buildInFor(sa.getKey(), sa.getValue())));
+        allNodes.add(new ConstraintGroup(buildInFor(rexBuilder, sa.getKey(), sa.getValue())));
         processedNodes.addAll(sa.getValue());
       }
 
@@ -537,23 +537,25 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    private RexNode buildInFor(Set<RexNodeRef> set, Collection<ConstraintGroup> value) throws SemanticException {
+    private static RexNode buildInFor(RexBuilder rexBuilder,
+        Set<RexNodeRef> set, Collection<ConstraintGroup> value) throws SemanticException {
 
       List<RexNodeRef> columns = new ArrayList<>(set);
       columns.sort(RexNodeRef.COMPARATOR);
       List<RexNode >operands = new ArrayList<>();
 
       List<RexNode> columnNodes = columns.stream().map(RexNodeRef::getRexNode).collect(Collectors.toList());
-      operands.add(useStructIfNeeded(columnNodes));
+      operands.add(useStructIfNeeded(rexBuilder, columnNodes));
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
-        operands.add(useStructIfNeeded(values));
+        operands.add(useStructIfNeeded(rexBuilder, values));
       }
 
       return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
     }
 
-    private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
+    private static RexNode useStructIfNeeded(
+        RexBuilder rexBuilder, List<? extends RexNode> columns) {
       // Create STRUCT clause
       if (columns.size() == 1) {
         return columns.get(0);

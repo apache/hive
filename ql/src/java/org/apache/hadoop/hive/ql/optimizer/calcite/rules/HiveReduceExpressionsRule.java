@@ -16,7 +16,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -24,6 +27,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -102,6 +106,40 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
       .withRelBuilderFactory(relBuilderFactory));
   }
 
+  private static boolean convertFromInBetweenClauses(
+      RexBuilder rexBuilder, List<RexNode> exprs) {
+    HiveInBetweenExpandRule.RexInBetweenExpander expander =
+        new HiveInBetweenExpandRule.RexInBetweenExpander(rexBuilder);
+    boolean modified = false;
+    int i = 0 ;
+    for (RexNode expr: exprs) {
+      expr = expander.apply(expr);
+      if (expander.isModified()) {
+        exprs.set(i, expr);
+        modified = true;
+      }
+      ++i;
+    }
+    return modified;
+  }
+
+  private static List<RexNode> covertToInBetweenClauses(
+      RexBuilder rexBuilder, List<RexNode> exprs) {
+
+    final List<RexNode> reducedExprs = new ArrayList<>(exprs.size());
+    final HivePointLookupOptimizerRule.RexTransformIntoBetween betweenTransformer =
+        new HivePointLookupOptimizerRule.RexTransformIntoBetween(rexBuilder);
+    final HivePointLookupOptimizerRule.RexTransformIntoInClause inTransformer =
+        new HivePointLookupOptimizerRule.RexTransformIntoInClause(rexBuilder, 2);
+    for (RexNode e: exprs) {
+      e = betweenTransformer.apply(e);
+      e = inTransformer.apply(e);
+      reducedExprs.add(e);
+    }
+
+    return reducedExprs;
+  }
+
   /**
    * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.Filter}.
    * If the condition is a constant, the filter is removed (if TRUE) or replaced with
@@ -124,17 +162,26 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
 
     @Override public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
-      final List<RexNode> expList =
-          Lists.newArrayList(filter.getCondition());
+      List<RexNode> expList = Lists.newArrayList(filter.getCondition());
       RexNode newConditionExp;
       boolean reduced;
       final RelMetadataQuery mq = call.getMetadataQuery();
       final RelOptPredicateList predicates =
           mq.getPulledUpPredicates(filter.getInput());
+      final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
+      // before reducing let's convert IN/BETWEEN to OR/AND (respectively), as Calcite
+      // does not handle them fully and HivePointLookupOptimizerRule can introduce them back
+      boolean modified = convertFromInBetweenClauses(rexBuilder, expList);
+
       if (reduceExpressions(filter, expList, predicates, true, false)) {
         assert expList.size() == 1;
         newConditionExp = expList.get(0);
         reduced = true;
+        // convert back to the original form if it was originally modified
+        if (modified) {
+          expList = covertToInBetweenClauses(rexBuilder, Collections.singletonList(newConditionExp));
+        }
+        newConditionExp = expList.get(0);
       } else {
         // No reduction, but let's still test the original
         // predicate to see if it was already a constant,
