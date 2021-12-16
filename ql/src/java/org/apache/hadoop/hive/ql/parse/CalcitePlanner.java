@@ -4025,7 +4025,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // replace each of the position alias in ORDERBY with the actual column
         if (ref != null && ref.getToken().getType() == HiveParser.Number) {
           if (isObyByPos) {
-            fieldIndex = getFieldIndexFromColumnNumber(selectOutputRR, ref);
+            int columnCount =
+                    selectOutputRR != null ? selectOutputRR.getColumnInfos().size() : inputRR.getColumnInfos().size();
+            fieldIndex = getFieldIndexFromColumnNumber(columnCount, ref);
           } else { // if not using position alias and it is a number.
             LOG.warn("Using constant number "
                     + ref.getText()
@@ -4140,10 +4142,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     // SELECT a, b FROM t ORDER BY 1
-    private int getFieldIndexFromColumnNumber(RowResolver selectOutputRR, ASTNode ref) throws SemanticException {
+    private int getFieldIndexFromColumnNumber(int columnCount, ASTNode ref) throws SemanticException {
       int fieldIndex;
       int pos = Integer.parseInt(ref.getText());
-      if (pos > 0 && pos <= selectOutputRR.getColumnInfos().size()) {
+      if (pos > 0 && pos <= columnCount) {
         // fieldIndex becomes so simple
         // Note that pos starts from 1 while fieldIndex starts from 0;
         fieldIndex = pos - 1;
@@ -4151,7 +4153,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new SemanticException(
                 ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg("Position alias: " + pos
                         + " does not exist\n" + "The Select List is indexed from 1 to "
-                        + selectOutputRR.getColumnInfos().size()));
+                        + columnCount));
       }
       return fieldIndex;
     }
