@@ -4715,6 +4715,7 @@ public class TestReplicationScenarios {
 
     // Do a bootstrap dump & load
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+    collector.getMetrics();
     ReplLoadWork.setMbeansParamsForTesting(true,true);
 
     // Do some operations at the source side so that the count & metrics can be counted at the load side.
@@ -4742,6 +4743,9 @@ public class TestReplicationScenarios {
       List<Stage> stages = elem.getProgress().getStages();
       assertTrue(stages.size() != 0);
       for (Stage stage : stages) {
+        if (stage.getReplStats() == null) {
+          continue;
+        }
         for (String event : events) {
           assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
         }
@@ -4785,6 +4789,9 @@ public class TestReplicationScenarios {
       List<Stage> stages = elem.getProgress().getStages();
       assertTrue(stages.size() != 0);
       for (Stage stage : stages) {
+        if (stage.getReplStats() == null) {
+          continue;
+        }
         for (String event : events) {
           assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
         }

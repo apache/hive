@@ -51,6 +51,9 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -80,6 +83,7 @@ import java.util.Map;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -154,6 +158,106 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.run("drop database if exists " + replicatedDbName + " cascade");
     replicaNonAcid.run("drop database if exists " + replicatedDbName + " cascade");
     primary.run("drop database if exists " + primaryDbName + "_extra cascade");
+  }
+
+  @Test
+  public void testReplicationMetricForSkippedIteration() throws Throwable {
+    isMetricsEnabledForTests(true);
+    MetricCollector collector = MetricCollector.getInstance();
+    WarehouseInstance.Tuple dumpData = primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets " +
+                    "stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)")
+            .dump(primaryDbName);
+
+
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+    primary.dump(primaryDbName);
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dumpData.lastReplicationId)
+            .run("select id from t1")
+            .verifyResults(new String[]{"1"});
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+    replica.load(replicatedDbName, primaryDbName);
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    isMetricsEnabledForTests(false);
+  }
+
+  @Test
+  public void testReplicationMetricForFailedIteration() throws Throwable {
+    isMetricsEnabledForTests(true);
+    MetricCollector collector = MetricCollector.getInstance();
+    WarehouseInstance.Tuple dumpData = primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets " +
+                    "stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)")
+            .dump(primaryDbName);
+
+    ReplicationMetric metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dumpData.lastReplicationId)
+            .run("select id from t1")
+            .verifyResults(new String[]{"1"});
+
+    Path nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    fs.create(nonRecoverableFile);
+
+    primary.dumpFailure(primaryDbName);
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+    primary.dumpFailure(primaryDbName);
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+    fs.delete(nonRecoverableFile, true);
+    dumpData = primary.dump(primaryDbName);
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+    replica.run("ALTER DATABASE " + replicatedDbName +
+            " SET DBPROPERTIES('" + ReplConst.REPL_INCOMPATIBLE + "'='true')");
+    replica.loadFailure(replicatedDbName, primaryDbName);
+
+    nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+    assertTrue(fs.exists(nonRecoverableFile));
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
+    assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+    replica.loadFailure(replicatedDbName, primaryDbName);
+
+    metric = collector.getMetrics().getLast();
+    assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+    isMetricsEnabledForTests(false);
   }
 
   @Test
