@@ -39,6 +39,7 @@ import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
@@ -191,6 +192,10 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             }
             if (newOperands.size() == 1) {
               return rexBuilder.makeLiteral(false);
+            }
+            else if (newOperands.size() == 2) {
+              return rexBuilder.makeCall(
+                  SqlStdOperatorTable.EQUALS, newOperands.get(0), newOperands.get(1));
             }
             return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
           }
