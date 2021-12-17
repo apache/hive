@@ -250,7 +250,11 @@ class TextDescTableFormatter extends DescTableFormatter {
       tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
       TextMetaDataTable metaDataTable = new TextMetaDataTable();
       metaDataTable.addRow("Table name", "I/U/D since last rebuild");
-      for (SourceTable sourceTable : table.getMVMetadata().getSourceTables()) {
+      List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
+
+      sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
+              .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+      for (SourceTable sourceTable : sourceTableList) {
         String qualifiedTableName = TableName.getQualified(
                 sourceTable.getTable().getCatName(),
                 sourceTable.getTable().getDbName(),

@@ -568,8 +568,8 @@ Outdated for Rewriting:	Yes
 	 	 
 # Materialized View Source table information	 	 
 Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n5	0/0/0               	 
 hive.default.cmv_basetable_2_n2	1/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1677,8 +1677,8 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n5	0/0/0               	 
 hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -2093,8 +2093,8 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n5	0/0/0               	 
 hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
