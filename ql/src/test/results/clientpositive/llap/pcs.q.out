@@ -1043,6 +1043,9 @@ WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcs_t1
+PREHOOK: Input: default@pcs_t1@ds=2000-04-08
+PREHOOK: Input: default@pcs_t1@ds=2000-04-09
+PREHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM (
@@ -1054,6 +1057,9 @@ WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
+POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1073,69 +1079,295 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 60 Data size: 16680 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 278 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: key (type: int), value (type: string), ds (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 278 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
-                        key expressions: _col0 (type: int), _col1 (type: string)
-                        null sort order: zz
+                        key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                        null sort order: zzz
                         numBuckets: -1
-                        sort order: ++
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        sort order: +++
+                        Statistics: Num rows: 2 Data size: 556 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: unknown
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2000-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2000-04-08
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcs_t1
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.pcs_t1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.pcs_t1
+                  name: default.pcs_t1
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2000-04-09
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2000-04-09
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcs_t1
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.pcs_t1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.pcs_t1
+                  name: default.pcs_t1
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2000-04-10
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2000-04-10
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcs_t1
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.pcs_t1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.pcs_t1
+                  name: default.pcs_t1
+            Truncated Path -> Alias:
+              /pcs_t1/ds=2000-04-08 [x]
+              /pcs_t1/ds=2000-04-09 [x]
+              /pcs_t1/ds=2000-04-10 [x]
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 60 Data size: 16680 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 278 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: key (type: int), value (type: string), ds (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 278 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
-                        key expressions: _col0 (type: int), _col1 (type: string)
-                        null sort order: zz
+                        key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                        null sort order: zzz
                         numBuckets: -1
-                        sort order: ++
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        sort order: +++
+                        Statistics: Num rows: 2 Data size: 556 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: unknown
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2000-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2000-04-08
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcs_t1
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.pcs_t1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.pcs_t1
+                  name: default.pcs_t1
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2000-04-09
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2000-04-09
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcs_t1
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.pcs_t1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.pcs_t1
+                  name: default.pcs_t1
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2000-04-10
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2000-04-10
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcs_t1
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.pcs_t1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.pcs_t1
+                  name: default.pcs_t1
+            Truncated Path -> Alias:
+              /pcs_t1/ds=2000-04-08 [y]
+              /pcs_t1/ds=2000-04-09 [y]
+              /pcs_t1/ds=2000-04-10 [y]
         Reducer 3 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), '2008-04-08' (type: string)
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 556 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 556 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1171,6 +1403,9 @@ WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcs_t1
+PREHOOK: Input: default@pcs_t1@ds=2000-04-08
+PREHOOK: Input: default@pcs_t1@ds=2000-04-09
+PREHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (
   SELECT X.* FROM pcs_t1 X WHERE struct(X.ds, X.key) in (struct('2000-04-08',1), struct('2000-04-09',2))
@@ -1181,6 +1416,9 @@ WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
+POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11))
 PREHOOK: type: QUERY

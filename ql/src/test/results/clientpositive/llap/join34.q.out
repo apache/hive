@@ -36,11 +36,11 @@ OPTIMIZED SQL: SELECT `t6`.`key`, `t6`.`value`, `t4`.`value` AS `value1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` < 20
+WHERE `key` < 20
 UNION ALL
 SELECT `key`, `value`
 FROM `default`.`src`
-WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` > 100) AS `t3`) AS `t4`
+WHERE `key` > 100) AS `t3`) AS `t4`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` IS NOT NULL) AS `t6` ON `t4`.`key` = `t6`.`key`
@@ -64,18 +64,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                  filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_40_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.092
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
-                    Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -180,17 +180,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x1
-                  filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
+                  filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
-                    Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1

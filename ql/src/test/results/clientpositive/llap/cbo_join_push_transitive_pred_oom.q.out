@@ -30,23 +30,6 @@ unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
 PREHOOK: query: EXPLAIN CBO SELECT c.m
 FROM
  (SELECT substr(from_unixtime(unix_timestamp(), 'yyyy-MM-dd'), 1, 1) AS m
@@ -81,13 +64,13 @@ HiveProject(m=[$0])
     HiveProject(m=[$0])
       HiveUnion(all=[true])
         HiveProject(m=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
-          HiveFilter(condition=[AND(OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), OR(AND(OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1))), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), IN(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
+          HiveFilter(condition=[OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2'))])
             HiveProject(DUMMY=[0])
               HiveTableScan(table=[[default, test1]], table:alias=[test1])
         HiveProject($f0=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
-          HiveFilter(condition=[AND(=($0, _UTF-16LE'2'), IN(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
+          HiveFilter(condition=[=($0, _UTF-16LE'2')])
             HiveTableScan(table=[[default, test2]], table:alias=[test2])
     HiveProject(m=[$0])
-      HiveFilter(condition=[AND(OR(AND(OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), =($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1))), =($0, _UTF-16LE'2')), OR(AND(OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), IN(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), OR(AND(OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1))), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2'))), AND(IN(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($0, _UTF-16LE'2'))), IN($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
+      HiveFilter(condition=[AND(OR(AND(OR(IS NOT NULL(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')), =($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1))), =($0, _UTF-16LE'2')), IN($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
         HiveTableScan(table=[[default, test3]], table:alias=[d])
 

@@ -852,15 +852,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: true (type: boolean)
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: boolean)
+                  value expressions: _col0 (type: boolean)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1129,15 +1125,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: true (type: boolean)
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: boolean)
+                  value expressions: _col0 (type: boolean)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
