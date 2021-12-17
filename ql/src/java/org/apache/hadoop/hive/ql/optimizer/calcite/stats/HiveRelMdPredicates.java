@@ -165,7 +165,8 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         final RexLiteral literal = (RexLiteral) expr.e;
         RexNode r = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
             rexBuilder.makeInputRef(project, expr.i), literal);
-        r = rexSimplify.simplifyPreservingType(r);
+        // do not simplify here, it can intefere with AggregateProjectPullUpConstantRule
+        // which needs '=($i, literal)', but '=($i, true)' gets simplified to 'true'
         projectPullUpPredicates.add(r);
       } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
       //TODO: Move this to calcite
