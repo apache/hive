@@ -86,6 +86,7 @@ import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -4211,6 +4212,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
+    return getNextNotificationsInternal(rqst, false, filter);
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return getNextNotificationsInternal(request, allowGapsInEventIds, filter);
+  }
+
+  @Nullable
+  private NotificationEventResponse getNextNotificationsInternal(
+      NotificationEventRequest rqst, boolean allowGapsInEventIds,
+      NotificationFilter filter) throws TException {
+    long lastEventId = rqst.getLastEvent();
     NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back {} events", rsp!= null ? rsp.getEventsSize() : 0);
     NotificationEventResponse filtered = new NotificationEventResponse();
@@ -4219,7 +4234,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       long prevEventId = lastEventId;
       for (NotificationEvent e : rsp.getEvents()) {
         LOG.debug("Got event with id : {}", e.getEventId());
-        if (e.getEventId() != nextEventId) {
+        if (!allowGapsInEventIds && e.getEventId() != nextEventId) {
           if (e.getEventId() == prevEventId) {
             LOG.error("NOTIFICATION_LOG table has multiple events with the same event Id {}. " +
                     "Something went wrong when inserting notification events.  Bootstrap the system " +
