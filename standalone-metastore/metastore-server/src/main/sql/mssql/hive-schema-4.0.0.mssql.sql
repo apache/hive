@@ -1373,7 +1373,7 @@ CREATE TABLE "REPLICATION_METRICS" (
   "RM_METADATA" varchar(max),
   "RM_PROGRESS" varchar(max),
   "RM_START_TIME" integer NOT NULL,
-  "MESSAGE_FORMAT" nvarchar(16),
+  "MESSAGE_FORMAT" nvarchar(16) DEFAULT 'json-0.2',
 );
 
 -- Create indexes for the replication metrics table
