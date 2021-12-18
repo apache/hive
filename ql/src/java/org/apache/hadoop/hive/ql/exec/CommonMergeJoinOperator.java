@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -74,6 +75,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient List<Object>[] nextKeyWritables;
   transient RowContainer<List<Object>>[] nextGroupStorage;
   transient RowContainer<List<Object>>[] candidateStorage;
+  transient RowContainer<List<Object>>[] extensionStorage;
 
   transient String[] tagToAlias;
   private transient boolean[] fetchDone;
@@ -92,6 +94,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   // A field because we cannot multi-inherit.
   transient InterruptibleProcessing interruptChecker;
+  transient boolean shortcutExtensionRows;
 
   transient NullOrdering nullOrdering;
 
@@ -121,6 +124,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     nextGroupStorage = new RowContainer[maxAlias];
     candidateStorage = new RowContainer[maxAlias];
+    extensionStorage = new RowContainer[maxAlias];
     keyWritables = new ArrayList[maxAlias];
     nextKeyWritables = new ArrayList[maxAlias];
     fetchDone = new boolean[maxAlias];
@@ -140,6 +144,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESMBJOINCACHEROWS);
     }
 
+    shortcutExtensionRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_EXTENSIONROWS);
+
     for (byte pos = 0; pos < order.length; pos++) {
       RowContainer<List<Object>> rc =
           JoinUtil.getRowContainer(hconf, rowContainerStandardObjectInspectors[pos], pos,
@@ -149,6 +155,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
           JoinUtil.getRowContainer(hconf, rowContainerStandardObjectInspectors[pos], pos,
               bucketSize, spillTableDesc, conf, !hasFilter(pos), reporter);
       candidateStorage[pos] = candidateRC;
+      RowContainer<List<Object>> extensionRC = JoinUtil.getRowContainer(hconf,
+          rowContainerStandardObjectInspectors[pos], pos, bucketSize, spillTableDesc, conf, !hasFilter(pos), reporter);
+      extensionStorage[pos] = extensionRC;
     }
 
     for (byte pos = 0; pos < order.length; pos++) {
@@ -240,6 +249,17 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     byte alias = (byte) tag;
     List<Object> value = getFilteredValue(alias, row);
+
+    if (shortcutExtensionRows && isOuterJoinExtensionRow(tag, value)) {
+      int type = condn[0].getType();
+      if (tag == 0 && (type == JoinDesc.LEFT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
+        emitExtensionRow(tag, value);
+      }
+      if (tag == 1 && (type == JoinDesc.RIGHT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
+        emitExtensionRow(tag, value);
+      }
+      return;
+    }
     // compute keys and values as StandardObjects
     List<Object> key = mergeJoinComputeKeys(row, alias);
     // Fetch the first group for all small table aliases.
@@ -302,7 +322,47 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     assert !nextKeyGroup;
     candidateStorage[tag].addRow(value);
+  }
 
+  private void emitExtensionRow(int tag, List<Object> value) throws HiveException {
+    extensionStorage[tag].addRow(value);
+    for (byte i = 0; i < order.length; i++) {
+      if (i == tag) {
+        storage[i] = extensionStorage[i];
+      } else {
+        putDummyOrEmpty(i);
+      }
+    }
+    checkAndGenObject();
+    extensionStorage[tag].clearRows();
+  }
+
+  /**
+   * Decides if the actual row must be an extension row.
+   *
+   * Extension rows are those which are not part of the inner-join.
+   * May not correctly identify all extension rows - but will remove trivially filtered ones.
+   */
+  private boolean isOuterJoinExtensionRow(int tag, List<Object> value) {
+    if (condn.length != 1) {
+      return false;
+    }
+    switch (condn[0].getType()) {
+    case JoinDesc.INNER_JOIN:
+    case JoinDesc.LEFT_OUTER_JOIN:
+    case JoinDesc.RIGHT_OUTER_JOIN:
+    case JoinDesc.FULL_OUTER_JOIN:
+      break;
+    default:
+      return false;
+    }
+    if (hasFilter(tag)) {
+      short filterTag = getFilterTag(value);
+      if (JoinUtil.isFiltered(filterTag, 1 - tag)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private List<Byte> joinOneGroup() throws HiveException {
@@ -430,7 +490,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       this.nextKeyWritables[t] = null;
     }
   }
-  
+
   @Override
   public void close(boolean abort) throws HiveException {
     joinFinalLeftData(); // Do this WITHOUT checking for parents
@@ -530,7 +590,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   private void doFirstFetchIfNeeded() throws HiveException {
-    if (firstFetchHappened) return;
+    if (firstFetchHappened) {
+      return;
+    }
     firstFetchHappened = true;
     for (byte pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
@@ -541,7 +603,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   private boolean allFetchDone() {
     for (byte pos = 0; pos < order.length; pos++) {
-      if (pos != posBigTable && !fetchDone[pos]) return false;
+      if (pos != posBigTable && !fetchDone[pos]) {
+        return false;
+      }
     }
     return true;
   }
@@ -638,7 +702,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       ObjectInspectorUtils.partialCopyToStandardObject(key, row,
           Utilities.ReduceField.KEY.position, 1, (StructObjectInspector) inputObjInspectors[alias],
           ObjectInspectorCopyOption.WRITABLE);
-      return (List<Object>) key.get(0); // this is always 0, even if KEY.position is not 
+      return (List<Object>) key.get(0); // this is always 0, even if KEY.position is not
     }
   }
 
