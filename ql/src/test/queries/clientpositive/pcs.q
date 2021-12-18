@@ -44,7 +44,7 @@ SELECT * FROM (
   UNION ALL
   SELECT Y.* FROM pcs_t1 Y WHERE struct(Y.ds, Y.key) in (struct('2000-04-08',1), struct('2000-04-09',2))
 ) A
-WHERE A.ds = '2008-04-08'
+WHERE A.ds = '2000-04-08'
 SORT BY A.key, A.value, A.ds;
 
 SELECT * FROM (
@@ -52,7 +52,7 @@ SELECT * FROM (
   UNION ALL
   SELECT Y.* FROM pcs_t1 Y WHERE struct(Y.ds, Y.key) in (struct('2000-04-08',1), struct('2000-04-09',2))
 ) A
-WHERE A.ds = '2008-04-08'
+WHERE A.ds = '2000-04-08'
 SORT BY A.key, A.value, A.ds;
 
 explain extended select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11));
