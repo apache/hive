@@ -298,13 +298,12 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
         }
         try {
           stage('Test') {
-            buildHive("-pl classification -pl cli org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
               sh '''#!/bin/bash -e
               sw java 11 && . /etc/profile.d/java.sh
               export MAVEN_OPTS=-Xmx5G
               jacoco=`find / -name jacoco.xml|tr '\n' ','`
-              ls */target/site/jacoco
               echo find coverage: ${jacoco%?}
               mvn sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=${jacoco%?} -pl classification -pl cli
               '''
