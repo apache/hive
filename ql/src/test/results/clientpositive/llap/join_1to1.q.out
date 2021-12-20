@@ -30,6 +30,33 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in6.txt' INTO TABLE jo
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@join_1to1_2
+PREHOOK: query: select key1 is null,* from join_1to1_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@join_1to1_1
+#### A masked pattern was here ####
+POSTHOOK: query: select key1 is null,* from join_1to1_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@join_1to1_1
+#### A masked pattern was here ####
+false	15	10015	66
+false	20	10020	66
+false	25	10025	88
+false	30	10030	66
+false	35	10035	88
+false	40	10040	66
+false	40	10040	88
+false	5	10005	66
+false	50	10050	66
+false	50	10050	88
+false	50	10050	88
+false	60	10040	66
+false	60	10040	66
+false	70	10040	66
+false	70	10040	66
+false	80	10040	88
+false	80	10040	88
+true	NULL	10050	66
+true	NULL	NULL	66
 PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1

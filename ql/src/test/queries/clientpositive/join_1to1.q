@@ -7,6 +7,8 @@ CREATE TABLE join_1to1_2(key1 int, key2 int, value int);
 LOAD DATA LOCAL INPATH '../../data/files/in6.txt' INTO TABLE join_1to1_2;
 
 
+select key1 is null,* from join_1to1_1;
+
 set hive.join.emit.interval=5;
 
 SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1;
