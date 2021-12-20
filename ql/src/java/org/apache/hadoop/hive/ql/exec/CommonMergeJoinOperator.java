@@ -95,6 +95,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient InterruptibleProcessing interruptChecker;
 
   transient NullOrdering nullOrdering;
+  transient private boolean shortcutUnmatchedRows;
 
   /** Kryo ctor. */
   protected CommonMergeJoinOperator() {
@@ -136,6 +137,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     int bucketSize;
 
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
+    shortcutUnmatchedRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_UNMATCHED_ROWS);
+
     if (oldVar != 100) {
       bucketSize = oldVar;
     } else {
@@ -344,7 +347,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
    * Putting them in a separate group also reduces processing done for them.
    */
   private boolean isOuterJoinUnmatchedRow(int tag, List<Object> value) {
-    if (condn.length != 1) {
+    if (!shortcutUnmatchedRows || condn.length != 1) {
       return false;
     }
     switch (condn[0].getType()) {
