@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
 /*
@@ -75,7 +74,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient List<Object>[] nextKeyWritables;
   transient RowContainer<List<Object>>[] nextGroupStorage;
   transient RowContainer<List<Object>>[] candidateStorage;
-  transient RowContainer<List<Object>>[] extensionStorage;
+  transient RowContainer<List<Object>>[] unmatchedStorage;
 
   transient String[] tagToAlias;
   private transient boolean[] fetchDone;
@@ -124,7 +123,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     nextGroupStorage = new RowContainer[maxAlias];
     candidateStorage = new RowContainer[maxAlias];
-    extensionStorage = new RowContainer[maxAlias];
+    unmatchedStorage = new RowContainer[maxAlias];
     keyWritables = new ArrayList[maxAlias];
     nextKeyWritables = new ArrayList[maxAlias];
     fetchDone = new boolean[maxAlias];
@@ -157,7 +156,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       candidateStorage[pos] = candidateRC;
       RowContainer<List<Object>> extensionRC = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos], pos, bucketSize, spillTableDesc, conf, !hasFilter(pos), reporter);
-      extensionStorage[pos] = extensionRC;
+      unmatchedStorage[pos] = extensionRC;
     }
 
     for (byte pos = 0; pos < order.length; pos++) {
@@ -253,11 +252,12 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (shortcutExtensionRows && isOuterJoinExtensionRow(tag, value)) {
       int type = condn[0].getType();
       if (tag == 0 && (type == JoinDesc.LEFT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
-        emitExtensionRow(tag, value);
+        unmatchedStorage[tag].addRow(value);
       }
       if (tag == 1 && (type == JoinDesc.RIGHT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
-        emitExtensionRow(tag, value);
+        unmatchedStorage[tag].addRow(value);
       }
+      emitExtensionRows(tag, false);
       return;
     }
     // compute keys and values as StandardObjects
@@ -324,17 +324,19 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     candidateStorage[tag].addRow(value);
   }
 
-  private void emitExtensionRow(int tag, List<Object> value) throws HiveException {
-    extensionStorage[tag].addRow(value);
+  private void emitExtensionRows(int tag, boolean force) throws HiveException {
+    if (unmatchedStorage[tag].rowCount() == 0 || (!force && unmatchedStorage[tag].rowCount() < joinEmitInterval)) {
+      return;
+    }
     for (byte i = 0; i < order.length; i++) {
       if (i == tag) {
-        storage[i] = extensionStorage[i];
+        storage[i] = unmatchedStorage[i];
       } else {
         putDummyOrEmpty(i);
       }
     }
     checkAndGenObject();
-    extensionStorage[tag].clearRows();
+    unmatchedStorage[tag].clearRows();
   }
 
   /**
@@ -370,6 +372,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   private List<Byte> joinOneGroup(boolean clear) throws HiveException {
+    for (int pos = 0; pos < order.length; pos++) {
+      emitExtensionRows(pos, true);
+    }
     int[] smallestPos = findSmallestKey();
     List<Byte> listOfNeedFetchNext = null;
     if (smallestPos != null) {
