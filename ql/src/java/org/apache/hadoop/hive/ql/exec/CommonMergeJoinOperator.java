@@ -93,7 +93,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   // A field because we cannot multi-inherit.
   transient InterruptibleProcessing interruptChecker;
-  transient boolean shortcutExtensionRows;
 
   transient NullOrdering nullOrdering;
 
@@ -143,8 +142,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESMBJOINCACHEROWS);
     }
 
-    shortcutExtensionRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_EXTENSIONROWS);
-
     for (byte pos = 0; pos < order.length; pos++) {
       RowContainer<List<Object>> rc =
           JoinUtil.getRowContainer(hconf, rowContainerStandardObjectInspectors[pos], pos,
@@ -154,9 +151,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
           JoinUtil.getRowContainer(hconf, rowContainerStandardObjectInspectors[pos], pos,
               bucketSize, spillTableDesc, conf, !hasFilter(pos), reporter);
       candidateStorage[pos] = candidateRC;
-      RowContainer<List<Object>> extensionRC = JoinUtil.getRowContainer(hconf,
+      RowContainer<List<Object>> unmatchedRC = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos], pos, bucketSize, spillTableDesc, conf, !hasFilter(pos), reporter);
-      unmatchedStorage[pos] = extensionRC;
+      unmatchedStorage[pos] = unmatchedRC;
     }
 
     for (byte pos = 0; pos < order.length; pos++) {
@@ -249,7 +246,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     byte alias = (byte) tag;
     List<Object> value = getFilteredValue(alias, row);
 
-    if (shortcutExtensionRows && isOuterJoinExtensionRow(tag, value)) {
+    if (isOuterJoinUnmatchedRow(tag, value)) {
       int type = condn[0].getType();
       if (tag == 0 && (type == JoinDesc.LEFT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
         unmatchedStorage[tag].addRow(value);
@@ -257,7 +254,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       if (tag == 1 && (type == JoinDesc.RIGHT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
         unmatchedStorage[tag].addRow(value);
       }
-      emitExtensionRows(tag, false);
+      emitUnmatchedRows(tag, false);
       return;
     }
     // compute keys and values as StandardObjects
@@ -324,7 +321,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     candidateStorage[tag].addRow(value);
   }
 
-  private void emitExtensionRows(int tag, boolean force) throws HiveException {
+  private void emitUnmatchedRows(int tag, boolean force) throws HiveException {
     if (unmatchedStorage[tag].rowCount() == 0 || (!force && unmatchedStorage[tag].rowCount() < joinEmitInterval)) {
       return;
     }
@@ -340,12 +337,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   /**
-   * Decides if the actual row must be an extension row.
+   * Decides if the actual row must be an unmatched row.
    *
-   * Extension rows are those which are not part of the inner-join.
-   * May not correctly identify all extension rows - but will remove trivially filtered ones.
+   * Unmatched rows are those which are not part of the inner-join.
+   * The current implementation has issues processing filtered rows in FOJ conditions.
+   * Putting them in a separate group also reduces processing done for them.
    */
-  private boolean isOuterJoinExtensionRow(int tag, List<Object> value) {
+  private boolean isOuterJoinUnmatchedRow(int tag, List<Object> value) {
     if (condn.length != 1) {
       return false;
     }
@@ -373,7 +371,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   private List<Byte> joinOneGroup(boolean clear) throws HiveException {
     for (int pos = 0; pos < order.length; pos++) {
-      emitExtensionRows(pos, true);
+      emitUnmatchedRows(pos, true);
     }
     int[] smallestPos = findSmallestKey();
     List<Byte> listOfNeedFetchNext = null;
