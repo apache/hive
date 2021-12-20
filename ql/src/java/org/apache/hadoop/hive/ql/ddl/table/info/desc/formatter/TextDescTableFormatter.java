@@ -22,11 +22,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
@@ -219,7 +221,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (table.isView() || table.isMaterializedView()) {
       String viewInfoTitle = "# " + (table.isView() ? "" : "Materialized ") + "View Information";
       tableInfo.append(LINE_DELIM).append(viewInfoTitle).append(LINE_DELIM);
-      getViewInfo(tableInfo, table);
+      getViewInfo(tableInfo, table, isOutputPadded);
     }
 
     return tableInfo.toString();
@@ -238,13 +240,30 @@ class TextDescTableFormatter extends DescTableFormatter {
     return tableInfo.toString();
   }
 
-  private void getViewInfo(StringBuilder tableInfo, Table table) {
+  private void getViewInfo(StringBuilder tableInfo, Table table, boolean isOutputPadded) {
     formatOutput("Original Query:", table.getViewOriginalText(), tableInfo);
     formatOutput("Expanded Query:", table.getViewExpandedText(), tableInfo);
     if (table.isMaterializedView()) {
       formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
       formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
           : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+      tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
+      TextMetaDataTable metaDataTable = new TextMetaDataTable();
+      metaDataTable.addRow("Table name", "I/U/D since last rebuild");
+      List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
+
+      sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
+              .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+      for (SourceTable sourceTable : sourceTableList) {
+        String qualifiedTableName = TableName.getQualified(
+                sourceTable.getTable().getCatName(),
+                sourceTable.getTable().getDbName(),
+                sourceTable.getTable().getTableName());
+        metaDataTable.addRow(qualifiedTableName,
+                String.format("%d/%d/%d",
+                        sourceTable.getInsertedCount(), sourceTable.getUpdatedCount(), sourceTable.getDeletedCount()));
+      }
+      tableInfo.append(metaDataTable.renderTable(isOutputPadded));
     }
   }
 

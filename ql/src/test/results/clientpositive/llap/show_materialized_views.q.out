@@ -386,6 +386,10 @@ Original Query:     	SELECT * FROM shtb_test1
 Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.test1.shtb_test1	0/0/0               	 
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_test1_view1
@@ -426,6 +430,10 @@ Original Query:     	SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000
 Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1` where `shtb_test1`.`key` > 1000 and `shtb_test1`.`key` < 2000	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.test1.shtb_test1	0/0/0               	 
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_test1_view2
@@ -467,6 +475,10 @@ Original Query:     	SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200
 Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1` where `shtb_test1`.`key` > 100 and `shtb_test1`.`key` < 200	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.test1.shtb_test1	0/0/0               	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
@@ -559,6 +571,10 @@ Original Query:     	SELECT * FROM foo_n0
 Expanded Query:     	SELECT `foo_n0`.`a` FROM `database`.`foo_n0`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.database.foo_n0	0/0/0               	 
 PREHOOK: query: DROP MATERIALIZED VIEW fooview
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: query: DROP MATERIALIZED VIEW fooview
