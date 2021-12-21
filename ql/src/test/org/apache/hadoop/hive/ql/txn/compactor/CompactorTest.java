@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
+import org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -100,6 +101,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 
+import javax.annotation.Nullable;
+
+import static org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor.CompactorMetadataCache;
+
 /**
  * Super class for all of the compactor test modules.
  */
@@ -132,15 +137,23 @@ public abstract class CompactorTest {
   }
 
   protected void startInitiator() throws Exception {
-    startThread(CompactorThreadType.INITIATOR, true);
+    startThread(CompactorThreadType.INITIATOR, true, null);
+  }
+
+  protected void startInitiatorWithCache(CompactorMetadataCache cache) throws Exception {
+    startThread(CompactorThreadType.INITIATOR, true, cache);
   }
 
   protected void startWorker() throws Exception {
-    startThread(CompactorThreadType.WORKER, true);
+    startThread(CompactorThreadType.WORKER, true, null);
   }
 
   protected void startCleaner() throws Exception {
-    startThread(CompactorThreadType.CLEANER, true);
+    startThread(CompactorThreadType.CLEANER, true, null);
+  }
+
+  protected void startCleanerWithCache(CompactorMetadataCache cache) throws Exception {
+    startThread(CompactorThreadType.CLEANER, true, cache);
   }
 
   protected void runAcidMetricService() throws Exception {
@@ -343,7 +356,8 @@ public abstract class CompactorTest {
   }
 
   // I can't do this with @Before because I want to be able to control when the thread starts
-  private void startThread(CompactorThreadType type, boolean stopAfterOne) throws Exception {
+  private void startThread(CompactorThreadType type, boolean stopAfterOne, @Nullable CompactorMetadataCache cache)
+      throws Exception {
     TestTxnDbUtil.setConfValues(conf);
     CompactorThread t;
     switch (type) {
@@ -356,6 +370,9 @@ public abstract class CompactorTest {
     t.setConf(conf);
     stop.set(stopAfterOne);
     t.init(stop);
+    if (cache != null) {
+      CacheAwareCompactor.trySetCache(t, cache);
+    }
     if (stopAfterOne) t.run();
     else t.start();
   }

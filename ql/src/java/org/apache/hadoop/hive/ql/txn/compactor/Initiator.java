@@ -164,8 +164,8 @@ public class Initiator extends MetaStoreCompactorThread {
 
           for (CompactionInfo ci : potentials) {
             try {
-              Table t = resolveTable(ci);
-              Partition p = resolvePartition(ci);
+              Table t = cacheAndResolveTable(ci);
+              Partition p = cacheAndResolvePartition(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
                     ", assuming it has been dropped and moving on.");
@@ -524,8 +524,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      //TODO: avoid repeated HMS lookup for same table (e.g partitions within table)
-      Table t = resolveTable(ci);
+      Table t = cacheAndResolveTable(ci);
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
             "table or has been dropped and moving on.");

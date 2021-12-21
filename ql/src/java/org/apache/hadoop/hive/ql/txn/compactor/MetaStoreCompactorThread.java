@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -45,11 +46,12 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
  * Compactor threads that runs in the metastore. It uses a {@link TxnStore}
  * to access the internal database.
  */
-public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
+public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread, CacheAwareCompactor {
 
   protected TxnStore txnHandler;
   protected int threadId;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
+  protected CompactorMetadataCache metadataCache;
 
   @Override
   public void setThreadId(int threadId) {
@@ -99,6 +101,25 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
       LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
       throw new MetaException(e.toString());
     }
+  }
+
+  @Override
+  public void setCache(CompactorMetadataCache metadataCache) {
+    this.metadataCache = metadataCache;
+  }
+
+  protected Table cacheAndResolveTable(CompactionInfo ci) throws MetaException {
+    if (metadataCache != null) {
+      return metadataCache.resolveTable(ci, () -> resolveTable(ci));
+    }
+    return resolveTable(ci);
+  }
+
+  protected Partition cacheAndResolvePartition(CompactionInfo ci) throws MetaException {
+    if (metadataCache != null) {
+      return metadataCache.resolvePartition(ci, () -> resolvePartition(ci));
+    }
+    return resolvePartition(ci);
   }
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {

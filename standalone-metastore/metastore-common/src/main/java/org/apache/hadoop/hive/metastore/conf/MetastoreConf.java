@@ -589,6 +589,9 @@ public class MetastoreConf {
             "in which a warning is being raised if multiple worker version are detected.\n" +
             "The setting has no effect if the metastore.metrics.enabled is disabled \n" +
             "or the metastore.acidmetrics.thread.on is turned off."),
+    COMPACTOR_METADATA_CACHE_TIMEOUT("metastore.compactor.metadata.cache.timeout",
+      "hive.metastore.compactor.metadata.cache.timeout", 60, TimeUnit.SECONDS,
+      "Number of seconds the table/partition metadata are cached by the compactor. Setting it to zero disables the feature."),
     COMPACTOR_MINOR_STATS_COMPRESSION(
         "metastore.compactor.enable.stats.compression",
         "metastore.compactor.enable.stats.compression", true,
