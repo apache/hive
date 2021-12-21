@@ -97,11 +97,7 @@ public class Executor {
       LOG.info("Executing command(queryId=" + driverContext.getQueryId() + "): " + driverContext.getQueryString());
 
       // TODO: should this use getUserFromAuthenticator?
-      hookContext = new PrivateHookContext(driverContext.getPlan(), driverContext.getQueryState(),
-          context.getPathToCS(), SessionState.get().getUserName(), SessionState.get().getUserIpAddress(),
-          InetAddress.getLocalHost().getHostAddress(), driverContext.getOperationId(),
-          SessionState.get().getSessionId(), Thread.currentThread().getName(), SessionState.get().isHiveServerQuery(),
-          SessionState.getPerfLogger(), driverContext.getQueryInfo(), context);
+      hookContext = new PrivateHookContext(driverContext, context);
 
       preExecutionActions();
       preExecutionCacheActions();
