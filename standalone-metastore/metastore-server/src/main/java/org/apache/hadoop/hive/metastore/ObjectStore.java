@@ -289,6 +289,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
+
+  private boolean useTableSerDes;
   /**
   * Verify the schema only once per JVM since the db connection info is static
   */
@@ -391,6 +393,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     this.batchSize = MetastoreConf.getIntVar(conf, ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
+    this.useTableSerDes = MetastoreConf.getBoolVar(conf, ConfVars.USE_TABLE_SERDES);
 
     if (!isInitialized) {
       throw new RuntimeException("Unable to create persistence manager. Check log for details");
@@ -2602,7 +2605,7 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException("Partition does not belong to target table "
               + dbName + "." + tblName + ": " + part);
         }
-        MPartition mpart = convertToMPart(part, table, true, true);
+        MPartition mpart = convertToMPart(part, table, true, useTableSerDes);
 
         toPersist.add(mpart);
         int now = (int) (System.currentTimeMillis() / 1000);
@@ -2684,7 +2687,7 @@ public class ObjectStore implements RawStore, Configurable {
         Partition part = iterator.next();
 
         if (isValidPartition(part, partitionKeys, ifNotExists)) {
-          MPartition mpart = convertToMPart(part, table, true, true);
+          MPartition mpart = convertToMPart(part, table, true, useTableSerDes);
           pm.makePersistent(mpart);
           if (tabGrants != null) {
             for (MTablePrivilege tab : tabGrants) {
@@ -2737,7 +2740,7 @@ public class ObjectStore implements RawStore, Configurable {
         tabColumnGrants = this.listTableAllColumnGrants(
             catName, part.getDbName(), part.getTableName());
       }
-      MPartition mpart = convertToMPart(part, table, true, true);
+      MPartition mpart = convertToMPart(part, table, true, useTableSerDes);
       pm.makePersistent(mpart);
 
       int now = (int) (System.currentTimeMillis() / 1000);
@@ -2930,7 +2933,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param useTableCD whether to try to use the parent table's column descriptor.
    * @return the model partition object, and null if the input partition is null.
    */
-  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD, boolean useTableSerDeInfo)
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD, boolean useTableSerDes)
       throws InvalidObjectException, MetaException {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
@@ -2947,7 +2950,7 @@ public class ObjectStore implements RawStore, Configurable {
     // thereby saving space. Similarly, we can also reuse the parent table's serde info.
     MStorageDescriptor msd;
     MSerDeInfo tblSerDeInfo = null;
-    if (useTableSerDeInfo && mt.getSd() != null && mt.getSd().getSerDeInfo() != null && part.getSd() != null &&
+    if (useTableSerDes && mt.getSd() != null && mt.getSd().getSerDeInfo() != null && part.getSd() != null &&
         convertToSerDeInfo(mt.getSd().getSerDeInfo(), false).equals(part.getSd().getSerdeInfo())) {
       tblSerDeInfo = mt.getSd().getSerDeInfo();
     }

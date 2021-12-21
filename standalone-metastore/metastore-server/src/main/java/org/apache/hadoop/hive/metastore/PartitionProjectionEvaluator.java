@@ -435,11 +435,15 @@ public class PartitionProjectionEvaluator {
         }
 
         if (ids[SERDE_INDEX] != null) {
-          // serde object must have already been intialized above in MetaStoreUtils.setNestedProperty call
-          if (part.getSd().getSerdeInfo() == null) {
-            part.getSd().setSerdeInfo(new SerDeInfo());
+          // serde object must have already been initialized above in MetaStoreUtils.setNestedProperty call
+          if (serdeIds.containsKey(ids[SERDE_INDEX])) {
+            part.getSd().setSerdeInfo(serdeIds.get(ids[SERDE_INDEX]));
+          } else {
+            if (part.getSd().getSerdeInfo() == null) {
+              part.getSd().setSerdeInfo(new SerDeInfo());
+            }
+            serdeIds.put(ids[SERDE_INDEX], part.getSd().getSerdeInfo());
           }
-          serdeIds.put(ids[SERDE_INDEX], part.getSd().getSerdeInfo());
           ids[SERDE_INDEX] = null;
         }
 
