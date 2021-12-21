@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -332,7 +333,7 @@ public class HBaseSerDeParameters {
       if (avroSchemaRetClass == null) {
         // bother about generating a schema only if a schema retriever class wasn't provided
         if (schemaLiteral != null) {
-          schema = Schema.parse(schemaLiteral);
+          schema = AvroCompatibilityHelper.parse(schemaLiteral);
         } else if (schemaUrl != null) {
           schema = HBaseSerDeHelper.getSchemaFromFS(schemaUrl, conf);
         } else if (deserializerClass != null) {

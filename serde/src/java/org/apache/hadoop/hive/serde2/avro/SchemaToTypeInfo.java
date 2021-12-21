@@ -27,6 +27,7 @@ import static org.apache.avro.Schema.Type.LONG;
 import static org.apache.avro.Schema.Type.NULL;
 import static org.apache.avro.Schema.Type.STRING;
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -113,8 +114,10 @@ class SchemaToTypeInfo {
       int precision = 0;
       int scale = 0;
       try {
-        precision = schema.getJsonProp(AvroSerDe.AVRO_PROP_PRECISION).getIntValue();
-        scale = schema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).getIntValue();
+        precision = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(schema, AvroSerDe.AVRO_PROP_PRECISION,
+            false, false));
+        scale = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(schema, AvroSerDe.AVRO_PROP_SCALE,
+            false, false));
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + schema, ex);
       }
@@ -132,7 +135,8 @@ class SchemaToTypeInfo {
         AvroSerDe.CHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
       int maxLength = 0;
       try {
-        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(schema, AvroSerDe.AVRO_PROP_MAX_LENGTH,
+            false, false));
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
       }
@@ -143,7 +147,8 @@ class SchemaToTypeInfo {
         AvroSerDe.VARCHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
       int maxLength = 0;
       try {
-        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(schema, AvroSerDe.AVRO_PROP_MAX_LENGTH,
+            false, false));
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
       }

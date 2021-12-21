@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -241,7 +242,8 @@ class AvroDeserializer {
 
       int scale = 0;
       try {
-        scale = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).getIntValue();
+        scale = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(fileSchema, AvroSerDe.AVRO_PROP_SCALE,
+            false, false));
       } catch(Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + fileSchema, ex);
       }
@@ -257,7 +259,8 @@ class AvroDeserializer {
 
       int maxLength = 0;
       try {
-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(fileSchema, AvroSerDe.AVRO_PROP_MAX_LENGTH,
+            false, false));
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value for char field from file schema: " + fileSchema, ex);
       }
@@ -272,7 +275,8 @@ class AvroDeserializer {
 
       maxLength = 0;
       try {
-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = Integer.parseInt(AvroCompatibilityHelper.getSchemaPropAsJsonString(fileSchema, AvroSerDe.AVRO_PROP_MAX_LENGTH,
+            false, false));
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value for varchar field from file schema: " + fileSchema, ex);
       }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -187,7 +188,7 @@ class AvroSerializer {
       if (schema.getType() == Type.BYTES){
         return AvroSerdeUtils.getBufferFromBytes((byte[])fieldOI.getPrimitiveJavaObject(structFieldData));
       } else if (schema.getType() == Type.FIXED){
-        Fixed fixed = new GenericData.Fixed(schema, (byte[])fieldOI.getPrimitiveJavaObject(structFieldData));
+        Fixed fixed = AvroCompatibilityHelper.newFixedField(schema, (byte[])fieldOI.getPrimitiveJavaObject(structFieldData));
         return fixed;
       } else {
         throw new AvroSerdeException("Unexpected Avro schema for Binary TypeInfo: " + schema.getType());

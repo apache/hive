@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper;
+import com.linkedin.avroutil1.compatibility.SchemaParseConfiguration;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import org.apache.avro.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -227,27 +230,23 @@ public class AvroSerdeUtils {
   }
 
   public static Schema getSchemaFor(String str) {
-    Schema.Parser parser = new Schema.Parser();
-    Schema schema = parser.parse(str);
-    return schema;
+    return AvroCompatibilityHelper.parse(str);
   }
 
   public static Schema getSchemaFor(File file) {
-    Schema.Parser parser = new Schema.Parser();
-    Schema schema;
+    InputStream targetStream = null;
     try {
-      schema = parser.parse(file);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to parse Avro schema from " + file.getName(), e);
+      targetStream = new FileInputStream(file);
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException("Failed to parse Avro schema from file due to the file (" + file.getAbsolutePath() + ") not found.", e);
     }
-    return schema;
+    return getSchemaFor(targetStream);
   }
 
   public static Schema getSchemaFor(InputStream stream) {
-    Schema.Parser parser = new Schema.Parser();
     Schema schema;
     try {
-      schema = parser.parse(stream);
+      schema = AvroCompatibilityHelper.parse(stream, SchemaParseConfiguration.LOOSE, null).getMainSchema();
     } catch (IOException e) {
       throw new RuntimeException("Failed to parse Avro schema", e);
     }

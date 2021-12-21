@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +74,7 @@ public class TypeInfoToSchema {
   }
 
   private Schema.Field createAvroField(String name, TypeInfo typeInfo, String comment) {
-    return new Schema.Field(name, createAvroSchema(typeInfo), comment, null);
+    return AvroCompatibilityHelper.createSchemaField(name, createAvroSchema(typeInfo), comment, null);
   }
 
   private Schema createAvroSchema(TypeInfo typeInfo) {
@@ -228,11 +229,11 @@ public class TypeInfoToSchema {
     JsonNode nullDefault = JsonNodeFactory.instance.nullNode();
     if (schemaField.schema().getType() == Schema.Type.RECORD) {
       for (Schema.Field field : schemaField.schema().getFields()) {
-        fields.add(new Schema.Field(field.name(), field.schema(), field.doc(), nullDefault));
+        fields.add(AvroCompatibilityHelper.createSchemaField(field.name(), field.schema(), field.doc(), getCompatibleDefaultValue(field)));
       }
     } else {
-      fields.add(new Schema.Field(schemaField.name(), schemaField.schema(), schemaField.doc(),
-          nullDefault));
+      fields.add(AvroCompatibilityHelper.createSchemaField(schemaField.name(), schemaField.schema(), schemaField.doc(),
+          getCompatibleDefaultValue(schemaField)));
     }
 
     return fields;
@@ -269,5 +270,11 @@ public class TypeInfoToSchema {
     }
 
     return prunedSchemas;
+  }
+
+  public static Object getCompatibleDefaultValue(Schema.Field field) {
+    return AvroCompatibilityHelper.fieldHasDefault(field)
+        ? AvroCompatibilityHelper.getGenericDefaultValue(field)
+        : null;
   }
 }
