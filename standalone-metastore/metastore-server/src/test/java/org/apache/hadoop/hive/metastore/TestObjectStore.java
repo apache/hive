@@ -585,7 +585,7 @@ public class TestObjectStore {
     // drop the partitions
     try (AutoCloseable c = deadline()) {
       objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-	        Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
     }
 
     // Check, if every data is dropped connected to the partitions
@@ -1418,6 +1418,13 @@ public class TestObjectStore {
 
   @Test
   public void testSerDeCreatedOnDemand() throws Exception {
+    // Enable USE_TABLE_SERDES
+    final boolean origUseTableSerDes = MetastoreConf.getBoolVar(conf, ConfVars.USE_TABLE_SERDES);
+    if (!origUseTableSerDes) {
+      MetastoreConf.setBoolVar(conf, ConfVars.USE_TABLE_SERDES, true);
+      objectStore.setConf(conf);
+    }
+
     createPartitionedTable(true, true);
     // Partitions should reuse table's serde info
     checkBackendTableSize("PARTITIONS", 3);
@@ -1453,10 +1460,23 @@ public class TestObjectStore {
     // A new SERDE should be created
     checkBackendTableSize("SERDES", 4);
     checkBackendTableSize("SERDE_PARAMS", 4);
+
+    // Restore conf
+    if (!origUseTableSerDes) {
+      MetastoreConf.setBoolVar(conf, ConfVars.USE_TABLE_SERDES, false);
+      objectStore.setConf(conf);
+    }
   }
 
   @Test
   public void testSerDesCleanup() throws Exception {
+    // Enable USE_TABLE_SERDES
+    final boolean origUseTableSerDes = MetastoreConf.getBoolVar(conf, ConfVars.USE_TABLE_SERDES);
+    if (!origUseTableSerDes) {
+      MetastoreConf.setBoolVar(conf, ConfVars.USE_TABLE_SERDES, true);
+      objectStore.setConf(conf);
+    }
+
     createPartitionedTable(true, true);
     // Partitions should reuse table's serde info
     checkBackendTableSize("PARTITIONS", 3);
@@ -1517,6 +1537,12 @@ public class TestObjectStore {
     }
     checkBackendTableSize("SERDES", 0);
     checkBackendTableSize("SERDE_PARAMS", 0);
+
+    // Restore conf
+    if (!origUseTableSerDes) {
+      MetastoreConf.setBoolVar(conf, ConfVars.USE_TABLE_SERDES, false);
+      objectStore.setConf(conf);
+    }
   }
 
   /**

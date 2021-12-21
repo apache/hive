@@ -1230,6 +1230,9 @@ public class MetastoreConf {
             "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
             "org.apache.hadoop.hive.serde2.OpenCSVSerde",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
+    USE_TABLE_SERDES("metastore.use.table.serdes",
+        "hive.use.table.serdes", false,
+        "When true, metastore reuses table's SerDe record for all partitions in a partitioned table"),
     SERVER_MAX_MESSAGE_SIZE("metastore.server.max.message.size",
         "hive.metastore.server.max.message.size", 100*1024*1024L,
         "Maximum message size in bytes a HMS will accept."),
