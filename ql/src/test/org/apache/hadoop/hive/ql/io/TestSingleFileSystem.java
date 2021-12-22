@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -85,6 +86,11 @@ public class TestSingleFileSystem {
     assertSfsFile(fs.getFileStatus(new Path("sfs+" + f1path + "/#SINGLEFILE#/f1")));
   }
 
+  @Test(expected = FileNotFoundException.class)
+  public void testGetFileStatusOfUnknown() throws Exception {
+    assertSfsFile(fs.getFileStatus(new Path("sfs+" + f1path + "/#SINGLEFILE#/unknown")));
+  }
+
   @Test
   public void testListStatusSingleFileDir() throws Exception {
     String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#";
@@ -93,12 +99,33 @@ public class TestSingleFileSystem {
     assertEquals(targetSfsPath + "/f1", list[0].getPath().toString());
   }
 
+
   @Test
   public void testListStatusSingleFileDirEndingInSlash() throws Exception {
     String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#/";
     FileStatus[] list = fs.listStatus(new Path(targetSfsPath));
     assertEquals(1, list.length);
     assertEquals(targetSfsPath + "f1", list[0].getPath().toString());
+  }
+
+  @Test(expected = FileNotFoundException.class)
+  public void testListSingleFileDirOfNonExistentFile() throws Exception {
+    String targetSfsPath = "sfs+" + f1path + "nonExistent/#SINGLEFILE#/";
+    fs.listStatus(new Path(targetSfsPath));
+  }
+
+  @Test
+  public void testListStatusTargetFile() throws Exception {
+    String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#/f1";
+    FileStatus[] list = fs.listStatus(new Path(targetSfsPath));
+    assertEquals(1, list.length);
+    assertEquals(targetSfsPath, list[0].getPath().toString());
+  }
+
+  @Test(expected = FileNotFoundException.class)
+  public void testListStatusNonTargetFile() throws Exception {
+    String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#/unknown";
+    fs.listStatus(new Path(targetSfsPath));
   }
 
   @Test
@@ -134,6 +161,11 @@ public class TestSingleFileSystem {
         assertEquals("asd", line);
       }
     }
+  }
+
+  @Test(expected = FileNotFoundException.class)
+  public void testOpenUnknownFileInSingleFileDir() throws Exception {
+    fs.open(new Path("sfs+" + f1path + "/#SINGLEFILE#/unknown"));
   }
 
   @Test(expected = IOException.class)

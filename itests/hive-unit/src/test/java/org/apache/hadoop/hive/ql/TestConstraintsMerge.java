@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -142,17 +143,17 @@ public class TestConstraintsMerge {
     runStatementOnDriver("insert into " + Table.TBL_CHECK_MERGE + "(name, age, gpa) values " +
             "('student1', 16, 2.0)", confForTez);
 
-    String errorMessage = null;
+    Throwable error = null;
     try {
       runStatementOnDriver("merge into " + Table.TBL_CHECK_MERGE +
               " using (select age from table_source) source\n" +
               "on source.age=table_check_merge.age\n" +
               "when matched then update set gpa=6", confForTez);
-    } catch (Exception ex) {
-      errorMessage = ex.getMessage();
+    } catch (Throwable t) {
+      error = t;
     }
 
-    assertNotNull(errorMessage);
-    assertTrue(errorMessage.contains("DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!"));
+    assertTrue(error instanceof DataConstraintViolationError);
+    assertTrue(error.getMessage().contains("Either CHECK or NOT NULL constraint violated!"));
   }
 }

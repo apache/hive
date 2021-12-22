@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -1301,7 +1302,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         .addCol("col2_2", ColumnType.INT_TYPE_NAME).build(metaStore.getConf());
     client.createTable(table1);
     sourceTable = createSourceTable(table1);
-    cm.addToTablesUsed(sourceTable);
+    cm.addToTablesUsed(
+            TableName.getDbTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()));
+    cm.addToSourceTables(sourceTable);
     cm.unsetMaterializationTime();
     client.updateCreationMetadata(catName, dbName, tableNames[3], cm);
 

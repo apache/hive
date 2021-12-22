@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -41,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Build a {@link Table}.  The database name and table name must be provided, plus whatever is
@@ -211,7 +213,12 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     if (temporary) t.setTemporary(temporary);
     t.setCatName(catName);
     if (!mvReferencedTables.isEmpty()) {
-      CreationMetadata cm = new CreationMetadata(catName, dbName, tableName, mvReferencedTables);
+      Set<String> tablesUsed = mvReferencedTables.stream()
+              .map(sourceTable -> TableName.getDbTable(
+                      sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
+              .collect(Collectors.toSet());
+      CreationMetadata cm = new CreationMetadata(catName, dbName, tableName, tablesUsed);
+      cm.setSourceTables(mvReferencedTables);
       if (mvValidTxnList != null) cm.setValidTxnList(mvValidTxnList);
       t.setCreationMetadata(cm);
     }

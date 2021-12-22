@@ -811,6 +811,13 @@ public interface IMetaStoreClient {
   Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
+  @Deprecated
+  /**
+   * Use {@link IMetaStoreClient#getMaterializationInvalidationInfo(CreationMetadata)} instead.
+   */
+  Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
   /**
    * Updates the creation metadata for the materialized view.
    */
@@ -3639,6 +3646,27 @@ public interface IMetaStoreClient {
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
                                                 NotificationFilter filter) throws TException;
+
+  /**
+   * Get the next set of notifications from the database.
+   * @param request The {@link NotificationEventRequest} request to be sent to the server
+   *                to fetch the next set of events.
+   * @param allowGapsInEventIds If this flag is true, the returned event ids may contain
+   *                            gaps in the event ids. This could happen if on the server
+   *                            side some of the events since the requested eventId have
+   *                            been garbage collected. If the flag is false, the method
+   *                            will throw {@link MetaException} if the returned events
+   *                            from the server are not in sequence from the requested
+   *                            event id.
+   * @param filter User provided filter to remove unwanted events.  If null, all events will be
+   *               returned.
+   * @return list of notifications, sorted by eventId.  It is guaranteed that the events are in
+   * the order that the operations were done on the database.
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException;
 
   /**
    * Get the last used notification event id.

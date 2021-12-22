@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,7 +89,6 @@ public class HookContext {
     public String getDescription() {
       return this.description;
     }
-    
   }
 
   private QueryPlan queryPlan;
@@ -125,8 +125,8 @@ public class HookContext {
     this.conf = queryState.getConf();
     this.inputPathToContentSummary = inputPathToContentSummary;
     completeTaskList = new ArrayList<TaskRunner>();
-    inputs = queryPlan.getInputs();
-    outputs = queryPlan.getOutputs();
+    inputs = queryPlan == null ? Collections.emptySet() : queryPlan.getInputs();
+    outputs = queryPlan == null ? Collections.emptySet() : queryPlan.getOutputs();
     ugi = Utils.getUGI();
     linfo = queryState.getLineageState().getLineageInfo();
     depMap = queryState.getLineageState().getIndex();

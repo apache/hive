@@ -2623,16 +2623,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function translate_table_dryrun(\metastore\Table $tbl)
+    public function translate_table_dryrun(\metastore\CreateTableRequest $request)
     {
-        $this->send_translate_table_dryrun($tbl);
+        $this->send_translate_table_dryrun($request);
         return $this->recv_translate_table_dryrun();
     }
 
-    public function send_translate_table_dryrun(\metastore\Table $tbl)
+    public function send_translate_table_dryrun(\metastore\CreateTableRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_translate_table_dryrun_args();
-        $args->tbl = $tbl;
+        $args->request = $request;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -3643,16 +3643,17 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_table_objects_by_name_req failed: unknown result");
     }
 
-    public function get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata)
+    public function get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata, $validTxnList)
     {
-        $this->send_get_materialization_invalidation_info($creation_metadata);
+        $this->send_get_materialization_invalidation_info($creation_metadata, $validTxnList);
         return $this->recv_get_materialization_invalidation_info();
     }
 
-    public function send_get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata)
+    public function send_get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata, $validTxnList)
     {
         $args = new \metastore\ThriftHiveMetastore_get_materialization_invalidation_info_args();
         $args->creation_metadata = $creation_metadata;
+        $args->validTxnList = $validTxnList;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(

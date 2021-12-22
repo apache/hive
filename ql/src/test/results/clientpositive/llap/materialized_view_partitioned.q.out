@@ -280,6 +280,10 @@ Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 25
 Expanded Query:     	SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY

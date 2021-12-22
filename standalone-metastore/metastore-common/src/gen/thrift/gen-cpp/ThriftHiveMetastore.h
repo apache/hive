@@ -66,7 +66,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_not_null_constraint(const AddNotNullConstraintRequest& req) = 0;
   virtual void add_default_constraint(const AddDefaultConstraintRequest& req) = 0;
   virtual void add_check_constraint(const AddCheckConstraintRequest& req) = 0;
-  virtual void translate_table_dryrun(Table& _return, const Table& tbl) = 0;
+  virtual void translate_table_dryrun(Table& _return, const CreateTableRequest& request) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
@@ -82,7 +82,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_tables_ext(std::vector<ExtendedTableInfo> & _return, const GetTablesExtRequest& req) = 0;
   virtual void get_table_req(GetTableResult& _return, const GetTableRequest& req) = 0;
   virtual void get_table_objects_by_name_req(GetTablesResult& _return, const GetTablesRequest& req) = 0;
-  virtual void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata) = 0;
+  virtual void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList) = 0;
   virtual void update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) = 0;
   virtual void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) = 0;
   virtual void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) = 0;
@@ -443,7 +443,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void add_check_constraint(const AddCheckConstraintRequest& /* req */) {
     return;
   }
-  void translate_table_dryrun(Table& /* _return */, const Table& /* tbl */) {
+  void translate_table_dryrun(Table& /* _return */, const CreateTableRequest& /* request */) {
     return;
   }
   void drop_table(const std::string& /* dbname */, const std::string& /* name */, const bool /* deleteData */) {
@@ -491,7 +491,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_table_objects_by_name_req(GetTablesResult& /* _return */, const GetTablesRequest& /* req */) {
     return;
   }
-  void get_materialization_invalidation_info(Materialization& /* _return */, const CreationMetadata& /* creation_metadata */) {
+  void get_materialization_invalidation_info(Materialization& /* _return */, const CreationMetadata& /* creation_metadata */, const std::string& /* validTxnList */) {
     return;
   }
   void update_creation_metadata(const std::string& /* catName */, const std::string& /* dbname */, const std::string& /* tbl_name */, const CreationMetadata& /* creation_metadata */) {
@@ -6007,8 +6007,8 @@ class ThriftHiveMetastore_add_check_constraint_presult {
 };
 
 typedef struct _ThriftHiveMetastore_translate_table_dryrun_args__isset {
-  _ThriftHiveMetastore_translate_table_dryrun_args__isset() : tbl(false) {}
-  bool tbl :1;
+  _ThriftHiveMetastore_translate_table_dryrun_args__isset() : request(false) {}
+  bool request :1;
 } _ThriftHiveMetastore_translate_table_dryrun_args__isset;
 
 class ThriftHiveMetastore_translate_table_dryrun_args {
@@ -6020,15 +6020,15 @@ class ThriftHiveMetastore_translate_table_dryrun_args {
   }
 
   virtual ~ThriftHiveMetastore_translate_table_dryrun_args() noexcept;
-  Table tbl;
+  CreateTableRequest request;
 
   _ThriftHiveMetastore_translate_table_dryrun_args__isset __isset;
 
-  void __set_tbl(const Table& val);
+  void __set_request(const CreateTableRequest& val);
 
   bool operator == (const ThriftHiveMetastore_translate_table_dryrun_args & rhs) const
   {
-    if (!(tbl == rhs.tbl))
+    if (!(request == rhs.request))
       return false;
     return true;
   }
@@ -6049,7 +6049,7 @@ class ThriftHiveMetastore_translate_table_dryrun_pargs {
 
 
   virtual ~ThriftHiveMetastore_translate_table_dryrun_pargs() noexcept;
-  const Table* tbl;
+  const CreateTableRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -7925,8 +7925,9 @@ class ThriftHiveMetastore_get_table_objects_by_name_req_presult {
 };
 
 typedef struct _ThriftHiveMetastore_get_materialization_invalidation_info_args__isset {
-  _ThriftHiveMetastore_get_materialization_invalidation_info_args__isset() : creation_metadata(false) {}
+  _ThriftHiveMetastore_get_materialization_invalidation_info_args__isset() : creation_metadata(false), validTxnList(false) {}
   bool creation_metadata :1;
+  bool validTxnList :1;
 } _ThriftHiveMetastore_get_materialization_invalidation_info_args__isset;
 
 class ThriftHiveMetastore_get_materialization_invalidation_info_args {
@@ -7934,19 +7935,24 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_args {
 
   ThriftHiveMetastore_get_materialization_invalidation_info_args(const ThriftHiveMetastore_get_materialization_invalidation_info_args&);
   ThriftHiveMetastore_get_materialization_invalidation_info_args& operator=(const ThriftHiveMetastore_get_materialization_invalidation_info_args&);
-  ThriftHiveMetastore_get_materialization_invalidation_info_args() {
+  ThriftHiveMetastore_get_materialization_invalidation_info_args() : validTxnList() {
   }
 
   virtual ~ThriftHiveMetastore_get_materialization_invalidation_info_args() noexcept;
   CreationMetadata creation_metadata;
+  std::string validTxnList;
 
   _ThriftHiveMetastore_get_materialization_invalidation_info_args__isset __isset;
 
   void __set_creation_metadata(const CreationMetadata& val);
 
+  void __set_validTxnList(const std::string& val);
+
   bool operator == (const ThriftHiveMetastore_get_materialization_invalidation_info_args & rhs) const
   {
     if (!(creation_metadata == rhs.creation_metadata))
+      return false;
+    if (!(validTxnList == rhs.validTxnList))
       return false;
     return true;
   }
@@ -7968,6 +7974,7 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_pargs {
 
   virtual ~ThriftHiveMetastore_get_materialization_invalidation_info_pargs() noexcept;
   const CreationMetadata* creation_metadata;
+  const std::string* validTxnList;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -33374,8 +33381,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_check_constraint(const AddCheckConstraintRequest& req);
   void send_add_check_constraint(const AddCheckConstraintRequest& req);
   void recv_add_check_constraint();
-  void translate_table_dryrun(Table& _return, const Table& tbl);
-  void send_translate_table_dryrun(const Table& tbl);
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request);
+  void send_translate_table_dryrun(const CreateTableRequest& request);
   void recv_translate_table_dryrun(Table& _return);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
@@ -33422,8 +33429,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_table_objects_by_name_req(GetTablesResult& _return, const GetTablesRequest& req);
   void send_get_table_objects_by_name_req(const GetTablesRequest& req);
   void recv_get_table_objects_by_name_req(GetTablesResult& _return);
-  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata);
-  void send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata);
+  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList);
+  void send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata, const std::string& validTxnList);
   void recv_get_materialization_invalidation_info(Materialization& _return);
   void update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata);
   void send_update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata);
@@ -35008,13 +35015,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_check_constraint(req);
   }
 
-  void translate_table_dryrun(Table& _return, const Table& tbl) {
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->translate_table_dryrun(_return, tbl);
+      ifaces_[i]->translate_table_dryrun(_return, request);
     }
-    ifaces_[i]->translate_table_dryrun(_return, tbl);
+    ifaces_[i]->translate_table_dryrun(_return, request);
     return;
   }
 
@@ -35165,13 +35172,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata) {
+  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_materialization_invalidation_info(_return, creation_metadata);
+      ifaces_[i]->get_materialization_invalidation_info(_return, creation_metadata, validTxnList);
     }
-    ifaces_[i]->get_materialization_invalidation_info(_return, creation_metadata);
+    ifaces_[i]->get_materialization_invalidation_info(_return, creation_metadata, validTxnList);
     return;
   }
 
@@ -37326,8 +37333,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_check_constraint(const AddCheckConstraintRequest& req);
   int32_t send_add_check_constraint(const AddCheckConstraintRequest& req);
   void recv_add_check_constraint(const int32_t seqid);
-  void translate_table_dryrun(Table& _return, const Table& tbl);
-  int32_t send_translate_table_dryrun(const Table& tbl);
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request);
+  int32_t send_translate_table_dryrun(const CreateTableRequest& request);
   void recv_translate_table_dryrun(Table& _return, const int32_t seqid);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   int32_t send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
@@ -37374,8 +37381,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_table_objects_by_name_req(GetTablesResult& _return, const GetTablesRequest& req);
   int32_t send_get_table_objects_by_name_req(const GetTablesRequest& req);
   void recv_get_table_objects_by_name_req(GetTablesResult& _return, const int32_t seqid);
-  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata);
-  int32_t send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata);
+  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList);
+  int32_t send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata, const std::string& validTxnList);
   void recv_get_materialization_invalidation_info(Materialization& _return, const int32_t seqid);
   void update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata);
   int32_t send_update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata);

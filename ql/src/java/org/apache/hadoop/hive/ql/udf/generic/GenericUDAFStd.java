@@ -27,9 +27,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-
 /**
  * Compute the standard deviation by extending GenericUDAFVariance and
  * overriding the terminate() method of the evaluator.
@@ -93,10 +90,7 @@ public class GenericUDAFStd extends GenericUDAFVariance {
      * use it, etc.
      */
     public static double calculateStdResult(double variance, long count) {
-      // TODO: BigDecimal.sqrt() is introduced in java 9. So change the below calculation once hive upgraded to java 9 or above.
-      BigDecimal bvariance = new BigDecimal(variance);
-      BigDecimal result = bvariance.divide(new BigDecimal(count), MathContext.DECIMAL128);
-      return Math.sqrt(result.doubleValue());
+      return Math.sqrt(variance / count);
     }
 
     @Override
