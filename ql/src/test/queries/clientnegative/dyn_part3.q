@@ -1,8 +1,7 @@
+--! qt:disabled:HIVE-24767
 --! qt:dataset:src
-set hive.exec.max.dynamic.partitions=600;
-set hive.exec.max.dynamic.partitions.pernode=600;
+set hive.exec.max.dynamic.partitions=100;
 set hive.exec.dynamic.partition=true;
-set hive.exec.max.created.files=100;
 
 create table nzhang_part( key string) partitioned by (value string);
 

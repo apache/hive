@@ -155,13 +155,13 @@ public class GenericUDFCase extends GenericUDF implements StatEstimatorProvider 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
       PessimisticStatCombiner combiner = new PessimisticStatCombiner();
-      for (int i = 1; i < argStats.size(); i += 2) {
+      for (int i = 2; i < argStats.size(); i += 2) {
         combiner.add(argStats.get(i));
       }
-      combiner.add(argStats.get(argStats.size() - 1));
+      if (argStats.size() % 2 == 0) {
+        combiner.add(argStats.get(argStats.size() - 1));
+      }
       return combiner.getResult();
     }
   }
-
-
 }

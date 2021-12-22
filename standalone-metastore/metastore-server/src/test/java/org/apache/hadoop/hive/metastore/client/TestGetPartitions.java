@@ -27,17 +27,13 @@ import java.util.Set;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 
@@ -80,19 +76,17 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client = metaStore.getClient();
 
     // Clean up the database
-    client.dropDatabase(DB_NAME, true, true, true);
     createDB(DB_NAME);
   }
 
   @After
   public void tearDown() throws Exception {
     try {
-      if (client != null) {
-        try {
-          client.close();
-        } catch (Exception e) {
-          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
-        }
+      client.dropDatabase(DB_NAME, true, true, true);
+      try {
+        client.close();
+      } catch (Exception e) {
+        // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
       }
     } finally {
       client = null;
@@ -262,7 +256,26 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartition(DB_NAME, TABLE_NAME, (String)null);
   }
 
-
+  /**
+   * Testing getPartitionRequest(GetPartitionRequest) ->
+   *         get_partition_req(PartitionRequest).
+   *
+   */
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testGetPartitionRequest() throws Exception {
+    createTable3PartCols1Part(client);
+    List<String> parts = Lists.newArrayList("1997", "05", "16");
+    GetPartitionRequest req = new GetPartitionRequest();
+    req.setCatName(MetaStoreUtils.getDefaultCatalog(metaStore.getConf()));
+    req.setDbName(DB_NAME);
+    req.setTblName(TABLE_NAME);
+    req.setPartVals(parts);
+    GetPartitionResponse res = client.getPartitionRequest(req);
+    Partition partition = res.getPartition();
+    assertNotNull(partition);
+    assertEquals(parts, partition.getValues());
+  }
 
   /**
    * Testing getPartition(String,String,List(String)) ->
@@ -336,11 +349,9 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartition(DB_NAME, TABLE_NAME, (List<String>)null);
   }
 
-
-
   /**
    * Testing getPartitionsByNames(String,String,List(String)) ->
-   *         get_partitions_by_names(String,String,List(String)).
+   *         get_partitions_by_names(PartitionsRequest).
    */
   @Test
   public void testGetPartitionsByNames() throws Exception {
@@ -581,7 +592,9 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Arrays.asList("partcol=a0", "partcol=a1"));
     Assert.assertEquals(2, fetchedParts.size());
     Set<String> vals = new HashSet<>(fetchedParts.size());
-    for (Partition part : fetchedParts) vals.add(part.getValues().get(0));
+    for (Partition part : fetchedParts) {
+      vals.add(part.getValues().get(0));
+    }
     Assert.assertTrue(vals.contains("a0"));
     Assert.assertTrue(vals.contains("a1"));
 
@@ -616,7 +629,5 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartitionsByNames("bogus", DB_NAME, TABLE_NAME,
         Collections.singletonList("yyyy=1997/mm=05/dd=16"));
   }
-
-
 
 }

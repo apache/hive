@@ -191,7 +191,7 @@ public class TestTezSessionPool {
 
       poolManager.reopen(session);
 
-      Mockito.verify(session).close(false);
+      Mockito.verify(session).close(true);
       Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
 
       // mocked session starts with default queue
@@ -329,7 +329,7 @@ public class TestTezSessionPool {
 
     poolManager.reopen(session);
 
-    Mockito.verify(session).close(false);
+    Mockito.verify(session).close(true);
     Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
   }
 

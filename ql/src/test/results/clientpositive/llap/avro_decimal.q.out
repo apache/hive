@@ -217,3 +217,50 @@ POSTHOOK: query: DROP TABLE avro_dec1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_dec1_n0
 POSTHOOK: Output: default@avro_dec1_n0
+PREHOOK: query: CREATE TABLE test_quoted_scale_precision
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{"type":"record","name":"DecimalTest","namespace":"com.example.test","fields":[{"name":"Decimal24_6","type":["null",{"type":"bytes","logicalType":"decimal","precision":"24","scale":"6"}]}]}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_quoted_scale_precision
+POSTHOOK: query: CREATE TABLE test_quoted_scale_precision
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{"type":"record","name":"DecimalTest","namespace":"com.example.test","fields":[{"name":"Decimal24_6","type":["null",{"type":"bytes","logicalType":"decimal","precision":"24","scale":"6"}]}]}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_quoted_scale_precision
+PREHOOK: query: show create table test_quoted_scale_precision
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test_quoted_scale_precision
+POSTHOOK: query: show create table test_quoted_scale_precision
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test_quoted_scale_precision
+CREATE TABLE `test_quoted_scale_precision`(
+  `decimal24_6` decimal(24,6) COMMENT '')
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.avro.AvroSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'avro.schema.literal'='{"type":"record","name":"DecimalTest","namespace":"com.example.test","fields":[{"name":"Decimal24_6","type":["null",{"type":"bytes","logicalType":"decimal","precision":"24","scale":"6"}]}]}', 
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: desc test_quoted_scale_precision
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_quoted_scale_precision
+POSTHOOK: query: desc test_quoted_scale_precision
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_quoted_scale_precision
+decimal24_6         	decimal(24,6)       	                    
+PREHOOK: query: DROP TABLE test_quoted_scale_precision
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_quoted_scale_precision
+PREHOOK: Output: default@test_quoted_scale_precision
+POSTHOOK: query: DROP TABLE test_quoted_scale_precision
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_quoted_scale_precision
+POSTHOOK: Output: default@test_quoted_scale_precision

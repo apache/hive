@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.privilege.show.grant;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeUtils;
 
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class ShowGrantOperation extends DDLOperation<ShowGrantDesc> {
           PrivilegeUtils.getAuthorizationTranslator(authorizer).getHivePrincipal(desc.getPrincipalDesc()),
           PrivilegeUtils.getAuthorizationTranslator(authorizer).getHivePrivilegeObject(desc.getHiveObj()));
       boolean testMode = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      DDLUtils.writeToFile(writeGrantInfo(privInfos, testMode), desc.getResFile(), context);
+      ShowUtils.writeToFile(writeGrantInfo(privInfos, testMode), desc.getResFile(), context);
     } catch (IOException e) {
       throw new HiveException("Error in show grant statement", e);
     }
@@ -85,16 +85,16 @@ public class ShowGrantOperation extends DDLOperation<ShowGrantDesc> {
       HivePrivilegeObject resource = privilege.getObject();
       HivePrincipal grantor = privilege.getGrantorPrincipal();
 
-      DDLUtils.appendNonNull(builder, resource.getDbname(), true);
-      DDLUtils.appendNonNull(builder, resource.getObjectName());
-      DDLUtils.appendNonNull(builder, resource.getPartKeys());
-      DDLUtils.appendNonNull(builder, resource.getColumns());
-      DDLUtils.appendNonNull(builder, principal.getName());
-      DDLUtils.appendNonNull(builder, principal.getType());
-      DDLUtils.appendNonNull(builder, privilege.getPrivilege().getName());
-      DDLUtils.appendNonNull(builder, privilege.isGrantOption());
-      DDLUtils.appendNonNull(builder, testMode ? -1 : privilege.getGrantTime() * 1000L);
-      DDLUtils.appendNonNull(builder, grantor.getName());
+      ShowUtils.appendNonNull(builder, resource.getDbname(), true);
+      ShowUtils.appendNonNull(builder, resource.getObjectName());
+      ShowUtils.appendNonNull(builder, resource.getPartKeys());
+      ShowUtils.appendNonNull(builder, resource.getColumns());
+      ShowUtils.appendNonNull(builder, principal.getName());
+      ShowUtils.appendNonNull(builder, principal.getType());
+      ShowUtils.appendNonNull(builder, privilege.getPrivilege().getName());
+      ShowUtils.appendNonNull(builder, privilege.isGrantOption());
+      ShowUtils.appendNonNull(builder, testMode ? -1 : privilege.getGrantTime() * 1000L);
+      ShowUtils.appendNonNull(builder, grantor.getName());
     }
     return builder.toString();
   }

@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -31,6 +29,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 
 public class AddPartitionEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(AddPartitionEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AddPartitionEvent.class);
 
   private String COMMAND_STR = "alter table %s add partition %s";
 
@@ -61,9 +61,7 @@ public class AddPartitionEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AddPartitionEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> AddPartitionEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreAddPartitionEvent      event = (PreAddPartitionEvent) preEventContext;
@@ -85,9 +83,7 @@ public class AddPartitionEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AddPartitionEvent.getOutputHObjs(): ret=" + ret );
-    }
+    LOG.debug("<== AddPartitionEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

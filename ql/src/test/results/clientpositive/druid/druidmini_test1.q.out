@@ -299,7 +299,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -397,7 +396,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -497,7 +495,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -599,7 +596,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -701,7 +697,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -803,7 +798,6 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,19 +56,34 @@ public class LoadFunction {
   private final FunctionEvent event;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
+  String dumpDirectory;
+  private final ReplicationMetricCollector metricCollector;
 
   public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
-                      String dbNameToLoadIn, TaskTracker existingTracker) {
+                      String dbNameToLoadIn, TaskTracker existingTracker, ReplicationMetricCollector metricCollector) {
     this.context = context;
     this.replLogger = replLogger;
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
+    this.metricCollector = metricCollector;
+  }
+
+  public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
+                      String dbNameToLoadIn, TaskTracker existingTracker,
+                      String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this.context = context;
+    this.replLogger = replLogger;
+    this.event = event;
+    this.dbNameToLoadIn = dbNameToLoadIn;
+    this.tracker = new TaskTracker(existingTracker);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
   }
 
   private void createFunctionReplLogTask(List<Task<?>> functionTasks,
                                          String functionName) {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName, dumpDirectory, metricCollector);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
     DAGTraversal.traverse(functionTasks, new AddDependencyToLeaves(replLogTask));
   }
@@ -85,7 +101,7 @@ public class LoadFunction {
       List<Task<?>> tasks = handler.handle(
           new MessageHandler.Context(
               dbNameToLoadIn, fromPath.toString(), null, null, context.hiveConf,
-              context.hiveDb, context.nestedContext, LOG)
+              context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)
       );
       createFunctionReplLogTask(tasks, handler.getFunctionName());
       tasks.forEach(tracker::addTask);

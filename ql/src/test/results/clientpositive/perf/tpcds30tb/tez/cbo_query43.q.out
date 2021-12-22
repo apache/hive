@@ -1,0 +1,17 @@
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], fetch=[100])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8])
+    HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)], agg#4=[sum($6)], agg#5=[sum($7)], agg#6=[sum($8)])
+      HiveProject($f0=[$13], $f1=[$12], $f2=[CASE($4, $1, null:DECIMAL(7, 2))], $f3=[CASE($5, $1, null:DECIMAL(7, 2))], $f4=[CASE($6, $1, null:DECIMAL(7, 2))], $f5=[CASE($7, $1, null:DECIMAL(7, 2))], $f6=[CASE($8, $1, null:DECIMAL(7, 2))], $f7=[CASE($9, $1, null:DECIMAL(7, 2))], $f8=[CASE($10, $1, null:DECIMAL(7, 2))])
+        HiveJoin(condition=[=($11, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($3, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
+              HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($22))])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject(d_date_sk=[$0], ==[=($14, _UTF-16LE'Sunday   ')], =2=[=($14, _UTF-16LE'Monday   ')], =3=[=($14, _UTF-16LE'Tuesday  ')], =4=[=($14, _UTF-16LE'Wednesday')], =5=[=($14, _UTF-16LE'Thursday ')], =6=[=($14, _UTF-16LE'Friday   ')], =7=[=($14, _UTF-16LE'Saturday ')])
+              HiveFilter(condition=[=($6, 1998)])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
+            HiveFilter(condition=[=($27, -6:DECIMAL(1, 0))])
+              HiveTableScan(table=[[default, store]], table:alias=[store])
+

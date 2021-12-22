@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.correlation;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -181,6 +183,23 @@ public class ReduceSinkDeDuplicationUtils {
         TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(new ArrayList<FieldSchema>(), pRS
             .getConf().getOrder(), pRS.getConf().getNullOrder());
         pRS.getConf().setKeySerializeInfo(keyTable);
+      } else if (cRS.getConf().getKeyCols() != null && cRS.getConf().getKeyCols().size() > 0) {
+        ArrayList<String> keyColNames = Lists.newArrayList();
+        for (ExprNodeDesc keyCol : pRS.getConf().getKeyCols()) {
+          String keyColName = keyCol.getExprString();
+          keyColNames.add(keyColName);
+        }
+        List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(pRS.getConf().getKeyCols(),
+            keyColNames, 0, "");
+        TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, pRS.getConf().getOrder(),
+            pRS.getConf().getNullOrder());
+        ArrayList<String> outputKeyCols = Lists.newArrayList();
+        for (int i = 0; i < fields.size(); i++) {
+          outputKeyCols.add(fields.get(i).getName());
+        }
+        pRS.getConf().setOutputKeyColumnNames(outputKeyCols);
+        pRS.getConf().setKeySerializeInfo(keyTable);
+        pRS.getConf().setNumDistributionKeys(cRS.getConf().getNumDistributionKeys());
       }
     }
     return true;
@@ -570,7 +589,7 @@ public class ReduceSinkDeDuplicationUtils {
         return false;
       }
     }
-    cRS.getConf().setKeyCols(ExprNodeDescUtils.backtrack(cKeysInParentRS, cRS, pRS));
+    cRS.getConf().setKeyCols(cKeysInParentRS);
 
     // Backtrack partition columns of cRS to pRS
     // If we cannot backtrack any of the columns, bail out
@@ -583,7 +602,7 @@ public class ReduceSinkDeDuplicationUtils {
         return false;
       }
     }
-    cRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(cPartitionInParentRS, cRS, pRS));
+    cRS.getConf().setPartitionCols(cPartitionInParentRS);
 
     // Backtrack value columns of cRS to pRS
     // If we cannot backtrack any of the columns, bail out
@@ -596,7 +615,7 @@ public class ReduceSinkDeDuplicationUtils {
         return false;
       }
     }
-    cRS.getConf().setValueCols(ExprNodeDescUtils.backtrack(cValueInParentRS, cRS, pRS));
+    cRS.getConf().setValueCols(cValueInParentRS);
 
     // Backtrack bucket columns of cRS to pRS (if any)
     // If we cannot backtrack any of the columns, bail out
@@ -610,7 +629,7 @@ public class ReduceSinkDeDuplicationUtils {
           return false;
         }
       }
-      cRS.getConf().setBucketCols(ExprNodeDescUtils.backtrack(cBucketInParentRS, cRS, pRS));
+      cRS.getConf().setBucketCols(cBucketInParentRS);
     }
 
     // Update column expression map

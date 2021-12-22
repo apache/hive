@@ -127,9 +127,20 @@ public class TestRetryingThriftCLIServiceClient {
       assertTrue(sqlExc.getCause() instanceof TTransportException);
       assertTrue(sqlExc.getMessage().contains("3"));
     }
-
     // Reset port setting
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, 15000);
+
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "10.17.207.11");
+    try {
+      RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
+      fail("Expected to throw exception for invalid host");
+    } catch (HiveSQLException sqlExc) {
+      assertTrue(sqlExc.getCause() instanceof TTransportException);
+      assertTrue(sqlExc.getMessage().contains("3"));
+    }
+    // Reset host setting
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "127.0.0.1");
+
     // Create client
     RetryingThriftCLIServiceClient.CLIServiceClientWrapper cliServiceClient
       = RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
@@ -145,9 +156,10 @@ public class TestRetryingThriftCLIServiceClient {
       cliServiceClient.openSession("anonymous", "anonymous");
     } catch (HiveSQLException exc) {
       exc.printStackTrace();
-      assertTrue(exc.getCause() instanceof TException);
-      assertEquals(1, RetryingThriftCLIServiceClientTest.handlerInst.callCount);
-      assertEquals(3, RetryingThriftCLIServiceClientTest.handlerInst.connectCount);
+      if(exc.getCause() instanceof TException){
+        assertEquals(1, RetryingThriftCLIServiceClientTest.handlerInst.callCount);
+        assertEquals(3, RetryingThriftCLIServiceClientTest.handlerInst.connectCount);
+      }
     } finally {
       cliServiceClient.closeTransport();
     }

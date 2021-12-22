@@ -18,13 +18,9 @@
 
 package org.apache.hive.service.cli;
 
-import java.util.List;
-
-import org.junit.Assert;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestHiveSQLException {
@@ -40,7 +36,7 @@ public class TestHiveSQLException {
 
     Assert.assertEquals(TStatusCode.ERROR_STATUS, status.getStatusCode());
     Assert.assertEquals(ex1.getMessage(), status.getErrorMessage());
-    Assert.assertEquals(HiveSQLException.toString(ex1), status.getInfoMessages());
+    Assert.assertEquals(HiveSQLException.DEFAULT_INFO, status.getInfoMessages());
   }
 
   /**
@@ -58,109 +54,7 @@ public class TestHiveSQLException {
     Assert.assertEquals(TStatusCode.ERROR_STATUS, status.getStatusCode());
     Assert.assertEquals(expectedSqlState, status.getSqlState());
     Assert.assertEquals(expectedMessage, status.getErrorMessage());
-    Assert.assertEquals(HiveSQLException.toString(ex1), status.getInfoMessages());
-  }
-
-  /**
-   * Tests the conversion between the exception text with the simple cause and the
-   * Throwable object
-   */
-  @Test
-  public void testExceptionMarshalling() throws Exception {
-    Exception ex1 = createException();
-    ex1.initCause(createSimpleCause());
-    Throwable ex = HiveSQLException.toCause(HiveSQLException.toString(ex1));
-
-    Assert.assertSame(RuntimeException.class, ex.getClass());
-    Assert.assertEquals("exception1", ex.getMessage());
-    Assert.assertSame(UnsupportedOperationException.class, ex.getCause().getClass());
-    Assert.assertEquals("exception2", ex.getCause().getMessage());
-  }
-
-  /**
-   * Tests the conversion between the exception text with nested cause and
-   * the Throwable object
-   */
-  @Test
-  public void testNestedException() {
-    Exception ex1 = createException();
-    ex1.initCause(createNestedCause());
-    Throwable ex = HiveSQLException.toCause(HiveSQLException.toString(ex1));
-
-    Assert.assertSame(RuntimeException.class, ex.getClass());
-    Assert.assertEquals("exception1", ex.getMessage());
-
-    Assert.assertSame(UnsupportedOperationException.class, ex.getCause().getClass());
-    Assert.assertEquals("exception2", ex.getCause().getMessage());
-
-    Assert.assertSame(Exception.class, ex.getCause().getCause().getClass());
-    Assert.assertEquals("exception3", ex.getCause().getCause().getMessage());
-  }
-
-  /**
-   * Tests the conversion of the exception with unknown source
-   */
-  @Test
-  public void testExceptionWithUnknownSource() {
-    Exception ex1 = createException();
-    ex1.initCause(createSimpleCause());
-    List<String> details = HiveSQLException.toString(ex1);
-
-    // Simulate the unknown source
-    String[] tokens = details.get(1).split(":");
-    tokens[2] = null;
-    tokens[3] = "-1";
-    details.set(1, StringUtils.join(tokens, ":"));
-
-    Throwable ex = HiveSQLException.toCause(details);
-
-    Assert.assertSame(RuntimeException.class, ex.getClass());
-    Assert.assertEquals("exception1", ex.getMessage());
-    Assert.assertSame(UnsupportedOperationException.class, ex.getCause().getClass());
-    Assert.assertEquals("exception2", ex.getCause().getMessage());
-  }
-
-  /**
-   * Tests the conversion of the exception that the class type of one of the causes
-   * doesn't exist. The stack trace text is generated on the server and passed to JDBC
-   * client. It's possible that some cause types don't exist on the client and HiveSQLException
-   * can't convert them and use RunTimeException instead.
-   */
-  @Test
-  public void testExceptionWithMissingTypeOnClient() {
-    Exception ex1 = new UnsupportedOperationException();
-    ex1.initCause(createSimpleCause());
-    List<String> details = HiveSQLException.toString(ex1);
-
-    // Simulate an unknown type
-    String[] tokens = details.get(0).split(":");
-    tokens[0] = "*DummyException";
-    details.set(0, StringUtils.join(tokens, ":"));
-
-    Throwable ex = HiveSQLException.toCause(details);
-    Assert.assertEquals(RuntimeException.class, ex.getClass());
-  }
-
-  /**
-   * Tests the conversion of the exception from anonymous class
-   */
-  @Test
-  public void testExceptionFromAnonymousClass() {
-    Dummy d = new Dummy() {
-
-      public void testExceptionConversion() {
-        Exception ex1 = createException();
-        ex1.initCause(createSimpleCause());
-        Throwable ex = HiveSQLException.toCause(HiveSQLException.toString(ex1));
-
-        Assert.assertSame(RuntimeException.class, ex.getClass());
-        Assert.assertEquals("exception1", ex.getMessage());
-        Assert.assertSame(UnsupportedOperationException.class, ex.getCause().getClass());
-        Assert.assertEquals("exception2", ex.getCause().getMessage());
-      }
-    };
-
-    d.testExceptionConversion();
+    Assert.assertEquals(HiveSQLException.DEFAULT_INFO, status.getInfoMessages());
   }
 
   interface Dummy {
@@ -175,7 +69,4 @@ public class TestHiveSQLException {
     return new UnsupportedOperationException("exception2");
   }
 
-  private static Exception createNestedCause() {
-    return new UnsupportedOperationException("exception2", new Exception("exception3"));
-  }
 }

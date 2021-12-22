@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.io.SessionStream;
@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -80,7 +81,6 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * SQLOperation.
@@ -106,9 +106,14 @@ public class SQLOperation extends ExecuteStatementOperation {
   private final Optional<MetricsScope> submittedQryScp;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
-      boolean runInBackground, long queryTimeout) {
+                      boolean runInBackground, long queryTimeout) {
+    this(parentSession, statement, confOverlay, runInBackground, queryTimeout, false);
+  }
+
+  public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
+      boolean runInBackground, long queryTimeout, boolean embedded) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
-    super(parentSession, statement, confOverlay, runInBackground);
+    super(parentSession, statement, confOverlay, runInBackground, embedded);
     this.runAsync = runInBackground;
     this.resultSchema = Optional.empty();
 
@@ -172,10 +177,10 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor.schedule(() -> {
           try {
             final String queryId = queryState.getQueryId();
-            log.info("Query timed out after: " + queryTimeout + " seconds. Cancelling the execution now: " + queryId);
+            log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
-            log.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
+            log.error("Error cancelling the query after timeout: {} seconds", queryTimeout, e);
           }
           return null;
         }, queryTimeout, TimeUnit.SECONDS);
@@ -188,9 +193,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
-      // Yarn ATS
-      String guid64 = Base64.encodeBase64URLSafeString(getHandle().getHandleIdentifier()
-          .toTHandleIdentifier().getGuid()).trim();
+      // Yarn ATS, also used in logging so remove padding for better display
+      String guid64 = Base64.getUrlEncoder().withoutPadding()
+          .encodeToString(getHandle().getHandleIdentifier().toTHandleIdentifier().getGuid());
       driver.setOperationId(guid64);
 
       // In Hive server mode, we are not able to retry in the FetchTask
@@ -206,13 +211,16 @@ public class SQLOperation extends ExecuteStatementOperation {
       throw toSQLException("Error while compiling statement", e);
     } catch (Throwable e) {
       setState(OperationState.ERROR);
+      if (e instanceof OutOfMemoryError) {
+        throw e;
+      }
       throw new HiveSQLException("Error running query", e);
     }
   }
 
   private void runQuery() throws HiveSQLException {
     try {
-      OperationState opState = getStatus().getState();
+      OperationState opState = getState();
       // Operation may have been cancelled by another thread
       if (opState.isTerminal()) {
         log.info("Not running the query. Operation is already in terminal state: " + opState
@@ -229,11 +237,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if ((getStatus().getState() == OperationState.CANCELED)
-          || (getStatus().getState() == OperationState.TIMEDOUT)
-          || (getStatus().getState() == OperationState.CLOSED)
-          || (getStatus().getState() == OperationState.FINISHED)) {
-        log.warn("Ignore exception in terminal state", e);
+      if (getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: {}", getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -241,6 +246,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         throw toSQLException("Error while compiling statement", (CommandProcessorException)e);
       } else if (e instanceof HiveSQLException) {
         throw (HiveSQLException) e;
+      } else if (e instanceof OutOfMemoryError) {
+        throw (OutOfMemoryError) e;
       } else {
         throw new HiveSQLException("Error running query", e);
       }
@@ -309,11 +316,17 @@ public class SQLOperation extends ExecuteStatementOperation {
         @Override
         public Object run() throws HiveSQLException {
           assert (!parentHive.allowClose());
-          Hive.set(parentHive);
+          try {
+            Hive.set(parentSessionState.getHiveDb());
+          } catch (HiveException e) {
+            throw new HiveSQLException(e);
+          }
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
-          LogUtils.registerLoggingContext(queryState.getConf());
+          if (!embedded) {
+            LogUtils.registerLoggingContext(queryState.getConf());
+          }
           ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
 
           try {
@@ -326,7 +339,9 @@ public class SQLOperation extends ExecuteStatementOperation {
             setOperationException(e);
             log.error("Error running hive query", e);
           } finally {
-            LogUtils.unregisterLoggingContext();
+            if (!embedded) {
+              LogUtils.unregisterLoggingContext();
+            }
 
             // If new hive object is created  by the child thread, then we need to close it as it might
             // have created a hms connection. Call Hive.closeCurrent() that closes the HMS connection, causes
@@ -341,7 +356,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         currentUGI.doAs(doAsAction);
       } catch (Exception e) {
         setOperationException(new HiveSQLException(e));
-        log.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
+        log.error("Error running hive query as user : {}", currentUGI.getShortUserName(), e);
       } finally {
         /**
          * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
@@ -383,9 +398,9 @@ public class SQLOperation extends ExecuteStatementOperation {
         boolean success = backgroundHandle.cancel(true);
         String queryId = queryState.getQueryId();
         if (success) {
-          log.info("The running operation has been successfully interrupted: " + queryId);
-        } else if (state == OperationState.CANCELED) {
-          log.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
+          log.info("The running operation has been successfully interrupted: {}", queryId);
+        } else if (log.isDebugEnabled()) {
+          log.debug("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
         }
       }
     }
@@ -415,19 +430,21 @@ public class SQLOperation extends ExecuteStatementOperation {
     String queryId = null;
     if (stateAfterCancel == OperationState.CANCELED) {
       queryId = queryState.getQueryId();
-      log.info("Cancelling the query execution: " + queryId);
+      log.info("Cancelling the query execution: {}", queryId);
     }
     cleanup(stateAfterCancel);
     cleanupOperationLog(operationLogCleanupDelayMs);
     if (stateAfterCancel == OperationState.CANCELED) {
-      log.info("Successfully cancelled the query: " + queryId);
+      log.info("Successfully cancelled the query: {}", queryId);
     }
   }
 
   @Override
   public void close() throws HiveSQLException {
-    cleanup(OperationState.CLOSED);
-    cleanupOperationLog(0);
+    if (!embedded) {
+      cleanup(OperationState.CLOSED);
+      cleanupOperationLog(0);
+    }
   }
 
   @Override
@@ -477,7 +494,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       return rowSet;
     } catch (Exception e) {
-      throw new HiveSQLException("Unable to get the next row set", e);
+      throw new HiveSQLException("Unable to get the next row set with exception: " + e.getMessage(), e);
     } finally {
       convey.clear();
     }
@@ -489,7 +506,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       List<QueryDisplay.TaskDisplay> statuses = driver.getQueryDisplay().getTaskDisplays();
       if (statuses != null) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          new ObjectMapper().writeValue(out, statuses);
+          QueryDisplay.OBJECT_MAPPER.writeValue(out, statuses);
           return out.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
           throw new HiveSQLException(e);
@@ -555,7 +572,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types);
         }
 
-        SerDeUtils.initializeSerDe(serde, queryState.getConf(), props, null);
+        serde.initialize(queryState.getConf(), props, null);
       } catch (Exception ex) {
         throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
       }

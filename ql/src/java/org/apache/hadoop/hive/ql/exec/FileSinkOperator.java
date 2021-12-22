@@ -24,11 +24,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -60,8 +62,11 @@ import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
+import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -69,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc.DPSortState;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -173,12 +179,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     int acidFileOffset = -1;
     private boolean isMmTable;
     private boolean isDirectInsert;
+    private AcidUtils.Operation acidOperation;
     private boolean isInsertOverwrite;
     String dpDirForCounters;
 
-    public FSPaths(Path specPath, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite) {
+    public FSPaths(Path specPath, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite,
+        AcidUtils.Operation acidOperation) {
       this.isMmTable = isMmTable;
       this.isDirectInsert = isDirectInsert;
+      this.acidOperation = acidOperation;
       this.isInsertOverwrite = isInsertOverwrite;
       if (!isMmTable && !isDirectInsert) {
         tmpPathRoot = Utilities.toTempPath(specPath);
@@ -208,40 +217,75 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       finalPaths = new Path[numFiles];
       outWriters = new RecordWriter[numFiles];
       updaters = new RecordUpdater[numFiles];
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Created slots for  " + numFiles);
-      }
+      LOG.debug("Created slots for {}", numFiles);
       stat = new Stat();
     }
 
-    public void closeWriters(boolean abort) throws HiveException {
+    public void closeWriters(boolean abort, List<Path> deleteDeltas) throws HiveException {
+      Exception exception = null;
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
             outWriters[idx].close(abort);
             updateProgress();
           } catch (IOException e) {
-            throw new HiveException(e);
+            exception = e;
+            LOG.error("Error closing " + outWriters[idx].toString(), e);
+            // continue closing others
           }
         }
       }
-      try {
-        for (int i = 0; i < updaters.length; i++) {
-          if (updaters[i] != null) {
-            SerDeStats stats = updaters[i].getStats();
-            // Ignore 0 row files except in case of insert overwrite
-            if (isDirectInsert && (stats.getRowCount() > 0 || isInsertOverwrite)) {
-              outPathsCommitted[i] = updaters[i].getUpdatedFilePath();
+      for (int i = 0; i < updaters.length; i++) {
+        if (updaters[i] != null) {
+          SerDeStats stats = updaters[i].getStats();
+          // Ignore 0 row files except in case of insert overwrite or delete or update
+          if (isDirectInsert
+              && (stats.getRowCount() > 0 || isInsertOverwrite || AcidUtils.Operation.DELETE.equals(acidOperation)
+                  || AcidUtils.Operation.UPDATE.equals(acidOperation))) {
+
+            OrcRecordUpdater recordUpdater = (OrcRecordUpdater) updaters[i];
+            switch (acidOperation) {
+            case INSERT:
+              outPathsCommitted[i] = recordUpdater.getUpdatedFilePath();
+              break;
+            case UPDATE:
+              // In case of update operation, we need both the deleteFilePath and the updatedFilePath.
+              // The updateFilePath will be added to the outPathsCommitted array and the deleteFilePath
+              // will be collected in a separate list.
+              outPathsCommitted[i] = recordUpdater.getUpdatedFilePath();
+              if (deleteDeltas != null) {
+                deleteDeltas.add(recordUpdater.getDeleteFilePath());
+                LOG.debug("The following path has been added to the deleteDeltas list: "
+                    + recordUpdater.getDeleteFilePath().toString());
+              }
+              break;
+            case DELETE:
+              // In case of delete operation, the deleteFilePath has to be used, not the updatedFilePath
+              outPathsCommitted[i] = recordUpdater.getDeleteFilePath();
+              break;
+            default:
+              break;
             }
+
+            LOG.debug(
+                "The following path has been added to the outPathsCommitted array: " + outPathsCommitted[i].toString());
+          }
+          try {
             updaters[i].close(abort);
+          } catch (IOException e) {
+            exception = e;
+            LOG.error("Error closing " + updaters[i].toString(), e);
+            // continue closing others
           }
         }
-      } catch (IOException e) {
-        throw new HiveException(e);
+      }
+      // Made an attempt to close all writers.
+      if (exception != null) {
+        throw new HiveException(exception);
       }
     }
 
-    private void commit(FileSystem fs, List<Path> commitPaths) throws HiveException {
+    private void commit(FileSystem fs, List<Path> commitPaths, List<Path> deleteDeltas) throws HiveException {
       for (int idx = 0; idx < outPaths.length; ++idx) {
         try {
           if (outPaths[idx] != null) {
@@ -251,6 +295,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           throw new HiveException("Unable to commit output from: " +
               outPaths[idx] + " to: " + finalPaths[idx], e);
         }
+      }
+      if (isDirectInsert && AcidUtils.Operation.UPDATE.equals(conf.getAcidOperation())) {
+        // In case of an update, the outPathsCommitted array only contains the delta directory,
+        // but not the delete delta directory. The files from the delete delta directory has to be
+        // added to the commitPath list, otherwise it will be cleaned up.
+        commitPaths.addAll(deleteDeltas);
       }
     }
 
@@ -271,7 +321,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (isMmTable) {
           assert outPaths[idx].equals(finalPaths[idx]);
           commitPaths.add(outPaths[idx]);
-        } else if (isDirectInsert && (outPathsCommitted[idx] != null)) {
+        } else if (isDirectInsert && outPathsCommitted[idx] != null) {
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
             Utilities.FILE_OP_LOGGER
                 .trace("committing " + outPathsCommitted[idx] + " (direct insert = " + isDirectInsert + ")");
@@ -365,7 +415,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // affects some less obscure scenario.
           try {
             FileSystem fpfs = finalPath.getFileSystem(hconf);
-            if ((!isDirectInsert) && fpfs.exists(finalPath)) {
+            if (!isDirectInsert && fpfs.exists(finalPath)) {
               throw new RuntimeException(finalPath + " already exists");
             }
           } catch (IOException e) {
@@ -374,11 +424,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           finalPaths[filesIdx] = finalPath;
           outPaths[filesIdx] = finalPath;
         }
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Final Path: FS " + finalPaths[filesIdx]);
-          if (LOG.isInfoEnabled() && (!isMmTable && !isDirectInsert)) {
-            LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
-          }
+        LOG.info("Final Path: FS " + finalPaths[filesIdx]);
+        if (!isMmTable && !isDirectInsert) {
+          LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
         }
       } else {
         finalPaths[filesIdx] = outPaths[filesIdx] = specPath;
@@ -449,11 +497,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       if (this.finalPaths[writerOffset] == null) {
-        // uninitialized bucket
-        String bucketName =
-            Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
-        this.finalPaths[writerOffset] = new Path(bDynParts ? buildTmpPath() : parent, bucketName);
-        this.outPaths[writerOffset] = new Path(buildTaskOutputTempPath(), bucketName);
+        if (conf.isDirectInsert()) {
+          this.outPathsCommitted = Arrays.copyOf(outPathsCommitted, writerOffset + 1);
+          this.finalPaths[writerOffset] = buildTmpPath();
+          this.outPaths[writerOffset] = buildTmpPath();
+        } else {
+          // uninitialized bucket
+          String bucketName =
+              Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
+          this.finalPaths[writerOffset] = new Path(bDynParts ? buildTmpPath() : parent, bucketName);
+          this.outPaths[writerOffset] = new Path(buildTaskOutputTempPath(), bucketName);
+        }
       }
       return writerOffset;
     }
@@ -493,6 +547,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   String taskId, originalTaskId;
 
   protected boolean filesCreated = false;
+  protected BitSet filesCreatedPerBucket = new BitSet();
 
   private void initializeSpecPath() {
     // For a query of the type:
@@ -582,16 +637,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         parent = Utilities.toTempPath(conf.getDirName());
       }
       statsFromRecordWriter = new boolean[numFiles];
-      serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
-      serializer.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties());
+      AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
+      serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
+
+      serializer = serde;
+
       outputClass = serializer.getSerializedClass();
       destTablePath = conf.getDestPath();
       isInsertOverwrite = conf.getInsertOverwrite();
       counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat +
-            (isCompressed ? " with compression" : ""));
-      }
+      LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat
+          + (isCompressed ? " with compression" : ""));
 
       // Timeout is chosen to make sure that even if one iteration takes more than
       // half of the script.timeout but less than script.timeout, we will still
@@ -610,7 +666,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             jc.getPartitionerClass(), null);
       }
 
-      if (dpCtx != null) {
+      if (dpCtx != null && !inspectPartitionValues()) {
         dpSetup();
       }
 
@@ -619,7 +675,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       if (!bDynParts) {
-        fsp = new FSPaths(specPath, conf.isMmTable(), conf.isDirectInsert(), conf.getInsertOverwrite());
+        fsp = new FSPaths(specPath, conf.isMmTable(), conf.isDirectInsert(), conf.getInsertOverwrite(),
+            conf.getAcidOperation());
         fsp.subdirAfterTxn = combinePathFragments(generateListBucketingDirName(null), unionPath);
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("creating new paths " + System.identityHashCode(fsp)
@@ -683,6 +740,28 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
+  /**
+   * Whether partition values are stored in the data files too (as opposed to just being represented in the partition
+   * folder name), along with non-partition column values. Therefore if true, the object inspector should not
+   * disregard/remove the partition columns.
+   *
+   * @return whether partition values should be part of the object inspector too
+   */
+  private boolean inspectPartitionValues() {
+    return Optional.ofNullable(conf).map(FileSinkDesc::getTableInfo)
+        .map(TableDesc::getProperties)
+        .map(props -> props.getProperty(hive_metastoreConstants.META_TABLE_STORAGE))
+        .map(handler -> {
+          try {
+            return HiveUtils.getStorageHandler(hconf, handler);
+          } catch (HiveException e) {
+            return null;
+          }
+        })
+        .map(HiveStorageHandler::alwaysUnpartitioned)
+        .orElse(Boolean.FALSE);
+  }
+
   public String getCounterName(Counter counter) {
     String suffix = Integer.toString(conf.getDestTableId());
     String fullName = conf.getTableInfo().getTableName();
@@ -741,21 +820,42 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
+  /**
+   * There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
+   * was not correlated correctly with the bucket numbers. So it could happen that rows from different buckets ended up in the same
+   * FileSinkOperator and got written out into one file. This is not correct, one bucket file must contain rows from the same bucket.
+   * Therefore the FileSinkOperator got extended with this method to be able to handle rows from different buckets.
+   * In this case it will create separate files from each bucket. This logic is similar to the one in the createDynamicBucket method.
+   * @param fsp
+   * @throws HiveException
+   */
+  protected void createBucketFilesForCompaction(FSPaths fsp) throws HiveException {
+    try {
+      if (fsp.outPaths.length < bucketId + 1) {
+        fsp.updaters = Arrays.copyOf(fsp.updaters, bucketId + 1);
+        fsp.outPaths = Arrays.copyOf(fsp.outPaths, bucketId + 1);
+        fsp.finalPaths = Arrays.copyOf(fsp.finalPaths, bucketId + 1);
+        fsp.outWriters = Arrays.copyOf(fsp.outWriters, bucketId + 1);
+        statsFromRecordWriter = Arrays.copyOf(statsFromRecordWriter, bucketId + 1);
+      }
+      createBucketForFileIdx(fsp, bucketId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    filesCreatedPerBucket.set(bucketId);
+  }
+
   protected void createBucketFiles(FSPaths fsp) throws HiveException {
     try {
       int filesIdx = 0;
       Set<Integer> seenBuckets = new HashSet<Integer>();
       for (int idx = 0; idx < totalFiles; idx++) {
         if (this.getExecContext() != null && this.getExecContext().getFileId() != null) {
-          if (LOG.isInfoEnabled()) {
-            LOG.info("replace taskId from execContext ");
-          }
+          LOG.info("replace taskId from execContext");
 
           taskId = Utilities.replaceTaskIdFromFilename(taskId, this.getExecContext().getFileId());
 
-          if (LOG.isInfoEnabled()) {
-            LOG.info("new taskId: FS " + taskId);
-          }
+          LOG.info("new taskId: FS " + taskId);
 
           assert !multiFileSpray;
           assert totalFiles == 1;
@@ -812,9 +912,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
           + fsp.buildTmpPath() + ", task " + taskId + ")");
       }
-      if (LOG.isInfoEnabled()) {
-        LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
-      }
+      LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
 
       if (isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert()) {
         // in recent hadoop versions, use deleteOnExit to clean tmp files.
@@ -851,10 +949,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // the row.
         ObjectInspector inspector = bDynParts ? subSetOI : outputObjInspector;
         int acidBucketNum = Integer.parseInt(Utilities.getTaskIdFromFilename(taskId));
-        String attemptId = null;
-        if (conf.isDirectInsert()) {
-          attemptId = taskId.split("_")[1];
-        }
+        Integer attemptId = getAttemptIdFromTaskId(taskId);
         fsp.updaters[filesIdx] = HiveFileFormatUtils.getAcidRecordUpdater(jc, conf.getTableInfo(),
             acidBucketNum, conf, fsp.outPaths[filesIdx], inspector, reporter, -1, attemptId); // outPath.getParent()
       }
@@ -955,16 +1050,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String lbDirName = null;
     lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
 
-    if (!bDynParts && !filesCreated) {
+    if (!bDynParts && (!filesCreated || conf.isCompactionTable())) {
       if (lbDirName != null) {
         if (valToPaths.get(lbDirName) == null) {
           createNewPaths(null, lbDirName);
         }
-      } else {
-        if (conf.isCompactionTable()) {
-          int bucketProperty = getBucketProperty(row);
-          bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+      } else if (conf.isCompactionTable()) {
+        int bucketProperty = getBucketProperty(row);
+        bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        if (!filesCreatedPerBucket.get(bucketId)) {
+          createBucketFilesForCompaction(fsp);
         }
+      } else {
         createBucketFiles(fsp);
       }
     }
@@ -1056,7 +1153,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // RecordUpdater expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
       if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || conf.isCompactionTable()) {
-        rowOutWriters[findWriterOffset(row)].write(recordValue);
+        writerOffset = bucketId;
+        if (!conf.isCompactionTable()) {
+          writerOffset = findWriterOffset(row);
+        }
+        rowOutWriters[writerOffset].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
         fpaths.updaters[findWriterOffset(row)].insert(conf.getTableWriteId(), row);
       } else {
@@ -1087,9 +1188,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           writerOffset = fpaths.createDynamicBucket(bucketNum);
         }
         if (fpaths.updaters[writerOffset] == null) {
-          fpaths.updaters[writerOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
-            jc, conf.getTableInfo(), bucketNum, conf,
-            fpaths.outPaths[writerOffset], rowInspector, reporter, 0);
+          Integer attemptId = getAttemptIdFromTaskId(taskId);
+          fpaths.updaters[writerOffset] = HiveFileFormatUtils.getAcidRecordUpdater(jc, conf.getTableInfo(), bucketNum,
+              conf, fpaths.outPaths[writerOffset], rowInspector, reporter, 0, attemptId);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Created updater for bucket number " + bucketNum + " using file " +
               fpaths.outPaths[writerOffset]);
@@ -1104,9 +1205,32 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     } catch (IOException e) {
+      LOG.error("Trying to close the writers as an IOException occurred: " + e.getMessage());
+      closeWriters(true);
       throw new HiveException(e);
     } catch (SerDeException e) {
+      closeWriters(true);
       throw new HiveException(e);
+    }
+  }
+
+  private void closeWriters(boolean abort) throws HiveException {
+    fpaths.closeWriters(true, null);
+    closeRecordwriters(true);
+  }
+
+  private void closeRecordwriters(boolean abort) {
+    if (rowOutWriters != null) {
+      for (RecordWriter writer : rowOutWriters) {
+        try {
+          if (writer != null) {
+            LOG.info("Closing {} on exception", writer);
+            writer.close(abort);
+          }
+        } catch (IOException e) {
+          LOG.error("Error closing rowOutWriter" + writer, e);
+        }
+      }
     }
   }
 
@@ -1152,7 +1276,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * @throws HiveException
    */
   private FSPaths createNewPaths(String dpDir, String lbDir) throws HiveException {
-    FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable(), conf.isDirectInsert(), conf.getInsertOverwrite());
+    FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable(), conf.isDirectInsert(), conf.getInsertOverwrite(),
+        conf.getAcidOperation());
     fsp2.subdirAfterTxn = combinePathFragments(lbDir, unionPath);
     fsp2.subdirBeforeTxn = dpDir;
     String pathKey = combinePathFragments(dpDir, lbDir);
@@ -1264,7 +1389,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
         if (!conf.getDpSortState().equals(DPSortState.NONE) && prevFsp != null) {
           // close the previous fsp as it is no longer needed
-          prevFsp.closeWriters(false);
+          prevFsp.closeWriters(false, null);
 
           // since we are closing the previous fsp's record writers, we need to see if we can get
           // stats from the record writer and store in the previous fsp that is cached
@@ -1364,7 +1489,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       List<Path> commitPaths = new ArrayList<>();
       for (FSPaths fsp : valToPaths.values()) {
-        fsp.closeWriters(abort);
+        List<Path> deleteDeltas = new ArrayList<Path>();
+        fsp.closeWriters(abort, deleteDeltas);
         // before closing the operator check if statistics gathering is requested
         // and is provided by record writer. this is different from the statistics
         // gathering done in processOp(). In processOp(), for each row added
@@ -1391,6 +1517,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                 if (stats != null) {
                   fsp.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
                   fsp.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
+                  fsp.addToStat(StatsSetupConst.INSERT_COUNT, stats.getInsertCount());
+                  fsp.addToStat(StatsSetupConst.UPDATE_COUNT, stats.getUpdateCount());
+                  fsp.addToStat(StatsSetupConst.DELETE_COUNT, stats.getDeleteCount());
                 }
               }
             }
@@ -1398,15 +1527,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
 
         if (isNativeTable()) {
-          fsp.commit(fs, commitPaths);
+          fsp.commit(fs, commitPaths, deleteDeltas);
         }
         if ("spark".equals(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE))) {
           SparkMetricUtils.updateSparkBytesWrittenMetrics(LOG, fs, fsp.finalPaths);
         }
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
-        Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(), conf
-            .getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs);
+        boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getAcidOperation());
+        Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(),
+            conf.getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs,
+            conf.getStaticSpec(), isDelete);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1470,7 +1601,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleDirectInsertTableFinalPath(specPath, unionSuffix, hconf, success, dpLevels, lbLevels, mbc,
               conf.getTableWriteId(), conf.getStatementId(), reporter, conf.isMmTable(), conf.isMmCtas(), conf
-                  .getInsertOverwrite(), conf.isDirectInsert());
+                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec(), conf.getAcidOperation(), conf);
         }
       }
     } catch (IOException e) {
@@ -1698,5 +1829,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } else {
       return (int) bucketProperty;
     }
+  }
+
+  private Integer getAttemptIdFromTaskId(String taskId) {
+    if (!conf.isDirectInsert() || taskId == null || taskId.split("_").length < 2) {
+      return null;
+    }
+    Integer attemptId = Integer.parseInt(taskId.split("_")[1]);
+    LOG.debug("Parsed the attemptId " + attemptId.toString() + " from the task ID " + taskId);
+    return attemptId;
   }
 }

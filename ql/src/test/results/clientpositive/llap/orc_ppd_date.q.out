@@ -125,7 +125,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n3 where da<'1970-02-29'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n3
 #### A masked pattern was here ####
-81475875500
+NULL
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n3 where da<'1970-02-29'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n3
@@ -134,7 +134,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n3 where da<'1970-02-29'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n3
 #### A masked pattern was here ####
-81475875500
+NULL
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n3 where da<'1970-02-15'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n3
@@ -347,7 +347,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -473,7 +473,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

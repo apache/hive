@@ -139,6 +139,7 @@ PREHOOK: Output: default@episodes_partitioned_n1
 POSTHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned_n1 PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@episodes_n2
+POSTHOOK: Output: default@episodes_partitioned_n1
 POSTHOOK: Output: default@episodes_partitioned_n1@doctor_pt=1
 POSTHOOK: Output: default@episodes_partitioned_n1@doctor_pt=11
 POSTHOOK: Output: default@episodes_partitioned_n1@doctor_pt=2
@@ -315,6 +316,7 @@ PREHOOK: Output: default@episodes_partitioned_serdeproperties
 POSTHOOK: query: INSERT INTO TABLE episodes_partitioned_serdeproperties PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@episodes_n2
+POSTHOOK: Output: default@episodes_partitioned_serdeproperties
 POSTHOOK: Output: default@episodes_partitioned_serdeproperties@doctor_pt=1
 POSTHOOK: Output: default@episodes_partitioned_serdeproperties@doctor_pt=11
 POSTHOOK: Output: default@episodes_partitioned_serdeproperties@doctor_pt=2

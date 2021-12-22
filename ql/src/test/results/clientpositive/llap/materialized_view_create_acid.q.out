@@ -29,6 +29,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n4
+POSTHOOK: Lineage: cmv_mat_view_n4.a SIMPLE [(cmv_basetable_n4)cmv_basetable_n4.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n4.b SIMPLE [(cmv_basetable_n4)cmv_basetable_n4.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n4.c SIMPLE [(cmv_basetable_n4)cmv_basetable_n4.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n4
@@ -71,3 +74,7 @@ Original Query:     	SELECT a, b, c FROM cmv_basetable_n4
 Expanded Query:     	SELECT `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` FROM `default`.`cmv_basetable_n4`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n4	0/0/0               	 

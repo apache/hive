@@ -57,7 +57,20 @@ public abstract class DatabaseRule extends ExternalResource {
 
   public abstract String getJdbcDriver();
 
-  public abstract String getJdbcUrl();
+  public abstract String getJdbcUrl(String hostAddress);
+
+  public final String getJdbcUrl() {
+    return getJdbcUrl(getContainerHostAddress());
+  }
+
+  public final String getContainerHostAddress() {
+    String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
+    if (hostAddress != null) {
+      return hostAddress;
+    } else {
+      return "localhost";
+    }
+  }
 
   private boolean verbose;
 
@@ -79,21 +92,25 @@ public abstract class DatabaseRule extends ExternalResource {
    *
    * @return URL
    */
-  public abstract String getInitialJdbcUrl();
+  public abstract String getInitialJdbcUrl(String hostAddress);
+
+  public final String getInitialJdbcUrl() {
+    return getInitialJdbcUrl(getContainerHostAddress());
+  }
 
   /**
    * Determine if the docker container is ready to use.
    *
-   * @param logOutput output of docker logs command
+   * @param pr output of docker logs command
    * @return true if ready, false otherwise
    */
-  public abstract boolean isContainerReady(String logOutput);
+  public abstract boolean isContainerReady(ProcessResults pr);
 
   protected String[] buildArray(String... strs) {
     return strs;
   }
 
-  private static class ProcessResults {
+  public static class ProcessResults {
     final String stdout;
     final String stderr;
     final int rc;
@@ -107,18 +124,19 @@ public abstract class DatabaseRule extends ExternalResource {
 
   @Override
   public void before() throws Exception { //runDockerContainer
+    runCmdAndPrintStreams(buildRmCmd(), 600);
     if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
     }
     long startTime = System.currentTimeMillis();
     ProcessResults pr;
     do {
-      Thread.sleep(5000);
-      pr = runCmd(buildLogCmd(), 5);
+      Thread.sleep(1000);
+      pr = runCmd(buildLogCmd(), 30);
       if (pr.rc != 0) {
         throw new RuntimeException("Failed to get docker logs");
       }
-    } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr.stdout));
+    } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
     if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
       throw new RuntimeException("Container failed to be ready in " + MAX_STARTUP_WAIT/1000 +
           " seconds");
@@ -134,10 +152,7 @@ public abstract class DatabaseRule extends ExternalResource {
       return;
     }
     try {
-      if (runCmdAndPrintStreams(buildStopCmd(), 60) != 0) {
-        throw new RuntimeException("Unable to stop docker container");
-      }
-      if (runCmdAndPrintStreams(buildRmCmd(), 15) != 0) {
+      if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
         throw new RuntimeException("Unable to remove docker container");
       }
     } catch (InterruptedException | IOException e) {
@@ -145,8 +160,14 @@ public abstract class DatabaseRule extends ExternalResource {
     }
   }
 
-  protected String getDockerContainerName(){
-    return String.format("metastore-test-%s-install", getDbType());
+  protected String getDockerContainerName() {
+    String suffix = System.getenv("HIVE_TEST_DOCKER_CONTAINER_SUFFIX");
+    if (suffix == null) {
+      suffix = "";
+    } else {
+      suffix = "-" + suffix;
+    }
+    return String.format("metastore-test-%s-install%s", getDbType(), suffix);
   }
 
   private ProcessResults runCmd(String[] cmd, long secondsToWait)
@@ -164,6 +185,7 @@ public abstract class DatabaseRule extends ExternalResource {
     reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
     final StringBuilder errLines = new StringBuilder();
     reader.lines().forEach(s -> errLines.append(s).append('\n'));
+    LOG.info("Result size: " + lines.length() + ";" + errLines.length());
     return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
   }
 
@@ -179,6 +201,7 @@ public abstract class DatabaseRule extends ExternalResource {
     List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
     cmd.add("docker");
     cmd.add("run");
+    cmd.add("--rm");
     cmd.add("--name");
     cmd.add(getDockerContainerName());
     cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
@@ -186,18 +209,12 @@ public abstract class DatabaseRule extends ExternalResource {
     return cmd.toArray(new String[cmd.size()]);
   }
 
-  private String[] buildStopCmd() {
-    return buildArray(
-        "docker",
-        "stop",
-        getDockerContainerName()
-    );
-  }
-
   private String[] buildRmCmd() {
     return buildArray(
         "docker",
         "rm",
+        "-f",
+        "-v",
         getDockerContainerName()
     );
   }
@@ -248,7 +265,8 @@ public abstract class DatabaseRule extends ExternalResource {
         "-url",
         getJdbcUrl(),
         "-driver",
-        getJdbcDriver()
+        getJdbcDriver(),
+        "-verbose"
     ));
   }
 

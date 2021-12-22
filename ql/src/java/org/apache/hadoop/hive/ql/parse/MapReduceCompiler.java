@@ -117,8 +117,7 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs) throws SemanticException {
+  protected void optimizeOperatorPlan(ParseContext pCtx) throws SemanticException {
     this.runDynPartitionSortOptimizations(pCtx, conf);
   }
 

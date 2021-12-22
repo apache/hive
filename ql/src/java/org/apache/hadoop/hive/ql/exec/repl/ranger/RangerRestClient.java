@@ -29,11 +29,16 @@ import java.util.List;
  */
 public interface RangerRestClient {
   RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
-                                              String dbName, String rangerHiveServiceName) throws Exception;
+                                              String dbName, String rangerHiveServiceName,
+                                              HiveConf hiveConf) throws Exception;
 
   RangerExportPolicyList importRangerPolicies(RangerExportPolicyList rangerExportPolicyList, String dbName,
                                               String baseUrl,
-                                              String rangerHiveServiceName) throws Exception;
+                                              String rangerHiveServiceName,
+                                              HiveConf hiveConf) throws Exception;
+
+  void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                          HiveConf hiveConf) throws Exception;
 
   List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies);
 
@@ -46,8 +51,9 @@ public interface RangerRestClient {
   RangerExportPolicyList readRangerPoliciesFromJsonFile(Path filePath,
                                                         HiveConf conf) throws SemanticException;
 
-  boolean checkConnection(String url) throws Exception;
+  boolean checkConnection(String url, HiveConf hiveConf) throws Exception;
 
-  List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                     String sourceDb, String targetDb) throws SemanticException;
+  RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName, String sourceDb,
+                                            String targetDb) throws SemanticException;
+
 }

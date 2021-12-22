@@ -109,11 +109,15 @@ public class TestBeelineArgParsing {
     extraContent.put(new File("META-INF/services/java.sql.Driver"), dummyDriverClazzName);
     File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName, extraContent);
     String pathToDummyDriver = jarFile.getAbsolutePath();
+    String pathToPostgresJar = System.getProperty("maven.local.repository")
+        + File.separator + "org"
+        + File.separator + "postgresql"
+        + File.separator + "postgresql"
+        + File.separator + "42.2.14"
+        + File.separator
+        + "postgresql-42.2.14.jar";
     return Arrays.asList(new Object[][] {
-        { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver",
-            System.getProperty("maven.local.repository") + File.separator + "postgresql"
-                + File.separator + "postgresql" + File.separator + "9.1-901.jdbc4" + File.separator
-                + "postgresql-9.1-901.jdbc4.jar", true },
+        { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver", pathToPostgresJar, true },
         { "jdbc:dummy://host:5432/testdb", dummyDriverClazzName, pathToDummyDriver, false } });
   }
 
@@ -189,11 +193,13 @@ public class TestBeelineArgParsing {
   public void testQueryScripts() throws Exception {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"-u", "url", "-n", "name",
-      "-p", "password", "-d", "driver", "-e", "select1", "-e", "select2"};
+      "-p", "password", "-d", "driver", "-e", "select1", "-e", "select2",
+      "-e", "select \"hive\""};
     Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.queries.contains("select1"));
     Assert.assertTrue(bl.queries.contains("select2"));
+    Assert.assertTrue(bl.queries.contains("select \"hive\""));
   }
 
   /**
@@ -412,4 +418,17 @@ public class TestBeelineArgParsing {
     bl.close();
   }
 
+  /**
+   * Test property file option with query.
+   */
+  @Test
+  public void testPropertyFileWithQuery() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] =
+        new String[] {"--property-file", "props", "-e", "show tables"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertEquals("props", bl.properties.get(0));
+    Assert.assertEquals("show tables", bl.queries.get(0));
+    bl.close();
+  }
 }

@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,14 +60,14 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
             context.eventOnlyReplicationSpec());
     truncateTableDesc.setWriteId(msg.getWriteId());
     Task<DDLWork> truncatePtnTask = TaskFactory.get(
-        new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
+        new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc, true,
+                context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     context.log.debug("Added truncate ptn task : {}:{}:{}", truncatePtnTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), tName.getDb(), tName.getTable(), partSpec);
 
     try {
-      return ReplUtils.addOpenTxnTaskForMigration(tName.getDb(), tName.getTable(),
-              context.hiveConf, updatedMetadata, truncatePtnTask, tblObj);
+      return ReplUtils.addChildTask(truncatePtnTask);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

@@ -278,6 +278,7 @@ PREHOOK: Output: default@stats4
 POSTHOOK: query: insert into table stats4 partition (ds) values (12341234, 'bob', 'today'),(123471234871239847, 'bob', 'today'),(431, 'tracy', 'tomorrow')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats4
 POSTHOOK: Output: default@stats4@ds=today
 POSTHOOK: Output: default@stats4@ds=tomorrow
 POSTHOOK: Lineage: stats4 PARTITION(ds=today).key SCRIPT []

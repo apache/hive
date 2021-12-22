@@ -290,7 +290,7 @@ public abstract class ThriftCLIServiceTest {
         OperationState.ERROR, state);
     // sqlState, errorCode should be set to appropriate values
     assertEquals(opStatus.getOperationException().getSQLState(), "08S01");
-    assertEquals(opStatus.getOperationException().getErrorCode(), 1);
+    assertEquals(opStatus.getOperationException().getErrorCode(), 40000);
 
     // Cleanup
     queryString = "DROP TABLE TEST_EXEC_ASYNC_THRIFT";

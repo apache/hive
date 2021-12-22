@@ -172,11 +172,12 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
+                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 31:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: s_store_id (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -309,11 +310,12 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
+                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 31:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -441,6 +443,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1

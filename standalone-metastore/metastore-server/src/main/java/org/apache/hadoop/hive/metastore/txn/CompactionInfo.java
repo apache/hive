@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 
 /**
  * Information on a possible or running compaction.
@@ -46,6 +48,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public char state;
   public CompactionType type;
   public String workerId;
+  public String workerVersion;
+  public String initiatorId;
+  public String initiatorVersion;
+  public long enqueueTime;
   public long start;
   public String runAs;
   public String properties;
@@ -53,11 +59,14 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean hasOldAbort = false;
   /**
    * The highest write id that the compaction job will pay attention to.
-   * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
+   * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL)
    * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
    * {@link ValidCompactorWriteIdList#highWatermark}.
    */
   public long highestWriteId;
+  public Set<Long> writeIds;
+  public boolean hasUncompactedAborts;
+
   byte[] metaInfo;
   String hadoopJobId;
   public String errorMessage;
@@ -77,7 +86,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.state = state;
   }
   CompactionInfo() {}
-  
+
   public String getFullPartitionName() {
     if (fullPartitionName == null) {
       StringBuilder buf = new StringBuilder(dbname);
@@ -116,12 +125,16 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "partName:" + partName + "," +
       "state:" + state + "," +
       "type:" + type + "," +
+      "enqueueTime:" + enqueueTime + "," +
+      "start:" + start + "," +
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
       "hasOldAbort:" + hasOldAbort + "," +
       "highestWriteId:" + highestWriteId + "," +
-      "errorMessage:" + errorMessage;
+      "errorMessage:" + errorMessage + "," +
+      "workerId: " + workerId + "," +
+      "initiatorId: " + initiatorId;
   }
 
   @Override
@@ -148,7 +161,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * @param rs ResultSet after call to rs.next()
    * @throws SQLException
    */
-  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException {
+  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException, MetaException {
     CompactionInfo fullCi = new CompactionInfo();
     fullCi.id = rs.getLong(1);
     fullCi.dbname = rs.getString(2);
@@ -164,9 +177,13 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.metaInfo = rs.getBytes(12);
     fullCi.hadoopJobId = rs.getString(13);
     fullCi.errorMessage = rs.getString(14);
+    fullCi.enqueueTime = rs.getLong(15);
+    fullCi.workerVersion = rs.getString(16);
+    fullCi.initiatorId = rs.getString(17);
+    fullCi.initiatorVersion = rs.getString(18);
     return fullCi;
   }
-  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
+  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
     pStmt.setLong(1, ci.id);
     pStmt.setString(2, ci.dbname);
     pStmt.setString(3, ci.tableName);
@@ -182,6 +199,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setBytes(13, ci.metaInfo);
     pStmt.setString(14, ci.hadoopJobId);
     pStmt.setString(15, ci.errorMessage);
+    pStmt.setLong(16, ci.enqueueTime);
+    pStmt.setString(17, ci.workerVersion);
+    pStmt.setString(18, ci.initiatorId);
+    pStmt.setString(19, ci.initiatorVersion);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
@@ -213,6 +234,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetErrorMessage()) {
       ci.errorMessage = cr.getErrorMessage();
     }
+    if (cr.isSetEnqueueTime()) {
+      ci.enqueueTime = cr.getEnqueueTime();
+    }
     return ci;
   }
 
@@ -231,6 +255,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setWorkerId(ci.workerId);
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);
+    cr.setEnqueueTime(ci.enqueueTime);
 
     return cr;
   }
@@ -248,5 +273,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       return compactionStructToInfo(ocis.getCi());
     }
     return null;
+  }
+
+  public void setWriteIds(boolean hasUncompactedAborts, Set<Long> writeIds) {
+    this.hasUncompactedAborts = hasUncompactedAborts;
+    this.writeIds = writeIds;
   }
 }

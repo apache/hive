@@ -17,7 +17,7 @@ CREATE TABLE part_subq(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq;
+LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' overwrite into table part_subq;
 
 -- non agg, non corr
 explain
@@ -139,6 +139,22 @@ having p_name in
 CREATE TABLE src_null_n4 (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH "../../data/files/kv1.txt" INTO TABLE src_null_n4;
 INSERT INTO src_null_n4 values('5444', null);
+
+explain
+select key, value, count(*)
+from src_null_n4 b
+where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
+group by key, value
+having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+
+set hive.auto.convert.anti.join=false;
+
+select key, value, count(*)
+from src_null_n4 b
+where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
+group by key, value
+having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+
 
 explain
 select key, value, count(*)

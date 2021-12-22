@@ -25,6 +25,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import org.apache.hive.common.util.Decimal128FastBuffer;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This code was based on code from Microsoft's PolyBase.
@@ -2516,6 +2517,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
      * @param signum
      * @return
      */
+  @SuppressFBWarnings(value = {"SF_SWITCH_FALLTHROUGH", "SF_SWITCH_NO_DEFAULT"}, justification = "Intentional fall through")
   public int fastSerializeForHiveDecimal(Decimal128FastBuffer scratch, byte signum) {
     int bufferUsed = this.count;
     ByteBuffer buf = scratch.getByteBuffer(bufferUsed);
@@ -2550,6 +2552,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
    * @param internalStorage
    * @return
    */
+    @SuppressFBWarnings(value = {"SF_SWITCH_FALLTHROUGH", "SF_SWITCH_NO_DEFAULT"}, justification = "Intentional fall through")
     public byte fastUpdateFromInternalStorage(byte[] internalStorage) {
         byte signum = 0;
         int skip = 0;
@@ -2653,6 +2656,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
      * @param pos
      * @return
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "Intentional fall through")
     private int fastUpdateIntFromInternalStorage(byte[] internalStorage,
             byte signum, int pos, int length) {
       // due to the way we use the allocation-free cast from HiveDecimalWriter to decimal128,
@@ -2697,10 +2701,6 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
       }
       return value;
     }
-
-  public int[] getV() {
-    return v;
-  }
 
   /**
    * This setter is only for de-serialization, should not be used otherwise.

@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +90,7 @@ public class TestScheduledQueryService {
   private int getNumRowsReturned(IDriver driver, String query) throws Exception {
     driver.run(query);
     FetchTask ft = driver.getFetchTask();
-    List res = new ArrayList();
+    List<?> res = new ArrayList<>();
     if (ft == null) {
       return 0;
     }
@@ -117,6 +117,7 @@ public class TestScheduledQueryService {
       r.setExecutionId(id++);
       r.setQuery(stmt);
       r.setScheduleKey(new ScheduledQueryKey("sch1", getClusterNamespace()));
+      r.setUser("nobody");
       if (id == 1) {
         return r;
       } else {

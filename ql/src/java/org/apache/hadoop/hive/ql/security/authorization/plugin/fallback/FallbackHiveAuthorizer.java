@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.fallback;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -39,13 +37,15 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.SettableConfigUpd
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.Operation2Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLAuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLPrivTypeGrant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class FallbackHiveAuthorizer extends AbstractHiveAuthorizer {
-  private static final Log LOG = LogFactory.getLog(FallbackHiveAuthorizer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FallbackHiveAuthorizer.class);
 
   private final HiveAuthzSessionContext sessionCtx;
   private final HiveAuthenticationProvider authenticator;

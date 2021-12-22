@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -39,11 +39,11 @@ public class TestAdminUser {
     MetastoreConf.setVar(conf, ConfVars.USERS_IN_ADMIN_ROLE, "adminuser");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     RawStore rawStore = new HMSHandler("testcreateroot", conf).getMS();
-    Role adminRole = rawStore.getRole(HiveMetaStore.ADMIN);
-    Assert.assertTrue(adminRole.getOwnerName().equals(HiveMetaStore.ADMIN));
-    Assert.assertEquals(rawStore.listPrincipalGlobalGrants(HiveMetaStore.ADMIN, PrincipalType.ROLE)
+    Role adminRole = rawStore.getRole(HMSHandler.ADMIN);
+    Assert.assertTrue(adminRole.getOwnerName().equals(HMSHandler.ADMIN));
+    Assert.assertEquals(rawStore.listPrincipalGlobalGrants(HMSHandler.ADMIN, PrincipalType.ROLE)
      .get(0).getGrantInfo().getPrivilege(),"All");
     Assert.assertEquals(rawStore.listRoles("adminuser", PrincipalType.USER).get(0).
-      getRoleName(),HiveMetaStore.ADMIN);
+      getRoleName(),HMSHandler.ADMIN);
  }
 }

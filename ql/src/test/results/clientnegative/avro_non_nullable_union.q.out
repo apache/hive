@@ -34,5 +34,39 @@ PREHOOK: query: INSERT OVERWRITE TABLE union_non_nullable_test_avro SELECT * FRO
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_nullable_test_text
 PREHOOK: Output: default@union_non_nullable_test_avro
+Status: Failed
+Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+Caused by: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+Caused by: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+Caused by: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+Caused by: Avro could not validate record against schema (record = {"id": 3, "value": null}) (schema = {"type":"record","name":"nullable","fields":[{"name":"id","type":"int"},{"name":"value","type":["int","double"]}]})
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0

@@ -159,7 +159,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -179,7 +179,7 @@ STAGE PLANS:
                   outputColumnNames: col1, col2
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector(col1, 'hll'), min(col2), max(col2), count(col2), compute_bit_vector(col2, 'hll')
+                    aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1), min(col2), max(col2), count(col2), compute_bit_vector_hll(col2)
                     minReductionHashAggr: 0.5
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -190,10 +190,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
@@ -213,7 +213,7 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-    Create View
+    Create Materialized View
       columns: a int, c decimal(10,2)
       expanded text: SELECT `cmv_basetable_n1`.`a`, `cmv_basetable_2_n0`.`c`
   FROM `default`.`cmv_basetable_n1` JOIN `default`.`cmv_basetable_2_n0` ON (`cmv_basetable_n1`.`a` = `cmv_basetable_2_n0`.`a`)
@@ -265,6 +265,8 @@ POSTHOOK: Input: default@cmv_basetable_2_n0
 POSTHOOK: Input: default@cmv_basetable_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n1
+POSTHOOK: Lineage: cmv_mat_view_n1.a SIMPLE [(cmv_basetable_n1)cmv_basetable_n1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n1.c SIMPLE [(cmv_basetable_2_n0)cmv_basetable_2_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n1.a
 FROM cmv_basetable_n1 join cmv_basetable_2_n0 ON (cmv_basetable_n1.a = cmv_basetable_2_n0.a)
@@ -424,16 +426,16 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col2 (type: decimal(10,2))
-                  minReductionHashAggr: 0.6
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -441,14 +443,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -481,14 +483,14 @@ POSTHOOK: Input: default@cmv_basetable_n1
 1
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n0
 PREHOOK: Input: default@cmv_basetable_n1
 PREHOOK: Input: default@cmv_mat_view_n1
 PREHOOK: Output: default@cmv_mat_view_n1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n0
 POSTHOOK: Input: default@cmv_basetable_n1
 POSTHOOK: Input: default@cmv_mat_view_n1
@@ -566,16 +568,16 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: int), _col1 (type: decimal(10,2))
-                      minReductionHashAggr: 0.6666666
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -611,27 +613,27 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: decimal(10,2))
-                  minReductionHashAggr: 0.6666666
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -640,10 +642,10 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                   outputColumnNames: a, c
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(a), max(a), count(1), count(a), compute_bit_vector(a, 'hll'), min(c), max(c), count(c), compute_bit_vector(c, 'hll')
-                    minReductionHashAggr: 0.0
+                    aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), min(c), max(c), count(c), compute_bit_vector_hll(c)
+                    minReductionHashAggr: 0.5
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
@@ -653,10 +655,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
@@ -701,13 +703,13 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n0
 PREHOOK: Input: default@cmv_basetable_n1
 PREHOOK: Input: default@cmv_mat_view_n1
 PREHOOK: Output: default@cmv_mat_view_n1
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n0
 POSTHOOK: Input: default@cmv_basetable_n1
 POSTHOOK: Input: default@cmv_mat_view_n1
@@ -922,12 +924,12 @@ POSTHOOK: Input: default@cmv_basetable_n1
 #### A masked pattern was here ####
 1
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n0
 PREHOOK: Input: default@cmv_basetable_n1
 PREHOOK: Output: default@cmv_mat_view_n1
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n0
 POSTHOOK: Input: default@cmv_basetable_n1
 POSTHOOK: Output: default@cmv_mat_view_n1

@@ -183,9 +183,7 @@ public class TestCounterMapping {
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
     OpTreeSignature filterSig = pm.lookup(OpTreeSignature.class, fos.get(0));
     Object pred = filterSig.getSig().getSigMap().get("getPredicateString");
-    // TODO: Missed opportunity due to cast on constant preventing simplification.
-    // Fixed when we upgrade to Calcite 1.22.0
-    assertEquals("((u = 2) and (u) IN (1, 2, 3)) (type: boolean)", pred);
+    assertEquals("(u = 2) (type: boolean)", pred);
   }
 
   @Test

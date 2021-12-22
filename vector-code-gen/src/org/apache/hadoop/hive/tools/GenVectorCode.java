@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -1209,6 +1208,11 @@ public class GenVectorCode extends Task {
       {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
       {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
 
+      {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorFinal", "long", "MERGING"},
+      {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorLong", "long", "COMPLETE"},
+      {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
+
+
       // Template, <ClassName>, <ValueType>, <IfDefined>
       {"VectorUDAFAvg", "VectorUDAFAvgLong", "long", "PARTIAL1"},
       {"VectorUDAFAvg", "VectorUDAFAvgLongComplete", "long", "COMPLETE"},
@@ -1460,6 +1464,8 @@ public class GenVectorCode extends Task {
         generateVectorUDAFAvgObject(tdesc);
       } else if (tdesc[0].equals("VectorUDAFAvgDecimalMerge")) {
         generateVectorUDAFAvgMerge(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
+        generateVectorUDAFComputeBitVector(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
@@ -1922,6 +1928,27 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
 
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateVectorUDAFComputeBitVector(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String valueType = tdesc[2];
+    String columnType = getColumnVectorType(valueType);
+    String ifDefined = "";
+    if (tdesc.length > 3) {
+      ifDefined = tdesc[3];
+    }
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
+    templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
     templateString = evaluateIfDefined(templateString, ifDefined);
 
     writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
@@ -3213,8 +3240,8 @@ public class GenVectorCode extends Task {
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replace("<ClassName>", className);
+    templateString = templateString.replace("<Operator>", operatorName.toLowerCase());
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);
@@ -3405,7 +3432,7 @@ public class GenVectorCode extends Task {
     if (type.equals("date")) {
       return
           "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
-          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
+          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, inputColumnNum[0]);";
     } else {
       return
           "    return super.vectorExpressionParameters();";
@@ -3416,7 +3443,7 @@ public class GenVectorCode extends Task {
     if (type.equals("date")) {
       return
           "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
-          "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
+          "    return getColumnParamString(0, inputColumnNum[0]) + \", date \" + dt.toString();";
     } else {
       return
           "    return super.vectorExpressionParameters();";

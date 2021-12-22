@@ -23,7 +23,7 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 public class Postgres extends DatabaseRule {
   @Override
   public String getDockerImageName() {
-    return "postgres:9.3";
+    return "postgres:11.6";
   }
 
   @Override
@@ -52,18 +52,19 @@ public class Postgres extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/" + HIVE_DB;
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/" + HIVE_DB;
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/postgres";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/postgres";
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("database system is ready to accept connections");
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout.contains("database system is ready to accept connections") &&
+        pr.stderr.contains("database system is ready to accept connections");
   }
 
   @Override

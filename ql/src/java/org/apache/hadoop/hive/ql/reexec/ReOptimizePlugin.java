@@ -101,7 +101,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
+  public boolean shouldReExecuteAfterCompile(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     boolean planDidChange = !planEquals(oldPlanMapper, newPlanMapper);
     LOG.info("planDidChange: {}", planDidChange);
     return planDidChange;

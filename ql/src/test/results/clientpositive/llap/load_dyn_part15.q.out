@@ -23,6 +23,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE load_dyn_part15_test PARTITION(part_key)
 SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable AS part_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@load_dyn_part15_test
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=%7B2
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=1
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=3%5D

@@ -51,9 +51,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.orc.OrcConf;
+import org.apache.orc.OrcProto;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.impl.OrcTail;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.WriterImpl;
 import org.slf4j.Logger;
@@ -129,6 +131,9 @@ public class OrcRecordUpdater implements RecordUpdater {
   // This records how many rows have been inserted or deleted.  It is separate from insertedRows
   // because that is monotonically increasing to give new unique row ids.
   private long rowCountDelta = 0;
+  private long insertCount = 0;
+  private long updateCount = 0;
+  private long deleteCount = 0;
   // used only for insert events, this is the number of rows held in memory before flush() is invoked
   private long bufferedRows = 0;
   private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder("insert");
@@ -245,9 +250,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("ORC schema = " + schema);
-    }
+    LOG.debug("ORC schema = {}", schema);
 
     return schema;
   }
@@ -282,7 +285,11 @@ public class OrcRecordUpdater implements RecordUpdater {
             BucketCodec.V1.getVersion()));
       }
     }
-    this.bucket.set(bucketCodec.encode(options));
+    this.bucket.set(bucketCodec.encode(options)); // encode might chang bucketId/stmtId, use the new one for file name generation
+    if (options.getStatementId() != -1) { // -1 is treated specially in createFilename during compaction
+      options.statementId(bucketCodec.decodeStatementId(this.bucket.get()));
+    }
+    options.bucket(bucketCodec.decodeWriterId(this.bucket.get()));
     this.path = AcidUtils.createFilename(partitionRoot, options);
     this.deleteEventWriter = null;
     this.deleteEventPath = null;
@@ -471,7 +478,9 @@ public class OrcRecordUpdater implements RecordUpdater {
         this.deleteEventWriter = OrcFile.createWriter(deleteEventPath,
             deleteWriterOptions.callback(deleteEventIndexBuilder));
         AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(deleteEventWriter);
-        AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
+        }
       }
 
       // A delete/update generates a delete event for the original row.
@@ -501,6 +510,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       addSimpleEvent(INSERT_OPERATION, currentWriteId, insertedRows++, row);
     }
     rowCountDelta++;
+    insertCount++;
     bufferedRows++;
   }
 
@@ -514,6 +524,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     } else {
       addSimpleEvent(UPDATE_OPERATION, currentWriteId, -1L, row);
     }
+    updateCount++;
   }
 
   @Override
@@ -526,6 +537,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     } else {
       addSimpleEvent(DELETE_OPERATION, currentWriteId, -1L, row);
     }
+    deleteCount++;
     rowCountDelta--;
   }
 
@@ -554,9 +566,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   public void close(boolean abort) throws IOException {
     if (abort) {
       if (flushLengths == null) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Close on abort for path: {}.. Deleting..", path);
-        }
+        LOG.debug("Close on abort for path: {}.. Deleting..", path);
         fs.delete(path, false);
       }
     } else if (!writerClosed) {
@@ -566,9 +576,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         // would be written & they are closed separately below.
         if (indexBuilder.acidStats.inserts > 0) {
           if (writer != null) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Closing writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
-            }
+            LOG.debug("Closing writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
             writer.close(); // normal close, when there are inserts.
           }
         } else {
@@ -583,32 +591,24 @@ public class OrcRecordUpdater implements RecordUpdater {
         }
       } else {
         //so that we create empty bucket files when needed (but see HIVE-17138)
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Initializing writer before close (to create empty buckets) for path: {}", path);
-        }
+        LOG.debug("Initializing writer before close (to create empty buckets) for path: {}", path);
         initWriter();
         writer.close(); // normal close.
       }
       if (deleteEventWriter != null) {
         if (deleteEventIndexBuilder.acidStats.deletes > 0) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Closing delete event writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
-          }
+          LOG.debug("Closing delete event writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
           // Only need to write out & close the delete_delta if there have been any.
           deleteEventWriter.close();
         } else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("No delete events in path: {}.. Deleting..", path);
-          }
+          LOG.debug("No delete events in path: {}.. Deleting..", path);
           // Just remove delete_delta, if there have been no delete events.
           fs.delete(deleteEventPath, false);
         }
       }
     }
     if (flushLengths != null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Closing and deleting flush length file for path: {}", path);
-      }
+      LOG.debug("Closing and deleting flush length file for path: {}", path);
       flushLengths.close();
       fs.delete(OrcAcidUtils.getSideFile(path), false);
     }
@@ -620,11 +620,13 @@ public class OrcRecordUpdater implements RecordUpdater {
     if (writer == null) {
       writer = OrcFile.createWriter(path, writerOptions);
       AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
-      try {
-        AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
-      } catch (Exception e) {
-        LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
-            + " different bucket within this delta/base directory", e);
+      if (options.isWriteVersionFile()) {
+        try {
+          AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+        } catch (Exception e) {
+          LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
+                        + " different bucket within this delta/base directory", e);
+        }
       }
     }
   }
@@ -633,6 +635,9 @@ public class OrcRecordUpdater implements RecordUpdater {
   public SerDeStats getStats() {
     SerDeStats stats = new SerDeStats();
     stats.setRowCount(rowCountDelta);
+    stats.setInsertCount(insertCount);
+    stats.setUpdateCount(updateCount);
+    stats.setDeleteCount(deleteCount);
     // Don't worry about setting raw data size diff.  I have no idea how to calculate that
     // without finding the row we are updating or deleting, which would be a mess.
     return stats;
@@ -644,15 +649,28 @@ public class OrcRecordUpdater implements RecordUpdater {
   }
 
   static RecordIdentifier[] parseKeyIndex(Reader reader) {
+    if (!reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+      return null;
+    }
+
+    ByteBuffer val =
+        reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
+            .duplicate();
+    return parseKeyIndex(val);
+  }
+
+  static RecordIdentifier[] parseKeyIndex(OrcTail orcTail) {
+    for(OrcProto.UserMetadataItem item: orcTail.getFooter().getMetadataList()) {
+      if (item.hasName() && item.getName().equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+        return parseKeyIndex(item.getValue().asReadOnlyByteBuffer().duplicate());
+      }
+    }
+    return null;
+  }
+
+  private static RecordIdentifier[] parseKeyIndex(ByteBuffer val) {
     String[] stripes;
     try {
-      if (!reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
-        return null;
-      }
-
-      ByteBuffer val =
-          reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
-              .duplicate();
       CharsetDecoder utf8Decoder = UTF8.newDecoder();
       stripes = utf8Decoder.decode(val).toString().split(";");
     } catch (CharacterCodingException e) {
@@ -815,5 +833,9 @@ public class OrcRecordUpdater implements RecordUpdater {
   @Override
   public Path getUpdatedFilePath() {
     return path;
+  }
+
+  public Path getDeleteFilePath() {
+    return deleteEventPath;
   }
 }

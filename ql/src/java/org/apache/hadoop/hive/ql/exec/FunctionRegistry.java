@@ -68,8 +68,6 @@ import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFJson;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFApproximateDistinct;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
@@ -383,6 +381,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("=", GenericUDFOPEqual.class);
     system.registerGenericUDF("==", GenericUDFOPEqual.class);
     system.registerGenericUDF("<=>", GenericUDFOPEqualNS.class);
+    system.registerGenericUDF("is_not_distinct_from", GenericUDFOPEqualNS.class);
     system.registerGenericUDF("!=", GenericUDFOPNotEqual.class);
     system.registerGenericUDF("<>", GenericUDFOPNotEqual.class);
     system.registerGenericUDF("<", GenericUDFOPLessThan.class);
@@ -469,12 +468,14 @@ public final class FunctionRegistry {
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
-    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
+    system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
+    system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
     system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
     system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
+    system.registerGenericUDAF("exception_in_vertex_udaf", new GenericUDAFExceptionInVertex());
 
     system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
@@ -482,6 +483,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
     system.registerGenericUDF("reflect2", GenericUDFReflect2.class);
     system.registerGenericUDF("java_method", GenericUDFReflect.class);
+    system.registerGenericUDF("exception_in_vertex_udf", GenericUDFExceptionInVertex.class);
 
     system.registerGenericUDF("array", GenericUDFArray.class);
     system.registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
@@ -508,6 +510,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("sort_array", GenericUDFSortArray.class);
     system.registerGenericUDF("sort_array_by", GenericUDFSortArrayByField.class);
     system.registerGenericUDF("array_contains", GenericUDFArrayContains.class);
+    system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);
     system.registerGenericUDF("map_values", GenericUDFMapValues.class);
@@ -826,11 +829,12 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static synchronized TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
+  public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
     // If same return one of them
     if (a.equals(b)) {
       return a;
     }
+
 
     if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
       // It is not primitive; check if it is a struct and we can infer a common class
@@ -848,6 +852,15 @@ public final class FunctionRegistry {
       // Same primitive category but different qualifiers.
       // Rely on getTypeInfoForPrimitiveCategory() to sort out the type params.
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
+    }
+
+    if (pcA == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcB
+      return b;
+    }
+    if (pcB == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcA
+      return a;
     }
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
@@ -1012,8 +1025,8 @@ public final class FunctionRegistry {
     }
 
     // Compare the field types
-    ArrayList<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
-    ArrayList<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
+    List<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
+    List<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
     for (int i = 0; i < fromTypes.size(); i++) {
       TypeInfo commonType = commonClassFunction.apply(fromTypes.get(i), toTypes.get(i));
       if (commonType == null) {
@@ -1068,19 +1081,17 @@ public final class FunctionRegistry {
 
   public static GenericUDAFEvaluator getGenericWindowingEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isDistinct,
-      boolean isAllColumns) throws SemanticException {
+      boolean isAllColumns, boolean respectNulls) throws SemanticException {
     Registry registry = SessionState.getRegistry();
     GenericUDAFEvaluator evaluator = registry == null ? null :
-        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns);
+        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls);
     return evaluator != null ? evaluator :
-        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns);
+        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls);
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName)
       throws SemanticException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Looking up GenericUDAF: " + functionName);
-    }
+    LOG.debug("Looking up GenericUDAF: {}", functionName);
     FunctionInfo finfo = getFunctionInfo(functionName);
     if (finfo == null) {
       return null;
@@ -1539,11 +1550,6 @@ public final class FunctionRegistry {
       return (TableFunctionResolver) ReflectionUtils.newInstance(tfInfo.getFunctionClass(), null);
     }
     return null;
-  }
-
-  public static TableFunctionResolver getWindowingTableFunction()
-      throws SemanticException {
-    return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
 
   public static boolean isNoopFunction(String fnName) {

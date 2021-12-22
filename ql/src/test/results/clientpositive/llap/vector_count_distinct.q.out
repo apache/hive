@@ -205,6 +205,7 @@ select ws_sold_date_sk, ws_sold_time_sk, ws_ship_date_sk, ws_item_sk,
        ws_net_paid_inc_ship_tax, ws_net_profit, ws_web_site_sk from web_sales_txt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales_txt
+POSTHOOK: Output: default@web_sales
 POSTHOOK: Output: default@web_sales@ws_web_site_sk=1
 POSTHOOK: Output: default@web_sales@ws_web_site_sk=10
 POSTHOOK: Output: default@web_sales@ws_web_site_sk=11

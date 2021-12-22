@@ -65,7 +65,7 @@ STAGE PLANS:
                         value expressions: value (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -117,7 +117,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: key, value
-                      Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: key (type: string)
@@ -125,12 +125,12 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: key (type: string)
-                        Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: value (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -364,7 +364,7 @@ STAGE PLANS:
                         value expressions: value (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -416,7 +416,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: key, value
-                      Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: key (type: string)
@@ -424,12 +424,12 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: key (type: string)
-                        Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: value (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

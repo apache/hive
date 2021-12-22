@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.drop;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -35,6 +36,8 @@ import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 import com.google.common.collect.Iterables;
+
+import java.util.Map;
 
 /**
  * Operation process of dropping a table.
@@ -86,15 +89,18 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
        * drop the partitions inside it that are older than this event. To wit, DROP TABLE FOR REPL
        * acts like a recursive DROP TABLE IF OLDER.
        */
-      if (!replicationSpec.allowEventReplacementInto(table.getParameters())) {
+      Map<String, String> dbParams = context.getDb().getDatabase(table.getDbName()).getParameters();
+      if (!replicationSpec.allowEventReplacementInto(dbParams)) {
         // Drop occured as part of replicating a drop, but the destination
         // table was newer than the event being replicated. Ignore, but drop
         // any partitions inside that are older.
         if (table.isPartitioned()) {
           PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
               MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
-          for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())) {
-            context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+          for (Partition p : partitions) {
+            if (replicationSpec.allowEventReplacementInto(dbParams)) {
+              context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+            }
           }
         }
         LOG.debug("DDLTask: Drop Table is skipped as table {} is newer than update", desc.getTableName());

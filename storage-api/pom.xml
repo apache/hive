@@ -24,7 +24,7 @@
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-storage-api</artifactId>
-  <version>2.7.0-SNAPSHOT</version>
+  <version>2.7.3-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Storage API</name>
 
@@ -34,10 +34,13 @@
     <commons-logging.version>1.1.3</commons-logging.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13</junit.version>
+    <junit.jupiter.version>5.6.3</junit.jupiter.version>
+    <junit.vintage.version>5.6.3</junit.vintage.version>
     <slf4j.version>1.7.30</slf4j.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
+    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
   </properties>
 
   <dependencies>
@@ -111,18 +114,30 @@
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-
-    <!-- test inter-project -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.vintage.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -148,6 +163,11 @@
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -163,9 +183,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M4</version>
         <configuration>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx2048m</argLine>
+          <argLine>-Xmx3g</argLine>
           <failIfNoTests>false</failIfNoTests>
           <systemPropertyVariables>
             <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>

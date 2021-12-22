@@ -19,11 +19,12 @@
 package org.apache.hadoop.hive.ql.ddl.misc.conf;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -47,15 +48,15 @@ public class ShowConfOperation extends DDLOperation<ShowConfDesc> {
     String description = conf.getDescription();
     String defaultValue = conf.getDefaultValue();
 
-    try (DataOutputStream output = DDLUtils.getOutputStream(desc.getResFile(), context)) {
+    try (DataOutputStream output = ShowUtils.getOutputStream(desc.getResFile(), context)) {
       if (defaultValue != null) {
-        output.write(defaultValue.getBytes("UTF-8"));
+        output.write(defaultValue.getBytes(StandardCharsets.UTF_8));
       }
       output.write(Utilities.tabCode);
-      output.write(conf.typeString().getBytes("UTF-8"));
+      output.write(conf.typeString().getBytes(StandardCharsets.UTF_8));
       output.write(Utilities.tabCode);
       if (description != null) {
-        output.write(description.replaceAll(" *\n *", " ").getBytes("UTF-8"));
+        output.write(description.replaceAll(" *\n *", " ").getBytes(StandardCharsets.UTF_8));
       }
       output.write(Utilities.newLineCode);
     }

@@ -29,11 +29,17 @@ import com.google.common.base.MoreObjects;
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.decimalInspectorFromStats;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DecimalColumnStatsMerger.class);
+
   @Override
-  protected void doMerge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+    LOG.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
+
     DecimalColumnStatsDataInspector aggregateData = decimalInspectorFromStats(aggregateColStats);
     DecimalColumnStatsDataInspector newData = decimalInspectorFromStats(newColStats);
 
@@ -55,7 +61,7 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      log.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
+      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
           aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
     }

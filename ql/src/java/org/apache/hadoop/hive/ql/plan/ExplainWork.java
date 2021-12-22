@@ -246,4 +246,8 @@ public class ExplainWork implements Serializable {
   public boolean isAst() {
     return config.isAst();
   }
+
+  public boolean isDDL() {
+    return config.isDDL();
+  }
 }

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -44,14 +45,14 @@ public class LogRedirector implements Runnable {
   private int numErrLogLines = 0;
 
   public LogRedirector(InputStream in, Logger logger, LogSourceCallback callback) {
-    this.in = new BufferedReader(new InputStreamReader(in));
+    this.in = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     this.callback = callback;
     this.logger = logger;
   }
 
   public LogRedirector(InputStream in, Logger logger, List<String> errLogs,
                        LogSourceCallback callback) {
-    this.in = new BufferedReader(new InputStreamReader(in));
+    this.in = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     this.errLogs = errLogs;
     this.callback = callback;
     this.logger = logger;

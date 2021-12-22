@@ -99,4 +99,11 @@ public interface PredicateLeaf {
    *
    */
   public List<Object> getLiteralList();
+
+  /**
+   * Get the id of the leaf.
+   * The ids are assigned sequentially from 0.
+   * @return the offset in the list returned from {@link SearchArgument#getLeaves}
+   */
+  int getId();
 }

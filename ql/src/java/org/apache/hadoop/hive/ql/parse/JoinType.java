@@ -23,5 +23,5 @@ package org.apache.hadoop.hive.ql.parse;
  *
  */
 public enum JoinType {
-  INNER, LEFTOUTER, RIGHTOUTER, FULLOUTER, UNIQUE, LEFTSEMI
+  INNER, LEFTOUTER, RIGHTOUTER, FULLOUTER, UNIQUE, LEFTSEMI, ANTI
 };

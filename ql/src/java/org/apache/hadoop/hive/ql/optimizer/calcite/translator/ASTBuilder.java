@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
@@ -30,6 +31,7 @@ import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -76,10 +78,26 @@ public class ASTBuilder {
 
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
-    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
-        ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
+    ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
+    if (hTbl.getHiveTableMD().getMetaTable() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
+    }
+
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);
+
+    if (hTbl.getHiveTableMD().getAsOfTimestamp() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_TIME, "TOK_AS_OF_TIME")
+          .add(HiveParser.StringLiteral, hTbl.getHiveTableMD().getAsOfTimestamp());
+      b.add(asOfBuilder);
+    }
+
+    if (hTbl.getHiveTableMD().getAsOfVersion() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_VERSION, "TOK_AS_OF_VERSION")
+          .add(HiveParser.Number, hTbl.getHiveTableMD().getAsOfVersion());
+      b.add(asOfBuilder);
+    }
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
@@ -143,6 +161,13 @@ public class ASTBuilder {
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
 
+    if (hts.getTableScanTrait() != null) {
+      // We need to carry the fetchDeletedRows information from calcite into the ast.
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+              .add(HiveParser.StringLiteral, String.format("\"%s\"", hts.getTableScanTrait().getPropertyKey()))
+              .add(HiveParser.StringLiteral, "\"TRUE\""));
+    }
+
     b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(propList));
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
@@ -173,6 +198,9 @@ public class ASTBuilder {
       break;
     case FULL:
       b = ASTBuilder.construct(HiveParser.TOK_FULLOUTERJOIN, "TOK_FULLOUTERJOIN");
+      break;
+    case ANTI:
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTANTISEMIJOIN, "TOK_LEFTANTISEMIJOIN");
       break;
     }
 
@@ -243,6 +271,8 @@ public class ASTBuilder {
     case INTERVAL_SECOND:
     case INTERVAL_YEAR:
     case INTERVAL_YEAR_MONTH:
+    case MAP:
+    case ARRAY:
     case ROW:
       if (literal.getValue() == null) {
         return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
@@ -373,6 +403,12 @@ public class ASTBuilder {
     }
 
     return (ASTNode) ParseDriver.adaptor.create(type, String.valueOf(val));
+  }
+
+  public static ASTNode dynamicParam(RexDynamicParam param) {
+    ASTNode node = (ASTNode)ParseDriver.adaptor.create(HiveParser.TOK_PARAMETER,
+        Integer.toString(param.getIndex()));
+    return node;
   }
 
   ASTNode curr;

@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -52,7 +50,8 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
@@ -71,12 +70,13 @@ public class TestPartitionManagement {
     conf = MetastoreConf.newMetastoreConf();
     conf.setClass(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
       MsckPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     conf.setBoolean(ConfVars.MULTITHREADED.getVarname(), false);
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -381,6 +381,16 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(5, partitions.size());
+
+    fs.mkdirs(new Path(tablePath, "state=MG/dt=2021-28-05"));
+    assertEquals(6, fs.listStatus(tablePath).length);
+    Database db = client.getDatabase(table.getDbName());
+    //PartitionManagementTask would not run for the database which is being failed over.
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
+    client.alterDatabase(dbName, db);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
   }
 
   @Test
@@ -526,6 +536,18 @@ public class TestPartitionManagement {
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(5, partitions.size());
 
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
+    client.alterDatabase(table.getDbName(), db);
+    // PartitionManagementTask would not do anything because the db is being failed over.
+    Thread.sleep(30 * 1000);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
+
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENDPOINT, "");
+    client.alterDatabase(table.getDbName(), db);
+
     // after 30s all partitions should have been gone
     Thread.sleep(30 * 1000);
     runPartitionManagementTask(conf);
@@ -598,7 +620,9 @@ public class TestPartitionManagement {
     // table property is set to true, but the table is marked as replication target. The new
     // partitions should not be created
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.TARGET_OF_REPLICATION, "true");
+    client.alterDatabase(table.getDbName(), db);
     client.alter_table(dbName, tableName, table);
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
@@ -642,8 +666,10 @@ public class TestPartitionManagement {
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
     table.getParameters().put(PartitionManagementTask.PARTITION_RETENTION_PERIOD_TBLPROPERTY,
             partitionRetentionPeriodMs + "ms");
-    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
     client.alter_table(dbName, tableName, table);
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.TARGET_OF_REPLICATION, "true");
+    client.alterDatabase(table.getDbName(), db);
 
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);

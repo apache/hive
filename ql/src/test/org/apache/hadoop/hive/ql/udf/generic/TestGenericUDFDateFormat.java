@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -80,8 +82,10 @@ public class TestGenericUDFDateFormat {
     ObjectInspector[] arguments = {valueOI0, valueOI1};
 
     udf.initialize(arguments);
-    runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
-    runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
+
+    runAndVerifyStr("2016-02-30 10:30:45", fmtText, null, udf);
+    runAndVerifyStr("2016-02-30 10:30:45", fmtText, null, udf);
+    runAndVerifyStr("2014-01-32", fmtText, null, udf);
     runAndVerifyStr("01/14/2014", fmtText, null, udf);
     runAndVerifyStr(null, fmtText, null, udf);
   }
@@ -130,6 +134,21 @@ public class TestGenericUDFDateFormat {
   }
 
   @Test
+  public void testDateFormatTsWithTimeZone() throws HiveException {
+    GenericUDFDateFormat udf = new GenericUDFDateFormat();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    Text fmtText = new Text("yyyy-MM-dd HH:mm:ss.SSS z");
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
+    ObjectInspector[] arguments = { valueOI0, valueOI1 };
+
+    udf.initialize(arguments);
+
+    runAndVerifyTs("2015-04-08 10:30:45", fmtText, "2015-04-08 10:30:45.000 PDT", udf);
+
+  }
+
+  @Test
   public void testNullFmt() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -147,7 +166,7 @@ public class TestGenericUDFDateFormat {
   public void testWrongFmt() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    Text fmtText = new Text("Q");
+    Text fmtText = new Text("B");
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
@@ -168,6 +187,19 @@ public class TestGenericUDFDateFormat {
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
     udf.initialize(arguments);
     runAndVerifyStr("1001-01-05", fmtText, "05---01--1001", udf);
+  }
+
+  @Test
+  public void testTimestampPriorTo1900() throws HiveException {
+    GenericUDFDateFormat udf = new GenericUDFDateFormat();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    Text fmtText = new Text("yyyy-MM-dd HH:mm:ss.SSS z");
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
+    ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    udf.initialize(arguments);
+    runAndVerifyStr("1400-01-14 01:01:10.123", fmtText, "1400-01-14 01:01:10.123 PST", udf);
+    runAndVerifyStr("1800-01-14 01:01:10.123", fmtText, "1800-01-14 01:01:10.123 PST", udf);
   }
 
   private void runAndVerifyStr(String str, Text fmtText, String expResult, GenericUDF udf)

@@ -61,12 +61,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <scope>test</scope>
-      <classifier>core</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
-      <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>

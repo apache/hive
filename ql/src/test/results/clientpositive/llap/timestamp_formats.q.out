@@ -139,3 +139,55 @@ POSTHOOK: query: DROP TABLE timestamp_formats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_formats
 POSTHOOK: Output: default@timestamp_formats
+PREHOOK: query: create table tstable(date_created timestamp)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES ('timestamp.formats'='yyyyMMddHHmmss')
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstable
+POSTHOOK: query: create table tstable(date_created timestamp)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES ('timestamp.formats'='yyyyMMddHHmmss')
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstable
+PREHOOK: query: select * from tstable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstable
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tstable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstable
+#### A masked pattern was here ####
+2020-12-05 00:00:17
+PREHOOK: query: insert into tstable values("2020-12-25")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstable
+POSTHOOK: query: insert into tstable values("2020-12-25")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstable
+POSTHOOK: Lineage: tstable.date_created SCRIPT []
+PREHOOK: query: select * from tstable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstable
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tstable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstable
+#### A masked pattern was here ####
+2020-12-25 00:00:00
+2020-12-05 00:00:17
+PREHOOK: query: drop table tstable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tstable
+PREHOOK: Output: default@tstable
+POSTHOOK: query: drop table tstable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tstable
+POSTHOOK: Output: default@tstable

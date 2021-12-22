@@ -85,8 +85,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
 
   private Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Table before,
       org.apache.hadoop.hive.metastore.api.Table after) {
-    if (before.getDbName().equals(after.getDbName())
-        && before.getTableName().equals(after.getTableName())) {
+    if (before.getDbName().equalsIgnoreCase(after.getDbName())
+        && before.getTableName().equalsIgnoreCase(after.getTableName())) {
       return isTruncateOp ? Scenario.TRUNCATE : Scenario.ALTER;
     } else {
       return Scenario.RENAME;
@@ -210,7 +210,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       String oldName = before.getTableName();
       String newName = after.getTableName();
       boolean needDump = true;
-      if (withinContext.oldReplScope != null) {
+      if (withinContext.oldReplScope != null && !withinContext.oldReplScope.equals(withinContext.replScope)) {
         needDump = handleRenameForReplacePolicy(withinContext, oldName, newName);
       } else if (!withinContext.replScope.includeAllTables()) {
         needDump = handleRenameForTableLevelReplication(withinContext, oldName, newName);

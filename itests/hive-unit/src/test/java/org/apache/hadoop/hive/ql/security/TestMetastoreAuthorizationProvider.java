@@ -174,10 +174,12 @@ public class TestMetastoreAuthorizationProvider {
     String dbName = getTestDbName();
     String tblName = getTestTableName();
     String userName = setupUser();
+    String loc = clientHiveConf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname) + "/" + dbName;
+    String mLoc = clientHiveConf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname) + "/" + dbName;
     allowCreateDatabase(userName);
-    driver.run("create database " + dbName);
+    driver.run("create database " + dbName + " location '" + loc + "' managedlocation '" + mLoc + "'");
     Database db = msc.getDatabase(dbName);
-    String dbLocn = db.getLocationUri();
+    String dbLocn = db.getManagedLocationUri();
     validateCreateDb(db, dbName);
     allowCreateInDb(dbName, userName, dbLocn);
     disallowCreateInDb(dbName, userName, dbLocn);
@@ -187,7 +189,7 @@ public class TestMetastoreAuthorizationProvider {
       driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
       assert false;
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
 
     // Even if table location is specified table creation should fail
@@ -200,7 +202,7 @@ public class TestMetastoreAuthorizationProvider {
         driver.run(String.format(
             "create table %s (a string) partitioned by (b string) location '" +tblLocation + "'", tblNameLoc));
       } catch (CommandProcessorException e) {
-        assertEquals(1, e.getResponseCode());
+        assertEquals(40000, e.getResponseCode());
       }
     }
 
@@ -263,7 +265,7 @@ public class TestMetastoreAuthorizationProvider {
     try {
       driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
 
     ttbl.setTableName(tblName+"mal");
@@ -280,7 +282,7 @@ public class TestMetastoreAuthorizationProvider {
     try {
       driver.run("alter table "+tblName+" add partition (b='2011')");
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
 
     List<String> ptnVals = new ArrayList<String>();
@@ -328,7 +330,13 @@ public class TestMetastoreAuthorizationProvider {
     InjectableDummyAuthenticator.injectMode(true);
     allowCreateDatabase(userName);
     driver.run("create database " + dbName);
+    db = msc.getDatabase(dbName);
+    dbLocn = db.getLocationUri();
     allowCreateInDb(dbName, userName, dbLocn);
+    dbLocn = db.getManagedLocationUri();
+     if (dbLocn != null) {
+       allowCreateInDb(dbName, userName, dbLocn);
+     }
     tbl.setTableType("EXTERNAL_TABLE");
     msc.createTable(tbl);
 
@@ -337,7 +345,7 @@ public class TestMetastoreAuthorizationProvider {
     try {
       driver.run("drop table "+tbl.getTableName());
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
   }
 

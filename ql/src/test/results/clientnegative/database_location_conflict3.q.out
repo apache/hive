@@ -11,4 +11,4 @@ POSTHOOK: Output: database:db
 PREHOOK: type: ALTERDATABASE_LOCATION
 PREHOOK: Output: database:db
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Managed and external locations for database cannot be the same
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Managed and external locations for database cannot be the same

@@ -22,10 +22,17 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -34,7 +41,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.thrift.TException;
@@ -52,6 +59,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -69,7 +77,7 @@ import java.util.List;
 @Category(MetastoreUnitTest.class)
 public class TestHiveMetaStoreTxns {
 
-  private static Configuration conf = MetastoreConf.newMetastoreConf();
+  private static Configuration conf;
   private static IMetaStoreClient client;
   private Connection conn;
 
@@ -216,7 +224,7 @@ public class TestHiveMetaStoreTxns {
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("mytable")
-        .setPartitionName("mypartition")
+        .setPartitionName("MyPartition=MyValue")
         .setExclusive()
         .setOperationType(DataOperationType.NO_TXN)
         .build());
@@ -255,7 +263,7 @@ public class TestHiveMetaStoreTxns {
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("mytable")
-        .setPartitionName("mypartition")
+        .setPartitionName("MyPartition=MyValue")
         .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
@@ -314,9 +322,13 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(2, validTxns.getInvalidTransactions().length);
     boolean sawThree = false, sawFive = false;
     for (long tid : validTxns.getInvalidTransactions()) {
-      if (tid == 3)  sawThree = true;
-      else if (tid == 5) sawFive = true;
-      else  Assert.fail("Unexpected value " + tid);
+      if (tid == 3) {
+        sawThree = true;
+      } else if (tid == 5) {
+        sawFive = true;
+      } else {
+        Assert.fail("Unexpected value " + tid);
+      }
     }
     Assert.assertTrue(sawThree);
     Assert.assertTrue(sawFive);
@@ -392,12 +404,58 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(writeIdList.getMinOpenWriteId().longValue(), 2);
   }
 
+  @Test
+  public void testGetLatestCommittedCompactionInfo() throws Exception {
+    final String dbName = "mydb";
+    final String tblName = "mytable";
+    Database db = new DatabaseBuilder().setName(dbName).build(conf);
+    db.unsetCatalogName();
+    client.createDatabase(db);
+
+    Table tbl = new TableBuilder().setDbName(dbName).setTableName(tblName)
+        .addCol("id", "int").addCol("name", "string")
+        .setType(TableType.MANAGED_TABLE.name()).build(conf);
+    client.createTable(tbl);
+    tbl = client.getTable(dbName, tblName);
+
+    client.compact2(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MINOR, new HashMap<>());
+    FindNextCompactRequest compactRequest = new FindNextCompactRequest();
+    compactRequest.setWorkerId("myworker");
+    OptionalCompactionInfoStruct optionalCi = client.findNextCompact(compactRequest);
+    client.markCleaned(optionalCi.getCi());
+
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+
+    // Test invalid inputs
+    final String invalidTblName = "invalid";
+    rqst.setDbname(dbName);
+    Assert.assertThrows(MetaException.class, () -> client.getLatestCommittedCompactionInfo(rqst));
+    rqst.setTablename(invalidTblName);
+    GetLatestCommittedCompactionInfoResponse response = client.getLatestCommittedCompactionInfo(rqst);
+
+    Assert.assertNotNull(response);
+    Assert.assertEquals(0, response.getCompactionsSize());
+
+    // Test normal inputs
+    rqst.setTablename(tblName);
+    response = client.getLatestCommittedCompactionInfo(rqst);
+
+    Assert.assertNotNull(response);
+    Assert.assertEquals(1, response.getCompactionsSize());
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    Assert.assertEquals(1, lci.getId());
+    Assert.assertNull(lci.getPartitionname());
+    Assert.assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
   @BeforeClass
   public static void setUpDB() throws Exception {
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -412,6 +470,6 @@ public class TestHiveMetaStoreTxns {
   @After
   public void tearDown() throws Exception {
     conn.close();
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 }

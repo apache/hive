@@ -151,7 +151,7 @@ from t_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
-6	2	17	13	17
+6	2	13	13	17
 PREHOOK: query: select
 rank(1, 3) WITHIN GROUP (ORDER BY col1, col2),
 rank(2, 3) WITHIN GROUP (ORDER BY col1, col2),

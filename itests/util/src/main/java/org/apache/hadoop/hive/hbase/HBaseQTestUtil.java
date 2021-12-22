@@ -59,8 +59,8 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void createSources(String tname) throws Exception {
-    super.createSources(tname);
+  public void createSources() throws Exception {
+    super.createSources();
 
     conf.setBoolean("hive.test.init.phase", true);
     datasetHandler.initDataset(HBASE_SRC_NAME, getCliDriver());
@@ -79,8 +79,8 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void cleanUp(String tname) throws Exception {
-    super.cleanUp(tname);
+  public void cleanUp() throws Exception {
+    super.cleanUp();
 
     Admin admin = null;
     try {

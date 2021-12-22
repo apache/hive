@@ -18,6 +18,8 @@
 
 package org.apache.hive.service.server;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -26,8 +28,10 @@ import org.apache.hadoop.hive.ql.ddl.process.kill.KillQueriesOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -58,7 +62,6 @@ public class KillQueryImpl implements KillQuery {
   private final KillQueryZookeeperManager killQueryZookeeperManager;
 
   private enum TagOrId {TAG, ID, UNKNOWN}
-
 
   public KillQueryImpl(OperationManager operationManager, KillQueryZookeeperManager killQueryZookeeperManager) {
     this.operationManager = operationManager;
@@ -116,11 +119,22 @@ public class KillQueryImpl implements KillQuery {
 
   private static boolean isAdmin() {
     boolean isAdmin = false;
-    if (SessionState.get().getAuthorizerV2() != null) {
+    // RANGER-1851
+    HivePrivilegeObject serviceNameObj = new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.SERVICE_NAME, null, "hiveservice");
+    SessionState ss = SessionState.get();
+    if (!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      // If authorization is disabled, hs2 process owner should have kill privileges
       try {
-        SessionState.get().getAuthorizerV2()
-            .checkPrivileges(HiveOperationType.KILL_QUERY, new ArrayList<>(),
-                new ArrayList<>(), new HiveAuthzContext.Builder().build());
+        return StringUtils.equals(ss.getUserName(), UserGroupInformation.getCurrentUser().getShortUserName());
+      } catch (IOException e) {
+        LOG.warn("Unable to check for admin privileges", e);
+        return false;
+      }
+    }
+    if (ss.getAuthorizerV2() != null) {
+      try {
+        ss.getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY, Arrays.asList(serviceNameObj), new ArrayList<HivePrivilegeObject>(),
+            new HiveAuthzContext.Builder().build());
         isAdmin = true;
       } catch (Exception e) {
         LOG.warn("Error while checking privileges", e);
@@ -154,8 +168,7 @@ public class KillQueryImpl implements KillQuery {
     killQuery(queryIdOrTag, errMsg, conf, false, SessionState.get().getUserName(), isAdmin());
   }
 
-  public void killLocalQuery(String queryIdOrTag, HiveConf conf, String doAs, boolean doAsAdmin)
-      throws HiveException {
+  public void killLocalQuery(String queryIdOrTag, HiveConf conf, String doAs, boolean doAsAdmin) throws HiveException {
     killQuery(queryIdOrTag, null, conf, true, doAs, doAsAdmin);
   }
 
@@ -175,7 +188,7 @@ public class KillQueryImpl implements KillQuery {
         LOG.debug("Query found with tag: {}", queryIdOrTag);
       }
     }
-    if (!operationsToKill.isEmpty()){
+    if (!operationsToKill.isEmpty()) {
       killOperations(queryIdOrTag, errMsg, conf, tagOrId, operationsToKill, doAs, doAsAdmin);
     } else {
       LOG.debug("Query not found with tag/id: {}", queryIdOrTag);

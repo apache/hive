@@ -13,4 +13,8 @@ FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+Status: Failed
+Vertex re-running, vertexName=Map 1, vertexId=vertex_#ID#
+Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE, Vertex vertex_#ID# [Map 1] failed as task task_#ID# failed after vertex succeeded.]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex re-running, vertexName=Map 1, vertexId=vertex_#ID#Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE, Vertex vertex_#ID# [Map 1] failed as task task_#ID# failed after vertex succeeded.]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0

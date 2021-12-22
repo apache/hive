@@ -19,7 +19,8 @@
 package org.apache.hadoop.hive.ql.ddl.table.info.show.status;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
+import org.apache.hadoop.hive.ql.ddl.table.info.show.status.formatter.ShowTableStatusFormatter;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
@@ -75,10 +76,10 @@ public class ShowTableStatusOperation extends DDLOperation<ShowTableStatusDesc> 
       LOG.info("Found {} table(s) matching the SHOW TABLE EXTENDED statement.", tableNames.size());
     }
 
-    DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context);
+    DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context);
     try {
-      context.getFormatter().showTableStatus(outStream, context.getDb(), context.getConf(), tables, partitionSpec,
-          partition);
+      ShowTableStatusFormatter formatter = ShowTableStatusFormatter.getFormatter(context.getConf());
+      formatter.showTableStatus(outStream, context.getDb(), context.getConf(), tables, partition);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show table status");
     } finally {

@@ -85,12 +85,12 @@ import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -350,7 +350,8 @@ public class TezSessionState {
 
     setupSessionAcls(tezConfig, conf);
 
-    final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
+    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
+    final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
         .build();
@@ -433,18 +434,16 @@ public class TezSessionState {
       // We are not in HS2; always create a new client for now.
       token = new LlapTokenClient(conf).getDelegationToken(null);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Obtained a LLAP token: " + token);
-    }
+    LOG.info("Obtained a LLAP token: " + token);
     return token;
   }
 
   private TezClient startSessionAndContainers(TezClient session, HiveConf conf,
       Map<String, LocalResource> commonLocalResources, TezConfiguration tezConfig,
       boolean isOnThread) throws TezException, IOException {
-    session.start();
     boolean isSuccessful = false;
     try {
+      session.start();
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
         int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
         LOG.info("Prewarming " + n + " containers  (id: " + sessionId
@@ -483,6 +482,10 @@ public class TezSessionState {
     } finally {
       if (isOnThread && !isSuccessful) {
         closeAndIgnoreExceptions(session);
+      }
+      if (!isSuccessful) {
+        cleanupScratchDir();
+        cleanupDagResources();
       }
     }
   }
@@ -720,6 +723,7 @@ public class TezSessionState {
   }
 
   protected final void cleanupScratchDir() throws IOException {
+    LOG.info("Attempting to clean up scratchDir for {} : {}", sessionId, tezScratchDir);
     if (tezScratchDir != null) {
       FileSystem fs = tezScratchDir.getFileSystem(conf);
       fs.delete(tezScratchDir, true);
@@ -728,7 +732,7 @@ public class TezSessionState {
   }
 
   protected final void cleanupDagResources() throws IOException {
-    LOG.info("Attemting to clean up resources for " + sessionId + ": " + resources);
+    LOG.info("Attempting to clean up resources for {} : {}", sessionId, resources);
     if (resources != null) {
       FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
       fs.delete(resources.dagResourcesDir, true);
@@ -815,9 +819,7 @@ public class TezSessionState {
     destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
         + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("The destination file name for [" + localJarPath + "] is " + destFileName);
-    }
+    LOG.debug("The destination file name for [{}] is {}", localJarPath, destFileName);
 
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.

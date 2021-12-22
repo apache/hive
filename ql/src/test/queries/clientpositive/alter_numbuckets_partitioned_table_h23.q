@@ -52,6 +52,12 @@ alter table tst1_n1 clustered by (value) into 12 buckets;
 
 describe formatted tst1_n1;
 
+-- Test changing name of bucket column
+
+alter table tst1_n1 change key keys string;
+
+describe formatted tst1_n1;
+
 -- Test removing buckets
 
 alter table tst1_n1 not clustered;

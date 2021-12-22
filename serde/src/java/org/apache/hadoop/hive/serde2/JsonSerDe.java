@@ -20,9 +20,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,15 +31,12 @@ import org.apache.hadoop.hive.serde2.json.HiveJsonWriter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.TimestampParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Hive SerDe for processing JSON formatted data. This is typically paired with
@@ -55,16 +50,13 @@ import org.slf4j.LoggerFactory;
  */
 @SerDeSpec(schemaProps = { serdeConstants.LIST_COLUMNS,
     serdeConstants.LIST_COLUMN_TYPES, serdeConstants.TIMESTAMP_FORMATS,
-    JsonSerDe.BINARY_FORMAT, JsonSerDe.IGNORE_EXTRA })
+    JsonSerDe.BINARY_FORMAT, JsonSerDe.IGNORE_EXTRA, JsonSerDe.STRINGIFY_COMPLEX })
 public class JsonSerDe extends AbstractSerDe {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
-
   public static final String BINARY_FORMAT = "json.binary.format";
+  public static final String STRINGIFY_COMPLEX = "json.stringify.complex.fields";
   public static final String IGNORE_EXTRA = "text.ignore.extra.fields";
   public static final String NULL_EMPTY_LINES = "text.null.empty.line";
-
-  private List<String> columnNames;
 
   private BinaryEncoding binaryEncoding;
   private boolean nullEmptyLines;
@@ -78,11 +70,35 @@ public class JsonSerDe extends AbstractSerDe {
    * Initialize the SerDe. By default, items being deserialized are expected to
    * be wrapped in Hadoop Writable objects and objects being serialized are
    * expected to be Java primitive objects.
+   *
+   * @param configuration Hadoop configuration
+   * @param tableProperties Table properties
+   * @param partitionProperties Partition properties (may be {@code null} if
+   *          table has no partitions)
+   * @throws NullPointerException if tableProperties is {@code null}
+   * @throws SerDeException if SerDe fails to initialize
    */
   @Override
-  public void initialize(final Configuration conf, final Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    initialize(conf, tbl, true);
+    initialize(configuration, tableProperties, partitionProperties, true);
+  }
+
+  /**
+   * Initialize the SerDe.
+   *
+   * @param configuration Hadoop configuration
+   * @param tableProperties Table properties
+   * @param partitionProperties Partition properties (may be {@code null} if
+   *          table has no partitions)
+   * @param writeablePrimitivesDeserialize true if outputs are Hadoop Writable
+   * @throws NullPointerException if tableProperties is {@code null}
+   * @throws SerDeException if SerDe fails to initialize
+   */
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties,
+      boolean writeablePrimitivesDeserialize) throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+    initialize(configuration, this.properties, writeablePrimitivesDeserialize);
   }
 
   /**
@@ -92,38 +108,16 @@ public class JsonSerDe extends AbstractSerDe {
    * @param tbl table properties
    * @param writeablePrimitivesDeserialize true if outputs are Hadoop Writable
    */
-  public void initialize(final Configuration conf, final Properties tbl,
+  private void initialize(final Configuration conf, final Properties tbl,
       final boolean writeablePrimitivesDeserialize) {
 
-    LOG.debug("Initializing JsonSerDe: {}", tbl.entrySet());
-
-    // Get column names
-    final String columnNameProperty =
-        tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnNameDelimiter = tbl.getProperty(
-        serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
-
-    this.columnNames = columnNameProperty.isEmpty() ? Collections.emptyList()
-        : Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-
-    // all column types
-    final String columnTypeProperty =
-        tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-
-    final List<TypeInfo> columnTypes =
-        columnTypeProperty.isEmpty() ? Collections.emptyList()
-            : TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-
-    LOG.debug("columns: {}, {}", columnNameProperty, columnNames);
-    LOG.debug("types: {}, {} ", columnTypeProperty, columnTypes);
-
-    assert (columnNames.size() == columnTypes.size());
+    log.debug("Initializing JsonSerDe: {}", tbl.entrySet());
 
     final String nullEmpty = tbl.getProperty(NULL_EMPTY_LINES, "false");
     this.nullEmptyLines = Boolean.parseBoolean(nullEmpty);
 
     this.rowTypeInfo = (StructTypeInfo) TypeInfoFactory
-        .getStructTypeInfo(columnNames, columnTypes);
+        .getStructTypeInfo(getColumnNames(), getColumnTypes());
 
     this.soi = (StructObjectInspector) TypeInfoUtils
         .getStandardWritableObjectInspectorFromTypeInfo(this.rowTypeInfo);
@@ -143,7 +137,7 @@ public class JsonSerDe extends AbstractSerDe {
         BinaryEncoding.valueOf(binaryEncodingStr.toUpperCase());
 
     this.jsonReader = new HiveJsonReader(this.soi, tsParser);
-    this.jsonWriter = new HiveJsonWriter(this.binaryEncoding, columnNames);
+    this.jsonWriter = new HiveJsonWriter(this.binaryEncoding, getColumnNames());
 
     this.jsonReader.setBinaryEncoding(binaryEncoding);
     this.jsonReader.enable(HiveJsonReader.Feature.COL_INDEX_PARSING);
@@ -154,11 +148,17 @@ public class JsonSerDe extends AbstractSerDe {
 
     final String ignoreExtras = tbl.getProperty(IGNORE_EXTRA, "true");
     if (Boolean.parseBoolean(ignoreExtras)) {
-      this.jsonReader.enable(HiveJsonReader.Feature.IGNORE_UKNOWN_FIELDS);
+      this.jsonReader.enable(HiveJsonReader.Feature.IGNORE_UNKNOWN_FIELDS);
     }
 
-    LOG.debug("JSON Struct Reader: {}", jsonReader);
-    LOG.debug("JSON Struct Writer: {}", jsonWriter);
+    final String stringifyComplex = tbl.getProperty(STRINGIFY_COMPLEX, "true");
+    if (Boolean.parseBoolean(stringifyComplex)) {
+      this.jsonReader.enable(HiveJsonReader.Feature.STRINGIFY_COMPLEX_FIELDS);
+    }
+
+    log.debug("Initialized SerDe {}", this);
+    log.debug("JSON Struct Reader: {}", jsonReader);
+    log.debug("JSON Struct Writer: {}", jsonWriter);
   }
 
   /**
@@ -187,7 +187,7 @@ public class JsonSerDe extends AbstractSerDe {
       return jsonReader.parseStruct(
           new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
     } catch (Exception e) {
-      LOG.debug("Problem parsing JSON text [{}].", t, e);
+      log.debug("Problem parsing JSON text [{}]", t, e);
       throw new SerDeException(e);
     }
   }
@@ -217,12 +217,6 @@ public class JsonSerDe extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics yet
-    return null;
   }
 
   public StructTypeInfo getTypeInfo() {

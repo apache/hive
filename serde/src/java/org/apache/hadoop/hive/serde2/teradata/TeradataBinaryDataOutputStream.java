@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.serde2.teradata;
 import org.apache.commons.io.EndianUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -49,8 +47,6 @@ import static java.lang.String.format;
  * specific types like VARCHAR, CHAR, TIMESTAMP, DATE...
  */
 public class TeradataBinaryDataOutputStream extends ByteArrayOutputStream {
-
-  private static final Log LOG = LogFactory.getLog(TeradataBinaryDataOutputStream.class);
 
   private static final int TIMESTAMP_NO_NANOS_BYTE_NUM = 19;
 
@@ -169,7 +165,7 @@ public class TeradataBinaryDataOutputStream extends ByteArrayOutputStream {
    * Write CHAR(N).
    * The representation of char in Teradata binary format is:
    * the byte number to read is based on the [charLength] * [bytePerChar] &lt;- totalLength,
-   * bytePerChar is decided by the charset: LATAIN charset is 2 bytes per char and UNICODE charset is 3 bytes per char.
+   * bytePerChar is decided by the charset: LATIN charset is 2 bytes per char and UNICODE charset is 3 bytes per char.
    * the null char will use space to pad.
    *
    * @param writable the writable

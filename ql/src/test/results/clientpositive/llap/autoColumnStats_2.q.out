@@ -477,6 +477,7 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14
 POSTHOOK: Output: default@nzhang_part14@value= 
 POSTHOOK: Output: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
@@ -533,6 +534,7 @@ POSTHOOK: query: insert into table nzhang_part14 partition(value)
 select key, value from src5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src5
+POSTHOOK: Output: default@nzhang_part14
 POSTHOOK: Output: default@nzhang_part14@value=val_165
 POSTHOOK: Output: default@nzhang_part14@value=val_238
 POSTHOOK: Output: default@nzhang_part14@value=val_27
@@ -1216,6 +1218,7 @@ select key, value, ds, hr from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part14
 POSTHOOK: Output: default@nzhang_part14@ds=1/hr=2
 POSTHOOK: Output: default@nzhang_part14@ds=1/hr=3
 POSTHOOK: Output: default@nzhang_part14@ds=2/hr=1
@@ -1622,3 +1625,41 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
+PREHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@a_n3
+POSTHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@a_n3
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}
+PREHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@a_n3
+POSTHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@a_n3
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}

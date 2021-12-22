@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
@@ -68,6 +69,10 @@ public class UDFToLong extends UDF {
   public UDFToLong() {
   }
 
+  @Override
+  public UDFMethodResolver getResolver() {
+    return new TimestampCastRestrictorResolver(super.getResolver());
+  }
   /**
    * Convert from void to a long. This is called for CAST(... AS BIGINT)
    *
@@ -217,7 +222,7 @@ public class UDFToLong extends UDF {
     if (i == null) {
       return null;
     } else {
-      longWritable.set(i.getSeconds());
+      longWritable.set(UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond());
       return longWritable;
     }
   }

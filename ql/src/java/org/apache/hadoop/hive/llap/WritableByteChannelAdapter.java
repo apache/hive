@@ -54,7 +54,7 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
   private ChannelFutureListener writeListener = new ChannelFutureListener() {
     @Override
     public void operationComplete(ChannelFuture future) {
-      //Asynch write completed
+      //Async write completed
       //Up the semaphore
       writeResources.release();
 
@@ -93,7 +93,7 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
     int size = src.remaining();
     //Down the semaphore or block until available
     takeWriteResources(1);
-    ByteBuf buf = allocator.buffer(size);
+    ByteBuf buf = allocator.getAsByteBufAllocator().buffer(size);
     buf.writeBytes(src);
     chc.writeAndFlush(buf).addListener(writeListener);
     return size;

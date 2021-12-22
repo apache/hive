@@ -34,52 +34,51 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class CustomSerDe4 extends CustomSerDe2 {
 
-    @Override
-    public void initialize(Configuration conf, Properties tbl)
-        throws SerDeException {
+  @Override
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-      // Read the configuration parameters
-      String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-      String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-      final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-          .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-      // The input column can either be a string or a list of integer values.
-      List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-      List<TypeInfo> columnTypes = TypeInfoUtils
-          .getTypeInfosFromTypeString(columnTypeProperty);
-      assert columnNames.size() == columnTypes.size();
-      numColumns = columnNames.size();
+    // Read the configuration parameters
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
+    // The input column can either be a string or a list of integer values.
+    List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
+    List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+    assert columnNames.size() == columnTypes.size();
+    numColumns = columnNames.size();
 
-      // No exception for type checking for simplicity
-      // Constructing the row ObjectInspector:
-      // The row consists of string columns, double columns, some union<int, double> columns only.
-      List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(
-          columnNames.size());
-      for (int c = 0; c < numColumns; c++) {
-        if (columnTypes.get(c).equals(TypeInfoFactory.stringTypeInfo)) {
-          columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-        }
-        else if (columnTypes.get(c).equals(TypeInfoFactory.doubleTypeInfo)) {
-          columnOIs.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
-        }
-        else {
+    // No exception for type checking for simplicity
+    // Constructing the row ObjectInspector:
+    // The row consists of string columns, double columns, some union<int,
+    // double> columns only.
+    List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(columnNames.size());
+    for (int c = 0; c < numColumns; c++) {
+      if (columnTypes.get(c).equals(TypeInfoFactory.stringTypeInfo)) {
+        columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      } else if (columnTypes.get(c).equals(TypeInfoFactory.doubleTypeInfo)) {
+        columnOIs.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
+      } else {
 
-          // Blindly add this as a union type containing int and double!
-          // Should be sufficient for the test case.
-         List<ObjectInspector> unionOI =  new ArrayList<ObjectInspector>();
-         unionOI.add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
-         unionOI.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
-          columnOIs.add(ObjectInspectorFactory.getStandardUnionObjectInspector(unionOI));
-        }
-      }
-      // StandardList uses ArrayList to store the row.
-      rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, columnOIs);
-
-      // Constructing the row object, etc, which will be reused for all rows.
-      row = new ArrayList<String>(numColumns);
-      for (int c = 0; c < numColumns; c++) {
-        row.add(null);
+        // Blindly add this as a union type containing int and double!
+        // Should be sufficient for the test case.
+        List<ObjectInspector> unionOI = new ArrayList<ObjectInspector>();
+        unionOI.add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+        unionOI.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
+        columnOIs.add(ObjectInspectorFactory.getStandardUnionObjectInspector(unionOI));
       }
     }
+    // StandardList uses ArrayList to store the row.
+    rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, columnOIs);
+
+    // Constructing the row object, etc, which will be reused for all rows.
+    row = new ArrayList<String>(numColumns);
+    for (int c = 0; c < numColumns; c++) {
+      row.add(null);
+    }
+  }
 
 }

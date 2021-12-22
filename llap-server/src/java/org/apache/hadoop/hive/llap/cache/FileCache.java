@@ -21,19 +21,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Function;
+import org.apache.hadoop.hive.common.io.CacheTag;
 
 /** Class used for a single file in LowLevelCacheImpl, etc. */
 class FileCache<T> {
   private static final int EVICTED_REFCOUNT = -1, EVICTING_REFCOUNT = -2;
   private final T cache;
+  private final Object fileKey;
   private final AtomicInteger refCount = new AtomicInteger(0);
+  private final CacheTag tag;
 
-  private FileCache(T value) {
+  private FileCache(T value, Object fileKey, CacheTag tag) {
     this.cache = value;
+    this.fileKey = fileKey;
+    this.tag = tag;
   }
 
   public T getCache() {
     return cache;
+  }
+
+  public CacheTag getTag() {
+    return tag;
   }
 
   boolean incRef() {
@@ -71,20 +80,24 @@ class FileCache<T> {
     assert result;
   }
 
+  public Object getFileKey() {
+    return fileKey;
+  }
+
   /**
    * All this mess is necessary because we want to be able to remove sub-caches for fully
    * evicted files. It may actually be better to have non-nested map with object keys?
    */
   public static <T> FileCache<T> getOrAddFileSubCache(
       ConcurrentHashMap<Object, FileCache<T>> cache, Object fileKey,
-      Function<Void, T> createFunc) {
+      Function<Void, T> createFunc, CacheTag tag) {
     FileCache<T> newSubCache = null;
     while (true) { // Overwhelmingly executes once.
       FileCache<T> subCache = cache.get(fileKey);
       if (subCache != null) {
         if (subCache.incRef()) return subCache; // Main path - found it, incRef-ed it.
         if (newSubCache == null) {
-          newSubCache = new FileCache<T>(createFunc.apply(null));
+          newSubCache = new FileCache<T>(createFunc.apply(null), fileKey, tag);
           newSubCache.incRef();
         }
         // Found a stale value we cannot incRef; try to replace it with new value.
@@ -93,7 +106,7 @@ class FileCache<T> {
       }
       // No value found.
       if (newSubCache == null) {
-        newSubCache = new FileCache<T>(createFunc.apply(null));
+        newSubCache = new FileCache<T>(createFunc.apply(null), fileKey, tag);
         newSubCache.incRef();
       }
       FileCache<T> oldSubCache = cache.putIfAbsent(fileKey, newSubCache);

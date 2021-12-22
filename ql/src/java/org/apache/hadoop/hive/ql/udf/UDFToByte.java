@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
@@ -66,6 +67,11 @@ public class UDFToByte extends UDF {
   private final ByteWritable byteWritable = new ByteWritable();
 
   public UDFToByte() {
+  }
+
+  @Override
+  public UDFMethodResolver getResolver() {
+    return new TimestampCastRestrictorResolver(super.getResolver());
   }
 
   /**
@@ -205,7 +211,7 @@ public class UDFToByte extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final byte byteValue = (byte) longValue;
       if (byteValue != longValue) {
         return null;

@@ -27,9 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 
@@ -37,7 +35,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
  * Base class for aggregation expressions.
  */
 public abstract class VectorAggregateExpression  implements Serializable {
-
   private static final long serialVersionUID = 1L;
 
   protected final VectorAggregationDesc vecAggrDesc;
@@ -144,6 +141,18 @@ public abstract class VectorAggregateExpression  implements Serializable {
   @Override
   public String toString() {
     return vecAggrDesc.toString();
+  }
+
+  /**
+   * Optional method to implement in VectorAggregateExpression instances. It's called for all
+   * aggregators from ProcessingMode, when VectorGroupByOperator is closed (before flush) or a
+   * write/flush happens. Calling this method properly before writing rows is the responsibility of
+   * VectorGroupByOperator.
+   *
+   * @param aggregationBuffer
+   * @param aborted
+   */
+  public void finish(AggregationBuffer aggregationBuffer, boolean aborted) {
   }
 }
 

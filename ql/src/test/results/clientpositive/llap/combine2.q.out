@@ -31,6 +31,7 @@ select * from (
    select key, '2010-04-21 09:45:00' value from src where key = 19) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine2_n0
 POSTHOOK: Output: default@combine2_n0@value=2010-04-21 09%3A45%3A00
 POSTHOOK: Output: default@combine2_n0@value=val_0
 POSTHOOK: Output: default@combine2_n0@value=val_2
@@ -226,7 +227,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1000 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

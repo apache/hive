@@ -54,17 +54,11 @@
           <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.pac4j</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-serde</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -106,7 +100,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
        <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
@@ -119,6 +112,16 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -249,6 +252,7 @@
                       <exclude>com.zaxxer:*</exclude>
                       <exclude>io.airlift:*</exclude>
                       <exclude>io.dropwizard.metrics:*</exclude>
+                      <exclude>io.netty:*</exclude>
                       <exclude>javax.activation:*</exclude>
                       <exclude>javax.inject:*</exclude>
                       <exclude>javax.jdo:*</exclude>
@@ -357,10 +361,6 @@
                     <relocation>
                       <pattern>javolution</pattern>
                       <shadedPattern>org.apache.hive.javolution</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>io.netty</pattern>
-                      <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                     </relocation>
                   </relocations>
                 </configuration>

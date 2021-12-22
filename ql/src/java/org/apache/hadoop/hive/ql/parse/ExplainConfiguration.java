@@ -53,6 +53,7 @@ public class ExplainConfiguration {
   private boolean locks = false;
   private boolean ast = false;
   private boolean debug = false;
+  private boolean ddl = false;
 
   private Path explainRootPath;
   private Map<String, Long> opIdToRuntimeNumRows;
@@ -205,5 +206,13 @@ public class ExplainConfiguration {
 
   public void setAst(boolean ast) {
     this.ast = ast;
+  }
+
+  public void setDDL(boolean ddl) {
+    this.ddl = ddl;
+  }
+
+  public boolean isDDL() {
+    return this.ddl;
   }
 }

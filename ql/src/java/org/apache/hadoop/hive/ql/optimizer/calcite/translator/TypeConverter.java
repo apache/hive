@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.Unsu
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -274,32 +273,7 @@ public class TypeConverter {
     throw new CalciteSemanticException("Union type is not supported", UnsupportedFeature.Union_type);
   }
 
-  /**
-   * This method exists because type information for CHAR literals
-   * is encoded within the literal value itself. The reason is that
-   * Calcite considers any character literal as CHAR type by default,
-   * while Hive is more flexible and may consider them STRING, VARCHAR,
-   * or CHAR.
-   */
   public static TypeInfo convertLiteralType(RexLiteral literal) {
-    if (literal.getType().getSqlTypeName() == SqlTypeName.CHAR) {
-      HiveNlsString string = (HiveNlsString) RexLiteral.value(literal);
-      if (string == null) {
-        // Original type
-        return TypeConverter.convertPrimitiveType(literal.getType());
-      }
-      // Interpret
-      switch (string.interpretation) {
-        case STRING:
-          return TypeInfoFactory.stringTypeInfo;
-        case VARCHAR:
-          return TypeInfoFactory.getVarcharTypeInfo(
-              literal.getType().getPrecision());
-        case CHAR:
-          return TypeInfoFactory.getCharTypeInfo(
-              literal.getType().getPrecision());
-      }
-    }
     return TypeConverter.convertPrimitiveType(literal.getType());
   }
 

@@ -189,8 +189,8 @@ final public class OrcStruct implements Writable {
     }
 
     OrcStructInspector(StructTypeInfo info) {
-      ArrayList<String> fieldNames = info.getAllStructFieldNames();
-      ArrayList<TypeInfo> fieldTypes = info.getAllStructFieldTypeInfos();
+      List<String> fieldNames = info.getAllStructFieldNames();
+      List<TypeInfo> fieldTypes = info.getAllStructFieldTypeInfos();
       fields = new ArrayList<StructField>(fieldNames.size());
       for(int i=0; i < fieldNames.size(); ++i) {
         fields.add(new Field(fieldNames.get(i),

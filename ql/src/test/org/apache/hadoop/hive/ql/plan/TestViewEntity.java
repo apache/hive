@@ -271,4 +271,30 @@ public class TestViewEntity {
 
   }
 
+  /**
+   * Verify create/alter view on another view's underlying table is always indirect
+   * direct and indirect inputs.
+   * @throws CommandProcessorException
+   */
+  @Test
+  public void alterView() throws CommandProcessorException {
+
+    driver.run("create table test_table (id int)");
+    driver.run("create view test_view as select * from test_table");
+
+
+    driver.compile("create view test_view_1 as select * from test_view", true);
+    assertEquals("default@test_view", CheckInputReadEntity.readEntities[0].getName());
+    assertTrue("default@test_view", CheckInputReadEntity.readEntities[0].isDirect());
+    assertEquals("default@test_table", CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("default@test_table", CheckInputReadEntity.readEntities[1].isDirect());
+
+    driver.run("create view test_view_1 as select * from test_view");
+
+    driver.compile("alter view test_view_1 as select * from test_view", true);
+    assertEquals("default@test_view", CheckInputReadEntity.readEntities[0].getName());
+    assertTrue("default@test_view", CheckInputReadEntity.readEntities[0].isDirect());
+    assertEquals("default@test_table", CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("default@test_table", CheckInputReadEntity.readEntities[1].isDirect());
+  }
 }

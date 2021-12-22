@@ -57,7 +57,7 @@ public class JDBCSortPushDownRule extends RelOptRule {
     final Sort sort = call.rel(0);
     final HiveJdbcConverter conv = call.rel(1);
 
-    for (RexNode currCall : sort.getChildExps()) {
+    for (RexNode currCall : sort.getSortExps()) {
       if (!JDBCRexCallValidator.isValidJdbcOperation(currCall, conv.getJdbcDialect())) {
         return false;
       }

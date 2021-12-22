@@ -609,6 +609,7 @@ PREHOOK: Output: default@all100kjson_textfile_orc
 POSTHOOK: query: INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@all100kjson_textfile_orc
 POSTHOOK: Output: default@all100kjson_textfile_orc@t=1
 POSTHOOK: Output: default@all100kjson_textfile_orc@t=10
 POSTHOOK: Output: default@all100kjson_textfile_orc@t=11
@@ -1191,6 +1192,7 @@ PREHOOK: Output: default@all100kjson_textfile_orc
 POSTHOOK: query: INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint < 1 and ctinyint > -50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@all100kjson_textfile_orc
 POSTHOOK: Output: default@all100kjson_textfile_orc@t=-1
 POSTHOOK: Output: default@all100kjson_textfile_orc@t=-10
 POSTHOOK: Output: default@all100kjson_textfile_orc@t=-11

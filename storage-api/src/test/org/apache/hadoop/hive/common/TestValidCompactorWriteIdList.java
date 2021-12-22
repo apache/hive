@@ -78,7 +78,7 @@ public class TestValidCompactorWriteIdList {
     Assert.assertEquals(ValidWriteIdList.RangeResponse.NONE, rsp);
   }
   @Test
-  public void exceptionsAbveHighWaterMark() {
+  public void exceptionsAboveHighWaterMark() {
     BitSet bitSet = new BitSet(4);
     bitSet.set(0, 4);
     ValidWriteIdList writeIds = new ValidCompactorWriteIdList(tableName, new long[]{8, 11, 17, 29}, bitSet, 15);

@@ -17,10 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
-
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -73,18 +71,12 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     dbcpDs.setDefaultReadOnly(false);
     dbcpDs.setDefaultAutoCommit(true);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
-    switch (dbProduct){
-      case MYSQL:
-        dbcpDs.setConnectionProperties("allowMultiQueries=true");
-        dbcpDs.setConnectionProperties("rewriteBatchedStatements=true");
-        break;
-      case POSTGRES:
-        dbcpDs.setConnectionProperties("reWriteBatchedInserts=true");
-        break;
-    default:
-      break;
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
+    Map<String, String> props = dbProduct.getDataSourceProperties();
+    for (Map.Entry<String, String> kv : props.entrySet()) {
+      dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue());
     }
+
     int maxPoolSize = hdpConfig.getInt(
             MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getVarname(),
             ((Long) MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getDefaultVal()).intValue());
@@ -123,8 +115,9 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
     objectPool.setLifo(lifo);
 
-    if (dbProduct == MYSQL) {
-      poolableConnFactory.setValidationQuery("SET @@session.sql_mode=ANSI_QUOTES");
+    String stmt = dbProduct.getPrepareTxnStmt();
+    if (stmt != null) {
+      poolableConnFactory.setValidationQuery(stmt);
     }
     return new PoolingDataSource(objectPool);
   }

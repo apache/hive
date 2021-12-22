@@ -77,7 +77,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   protected String fullyQualifiedTableName;
   protected Map<String, List<RecordUpdater>> updaters = new HashMap<>();
   protected Map<String, Path> partitionPaths = new HashMap<>();
-  protected Set<String> addedPartitions = new HashSet<>();
+  protected Set<String> updatedPartitions = new HashSet<>();
   // input OI includes table columns + partition columns
   protected StructObjectInspector inputRowObjectInspector;
   // output OI strips off the partition columns and retains other columns
@@ -393,6 +393,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       entry.getValue().clear();
     }
     updaters.clear();
+    updatedPartitions.clear();
     if (LOG.isDebugEnabled()) {
       logStats("Stats after close:");
     }
@@ -493,9 +494,12 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
+  /**
+   * @return the list of newly added or updated partitions.
+   */
   @Override
   public Set<String> getPartitions() {
-    return addedPartitions;
+    return updatedPartitions;
   }
 
   protected RecordUpdater createRecordUpdater(List<String> partitionValues, final Path partitionPath,
@@ -581,16 +585,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
           destLocation = new Path(table.getSd().getLocation());
         } else {
           PartitionInfo partitionInfo = conn.createPartitionIfNotExists(partitionValues);
-          // collect the newly added partitions. connection.commitTransaction() will report the dynamically added
-          // partitions to TxnHandler
-          if (!partitionInfo.isExists()) {
-            addedPartitions.add(partitionInfo.getName());
-          } else {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Partition {} already exists for table {}",
-                  partitionInfo.getName(), fullyQualifiedTableName);
-            }
-          }
+          // collect the newly added/updated partitions. connection.commitTransaction() will report the dynamically
+          // added partitions to TxnHandler
+          updatedPartitions.add(partitionInfo.getName());
           destLocation = new Path(partitionInfo.getPartitionLocation());
         }
         partitionPaths.put(key, destLocation);
@@ -642,8 +639,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     LOG.debug("{} [record-updaters: {}, partitions: {}, buffered-records: {} total-records: {} " +
         "buffered-ingest-size: {}, total-ingest-size: {} tenured-memory-usage: {}]", prefix, openRecordUpdaters,
-      partitionPaths.size(), bufferedRecords, conn.getConnectionStats().getRecordsWritten(),
+      partitionPaths.size(), bufferedRecords, conn == null ? 0 : conn.getConnectionStats().getRecordsWritten(),
       LlapUtil.humanReadableByteCount(ingestSizeBytes),
-      LlapUtil.humanReadableByteCount(conn.getConnectionStats().getRecordsSize()), oldGenUsage);
+      LlapUtil.humanReadableByteCount(conn == null ? 0 : conn.getConnectionStats().getRecordsSize()), oldGenUsage);
   }
 }

@@ -1,8 +1,12 @@
+-- Test Incremental rebuild of materialized view with aggregate but without count(*)
+-- when source tables have delete operations since last rebuild.
+
 SET hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
+set hive.acid.direct.insert.enabled=false;
 
 create table cmv_basetable_n5 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 

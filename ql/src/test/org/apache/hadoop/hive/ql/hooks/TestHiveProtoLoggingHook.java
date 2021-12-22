@@ -84,6 +84,7 @@ public class TestHiveProtoLoggingHook {
     QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {};
     queryPlan.setQueryId("test_queryId");
     queryPlan.setQueryStartTime(1234L);
+    queryPlan.setQueryString("SELECT * FROM t WHERE i > 10");
     queryPlan.setRootTasks(new ArrayList<>());
     queryPlan.setInputs(new HashSet<>());
     queryPlan.setOutputs(new HashSet<>());
@@ -208,8 +209,8 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testPostEventLog() throws Exception {
     context.setHookType(HookType.POST_EXEC_HOOK);
-    context.getPerfLogger().PerfLogBegin("test", "LogTest");
-    context.getPerfLogger().PerfLogEnd("test", "LogTest");
+    context.getPerfLogger().perfLogBegin("test", "LogTest");
+    context.getPerfLogger().perfLogEnd("test", "LogTest");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);
@@ -233,6 +234,7 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testFailureEventLog() throws Exception {
     context.setHookType(HookType.ON_FAILURE_HOOK);
+    context.setErrorMessage("test_errormessage");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);
@@ -246,6 +248,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals("test_op_id", event.getOperationId());
 
     assertOtherInfo(event, OtherInfoType.STATUS, Boolean.FALSE.toString());
+    assertOtherInfo(event, OtherInfoType.ERROR_MESSAGE, "test_errormessage");
     assertOtherInfo(event, OtherInfoType.PERF, null);
   }
 
@@ -283,7 +286,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals(2, statusLen);
   }
 
-  private ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
+  public static ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
       throws IOException {
     Path path = new Path(tmpFolder);
     FileSystem fs = path.getFileSystem(conf);

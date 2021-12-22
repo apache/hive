@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
@@ -87,6 +87,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   public int getCurrentStmtId() {
     return  0;
   }
+
+  @Override
+  public long getLatestTxnIdInConflict() throws LockException {
+    return 0;
+  }
+
   @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
     return 0L;
@@ -266,7 +272,17 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public GetOpenTxnsResponse getOpenTxns() throws LockException {
+    return new GetOpenTxnsResponse();
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws LockException {
+    return new ValidReadTxnList();
+  }
+
+  @Override
+  public ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException {
     return new ValidReadTxnList();
   }
 
@@ -419,5 +435,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
     }
     return locks;
+  }
+
+  @Override
+  public String getQueryid() {
+    return null;
   }
 }

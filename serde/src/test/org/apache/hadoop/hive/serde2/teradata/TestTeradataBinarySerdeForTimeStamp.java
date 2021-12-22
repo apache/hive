@@ -49,7 +49,7 @@ public class TestTeradataBinarySerdeForTimeStamp {
   @Test
   public void testTimestampPrecision6() throws Exception {
     props.setProperty(TeradataBinarySerde.TD_TIMESTAMP_PRECISION, "6");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
 
     //2012-10-01 12:00:00.110000
     BytesWritable in = new BytesWritable(
@@ -72,7 +72,7 @@ public class TestTeradataBinarySerdeForTimeStamp {
   @Test
   public void testTimestampPrecision0() throws Exception {
     props.setProperty(TeradataBinarySerde.TD_TIMESTAMP_PRECISION, "0");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
 
     //2012-10-01 12:00:00
     BytesWritable in =
@@ -95,7 +95,7 @@ public class TestTeradataBinarySerdeForTimeStamp {
   @Test
   public void testTimestampPrecision3() throws Exception {
     props.setProperty(TeradataBinarySerde.TD_TIMESTAMP_PRECISION, "3");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
 
     //2012-10-01 12:00:00.345
     BytesWritable in =

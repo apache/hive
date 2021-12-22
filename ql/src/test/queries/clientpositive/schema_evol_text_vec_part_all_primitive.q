@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-23923
 --! qt:dataset:part
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;

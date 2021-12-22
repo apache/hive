@@ -1,0 +1,136 @@
+PREHOOK: query: create table test1 (id int, val string) partitioned by (val2 string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: create table test1 (id int, val string) partitioned by (val2 string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+PREHOOK: query: describe formatted test1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test1
+POSTHOOK: query: describe formatted test1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test1
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+val                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+val2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: alter table test1 add partition (val2='foo')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@test1
+POSTHOOK: query: alter table test1 add partition (val2='foo')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@test1
+POSTHOOK: Output: default@test1@val2=foo
+PREHOOK: query: alter table test1 add partition (val2='bar')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@test1
+POSTHOOK: query: alter table test1 add partition (val2='bar')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@test1
+POSTHOOK: Output: default@test1@val2=bar
+PREHOOK: query: insert into test1 partition (val2='foo') values (1, 'abc')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test1@val2=foo
+POSTHOOK: query: insert into test1 partition (val2='foo') values (1, 'abc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test1@val2=foo
+POSTHOOK: Lineage: test1 PARTITION(val2=foo).id SCRIPT []
+POSTHOOK: Lineage: test1 PARTITION(val2=foo).val SCRIPT []
+PREHOOK: query: insert into test1 partition (val2='bar') values (1, 'def')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test1@val2=bar
+POSTHOOK: query: insert into test1 partition (val2='bar') values (1, 'def')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test1@val2=bar
+POSTHOOK: Lineage: test1 PARTITION(val2=bar).id SCRIPT []
+POSTHOOK: Lineage: test1 PARTITION(val2=bar).val SCRIPT []
+PREHOOK: query: delete from test1 where val2 = 'bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1@val2=bar
+PREHOOK: Output: default@test1@val2=bar
+POSTHOOK: query: delete from test1 where val2 = 'bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1@val2=bar
+POSTHOOK: Output: default@test1@val2=bar
+PREHOOK: query: select '--> hive.optimize.metadataonly=true'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '--> hive.optimize.metadataonly=true'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+--> hive.optimize.metadataonly=true
+PREHOOK: query: select distinct val2 from test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1@val2=bar
+PREHOOK: Input: default@test1@val2=foo
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct val2 from test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1@val2=bar
+POSTHOOK: Input: default@test1@val2=foo
+#### A masked pattern was here ####
+foo
+PREHOOK: query: select '--> hive.optimize.metadataonly=false'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '--> hive.optimize.metadataonly=false'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+--> hive.optimize.metadataonly=false
+PREHOOK: query: select distinct val2 from test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1@val2=bar
+PREHOOK: Input: default@test1@val2=foo
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct val2 from test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1@val2=bar
+POSTHOOK: Input: default@test1@val2=foo
+#### A masked pattern was here ####
+foo

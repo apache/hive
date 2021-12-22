@@ -423,22 +423,18 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       Map<String, String> nameMapping = new HashMap<>();
       final ArrayList<String> keyColNames = Lists.newArrayList();
       final ArrayList<String> valColNames = Lists.newArrayList();
-      keyCols.stream().forEach(exprNodeDesc -> {
+      for (ExprNodeDesc exprNodeDesc : keyCols) {
         keyColNames.add(exprNodeDesc.getExprString());
-        colExprMap
-            .put(Utilities.ReduceField.KEY + "." + exprNodeDesc.getExprString(), exprNodeDesc);
-        nameMapping.put(exprNodeDesc.getExprString(),
-            Utilities.ReduceField.KEY + "." + exprNodeDesc.getName()
-        );
-      });
-      valCols.stream().forEach(exprNodeDesc -> {
+        String key = Utilities.ReduceField.KEY + "." + exprNodeDesc.getExprString();
+        colExprMap.put(key, exprNodeDesc);
+        nameMapping.put(exprNodeDesc.getExprString(), key);
+      }
+      for (ExprNodeDesc exprNodeDesc : valCols) {
         valColNames.add(exprNodeDesc.getExprString());
-        colExprMap
-            .put(Utilities.ReduceField.VALUE + "." + exprNodeDesc.getExprString(), exprNodeDesc);
-        nameMapping.put(exprNodeDesc.getExprString(),
-            Utilities.ReduceField.VALUE + "." + exprNodeDesc.getName()
-        );
-      });
+        String key = Utilities.ReduceField.VALUE + "." + exprNodeDesc.getExprString();
+        colExprMap.put(key, exprNodeDesc);
+        nameMapping.put(exprNodeDesc.getExprString(), key);
+      }
 
 
       // order and null order

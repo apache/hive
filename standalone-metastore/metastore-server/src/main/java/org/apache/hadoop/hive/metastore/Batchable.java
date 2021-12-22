@@ -51,9 +51,10 @@ public abstract class Batchable<I, R> {
       return;
     }
     if (queries == null) {
-      queries = new ArrayList<Query>(1);
+      queries = new ArrayList<>(b.queries);
+    } else {
+      queries.addAll(b.queries);
     }
-    queries.addAll(b.queries);
   }
   public void closeAllQueries() {
     for (Query q : queries) {

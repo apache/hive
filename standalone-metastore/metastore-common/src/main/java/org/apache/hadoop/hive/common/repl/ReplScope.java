@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.repl;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -115,5 +116,25 @@ public class ReplScope implements Serializable {
       return false;
     }
     return excludedTableNamePattern.matcher(tableName).matches();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (! (o instanceof ReplScope)) {
+      return false;
+    }
+
+    ReplScope replScope = (ReplScope)o;
+    return Objects.equals(replScope.excludedTableNames, this.excludedTableNames)
+      && Objects.equals(replScope.includedTableNames, this.includedTableNames)
+      && Objects.equals(replScope.dbName, this.dbName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(dbName, dbNamePattern, includedTableNames, excludedTableNames);
   }
 }

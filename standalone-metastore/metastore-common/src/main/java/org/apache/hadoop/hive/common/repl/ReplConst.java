@@ -44,4 +44,13 @@ public class ReplConst {
    * last event affecting this table.
    */
   public static final String REPL_TARGET_TABLE_PROPERTY = "repl.last.id";
+
+  /**
+   * Database level prop to identify the failover endPoint of the database.
+   * */
+  public static final String REPL_FAILOVER_ENDPOINT = "repl.failover.endpoint";
+
+  public static final String TARGET_OF_REPLICATION = "repl.target.for";
+
+  public static final String REPL_INCOMPATIBLE = "repl.incompatible";
 }

@@ -21,3 +21,20 @@ ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-
 SELECT * FROM timestamp_formats;
 
 DROP TABLE timestamp_formats;
+
+set hive.fetch.task.conversion=none;
+set hive.vectorized.execution.enabled=true;
+
+dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/test_timestamp;
+dfs -copyFromLocal ../../data/files/test_timestamp.csv  ${system:test.tmp.dir}/test_timestamp/;
+
+create table tstable(date_created timestamp)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES ('timestamp.formats'='yyyyMMddHHmmss')
+stored as textfile LOCATION '${system:test.tmp.dir}/test_timestamp';
+
+select * from tstable;
+insert into tstable values("2020-12-25");
+select * from tstable;
+
+drop table tstable;

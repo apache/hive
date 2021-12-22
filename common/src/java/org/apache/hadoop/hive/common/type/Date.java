@@ -17,41 +17,76 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
+import java.time.temporal.ChronoField;
+import java.util.Objects;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
 
 /**
- * This is the internal type for Date.
- * The full qualified input format of Date is "yyyy-MM-dd".
+ * This is the internal type for Date. The full qualified input format of Date
+ * is "uuuu-MM-dd". For example: "2021-02-11".
+ * <table border="2">
+ * <tr>
+ * <th>Field</th>
+ * <th>Format</th>
+ * <th>Description</th>
+ * </tr>
+ * <tr>
+ * <td>Year</td>
+ * <td>uuuu</td>
+ * <td>The proleptic year, such as 2012. This represents the concept of the
+ * year, counting sequentially and using negative numbers.</td>
+ * </tr>
+ * <tr>
+ * <td>Month of Year</td>
+ * <td>MM</td>
+ * <td>The month-of-year, such as March. This represents the concept of the
+ * month within the year. In the default ISO calendar system, this has values
+ * from January (1) to December (12).</td>
+ * </tr>
+ * <tr>
+ * <td>Day of Month</td>
+ * <td>dd</td>
+ * <td>This represents the concept of the day within the month. In the default
+ * ISO calendar system, this has values from 1 to 31 in most months.</td>
+ * </tr>
+ * </table>
+ * <p>
+ * The {@link ChronoField#YEAR} and "uuuu" format string indicate the year. This
+ * is not to be confused with the more common "yyyy" which standard for
+ * "year-of-era" in Java. One important difference is that "year" includes
+ * negative numbers whereas the "year-of-era" value should typically always be
+ * positive.
+ * </p>
+ *
+ * @see {@link ChronoField#YEAR}
+ * @see {@link ChronoField#YEAR_OF_ERA}
  */
 public class Date implements Comparable<Date> {
 
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
-  private static final DateTimeFormatter PARSE_FORMATTER;
-  private static final DateTimeFormatter PRINT_FORMATTER;
-  static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    builder.appendValue(YEAR, 1, 10, SignStyle.NORMAL)
-        .appendLiteral('-')
-        .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL)
-        .appendLiteral('-')
-        .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL);
-    PARSE_FORMATTER = builder.toFormatter().withResolverStyle(ResolverStyle.LENIENT);
-    builder = new DateTimeFormatterBuilder();
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-    PRINT_FORMATTER = builder.toFormatter();
-  }
+
+  private static final DateTimeFormatter PARSE_FORMATTER =
+      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
+          .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
+          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.STRICT);
+
+  private static final DateTimeFormatter PRINT_FORMATTER =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("uuuu-MM-dd")).toFormatter();
 
   private LocalDate localDate;
 
@@ -101,6 +136,10 @@ public class Date implements Comparable<Date> {
     return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
   }
 
+  public long toEpochMilli(ZoneId id) {
+    return localDate.atStartOfDay().atZone(id).toInstant().toEpochMilli();
+  }
+
   public void setYear(int year) {
     localDate = localDate.withYear(year);
   }
@@ -122,16 +161,33 @@ public class Date implements Comparable<Date> {
         Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC).toLocalDate();
   }
 
-  public static Date valueOf(String s) {
-    s = s.trim();
+  /**
+   * Obtains an instance of Date from a text string such as 2021-02-22T09:39:27.
+   * Other supported formats are "2021-02-22T09:39:27Z", "2021-02-22 09:39:27",
+   * "2021-02-22T09:39:27+00:00", "2021-02-22". Any time information is simply
+   * dropped.
+   *
+   * @param text the text to parse, not null
+   * @return The {@code Date} objects parsed from the text
+   * @throws IllegalArgumentException if the text cannot be parsed into a
+   *           {@code Date}
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Date valueOf(final String text) {
+    String s = Objects.requireNonNull(text).trim();
     int idx = s.indexOf(" ");
     if (idx != -1) {
       s = s.substring(0, idx);
+    } else {
+      idx = s.indexOf('T');
+      if (idx != -1) {
+        s = s.substring(0, idx);
+      }
     }
     LocalDate localDate;
     try {
       localDate = LocalDate.parse(s, PARSE_FORMATTER);
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error");
     }
     return new Date(localDate);
@@ -173,6 +229,8 @@ public class Date implements Comparable<Date> {
   /**
    * Return a copy of this object.
    */
+  @Override
+  @SuppressFBWarnings(value = "CN_IMPLEMENTS_CLONE_BUT_NOT_CLONEABLE", justification = "Intended")
   public Object clone() {
     // LocalDateTime is immutable.
     return new Date(this.localDate);

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -61,15 +62,17 @@ final class CommandAuthorizerV1 {
     Hive db = sem.getDb();
     HiveAuthorizationProvider authorizer = ss.getAuthorizer();
 
-    authorizeOperation(op, sem, db, authorizer);
+    authorizeOperation(op, sem, inputs, outputs, db, authorizer);
     authorizeOutputs(op, outputs, db, authorizer);
     authorizeInputs(op, sem, inputs, authorizer);
   }
 
-  private static void authorizeOperation(HiveOperation op, BaseSemanticAnalyzer sem, Hive db,
+  private static void authorizeOperation(HiveOperation op, BaseSemanticAnalyzer sem, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs, Hive db,
       HiveAuthorizationProvider authorizer) throws HiveException {
-    if (op.equals(HiveOperation.CREATEDATABASE)) {
-      authorizer.authorize(op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
+    if (op.equals(HiveOperation.CREATEDATABASE) || op.equals(HiveOperation.ALTERDATABASE_LOCATION)) {
+      authorizer.authorizeDbLevelOperations(op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges(),
+          inputs, outputs);
     } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.CREATETABLE)) {
       authorizer.authorize(db.getDatabase(SessionState.get().getCurrentDatabase()), null,
           HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
@@ -191,10 +194,9 @@ final class CommandAuthorizerV1 {
     // for a select or create-as-select query, populate the partition to column (par2Cols) or
     // table to columns mapping (tab2Cols)
     if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.QUERY)) {
-      SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
-      ParseContext parseCtx = querySem.getParseContext();
+      ParseContext parseCtx = sem.getParseContext();
 
-      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps().entrySet()) {
+      for (Map.Entry<String, TableScanOperator> topOpMap : parseCtx.getTopOps().entrySet()) {
         TableScanOperator tableScanOp = topOpMap.getValue();
         if (!tableScanOp.isInsideView()) {
           Table tbl = tableScanOp.getConf().getTableMetadata();

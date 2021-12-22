@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -79,7 +80,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public static final String CONTEXT_NAME_KEY = "__hive.context.name";
 
   private transient Configuration configuration;
-  protected transient CompilationOpContext cContext;
+  protected CompilationOpContext cContext;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -916,6 +917,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     final int childSize = childOperatorsArray.length;
     if (childSize == 1) {
       childOperatorsArray[0].process(batch, childOperatorsTag[0]);
+      // if that single child is done, this operator is also done
+      if (childOperatorsArray[0].getDone()){
+        setDone(true);
+      }
     } else {
       int childrenDone = 0;
       for (int i = 0; i < childOperatorsArray.length; i++) {
@@ -1542,5 +1547,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
     }
     return true;
+  }
+
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+    for (Operator<? extends OperatorDesc> c : getChildOperators()) {
+      c.replaceTabAlias(oldAlias, newAlias);
+    }
   }
 }

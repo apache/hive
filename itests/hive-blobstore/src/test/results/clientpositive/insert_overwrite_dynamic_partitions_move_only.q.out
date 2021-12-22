@@ -47,6 +47,7 @@ SELECT
 FROM tmp_table_move t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table_move
+POSTHOOK: Output: default@s3_table_move
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10000
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10001
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10002
@@ -104,6 +105,7 @@ SELECT
 FROM tmp_table_move t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table_move
+POSTHOOK: Output: default@s3_table_move
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10000
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10001
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10002

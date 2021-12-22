@@ -54,7 +54,7 @@ public class Log4jQueryCompleteMarker implements Marker {
 
   @Override
   public boolean isInstanceOf(String name) {
-    return false;
+    return EOF_MARKER.equals(name);
   }
 
   @Override

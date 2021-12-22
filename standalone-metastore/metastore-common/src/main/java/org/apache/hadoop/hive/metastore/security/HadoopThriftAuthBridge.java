@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Base64;
@@ -74,7 +75,7 @@ public abstract class HadoopThriftAuthBridge {
 
   // We want to have only one auth bridge.  In the past this was handled by ShimLoader, but since
   // we're no longer using that we'll do it here.
-  private static HadoopThriftAuthBridge self = null;
+  private static volatile HadoopThriftAuthBridge self = null;
 
   public static HadoopThriftAuthBridge getBridge() {
     if (self == null) {
@@ -218,12 +219,16 @@ public abstract class HadoopThriftAuthBridge {
       case DIGEST:
         Token<DelegationTokenIdentifier> t= new Token<>();
         t.decodeFromUrlString(tokenStrForm);
-        saslTransport = new TSaslClientTransport(
-            method.getMechanismName(),
-            null,
-            null, SaslRpcServer.SASL_DEFAULT_REALM,
-            saslProps, new SaslClientCallbackHandler(t),
-            underlyingTransport);
+        try {
+          saslTransport = new TSaslClientTransport(
+              method.getMechanismName(),
+              null,
+              null, SaslRpcServer.SASL_DEFAULT_REALM,
+              saslProps, new SaslClientCallbackHandler(t),
+              underlyingTransport);
+        } catch (TTransportException e) {
+          e.printStackTrace();
+        }
         return new TUGIAssumingTransport(saslTransport, UserGroupInformation.getCurrentUser());
 
       case KERBEROS:
@@ -238,7 +243,7 @@ public abstract class HadoopThriftAuthBridge {
           return UserGroupInformation.getCurrentUser().doAs(
               new PrivilegedExceptionAction<TUGIAssumingTransport>() {
                 @Override
-                public TUGIAssumingTransport run() throws IOException {
+                public TUGIAssumingTransport run() throws IOException, TTransportException {
                   TTransport saslTransport = new TSaslClientTransport(
                     method.getMechanismName(),
                     null,
@@ -302,7 +307,7 @@ public abstract class HadoopThriftAuthBridge {
       }
 
       static String encodeIdentifier(byte[] identifier) {
-        return new String(Base64.getEncoder().encode(identifier));
+        return new String(Base64.getEncoder().encode(identifier), StandardCharsets.UTF_8);
       }
 
       static char[] encodePassword(byte[] password) {
@@ -579,7 +584,7 @@ public abstract class HadoopThriftAuthBridge {
      *
      * This is used on the server side to set the UGI for each specific call.
      */
-    protected class TUGIAssumingProcessor implements TProcessor {
+    protected static class TUGIAssumingProcessor implements TProcessor {
       final TProcessor wrapped;
       DelegationTokenSecretManager secretManager;
       boolean useProxy;
@@ -592,84 +597,88 @@ public abstract class HadoopThriftAuthBridge {
 
 
       @Override
-      public boolean process(final TProtocol inProt, final TProtocol outProt) throws TException {
-        TTransport trans = inProt.getTransport();
-        if (!(trans instanceof TSaslServerTransport)) {
-          throw new TException("Unexpected non-SASL transport " + trans.getClass());
-        }
-        TSaslServerTransport saslTrans = (TSaslServerTransport)trans;
-        SaslServer saslServer = saslTrans.getSaslServer();
-        String authId = saslServer.getAuthorizationID();
-        LOG.debug("Sasl Server AUTH ID: {}", authId);
-        String endUser = authId;
+      public void process(final TProtocol inProt, final TProtocol outProt) throws TException {
+       TTransport trans = inProt.getTransport();
+       if (!(trans instanceof TSaslServerTransport)) {
+         throw new TException("Unexpected non-SASL transport " + trans.getClass());
+       }
+       TSaslServerTransport saslTrans = (TSaslServerTransport)trans;
+       SaslServer saslServer = saslTrans.getSaslServer();
+       String authId = saslServer.getAuthorizationID();
+       LOG.debug("Sasl Server AUTH ID: {}", authId);
+       String endUser = authId;
 
-        Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
-        remoteAddress.set(socket.getInetAddress());
+       Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
+       remoteAddress.set(socket.getInetAddress());
 
-        String mechanismName = saslServer.getMechanismName();
-        userAuthMechanism.set(mechanismName);
-        if (AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(mechanismName)) {
-          remoteUser.set(endUser);
-          return wrapped.process(inProt, outProt);
-        }
+       String mechanismName = saslServer.getMechanismName();
+       userAuthMechanism.set(mechanismName);
+       if (AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(mechanismName)) {
+         remoteUser.set(endUser);
+         wrapped.process(inProt, outProt);
+         return;
+       }
 
-        authenticationMethod.set(AuthenticationMethod.KERBEROS);
-        if(AuthMethod.TOKEN.getMechanismName().equalsIgnoreCase(mechanismName)) {
-          try {
-            TokenIdentifier tokenId = SaslRpcServer.getIdentifier(authId,
-                secretManager);
-            endUser = tokenId.getUser().getUserName();
-            authenticationMethod.set(AuthenticationMethod.TOKEN);
-          } catch (InvalidToken e) {
-            throw new TException(e.getMessage());
-          }
-        }
+       authenticationMethod.set(AuthenticationMethod.KERBEROS);
+       if(AuthMethod.TOKEN.getMechanismName().equalsIgnoreCase(mechanismName)) {
+         try {
+           TokenIdentifier tokenId = SaslRpcServer.getIdentifier(authId,
+               secretManager);
+           endUser = tokenId.getUser().getUserName();
+           authenticationMethod.set(AuthenticationMethod.TOKEN);
+         } catch (InvalidToken e) {
+           throw new TException(e.getMessage());
+         }
+       }
 
-        UserGroupInformation clientUgi = null;
-        try {
-          if (useProxy) {
-            clientUgi = UserGroupInformation.createProxyUser(
-                endUser, UserGroupInformation.getLoginUser());
-            remoteUser.set(clientUgi.getShortUserName());
-            LOG.debug("Set remoteUser: {}", remoteUser.get());
-            return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
+       UserGroupInformation clientUgi = null;
+       try {
+         if (useProxy) {
+           clientUgi = UserGroupInformation.createProxyUser(
+               endUser, UserGroupInformation.getLoginUser());
+           remoteUser.set(clientUgi.getShortUserName());
+           LOG.debug("Set remoteUser: {}", remoteUser.get());
+           clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
 
-              @Override
-              public Boolean run() {
-                try {
-                  return wrapped.process(inProt, outProt);
-                } catch (TException te) {
-                  throw new RuntimeException(te);
-                }
-              }
-            });
-          } else {
-            // use the short user name for the request
-            UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
-            remoteUser.set(endUserUgi.getShortUserName());
-            LOG.debug("Set remoteUser: {}, from endUser: {}", remoteUser.get(),
-                endUser);
-            return wrapped.process(inProt, outProt);
-          }
-        } catch (RuntimeException rte) {
-          if (rte.getCause() instanceof TException) {
-            throw (TException)rte.getCause();
-          }
-          throw rte;
-        } catch (InterruptedException ie) {
-          throw new RuntimeException(ie); // unexpected!
-        } catch (IOException ioe) {
-          throw new RuntimeException(ioe); // unexpected!
-        } finally {
-          if (clientUgi != null) {
-            try {
-              FileSystem.closeAllForUGI(clientUgi);
-            } catch (IOException exception) {
-              LOG.error("Could not clean up file-system handles for UGI: "
-                  + clientUgi, exception);
-            }
-          }
-        }
+             @Override
+             public Boolean run() {
+               try {
+                 wrapped.process(inProt, outProt);
+                 return true;
+               } catch (TException te) {
+                 throw new RuntimeException(te);
+               }
+             }
+           });
+           return;
+         } else {
+           // use the short user name for the request
+           UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
+           remoteUser.set(endUserUgi.getShortUserName());
+           LOG.debug("Set remoteUser: {}, from endUser: {}", remoteUser.get(),
+               endUser);
+           wrapped.process(inProt, outProt);
+           return;
+         }
+       } catch (RuntimeException rte) {
+         if (rte.getCause() instanceof TException) {
+           throw (TException)rte.getCause();
+         }
+         throw rte;
+       } catch (InterruptedException ie) {
+         throw new RuntimeException(ie); // unexpected!
+       } catch (IOException ioe) {
+         throw new RuntimeException(ioe); // unexpected!
+       } finally {
+         if (clientUgi != null) {
+           try {
+             FileSystem.closeAllForUGI(clientUgi);
+           } catch (IOException exception) {
+             LOG.error("Could not clean up file-system handles for UGI: "
+                 + clientUgi, exception);
+           }
+         }
+       }
       }
     }
 
@@ -683,6 +692,7 @@ public abstract class HadoopThriftAuthBridge {
     static class TUGIAssumingTransportFactory extends TTransportFactory {
       private final UserGroupInformation ugi;
       private final TTransportFactory wrapped;
+      private Throwable cause = null;
 
       public TUGIAssumingTransportFactory(TTransportFactory wrapped, UserGroupInformation ugi) {
         assert wrapped != null;
@@ -691,15 +701,34 @@ public abstract class HadoopThriftAuthBridge {
         this.ugi = ugi;
       }
 
-
       @Override
-      public TTransport getTransport(final TTransport trans) {
-        return ugi.doAs(new PrivilegedAction<TTransport>() {
+      public TTransport getTransport(final TTransport trans) throws TTransportException {
+        // We use the null return result to work around no Exception throws clause for UserGroupInformation doAs method.
+        TTransport result = ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
-            return wrapped.getTransport(trans);
+            try {
+              return wrapped.getTransport(trans);
+            } catch (TTransportException e) {
+              cause = e;
+              return null;
+            } catch (RuntimeException re) {
+              /*
+               * One cause can be:
+               *    org.apache.thrift.transport.TSaslTransportException: No data or no sasl data in the stream
+               * Others are possible.
+               *
+               * Get rid of RuntimeException.
+               */
+              cause = re.getCause();
+              return null;
+            }
           }
         });
+        if (result == null) {
+          throw new TTransportException(cause);
+        }
+        return result;
       }
     }
   }

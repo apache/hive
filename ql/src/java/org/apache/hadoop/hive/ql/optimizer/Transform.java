@@ -42,15 +42,15 @@ public abstract class Transform {
   
   public void beginPerfLogging() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
   }
 
   public void endPerfLogging() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
   }
   public void endPerfLogging(String additionalInfo) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-	perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, additionalInfo);
+	perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, additionalInfo);
   }  
 }

@@ -424,7 +424,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 POSTHOOK: Output: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
@@ -463,22 +463,21 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t9`.`plan_key`, `t9`.`project_key`
+OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t8`.`plan_key`, `t8`.`project_key`
 FROM (SELECT `t4`.`plan_key`, `t6`.`project_key`
 FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
 FROM (SELECT `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
 FROM `default`.`l3_monthly_dw_dimplan`
-WHERE `idp_data_date` = DATE '2017-12-28' AND `finplan_detail_object_id` IS NOT NULL AND `l3_snapshot_number` IS NOT NULL) AS `t0`
+WHERE `idp_data_date` = DATE '2017-12-28' AND (`finplan_detail_object_id` IS NOT NULL AND `l3_snapshot_number` IS NOT NULL)) AS `t0`
 RIGHT JOIN ((SELECT `plan_detail_object_id`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
-WHERE `project_object_id` = 7147200) AS `t2`,
-(SELECT `l3_snapshot_number`
+WHERE `project_object_id` = 7147200) AS `t2`, (SELECT `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
 LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
-WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200 AND `l3_snapshot_number` IS NOT NULL) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
+WHERE `idp_data_date` = DATE '2017-12-28' AND (`project_object_id` = 7147200 AND `l3_snapshot_number` IS NOT NULL)) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
 ORDER BY `t4`.`plan_key`, `t6`.`project_key`
-LIMIT 5) AS `t9`
+LIMIT 5) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -565,8 +564,6 @@ STAGE PLANS:
                                     sort order: ++
                                     Statistics: Num rows: 30 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                                     tag: -1
-                                    TopN: 5
-                                    TopN Hash Memory Usage: 0.1
                                     auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -627,7 +624,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -844,7 +841,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
 l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
@@ -886,7 +883,7 @@ POSTHOOK: Input: default@l3_monthly_dw_dimplan
 7147200	195775	27114
 7147200	234349	27114
 7147200	350519	27114
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
@@ -925,22 +922,21 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t9`.`plan_key`, `t9`.`project_key`
+OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t8`.`plan_key`, `t8`.`project_key`
 FROM (SELECT `t4`.`plan_key`, `t6`.`project_key`
 FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
 FROM (SELECT `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
 FROM `default`.`l3_monthly_dw_dimplan`
-WHERE `idp_data_date` = DATE '2017-12-28' AND `finplan_detail_object_id` IS NOT NULL AND `l3_snapshot_number` IS NOT NULL) AS `t0`
+WHERE `idp_data_date` = DATE '2017-12-28' AND (`finplan_detail_object_id` IS NOT NULL AND `l3_snapshot_number` IS NOT NULL)) AS `t0`
 RIGHT JOIN ((SELECT `plan_detail_object_id`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
-WHERE `project_object_id` = 7147200) AS `t2`,
-(SELECT `l3_snapshot_number`
+WHERE `project_object_id` = 7147200) AS `t2`, (SELECT `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
 LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
-WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200 AND `l3_snapshot_number` IS NOT NULL) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
+WHERE `idp_data_date` = DATE '2017-12-28' AND (`project_object_id` = 7147200 AND `l3_snapshot_number` IS NOT NULL)) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
 ORDER BY `t4`.`plan_key`, `t6`.`project_key`
-LIMIT 5) AS `t9`
+LIMIT 5) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1027,8 +1023,6 @@ STAGE PLANS:
                                     sort order: ++
                                     Statistics: Num rows: 30 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                                     tag: -1
-                                    TopN: 5
-                                    TopN Hash Memory Usage: 0.1
                                     auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1089,7 +1083,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: bigint)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1306,7 +1300,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[54][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
 l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
@@ -1431,7 +1425,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int), _col2 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1530,7 +1524,7 @@ POSTHOOK: query: explain extended select col_1, col_2, col_3 from test_table whe
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(2 AS INTEGER) AS `col_1`, `col_2`, `col_3`
+OPTIMIZED SQL: SELECT CAST(2 AS INT) AS `col_1`, `col_2`, `col_3`
 FROM (SELECT `col_2`, `col_3`
 FROM `default`.`test_table`
 WHERE `col_1` = 2
@@ -1574,7 +1568,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

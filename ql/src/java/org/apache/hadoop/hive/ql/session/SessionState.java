@@ -57,6 +57,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -73,7 +74,10 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -94,6 +98,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -133,6 +139,11 @@ public class SessionState implements ISessionAuthState{
   static final String INFO_FILE_NAME = "inuse.info";
 
   /**
+   *
+   */
+  private final ConcurrentHashMap<String, Map<Object, Object>> cache = new ConcurrentHashMap<>();
+
+  /**
    * Concurrent since SessionState is often propagated to workers in thread pools
    */
   private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
@@ -140,6 +151,9 @@ public class SessionState implements ISessionAuthState{
       new ConcurrentHashMap<>();
   private final Map<String, TempTable> tempPartitions =
       new ConcurrentHashMap<>();
+
+  // Prepared statement plans
+  private final Map<String, SemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -155,6 +169,11 @@ public class SessionState implements ISessionAuthState{
    * silent mode.
    */
   protected boolean isSilent;
+
+  /**
+   * silent mode.
+   */
+  protected boolean isQtestLogging;
 
   /**
    * verbose mode
@@ -252,15 +271,12 @@ public class SessionState implements ISessionAuthState{
 
   private SparkSession sparkSession;
 
+  private final Map<Class, Object> dynamicVars = new HashMap<>();
+
   /**
    * Gets information about HDFS encryption
    */
   private Map<URI, HadoopShims.HdfsEncryptionShim> hdfsEncryptionShims = Maps.newHashMap();
-
-  /**
-   * Cache for Erasure Coding shims.
-   */
-  private Map<URI, HadoopShims.HdfsErasureCodingShim> erasureCodingShims;
 
   private final String userName;
 
@@ -304,6 +320,8 @@ public class SessionState implements ISessionAuthState{
 
   private final Registry registry;
 
+  private final CleanupService cleanupService;
+
   /**
    * Used to cache functions in use for a query, during query planning
    * and is later used for function usage authorization.
@@ -327,12 +345,30 @@ public class SessionState implements ISessionAuthState{
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  private Hive hiveDb;
+  private final Map<String, QueryState> queryStateMap = new HashMap<>();
+
+  public QueryState getQueryState(String queryId) {
+    return queryStateMap.get(queryId);
+  }
+
+  public void addQueryState(String queryId, QueryState queryState) {
+    queryStateMap.put(queryId, queryState);
+  }
+
+  public void removeQueryState(String queryId) {
+    queryStateMap.remove(queryId);
+  }
+
   @Override
   public HiveConf getConf() {
     return sessionConf;
   }
 
   public void setConf(HiveConf conf) {
+    if (hiveDb != null) {
+      hiveDb.setConf(conf);
+    }
     this.sessionConf = conf;
   }
 
@@ -368,6 +404,10 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
+  public boolean getIsQtestLogging() {
+    return isQtestLogging;
+  }
+
   public boolean isHiveServerQuery() {
     return this.isHiveServerQuery;
   }
@@ -377,6 +417,10 @@ public class SessionState implements ISessionAuthState{
       sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
+  }
+
+  public void setIsQtestLogging(boolean isQtestLogging) {
+    this.isQtestLogging = isQtestLogging;
   }
 
   public ReentrantLock getCompileLock() {
@@ -392,11 +436,11 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+    this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
   }
 
   public boolean getIsUsingThriftJDBCBinarySerDe() {
-	return isUsingThriftJDBCBinarySerDe;
+    return isUsingThriftJDBCBinarySerDe;
   }
 
   public void setIsHiveServerQuery(boolean isHiveServerQuery) {
@@ -408,6 +452,10 @@ public class SessionState implements ISessionAuthState{
   }
 
   public SessionState(HiveConf conf, String userName) {
+    this(conf, userName, SyncCleanupService.INSTANCE);
+  }
+
+  public SessionState(HiveConf conf, String userName, CleanupService cleanupService) {
     this.sessionConf = conf;
     this.userName = userName;
     this.registry = new Registry(false);
@@ -434,6 +482,7 @@ public class SessionState implements ISessionAuthState{
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
     killQuery = new NullKillQuery();
+    this.cleanupService = cleanupService;
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
   }
@@ -525,7 +574,7 @@ public class SessionState implements ISessionAuthState{
   }
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     try {
-      return getHdfsEncryptionShim(FileSystem.get(sessionConf));
+      return getHdfsEncryptionShim(FileSystem.get(sessionConf), sessionConf);
     }
     catch(HiveException hiveException) {
       throw hiveException;
@@ -535,20 +584,31 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
-  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
-    if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
-      try {
-        if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShims.put(fs.getUri(), ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf));
-        } else {
-          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
-        }
-      } catch (Exception e) {
-        throw new HiveException(e);
-      }
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs, HiveConf conf) throws HiveException {
+
+    if (!"hdfs".equals(fs.getUri().getScheme())) {
+      LOG.warn("Unable to get hdfs encryption shim, because FileSystem URI schema is not hdfs. Returning null. "
+          + "FileSystem URI: " + fs.getUri());
+      return null;
     }
 
-    return hdfsEncryptionShims.get(fs.getUri());
+    if (conf.getBoolVar(ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON)) {
+      if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
+          hdfsEncryptionShims.put(fs.getUri(), getHdfsEncryptionShimInternal(fs));
+      }
+      return hdfsEncryptionShims.get(fs.getUri());
+
+    } else { // skip the cache
+      return getHdfsEncryptionShimInternal(fs);
+    }
+  }
+
+  private HadoopShims.HdfsEncryptionShim getHdfsEncryptionShimInternal(FileSystem fs) throws HiveException {
+    try {
+      return ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
@@ -874,6 +934,10 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
+  public CleanupService getCleanupService() {
+    return cleanupService;
+  }
+
   private void dropSessionPaths(Configuration conf) throws IOException {
     if (hdfsSessionPath != null) {
       if (hdfsSessionPathLockFile != null) {
@@ -900,9 +964,7 @@ public class SessionState implements ISessionAuthState{
       } else {
         fs = path.getFileSystem(conf);
       }
-      fs.cancelDeleteOnExit(path);
-      fs.delete(path, true);
-      LOG.info("Deleted directory: {} on fs with scheme {}", path, fs.getScheme());
+      cleanupService.deleteRecursive(path, fs);
     } catch (IllegalArgumentException | UnsupportedOperationException | IOException e) {
       LOG.error("Failed to delete path at {} on fs with scheme {}", path,
           (fs == null ? "Unknown-null" : fs.getScheme()), e);
@@ -977,7 +1039,7 @@ public class SessionState implements ISessionAuthState{
     authorizerV2.applyAuthorizationConfigPolicy(sessionConf);
     // update config in Hive thread local as well and init the metastore client
     try {
-      Hive.get(sessionConf).getMSC();
+      Hive.getWithoutRegisterFns(sessionConf).getMSC();
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
@@ -1175,6 +1237,17 @@ public class SessionState implements ISessionAuthState{
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
+    public boolean getIsQtestLogging() {
+      SessionState ss = SessionState.get();
+      // use the session or the one supplied in constructor
+      return (ss != null) ? ss.getIsQtestLogging() : false;
+    }
+
     /**
      * Logs into the log file.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
@@ -1266,7 +1339,9 @@ public class SessionState implements ISessionAuthState{
      * @param detail Extra detail to log which will be not printed if null
      */
     public void printError(String error, String detail) {
-      getErrStream().println(error);
+      if(!getIsSilent() || getIsQtestLogging()) {
+        getErrStream().println(error);
+      }
       LOG.error(error + StringUtils.defaultString(detail));
     }
   }
@@ -1777,6 +1852,7 @@ public class SessionState implements ISessionAuthState{
       txnMgr.closeTxnManager();
     }
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
+    Utilities.restoreSessionSpecifiedClassLoader(getClass().getClassLoader());
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);
@@ -1807,7 +1883,10 @@ public class SessionState implements ISessionAuthState{
       unCacheDataNucleusClassLoaders();
     } finally {
       // removes the threadlocal variables, closes underlying HMS connection
-      Hive.closeCurrent();
+      if (hiveDb != null) {
+        hiveDb.close(true);
+        hiveDb = null;
+      }
     }
     progressMonitor = null;
     // Hadoop's ReflectionUtils caches constructors for the classes it instantiated.
@@ -1816,6 +1895,12 @@ public class SessionState implements ISessionAuthState{
     // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
     // cleared up, we would have to retain this to avoid mem leak.
     clearReflectionUtilsCache();
+    for (Object each : dynamicVars.values()) {
+      if (each instanceof Closeable) {
+        ((Closeable)each).close();
+      }
+    }
+    dynamicVars.clear();
   }
 
   private void clearReflectionUtilsCache() {
@@ -1947,6 +2032,11 @@ public class SessionState implements ISessionAuthState{
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
   }
+
+  public Map<String, SemanticAnalyzer> getPreparePlans() {
+    return preparePlanMap;
+  }
+
   public Map<String, TempTable> getTempPartitions() {
     return tempPartitions;
   }
@@ -1976,6 +2066,15 @@ public class SessionState implements ISessionAuthState{
 
   public void setSparkSession(SparkSession sparkSession) {
     this.sparkSession = sparkSession;
+  }
+
+  public void addDynamicVar(Object object) {
+    dynamicVars.put(object.getClass(), object);
+  }
+
+  public <T> T getDynamicVar(Class<T> clazz) {
+    Object value = dynamicVars.get(clazz);
+    return value == null ? null : clazz.cast(value);
   }
 
   /**
@@ -2101,6 +2200,31 @@ public class SessionState implements ISessionAuthState{
   public String getNewSparkSessionId() {
     return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
   }
+
+  /**
+   * Retrieves the query cache for the given query.
+   * @param queryId the unique identifier of the query
+   * @return the cache for the query
+   */
+  public Map<Object, Object> getQueryCache(String queryId) {
+    QueryState qs = getQueryState(queryId);
+    if (qs == null) {
+      return null;
+    }
+    return qs.getHMSCache();
+  }
+
+  public Hive getHiveDb() throws HiveException {
+    if (hiveDb == null) {
+      hiveDb = Hive.createHiveForSession(sessionConf);
+      // Need to setAllowClose to false. For legacy reasons, the Hive object is stored
+      // in thread local storage. If allowClose is true, the session can get closed when
+      // the thread goes away which is not desirable when the Hive object is used across
+      // different queries in the session.
+      hiveDb.setAllowClose(false);
+    }
+    return hiveDb;
+  }
 }
 
 class ResourceMaps {
@@ -2163,5 +2287,4 @@ class ResourceMaps {
     }
     return result;
   }
-
 }

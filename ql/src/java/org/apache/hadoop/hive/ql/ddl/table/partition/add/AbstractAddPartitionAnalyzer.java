@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
@@ -130,4 +131,5 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
 
   protected abstract void postProcess(TableName tableName, Table table, AlterTableAddPartitionDesc desc,
       Task<DDLWork> ddlTask) throws SemanticException;
+
 }

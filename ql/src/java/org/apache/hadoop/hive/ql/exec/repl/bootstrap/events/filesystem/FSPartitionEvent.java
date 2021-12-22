@@ -52,6 +52,18 @@ public class FSPartitionEvent implements PartitionEvent {
   }
 
   @Override
+  public ReplicationState.PartitionState.Stage lastStageReplicated() {
+    assert replicationState != null && replicationState.partitionState != null;
+    return replicationState.partitionState.stage;
+  }
+
+  @Override
+  public AlterTableAddPartitionDesc.PartitionDesc lastPartSpecReplicated() {
+    assert replicationState != null && replicationState.partitionState != null;
+    return replicationState.partitionState.partSpec;
+  }
+
+  @Override
   public TableEvent asTableEvent() {
     return tableEvent;
   }

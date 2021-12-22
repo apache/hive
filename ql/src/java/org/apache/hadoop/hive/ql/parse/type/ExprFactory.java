@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -111,6 +112,11 @@ public abstract class ExprFactory<T> {
    * Creates a null constant expression with void type.
    */
   protected abstract T createNullConstantExpr();
+
+  /**
+   * Creates a dynamic parameter expression with void type.
+   */
+  protected abstract T createDynamicParamExpr(int index);
 
   /**
    * Creates a boolean constant expression from input value.
@@ -264,7 +270,7 @@ public abstract class ExprFactory<T> {
    * Interpret the input constant value of source type as target type.
    */
   protected abstract Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType,
-      Object constantValue, PrimitiveTypeInfo sourceType);
+      Object constantValue, PrimitiveTypeInfo sourceType, boolean isEqual);
 
   /**
    * Returns value stored in a constant expression.
@@ -293,13 +299,7 @@ public abstract class ExprFactory<T> {
   /**
    * Creates function call expression.
    */
-  protected abstract T createFuncCallExpr(TypeInfo typeInfo, GenericUDF genericUDF,
-      List<T> inputs) throws SemanticException;
-
-  /**
-   * Creates function call expression.
-   */
-  protected abstract T createFuncCallExpr(GenericUDF genericUDF, String funcText,
+  protected abstract T createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi, String funcText,
       List<T> inputs) throws SemanticException;
 
   /**
@@ -327,10 +327,25 @@ public abstract class ExprFactory<T> {
    */
   protected abstract boolean isSTRUCTFuncCallExpr(T expr);
 
+  protected abstract boolean isAndFunction(FunctionInfo fi);
+
+  protected abstract boolean isOrFunction(FunctionInfo fi);
+
+  protected abstract boolean isInFunction(FunctionInfo fi);
+
+  protected abstract boolean isCompareFunction(FunctionInfo fi);
+
+  protected abstract boolean isEqualFunction(FunctionInfo fi);
+
+  protected abstract boolean isNSCompareFunction(FunctionInfo fi);
+
+  protected abstract boolean isConsistentWithinQuery(FunctionInfo fi);
+
+  protected abstract boolean isStateful(FunctionInfo fi);
   /**
    * Returns true if a CASE expression can be converted into a COALESCE function call.
    */
-  protected abstract boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<T> inputs);
+  protected abstract boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<T> inputs);
 
   /* SUBQUERIES */
   /**
@@ -393,4 +408,10 @@ public abstract class ExprFactory<T> {
    */
   protected abstract List<String> getStructNameList(T expr);
 
+  /**
+   * Returns the FunctionInfo given the name
+   */
+  protected abstract FunctionInfo getFunctionInfo(String funcName) throws SemanticException;
+
+  protected abstract T replaceFieldNamesInStruct(T expr, List<String> newFieldNames);
 }

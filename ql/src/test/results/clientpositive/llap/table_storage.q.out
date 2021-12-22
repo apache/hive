@@ -547,3 +547,140 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t UNSET SERDEPROPERTIES('property1')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t UNSET SERDEPROPERTIES('property1')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Unset Serde Props
+      table name: default.t
+      properties:
+        property1 
+
+PREHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+WITH SERDEPROPERTIES ( 
+  'property2'='value2') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+WITH SERDEPROPERTIES ( 
+  'property2'='value2') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE t SET SERDEPROPERTIES('property1'='value1')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SET SERDEPROPERTIES('property1'='value1')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+WITH SERDEPROPERTIES ( 
+  'property1'='value1', 
+  'property2'='value2') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1', 'property2')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UNSET SERDEPROPERTIES('property1', 'property2')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####

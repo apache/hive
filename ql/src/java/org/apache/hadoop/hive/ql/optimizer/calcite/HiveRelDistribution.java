@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.calcite.plan.RelMultipleTrait;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -27,6 +29,7 @@ import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
 import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mappings.TargetMapping;
 
 import com.google.common.collect.Ordering;
@@ -81,8 +84,19 @@ public class HiveRelDistribution implements RelDistribution {
       return this;
     }
     List<Integer> newKeys = new ArrayList<>(keys.size());
+
+    if (Bug.CALCITE_4166_FIXED) {
+      throw new AssertionError("Remove logic in HiveRelDistribution when [CALCITE-4166] "
+          + "has been fixed and use newKeys.add(mapping.getTargetOpt(key)); instead.");
+    }
+
+    Map<Integer, Integer> tmp = new HashMap<>(mapping.getSourceCount());
+    for (IntPair aMapping : mapping) {
+      tmp.put(aMapping.source, aMapping.target);
+    }
+
     for (Integer key : keys) {
-      newKeys.add(mapping.getTargetOpt(key));
+      newKeys.add(tmp.get(key));
     }
     return new HiveRelDistribution(type, newKeys);
   }

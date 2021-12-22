@@ -1,0 +1,70 @@
+PREHOOK: query: EXPLAIN CBO
+VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6), ROW(11, 12, 13)))], rowType=[RecordType(INTEGER col1, INTEGER b, INTEGER c)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+col1	b	c
+1	2	3
+4	5	6
+11	12	13
+PREHOOK: query: VALUES(1 as a,2 b,3 as c),(4,5,6),(11,12,13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1 as a,2 b,3 as c),(4,5,6),(11,12,13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b	c
+1	2	3
+4	5	6
+11	12	13
+PREHOOK: query: VALUES(1 a,2 b,3),(4,5,6),(11,12,13)
+UNION ALL
+VALUES(100 f,200 g,300 h),(400,500,600),(110,120,130)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1 a,2 b,3),(4,5,6),(11,12,13)
+UNION ALL
+VALUES(100 f,200 g,300 h),(400,500,600),(110,120,130)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b	col3
+1	2	3
+4	5	6
+11	12	13
+100	200	300
+400	500	600
+110	120	130
+PREHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+col1	b	c
+1	2	3
+4	5	6
+11	12	13

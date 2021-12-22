@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.shims;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
 import org.apache.hadoop.io.WritableComparable;
 
@@ -50,5 +51,18 @@ public class CombineHiveKey implements WritableComparable {
   public int compareTo(Object w) {
     assert false;
     return 0;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CombineHiveKey that = (CombineHiveKey) o;
+    return Objects.equals(key, that.key);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key);
   }
 }

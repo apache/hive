@@ -33,7 +33,6 @@ import java.util.Map;
 /**
  * Tests statistics replication for ACID tables.
  */
-@Ignore("HIVE-22626 should fix this")
 public class TestStatsReplicationScenariosACIDNoAutogather extends TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();

@@ -28,6 +28,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
@@ -56,6 +57,10 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
     this.convention = jc;
     this.url = url;
     this.user = user;
+  }
+
+  @Override public RelWriter explainTerms(RelWriter pw) {
+    return super.explainTerms(pw).item("convention", convention);
   }
 
   public JdbcConvention getJdbcConvention() {
@@ -114,7 +119,7 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
           projects, nodeToTranslate.getRowType());
     }
     final HiveJdbcImplementor.Result result =
-        jdbcImplementor.visit(topProject);
+        jdbcImplementor.visitRoot(topProject);
     return result.asStatement().toSqlString(dialect).getSql();
   }
 

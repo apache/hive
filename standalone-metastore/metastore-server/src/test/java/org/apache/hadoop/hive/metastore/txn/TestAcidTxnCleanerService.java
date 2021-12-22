@@ -33,11 +33,11 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 
 
 import static java.util.Collections.singletonList;
@@ -46,7 +46,6 @@ import static java.util.Collections.singletonList;
  * Testing whether AcidTxnCleanerService removes the correct records
  * from the TXNS table (via TxnStore).
  */
-@Ignore("test unstable HIVE-23525")
 public class TestAcidTxnCleanerService {
 
   private AcidTxnCleanerService underTest;
@@ -60,12 +59,12 @@ public class TestAcidTxnCleanerService {
     underTest.setConf(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.setOpenTxnTimeOutMillis(100);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.prepDb(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 
   @Test
@@ -82,7 +81,8 @@ public class TestAcidTxnCleanerService {
 
     // always leaves the MAX(TXN_ID) in the TXNS table
     Assert.assertEquals(1, getTxnCount());
-    Assert.assertEquals(5, getMaxTxnId());
+    // The max TxnId might be greater id the openTxns failes with slow commit and retries
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -97,7 +97,7 @@ public class TestAcidTxnCleanerService {
 
     // deletes only the initial (committed) TXNS record
     Assert.assertEquals(5, getTxnCount());
-    Assert.assertEquals(5, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -113,7 +113,7 @@ public class TestAcidTxnCleanerService {
 
     // always leaves the MAX(TXN_ID) in the TXNS table
     Assert.assertEquals(1, getTxnCount());
-    Assert.assertEquals(5, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -135,7 +135,7 @@ public class TestAcidTxnCleanerService {
 
     // kept only the 5 non-empty aborted ones
     Assert.assertEquals(5, getTxnCount());
-    Assert.assertEquals(15, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least 15", getMaxTxnId() >= 15);
   }
 
   @Test
@@ -148,16 +148,16 @@ public class TestAcidTxnCleanerService {
         TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50);
     OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(
         TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50, "user", "hostname"));
+    txnHandler.setOpenTxnTimeOutMillis(1);
     txnHandler.abortTxns(new AbortTxnsRequest(resp.getTxn_ids()));
     GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
-    txnHandler.setOpenTxnTimeOutMillis(1);
 
     underTest.run();
 
     openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(2, openTxns.getOpen_txnsSize());
-    Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least", getMaxTxnId() >= TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1);
   }
 
   private void openNonEmptyThenAbort() throws MetaException, NoSuchTxnException, TxnAbortedException {
@@ -186,10 +186,10 @@ public class TestAcidTxnCleanerService {
   }
 
   private long getTxnCount() throws Exception {
-    return TxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXNS\"");
+    return TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXNS\"");
   }
 
   private long getMaxTxnId() throws Exception {
-    return TxnDbUtil.countQueryAgent(conf, "SELECT MAX(\"TXN_ID\") FROM \"TXNS\"");
+    return TestTxnDbUtil.countQueryAgent(conf, "SELECT MAX(\"TXN_ID\") FROM \"TXNS\"");
   }
 }

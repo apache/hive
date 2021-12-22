@@ -1,0 +1,80 @@
+PREHOOK: query: create table t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: create materialized view mat1 as
+select * from t1 where col0 = 1
+union
+select * from t1 where col0 = 2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: create materialized view mat1 as
+select * from t1 where col0 = 1
+union
+select * from t1 where col0 = 2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.col0 EXPRESSION []
+PREHOOK: query: explain cbo
+select * from t1 where col0 = 1
+union
+select * from t1 where col0 = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from t1 where col0 = 1
+union
+select * from t1 where col0 = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: explain cbo
+select * from t1 where col0 = 1
+union
+select * from t1 where col0 = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from t1 where col0 = 1
+union
+select * from t1 where col0 = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject($f0=[$0])
+    HiveUnion(all=[true])
+      HiveProject($f0=[CAST(1):INTEGER])
+        HiveFilter(condition=[=($0, 1)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+      HiveProject($f0=[CAST(2):INTEGER])
+        HiveFilter(condition=[=($0, 2)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: drop materialized view mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: drop materialized view mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1

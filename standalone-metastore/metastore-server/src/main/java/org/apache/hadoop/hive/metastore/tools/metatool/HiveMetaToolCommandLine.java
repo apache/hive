@@ -58,6 +58,25 @@ class HiveMetaToolCommandLine {
       .create("updateLocation");
 
   @SuppressWarnings("static-access")
+  private static final Option LIST_EXT_TBL_LOCS = OptionBuilder
+          .withArgName("dbName> " + " <output-loc")
+          .hasArgs(2)
+          .withDescription("Generates a file containing a list of directories which cover external table data locations " +
+                  "for the specified database. A database name or pattern must be specified, on which the tool will be run." +
+                  "The output is generated at the specified location."
+                  )
+          .create("listExtTblLocs");
+
+  @SuppressWarnings("static-access")
+  private static final Option DIFF_EXT_TBL_LOCS = OptionBuilder
+          .withArgName("file1> " + " <file2> " + "<output-loc")
+          .hasArgs(3)
+          .withDescription("Generates the difference between two output-files created using -listExtTblLocs option at the" +
+                  " specified location. Output contains locations(keys) unique to each input file. For keys common to both " +
+                  "input-files, those entities are listed which are deleted from the first file and introduced in the second."
+          )
+          .create("diffExtTblLocs");
+
   private static final Option DRY_RUN = OptionBuilder
       .withDescription("Perform a dry run of updateLocation changes.When run with the dryRun option updateLocation " +
           "changes are displayed but not persisted. dryRun is valid only with the updateLocation option.")
@@ -93,6 +112,8 @@ class HiveMetaToolCommandLine {
     OPTIONS.addOption(LIST_FS_ROOT);
     OPTIONS.addOption(EXECUTE_JDOQL);
     OPTIONS.addOption(UPDATE_LOCATION);
+    OPTIONS.addOption(LIST_EXT_TBL_LOCS);
+    OPTIONS.addOption(DIFF_EXT_TBL_LOCS);
     OPTIONS.addOption(DRY_RUN);
     OPTIONS.addOption(SERDE_PROP_KEY);
     OPTIONS.addOption(TABLE_PROP_KEY);
@@ -102,6 +123,8 @@ class HiveMetaToolCommandLine {
   private boolean listFSRoot;
   private String jdoqlQuery;
   private String[] updateLocationParams;
+  private String[] listExtTblLocsParams;
+  private String[] diffExtTblLocsParams;
   private boolean dryRun;
   private String serdePropKey;
   private String tablePropKey;
@@ -137,19 +160,33 @@ class HiveMetaToolCommandLine {
     listFSRoot = cl.hasOption(LIST_FS_ROOT.getOpt());
     jdoqlQuery = cl.getOptionValue(EXECUTE_JDOQL.getOpt());
     updateLocationParams = cl.getOptionValues(UPDATE_LOCATION.getOpt());
+    listExtTblLocsParams = cl.getOptionValues(LIST_EXT_TBL_LOCS.getOpt());
+    diffExtTblLocsParams = cl.getOptionValues(DIFF_EXT_TBL_LOCS.getOpt());
     dryRun = cl.hasOption(DRY_RUN.getOpt());
     serdePropKey = cl.getOptionValue(SERDE_PROP_KEY.getOpt());
     tablePropKey = cl.getOptionValue(TABLE_PROP_KEY.getOpt());
     help = cl.hasOption(HELP.getOpt());
 
-    int commandCount = (isListFSRoot() ? 1 : 0) + (isExecuteJDOQL() ? 1 : 0) + (isUpdateLocation() ? 1 : 0);
+    int commandCount = (isListFSRoot() ? 1 : 0) + (isExecuteJDOQL() ? 1 : 0) + (isUpdateLocation() ? 1 : 0) +
+          (isListExtTblLocs() ? 1 : 0) + (isDiffExtTblLocs() ? 1 : 0);
     if (commandCount != 1) {
-      throw new IllegalArgumentException("exectly one of -listFSRoot, -executeJDOQL, -updateLocation must be set");
+      throw new IllegalArgumentException("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, " +
+              "-listExtTblLocs, -diffExtTblLocs must be set");
     }
 
     if (updateLocationParams != null && updateLocationParams.length != 2) {
       throw new IllegalArgumentException("HiveMetaTool:updateLocation takes in 2 arguments but was passed " +
           updateLocationParams.length + " arguments");
+    }
+
+    if (listExtTblLocsParams != null && listExtTblLocsParams.length != 2) {
+      throw new IllegalArgumentException("HiveMetaTool:listExtTblLocs takes in 2 arguments but was passed " +
+              listExtTblLocsParams.length + " arguments");
+    }
+
+    if (diffExtTblLocsParams != null && diffExtTblLocsParams.length != 3) {
+      throw new IllegalArgumentException("HiveMetaTool:diffExtTblLocs takes in 3 arguments but was passed " +
+              diffExtTblLocsParams.length + " arguments");
     }
 
     if ((dryRun || serdePropKey != null || tablePropKey != null) && !isUpdateLocation()) {
@@ -176,6 +213,8 @@ class HiveMetaToolCommandLine {
         "\tlistFSRoot    : " + listFSRoot + "\n" +
         "\tjdoqlQuery    : " + jdoqlQuery + "\n" +
         "\tupdateLocation: " + Arrays.toString(updateLocationParams) + "\n" +
+        "\tlistExtTblLocs: " + Arrays.toString(listExtTblLocsParams) + "\n" +
+        "\tdiffExtTblLocs: " + Arrays.toString(diffExtTblLocsParams) + "\n" +
         "\tdryRun        : " + dryRun + "\n" +
         "\tserdePropKey  : " + serdePropKey + "\n" +
         "\ttablePropKey  : " + tablePropKey);
@@ -197,8 +236,24 @@ class HiveMetaToolCommandLine {
     return updateLocationParams != null;
   }
 
+  boolean isListExtTblLocs() {
+    return listExtTblLocsParams != null;
+  }
+
+  boolean isDiffExtTblLocs() {
+    return diffExtTblLocsParams != null;
+  }
+
   String[] getUpddateLocationParams() {
     return updateLocationParams;
+  }
+
+  String[] getListExtTblLocsParams() {
+    return listExtTblLocsParams;
+  }
+
+  String[] getDiffExtTblLocsParams() {
+    return diffExtTblLocsParams;
   }
 
   boolean isDryRun() {

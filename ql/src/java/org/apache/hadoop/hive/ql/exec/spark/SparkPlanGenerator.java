@@ -18,19 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.hive.spark.client.SparkClientUtilities;
-import org.apache.spark.SparkConf;
 import org.apache.spark.util.CallSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +108,7 @@ public class SparkPlanGenerator {
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
     SparkPlan sparkPlan = new SparkPlan(this.jobConf, this.sc.sc());
     cloneToWork = sparkWork.getCloneToWork();
     workToTranMap.clear();
@@ -125,13 +119,13 @@ public class SparkPlanGenerator {
         // Run the SparkDynamicPartitionPruner, we run this here instead of inside the
         // InputFormat so that we don't have to run pruning when creating a Record Reader
         runDynamicPartitionPruner(work);
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
         SparkTran tran = generate(work, sparkWork);
         SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
         sparkPlan.addTran(tran);
         sparkPlan.connect(parentTran, tran);
         workToTranMap.put(work, tran);
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
       }
     } finally {
       // clear all ThreadLocal cached MapWork/ReduceWork after plan generation
@@ -139,7 +133,7 @@ public class SparkPlanGenerator {
       Utilities.clearWorkMap(jobConf);
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
     return sparkPlan;
   }
 

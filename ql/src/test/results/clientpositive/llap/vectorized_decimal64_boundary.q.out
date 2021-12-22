@@ -109,7 +109,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_store_sk:int, 1:ss_quantity:int, 2:ss_sales_price:decimal(7,2)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_store_sk:int, 1:ss_quantity:int, 2:ss_sales_price:decimal(7,2)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -123,8 +123,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 18]
-                          selectExpressions: IfExprDecimal64ColumnDecimal64Column(col 14:boolean, col 16:decimal(18,2)/DECIMAL_64, col 17:decimal(18,2)/DECIMAL_64)(children: ColAndCol(col 11:boolean, col 13:boolean)(children: IsNotNull(col 2:decimal(7,2)/DECIMAL_64) -> 11:boolean, IsNotNull(col 19:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 12:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 1:int) -> 12:decimal(10,0)/DECIMAL_64) -> 19:decimal(10,0)) -> 13:boolean) -> 14:boolean, Decimal64ColMultiplyDecimal64Column(col 2:decimal(7,2)/DECIMAL_64, col 15:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 1:int) -> 15:decimal(10,0)/DECIMAL_64) -> 16:decimal(18,2)/DECIMAL_64, ConstantVectorExpression(val 0) -> 17:bigint) -> 18:decimal(18,2)/DECIMAL_64
+                          projectedOutputColumnNums: [0, 19]
+                          selectExpressions: IfExprDecimal64ColumnDecimal64Column(col 15:boolean, col 17:decimal(18,2)/DECIMAL_64, col 18:decimal(18,2)/DECIMAL_64)(children: ColAndCol(col 12:boolean, col 14:boolean)(children: IsNotNull(col 2:decimal(7,2)/DECIMAL_64) -> 12:boolean, IsNotNull(col 20:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 13:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 1:int) -> 13:decimal(10,0)/DECIMAL_64) -> 20:decimal(10,0)) -> 14:boolean) -> 15:boolean, Decimal64ColMultiplyDecimal64Column(col 2:decimal(7,2)/DECIMAL_64, col 16:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 1:int) -> 16:decimal(10,0)/DECIMAL_64) -> 17:decimal(18,2)/DECIMAL_64, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:decimal(18,2)/DECIMAL_64
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -136,7 +136,7 @@ STAGE PLANS:
                             keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 18:decimal(18,2)
+                            valueColumns: 19:decimal(18,2)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(18,2))
             Execution mode: vectorized, llap
@@ -164,7 +164,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:s_store_sk:int, 1:s_store_id:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:s_store_sk:int, 1:s_store_id:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

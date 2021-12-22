@@ -1,0 +1,24 @@
+PREHOOK: query: create table table_t (id int) partitioned by (dob date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_t
+POSTHOOK: query: create table table_t (id int) partitioned by (dob date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_t
+PREHOOK: query: create table table_b (id int) partitioned by (dob date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_b
+POSTHOOK: query: create table table_b (id int) partitioned by (dob date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_b
+PREHOOK: query: from table_b a insert overwrite table table_t select a.id,a.dob
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_b
+PREHOOK: Output: default@table_t
+POSTHOOK: query: from table_b a insert overwrite table table_t select a.id,a.dob
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_b
+POSTHOOK: Output: default@table_t

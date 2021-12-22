@@ -34,7 +34,7 @@
   <packaging>jar</packaging>
   <name>Hive Integration - QFile Druid Tests</name>
 
-  <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+  <!-- dependencies are always listed in sorted order by groupId, artifactId -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <druid.avatica.version>1.15.0</druid.avatica.version>
@@ -44,7 +44,7 @@
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.test.version>2.0.0</kafka.test.version>
+    <kafka.test.version>2.5.0</kafka.test.version>
     <druid.guice.version>4.1.0</druid.guice.version>
     <slf4j.version>1.7.30</slf4j.version>
   </properties>
@@ -224,12 +224,10 @@
         <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
-          <version>${jackson.version}</version>
         </dependency>
         <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
-          <version>${jackson.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>

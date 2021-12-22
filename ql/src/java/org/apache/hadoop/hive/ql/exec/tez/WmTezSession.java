@@ -18,20 +18,19 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 import org.apache.hive.common.util.Ref;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 
 @JsonSerialize
 public class WmTezSession extends TezSessionPoolSession implements AmPluginNode {
@@ -55,6 +54,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   @JsonProperty("queryId")
   private String queryId;
   private SettableFuture<Boolean> returnFuture = null;
+  private boolean isDelayedMove;
 
   private final WorkloadManager wmParent;
 
@@ -72,6 +72,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       SessionExpirationTracker expiration, HiveConf conf) {
     super(sessionId, parent, expiration, conf);
     wmParent = parent;
+    isDelayedMove = false;
   }
 
   @VisibleForTesting
@@ -79,6 +80,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       SessionExpirationTracker expiration, HiveConf conf) {
     super(sessionId, testParent, expiration, conf);
     wmParent = null;
+    isDelayedMove = false;
   }
 
   public ListenableFuture<WmTezSession> waitForAmRegistryAsync(
@@ -168,6 +170,14 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
     return poolName;
   }
 
+  public void setDelayedMove(boolean isDelayedMove) {
+    this.isDelayedMove = isDelayedMove;
+  }
+
+  public boolean isDelayedMove() {
+    return isDelayedMove;
+  }
+
   void setClusterFraction(double fraction) {
     this.clusterFraction = fraction;
   }
@@ -175,6 +185,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   void clearWm() {
     this.poolName = null;
     this.clusterFraction = null;
+    this.isDelayedMove = false;
   }
 
   public boolean hasClusterFraction() {

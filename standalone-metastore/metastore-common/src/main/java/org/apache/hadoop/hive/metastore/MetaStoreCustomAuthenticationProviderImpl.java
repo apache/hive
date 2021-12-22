@@ -63,8 +63,8 @@ public class MetaStoreCustomAuthenticationProviderImpl implements MetaStorePassw
   }
 
   @Override
-  public void Authenticate(String user, String password) throws AuthenticationException {
-    customProvider.Authenticate(user, password);
+  public void authenticate(String user, String password) throws AuthenticationException {
+    customProvider.authenticate(user, password);
   }
 
 }

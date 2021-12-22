@@ -75,7 +75,8 @@ public class Optimizer {
     Set<String> postExecHooks = Sets.newHashSet(
       Splitter.on(",").trimResults().omitEmptyStrings().split(
         Strings.nullToEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.POSTEXECHOOKS))));
-    if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_LINEAGE_INFO)
+        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
         || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
         || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
       transformations.add(new Generator(postExecHooks));
@@ -213,6 +214,9 @@ public class Optimizer {
     }
     if (HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE) > 0) {
       transformations.add(new LimitPushdownOptimizer());
+    }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT)) {
+      transformations.add(new OrderlessLimitPushDownOptimizer());
     }
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES)) {
       transformations.add(new StatsOptimizer());

@@ -28,9 +28,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.hive.http.HttpConstants;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.server.HiveServer2;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Returns "true" if this HS2 instance is leader else "false".

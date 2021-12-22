@@ -59,7 +59,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -77,7 +77,7 @@ STAGE PLANS:
                       Statistics: Num rows: 475 Data size: 951428 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: array<string>)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -87,10 +87,10 @@ STAGE PLANS:
                 keys:
                   0 key (type: string)
                   1 key (type: string)
-                outputColumnNames: _col6
+                outputColumnNames: _col7
                 Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col6 (type: array<string>)
+                  expressions: _col7 (type: array<string>)
                   outputColumnNames: _col1
                   Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
@@ -99,7 +99,7 @@ STAGE PLANS:
                       Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                       Lateral View Join Operator
                         outputColumnNames: _col2
-                        Statistics: Num rows: 1100 Data size: 95700 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 550 Data size: 95700 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(_col2)
                           minReductionHashAggr: 0.99
@@ -120,7 +120,7 @@ STAGE PLANS:
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col2
-                          Statistics: Num rows: 1100 Data size: 95700 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 550 Data size: 95700 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
                             aggregations: count(_col2)
                             minReductionHashAggr: 0.99

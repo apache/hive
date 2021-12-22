@@ -35,6 +35,7 @@ POSTHOOK: query: insert overwrite table alter_partition_change_col1 partition (p
   select c1, c2, cast(null as string), '123' from alter_partition_change_col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_partition_change_col0
+POSTHOOK: Output: default@alter_partition_change_col1
 POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
 POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]

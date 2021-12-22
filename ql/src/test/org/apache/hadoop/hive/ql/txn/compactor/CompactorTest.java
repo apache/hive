@@ -24,6 +24,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -34,7 +37,11 @@ import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
@@ -45,8 +52,13 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -82,7 +94,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 
 /**
  * Super class for all of the compactor test modules.
@@ -90,6 +106,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class CompactorTest {
   static final private String CLASS_NAME = CompactorTest.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  public static final String WORKER_VERSION = "4.0.0";
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;
@@ -101,8 +118,10 @@ public abstract class CompactorTest {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.cleanDb(conf);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.prepDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
@@ -113,19 +132,22 @@ public abstract class CompactorTest {
   }
 
   protected void startInitiator() throws Exception {
-    startThread('i', true);
+    startThread(CompactorThreadType.INITIATOR, true);
   }
 
   protected void startWorker() throws Exception {
-    startThread('w', true);
+    startThread(CompactorThreadType.WORKER, true);
   }
 
   protected void startCleaner() throws Exception {
-    startThread('c', true);
+    startThread(CompactorThreadType.CLEANER, true);
   }
 
-  protected void startCleaner(AtomicBoolean looped) throws Exception {
-    startThread('c', false, looped);
+  protected void runAcidMetricService() throws Exception {
+    TestTxnDbUtil.setConfValues(conf);
+    AcidMetricService t = new AcidMetricService();
+    t.setConf(conf);
+    t.run();
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
@@ -136,10 +158,6 @@ public abstract class CompactorTest {
                            Map<String, String> parameters)  throws TException {
     return newTable(dbName, tableName, partitioned, parameters, null, false);
 
-  }
-
-  protected Table newTempTable(String tableName) throws TException {
-    return newTable("default", tableName, false, null, null, true);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned,
@@ -183,19 +201,33 @@ public abstract class CompactorTest {
   }
 
   protected Partition newPartition(Table t, String value, List<Order> sortCols) throws Exception {
+    return newPartition(t, value, sortCols, new HashMap<>());
+  }
+
+  protected Partition newPartition(Table t, String value, List<Order> sortCols, Map<String, String> parameters)
+      throws Exception {
     Partition part = new Partition();
     part.addToValues(value);
     part.setDbName(t.getDbName());
     part.setTableName(t.getTableName());
     part.setSd(newStorageDescriptor(getLocation(t.getTableName(), value), sortCols));
-    part.setParameters(new HashMap<String, String>());
+    part.setParameters(parameters);
     ms.add_partition(part);
     return part;
   }
 
   protected long openTxn() throws MetaException {
-    List<Long> txns = txnHandler.openTxns(new OpenTxnRequest(1, System.getProperty("user.name"),
-        Worker.hostname())).getTxn_ids();
+    return openTxn(TxnType.DEFAULT);
+  }
+
+  protected long openTxn(TxnType txnType) throws MetaException {
+    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), ServerUtils.hostname());
+    rqst.setTxn_type(txnType);
+    if (txnType == TxnType.REPL_CREATED) {
+      rqst.setReplPolicy("default.*");
+      rqst.setReplSrcTxnIds(Arrays.asList(1L));
+    }
+    List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
   }
 
@@ -220,6 +252,9 @@ public abstract class CompactorTest {
 
   protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords) throws Exception {
     addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
+  }
+  protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords, long visibilityId) throws Exception {
+    addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true, visibilityId);
   }
 
   protected void addLegacyFile(Table t, Partition p, int numRecords) throws Exception {
@@ -253,6 +288,12 @@ public abstract class CompactorTest {
   }
 
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
+      throws NoSuchTxnException, TxnAbortedException, MetaException {
+    burnThroughTransactions(dbName, tblName, num, open, aborted, null);
+  }
+
+  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted,
+      LockRequest lockReq)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
@@ -260,10 +301,15 @@ public abstract class CompactorTest {
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {
-      assert(awiResp.getTxnToWriteIds().get(i++).getTxnId() == tid);
+      assert (awiResp.getTxnToWriteIds().get(i).getTxnId() == tid);
+      ++i;
+      if (lockReq != null) {
+        lockReq.setTxnid(tid);
+        txnHandler.lock(lockReq);
+      }
       if (aborted != null && aborted.contains(tid)) {
         txnHandler.abortTxn(new AbortTxnRequest(tid));
-      } else if (open == null || (open != null && !open.contains(tid))) {
+      } else if (open == null || !open.contains(tid)) {
         txnHandler.commitTxn(new CommitTxnRequest(tid));
       }
     }
@@ -297,24 +343,19 @@ public abstract class CompactorTest {
   }
 
   // I can't do this with @Before because I want to be able to control when the thread starts
-  private void startThread(char type, boolean stopAfterOne) throws Exception {
-    startThread(type, stopAfterOne, new AtomicBoolean());
-  }
-
-  private void startThread(char type, boolean stopAfterOne, AtomicBoolean looped)
-    throws Exception {
-    TxnDbUtil.setConfValues(conf);
-    CompactorThread t = null;
+  private void startThread(CompactorThreadType type, boolean stopAfterOne) throws Exception {
+    TestTxnDbUtil.setConfValues(conf);
+    CompactorThread t;
     switch (type) {
-      case 'i': t = new Initiator(); break;
-      case 'w': t = new Worker(); break;
-      case 'c': t = new Cleaner(); break;
+      case INITIATOR: t = new Initiator(); break;
+      case WORKER: t = new Worker(); break;
+      case CLEANER: t = new Cleaner(); break;
       default: throw new RuntimeException("Huh? Unknown thread type.");
     }
     t.setThreadId((int) t.getId());
     t.setConf(conf);
     stop.set(stopAfterOne);
-    t.init(stop, looped);
+    t.init(stop);
     if (stopAfterOne) t.run();
     else t.start();
   }
@@ -328,16 +369,20 @@ public abstract class CompactorTest {
     return location;
   }
 
-  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE};
+  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE}
 
-  private void addFile(Table t, Partition p, long minTxn, long maxTxn,
-                       int numRecords,  FileType type, int numBuckets,
-                       boolean allBucketsPresent) throws Exception {
+  private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
+      boolean allBucketsPresent) throws Exception {
+    addFile(t, p, minTxn, maxTxn, numRecords, type, numBuckets, allBucketsPresent, 0);
+  }
+
+  private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
+      boolean allBucketsPresent, long visibilityId) throws Exception {
     String partValue = (p == null) ? null : p.getValues().get(0);
     Path location = new Path(getLocation(t.getTableName(), partValue));
     String filename = null;
     switch (type) {
-      case BASE: filename = "base_" + maxTxn; break;
+      case BASE: filename = AcidUtils.BASE_PREFIX + maxTxn + (visibilityId > 0 ? AcidUtils.VISIBILITY_PREFIX + visibilityId : ""); break;
       case LENGTH_FILE: // Fall through to delta
       case DELTA: filename = makeDeltaDirName(minTxn, maxTxn); break;
       case LEGACY: break; // handled below
@@ -383,7 +428,7 @@ public abstract class CompactorTest {
     @Override
     public RawReader<Text> getRawReader(Configuration conf, boolean collapseEvents, int bucket,
                                         ValidWriteIdList validWriteIdList,
-                                        Path baseDirectory, Path[] deltaDirectory, Map<String, String> deltaToAttemptId) throws IOException {
+                                        Path baseDirectory, Path[] deltaDirectory, Map<String, Integer> deltaToAttemptId) throws IOException {
 
       List<Path> filesToRead = new ArrayList<Path>();
       if (baseDirectory != null) {
@@ -592,4 +637,31 @@ public abstract class CompactorTest {
   String makeDeleteDeltaDirNameCompacted(long minTxnId, long maxTxnId) {
     return AcidUtils.deleteDeltaSubdir(minTxnId, maxTxnId);
   }
+
+  protected long compactInTxn(CompactionRequest rqst) throws Exception {
+    txnHandler.compact(rqst);
+    FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+    findNextCompactRequest.setWorkerId("fred");
+    findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
+    CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
+    ci.runAs = System.getProperty("user.name");
+    long compactorTxnId = openTxn(TxnType.COMPACTION);
+    // Need to create a valid writeIdList to set the highestWriteId in ci
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), compactorTxnId);
+    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest();
+    writeIdsRequest.setValidTxnList(validTxnList.writeToString());
+    writeIdsRequest
+        .setFullTableNames(Collections.singletonList(TxnUtils.getFullTableName(rqst.getDbname(), rqst.getTablename())));
+    // with this ValidWriteIdList is capped at whatever HWM validTxnList has
+    ValidCompactorWriteIdList tblValidWriteIds = TxnUtils
+        .createValidCompactWriteIdList(txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds().get(0));
+
+    ci.highestWriteId = tblValidWriteIds.getHighWatermark();
+    txnHandler.updateCompactorState(ci, compactorTxnId);
+    txnHandler.markCompacted(ci);
+    txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
+    Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+    return compactorTxnId;
+  }
+
 }

@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -69,17 +69,22 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.stringifyValues;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.makeValuesClause;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
+
 /**
  * This class resides in itests to facilitate running query using Tez engine, since the jars are
  * fully loaded here, which is not the case if it stays in ql.
  */
 public class TestAcidOnTez {
   static final private Logger LOG = LoggerFactory.getLogger(TestAcidOnTez.class);
-  private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
+  public static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestAcidOnTez.class.getCanonicalName()
       + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+  public static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   //bucket count for test tables; set it to 1 for easier debugging
   private static int BUCKET_COUNT = 2;
   @Rule
@@ -116,10 +121,10 @@ public class TestAcidOnTez {
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    TxnDbUtil.setConfValues(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
     hiveConf.setInt(MRJobConfig.MAP_MEMORY_MB, 1024);
     hiveConf.setInt(MRJobConfig.REDUCE_MEMORY_MB, 1024);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -169,7 +174,7 @@ public class TestAcidOnTez {
         d.destroy();
         d = null;
       }
-      TxnDbUtil.cleanDb(hiveConf);
+      TestTxnDbUtil.cleanDb(hiveConf);
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
@@ -285,7 +290,7 @@ public class TestAcidOnTez {
     }
     //run Minor compaction
     runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " compact 'minor'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact minor:");
     for (String s : rs) {
@@ -315,7 +320,7 @@ public class TestAcidOnTez {
     }
     //run Major compaction
     runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact major:");
     for (String s : rs) {
@@ -423,7 +428,7 @@ public class TestAcidOnTez {
 
     //run Major compaction
     runStatementOnDriver("alter table " + Table.NONACIDPART + " partition (p=1) compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, p, INPUT__FILE__NAME from " + Table.NONACIDPART + " order by ROW__ID", confForTez);
     LOG.warn("after major compaction:");
     for (String s : rs) {
@@ -446,7 +451,6 @@ public class TestAcidOnTez {
    * {@link org.apache.hadoop.hive.ql.metadata.Hive#moveAcidFiles(FileSystem, FileStatus[], Path, List)} drops the union subdirs
    * since each delta file has a unique name.
    */
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCtasTezUnion() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
@@ -454,13 +458,17 @@ public class TestAcidOnTez {
     setupTez(confForTez);
     //CTAS with ACID target table
     List<String> rs0 = runStatementOnDriver("explain create table " + Table.ACIDNOBUCKET + " stored as ORC TBLPROPERTIES('transactional'='true') as " +
-      "select a, b from " + Table.ACIDTBL + " where a <= 5 union all select a, b from " + Table.NONACIDORCTBL + " where a >= 5", confForTez);
+      "(select a, b from " + Table.ACIDTBL + " where a <= 5 order by a desc , b desc limit 3) " +
+        "union all (select a, b from " + Table.NONACIDORCTBL + " where a >= 5 order by a desc, b desc limit 3)",
+        confForTez);
     LOG.warn("explain ctas:");//TezEdgeProperty.EdgeType
     for (String s : rs0) {
       LOG.warn(s);
     }
     runStatementOnDriver("create table " + Table.ACIDNOBUCKET + " stored as ORC TBLPROPERTIES('transactional'='true') as " +
-      "select a, b from " + Table.ACIDTBL + " where a <= 5 union all select a, b from " + Table.NONACIDORCTBL + " where a >= 5", confForTez);
+      "(select a, b from " + Table.ACIDTBL + " where a <= 5 order by a desc, b desc limit 3) " +
+        "union all (select a, b from " + Table.NONACIDORCTBL + " where a >= 5 order by a desc, b desc limit 3)",
+        confForTez);
     List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after ctas:");
     for (String s : rs) {
@@ -495,7 +503,7 @@ public class TestAcidOnTez {
       {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":1}\t3\t4", "/delta_0000001_0000001_0001/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":2}\t1\t2", "/delta_0000001_0000001_0001/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870914,\"rowid\":0}\t9\t10", "/delta_0000001_0000001_0002/bucket_00000"},
-      {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t70\t80", "/delta_0000002_0000002_0000/bucket_00000"}
+      {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t70\t80", "/delta_0000002_0000002_0000/bucket_00000_0"}
     };
     Assert.assertEquals("Unexpected row count after update", expected2.length, rs.size());
     //verify data and layout
@@ -520,7 +528,7 @@ public class TestAcidOnTez {
     }
     //run Minor compaction
     runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'minor'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact minor:");
     for (String s : rs) {
@@ -536,7 +544,7 @@ public class TestAcidOnTez {
     //check we have right delete delta files after minor compaction
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003"};
+    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000023"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta2.length; i++) {
         if(expectedDelDelta2[i] != null && stat.getPath().toString().endsWith(expectedDelDelta2[i])) {
@@ -550,7 +558,7 @@ public class TestAcidOnTez {
     }
     //run Major compaction
     runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID", confForTez);
     LOG.warn("after compact major:");
     for (String s : rs) {
@@ -560,7 +568,7 @@ public class TestAcidOnTez {
     for(int i = 0; i < expected2.length; i++) {
       Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
       //everything is now in base/
-      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003/bucket_00000"));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003_v0000025/bucket_00000"));
     }
   }
   /**
@@ -611,11 +619,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     //make the table ACID
     runStatementOnDriver("alter table T SET TBLPROPERTIES ('transactional'='true')", confForTez);
     rs = runStatementOnDriver("select a,b from T order by a, b", confForTez);
-    Assert.assertEquals("After to Acid conversion", TestTxnCommands2.stringifyValues(values), rs);
+    Assert.assertEquals("After to Acid conversion", stringifyValues(values), rs);
 
     //run Major compaction
     runStatementOnDriver("alter table T compact 'major'", confForTez);
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID", confForTez);
     LOG.warn(testName.getMethodName() + ": after compact major of T:");
     for (String s : rs) {
@@ -623,15 +631,15 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     }
     String[][] expected2 = {
        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-           "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+           "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8",
-          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
-          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"}
+          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"}
     };
     Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
     for(int i = 0; i < expected2.length; i++) {
@@ -700,7 +708,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("delete from " + Table.ACIDTBL, confForTez);
     //make sure both buckets are not empty
-    runStatementOnDriver("insert into " + Table.ACIDTBL + TestTxnCommands2.makeValuesClause(values), confForTez);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values), confForTez);
     runStatementOnDriver("drop table if exists T", confForTez);
     /*
     With bucketed target table Union All is not removed
@@ -906,10 +914,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
       LocatedFileStatus lf = lfs.next();
       Path file = lf.getPath();
       if (!file.getName().startsWith(".") && !file.getName().startsWith("_")) {
-        Reader reader = OrcFile.createReader(file, OrcFile.readerOptions(new Configuration()));
-        OrcProto.Footer footer = reader.getFileTail().getFooter();
-        assertEquals("Reader based original check", expected, OrcInputFormat.isOriginal(reader));
-        assertEquals("Footer based original check", expected, OrcInputFormat.isOriginal(footer));
+        try (Reader reader = OrcFile.createReader(file, OrcFile.readerOptions(new Configuration()))) {
+          OrcProto.Footer footer = reader.getFileTail().getFooter();
+          assertEquals("Reader based original check", expected, OrcInputFormat.isOriginal(reader));
+          assertEquals("Footer based original check", expected, OrcInputFormat.isOriginal(footer));
+        }
         foundAnyFile = true;
       }
     }
@@ -949,12 +958,12 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
 
     // Perform compaction. Join result after compaction should still be the same
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
-    TestTxnCommands2.runCleaner(hiveConf);
+    runCleaner(hiveConf);
 
     runQueries(engine, joinType, confForTez, confForMR);
   }
@@ -987,11 +996,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
         }
         rs = runStatementOnDriver(query, confForMR);
       }
-      Assert.assertEquals("Join result incorrect", TestTxnCommands2.stringifyValues(expected), rs);
+      Assert.assertEquals("Join result incorrect", stringifyValues(expected), rs);
     }
   }
 
-  private void setupTez(HiveConf conf) {
+  public static void setupTez(HiveConf conf) {
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
     conf.set("tez.am.resource.memory.mb", "128");
@@ -1022,7 +1031,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   /**
    * Run statement with customized hive conf
    */
-  private List<String> runStatementOnDriver(String stmt, HiveConf conf)
+  public static List<String> runStatementOnDriver(String stmt, HiveConf conf)
       throws Exception {
     IDriver driver = DriverFactory.newDriver(conf);
     driver.setMaxRows(10000);

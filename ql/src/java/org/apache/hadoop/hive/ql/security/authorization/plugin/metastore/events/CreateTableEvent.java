@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -30,6 +28,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +40,7 @@ import java.util.List;
  */
 
 public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(CreateTableEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CreateTableEvent.class);
 
   private String COMMAND_STR = "create table";
 
@@ -59,18 +59,13 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> CreateTableEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> CreateTableEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
     String                    uri   = getSdLocation(table.getSd());
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, table.getDbName(), null, null, null,
-        HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-        table.getOwner(), table.getOwnerType()));
     ret.add(getHivePrivilegeObject(table));
 
     if (StringUtils.isNotEmpty(uri)) {
@@ -79,9 +74,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

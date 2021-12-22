@@ -1,0 +1,187 @@
+PREHOOK: query: drop table if exists test_truncate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists test_truncate
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table test_truncate (id int, value string) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: create external table test_truncate (id int, value string) stored by iceberg stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: alter table test_truncate set tblproperties('external.table.purge'='false')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@test_truncate
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: alter table test_truncate set tblproperties('external.table.purge'='false')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: insert into test_truncate values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: insert into test_truncate values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: insert into test_truncate values (6, 'six'), (7, 'seven')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: insert into test_truncate values (6, 'six'), (7, 'seven')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: insert into test_truncate values (8, 'eight'), (9, 'nine'), (10, 'ten')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: insert into test_truncate values (8, 'eight'), (9, 'nine'), (10, 'ten')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: analyze table test_truncate compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_truncate
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: analyze table test_truncate compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: select * from test_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_truncate
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+10	ten
+2	two
+3	three
+4	four
+5	five
+6	six
+7	seven
+8	eight
+9	nine
+PREHOOK: query: describe formatted test_truncate
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_truncate
+POSTHOOK: query: describe formatted test_truncate
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_truncate
+# col_name            	data_type           	comment             
+id                  	int                 	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"value\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	external.table.purge	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	3                   
+	numRows             	10                  
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                
+#### A masked pattern was here ####
+	write.format.default	parquet             
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: truncate test_truncate force
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: truncate test_truncate force
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_truncate
+PREHOOK: query: select count(*) from test_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_truncate
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from test_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: select * from test_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_truncate
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: describe formatted test_truncate
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_truncate
+POSTHOOK: query: describe formatted test_truncate
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_truncate
+# col_name            	data_type           	comment             
+id                  	int                 	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	external.table.purge	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                   
+#### A masked pattern was here ####
+	write.format.default	parquet             
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: drop table if exists test_truncate
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_truncate
+PREHOOK: Output: default@test_truncate
+POSTHOOK: query: drop table if exists test_truncate
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_truncate
+POSTHOOK: Output: default@test_truncate

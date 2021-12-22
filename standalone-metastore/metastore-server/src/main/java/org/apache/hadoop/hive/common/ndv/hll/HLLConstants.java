@@ -26,9 +26,6 @@ public class HLLConstants {
   public static final int MIN_P_VALUE = 4;
   public static final int MAX_P_VALUE = 16;
 
-  // number of entries to store before being merged to sparse map
-  public static final int TEMP_LIST_DEFAULT_SIZE = 1024;
-
   // constants for SPARSE encoding
   public static final int P_PRIME_VALUE = 25;
   public static final int Q_PRIME_VALUE = 6;

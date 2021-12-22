@@ -19,15 +19,19 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -68,13 +72,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRexExprList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -197,6 +200,15 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
+  protected RexNode createDynamicParamExpr(int index) {
+    return rexBuilder.makeDynamicParam(
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.NULL), index);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected RexNode createBooleanConstantExpr(String value) {
     Boolean b = value != null ? Boolean.valueOf(value) : null;
     return rexBuilder.makeLiteral(b,
@@ -283,33 +295,34 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     if (!allowNullValueConstantExpr && hd == null) {
       return null;
     }
-    DecimalTypeInfo type = adjustType(hd);
+    BigDecimal bd = hd != null ? hd.bigDecimalValue() : null;
+    DecimalTypeInfo type = adjustType(bd);
     return rexBuilder.makeExactLiteral(
-        hd != null ? hd.bigDecimalValue() : null,
-        TypeConverter.convert(type, rexBuilder.getTypeFactory()));
+        bd, TypeConverter.convert(type, rexBuilder.getTypeFactory()));
   }
 
   @Override
   protected TypeInfo adjustConstantType(PrimitiveTypeInfo targetType, Object constantValue) {
-    if (constantValue instanceof HiveDecimal) {
-      return adjustType((HiveDecimal) constantValue);
+    if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(targetType.getPrimitiveTypeEntry())) {
+      return adjustType((BigDecimal) constantValue);
     }
     return targetType;
   }
 
-  private DecimalTypeInfo adjustType(HiveDecimal hd) {
-    // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
-    //       precision and scale of the value by throwing away trailing zeroes. This may or may
-    //       not be desirable for the literals; however, this used to be the default behavior
-    //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
+  private DecimalTypeInfo adjustType(BigDecimal bd) {
     int prec = 1;
     int scale = 0;
-    if (hd != null) {
-      prec = hd.precision();
-      scale = hd.scale();
+    if (bd != null) {
+      prec = bd.precision();
+      scale = bd.scale();
+      if (prec < scale) {
+        // This can happen for numbers less than 0.1
+        // For 0.001234: prec=4, scale=6
+        // In this case, we'll set the type to have the same precision as the scale.
+        prec = scale;
+      }
     }
-    DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-    return typeInfo;
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
   }
 
   /**
@@ -317,11 +330,11 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType, Object constantValue,
-      PrimitiveTypeInfo sourceType) {
+      PrimitiveTypeInfo sourceType, boolean isEqual) {
     // Extract string value if necessary
     Object constantToInterpret = constantValue;
-    if (constantValue instanceof HiveNlsString) {
-      constantToInterpret = ((HiveNlsString) constantValue).getValue();
+    if (constantValue instanceof NlsString) {
+      constantToInterpret = ((NlsString) constantValue).getValue();
     }
 
     if (constantToInterpret instanceof Number || constantToInterpret instanceof String) {
@@ -332,9 +345,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).longValueExact();
         } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-          return Double.valueOf(constantToInterpret.toString());
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-          return Float.valueOf(constantToInterpret.toString());
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).byteValueExact();
         } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
@@ -344,22 +357,20 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           return decimal != null ? decimal.bigDecimalValue() : null;
         }
       } catch (NumberFormatException | ArithmeticException nfe) {
+        if (!isEqual && (constantToInterpret instanceof Number ||
+            NumberUtils.isNumber(constantToInterpret.toString()))) {
+          // The target is a number, if constantToInterpret can be interpreted as a number,
+          // return the constantToInterpret directly, GenericUDFBaseCompare will do
+          // type conversion for us.
+          return constantToInterpret;
+        }
         LOG.trace("Failed to narrow type of constant", nfe);
         return null;
       }
     }
 
-    // Comparision of decimal and float/double happens in float/double.
     if (constantToInterpret instanceof BigDecimal) {
-      BigDecimal bigDecimal = (BigDecimal) constantToInterpret;
-
-      PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
-      if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.doubleValue();
-      } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.floatValue();
-      }
-      return bigDecimal;
+      return constantToInterpret;
     }
 
     String constTypeInfoName = sourceType.getTypeName();
@@ -374,7 +385,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         HiveChar newValue = new HiveChar(constValue, length);
         HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
         if (maxCharConst.equals(newValue)) {
-          return makeHiveUnicodeString(Interpretation.CHAR, newValue.getValue());
+          return makeHiveUnicodeString(newValue.getValue());
         } else {
           return null;
         }
@@ -385,7 +396,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         HiveVarchar newValue = new HiveVarchar(constValue, length);
         HiveVarchar maxCharConst = new HiveVarchar(constValue, HiveVarchar.MAX_VARCHAR_LENGTH);
         if (maxCharConst.equals(newValue)) {
-          return makeHiveUnicodeString(Interpretation.VARCHAR, newValue.getValue());
+          return makeHiveUnicodeString(newValue.getValue());
         } else {
           return null;
         }
@@ -407,8 +418,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexLiteral createStringConstantExpr(String value) {
-    return rexBuilder.makeCharLiteral(
-        makeHiveUnicodeString(Interpretation.STRING, value));
+    RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
+        Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    // Note. Though we pass allowCast=true as parameter, this method will return a
+    // VARCHAR literal without a CAST.
+    return (RexLiteral) rexBuilder.makeLiteral(
+        makeHiveUnicodeString(value), stringType, true);
   }
 
   /**
@@ -621,28 +637,12 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexNode createFuncCallExpr(TypeInfo returnType, GenericUDF genericUDF,
+  protected RexNode createFuncCallExpr(TypeInfo typeInfo, FunctionInfo functionInfo, String funcText,
       List<RexNode> inputs) throws SemanticException {
-    final String funcText = genericUDF.getClass().getAnnotation(Description.class).name();
-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
-    return functionHelper.getExpression(
-        funcText, functionInfo, inputs,
-        TypeConverter.convert(returnType, rexBuilder.getTypeFactory()));
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected RexNode createFuncCallExpr(GenericUDF genericUDF, String funcText,
-      List<RexNode> inputs) throws SemanticException {
-    // 1) Function resolution
-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
     // 2) Compute return type
     RelDataType returnType;
-    if (genericUDF instanceof SettableUDF) {
-      returnType = TypeConverter.convert(
-          ((SettableUDF) genericUDF).getTypeInfo(), rexBuilder.getTypeFactory());
+    if (typeInfo != null) {
+      returnType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
     } else {
       returnType = functionHelper.getReturnType(functionInfo, inputs);
     }
@@ -796,6 +796,22 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
+  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return functionHelper.isConsistentWithinQuery(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isStateful(FunctionInfo fi) {
+    return functionHelper.isStateful(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected boolean isPOSITIVEFuncCallExpr(RexNode expr) {
     return expr.isA(SqlKind.PLUS_PREFIX);
   }
@@ -832,7 +848,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<RexNode> inputs) {
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<RexNode> inputs) {
     return false;
   }
 
@@ -857,6 +873,51 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
+  protected boolean isAndFunction(FunctionInfo fi) {
+    return functionHelper.isAndFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isOrFunction(FunctionInfo fi) {
+    return functionHelper.isOrFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isInFunction(FunctionInfo fi) {
+    return functionHelper.isInFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isCompareFunction(FunctionInfo fi) {
+    return functionHelper.isCompareFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isEqualFunction(FunctionInfo fi) {
+    return functionHelper.isEqualFunction(fi);
+  }
+
+  @Override
+  protected boolean isNSCompareFunction(FunctionInfo fi) {
+    return functionHelper.isNSCompareFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected boolean isConstantStruct(RexNode expr) {
     return expr.getType().getSqlTypeName() == SqlTypeName.ROW &&
         HiveCalciteUtil.isLiteral(expr);
@@ -871,7 +932,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     // subqueryToRelNode might be null if subquery expression anywhere other than
     //  as expected in filter (where/having). We should throw an appropriate error
     // message
-    Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
+    Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode = ctx.getSubqueryToRelNode();
     if (subqueryToRelNode == null) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
           " Currently SubQuery expressions are only allowed as " +
@@ -879,11 +940,14 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
 
     ASTNode subqueryOp = (ASTNode) expr.getChild(0);
-    RelNode subqueryRel = subqueryToRelNode.get(expr);
+    RelNode subqueryRel = subqueryToRelNode.get(expr).getSubQueryRelNode();
     // For now because subquery is only supported in filter
     // we will create subquery expression of boolean type
     switch (subqueryType) {
       case EXISTS: {
+        if (subqueryToRelNode.get(expr).hasFullAggregate()) {
+          return createConstantExpr(TypeInfoFactory.booleanTypeInfo, true);
+        }
         return RexSubQuery.exists(subqueryRel);
       }
       case IN: {
@@ -925,6 +989,26 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       default:
         return null;
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
+    return functionHelper.getFunctionInfo(funcName);
+  }
+
+  @Override
+  protected RexNode replaceFieldNamesInStruct(RexNode expr, List<String> newFieldNames) {
+    if (newFieldNames.isEmpty()) {
+      return expr;
+    }
+
+    RexCall structCall = (RexCall) expr;
+    List<RelDataType> newTypes = structCall.operands.stream().map(RexNode::getType).collect(Collectors.toList());
+    RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, newFieldNames);
+    return rexBuilder.makeCall(newType, structCall.op, structCall.operands);
   }
 
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
@@ -989,22 +1073,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
   }
 
-  public static NlsString makeHiveUnicodeString(Interpretation interpretation, String text) {
-    return new HiveNlsString(interpretation, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  public static NlsString makeHiveUnicodeString(String text) {
+    return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
-
-  public static class HiveNlsString extends NlsString {
-
-    public enum Interpretation {
-      CHAR, VARCHAR, STRING;
-    }
-
-    public final Interpretation interpretation;
-
-    public HiveNlsString(Interpretation interpretation, String value, String charsetName, SqlCollation collation) {
-      super(value, charsetName, collation);
-      this.interpretation = interpretation;
-    }
-  }
-
 }

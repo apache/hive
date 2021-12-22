@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -33,11 +34,13 @@ public class AtlasLoadWork implements Serializable {
   private final String srcDB;
   private final String tgtDB;
   private final Path stagingDir;
+  private final transient ReplicationMetricCollector metricCollector;
 
-  public AtlasLoadWork(String srcDB, String tgtDB, Path stagingDir) {
+  public AtlasLoadWork(String srcDB, String tgtDB, Path stagingDir, ReplicationMetricCollector metricCollector) {
     this.srcDB = srcDB;
     this.tgtDB = tgtDB;
     this.stagingDir = stagingDir;
+    this.metricCollector = metricCollector;
   }
 
   public static long getSerialVersionUID() {
@@ -54,5 +57,9 @@ public class AtlasLoadWork implements Serializable {
 
   public Path getStagingDir() {
     return stagingDir;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
   }
 }

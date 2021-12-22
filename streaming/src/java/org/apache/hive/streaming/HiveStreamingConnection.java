@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StreamCapabilities;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -686,15 +688,19 @@ public class HiveStreamingConnection implements StreamingConnection {
       if (manageTransactions) {
         getMSC().close();
         getHeatbeatMSC().close();
+        try {
+          // Close the HMS that is used for addWriteNotificationLog
+          Hive.get(conf).getSynchronizedMSC().close();
+        } catch (Exception e) {
+          LOG.warn("Error while closing HMS connection", e);
+        }
       }
       //remove shutdown hook entry added while creating this connection via HiveStreamingConnection.Builder#connect()
       if (!ShutdownHookManager.isShutdownInProgress()) {
         ShutdownHookManager.removeShutdownHook(this.onShutdownRunner);
       }
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
-    }
+    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
   }
 
   @Override
@@ -776,8 +782,7 @@ public class HiveStreamingConnection implements StreamingConnection {
 
         // List the new files added inside the write path (delta directory).
         FileSystem fs = tableObject.getDataLocation().getFileSystem(conf);
-        List<Path> newFiles = new ArrayList<>();
-        Hive.listFilesInsideAcidDirectory(writeInfo.getWriteDir(), fs, newFiles);
+        List<FileStatus> newFiles = HdfsUtils.listLocatedFileStatus(fs, writeInfo.getWriteDir(), null, true);
 
         // If no files are added by this streaming writes, then no need to log write notification event.
         if (newFiles.isEmpty()) {
@@ -788,7 +793,7 @@ public class HiveStreamingConnection implements StreamingConnection {
 
         // Add write notification events into HMS table.
         Hive.addWriteNotificationLog(conf, tableObject, writeInfo.getPartitionVals(),
-                currentTxnId, currentWriteId, newFiles);
+                currentTxnId, currentWriteId, newFiles, null);
       }
     } catch (IOException | TException | HiveException e) {
       throw new StreamingException("Failed to log write notification events.", e);

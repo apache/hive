@@ -84,7 +84,7 @@ public class TestKuduSerDe {
   @Test
   public void testSerDeRoundTrip() throws Exception {
     KuduSerDe serDe = new KuduSerDe();
-    serDe.initialize(BASE_CONF, TBL_PROPS);
+    serDe.initialize(BASE_CONF, TBL_PROPS, null);
 
     PartialRow before = SCHEMA.newPartialRow();
     before.addByte("key", (byte) 1);
@@ -149,7 +149,7 @@ public class TestKuduSerDe {
     conf.unset(KUDU_MASTER_ADDRS_KEY);
 
     try {
-      serDe.initialize(conf, TBL_PROPS);
+      serDe.initialize(conf, TBL_PROPS, null);
       fail("Should fail on missing table");
     } catch (SerDeException ex) {
       assertThat(ex.getMessage(),
@@ -164,7 +164,7 @@ public class TestKuduSerDe {
     Properties tblProps = new Properties();
 
     try {
-      serDe.initialize(BASE_CONF, tblProps);
+      serDe.initialize(BASE_CONF, tblProps, null);
       fail("Should fail on missing table");
     } catch (SerDeException ex) {
       assertThat(ex.getMessage(), containsString("kudu.table_name is not set"));
@@ -179,7 +179,7 @@ public class TestKuduSerDe {
     tblProps.setProperty(KUDU_TABLE_NAME_KEY, "default.notatable");
 
     try {
-      serDe.initialize(BASE_CONF, tblProps);
+      serDe.initialize(BASE_CONF, tblProps, null);
       fail("Should fail on a bad table");
     } catch (SerDeException ex) {
       assertThat(ex.getMessage(),

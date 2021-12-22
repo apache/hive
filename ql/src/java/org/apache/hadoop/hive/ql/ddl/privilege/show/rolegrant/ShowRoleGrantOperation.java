@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.privilege.show.rolegrant;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeUtils;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class ShowRoleGrantOperation extends DDLOperation<ShowRoleGrantDesc> {
     boolean testMode = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
     List<HiveRoleGrant> roles = authorizer.getRoleGrantInfoForPrincipal(
         AuthorizationUtils.getHivePrincipal(desc.getName(), desc.getPrincipalType()));
-    DDLUtils.writeToFile(writeRolesGrantedInfo(roles, testMode), desc.getResFile(), context);
+    ShowUtils.writeToFile(writeRolesGrantedInfo(roles, testMode), desc.getResFile(), context);
 
     return 0;
   }
@@ -60,10 +60,10 @@ public class ShowRoleGrantOperation extends DDLOperation<ShowRoleGrantDesc> {
     //sort the list to get sorted (deterministic) output (for ease of testing)
     Collections.sort(roles);
     for (HiveRoleGrant role : roles) {
-      DDLUtils.appendNonNull(builder, role.getRoleName(), true);
-      DDLUtils.appendNonNull(builder, role.isGrantOption());
-      DDLUtils.appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
-      DDLUtils.appendNonNull(builder, role.getGrantor());
+      ShowUtils.appendNonNull(builder, role.getRoleName(), true);
+      ShowUtils.appendNonNull(builder, role.isGrantOption());
+      ShowUtils.appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
+      ShowUtils.appendNonNull(builder, role.getGrantor());
     }
     return builder.toString();
   }

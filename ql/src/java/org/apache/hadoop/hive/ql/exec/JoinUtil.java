@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -305,10 +304,10 @@ public class JoinUtil {
     if (desc == null) {
       return null;
     }
-    AbstractSerDe sd = (AbstractSerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
+    AbstractSerDe sd = (AbstractSerDe) ReflectionUtil.newInstance(desc.getSerDeClass(),
         null);
     try {
-      SerDeUtils.initializeSerDe(sd, null, desc.getProperties(), null);
+      sd.initialize(null, desc.getProperties(), null);
     } catch (SerDeException e) {
       LOG.warn("Error getting spill table", e);
       return null;
@@ -325,7 +324,7 @@ public class JoinUtil {
       int columnSize = valueCols.size();
       StringBuilder colNames = new StringBuilder();
       StringBuilder colTypes = new StringBuilder();
-      if (columnSize <= 0) {
+      if (columnSize <= 0 && noFilter) {
         continue;
       }
       for (int k = 0; k < columnSize; k++) {
@@ -342,9 +341,12 @@ public class JoinUtil {
         colTypes.append(TypeInfoFactory.shortTypeInfo.getTypeName());
         colTypes.append(',');
       }
-      // remove the last ','
-      colNames.setLength(colNames.length() - 1);
-      colTypes.setLength(colTypes.length() - 1);
+      if (colNames.length() > 0) {
+        // remove the last ','
+        colNames.setLength(colNames.length() - 1);
+        colTypes.setLength(colTypes.length() - 1);
+      }
+
       Properties props = new Properties();
       props.put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode);
       props.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames.toString());

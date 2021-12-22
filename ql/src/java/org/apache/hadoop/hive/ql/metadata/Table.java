@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -38,9 +39,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -57,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -99,39 +103,43 @@ public class Table implements Serializable {
   /**
    * These fields are all cached fields.  The information comes from tTable.
    */
-  private Deserializer deserializer;
+  private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
   private Path path;
 
   private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
+  private transient MaterializedViewMetadata materializedViewMetadata;
 
-  private transient TableSpec tableSpec;
+  private TableSpec tableSpec;
 
-  private transient boolean materializedTable;
+  private boolean materializedTable;
 
   /** Note: This is set only for describe table purposes, it cannot be used to verify whether
    * a materialization is up-to-date or not. */
-  private transient Boolean outdatedForRewritingMaterializedView;
+  private Boolean outdatedForRewritingMaterializedView;
 
   /** Constraint related objects */
-  private transient PrimaryKeyInfo pki;
-  private transient ForeignKeyInfo fki;
-  private transient UniqueConstraint uki;
-  private transient NotNullConstraint nnc;
-  private transient DefaultConstraint dc;
-  private transient CheckConstraint cc;
+  private TableConstraintsInfo tableConstraintsInfo;
 
   /** Constraint related flags
    *  This is to track if constraints are retrieved from metastore or not
    */
-  private transient boolean isPKFetched=false;
-  private transient boolean isFKFetched=false;
-  private transient boolean isUniqueFetched=false;
-  private transient boolean isNotNullFetched=false;
-  private transient boolean isDefaultFetched=false;
-  private transient boolean isCheckFetched=false;
+  private boolean isTableConstraintsFetched=false;
+
+  private String metaTable;
+
+  /**
+   * The version of the table. For Iceberg tables this is the snapshotId.
+   */
+  private String asOfVersion = null;
+
+  /**
+   * The version of the table at the given timestamp. The format will be parsed with
+   * TimestampTZUtil.parse.
+   */
+  private String asOfTimestamp = null;
 
   /**
    * Used only for serialization.
@@ -169,6 +177,11 @@ public class Table implements Serializable {
 
     // copy constraints
     newTab.copyConstraints(this);
+
+    newTab.setAsOfTimestamp(this.asOfTimestamp);
+    newTab.setAsOfVersion(this.asOfVersion);
+
+    newTab.setMetaTable(this.getMetaTable());
     return newTab;
   }
 
@@ -251,7 +264,7 @@ public class Table implements Serializable {
           "at least one column must be specified for the table");
     }
     if (!isView()) {
-      if (null == getDeserializerFromMetaStore(false)) {
+      if (null == getDeserializer(false)) {
         throw new HiveException("must specify a non-null serDe");
       }
       if (null == getInputFormatClass()) {
@@ -303,6 +316,10 @@ public class Table implements Serializable {
     return tTable.getTableName();
   }
 
+  public TableName getFullTableName() {
+    return new TableName(getCatName(), getDbName(), getTableName());
+  }
+
   final public Path getDataLocation() {
     if (path == null) {
       path = getPath();
@@ -330,7 +347,7 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializerFromMetaStore(boolean skipConfError) {
     try {
-      return HiveMetaStoreUtils.getDeserializer(SessionState.getSessionConf(), tTable, skipConfError);
+      return HiveMetaStoreUtils.getDeserializer(SessionState.getSessionConf(), tTable, metaTable, skipConfError);
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -349,6 +366,10 @@ public class Table implements Serializable {
       throw new RuntimeException(e);
     }
     return storageHandler;
+  }
+
+  public void setStorageHandler(HiveStorageHandler sh){
+    storageHandler = sh;
   }
 
   public StorageHandlerInfo getStorageHandlerInfo() {
@@ -467,7 +488,7 @@ public class Table implements Serializable {
   }
 
   public String getProperty(String name) {
-    return tTable.getParameters().get(name);
+    return tTable.getParameters() != null ? tTable.getParameters().get(name) : null;
   }
 
   public boolean isImmutable(){
@@ -554,6 +575,12 @@ public class Table implements Serializable {
         return false;
       }
     } else if (!tTable.equals(other.tTable)) {
+      return false;
+    }
+    if (!Objects.equals(asOfTimestamp, other.asOfTimestamp)) {
+      return false;
+    }
+    if (!Objects.equals(asOfVersion, other.asOfVersion)) {
       return false;
     }
     return true;
@@ -934,16 +961,24 @@ public class Table implements Serializable {
   /**
    * @return the creation metadata (only for materialized views)
    */
-  public CreationMetadata getCreationMetadata() {
-    return tTable.getCreationMetadata();
+  public MaterializedViewMetadata getMVMetadata() {
+    if (tTable.getCreationMetadata() == null) {
+      return null;
+    }
+    if (materializedViewMetadata == null) {
+      materializedViewMetadata = new MaterializedViewMetadata(tTable.getCreationMetadata());
+    }
+
+    return materializedViewMetadata;
   }
 
   /**
-   * @param creationMetadata
+   * @param materializedViewMetadata
    *          the creation metadata (only for materialized views)
    */
-  public void setCreationMetadata(CreationMetadata creationMetadata) {
-    tTable.setCreationMetadata(creationMetadata);
+  public void setMaterializedViewMetadata(MaterializedViewMetadata materializedViewMetadata) {
+    this.materializedViewMetadata = materializedViewMetadata;
+    tTable.setCreationMetadata(materializedViewMetadata.creationMetadata);
   }
 
   public void clearSerDeInfo() {
@@ -1177,144 +1212,130 @@ public class Table implements Serializable {
    *  constraints DESCRIBE could set all type of constraints
    * */
 
-  /* This only return PK which are created with RELY */
-  public PrimaryKeyInfo getPrimaryKeyInfo() {
-    if(!this.isPKFetched) {
+  public TableConstraintsInfo getTableConstraintsInfo() {
+
+    if (!isTableConstraintsFetched) {
       try {
-        pki = Hive.get().getReliablePrimaryKeys(this.getDbName(), this.getTableName());
-        this.isPKFetched = true;
+        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true,
+            this.getTTable() != null ? this.getTTable().getId() : -1);
+        this.isTableConstraintsFetched = true;
       } catch (HiveException e) {
-        LOG.warn("Cannot retrieve PK info for table : " + this.getTableName()
-            + " ignoring exception: " + e);
+        LOG.warn("Cannot retrieve Table Constraints info for table : " + this.getTableName() + " ignoring exception: " + e);
+        tableConstraintsInfo = new TableConstraintsInfo();
       }
     }
-    return pki;
+    return tableConstraintsInfo;
   }
 
-  public void setPrimaryKeyInfo(PrimaryKeyInfo pki) {
-    this.pki = pki;
-    this.isPKFetched = true;
+  public void setTableConstraintsInfo(TableConstraintsInfo tableConstraintsInfo) {
+    this.tableConstraintsInfo = tableConstraintsInfo;
+    this.isTableConstraintsFetched = true;
+  }
+
+  /* This only return PK which are created with RELY */
+  public PrimaryKeyInfo getPrimaryKeyInfo() {
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
+    }
+    return tableConstraintsInfo.getPrimaryKeyInfo();
   }
 
   /* This only return FK constraints which are created with RELY */
   public ForeignKeyInfo getForeignKeyInfo() {
-    if(!isFKFetched) {
-      try {
-        fki = Hive.get().getReliableForeignKeys(this.getDbName(), this.getTableName());
-        this.isFKFetched = true;
-      } catch (HiveException e) {
-        LOG.warn(
-            "Cannot retrieve FK info for table : " + this.getTableName()
-                + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return fki;
-  }
-
-  public void setForeignKeyInfo(ForeignKeyInfo fki) {
-    this.fki = fki;
-    this.isFKFetched = true;
+    return tableConstraintsInfo.getForeignKeyInfo();
   }
 
   /* This only return UNIQUE constraint defined with RELY */
   public UniqueConstraint getUniqueKeyInfo() {
-    if(!isUniqueFetched) {
-      try {
-        uki = Hive.get().getReliableUniqueConstraints(this.getDbName(), this.getTableName());
-        this.isUniqueFetched = true;
-      } catch (HiveException e) {
-        LOG.warn(
-            "Cannot retrieve Unique Key info for table : " + this.getTableName()
-                + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return uki;
-  }
-
-  public void setUniqueKeyInfo(UniqueConstraint uki) {
-    this.uki = uki;
-    this.isUniqueFetched = true;
+    return tableConstraintsInfo.getUniqueConstraint();
   }
 
   /* This only return NOT NULL constraint defined with RELY */
   public NotNullConstraint getNotNullConstraint() {
-    if(!isNotNullFetched) {
-      try {
-        nnc = Hive.get().getReliableNotNullConstraints(this.getDbName(), this.getTableName());
-        this.isNotNullFetched = true;
-      } catch (HiveException e) {
-        LOG.warn("Cannot retrieve Not Null constraint info for table : "
-            + this.getTableName() + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return nnc;
-  }
-
-  public void setNotNullConstraint(NotNullConstraint nnc) {
-    this.nnc = nnc;
-    this.isNotNullFetched = true;
+    return tableConstraintsInfo.getNotNullConstraint();
   }
 
   /* This only return DEFAULT constraint defined with ENABLE */
   public DefaultConstraint getDefaultConstraint() {
-    if(!isDefaultFetched) {
-      try {
-        dc = Hive.get().getEnabledDefaultConstraints(this.getDbName(), this.getTableName());
-        this.isDefaultFetched = true;
-      } catch (HiveException e) {
-        LOG.warn("Cannot retrieve Default constraint info for table : "
-            + this.getTableName() + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return dc;
-  }
-
-  public void setDefaultConstraint(DefaultConstraint dc) {
-    this.dc = dc;
-    this.isDefaultFetched = true;
+    return tableConstraintsInfo.getDefaultConstraint();
   }
 
   /* This only return CHECK constraint defined with ENABLE */
   public CheckConstraint getCheckConstraint() {
-    if(!isCheckFetched) {
-      try{
-        cc = Hive.get().getEnabledCheckConstraints(this.getDbName(), this.getTableName());
-        this.isCheckFetched = true;
-      } catch (HiveException e) {
-        LOG.warn("Cannot retrieve Check constraint info for table : "
-            + this.getTableName() + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return cc;
-  }
-
-  public void setCheckConstraint(CheckConstraint cc) {
-    this.cc = cc;
-    this.isCheckFetched = true;
+    return tableConstraintsInfo.getCheckConstraint();
   }
 
   /** This shouldn't use get apis because those api call metastore
    * to fetch constraints.
-   * getMetaData only need to make a copy of existing constraints, even if those are not fetched
+   * getMetaData only need to make a reference copy of existing constraints, even if those are not fetched
    */
   public void copyConstraints(final Table tbl) {
-    this.pki = tbl.pki;
-    this.isPKFetched = tbl.isPKFetched;
-
-    this.fki = tbl.fki;
-    this.isFKFetched = tbl.isFKFetched;
-
-    this.uki = tbl.uki;
-    this.isUniqueFetched = tbl.isUniqueFetched;
-
-    this.nnc = tbl.nnc;
-    this.isNotNullFetched = tbl.isNotNullFetched;
-
-    this.dc = tbl.dc;
-    this.isDefaultFetched = tbl.isDefaultFetched;
-
-    this.cc = tbl.cc;
-    this.isCheckFetched = tbl.isCheckFetched;
+    this.tableConstraintsInfo = tbl.tableConstraintsInfo;
+    this.isTableConstraintsFetched = tbl.isTableConstraintsFetched;
   }
 
+  /**
+   * This method ignores the write Id, while comparing two tables.
+   *
+   * @param tbl table to compare with
+   * @return
+   */
+  public boolean equalsWithIgnoreWriteId(Table tbl ) {
+    long targetWriteId = getTTable().getWriteId();
+    long entityWriteId = tbl.getTTable().getWriteId();
+    getTTable().setWriteId(0L);
+    tbl.getTTable().setWriteId(0L);
+    boolean result = equals(tbl);
+    getTTable().setWriteId(targetWriteId);
+    tbl.getTTable().setWriteId(entityWriteId);
+    return result;
+  }
+
+  public String getAsOfVersion() {
+    return asOfVersion;
+  }
+
+  public void setAsOfVersion(String asOfVersion) {
+    this.asOfVersion = asOfVersion;
+  }
+
+  public String getAsOfTimestamp() {
+    return asOfTimestamp;
+  }
+
+  public void setAsOfTimestamp(String asOfTimestamp) {
+    this.asOfTimestamp = asOfTimestamp;
+  }
+
+  public String getMetaTable() {
+    return metaTable;
+  }
+
+  public void setMetaTable(String metaTable) {
+    this.metaTable = metaTable;
+  }
+
+  public SourceTable createSourceTable() {
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTable(this.tTable);
+    sourceTable.setInsertedCount(0L);
+    sourceTable.setUpdatedCount(0L);
+    sourceTable.setDeletedCount(0L);
+    return sourceTable;
+  }
 };

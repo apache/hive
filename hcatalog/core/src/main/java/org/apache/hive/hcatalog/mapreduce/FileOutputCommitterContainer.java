@@ -500,19 +500,14 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         if (immutable){
           // Dryrun checks are meaningless for mutable table - we should always succeed
           // unless there is a runtime IOException.
-          if(LOG.isDebugEnabled()) {
-            LOG.debug("Testing if moving file: [" + file + "] to ["
-                + finalOutputPath + "] would cause a problem");
-          }
+          LOG.debug("Testing if moving file: [{}] to [{}] would cause a problem", file, finalOutputPath);
           if (fs.exists(finalOutputPath)) {
             throw new HCatException(ErrorType.ERROR_MOVE_FAILED, "Data already exists in "
                 + finalOutputPath + ", duplicate publish not possible.");
           }
         }
       } else {
-        if(LOG.isDebugEnabled()) {
-          LOG.debug("Moving file: [ " + file + "] to [" + finalOutputPath + "]");
-        }
+        LOG.debug("Moving file: [{}] to [{}]", file, finalOutputPath);
         // Make sure the parent directory exists.  It is not an error
         // to recreate an existing directory
         fs.mkdirs(finalOutputPath.getParent());
@@ -565,9 +560,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
               // otherwise rename cannot move file to the right place
               fs.create(placeholder).close();
             }
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Moving directory: " + file + " to " + parentDir);
-            }
+            LOG.debug("Moving directory: {} to {}", file, parentDir);
 
             // If custom dynamic location provided, need to rename to final output path
             Path dstPath = !customDynamicLocationUsed ? parentDir : finalOutputPath;
@@ -681,7 +674,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
       // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
       String dynPathSpec = loadPath.toUri().getPath();
-      dynPathSpec = dynPathSpec.replaceAll("__HIVE_DEFAULT_PARTITION__", "*");
+      dynPathSpec = dynPathSpec.replace("__HIVE_DEFAULT_PARTITION__", "*");
 
       //      LOG.info("Searching for "+dynPathSpec);
       Path pathPattern = new Path(dynPathSpec);

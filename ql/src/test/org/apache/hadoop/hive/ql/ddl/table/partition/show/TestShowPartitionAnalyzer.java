@@ -18,9 +18,15 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.partition.show;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -36,17 +42,28 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 public class TestShowPartitionAnalyzer {
+
+  private HiveConf conf;
+
+  @Before
+  public void before() throws Exception {
+    conf = new HiveConf();
+    SessionState.start(conf);
+  }
+
+  @After
+  public void after() throws Exception {
+    SessionState.get().close();
+  }
 
   @Test
   public void testGetShowPartitionsFilter() throws Exception {
@@ -65,20 +82,13 @@ public class TestShowPartitionAnalyzer {
     TypeCheckCtx tcCtx = new TypeCheckCtx(rwsch);
     // Numeric columns compare with the default partition
     String showPart1 = "show partitions databaseFoo.tableBar " +
-        "where ds > '2010-03-03' and hr = '__HIVE_DEFAULT_PARTITION__' and "
+        "where ds > '2010-03-03' and "
         + "rs <= 421021";
-    ASTNode command = ParseUtils.parse(showPart1);
+    ASTNode command = ParseUtils.parse(showPart1, new Context(conf));
     ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)genExprNodeByDefault(tcCtx, command);
-    // the hr op '__HIVE_DEFAULT_PARTITION__' converts to null
-    Assert.assertEquals(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo,
-        null).getExprString(), funcDesc.getChildren().get(1).getExprString());
-    // the type between the column ds and the constant '2010-03-03' do not mismatch
-    ExprNodeGenericFuncDesc child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(0);
-    Assert.assertEquals("ds", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
-    Assert.assertEquals("2010-03-03", ((ExprNodeConstantDesc)child.getChildren().get(1)).getValue());
 
     // rs <= 421021
-    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(2);
+    ExprNodeGenericFuncDesc child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(1);
     Assert.assertEquals("rs", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
     Assert.assertEquals(421021, ((ExprNodeConstantDesc)child.getChildren().get(1)).getValue());
 
@@ -88,7 +98,7 @@ public class TestShowPartitionAnalyzer {
     ShowPartitionAnalyzer analyzer = new ShowPartitionAnalyzer(QueryState.getNewQueryState(
         new HiveConf(), null));
     funcDesc = (ExprNodeGenericFuncDesc)analyzer.getShowPartitionsFilter(table, command);
-    Assert.assertTrue(funcDesc.getChildren().size() == 3);
+    Assert.assertTrue(funcDesc.getChildren().size() == 2);
     // ds > '2010-03-03'
     child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(0);
     Assert.assertEquals("ds", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
@@ -96,23 +106,16 @@ public class TestShowPartitionAnalyzer {
     Assert.assertEquals(child.getChildren().get(0).getTypeString(),
         child.getChildren().get(1).getTypeString());
     // rs <= 421021
-    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(2);
+    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(1);
     Assert.assertEquals("rs", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
     Assert.assertEquals(TypeInfoFactory.stringTypeInfo, child.getChildren().get(0).getTypeInfo());
     Assert.assertEquals(child.getChildren().get(0).getTypeString(),
         child.getChildren().get(1).getTypeString());
 
-    // hr = '__HIVE_DEFAULT_PARTITION__'
-    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(1);
-    Assert.assertTrue(child.getChildren().size() == 1);
-    Assert.assertEquals("hr", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
-    Assert.assertEquals(child.getGenericUDF().getUdfName(),
-        FunctionRegistry.getFunctionInfo("isnull").getGenericUDF().getUdfName());
-
     // invalid input
     String showPart2 = "show partitions databaseFoo.tableBar " +
         "where hr > 'a123' and hr <= '2346b'";
-    command = ParseUtils.parse(showPart2);
+    command = ParseUtils.parse(showPart2, new Context(conf));
     try {
       analyzer.getShowPartitionsFilter(table, command);
       Assert.fail("show throw semantic exception");

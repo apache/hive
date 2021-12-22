@@ -16,6 +16,9 @@ create table `masking_test_subq_n1` as select cast(key as int) as key, value fro
 
 create view `v1_n9` as select * from `masking_test_subq_n1`;
 
+explain cbo
+select * from `v1_n9`
+limit 20;
 explain
 select * from `v1_n9`
 limit 20;

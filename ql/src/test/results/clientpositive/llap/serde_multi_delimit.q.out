@@ -198,6 +198,43 @@ NULL	NULL	NULL	NULL	NULL
 8	8	NULL	8	8
 9	9	NULL	9	9
 10101010	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE TABLE t4_multi_delimit(colA string,
+  colB string,
+  colC string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4_multi_delimit
+POSTHOOK: query: CREATE TABLE t4_multi_delimit(colA string,
+  colB string,
+  colC string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4_multi_delimit
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t4_multi_delimit.csv" INTO TABLE t4_multi_delimit
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t4_multi_delimit
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t4_multi_delimit.csv" INTO TABLE t4_multi_delimit
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t4_multi_delimit
+PREHOOK: query: SELECT * FROM t4_multi_delimit
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4_multi_delimit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t4_multi_delimit
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4_multi_delimit
+#### A masked pattern was here ####
+Ð¡Ð¾Ðº	dsadsa	NULL
+ááé		üóüóüóüóüó
+		
+áűáűáűáű		
+űűű	ááá	óóó
 PREHOOK: query: DROP TABLE t1_multi_delimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_multi_delimit
@@ -230,3 +267,11 @@ POSTHOOK: query: DROP TABLE t3_multi_delimit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t3_multi_delimit
 POSTHOOK: Output: default@t3_multi_delimit
+PREHOOK: query: DROP TABLE t4_multi_delimit
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t4_multi_delimit
+PREHOOK: Output: default@t4_multi_delimit
+POSTHOOK: query: DROP TABLE t4_multi_delimit
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t4_multi_delimit
+POSTHOOK: Output: default@t4_multi_delimit

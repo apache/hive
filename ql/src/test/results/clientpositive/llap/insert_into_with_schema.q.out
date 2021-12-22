@@ -235,6 +235,7 @@ PREHOOK: Output: x314@pageviews
 POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 17, '17mail.com', '2014-09-23')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: x314@pageviews
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=17
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).link SCRIPT []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).source_n0 SIMPLE []
@@ -246,6 +247,7 @@ PREHOOK: Output: x314@pageviews
 POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 19, '19mail.com', '2014-09-24')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: x314@pageviews
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-24/i=19
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).link SCRIPT []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).source_n0 SIMPLE []
@@ -257,6 +259,7 @@ PREHOOK: Output: x314@pageviews
 POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link) VALUES ('jsmith', 23, '23mail.com')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: x314@pageviews
 POSTHOOK: Output: x314@pageviews@datestamp=__HIVE_DEFAULT_PARTITION__/i=23
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).link SCRIPT []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).source_n0 SIMPLE []

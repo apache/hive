@@ -65,7 +65,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ss_ext_list_price (type: decimal(7,2)), ss_ext_discount_amt (type: int)
                     outputColumnNames: ss_ext_list_price, ss_ext_discount_amt
@@ -77,7 +77,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(CASE WHEN ((ss_ext_discount_amt = 101)) THEN (ss_ext_list_price) ELSE (null) END)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64(IfExprColumnNull(col 5:boolean, col 0:decimal(7,2)/DECIMAL_64, null)(children: LongColEqualLongScalar(col 2:int, val 101) -> 5:boolean, col 0:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                          aggregators: VectorUDAFSumDecimal64(IfExprColumnNull(col 6:boolean, col 0:decimal(7,2)/DECIMAL_64, null)(children: LongColEqualLongScalar(col 2:int, val 101) -> 6:boolean, col 0:decimal(7,2)/DECIMAL_64) -> 7:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -199,7 +199,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ss_ext_list_price (type: decimal(7,2))
                     outputColumnNames: ss_ext_list_price
@@ -211,7 +211,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(COALESCE(ss_ext_list_price,1.1))
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64(VectorCoalesce(columns [0, 5])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 5:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                          aggregators: VectorUDAFSumDecimal64(VectorCoalesce(columns [0, 6])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 6:decimal(7,2)/DECIMAL_64) -> 7:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -333,7 +333,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ss_ext_list_price (type: decimal(7,2))
                     outputColumnNames: ss_ext_list_price
@@ -345,7 +345,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(COALESCE(ss_ext_list_price,1.1))
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64(VectorCoalesce(columns [0, 5])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 5:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                          aggregators: VectorUDAFSumDecimal64(VectorCoalesce(columns [0, 6])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 6:decimal(7,2)/DECIMAL_64) -> 7:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

@@ -7,6 +7,7 @@ build-eclipse
 .settings
 .factorypath
 *.launch
+*.metadata
 *~
 metastore_db
 common/src/gen
@@ -38,3 +39,5 @@ standalone-metastore/metastore-server/src/gen/version
 launch.json
 settings.json
 kafka-handler/src/test/gen
+**/.vscode/
+/.recommenders/

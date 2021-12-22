@@ -43,6 +43,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_src_part
 POSTHOOK: Output: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Output: default@merge_src_part@ds=2008-04-09
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -118,7 +119,7 @@ STAGE PLANS:
                       outputColumnNames: col1, col2
                       Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector(col1, 'hll'), max(length(col2)), avg(COALESCE(length(col2),0)), count(col2), compute_bit_vector(col2, 'hll')
+                        aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector_hll(col1), max(length(col2)), avg(COALESCE(length(col2),0)), count(col2), compute_bit_vector_hll(col2)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -132,8 +133,8 @@ STAGE PLANS:
                           tag: -1
                           value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
                           auto parallelism: false
-            Execution mode: llap
-            LLAP IO: no inputs
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -172,11 +173,11 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /merge_src [merge_src]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2318,6 +2319,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`merge_src_part`
 WHERE `ds` IS NOT NULL
@@ -2379,7 +2381,7 @@ STAGE PLANS:
                       outputColumnNames: key, value, ds
                       Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector(value, 'hll')
+                        aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                         keys: ds (type: string)
                         minReductionHashAggr: 0.99
                         mode: hash
@@ -2396,8 +2398,8 @@ STAGE PLANS:
                           tag: -1
                           value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: bigint), _col9 (type: binary)
                           auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2477,11 +2479,11 @@ STAGE PLANS:
               /merge_src_part/ds=2008-04-08 [merge_src_part]
               /merge_src_part/ds=2008-04-09 [merge_src_part]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -2568,6 +2570,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-09
 POSTHOOK: Lineage: merge_src_part2 PARTITION(ds=2008-04-08).key SIMPLE [(merge_src_part)merge_src_part.FieldSchema(name:key, type:string, comment:null), ]
@@ -4627,6 +4630,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -4664,7 +4668,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                       auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4744,7 +4748,7 @@ STAGE PLANS:
               /merge_src_part/ds=2008-04-08 [merge_src_part]
               /merge_src_part/ds=2008-04-09 [merge_src_part]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -4784,7 +4788,7 @@ STAGE PLANS:
                   outputColumnNames: key, value, ds
                   Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector(value, 'hll')
+                    aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                     keys: ds (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -4871,6 +4875,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
+POSTHOOK: Output: default@merge_src_part2
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-09
 POSTHOOK: Lineage: merge_src_part2 PARTITION(ds=2008-04-08).key SIMPLE [(merge_src_part)merge_src_part.FieldSchema(name:key, type:string, comment:null), ]

@@ -91,7 +91,7 @@ data_type           	bigint
 min                 	1                   
 max                 	70                  
 num_nulls           	72                  
-distinct_count      	73                  
+distinct_count      	70                  
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
@@ -120,7 +120,7 @@ data_type           	bigint
 min                 	1                   
 max                 	70                  
 num_nulls           	72                  
-distinct_count      	73                  
+distinct_count      	70                  
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    

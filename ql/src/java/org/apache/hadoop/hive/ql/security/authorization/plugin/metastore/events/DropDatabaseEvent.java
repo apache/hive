@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -29,6 +27,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ import java.util.List;
  */
 
 public class DropDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log  LOG = LogFactory.getLog(DropDatabaseEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DropDatabaseEvent.class);
 
   private String COMMAND_STR = "drop database";
 
@@ -54,9 +54,7 @@ public class DropDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> DropDatabaseEvent.getInputHObjs()");
-    }
+    LOG.debug("==> DropDatabaseEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreDropDatabaseEvent      event    = (PreDropDatabaseEvent) preEventContext;
@@ -66,9 +64,7 @@ public class DropDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, database);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== DropDatabaseEvent.getInputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== DropDatabaseEvent.getInputHObjs(): ret={}", ret);
 
     return ret;
   }

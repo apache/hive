@@ -23,11 +23,11 @@ STAGE PLANS:
         TableScan
           alias: x
           filterExpr: (ds = '2008-04-08') (type: boolean)
-          Select Operator
-            expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Limit
-              Number of rows: 10
+          Limit
+            Number of rows: 10
+            Select Operator
+              expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3
               ListSink
 
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = "2008-04-08" LIMIT 10

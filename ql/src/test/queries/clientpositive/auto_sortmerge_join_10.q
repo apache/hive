@@ -48,6 +48,8 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key;
 
+set hive.auto.convert.sortmerge.join=true;
+
 -- One of the subqueries contains a groupby, so it should not be converted to a sort-merge join.
 explain
 select count(*) from 
@@ -61,3 +63,49 @@ select count(*) from
     join
   (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key;
+
+
+set hive.auto.convert.sortmerge.join=true;
+set hive.optimize.semijoin.conversion = false;
+
+explain
+select count(*) from
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1
+    join
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
+  on subq1.key = subq2.key;
+
+select count(*) from
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1
+    join
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
+  on subq1.key = subq2.key;
+
+explain
+select subq2.key from
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1
+    join
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
+  on subq1.key = subq2.key order by subq2.key;
+
+select subq2.key from
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1
+    join
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
+  on subq1.key = subq2.key order by subq2.key;
+
+explain
+select count(t1.key) from tbl1_n5 as t1 where not exists
+    (select 1 from tbl2_n4 as t2 where t1.key = t2.key);
+
+select count(t1.key) from tbl1_n5 as t1 where not exists
+     (select 1 from tbl2_n4 as t2 where t1.key = t2.key);
+
+set hive.auto.convert.anti.join=false;
+
+explain
+select count(t1.key) from tbl1_n5 as t1 where not exists
+    (select 1 from tbl2_n4 as t2 where t1.key = t2.key);
+
+select count(t1.key) from tbl1_n5 as t1 where not exists
+     (select 1 from tbl2_n4 as t2 where t1.key = t2.key);

@@ -58,8 +58,18 @@ LOAD DATA LOCAL INPATH "../../data/files/t3_multi_delimit.csv" INTO TABLE t3_mul
 
 SELECT * FROM t3_multi_delimit;
 
+CREATE TABLE t4_multi_delimit(colA string,
+  colB string,
+  colC string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH "../../data/files/t4_multi_delimit.csv" INTO TABLE t4_multi_delimit;
+
+SELECT * FROM t4_multi_delimit;
+
 
 DROP TABLE t1_multi_delimit;
 DROP TABLE t11_csv_serde;
 DROP TABLE t2_multi_delimit;
 DROP TABLE t3_multi_delimit;
+DROP TABLE t4_multi_delimit;

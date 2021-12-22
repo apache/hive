@@ -1,0 +1,1 @@
+FAILED: SemanticException No existing plan found for the execute statement. Please make sure to add one using prepare

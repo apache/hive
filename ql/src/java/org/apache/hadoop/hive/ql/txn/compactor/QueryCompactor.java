@@ -28,12 +28,13 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import java.util.List;
 abstract class QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
-  private static final String TMPDIR = "_tmp";
 
   /**
    * Start a query based compaction.
@@ -59,7 +59,8 @@ abstract class QueryCompactor {
    * @throws IOException compaction cannot be finished.
    */
   abstract void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException, HiveException;
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException,
+      HiveException;
 
   /**
    * This is the final step of the compaction, which can vary based on compaction type. Usually this involves some file
@@ -93,8 +94,14 @@ abstract class QueryCompactor {
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
       throws IOException {
+    String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
+    }
     Util.disableLlapCaching(conf);
-    String user = UserGroupInformation.getCurrentUser().getShortUserName();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
+    String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
     long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
     try {
@@ -115,6 +122,18 @@ abstract class QueryCompactor {
       }
       for (String query : compactionQueries) {
         LOG.info("Running {} compaction via query: {}", compactionInfo.isMajorCompaction() ? "major" : "minor", query);
+        if (!compactionInfo.isMajorCompaction()) {
+          // There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
+          // was not correlated correctly with the bucket numbers. So we could end up with files containing rows from
+          // multiple buckets or rows from the same bucket could end up in different FileSinkOperator. This behaviour resulted
+          // corrupted files. To fix this, the FileSinkOperator has been extended to be able to handle rows from different buckets.
+          // But we also had to be sure that all rows from the same bucket would end up in the same FileSinkOperator. Therefore
+          // the ReduceSinkOperator has also been extended to distribute the rows by bucket numbers. To use this logic,
+          // these two optimisations have to be turned off for the MINOR compaction. The MAJOR compaction works differently
+          // and its query doesn't use reducers, so these optimisations should not be turned off for MAJOR compaction.
+          conf.set("hive.optimize.bucketingsorting", "false");
+          conf.set("hive.vectorized.execution.enabled", "false");
+        }
         DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds, compactorTxnId);
       }
       commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);
@@ -166,16 +185,17 @@ abstract class QueryCompactor {
      * @param writingBase if true, we are creating a base directory, otherwise a delta
      * @param createDeleteDelta if true, the delta dir we are creating is a delete delta
      * @param bucket0 whether to specify 0 as the bucketid
+     * @param directory AcidUtils.Directory - only required for minor compaction result (delta) dirs
      *
      * @return Path of new base/delta/delete delta directory
      */
     static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
-        boolean writingBase, boolean createDeleteDelta, boolean bucket0) {
-      long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+        boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
+      long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
       long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
       AcidOutputFormat.Options options =
-          new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minOpenWriteId)
+          new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minWriteID)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)
               .writingBase(writingBase).writingDeleteDelta(createDeleteDelta);
       if (bucket0) {
@@ -183,6 +203,26 @@ abstract class QueryCompactor {
       }
       Path location = new Path(sd.getLocation());
       return AcidUtils.baseOrDeltaSubdirPath(location, options);
+    }
+
+    /**
+     * Get the min writeId for the new result directory. This only matters if the result directory will be a delta
+     * directory i.e. minor compaction.
+     * AcidUtils.Directory sorts delta directory names in alphabetical order: First it lists the delete deltas
+     * (delete_delta_x_y) then deltas (delta_x_y), both sorted by x, which is the min write id we're looking for.
+     * Get the the minimum value of x.
+     * @param directory holds information about the deltas we are compacting
+     * @return the smallest min write id found in deltas and delete deltas
+     */
+    private static long getMinWriteID(AcidDirectory directory) {
+      long minWriteID = Long.MAX_VALUE;
+      for (AcidUtils.ParsedDelta delta : directory.getCurrentDirectories()) {
+        minWriteID = Math.min(delta.getMinWriteId(), minWriteID);
+        if (!delta.isDeleteDelta()) {
+          break;
+        }
+      }
+      return minWriteID;
     }
 
     /**
@@ -219,7 +259,7 @@ abstract class QueryCompactor {
     /**
      * Remove the delta directories of aborted transactions.
      */
-    static void removeFilesForMmTable(HiveConf conf, AcidUtils.Directory dir) throws IOException {
+    static void removeFilesForMmTable(HiveConf conf, AcidDirectory dir) throws IOException {
       List<Path> filesToDelete = dir.getAbortedDirectories();
       if (filesToDelete.size() < 1) {
         return;

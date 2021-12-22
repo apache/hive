@@ -51,6 +51,7 @@ import org.junit.runner.RunWith;
 
 import com.google.common.collect.Lists;
 
+@org.junit.Ignore("unstable test HIVE-23681")
 @RunWith(RetryTestRunner.class)
 public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
   @Rule

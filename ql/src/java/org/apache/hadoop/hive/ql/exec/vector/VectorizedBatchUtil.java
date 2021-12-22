@@ -632,10 +632,15 @@ public class VectorizedBatchUtil {
   private static final byte[] EMPTY_BYTES = new byte[0];
   private static final HiveIntervalDayTime emptyIntervalDayTime = new HiveIntervalDayTime(0, 0);
 
+  public static void copyNonSelectedColumnVector(VectorizedRowBatch sourceBatch,
+      int sourceColumnNum, VectorizedRowBatch targetBatch, int targetColumnNum, int size) {
+    copyNonSelectedColumnVector(sourceBatch, sourceColumnNum, targetBatch, targetColumnNum, size, 0);
+  }
+
   public static void copyNonSelectedColumnVector(
       VectorizedRowBatch sourceBatch, int sourceColumnNum,
       VectorizedRowBatch targetBatch, int targetColumnNum,
-      int size) {
+      int size, int startIndex) {
 
     ColumnVector sourceColVector = sourceBatch.cols[sourceColumnNum];
     ColumnVector targetColVector = targetBatch.cols[targetColumnNum];
@@ -651,6 +656,7 @@ public class VectorizedBatchUtil {
     }
     if (sourceColVector.isRepeating) {
       size = 1;
+      startIndex = 0; // we must copy the first item in case of isRepeating
       targetColVector.isRepeating = true;
     } else {
       targetColVector.isRepeating = false;
@@ -662,14 +668,14 @@ public class VectorizedBatchUtil {
       {
         long[] sourceVector = ((LongColumnVector) sourceColVector).vector;
         long[] targetVector = ((LongColumnVector) targetColVector).vector;
-        System.arraycopy(sourceVector, 0, targetVector, 0, size);
+        System.arraycopy(sourceVector, startIndex, targetVector, 0, size);
       }
       break;
     case DOUBLE:
       {
         double[] sourceVector = ((DoubleColumnVector) sourceColVector).vector;
         double[] targetVector = ((DoubleColumnVector) targetColVector).vector;
-        System.arraycopy(sourceVector, 0, targetVector, 0, size);
+        System.arraycopy(sourceVector, startIndex, targetVector, 0, size);
       }
       break;
     case BYTES:
@@ -682,14 +688,14 @@ public class VectorizedBatchUtil {
         BytesColumnVector targetBytesColVector = ((BytesColumnVector) targetColVector);
   
         if (sourceColVector.noNulls) {
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             targetBytesColVector.setVal(i, sourceVector[i], sourceStart[i], sourceLength[i]);
           }
         } else {
           boolean[] sourceIsNull = sourceColVector.isNull;
   
           // Target isNull was copied at beginning of method.
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             if (!sourceIsNull[i]) {
               targetBytesColVector.setVal(i, sourceVector[i], sourceStart[i], sourceLength[i]);
             } else {
@@ -707,14 +713,14 @@ public class VectorizedBatchUtil {
         DecimalColumnVector targetDecimalColVector = ((DecimalColumnVector) targetColVector);
 
         if (sourceColVector.noNulls) {
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             targetDecimalColVector.set(i, sourceVector[i]);
           }
         } else {
           boolean[] sourceIsNull = sourceColVector.isNull;
 
           // Target isNull was copied at beginning of method.
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             if (!sourceIsNull[i]) {
               targetDecimalColVector.set(i, sourceVector[i]);
             } else {
@@ -735,7 +741,7 @@ public class VectorizedBatchUtil {
         int[] targetNanos = targetTimestampColVector.nanos;
 
         if (sourceColVector.noNulls) {
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             targetTime[i] = sourceTime[i];
             targetNanos[i] = sourceNanos[i];
           }
@@ -743,7 +749,7 @@ public class VectorizedBatchUtil {
           boolean[] sourceIsNull = sourceColVector.isNull;
   
           // Target isNull was copied at beginning of method.
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             if (!sourceIsNull[i]) {
               targetTime[i] = sourceTime[i];
               targetNanos[i] = sourceNanos[i];
@@ -762,7 +768,7 @@ public class VectorizedBatchUtil {
         IntervalDayTimeColumnVector targetIntervalDayTimeColVector = ((IntervalDayTimeColumnVector) targetColVector);
 
         if (sourceColVector.noNulls) {
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             targetIntervalDayTimeColVector.set(
                 i, targetIntervalDayTimeColVector.asScratchIntervalDayTime(i));
           }
@@ -770,7 +776,7 @@ public class VectorizedBatchUtil {
           boolean[] sourceIsNull = sourceColVector.isNull;
 
           // Target isNull was copied at beginning of method.
-          for (int i = 0; i < size; i++) {
+          for (int i = startIndex; i < size; i++) {
             if (!sourceIsNull[i]) {
               targetIntervalDayTimeColVector.set(
                   i, targetIntervalDayTimeColVector.asScratchIntervalDayTime(i));

@@ -1,0 +1,42 @@
+Ln:1 DECLARE a BIGINT = 3
+Ln:2 DECLARE b DECIMAL = 4
+Ln:3 DECLARE c DOUBLE = 5.0
+Ln:4 DECLARE s STRING = 'abc'
+6
+7
+8.0
+8
+7
+9
+10.0
+8.0
+9
+abcabc
+0
+-1
+-2.0
+0
+1
+-1
+0.0
+2.0
+1
+9
+12
+15.0
+16
+12
+20
+25.0
+15.0
+20
+1
+0.75
+0.6
+1
+4
+0.8
+1.0
+1.6666666666666667
+1.25
+Ln:61 Unsupported data types in '/' operator (STRING/BIGINT)

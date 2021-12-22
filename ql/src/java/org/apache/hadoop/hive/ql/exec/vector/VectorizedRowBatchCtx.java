@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -185,13 +187,20 @@ public class VectorizedRowBatchCtx {
 
   public int findVirtualColumnNum(VirtualColumn virtualColumn) {
     // Virtual columns start after the last partition column.
-    int resultColumnNum = dataColumnCount + partitionColumnCount;
-    for (VirtualColumn neededVirtualColumn : neededVirtualColumns) {
-      if (neededVirtualColumn.equals(virtualColumn)) {
-        return resultColumnNum;
+    int partitionEndColumnNum = dataColumnCount + partitionColumnCount;
+    final int virtualEndColumnNum = partitionEndColumnNum + virtualColumnCount;
+    for (int virtualColumnNum = partitionEndColumnNum; virtualColumnNum < virtualEndColumnNum; virtualColumnNum++) {
+      String virtualColumnName = rowColumnNames[virtualColumnNum];
+      if (!virtualColumnName.equals(virtualColumn.getName())) {
+        continue;
       }
-      resultColumnNum++;
+      if (!isVirtualColumnNeeded(virtualColumnName)) {
+        continue;
+      }
+
+      return virtualColumnNum;
     }
+
     return -1;
   }
 
@@ -375,6 +384,27 @@ public class VectorizedRowBatchCtx {
     return result;
   }
 
+  public void setBucketAndWriteIdOf(VectorizedRowBatch vectorizedRowBatch, BucketIdentifier bucketIdentifier) {
+    if (bucketIdentifier == null) {
+      return;
+    }
+
+    int virtualColumnNum = findVirtualColumnNum(VirtualColumn.ROWID);
+    if (virtualColumnNum == -1) {
+      return;
+    }
+
+    StructColumnVector rowIdStructColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
+
+    LongColumnVector writeIdColVector = (LongColumnVector) rowIdStructColVector.fields[0];
+    writeIdColVector.isRepeating = true;
+    writeIdColVector.vector[0] = bucketIdentifier.getWriteId();
+    LongColumnVector bucketIdColVector = (LongColumnVector) rowIdStructColVector.fields[1];
+    bucketIdColVector.isRepeating = true;
+    bucketIdColVector.vector[0] = bucketIdentifier.getBucketProperty();
+    LongColumnVector rowIdColVector = (LongColumnVector) rowIdStructColVector.fields[2];
+  }
+
   /**
    * Add the partition values to the batch
    *
@@ -388,203 +418,210 @@ public class VectorizedRowBatchCtx {
 
   public void addPartitionColsToBatch(ColumnVector[] cols, Object[] partitionValues)
   {
+    int[] colIndices = IntStream.range(dataColumnCount, dataColumnCount + partitionColumnCount).toArray();
+
     if (partitionValues != null) {
-      for (int i = 0; i < partitionColumnCount; i++) {
-        Object value = partitionValues[i];
+      for (int i = 0; i < colIndices.length; i++) {
+        int colIndex = colIndices[i];
+        addPartitionColsToBatch(cols[colIndex], partitionValues[i], colIndex);
+      }
+    }
+  }
 
-        int colIndex = dataColumnCount + i;
-        String partitionColumnName = rowColumnNames[colIndex];
-        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) rowColumnTypeInfos[colIndex];
-        switch (primitiveTypeInfo.getPrimitiveCategory()) {
-        case BOOLEAN: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill((Boolean) value == true ? 1 : 0);
-          }
+  public void addPartitionColsToBatch(ColumnVector col, Object value, int colIndex)
+  {
+    String partitionColumnName = rowColumnNames[colIndex];
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) rowColumnTypeInfos[colIndex];
+    switch (primitiveTypeInfo.getPrimitiveCategory()) {
+    case BOOLEAN: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill((Boolean) value == true ? 1 : 0);
+      }
+    }
+    break;
+
+    case BYTE: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill((Byte) value);
+      }
+    }
+    break;
+
+    case SHORT: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill((Short) value);
+      }
+    }
+    break;
+
+    case INT: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill((Integer) value);
+      }
+    }
+    break;
+
+    case LONG: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill((Long) value);
+      }
+    }
+    break;
+
+    case DATE: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill(DateWritableV2.dateToDays((Date) value));
+      }
+    }
+    break;
+
+    case TIMESTAMP: {
+      TimestampColumnVector lcv = (TimestampColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill(((Timestamp) value).toSqlTimestamp());
+      }
+    }
+    break;
+
+    case INTERVAL_YEAR_MONTH: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      if (value == null) {
+        lcv.noNulls = false;
+        lcv.isNull[0] = true;
+        lcv.isRepeating = true;
+      } else {
+        lcv.fill(((HiveIntervalYearMonth) value).getTotalMonths());
+      }
+    }
+    break;
+
+    case INTERVAL_DAY_TIME: {
+      IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) col;
+      if (value == null) {
+        icv.noNulls = false;
+        icv.isNull[0] = true;
+        icv.isRepeating = true;
+      } else {
+        icv.fill(((HiveIntervalDayTime) value));
+      }
+    }
+    break;
+
+    case FLOAT: {
+      DoubleColumnVector dcv = (DoubleColumnVector) col;
+      if (value == null) {
+        dcv.noNulls = false;
+        dcv.isNull[0] = true;
+        dcv.isRepeating = true;
+      } else {
+        dcv.fill((Float) value);
+      }
+    }
+    break;
+
+    case DOUBLE: {
+      DoubleColumnVector dcv = (DoubleColumnVector) col;
+      if (value == null) {
+        dcv.noNulls = false;
+        dcv.isNull[0] = true;
+        dcv.isRepeating = true;
+      } else {
+        dcv.fill((Double) value);
+      }
+    }
+    break;
+
+    case DECIMAL: {
+      DataTypePhysicalVariation dataTypePhysicalVariation = rowDataTypePhysicalVariations != null ?
+        rowDataTypePhysicalVariations[colIndex] : DataTypePhysicalVariation.NONE;
+
+      if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+        Decimal64ColumnVector dv = (Decimal64ColumnVector) col;
+        if (value == null) {
+          dv.noNulls = false;
+          dv.isNull[0] = true;
+          dv.isRepeating = true;
+        } else {
+          dv.fill(((HiveDecimal) value).longValue());
         }
-        break;
-
-        case BYTE: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill((Byte) value);
-          }
-        }
-        break;
-
-        case SHORT: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill((Short) value);
-          }
-        }
-        break;
-
-        case INT: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill((Integer) value);
-          }
-        }
-        break;
-
-        case LONG: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill((Long) value);
-          }
-        }
-        break;
-
-        case DATE: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill(DateWritableV2.dateToDays((Date) value));
-          }
-        }
-        break;
-
-        case TIMESTAMP: {
-          TimestampColumnVector lcv = (TimestampColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill(((Timestamp) value).toSqlTimestamp());
-          }
-        }
-        break;
-
-        case INTERVAL_YEAR_MONTH: {
-          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
-          if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
-          } else {
-            lcv.fill(((HiveIntervalYearMonth) value).getTotalMonths());
-          }
-        }
-
-        case INTERVAL_DAY_TIME: {
-          IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) cols[colIndex];
-          if (value == null) {
-            icv.noNulls = false;
-            icv.isNull[0] = true;
-            icv.isRepeating = true;
-          } else {
-            icv.fill(((HiveIntervalDayTime) value));
-          }
-        }
-
-        case FLOAT: {
-          DoubleColumnVector dcv = (DoubleColumnVector) cols[colIndex];
-          if (value == null) {
-            dcv.noNulls = false;
-            dcv.isNull[0] = true;
-            dcv.isRepeating = true;
-          } else {
-            dcv.fill((Float) value);
-          }
-        }
-        break;
-
-        case DOUBLE: {
-          DoubleColumnVector dcv = (DoubleColumnVector) cols[colIndex];
-          if (value == null) {
-            dcv.noNulls = false;
-            dcv.isNull[0] = true;
-            dcv.isRepeating = true;
-          } else {
-            dcv.fill((Double) value);
-          }
-        }
-        break;
-
-        case DECIMAL: {
-          DataTypePhysicalVariation dataTypePhysicalVariation = rowDataTypePhysicalVariations != null ?
-            rowDataTypePhysicalVariations[colIndex] : DataTypePhysicalVariation.NONE;
-
-          if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
-            Decimal64ColumnVector dv = (Decimal64ColumnVector) cols[colIndex];
-            if (value == null) {
-              dv.noNulls = false;
-              dv.isNull[0] = true;
-              dv.isRepeating = true;
-            } else {
-              dv.fill(((HiveDecimal) value).longValue());
-            }
-          } else {
-            DecimalColumnVector dv = (DecimalColumnVector) cols[colIndex];
-            if (value == null) {
-              dv.noNulls = false;
-              dv.isNull[0] = true;
-              dv.isRepeating = true;
-            } else {
-              dv.fill((HiveDecimal) value);
-            }
-          }
-        }
-        break;
-
-        case BINARY: {
-            BytesColumnVector bcv = (BytesColumnVector) cols[colIndex];
-            byte[] bytes = (byte[]) value;
-            if (bytes == null) {
-              bcv.noNulls = false;
-              bcv.isNull[0] = true;
-              bcv.isRepeating = true;
-            } else {
-              bcv.fill(bytes);
-            }
-          }
-          break;
-
-        case STRING:
-        case CHAR:
-        case VARCHAR: {
-          BytesColumnVector bcv = (BytesColumnVector) cols[colIndex];
-          String sVal = value.toString();
-          if (sVal == null) {
-            bcv.noNulls = false;
-            bcv.isNull[0] = true;
-            bcv.isRepeating = true;
-          } else {
-            bcv.fill(sVal.getBytes());
-          }
-        }
-        break;
-
-        default:
-          throw new RuntimeException("Unable to recognize the partition type " + primitiveTypeInfo.getPrimitiveCategory() +
-              " for column " + partitionColumnName);
+      } else {
+        DecimalColumnVector dv = (DecimalColumnVector) col;
+        if (value == null) {
+          dv.noNulls = false;
+          dv.isNull[0] = true;
+          dv.isRepeating = true;
+        } else {
+          dv.fill((HiveDecimal) value);
         }
       }
+    }
+    break;
+
+    case BINARY: {
+        BytesColumnVector bcv = (BytesColumnVector) col;
+        byte[] bytes = (byte[]) value;
+        if (bytes == null) {
+          bcv.noNulls = false;
+          bcv.isNull[0] = true;
+          bcv.isRepeating = true;
+        } else {
+          bcv.fill(bytes);
+        }
+      }
+      break;
+
+    case STRING:
+    case CHAR:
+    case VARCHAR: {
+      BytesColumnVector bcv = (BytesColumnVector) col;
+      String sVal = value.toString();
+      if (sVal == null) {
+        bcv.noNulls = false;
+        bcv.isNull[0] = true;
+        bcv.isRepeating = true;
+      } else {
+        bcv.fill(sVal.getBytes());
+      }
+    }
+    break;
+
+    default:
+      throw new RuntimeException("Unable to recognize the partition type " + primitiveTypeInfo.getPrimitiveCategory() +
+          " for column " + partitionColumnName);
     }
   }
 

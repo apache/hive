@@ -147,7 +147,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -283,15 +283,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
-FROM (SELECT *
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t3`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -332,7 +332,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -401,7 +401,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -525,15 +525,15 @@ POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
-FROM (SELECT *
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t3`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -574,7 +574,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -643,7 +643,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -771,12 +771,12 @@ POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t2_n0
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds`, `t2`.`ds` AS `ds1`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
-FROM (SELECT `key`, `value`, `ds`, `ds` = '2000-04-08' AS `=`, `ds` = '2000-04-09' AS `=7`
+FROM (SELECT `key`, `value`, `ds`, `ds` = '2000-04-08' AS `=`, `ds` = '2000-04-09' AS `=8`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' OR `ds` = '2000-04-09') AS `t0`
-INNER JOIN (SELECT `ds`, `key`, `value`, `key` = 1 AS `=`, `key` = 2 AS `=7`
+INNER JOIN (SELECT `ds`, `key`, `value`, `key` = 1 AS `=`, `key` = 2 AS `=8`
 FROM `default`.`pcr_t2_n0`
-WHERE `key` = 1 OR `key` = 2) AS `t2` ON `t0`.`=` AND `t2`.`=` OR `t0`.`=7` AND `t2`.`=7`
+WHERE `key` = 1 OR `key` = 2) AS `t2` ON `t0`.`=` AND `t2`.`=` OR `t0`.`=8` AND `t2`.`=8`
 ORDER BY `t2`.`key`, `t2`.`value`, `t0`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -812,7 +812,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -916,7 +916,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1047,12 +1047,12 @@ POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-10
 POSTHOOK: Input: default@pcr_t2_n0
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds`, `t2`.`ds` AS `ds1`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
-FROM (SELECT `key`, `value`, `ds`, `key` = 1 AS `=`, `key` = 2 AS `=7`
+FROM (SELECT `key`, `value`, `ds`, `key` = 1 AS `=`, `key` = 2 AS `=8`
 FROM `default`.`pcr_t1_n2`
 WHERE `key` = 1 OR `key` = 2) AS `t0`
-INNER JOIN (SELECT `ds`, `key`, `value`, `ds` = '2000-04-08' AS `=`, `ds` = '2000-04-09' AS `=7`
+INNER JOIN (SELECT `ds`, `key`, `value`, `ds` = '2000-04-08' AS `=`, `ds` = '2000-04-09' AS `=8`
 FROM `default`.`pcr_t2_n0`
-WHERE `ds` = '2000-04-08' OR `ds` = '2000-04-09') AS `t2` ON `t2`.`=` AND `t0`.`=` OR `t2`.`=7` AND `t0`.`=7`
+WHERE `ds` = '2000-04-08' OR `ds` = '2000-04-09') AS `t2` ON `t2`.`=` AND `t0`.`=` OR `t2`.`=8` AND `t0`.`=8`
 ORDER BY `t0`.`key`, `t0`.`value`, `t2`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1092,7 +1092,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1233,7 +1233,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1538,7 +1538,7 @@ POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
+WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
 ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1577,7 +1577,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1713,15 +1713,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
-FROM (SELECT *
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t3`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1762,7 +1762,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1831,7 +1831,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1955,15 +1955,15 @@ POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
-FROM (SELECT *
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t3`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2004,7 +2004,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2073,7 +2073,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2234,7 +2234,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2338,7 +2338,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2502,7 +2502,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2643,7 +2643,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

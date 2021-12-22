@@ -102,7 +102,7 @@ public class TimestampColumnStatsDataInspector extends TimestampColumnStatsData 
   }
 
   public NumDistinctValueEstimator getNdvEstimator() {
-    if (isSetBitVectors() && getBitVectors().length != 0) {
+    if (ndvEstimator == null && isSetBitVectors() && getBitVectors().length != 0) {
       updateNdvEstimator();
     }
     return ndvEstimator;

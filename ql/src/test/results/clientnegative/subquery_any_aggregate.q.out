@@ -34,4 +34,4 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tt
 POSTHOOK: Lineage: tt.i SCRIPT []
 POSTHOOK: Lineage: tt.j SCRIPT []
-FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException: Subquery rewrite: Aggregate without group by is not allowed
+FAILED: CalciteSubqueryRuntimeException Subquery rewrite: Aggregate without group by is not allowed

@@ -40,8 +40,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.CacheEntryList;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetCacheContentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetCacheContentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -75,8 +78,8 @@ public class LlapProtocolServerImpl extends AbstractService
 
   private final int numHandlers;
   private final ContainerRunner containerRunner;
-  private final int srvPort, mngPort;
-  private RPC.Server server, mngServer;
+  private final int srvPort, mngPort, externalClientsRpcPort;
+  private RPC.Server server, mngServer, externalClientsRpcServer;
   private final AtomicReference<InetSocketAddress> srvAddress, mngAddress;
   private final SecretManager secretManager;
   private String clusterUser = null;
@@ -87,7 +90,8 @@ public class LlapProtocolServerImpl extends AbstractService
 
   public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
       ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
-      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId,
+      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int externalClientsRpcPort,
+      int mngPort, DaemonId daemonId,
       LlapDaemonExecutorMetrics executorMetrics) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
@@ -96,6 +100,7 @@ public class LlapProtocolServerImpl extends AbstractService
     this.srvAddress = srvAddress;
     this.srvPort = srvPort;
     this.mngAddress = mngAddress;
+    this.externalClientsRpcPort = externalClientsRpcPort;
     this.mngPort = mngPort;
     this.daemonId = daemonId;
     this.executorMetrics = executorMetrics;
@@ -232,6 +237,15 @@ public class LlapProtocolServerImpl extends AbstractService
     server = LlapUtil.startProtocolServer(srvPort, numHandlers, srvAddress, conf, daemonImpl,
         LlapProtocolBlockingPB.class, secretManager, pp, ConfVars.LLAP_SECURITY_ACL,
         ConfVars.LLAP_SECURITY_ACL_DENY);
+    // for cloud deployments, start a separate RPC server on the port
+    // which we can open to accept requests from external clients.
+    if (LlapUtil.isCloudDeployment(conf)) {
+      externalClientsRpcServer = LlapUtil.startProtocolServer(externalClientsRpcPort, numHandlers, null, conf, daemonImpl,
+          LlapProtocolBlockingPB.class, secretManager, pp, ConfVars.LLAP_SECURITY_ACL,
+          ConfVars.LLAP_SECURITY_ACL_DENY);
+
+      LOG.info("Started externalClientsRpcServer for cloud based deployments : {}, {}", externalClientsRpcServer.getListenerAddress(), externalClientsRpcServer);
+    }
     mngServer = LlapUtil.startProtocolServer(mngPort, 2, mngAddress, conf, managementImpl,
         LlapManagementProtocolPB.class, secretManager, pp, ConfVars.LLAP_MANAGEMENT_ACL,
         ConfVars.LLAP_MANAGEMENT_ACL_DENY);
@@ -242,6 +256,9 @@ public class LlapProtocolServerImpl extends AbstractService
   public void serviceStop() {
     if (server != null) {
       server.stop();
+    }
+    if (externalClientsRpcServer != null) {
+      externalClientsRpcServer.stop();
     }
     if (mngServer != null) {
       mngServer.stop();
@@ -256,6 +273,11 @@ public class LlapProtocolServerImpl extends AbstractService
   @InterfaceAudience.Private
   InetSocketAddress getManagementBindAddress() {
     return mngAddress.get();
+  }
+
+  @InterfaceAudience.Private
+  InetSocketAddress getExternalClientsRpcServerBindAddress() {
+    return externalClientsRpcServer.getListenerAddress();
   }
 
   @Override
@@ -346,6 +368,18 @@ public class LlapProtocolServerImpl extends AbstractService
       responseProtoBuilder.setEvictedBytes(evicted);
     } else {
       responseProtoBuilder.setEvictedBytes(-1L);
+    }
+    return responseProtoBuilder.build();
+  }
+
+  @Override
+  public GetCacheContentResponseProto getCacheContent(RpcController controller,
+      GetCacheContentRequestProto request) {
+    GetCacheContentResponseProto.Builder responseProtoBuilder = GetCacheContentResponseProto.newBuilder();
+    LlapIo<?> llapIo = LlapProxy.getIo();
+    if (llapIo != null) {
+      CacheEntryList entries = llapIo.fetchCachedContentInfo();
+      responseProtoBuilder.setResult(entries);
     }
     return responseProtoBuilder.build();
   }

@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -541,6 +542,16 @@ import com.google.common.annotations.VisibleForTesting;
     return result;
   }
 
+  public DataTypePhysicalVariation[] getAllDataTypePhysicalVariations() throws HiveException {
+    final int size = initialTypeInfos.size() + ocm.outputColCount;
+
+    DataTypePhysicalVariation[] result = new DataTypePhysicalVariation[size];
+    for (int i = 0; i < size; i++) {
+      result[i] = getDataTypePhysicalVariation(i);
+    }
+    return result;
+  }
+
   public static final Pattern decimalTypePattern = Pattern.compile("decimal.*",
       Pattern.CASE_INSENSITIVE);
 
@@ -869,30 +880,12 @@ import com.google.common.annotations.VisibleForTesting;
 
     } else {
       // Ok, we need to convert.
-      ArrayList<ExprNodeDesc> exprAsList = new ArrayList<>(1);
-      exprAsList.add(exprDesc);
-
-      // First try our cast method that will handle a few special cases.
-      VectorExpression castToBooleanExpr = getCastToBoolean(exprAsList);
-      if (castToBooleanExpr == null) {
-
-        // Ok, try the UDF.
-        castToBooleanExpr = getVectorExpressionForUdf(null, UDFToBoolean.class, exprAsList,
-            VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo);
-        if (castToBooleanExpr == null) {
-          throw new HiveException("Cannot vectorize converting expression " +
-              exprDesc.getExprString() + " to boolean");
-        }
+      List<ExprNodeDesc> exprAsList = Collections.singletonList(exprDesc);
+      expr = getCastToBooleanExpression(exprAsList, VectorExpressionDescriptor.Mode.FILTER);
+      if (expr == null) {
+        throw new HiveException("Cannot vectorize converting expression " +
+            exprDesc.getExprString() + " to boolean");
       }
-
-      final int outputColumnNum = castToBooleanExpr.getOutputColumnNum();
-
-      expr = new SelectColumnIsTrue(outputColumnNum);
-
-      expr.setChildExpressions(new VectorExpression[] {castToBooleanExpr});
-
-      expr.setInputTypeInfos(castToBooleanExpr.getOutputTypeInfo());
-      expr.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
     }
     return expr;
   }
@@ -1469,9 +1462,12 @@ import com.google.common.annotations.VisibleForTesting;
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
       return true;
-    } else {
-      return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
+    } else if (gudf instanceof GenericUDFConcat && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
     }
+    return false;
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
@@ -1481,6 +1477,10 @@ import com.google.common.annotations.VisibleForTesting;
         || udfClass.equals(UDFToLong.class);
 
     // Boolean is purposely excluded.
+  }
+
+  public static boolean isCastToBoolean(Class<? extends UDF> udfClass) {
+    return udfClass.equals(UDFToBoolean.class);
   }
 
   public static boolean isCastToFloatFamily(Class<? extends UDF> udfClass) {
@@ -1598,7 +1598,11 @@ import com.google.common.annotations.VisibleForTesting;
       if (typeInfo.getCategory() != Category.PRIMITIVE) {
         throw new HiveException("Complex type constants (" + typeInfo.getCategory() + ") not supported for type name " + typeName);
       }
-      return new ConstantVectorExpression(outCol, typeInfo, true);
+      if (mode == VectorExpressionDescriptor.Mode.FILTER) {
+        return new FilterConstantBooleanVectorExpression(0);
+      } else {
+        return new ConstantVectorExpression(outCol, typeInfo, true);
+      }
     }
 
     // Boolean is special case.
@@ -2680,7 +2684,7 @@ import com.google.common.annotations.VisibleForTesting;
 
     StructTypeInfo structTypeInfo = (StructTypeInfo) colTypeInfo;
 
-    ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     final int fieldCount = fieldTypeInfos.size();
     ColumnVector.Type[] fieldVectorColumnTypes = new ColumnVector.Type[fieldCount];
     InConstantType[] fieldInConstantTypes = new InConstantType[fieldCount];
@@ -2992,8 +2996,8 @@ import com.google.common.annotations.VisibleForTesting;
       PrimitiveCategory integerPrimitiveCategory =
           getAnyIntegerPrimitiveCategoryFromUdfClass(cl);
       ve = getCastToLongExpression(childExpr, integerPrimitiveCategory);
-    } else if (cl.equals(UDFToBoolean.class)) {
-      ve = getCastToBoolean(childExpr);
+    } else if (isCastToBoolean(cl)) {
+      ve = getCastToBooleanExpression(childExpr, mode);
     } else if (isCastToFloatFamily(cl)) {
       ve = getCastToDoubleExpression(cl, childExpr, returnType);
     }
@@ -3470,26 +3474,41 @@ import com.google.common.annotations.VisibleForTesting;
     return null;
   }
 
-  private VectorExpression getCastToBoolean(List<ExprNodeDesc> childExpr)
+  private VectorExpression getCastToBooleanExpression(List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode mode)
       throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
     TypeInfo inputTypeInfo = child.getTypeInfo();
     String inputType = inputTypeInfo.toString();
     if (child instanceof ExprNodeConstantDesc) {
       if (null == ((ExprNodeConstantDesc)child).getValue()) {
-        return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, VectorExpressionDescriptor.Mode.PROJECTION);
+        return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, mode);
       }
       // Don't do constant folding here.  Wait until the optimizer is changed to do it.
       // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
       return null;
     }
+
+    VectorExpression ve;
     // Long and double are handled using descriptors, string needs to be specially handled.
     if (isStringFamily(inputType)) {
-
-      return createVectorExpression(CastStringToBoolean.class, childExpr,
+      ve = createVectorExpression(CastStringToBoolean.class, childExpr,
           VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo, DataTypePhysicalVariation.NONE);
+    } else {
+      // Ok, try the UDF.
+      ve = getVectorExpressionForUdf(null, UDFToBoolean.class, childExpr,
+          VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo);
     }
-    return null;
+
+    if (ve == null || mode == VectorExpressionDescriptor.Mode.PROJECTION) {
+      return ve;
+    }
+
+    int outputColumnNum = ve.getOutputColumnNum();
+    SelectColumnIsTrue filterVectorExpr = new SelectColumnIsTrue(outputColumnNum);
+    filterVectorExpr.setChildExpressions(new VectorExpression[] { ve });
+    filterVectorExpr.setInputTypeInfos(ve.getOutputTypeInfo());
+    filterVectorExpr.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
+    return filterVectorExpr;
   }
 
   private VectorExpression getCastToLongExpression(List<ExprNodeDesc> childExpr, PrimitiveCategory integerPrimitiveCategory)

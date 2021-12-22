@@ -113,6 +113,7 @@ PREHOOK: Output: default@mpart1
 POSTHOOK: query: INSERT INTO TABLE mpart1 PARTITION(ds, hr, rs) SELECT * FROM srcpart1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart1
+POSTHOOK: Output: default@mpart1
 POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=21/rs=NA
 POSTHOOK: Output: default@mpart1@ds=1980-11-10/hr=__HIVE_DEFAULT_PARTITION__/rs=NA
 POSTHOOK: Output: default@mpart1@ds=1980-11-11/hr=12/rs=AS

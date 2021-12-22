@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
 /**
@@ -49,6 +50,7 @@ public class IOContext {
    * supports {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#ROWID}
    */
   private  RecordIdentifier ri;
+  private boolean isDeletedRecord;
 
   public static enum Comparison {
     GREATER,
@@ -174,6 +176,23 @@ public class IOContext {
 
   public void setRecordIdentifier(RecordIdentifier ri) {
     this.ri = ri;
+  }
+
+  public void parseRecordIdentifier(Configuration configuration) {
+    BucketIdentifier bucketIdentifier = BucketIdentifier.from(configuration, inputPath);
+    if (bucketIdentifier == null) {
+      this.ri = null;
+    } else {
+      this.ri = new RecordIdentifier(bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty(), 0);
+    }
+  }
+
+  public boolean isDeletedRecord() {
+    return isDeletedRecord;
+  }
+
+  public void setDeletedRecord(boolean deletedRecord) {
+    isDeletedRecord = deletedRecord;
   }
 
   /**

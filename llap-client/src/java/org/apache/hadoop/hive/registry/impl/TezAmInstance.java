@@ -14,8 +14,8 @@
 package org.apache.hadoop.hive.registry.impl;
 
 import java.io.IOException;
+import java.util.Base64;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.AddressTypes;
@@ -66,7 +66,7 @@ public class TezAmInstance extends ServiceInstanceBase {
     if (this.token != null) return token;
     String tokenString = getProperties().get(TezAmRegistryImpl.AM_PLUGIN_TOKEN);
     if (tokenString == null || tokenString.isEmpty()) return null;
-    byte[] tokenBytes = Base64.decodeBase64(tokenString);
+    byte[] tokenBytes = Base64.getDecoder().decode(tokenString);
     Token<JobTokenIdentifier> token = new Token<>();
     try {
       token.readFields(ByteStreams.newDataInput(tokenBytes));

@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.io.DataInputBuffer;
@@ -401,4 +400,24 @@ public class LlapUtil {
     credentials.readTokenStorageStream(dib);
     return credentials;
   }
+
+  /**
+   * @return returns the value of LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED
+   * @param conf
+   */
+  public static boolean isCloudDeployment(Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED, false);
+  }
+
+  /**
+   * @return returns the value of PUBLIC_HOSTNAME from either environment variable or system properties
+   */
+  public static String getPublicHostname() {
+    String publicHostname = System.getenv("PUBLIC_HOSTNAME");
+    if (publicHostname == null) {
+      publicHostname = System.getProperty("PUBLIC_HOSTNAME");
+    }
+    return publicHostname;
+  }
+
 }

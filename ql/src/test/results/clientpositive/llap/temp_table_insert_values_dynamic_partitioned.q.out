@@ -21,6 +21,7 @@ POSTHOOK: query: insert into table ivdp_temp partition (ds) values
 (6553, 923.19, 'the lamb was sure to go', 'tomorrow')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ivdp_temp
 POSTHOOK: Output: default@ivdp_temp@ds=today
 POSTHOOK: Output: default@ivdp_temp@ds=tomorrow
 POSTHOOK: Lineage: ivdp_temp PARTITION(ds=today).de SCRIPT []

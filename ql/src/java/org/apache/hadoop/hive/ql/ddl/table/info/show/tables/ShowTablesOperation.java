@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.info.show.tables;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
@@ -69,8 +69,9 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
     Collections.sort(tableNames);
     LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
 
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      context.getFormatter().showTables(os, tableNames);
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      ShowTablesFormatter formatter = ShowTablesFormatter.getFormatter(context.getConf());
+      formatter.showTables(os, tableNames);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database " + desc.getDbName());
     }
@@ -88,8 +89,9 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
     Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
     LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
 
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      context.getFormatter().showTablesExtended(os, tableObjects);
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      ShowTablesFormatter formatter = ShowTablesFormatter.getFormatter(context.getConf());
+      formatter.showTablesExtended(os, tableObjects);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database " + desc.getDbName());
     }

@@ -66,7 +66,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   ConstantVectorExpression(int outputColumnNum, TypeInfo outputTypeInfo) throws HiveException {
-    super(outputColumnNum);
+    super(-1, outputColumnNum);
 
     this.outputTypeInfo = outputTypeInfo;
     outputDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
@@ -474,7 +474,7 @@ public class ConstantVectorExpression extends VectorExpression {
 
   public void setStructValue(Object structValue) throws HiveException {
     StructTypeInfo structTypeInfo = (StructTypeInfo) outputTypeInfo;
-    ArrayList<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
+    List<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
     final int size = fieldTypeInfoList.size();
     this.structValue = new ConstantVectorExpression[size];
     List<Object> fieldValueList = (List<Object>) structValue;

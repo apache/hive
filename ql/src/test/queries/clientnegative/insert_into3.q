@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.lock.numretries=5;
 set hive.lock.sleep.between.retries=5;
+set hive.support.concurrency=true;
 
 DROP TABLE insert_into3_neg;
 

@@ -37,9 +37,12 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -49,8 +52,11 @@ import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONAddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONAddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddPartitionMessage;
@@ -61,6 +67,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONCommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCreateCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCreateDatabaseMessage;
@@ -108,6 +115,8 @@ public class MessageBuilder {
   public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
   public static final String ADD_UNIQUECONSTRAINT_EVENT = "ADD_UNIQUECONSTRAINT";
   public static final String ADD_NOTNULLCONSTRAINT_EVENT = "ADD_NOTNULLCONSTRAINT";
+  public static final String ADD_DEFAULTCONSTRAINT_EVENT = "ADD_DEFAULTCONSTRAINT";
+  public static final String ADD_CHECKCONSTRAINT_EVENT = "ADD_CHECKCONSTRAINT";
   public static final String DROP_CONSTRAINT_EVENT = "DROP_CONSTRAINT";
   public static final String CREATE_ISCHEMA_EVENT = "CREATE_ISCHEMA";
   public static final String ALTER_ISCHEMA_EVENT = "ALTER_ISCHEMA";
@@ -123,10 +132,16 @@ public class MessageBuilder {
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
   public static final String ACID_WRITE_EVENT = "ACID_WRITE_EVENT";
+  public static final String BATCH_ACID_WRITE_EVENT = "BATCH_ACID_WRITE_EVENT";
   public static final String UPDATE_TBL_COL_STAT_EVENT = "UPDATE_TBL_COL_STAT_EVENT";
   public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
   public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";
+  public static final String UPDATE_PART_COL_STAT_EVENT_BATCH = "UPDATE_PART_COL_STAT_EVENT_BATCH";
   public static final String DELETE_PART_COL_STAT_EVENT = "DELETE_PART_COL_STAT_EVENT";
+  public static final String COMMIT_COMPACTION_EVENT = "COMMIT_COMPACTION_EVENT";
+  public static final String CREATE_DATACONNECTOR_EVENT = "CREATE_DATACONNECTOR";
+  public static final String ALTER_DATACONNECTOR_EVENT = "ALTER_DATACONNECTOR";
+  public static final String DROP_DATACONNECTOR_EVENT = "DROP_DATACONNECTOR";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -142,8 +157,9 @@ public class MessageBuilder {
     if (instance == null) {
       synchronized (lock) {
         if (instance == null) {
-          instance = new MessageBuilder();
-          instance.init();
+          MessageBuilder newInstance = new MessageBuilder();
+          newInstance.init();
+          instance = newInstance;
         }
       }
     }
@@ -241,6 +257,16 @@ public class MessageBuilder {
     return new JSONAddNotNullConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, nns, now());
   }
 
+  public AddDefaultConstraintMessage buildAddDefaultConstraintMessage(
+    List<SQLDefaultConstraint> dcs) {
+    return new JSONAddDefaultConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dcs, now());
+  }
+
+  public AddCheckConstraintMessage buildAddCheckConstraintMessage(
+    List<SQLCheckConstraint> ccs) {
+    return new JSONAddCheckConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, ccs, now());
+  }
+
   public DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
       String constraintName) {
     return new JSONDropConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dbName, tableName,
@@ -311,40 +337,56 @@ public class MessageBuilder {
             colName, partName, partValues);
   }
 
+  public CommitCompactionMessage buildCommitCompactionMessage(CommitCompactionEvent event) {
+    return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), event);
+  }
+
   private long now() {
     return System.currentTimeMillis() / 1000;
   }
 
   public static String createPrimaryKeyObjJson(SQLPrimaryKey primaryKeyObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(primaryKeyObj, "UTF-8");
+    return serializer.toString(primaryKeyObj);
   }
 
   public static String createForeignKeyObjJson(SQLForeignKey foreignKeyObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(foreignKeyObj, "UTF-8");
+    return serializer.toString(foreignKeyObj);
   }
 
   public static String createUniqueConstraintObjJson(SQLUniqueConstraint uniqueConstraintObj)
       throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(uniqueConstraintObj, "UTF-8");
+    return serializer.toString(uniqueConstraintObj);
   }
 
   public static String createNotNullConstraintObjJson(SQLNotNullConstraint notNullConstaintObj)
       throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(notNullConstaintObj, "UTF-8");
+    return serializer.toString(notNullConstaintObj);
+  }
+
+  public static String createDefaultConstraintObjJson(SQLDefaultConstraint defaultConstaintObj)
+    throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(defaultConstaintObj);
+  }
+
+  public static String createCheckConstraintObjJson(SQLCheckConstraint checkConstraintObj)
+    throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(checkConstraintObj);
   }
 
   public static String createDatabaseObjJson(Database dbObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(dbObj, "UTF-8");
+    return serializer.toString(dbObj);
   }
 
   public static String createCatalogObjJson(Catalog catObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(catObj, "UTF-8");
+    return serializer.toString(catObj);
   }
 
   public static String createTableObjJson(Table tableObj) throws TException {
@@ -352,7 +394,7 @@ public class MessageBuilder {
     // any pattern provided through EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS
     filterMapkeys(tableObj.getParameters(), paramsFilter);
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(tableObj, "UTF-8");
+    return serializer.toString(tableObj);
   }
 
   public static String createPartitionObjJson(Partition partitionObj) throws TException {
@@ -360,12 +402,12 @@ public class MessageBuilder {
     // any pattern provided through EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS
     filterMapkeys(partitionObj.getParameters(), paramsFilter);
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(partitionObj, "UTF-8");
+    return serializer.toString(partitionObj);
   }
 
   public static String createFunctionObjJson(Function functionObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(functionObj, "UTF-8");
+    return serializer.toString(functionObj);
   }
 
   public static Table getTableObj(ObjectNode jsonTree) throws Exception {
@@ -378,7 +420,7 @@ public class MessageBuilder {
 
   public static String createTableColumnStatJson(ColumnStatistics tableColumnStat) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(tableColumnStat, "UTF-8");
+    return serializer.toString(tableColumnStat);
   }
 
   /*

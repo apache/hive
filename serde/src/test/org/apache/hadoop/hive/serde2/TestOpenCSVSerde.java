@@ -41,7 +41,7 @@ public class TestOpenCSVSerde {
 
   @Test
   public void testDeserialize() throws Exception {
-    csv.initialize(null, props);
+    csv.initialize(null, props, null);
     final Text in = new Text("hello,\"yes, okay\",1");
 
     final List<String> row = (List<String>) csv.deserialize(in);
@@ -57,7 +57,7 @@ public class TestOpenCSVSerde {
     props.setProperty(OpenCSVSerde.SEPARATORCHAR, "\t");
     props.setProperty(OpenCSVSerde.QUOTECHAR, "'");
 
-    csv.initialize(null, props);
+    csv.initialize(null, props, null);
 
     final Text in = new Text("hello\t'yes\tokay'\t1");
     final List<String> row = (List<String>) csv.deserialize(in);
@@ -72,7 +72,7 @@ public class TestOpenCSVSerde {
     props.setProperty(OpenCSVSerde.QUOTECHAR, "'");
     props.setProperty(OpenCSVSerde.ESCAPECHAR, "\\");
 
-    csv.initialize(null, props);
+    csv.initialize(null, props, null);
 
     final Text in = new Text("hello,'yes\\'okay',1");
     final List<String> row = (List<String>) csv.deserialize(in);

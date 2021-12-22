@@ -45,11 +45,13 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.serde2.JsonSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -118,7 +120,7 @@ public class HiveJsonReader {
    * <ul>
    * <li>{@link #COL_INDEX_PARSING}</li>
    * <li>{@link #PRIMITIVE_TO_WRITABLE}</li>
-   * <li>{@link #IGNORE_UKNOWN_FIELDS}</li>
+   * <li>{@link #IGNORE_UNKNOWN_FIELDS}</li>
    * </ul>
    */
   public enum Feature {
@@ -141,7 +143,13 @@ public class HiveJsonReader {
      * produce a log warnings. If this feature is disabled, an Exception will be
      * thrown and parsing will stop.
      */
-    IGNORE_UKNOWN_FIELDS
+    IGNORE_UNKNOWN_FIELDS,
+    /**
+     * If the JSON object being parsed includes a complex field with non defined Hive schema,
+     * enabling this feature will cause the JSON reader to treat the field as a String.
+     * If the feature is disabled, an Exception will be thrown and parsing will stop.
+     */
+    STRINGIFY_COMPLEX_FIELDS
   }
 
   /**
@@ -371,11 +379,13 @@ public class HiveJsonReader {
    */
   private Object visitLeafNode(final JsonNode leafNode,
       final ObjectInspector oi) throws SerDeException {
-    Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.OBJECT);
-    Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.ARRAY);
-
     final PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
     final PrimitiveTypeInfo typeInfo = poi.getTypeInfo();
+
+    if (typeInfo.getPrimitiveCategory() != PrimitiveCategory.STRING) {
+      Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.OBJECT);
+      Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.ARRAY);
+    }
 
     switch (typeInfo.getPrimitiveCategory()) {
     case INT:
@@ -393,7 +403,17 @@ public class HiveJsonReader {
     case DOUBLE:
       return Double.valueOf(leafNode.asDouble());
     case STRING:
-      return leafNode.asText();
+      if (leafNode.isValueNode()) {
+        return leafNode.asText();
+      } else {
+        if (isEnabled(Feature.STRINGIFY_COMPLEX_FIELDS)) {
+          return leafNode.toString();
+        } else {
+          throw new SerDeException(
+              "Complex field found in JSON does not match table definition: " + typeInfo.getTypeName()
+                  + ", please consider enabling `" + JsonSerDe.STRINGIFY_COMPLEX + "` table property");
+        }
+      }
     case BINARY:
       return getByteValue(leafNode);
     case DATE:
@@ -449,7 +469,7 @@ public class HiveJsonReader {
   /**
    * Matches the JSON object's field name with the Hive data type.
    *
-   * @param oi The ObjectInsepctor to lookup the matching in
+   * @param oi The ObjectInspector to lookup the matching in
    * @param fieldName The name of the field parsed from the JSON text
    * @return The meta data of regarding this field
    * @throws SerDeException The SerDe is not configured correctly
@@ -490,7 +510,7 @@ public class HiveJsonReader {
       this.discoveredFields.put(pair, structField);
     } else {
       // Tried everything and did not discover this field
-      if (isEnabled(Feature.IGNORE_UKNOWN_FIELDS)
+      if (isEnabled(Feature.IGNORE_UNKNOWN_FIELDS)
           && this.discoveredUnknownFields.add(pair)) {
         LOG.warn("Discovered unknown field: {}. Ignoring.", fieldName);
       } else {

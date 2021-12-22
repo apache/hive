@@ -21,4 +21,7 @@ public interface MessageSerializer {
   default String serialize(EventMessage message) {
     return message.toString();
   }
+  default String serialize(String msg) {
+    return msg;
+  }
 }

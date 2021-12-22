@@ -93,9 +93,11 @@ public class VerifyingObjectStore extends ObjectStore {
   @Override
   public List<Partition> getPartitions(
       String catName, String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
+    openTransaction();
     List<Partition> sqlResults = getPartitionsInternal(catName, dbName, tableName, maxParts, true, false);
     List<Partition> ormResults = getPartitionsInternal(catName, dbName, tableName, maxParts, false, true);
     verifyLists(sqlResults, ormResults, Partition.class);
+    commitTransaction();
     return sqlResults;
   }
 

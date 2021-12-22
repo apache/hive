@@ -4,6 +4,7 @@ SET hive.vectorized.execution.enabled=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
+SET hive.strict.checks.type.safety=false;
 
 create table newtypesorc_n5(c char(10), v varchar(10), d decimal(5,3), da date) stored as orc tblproperties("orc.stripe.size"="16777216"); 
 

@@ -62,20 +62,20 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 913920 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: size(l) (type: int)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Limit
+                    Number of rows: 10
+                    Limit Vectorization:
+                        className: VectorLimitOperator
                         native: true
-                        projectedOutputColumnNums: [2]
-                        selectExpressions: VectorUDFAdaptor(size(l)) -> 2:int
-                    Statistics: Num rows: 500 Data size: 913920 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 10
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                    Statistics: Num rows: 10 Data size: 18270 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: size(l) (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [3]
+                          selectExpressions: VectorUDFAdaptor(size(l)) -> 3:int
                       Statistics: Num rows: 10 Data size: 18270 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false

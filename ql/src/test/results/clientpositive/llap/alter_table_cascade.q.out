@@ -43,6 +43,7 @@ POSTHOOK: query: insert overwrite table alter_table_cascade partition (p1, p2)
   select c1, cast(null as string), '123' from alter_table_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_src
+POSTHOOK: Output: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
 POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
@@ -857,6 +858,7 @@ POSTHOOK: query: insert overwrite table alter_table_restrict partition (p1, p2)
   select c1, cast(null as string), '123' from alter_table_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_src
+POSTHOOK: Output: default@alter_table_restrict
 POSTHOOK: Output: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 POSTHOOK: Output: default@alter_table_restrict@p1=abc/p2=123
 POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]

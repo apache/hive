@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.scheduled;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -33,11 +50,11 @@ public class QTestScheduledQueryCleaner implements QTestOptionHandler {
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
-    clearScheduledQueries(qt);
+    clearScheduledQueries(qt.getConf());
 
   }
 
-  public void clearScheduledQueries(QTestUtil qt) {
+  private void clearScheduledQueries(HiveConf conf) {
     if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) != null) {
       return;
     }
@@ -46,10 +63,9 @@ public class QTestScheduledQueryCleaner implements QTestOptionHandler {
       ScheduledQueryMaintenanceRequest request = new ScheduledQueryMaintenanceRequest();
       request.setType(ScheduledQueryMaintenanceRequestType.DROP);
       ScheduledQuery schq = new ScheduledQuery();
-      schq.setScheduleKey(new ScheduledQueryKey(name, qt.getConf().getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
+      schq.setScheduleKey(new ScheduledQueryKey(name, conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
       request.setScheduledQuery(schq);
       try {
-        HiveConf conf = qt.getConf();
         Hive db = Hive.get(conf); // propagate new conf to meta store
 
         db.getMSC().scheduledQueryMaintenance(request);

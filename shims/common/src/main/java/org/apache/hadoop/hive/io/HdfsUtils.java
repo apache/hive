@@ -176,7 +176,7 @@ public class HdfsUtils {
     Iterables.removeIf(entries, new Predicate<AclEntry>() {
       @Override
       public boolean apply(AclEntry input) {
-        if (input.getName() == null) {
+        if (input != null && input.getName() == null) {
           return true;
         }
         return false;

@@ -18,9 +18,14 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events;
 
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 
 public interface PartitionEvent extends TableEvent {
   AlterTableAddPartitionDesc lastPartitionReplicated();
+
+  ReplicationState.PartitionState.Stage lastStageReplicated();
+
+  AlterTableAddPartitionDesc.PartitionDesc lastPartSpecReplicated();
 
   TableEvent asTableEvent();
 }

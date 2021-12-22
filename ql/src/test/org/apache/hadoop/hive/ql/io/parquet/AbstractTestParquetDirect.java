@@ -167,7 +167,7 @@ public abstract class AbstractTestParquetDirect {
     Properties props = new Properties();
     props.setProperty(serdeConstants.LIST_COLUMNS, COMMA.join(columnNames));
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, COMMA.join(columnTypes));
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
     serde.deserialize(record);
   }
 }

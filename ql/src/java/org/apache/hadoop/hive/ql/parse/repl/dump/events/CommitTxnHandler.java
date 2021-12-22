@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,9 +21,8 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
@@ -41,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +55,17 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext)
-          throws IOException, LoginException, MetaException, HiveFatalException {
-    // encoded filename/checksum of files, write into _files
-    for (String file : files) {
-      writeFileEntry(qlMdTable, ptn, file, withinContext);
+  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
+                              Path dataPath)
+          throws IOException, LoginException, MetaException, HiveFatalException, SemanticException {
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+    if (copyAtLoad) {
+      // encoded filename/checksum of files, write into _files
+      writeEncodedDumpFiles(withinContext, files, dataPath);
+    } else {
+      for (String file : files) {
+        writeFileEntry(qlMdTable, ptn, file, withinContext);
+      }
     }
   }
 
@@ -81,10 +86,13 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
             withinContext.hiveConf);
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
-      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext);
+      Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
+      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext, dataPath);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
-        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext);
+        Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
+                + qlPtns.get(idx).getName());
+        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext, dataPath);
       }
     }
   }
@@ -100,9 +108,9 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
     String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
-    RawStore rawStore = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf);
-    List<WriteEventInfo> writeEventInfoList
-            = rawStore.getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, null);
+    GetAllWriteEventInfoRequest request = new GetAllWriteEventInfoRequest(eventMessage.getTxnId());
+    request.setDbName(contextDbName);
+    List<WriteEventInfo> writeEventInfoList = withinContext.db.getMSC().getAllWriteEventInfo(request);
     return ((writeEventInfoList == null)
             ? null
             : new ArrayList<>(Collections2.filter(writeEventInfoList,

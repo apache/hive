@@ -20,6 +20,8 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
@@ -218,6 +220,24 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONAddNotNullConstraintMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct AddNotNullConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public AddDefaultConstraintMessage getAddDefaultConstraintMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAddDefaultConstraintMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AddDefaultConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public AddCheckConstraintMessage getAddCheckConstraintMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAddCheckConstraintMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AddCheckConstraintMessage", e);
     }
   }
 

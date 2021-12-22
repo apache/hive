@@ -66,14 +66,12 @@ public final class CompileLock implements AutoCloseable {
     try {
       if (underlying.tryLock(0, unit)) {
         LOG.debug(LOCK_ACQUIRED_MSG);
-        return aquired();
+        return acquired();
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Interrupted Exception ignored", e);
-      }
-      return failedToAquire();
+      LOG.debug("Interrupted Exception ignored", e);
+      return failedToAcquire();
     }
 
     // If the first shot fails, then we log the waiting messages.
@@ -85,28 +83,26 @@ public final class CompileLock implements AutoCloseable {
       try {
         if (!underlying.tryLock(timeout, unit)) {
           LOG.error(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg() + ": " + command);
-          return failedToAquire();
+          return failedToAcquire();
         }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Interrupted Exception ignored", e);
-        }
-        return failedToAquire();
+        LOG.debug("Interrupted Exception ignored", e);
+        return failedToAcquire();
       }
     } else {
       underlying.lock();
     }
 
     LOG.debug(LOCK_ACQUIRED_MSG);
-    return aquired();
+    return acquired();
   }
 
-  private boolean aquired() {
+  private boolean acquired() {
     return locked(true);
   }
 
-  private boolean failedToAquire() {
+  private boolean failedToAcquire() {
     return locked(false);
   }
 

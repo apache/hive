@@ -1,0 +1,244 @@
+PREHOOK: query: create table daysales (customer int) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@daysales
+POSTHOOK: query: create table daysales (customer int) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@daysales
+PREHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales@dt=2001-01-01
+POSTHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales@dt=2001-01-01
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-01).customer SCRIPT []
+PREHOOK: query: insert into daysales partition(dt='2001-01-03') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@daysales@dt=2001-01-03
+POSTHOOK: query: insert into daysales partition(dt='2001-01-03') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@daysales@dt=2001-01-03
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer SCRIPT []
+PREHOOK: query: explain prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: explain prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: daysales
+                  filterExpr: ((dt = CAST( $1 AS STRING)) and (customer = UDFToInteger($2))) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((dt = CAST( $1 AS STRING)) and (customer = UDFToInteger($2))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: daysales
+                  filterExpr: ((dt = CAST( '2001-01-01' AS STRING)) and (customer = UDFToInteger(1))) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((dt = CAST( '2001-01-01' AS STRING)) and (customer = UDFToInteger(1))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: dt=2001-01-01
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    dt 2001-01-01
+                  properties:
+                    column.name.delimiter ,
+                    columns customer
+                    columns.types int
+#### A masked pattern was here ####
+                    name default.daysales
+                    partition_columns dt
+                    partition_columns.types string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns customer
+                      columns.comments 
+                      columns.types int
+#### A masked pattern was here ####
+                      name default.daysales
+                      partition_columns dt
+                      partition_columns.types string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.daysales
+                  name: default.daysales
+            Truncated Path -> Alias:
+              /daysales/dt=2001-01-01 [daysales]
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: type: EXECUTE QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
+1

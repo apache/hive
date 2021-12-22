@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -29,6 +30,7 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
@@ -38,9 +40,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -55,6 +59,9 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
 
   public static final HiveJoinAddNotNullRule INSTANCE_SEMIJOIN =
       new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+
+  public static final HiveJoinAddNotNullRule INSTANCE_ANTIJOIN =
+      new HiveJoinAddNotNullRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   private final FilterFactory filterFactory;
 
@@ -74,7 +81,15 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     Join join = call.rel(0);
-    if (join.getJoinType() == JoinRelType.FULL || join.getCondition().isAlwaysTrue()) {
+
+    // For anti join case add the not null on right side even if the condition is always true.
+    // This is done because during execution, anti join expect the right side to be empty and
+    // if we don't put null check on right, for null only right side table and condition always
+    // true, execution will produce 0 records as the post processing to filter out null value
+    // is not done for always true conditions during execution.
+    // eg  select * from left_tbl where (select 1 from all_null_right limit 1) is null
+    if (join.getJoinType() == JoinRelType.FULL ||
+            (join.getJoinType() != JoinRelType.ANTI && join.getCondition().isAlwaysTrue())) {
       return;
     }
 
@@ -92,7 +107,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
 
     boolean genPredOnLeft = join.getJoinType() == JoinRelType.RIGHT || join.getJoinType() == JoinRelType.INNER || join.isSemiJoin();
-    boolean genPredOnRight = join.getJoinType() == JoinRelType.LEFT || join.getJoinType() == JoinRelType.INNER || join.isSemiJoin();
+    boolean genPredOnRight = join.getJoinType() == JoinRelType.LEFT || join.getJoinType() == JoinRelType.INNER || join.isSemiJoin()|| join.getJoinType() == JoinRelType.ANTI;
 
     RexNode newLeftPredicate = getNewPredicate(join, registry, joinPredInfo, leftPushedPredicates, genPredOnLeft, 0);
     RexNode newRightPredicate = getNewPredicate(join, registry, joinPredInfo, rightPushedPredicates, genPredOnRight, 1);
@@ -101,8 +116,8 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       return;
     }
 
-    RelNode lChild = getNewChild(call, join, join.getLeft(), newLeftPredicate);
-    RelNode rChild = getNewChild(call, join, join.getRight(), newRightPredicate);
+    RelNode lChild = getNewChild(call, join.getLeft(), newLeftPredicate);
+    RelNode rChild = getNewChild(call, join.getRight(), newRightPredicate);
 
     Join newJoin = join.copy(join.getTraitSet(), join.getCondition(), lChild, rChild, join.getJoinType(),
         join.isSemiJoinDone());
@@ -141,7 +156,19 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       Set<String> pushedPredicates) {
     List<RexNode> newConditions = Lists.newArrayList();
 
+    Set<Integer> joinExprInputRefs = inputJoinExprs.stream()
+        .filter(n -> n.isA(SqlKind.INPUT_REF))
+        .map(RexInputRef.class::cast)
+        .map(RexInputRef::getIndex)
+        .collect(Collectors.toSet());
+
     for (RexNode rexNode : inputJoinExprs) {
+      Set<Integer> rexNodeInputRefs = HiveCalciteUtil.getInputRefs(rexNode);
+      // if we have both $0 and EXPR($0), then create only IS NOT NULL($0)
+      if (!rexNode.isA(SqlKind.INPUT_REF) && rexNodeInputRefs.size() == 1
+          && joinExprInputRefs.contains(rexNodeInputRefs.iterator().next())) {
+        continue;
+      }
       RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexNode);
       String digest = cond.toString();
       if (pushedPredicates.add(digest)) {
@@ -151,9 +178,9 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     return newConditions;
   }
 
-  private RelNode getNewChild(RelOptRuleCall call, Join join, RelNode child, RexNode newPredicate) {
+  private RelNode getNewChild(RelOptRuleCall call, RelNode child, RexNode newPredicate) {
     if (!newPredicate.isAlwaysTrue()) {
-      RelNode newChild = filterFactory.createFilter(child, newPredicate);
+      RelNode newChild = filterFactory.createFilter(child, newPredicate, ImmutableSet.of());
       call.getPlanner().onCopy(child, newChild);
       return newChild;
     }

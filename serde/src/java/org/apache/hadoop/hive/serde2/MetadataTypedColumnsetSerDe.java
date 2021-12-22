@@ -66,7 +66,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
 
   @Override
   public String toString() {
-    return "MetaDataTypedColumnsetSerDe[" + separator + "," + columnNames + "]";
+    return "MetaDataTypedColumnsetSerDe[" + separator + "," + columnNames + "," + super.toString() + "]";
   }
 
   public MetadataTypedColumnsetSerDe() throws SerDeException {
@@ -87,15 +87,18 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
   }
 
   @Override
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
-    String altSep = tbl.getProperty(serdeConstants.SERIALIZATION_FORMAT);
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
+    String altSep = properties.getProperty(serdeConstants.SERIALIZATION_FORMAT);
     separator = getByteValue(altSep, DefaultSeparator);
 
-    String altNull = tbl.getProperty(serdeConstants.SERIALIZATION_NULL_FORMAT);
+    String altNull = properties.getProperty(serdeConstants.SERIALIZATION_NULL_FORMAT);
     nullString = getByteValue(altNull, defaultNullString);
 
-    String columnProperty = tbl.getProperty("columns");
-    String serdeName = tbl.getProperty(serdeConstants.SERIALIZATION_LIB);
+    String columnProperty = properties.getProperty("columns");
+    String serdeName = properties.getProperty(serdeConstants.SERIALIZATION_LIB);
     // tables that were serialized with columnsetSerDe doesn't have metadata
     // so this hack applies to all such tables
     boolean columnsetSerDe = false;
@@ -103,8 +106,9 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
         && serdeName.equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
       columnsetSerDe = true;
     }
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     if (columnProperty == null || columnProperty.length() == 0
         || columnsetSerDe) {
       // Hack for tables with no columns
@@ -118,7 +122,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
           .getInstance(columnNames);
     }
 
-    String lastColumnTakesRestString = tbl
+    String lastColumnTakesRestString = properties
         .getProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
@@ -228,12 +232,6 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
     }
     serializeCache.set(sb.toString());
     return serializeCache;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
 }

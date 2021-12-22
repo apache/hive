@@ -17,7 +17,6 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.exec.max.dynamic.partitions=1000;
 set hive.exec.max.dynamic.partitions.pernode=1000;
-set hive.optimize.sort.dynamic.partition=true;
 
 -- Force multiple writers when reading
 drop table dp_mm;

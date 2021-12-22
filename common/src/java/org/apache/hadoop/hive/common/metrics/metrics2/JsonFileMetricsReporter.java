@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -163,7 +164,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
       }
 
       // Write json to the temp file.
-      try (BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile.toFile()))) {
+      try (BufferedWriter bw = Files.newBufferedWriter(tmpFile, StandardCharsets.UTF_8)) {
         bw.write(json);
       } catch (IOException e) {
         LOGGER.error("Unable to write to temp file " + tmpFile, e);

@@ -46,7 +46,7 @@ public abstract class LlapCacheableBuffer {
   public static final int INVALIDATE_OK = 0, INVALIDATE_FAILED = 1, INVALIDATE_ALREADY_INVALID = 2;
   protected abstract int invalidate();
   public abstract long getMemoryUsage();
-  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher);
+  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction);
 
   @Override
   public String toString() {
@@ -61,4 +61,21 @@ public abstract class LlapCacheableBuffer {
   public abstract CacheTag getTag();
 
   protected abstract boolean isLocked();
+
+  /**
+   * Marks this buffer as eligible for proactive eviction.
+   * @return buffer size
+   */
+  public abstract long markForEviction();
+
+  /**
+   * Un-marks proactive eviction flag from this buffer.
+   */
+  public abstract void removeProactiveEvictionMark();
+
+  /**
+   * Checks if this buffer is marked for proactive eviction
+   * @return true if marked
+   */
+  public abstract boolean isMarkedForEviction();
 }

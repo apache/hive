@@ -138,7 +138,8 @@ public class Operation2Privilege {
 
     op2Priv.put(HiveOperationType.CREATEDATABASE, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),
-        new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.LOCAL_URI)));
+        new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.LOCAL_URI),
+        new PrivRequirement(ADMIN_PRIV_AR, HivePrivilegeObjectType.DATACONNECTOR)));
 
     op2Priv.put(HiveOperationType.DROPDATABASE, PrivRequirement.newIOPrivRequirement(null, OWNER_PRIV_AR));
     // this should be database usage privilege once it is supported
@@ -186,6 +187,8 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERTABLE_PROPERTIES,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_OWNER,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_SETPARTSPEC,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_SERIALIZER,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
@@ -245,6 +248,8 @@ public class Operation2Privilege {
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REWRITE,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REBUILD,
+        PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT)));
     op2Priv.put(HiveOperationType.DROP_MATERIALIZED_VIEW,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
@@ -351,6 +356,8 @@ public class Operation2Privilege {
         new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
+    op2Priv.put(HiveOperationType.PREPARE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.EXECUTE, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWLOCKS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.CREATEFUNCTION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
@@ -438,6 +445,14 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.CREATE_MAPPING, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.ALTER_MAPPING, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.DROP_MAPPING, PrivRequirement.newIOPrivRequirement(null, null));
+
+    op2Priv.put(HiveOperationType.CREATEDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_OWNER, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_URL, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DESCDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWDATACONNECTORS, PrivRequirement.newIOPrivRequirement(null, null));
   }
 
   /**

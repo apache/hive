@@ -1,4 +1,5 @@
 set hive.lock.numretries=0;
+set hive.support.concurrency=true;
 
 create database lockneg4;
 

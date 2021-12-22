@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -180,14 +181,13 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
           if (((CountAgg) agg).uniqueObjects == null) {
             ((CountAgg) agg).uniqueObjects = new HashSet<ObjectInspectorObject>();
           }
-          HashSet<ObjectInspectorObject> uniqueObjs = ((CountAgg) agg).uniqueObjects;
+          Set<ObjectInspectorObject> uniqueObjs = ((CountAgg) agg).uniqueObjects;
 
           ObjectInspectorObject obj = new ObjectInspectorObject(
               ObjectInspectorUtils.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA),
               outputOI);
-          if (!uniqueObjs.contains(obj)) {
-            uniqueObjs.add(obj);
-          } else {
+          boolean inserted = uniqueObjs.add(obj);
+          if (!inserted){
             countThisRow = false;
           }
         }

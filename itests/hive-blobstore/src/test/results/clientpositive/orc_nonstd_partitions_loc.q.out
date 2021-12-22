@@ -99,6 +99,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date, game_id,
 SELECT * FROM src_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
+POSTHOOK: Output: default@orc_events
 POSTHOOK: Output: default@orc_events@run_date=20120921/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@orc_events@run_date=20121021/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@orc_events@run_date=20121121/game_id=39/event_name=hq_change
@@ -313,6 +314,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date, game_id,
 SELECT * FROM src_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
+POSTHOOK: Output: default@orc_events
 POSTHOOK: Output: default@orc_events@run_date=20120921/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@orc_events@run_date=20121021/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@orc_events@run_date=20121121/game_id=39/event_name=hq_change
@@ -433,6 +435,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date, game_id,
 SELECT * FROM src_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
+POSTHOOK: Output: default@orc_events
 POSTHOOK: Output: default@orc_events@run_date=20120921/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@orc_events@run_date=20121021/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@orc_events@run_date=20121121/game_id=39/event_name=hq_change

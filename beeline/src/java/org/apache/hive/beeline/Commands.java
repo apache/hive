@@ -147,7 +147,7 @@ public class Commands {
   public boolean addlocaldrivername(String line) {
     String driverName = arg1(line, "driver class name");
     try {
-      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+      beeLine.setDrivers(beeLine.scanDrivers());
     } catch (IOException e) {
       beeLine.error("Fail to scan drivers due to the exception:" + e);
       beeLine.error(e);
@@ -177,7 +177,7 @@ public class Commands {
       URLClassLoader newClassLoader = new URLClassLoader(new URL[]{p.toURL()}, classLoader);
 
       Thread.currentThread().setContextClassLoader(newClassLoader);
-      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+      beeLine.setDrivers(beeLine.scanDrivers());
     } catch (Exception e) {
       beeLine.error("Fail to add local jar due to the exception:" + e);
       beeLine.error(e);
@@ -211,7 +211,7 @@ public class Commands {
         return def;
       }
       throw new IllegalArgumentException(beeLine.loc("arg-usage",
-          new Object[] {ret.length == 0 ? "" : ret[0],
+          new Object[] {ret == null || ret.length == 0 ? "" : ret[0],
               paramname}));
     }
     return ret[1];
@@ -347,7 +347,7 @@ public class Commands {
     TreeSet<String> names = new TreeSet<String>();
 
     if (beeLine.getDrivers() == null) {
-      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(line)));
+      beeLine.setDrivers(beeLine.scanDrivers());
     }
 
     beeLine.info(beeLine.loc("drivers-found-count", beeLine.getDrivers().size()));
@@ -1088,8 +1088,7 @@ public class Commands {
    * Check if the input line is a multi-line command which needs to read further
    */
   public String handleMultiLineCmd(String line) throws IOException {
-    int[] startQuote = {-1};
-    line = HiveStringUtils.removeComments(line, startQuote);
+    line = HiveStringUtils.removeComments(line);
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
                        : jline.console.ConsoleReader.NULL_MASK;
 
@@ -1117,7 +1116,7 @@ public class Commands {
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
       }
-      extra = HiveStringUtils.removeComments(extra, startQuote);
+      extra = HiveStringUtils.removeComments(extra);
       if (extra != null && !extra.isEmpty()) {
         line += "\n" + extra;
       }
@@ -1660,7 +1659,8 @@ public class Commands {
     }
 
     beeLine.info("Connecting to " + url);
-    if (Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PRINCIPAL) == null) {
+    if (Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PRINCIPAL) == null
+        && !JdbcConnectionParams.AUTH_SSO_BROWSER_MODE.equals(auth)) {
       String urlForPrompt = url.substring(0, url.contains(";") ? url.indexOf(';') : url.length());
       if (username == null) {
         username = beeLine.getConsoleReader().readLine("Enter username for " + urlForPrompt + ": ");

@@ -71,6 +71,7 @@ select id, dts as dt from unionall_lv_src2 tt lateral view explode(tt.dates) dd 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unionall_lv_src1
 POSTHOOK: Input: default@unionall_lv_src2
+POSTHOOK: Output: default@unionall_lv_dest
 POSTHOOK: Output: default@unionall_lv_dest@dt=2019-01-01
 POSTHOOK: Output: default@unionall_lv_dest@dt=2019-01-02
 POSTHOOK: Output: default@unionall_lv_dest@dt=2019-01-03

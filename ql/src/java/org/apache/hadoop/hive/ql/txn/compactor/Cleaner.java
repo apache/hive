@@ -25,9 +25,16 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,11 +58,18 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
+import com.codahale.metrics.Counter;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -66,65 +80,110 @@ public class Cleaner extends MetaStoreCompactorThread {
   private long cleanerCheckInterval = 0;
 
   private ReplChangeManager replChangeManager;
+  private ExecutorService cleanerExecutor;
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
-    super.init(stop, looped);
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     replChangeManager = ReplChangeManager.getInstance(conf);
+    cleanerCheckInterval = conf.getTimeVar(
+            HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
+    cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
+            COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
   }
 
   @Override
   public void run() {
-    if (cleanerCheckInterval == 0) {
-      cleanerCheckInterval = conf.getTimeVar(
-          HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    do {
-      // This is solely for testing.  It checks if the test has set the looped value to false,
-      // and if so remembers that and then sets it to true at the end.  We have to check here
-      // first to make sure we go through a complete iteration of the loop before resetting it.
-      boolean setLooped = !looped.get();
-      TxnStore.MutexAPI.LockHandle handle = null;
-      long startedAt = -1;
-      // Make sure nothing escapes this run method and kills the metastore at large,
-      // so wrap it in a big catch Throwable statement.
-      try {
-        handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
-        startedAt = System.currentTimeMillis();
-        long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-        for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
-          clean(compactionInfo, minOpenTxnId);
+    LOG.info("Starting Cleaner thread");
+    try {
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+      Counter failuresCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
+      do {
+        TxnStore.MutexAPI.LockHandle handle = null;
+        long startedAt = -1;
+        boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
+        long retentionTime = 0;
+        if (delayedCleanupEnabled) {
+          retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
         }
-      } catch (Throwable t) {
-        LOG.error("Caught an exception in the main loop of compactor cleaner, " +
-            StringUtils.stringifyException(t));
-      }
-      finally {
-        if (handle != null) {
-          handle.releaseLocks();
-        }
-      }
-      if (setLooped) {
-        looped.set(true);
-      }
-      // Now, go back to bed until it's time to do this again
-      long elapsedTime = System.currentTimeMillis() - startedAt;
-      if (elapsedTime >= cleanerCheckInterval || stop.get())  {
-        continue;
-      } else {
+        // Make sure nothing escapes this run method and kills the metastore at large,
+        // so wrap it in a big catch Throwable statement.
         try {
-          Thread.sleep(cleanerCheckInterval - elapsedTime);
-        } catch (InterruptedException ie) {
-          // What can I do about it?
+          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+          startedAt = System.currentTimeMillis();
+
+          if (metricsEnabled) {
+            stopCycleUpdater();
+            startCycleUpdater(HiveConf.getTimeVar(conf,
+                    HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_DURATION_UPDATE_INTERVAL, TimeUnit.MILLISECONDS),
+                    new CleanerCycleUpdater(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt));
+          }
+
+          long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+
+          List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
+          if (!readyToClean.isEmpty()) {
+            long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
+            final long cleanerWaterMark = minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
+
+            LOG.info("Cleaning based on min open txn id: " + cleanerWaterMark);
+            List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
+            // For checking which compaction can be cleaned we can use the minOpenTxnId
+            // However findReadyToClean will return all records that were compacted with old version of HMS
+            // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
+            // to the clean method, to avoid cleaning up deltas needed for running queries
+            // when min_history_level is finally dropped, than every HMS will commit compaction the new way
+            // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
+            for (CompactionInfo compactionInfo : readyToClean) {
+              cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
+                      clean(compactionInfo, cleanerWaterMark, metricsEnabled)), cleanerExecutor));
+            }
+            CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
+          }
+        } catch (Throwable t) {
+          // the lock timeout on AUX lock, should be ignored.
+          if (metricsEnabled && handle != null) {
+            failuresCounter.inc();
+          }
+          LOG.error("Caught an exception in the main loop of compactor cleaner, " +
+                  StringUtils.stringifyException(t));
+        } finally {
+          if (handle != null) {
+            handle.releaseLocks();
+          }
+          if (metricsEnabled) {
+            updateCycleDurationMetric(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION, startedAt);
+          }
+          stopCycleUpdater();
         }
+        // Now, go back to bed until it's time to do this again
+        long elapsedTime = System.currentTimeMillis() - startedAt;
+        if (elapsedTime < cleanerCheckInterval && !stop.get()) {
+          Thread.sleep(cleanerCheckInterval - elapsedTime);
+        }
+        LOG.debug("Cleaner thread finished one loop.");
+      } while (!stop.get());
+    } catch (InterruptedException ie) {
+      LOG.error("Compactor cleaner thread interrupted, exiting " +
+        StringUtils.stringifyException(ie));
+    } finally {
+      if (cleanerExecutor != null) {
+        this.cleanerExecutor.shutdownNow();
       }
-    } while (!stop.get());
+    }
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
+    String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
+        (ci.type != null ? ci.type.toString().toLowerCase() : null);
     try {
+      if (metricsEnabled) {
+        perfLogger.perfLogBegin(CLASS_NAME, cleanerMetric);
+      }
       Table t = resolveTable(ci);
       if (t == null) {
         // The table was dropped before we got around to cleaning it.
@@ -133,6 +192,13 @@ public class Cleaner extends MetaStoreCompactorThread {
         txnHandler.markCleaned(ci);
         return;
       }
+      if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
+        // The table was marked no clean up true.
+        LOG.info("Skipping table " + ci.getFullTableName() + " clean up, as NO_CLEANUP set to true");
+        txnHandler.markCleaned(ci);
+        return;
+      }
+
       Partition p = null;
       if (ci.partName != null) {
         p = resolvePartition(ci);
@@ -143,7 +209,16 @@ public class Cleaner extends MetaStoreCompactorThread {
           txnHandler.markCleaned(ci);
           return;
         }
+        if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
+          // The partition was marked no clean up true.
+          LOG.info("Skipping partition " + ci.getFullPartitionName() + " clean up, as NO_CLEANUP set to true");
+          txnHandler.markCleaned(ci);
+          return;
+        }
       }
+
+      txnHandler.markCleanerStart(ci);
+
       StorageDescriptor sd = resolveStorageDescriptor(t, p);
       final String location = sd.getLocation();
       ValidTxnList validTxnList =
@@ -180,31 +255,21 @@ public class Cleaner extends MetaStoreCompactorThread {
        * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
        * useful if there is all of a sudden a flood of aborted txns.  (For another day).
        */
-      List<String> tblNames = Collections.singletonList(
-          TableName.getDbTable(t.getDbName(), t.getTableName()));
-      GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tblNames);
-      rqst.setValidTxnList(validTxnList.writeToString());
-      GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(rqst);
-      //we could have no write IDs for a table if it was never written to but
-      // since we are in the Cleaner phase of compactions, there must have
-      // been some delta/base dirs
-      assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
-      //Creating 'reader' list since we are interested in the set of 'obsolete' files
-      ValidReaderWriteIdList validWriteIdList =
-          TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
 
+      // Creating 'reader' list since we are interested in the set of 'obsolete' files
+      final ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, t, validTxnList);
+      LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
+
+      Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
-        removeFiles(location, validWriteIdList, ci);
+        removedFiles.value = removeFiles(location, validWriteIdList, ci);
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
-        ugi.doAs(new PrivilegedExceptionAction<Object>() {
-          @Override
-          public Object run() throws Exception {
-            removeFiles(location, validWriteIdList, ci);
-            return null;
-          }
+        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+          removedFiles.value = removeFiles(location, validWriteIdList, ci);
+          return null;
         });
         try {
           FileSystem.closeAllForUGI(ugi);
@@ -213,22 +278,64 @@ public class Cleaner extends MetaStoreCompactorThread {
               ci.getFullPartitionName() + idWatermark(ci), exception);
         }
       }
-      txnHandler.markCleaned(ci);
+      if (removedFiles.value || isDynPartAbort(t, ci)) {
+        txnHandler.markCleaned(ci);
+      } else {
+        txnHandler.clearCleanerStart(ci);
+        LOG.warn("No files were removed. Leaving queue entry " + ci + " in ready for cleaning state.");
+      }
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
           StringUtils.stringifyException(e));
       ci.errorMessage = e.getMessage();
       txnHandler.markFailed(ci);
+    } finally {
+      if (metricsEnabled) {
+        perfLogger.perfLogEnd(CLASS_NAME, cleanerMetric);
+      }
     }
   }
+
+  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, Table t, ValidTxnList validTxnList)
+      throws NoSuchTxnException, MetaException {
+    List<String> tblNames = Collections.singletonList(TableName.getDbTable(t.getDbName(), t.getTableName()));
+    GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
+    request.setValidTxnList(validTxnList.writeToString());
+    GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
+    // we could have no write IDs for a table if it was never written to but
+    // since we are in the Cleaner phase of compactions, there must have
+    // been some delta/base dirs
+    assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
+    ValidReaderWriteIdList validWriteIdList =
+        TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+    /*
+     * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
+     * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction
+     * should not touch the newer obsolete directories to not to violate the retentionTime for those.
+     */
+    if (ci.highestWriteId < validWriteIdList.getHighWatermark()) {
+      validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
+    }
+    return validWriteIdList;
+  }
+
+  private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
+    return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
+        && ci.partName == null;
+  }
+
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
-  private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
+
+  /**
+   * @return true if any files were removed
+   */
+  private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
-        false), false, null, false);
+    AcidDirectory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
+        false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -239,13 +346,23 @@ public class Cleaner extends MetaStoreCompactorThread {
      * txns with write IDs > {@link CompactionInfo#highestWriteId}.
      * See {@link TxnStore#markCleaned(CompactionInfo)}
      */
+    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
+    if (isDynPartAbort(table, ci) || dir.hasUncompactedAborts()) {
+      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
+    }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
+    if (isDynPartAbort(table, ci)) {
+      // In the event of an aborted DP operation, we should only consider the aborted directories for cleanup.
+      // Including obsolete directories for partitioned tables can result in data loss.
+      obsoleteDirs = dir.getAbortedDirectories();
+    }
     List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
+
     StringBuilder extraDebugInfo = new StringBuilder("[");
     for (Path stat : obsoleteDirs) {
       filesToDelete.add(stat);
       extraDebugInfo.append(stat.getName()).append(",");
-      if(!FileUtils.isPathWithinSubtree(stat, locPath)) {
+      if (!FileUtils.isPathWithinSubtree(stat, locPath)) {
         LOG.info(idWatermark(ci) + " found unexpected file: " + stat);
       }
     }
@@ -255,12 +372,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     if (filesToDelete.size() < 1) {
       LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
           ", that hardly seems right.");
-      return;
+      return false;
     }
 
-    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+    FileSystem fs = dir.getFs();
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
-    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
@@ -268,6 +384,22 @@ public class Cleaner extends MetaStoreCompactorThread {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);
+    }
+    return true;
+  }
+
+  private static class CleanerCycleUpdater implements Runnable {
+    private final String metric;
+    private final long startedAt;
+
+    CleanerCycleUpdater(String metric, long startedAt) {
+      this.metric = metric;
+      this.startedAt = startedAt;
+    }
+
+    @Override
+    public void run() {
+      updateCycleDurationMetric(metric, startedAt);
     }
   }
 }

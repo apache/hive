@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -33,7 +32,7 @@ import static java.util.stream.Collectors.joining;
 /**
  * A wrapper around cache eviction policy that tracks cache contents via tags.
  */
-public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListener {
+public class CacheContentsTracker implements LowLevelCachePolicy, ProactiveEvictingCachePolicy, EvictionListener {
   private static final long CLEANUP_TIME_MS = 3600 * 1000L, MIN_TIME_MS = 300 * 1000L;
 
   private final ConcurrentSkipListMap<CacheTag, TagState> tagInfo = new ConcurrentSkipListMap<>();
@@ -163,11 +162,6 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
   }
 
   @Override
-  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-    return realPolicy.evictEntity(predicate);
-  }
-
-  @Override
   public long evictSomeBlocks(long memoryToReserve) {
     return realPolicy.evictSomeBlocks(memoryToReserve);
   }
@@ -227,4 +221,16 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
     reportRemoved(buffer);
   }
 
+  @Override
+  public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
+    evictionListener.notifyProactivelyEvicted(buffer);
+    reportRemoved(buffer);
+  }
+
+  @Override
+  public void notifyProactiveEvictionMark() {
+    if (realPolicy instanceof ProactiveEvictingCachePolicy) {
+      ((ProactiveEvictingCachePolicy) realPolicy).notifyProactiveEvictionMark();
+    }
+  }
 }

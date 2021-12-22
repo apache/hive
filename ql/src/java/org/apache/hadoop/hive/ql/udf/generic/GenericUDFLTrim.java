@@ -21,17 +21,19 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimColScalar;
 
 /**
  * UDFLTrim.
  *
  */
 @Description(name = "ltrim",
-    value = "_FUNC_(str) - Removes the " +
-    "leading space characters from str ", extended = "Example:\n"
-    + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'")
-@VectorizedExpressions({ StringLTrim.class })
+    value = "_FUNC_(str[, chars]) - Removes the " +
+    "leading pad characters from str ", extended = "Example:\n"
+    + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'\n"
+    + "  > SELECT _FUNC_('xyzzxyfacebook', 'zyx') FROM src LIMIT 1;\n" + "  'facebook'")
+@VectorizedExpressions({ StringLTrimCol.class, StringLTrimColScalar.class })
 public class GenericUDFLTrim extends GenericUDFBaseTrim {
 
   public GenericUDFLTrim() {
@@ -39,8 +41,8 @@ public class GenericUDFLTrim extends GenericUDFBaseTrim {
   }
 
   @Override
-  protected String performOp(String val) {
-    return StringUtils.stripStart(val, " ");
+  protected String performOp(String val, String trimChars) {
+    return StringUtils.stripStart(val, trimChars);
   }
 
 }
