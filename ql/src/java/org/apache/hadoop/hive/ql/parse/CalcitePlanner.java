@@ -4777,7 +4777,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // need to remember the expressions and the alias.
         // In OP return path, we need to generate a SEL and then a UDTF
         // following old semantic analyzer.
-        outputRel = genUDTFPlan(genericUDTF, genericUDTFName, udtfTableAlias, udtfColAliases, qb,
+        return genUDTFPlan(genericUDTF, genericUDTFName, udtfTableAlias, udtfColAliases, qb,
             columnList, outputRR, srcRel);
       } else {
         String dest = qbp.getClauseNames().iterator().next();
@@ -4869,8 +4869,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return i;
     }
 
-    private RelNode genUDTFPlan(GenericUDTF genericUDTF, String genericUDTFName, String outputTableAlias,
-        ArrayList<String> colAliases, QB qb, List<RexNode> selectColLst, RowResolver selectRR, RelNode input) throws SemanticException {
+    private Pair<RelNode, RowResolver> genUDTFPlan(GenericUDTF genericUDTF,
+                                                   String genericUDTFName,
+                                                   String outputTableAlias,
+                                                   ArrayList<String> colAliases,
+                                                   QB qb,
+                                                   List<RexNode> selectColLst,
+                                                   RowResolver selectRR,
+                                                   RelNode input) throws SemanticException {
 
       // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
       QBParseInfo qbp = qb.getParseInfo();
@@ -4968,7 +4974,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       relToHiveColNameCalcitePosMap.put(udtf, buildHiveToCalciteColumnMap(outputRR));
       relToHiveRR.put(udtf, outputRR);
 
-      return udtf;
+      return new Pair<>(udtf, outputRR);
     }
 
     private Pair<RelNode, RowResolver> genGBSelectDistinctPlan(Pair<RelNode, RowResolver> srcNodeRR)
