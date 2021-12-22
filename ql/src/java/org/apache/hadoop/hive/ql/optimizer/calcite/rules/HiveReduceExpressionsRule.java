@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRuleCall;
