@@ -81,7 +81,12 @@
           </exclusion>
         </exclusions>
    </dependency>
-    <!-- used by thrift generated code -->
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <version>${disruptor.version}</version>
+    </dependency>
+   <!-- used by thrift generated code -->
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
