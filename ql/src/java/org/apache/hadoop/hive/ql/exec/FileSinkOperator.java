@@ -306,8 +306,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     private void commitOneOutPath(int idx, FileSystem fs, List<Path> commitPaths)
         throws IOException, HiveException {
-      if ((bDynParts || isSkewedStoredAsSubDirectories)
-          && !fs.exists(finalPaths[idx].getParent())) {
+      if (finalPaths[idx] != null && !fs.exists(finalPaths[idx].getParent())) {
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("commit making path for dyn/skew: " + finalPaths[idx].getParent());
         }
