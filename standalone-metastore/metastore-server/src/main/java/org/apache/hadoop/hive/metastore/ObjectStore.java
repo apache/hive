@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -3958,7 +3957,7 @@ public class ObjectStore implements RawStore, Configurable {
           SqlFilterForPushdown filter = new SqlFilterForPushdown();
           if (directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
               exprTree, defaultPartitionName, filter)) {
-            String catalogName = (catName != null) ? catName : DEFAULT_CATALOG_NAME;
+            String catalogName = (catName != null) ? catName : getDefaultCatalog(conf);
             return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter, null, isAcidTable);
           }
         }
@@ -9676,7 +9675,7 @@ public class ObjectStore implements RawStore, Configurable {
       for (ColumnStatisticsObj statsObj:statsObjs) {
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
             mTable, statsDesc,
-            statsObj, colStats.getEngine());
+            statsObj, colStats.getEngine(), getDefaultCatalog(conf));
         writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
         // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
@@ -9768,7 +9767,8 @@ public class ObjectStore implements RawStore, Configurable {
 
       for (ColumnStatisticsObj statsObj : statsObjs) {
         MPartitionColumnStatistics mStatsObj =
-            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
+            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj,
+                colStats.getEngine(), getDefaultCatalog(conf));
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }

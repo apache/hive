@@ -5952,7 +5952,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       environmentContext = new EnvironmentContext();
     }
     if (catName == null) {
-      catName = MetaStoreUtils.getDefaultCatalog(conf);
+      catName = getDefaultCatalog(conf);
     }
 
     startTableFunction("alter_partitions", catName, db_name, tbl_name);
@@ -6071,7 +6071,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       envContext = new EnvironmentContext();
     }
     if (catName == null) {
-      catName = MetaStoreUtils.getDefaultCatalog(conf);
+      catName = getDefaultCatalog(conf);
     }
 
     // HIVE-25282: Drop/Alter table in REMOTE db should fail
@@ -9510,7 +9510,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     ms.openTransaction();
     boolean success = false;
     try {
-      Table tbl = ms.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
+      Table tbl = ms.getTable(getDefaultCatalog(conf), dbName, tblName);
       if (tbl == null) {
         throw new NoSuchObjectException(dbName + "." + tblName + " not found");
       }
@@ -9535,7 +9535,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (partName != null) {
           partNames = Lists.newArrayList(partName);
         } else if (isAllPart) {
-          partNames = ms.listPartitionNames(DEFAULT_CATALOG_NAME, dbName, tblName, (short)-1);
+          partNames = ms.listPartitionNames(getDefaultCatalog(conf), dbName, tblName, (short)-1);
         } else {
           throw new MetaException("Table is partitioned");
         }
@@ -9548,7 +9548,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           int currentBatchSize = Math.min(batchSize, partNames.size() - index);
           List<String> nameBatch = partNames.subList(index, index + currentBatchSize);
           index += currentBatchSize;
-          List<Partition> parts = ms.getPartitionsByNames(DEFAULT_CATALOG_NAME, dbName, tblName, nameBatch);
+          List<Partition> parts = ms.getPartitionsByNames(getDefaultCatalog(conf), dbName, tblName, nameBatch);
           for (Partition part : parts) {
             if (!part.isSetSd() || !part.getSd().isSetLocation()) {
               throw new MetaException("Partition does not have storage location;" +

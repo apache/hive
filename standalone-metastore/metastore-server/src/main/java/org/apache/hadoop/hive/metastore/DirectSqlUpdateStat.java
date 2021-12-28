@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * This class contains the optimizations for MetaStore that rely on direct SQL access to
@@ -186,10 +187,10 @@ class DirectSqlUpdateStat {
         PartColNameInfo temp = new PartColNameInfo(partId, statisticsObj.getColName());
         if (selectedParts.contains(temp)) {
           updateMap.put(temp, StatObjectConverter.
-                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine(), getDefaultCatalog(conf)));
         } else {
           insertMap.put(temp, StatObjectConverter.
-                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine(), getDefaultCatalog(conf)));
         }
       }
     }

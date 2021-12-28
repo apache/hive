@@ -76,7 +76,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -1321,7 +1320,7 @@ public class CachedStore implements RawStore, Configurable {
     if (succ && !canUseEvents) {
       String dbName = normalizeIdentifier(part.getDbName());
       String tblName = normalizeIdentifier(part.getTableName());
-      String catName = part.isSetCatName() ? normalizeIdentifier(part.getCatName()) : DEFAULT_CATALOG_NAME;
+      String catName = part.isSetCatName() ? normalizeIdentifier(part.getCatName()) : getDefaultCatalog(conf);
       if (!shouldCacheTable(catName, dbName, tblName)) {
         return succ;
       }
@@ -2185,7 +2184,7 @@ public class CachedStore implements RawStore, Configurable {
   private void updatePartitionColumnStatisticsInCache(ColumnStatistics colStats, Map<String, String> newParams,
                                                   List<String> partVals) throws MetaException, NoSuchObjectException {
     String catName = colStats.getStatsDesc().isSetCatName() ? normalizeIdentifier(
-            colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;
+            colStats.getStatsDesc().getCatName()) : getDefaultCatalog(conf);
     String dbName = normalizeIdentifier(colStats.getStatsDesc().getDbName());
     String tblName = normalizeIdentifier(colStats.getStatsDesc().getTableName());
     if (!shouldCacheTable(catName, dbName, tblName)) {
@@ -2820,7 +2819,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     String dbName = normalizeIdentifier(tbl.getDbName());
     String tblName = normalizeIdentifier(tbl.getTableName());
-    String catName = tbl.isSetCatName() ? normalizeIdentifier(tbl.getCatName()) : DEFAULT_CATALOG_NAME;
+    String catName = tbl.isSetCatName() ? normalizeIdentifier(tbl.getCatName()) : getDefaultCatalog(conf);
     if (!shouldCacheTable(catName, dbName, tblName)) {
       return constraints;
     }
