@@ -9675,7 +9675,7 @@ public class ObjectStore implements RawStore, Configurable {
       for (ColumnStatisticsObj statsObj:statsObjs) {
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
             mTable, statsDesc,
-            statsObj, colStats.getEngine(), getDefaultCatalog(conf));
+            statsObj, colStats.getEngine());
         writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
         // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
@@ -9767,8 +9767,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       for (ColumnStatisticsObj statsObj : statsObjs) {
         MPartitionColumnStatistics mStatsObj =
-            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj,
-                colStats.getEngine(), getDefaultCatalog(conf));
+            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }

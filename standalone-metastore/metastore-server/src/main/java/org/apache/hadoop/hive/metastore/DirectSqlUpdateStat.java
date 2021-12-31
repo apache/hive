@@ -149,7 +149,7 @@ class DirectSqlUpdateStat {
   private void populateInsertUpdateMap(Map<PartitionInfo, ColumnStatistics> statsPartInfoMap,
                                        Map<PartColNameInfo, MPartitionColumnStatistics> updateMap,
                                        Map<PartColNameInfo, MPartitionColumnStatistics>insertMap,
-                                       Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
+                                       Connection dbConn, Table tbl) throws SQLException, MetaException, NoSuchObjectException {
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
     Statement statement = null;
@@ -183,14 +183,17 @@ class DirectSqlUpdateStat {
       ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
       long partId = partitionInfo.partitionId;
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      if (!statsDesc.isSetCatName()) {
+        statsDesc.setCatName(tbl.getCatName());
+      }
       for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
         PartColNameInfo temp = new PartColNameInfo(partId, statisticsObj.getColName());
         if (selectedParts.contains(temp)) {
           updateMap.put(temp, StatObjectConverter.
-                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine(), getDefaultCatalog(conf)));
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
         } else {
           insertMap.put(temp, StatObjectConverter.
-                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine(), getDefaultCatalog(conf)));
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
         }
       }
     }
@@ -600,7 +603,7 @@ class DirectSqlUpdateStat {
 
       Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
       Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
-      populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn);
+      populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn, tbl);
 
       LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
 

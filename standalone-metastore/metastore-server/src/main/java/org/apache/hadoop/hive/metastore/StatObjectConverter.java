@@ -61,7 +61,7 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 public class StatObjectConverter {
   // JDO
   public static MTableColumnStatistics convertToMTableColumnStatistics(MTable table,
-      ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj, String engine, String defaultCatalogName)
+      ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException {
      if (statsObj == null || statsDesc == null) {
        throw new InvalidObjectException("Invalid column stats object");
@@ -70,7 +70,7 @@ public class StatObjectConverter {
      MTableColumnStatistics mColStats = new MTableColumnStatistics();
      mColStats.setTable(table);
      mColStats.setDbName(statsDesc.getDbName());
-     mColStats.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : defaultCatalogName);
+     mColStats.setCatName(table.getDatabase().getCatalogName());
      mColStats.setTableName(statsDesc.getTableName());
      mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
      mColStats.setColName(statsObj.getColName());
@@ -441,15 +441,20 @@ public class StatObjectConverter {
   }
 
   public static MPartitionColumnStatistics convertToMPartitionColumnStatistics(
-      MPartition partition, ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj, String engine, String defaultCatalogName)
+      MPartition partition, ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj, String engine)
           throws MetaException, NoSuchObjectException {
     if (statsDesc == null || statsObj == null) {
       return null;
     }
 
     MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
-    mColStats.setPartition(partition);
-    mColStats.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : defaultCatalogName);
+    if (partition != null) {
+      mColStats.setCatName(partition.getTable().getDatabase().getCatalogName());
+      mColStats.setPartition(partition);
+    } else {
+      // Assume that the statsDesc has already set catalogName when partition is null
+      mColStats.setCatName(statsDesc.getCatName());
+    }
     mColStats.setDbName(statsDesc.getDbName());
     mColStats.setTableName(statsDesc.getTableName());
     mColStats.setPartitionName(statsDesc.getPartName());
