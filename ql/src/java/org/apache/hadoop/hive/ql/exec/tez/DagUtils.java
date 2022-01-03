@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
@@ -727,7 +728,8 @@ public class DagUtils {
   /*
    * Helper to setup default environment for a task in YARN.
    */
-  private Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
+  @VisibleForTesting
+  Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvBasedOnMRTaskEnv(conf, environment, isMap);
     return environment;

@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -189,6 +190,8 @@ public class TezTask extends Task<TezWork> {
       // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
       JobConf jobConf = utils.createConfiguration(conf, false);
 
+      // Setup the job specific keystore path if exists and put the password into the environment variables of tez am/tasks.
+      HiveConfUtil.updateJobCredentialProviders(jobConf);
 
       // Get all user jars from work (e.g. input format stuff).
       String[] allNonConfFiles = work.configureJobConfAndExtractJars(jobConf);
