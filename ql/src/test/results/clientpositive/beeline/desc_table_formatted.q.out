@@ -38,6 +38,24 @@ PREHOOK: query: INSERT INTO datatype_stats_n0 values(1, 2, 44, 455, 45454.3, 454
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: INSERT INTO datatype_stats_n0 values(1, 2, 44, 455, 45454.3, 454.6564, 2354, '2012-01-01 01:02:02', '2011-12-31', 'update_statisticr', 'statr', 'hivd', 'false', 'bin')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Lineage: datatype_stats_n0.b SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bin SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bl SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.c SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.d SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dem SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dt SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.f SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.i SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.s SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.str SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.t SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.ts SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.v SCRIPT []
 PREHOOK: query: INSERT INTO datatype_stats_n0 values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
