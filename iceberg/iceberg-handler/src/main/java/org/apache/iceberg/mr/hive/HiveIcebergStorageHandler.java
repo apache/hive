@@ -36,7 +36,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -54,6 +53,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -370,6 +370,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new URI(ICEBERG_URI_PREFIX + table.location());
   }
 
+  @Override
+  public void validateSinkOperation(FileSinkDesc sinkDesc) {
+    HiveStorageHandler.super.validateSinkOperation(sinkDesc);
+    if (sinkDesc.getInsertOverwrite()) {
+      Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
+      if (IcebergTableUtil.isBucketed(table)) {
+        throw new IllegalStateException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
+      }
+    }
+  }
+
   private void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
@@ -467,7 +478,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
     Table table = IcebergTableUtil.getTable(configuration, props);
-    assertNotInsertOverwriteWithBucketedTable(props, table);
     String schemaJson = SchemaParser.toJson(table.schema());
 
     Maps.fromProperties(props).entrySet().stream()
@@ -491,18 +501,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-  }
-
-  private static void assertNotInsertOverwriteWithBucketedTable(Properties props, Table table) {
-    // check and throw if we're insert overwriting a bucket transform table
-    if ("true".equalsIgnoreCase(props.getProperty(Constants.IS_INSERT_OVERWRITE_QUERY))) {
-      boolean isBucketed = table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
-      if (isBucketed) {
-        throw new IllegalStateException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
-      }
-    }
-    // remove the key as we won't need it any longer
-    props.remove(Constants.IS_INSERT_OVERWRITE_QUERY);
   }
 
   /**

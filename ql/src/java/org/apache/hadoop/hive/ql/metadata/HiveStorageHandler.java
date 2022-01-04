@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -351,5 +352,8 @@ public interface HiveStorageHandler extends Configurable {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     return new URI(this.getClass().getSimpleName().toLowerCase() + "://" +
         HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
+  }
+
+  default void validateSinkOperation(FileSinkDesc sinkDesc) {
   }
 }

@@ -12580,6 +12580,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    // validate if this sink operation is allowed for non-native tables
+    Optional.ofNullable(sinkOp)
+        .filter(op -> op instanceof FileSinkOperator)
+        .map(op -> (FileSinkOperator) op)
+        .map(FileSinkOperator::getConf)
+        .map(FileSinkDesc::getTable)
+        .map(Table::getStorageHandler)
+        .ifPresent(handler -> handler.validateSinkOperation((FileSinkDesc) sinkOp.getConf()));
+
     // Check query results cache
     // In the case that row or column masking/filtering was required, we do not support caching.
     // TODO: Enable caching for queries with masking/filtering
