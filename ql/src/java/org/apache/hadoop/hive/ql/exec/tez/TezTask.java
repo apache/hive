@@ -384,6 +384,11 @@ public class TezTask extends Task<TezWork> {
           }
         }
 
+        Optional.ofNullable(jobConf.get("HiveIcebergStorageHandler_delete")).ifPresent(v ->
+            icebergProperties.put("HiveIcebergStorageHandler_delete", v));
+        Optional.ofNullable(jobConf.get("HiveIcebergStorageHandler_write")).ifPresent(v ->
+            icebergProperties.put("HiveIcebergStorageHandler_write", v));
+
         // save information for each target table
         tables.forEach(table -> SessionStateUtil.addCommitInfo(jobConf, table, jobId,
             status.getProgress().getSucceededTaskCount(), icebergProperties));

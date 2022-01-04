@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -81,6 +83,7 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
@@ -93,7 +96,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
 
-  static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
+  public static final String OPERATION_KEY = "iceberg.mr.operation.type";
+  public static final String DELETE_KEY = "HiveIcebergStorageHandler_delete";
+  public static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
   private Configuration conf;
 
@@ -135,11 +140,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    map.put(WRITE_KEY, "true");
+    boolean isDelete = SessionStateUtil.getProperty(conf, "opType")
+        .filter(t -> t.equals(Context.Operation.DELETE.name())).isPresent();
+    map.put(isDelete ? DELETE_KEY : WRITE_KEY, "true");
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
-    tableDesc.getProperties().put(WRITE_KEY, "true");
+    tableDesc.getProperties().put(isDelete ? DELETE_KEY : WRITE_KEY, "true");
   }
 
   /**
@@ -169,7 +176,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(WRITE_KEY) != null) {
+        (tableDesc.getProperties().get(WRITE_KEY) != null || tableDesc.getProperties().get(DELETE_KEY) != null)) {
+      // set delete key into job conf too
+      if (tableDesc.getProperties().get(DELETE_KEY) != null) {
+        jobConf.set(DELETE_KEY, "true");
+      }
       String tableName = tableDesc.getTableName();
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
@@ -369,6 +380,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new URI(ICEBERG_URI_PREFIX + table.location());
   }
 
+  @Override
+  public boolean supportsAcidOperations() {
+    return true;
+  }
+
+  @Override
+  public List<VirtualColumn> acidVirtualColumns() {
+    return ImmutableList.of(VirtualColumn.POS_DEL_PATH, VirtualColumn.POS_DEL_POS);
+  }
+
   private void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
@@ -406,6 +427,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // There is nothing to prune, or we could not use the filter
     LOG.debug("Not found Iceberg partition columns to prune with predicate {}", syntheticFilterPredicate);
     return false;
+  }
+
+  public static boolean isDelete(Configuration conf) {
+    return conf != null && conf.getBoolean(HiveIcebergStorageHandler.DELETE_KEY, false);
   }
 
   /**

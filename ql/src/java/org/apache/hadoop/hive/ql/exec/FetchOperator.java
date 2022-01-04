@@ -598,7 +598,7 @@ public class FetchOperator implements Serializable {
           }
           if (hasVC) {
             row[isPartitioned ? 2 : 1] =
-                MapOperator.populateVirtualColumnValues(context, vcCols, vcValues, currSerDe);
+                MapOperator.populateVirtualColumnValues(context, vcCols, vcValues, currSerDe, null);
           }
           Object deserialized = currSerDe.deserialize(value);
           if (ObjectConverter != null) {

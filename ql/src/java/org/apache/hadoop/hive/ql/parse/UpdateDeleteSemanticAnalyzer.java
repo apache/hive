@@ -23,12 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -97,12 +100,22 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     Table mTable = getTargetTable(tabName);
     validateTargetTable(mTable);
 
+    // save the operation type into the query state
+    SessionStateUtil.addResource(conf, "opType", operation.name());
+
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    rewrittenQueryStr.append(" select ROW__ID");
+    boolean nonNativeAcid = mTable.getStorageHandler() != null && mTable.getStorageHandler().supportsAcidOperations();
+    if (nonNativeAcid) {
+      String virtualCols = mTable.getStorageHandler().acidVirtualColumns().stream()
+          .map(VirtualColumn::getName).collect(Collectors.joining(","));
+      rewrittenQueryStr.append(" select ").append(virtualCols);
+    } else {
+      rewrittenQueryStr.append(" select ROW__ID");
+    }
 
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
@@ -132,7 +145,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr, null);
+    addPartitionColsToSelect(nonNativeAcid ? mTable.getCols() : mTable.getPartCols(), rewrittenQueryStr, null);
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
 
@@ -145,7 +158,13 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    rewrittenQueryStr.append(" sort by ROW__ID ");
+    if (nonNativeAcid) {
+      String virtualCols = mTable.getStorageHandler().acidVirtualColumns().stream()
+          .map(VirtualColumn::getName).collect(Collectors.joining(","));
+      rewrittenQueryStr.append(" sort by ").append(virtualCols).append(" ");
+    } else {
+      rewrittenQueryStr.append(" sort by ROW__ID ");
+    }
 
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;

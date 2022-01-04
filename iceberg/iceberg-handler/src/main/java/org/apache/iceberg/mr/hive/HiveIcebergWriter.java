@@ -17,14 +17,13 @@
  * under the License.
  */
 
-package org.apache.iceberg;
+package org.apache.iceberg.mr.hive;
 
-public interface ClientPool<C, E extends Exception> {
-  interface Action<R, C, E extends Exception> {
-    R run(C client) throws E;
-  }
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.mapred.Container;
 
-  <R> R run(Action<R, C, E> action) throws E, InterruptedException;
-
-  <R> R run(Action<R, C, E> action, boolean retry) throws E, InterruptedException;
+public interface HiveIcebergWriter extends FileSinkOperator.RecordWriter,
+    org.apache.hadoop.mapred.RecordWriter<NullWritable, Container<Record>> {
 }

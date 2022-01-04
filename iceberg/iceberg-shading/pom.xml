@@ -41,11 +41,6 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
-            <artifactId>patched-iceberg-core</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-data</artifactId>
             <optional>true</optional>
         </dependency>

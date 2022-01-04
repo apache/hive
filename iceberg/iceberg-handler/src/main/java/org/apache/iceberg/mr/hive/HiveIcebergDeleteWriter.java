@@ -20,69 +20,83 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
-import org.apache.iceberg.io.PartitionedFanoutWriter;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class HiveIcebergRecordWriter extends PartitionedFanoutWriter<Record> implements HiveIcebergWriter {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRecordWriter.class);
-
-  // The current key is reused at every write to avoid unnecessary object creation
-  private final PartitionKey currentKey;
-  private final FileIO io;
-  private final InternalRecordWrapper wrapper;
-
-  // <TaskAttemptId, <TABLE_NAME, HiveIcebergRecordWriter>> map to store the active writers
+public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Record> implements HiveIcebergWriter {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteWriter.class);
+  // <TaskAttemptId, <TABLE_NAME, HiveIcebergDeleteWriter>> map to store the active writers
   // Stored in concurrent map, since some executor engines can share containers
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergRecordWriter>> writers = Maps.newConcurrentMap();
+  private static final Map<TaskAttemptID, Map<String, HiveIcebergDeleteWriter>> writers = Maps.newConcurrentMap();
 
-  static Map<String, HiveIcebergRecordWriter> removeWriters(TaskAttemptID taskAttemptID) {
+  static Map<String, HiveIcebergDeleteWriter> removeWriters(TaskAttemptID taskAttemptID) {
     return writers.remove(taskAttemptID);
   }
-
-  static Map<String, HiveIcebergRecordWriter> getWriters(TaskAttemptID taskAttemptID) {
+  static Map<String, HiveIcebergDeleteWriter> getWriters(TaskAttemptID taskAttemptID) {
     return writers.get(taskAttemptID);
   }
 
-  HiveIcebergRecordWriter(
-      Schema schema, PartitionSpec spec, FileFormat format,
-      FileAppenderFactory<Record> appenderFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
-      TaskAttemptID taskAttemptID, String tableName) {
-    super(spec, format, appenderFactory, fileFactory, io, targetFileSize);
+  private final FileIO io;
+  private final PartitionSpec spec;
+  private final InternalRecordWrapper wrapper;
+
+  HiveIcebergDeleteWriter(
+      FileWriterFactory<Record> writerFactory,
+      Schema schema,
+      PartitionSpec spec,
+      FileFormat fileFormat,
+      OutputFileFactory fileFactory,
+      FileIO io,
+      long targetFileSize,
+      TaskAttemptID taskAttemptID,
+      String tableName) {
+    super(writerFactory, fileFactory, io, fileFormat, targetFileSize);
     this.io = io;
-    this.currentKey = new PartitionKey(spec, schema);
+    this.spec = spec;
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
     writers.get(taskAttemptID).put(tableName, this);
   }
 
-  @Override
-  protected PartitionKey partition(Record row) {
-    currentKey.partition(wrapper.wrap(row));
-    return currentKey;
+  public DeleteFile[] deleteFiles() {
+    return result().deleteFiles().toArray(new DeleteFile[0]);
   }
 
   @Override
   public void write(Writable row) throws IOException {
-    super.write(((Container<Record>) row).get());
+    Record rec = ((Container<Record>) row).get();
+    String filePath = rec.get(0, String.class);
+    long filePosition = rec.get(1, Long.class);
+    for (int i = 2; i < rec.size(); ++i) {
+      rec.set(i - 2, rec.get(i));
+    }
+
+    PartitionKey partitionKey = new PartitionKey(spec, spec.schema());
+    partitionKey.partition(wrapper.wrap(rec));
+    PositionDelete<Record> positionDelete = PositionDelete.create();
+    positionDelete.set(filePath, filePosition, rec);
+    super.write(positionDelete, spec, partitionKey);
   }
 
   @Override
@@ -93,18 +107,18 @@ class HiveIcebergRecordWriter extends PartitionedFanoutWriter<Record> implements
   @Override
   public void close(boolean abort) throws IOException {
     super.close();
-    DataFile[] dataFiles = super.dataFiles();
 
     // If abort then remove the unnecessary files
     if (abort) {
-      Tasks.foreach(dataFiles)
+      List<DeleteFile> files = result().deleteFiles();
+      Tasks.foreach(files)
           .retry(3)
           .suppressFailureWhenFinished()
-          .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
-          .run(dataFile -> io.deleteFile(dataFile.path().toString()));
+          .onFailure((file, exception) -> LOG.debug("Failed on to remove delete file {} on abort", file, exception))
+          .run(deleteFile -> io.deleteFile(deleteFile.path().toString()));
     }
 
-    LOG.info("IcebergRecordWriter is closed with abort={}. Created {} files", abort, dataFiles.length);
+    LOG.info("IcebergDeleteWriter is closed with abort={}.", abort);
   }
 
   @Override

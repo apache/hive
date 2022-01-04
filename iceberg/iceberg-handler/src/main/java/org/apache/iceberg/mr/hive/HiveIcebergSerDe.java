@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -57,6 +59,7 @@ import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +76,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
   private Container<Record> row = new Container<>();
+  private boolean isDelete = false;
 
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
@@ -127,7 +131,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
 
     Schema projectedSchema;
-    if (serDeProperties.get(HiveIcebergStorageHandler.WRITE_KEY) != null) {
+    if (HiveIcebergStorageHandler.isDelete(configuration)) {
+      // when writing delete files, we should not do projection pushdown + add
+      // the row position and file path to the schema
+      List<Types.NestedField> cols = new ArrayList<>(tableSchema.columns());
+      cols.add(MetadataColumns.DELETE_FILE_PATH);
+      cols.add(MetadataColumns.DELETE_FILE_POS);
+      projectedSchema = new Schema(cols);
+      isDelete = true;
+    } else if (serDeProperties.get(HiveIcebergStorageHandler.WRITE_KEY) != null) {
       // when writing out data, we should not do projection pushdown
       projectedSchema = tableSchema;
     } else {
@@ -205,8 +217,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   public Writable serialize(Object o, ObjectInspector objectInspector) {
     Deserializer deserializer = deserializers.get(objectInspector);
     if (deserializer == null) {
+      Schema delSchema = null;
+      if (isDelete) {
+        List<Types.NestedField> cols = new ArrayList<>(tableSchema.columns());
+        cols.add(MetadataColumns.DELETE_FILE_PATH);
+        cols.add(MetadataColumns.DELETE_FILE_POS);
+        delSchema = new Schema(cols);
+      }
       deserializer = new Deserializer.Builder()
-          .schema(tableSchema)
+          .schema(isDelete ? delSchema : tableSchema)
           .sourceInspector((StructObjectInspector) objectInspector)
           .writerInspector((StructObjectInspector) inspector)
           .build();

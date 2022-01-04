@@ -50,10 +50,12 @@ public enum VirtualColumn {
 
   RAWDATASIZE("RAW__DATA__SIZE", TypeInfoFactory.longTypeInfo),
   /**
-   * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier} 
+   * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier}
    */
   ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
   ROWISDELETED("ROW__IS__DELETED", TypeInfoFactory.booleanTypeInfo),
+  POS_DEL_PATH("POS_DEL_PATH", TypeInfoFactory.stringTypeInfo),
+  POS_DEL_POS("POS_DEL_POS", TypeInfoFactory.longTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -66,7 +68,7 @@ public enum VirtualColumn {
 
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
-          RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName());
+          RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), POS_DEL_PATH.getName(), POS_DEL_POS.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
        new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();

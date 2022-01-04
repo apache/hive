@@ -29,7 +29,7 @@
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
         <path.to.iceberg.root>.</path.to.iceberg.root>
-        <iceberg.version>0.12.1</iceberg.version>
+        <iceberg.version>0.13.0-SNAPSHOT</iceberg.version>
         <kryo-shaded.version>4.0.2</kryo-shaded.version>
         <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
         <iceberg.avro.version>1.9.2</iceberg.avro.version>
@@ -44,8 +44,6 @@
     </properties>
 
     <modules>
-        <module>patched-iceberg-api</module>
-        <module>patched-iceberg-core</module>
         <module>iceberg-shading</module>
         <module>iceberg-catalog</module>
         <module>iceberg-handler</module>
@@ -53,16 +51,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.apache.iceberg</groupId>
-                <artifactId>patched-iceberg-api</artifactId>
-                <version>patched-${iceberg.version}-${project.parent.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.iceberg</groupId>
-                <artifactId>patched-iceberg-core</artifactId>
-                <version>patched-${iceberg.version}-${project.parent.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-api</artifactId>

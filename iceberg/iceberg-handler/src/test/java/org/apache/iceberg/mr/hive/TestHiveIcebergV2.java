@@ -135,7 +135,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedFiles().spliterator(), false)
         .findFirst()
         .orElseThrow(() -> new RuntimeException("Did not find any data files for test table"));
-    List<PositionDelete<Record>> deletes = ImmutableList.of(new PositionDelete<Record>().set(
+    PositionDelete<Record> posDel = PositionDelete.create();
+    List<PositionDelete<Record>> deletes = ImmutableList.of(posDel.set(
         dataFile.path(), 2L, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2))
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
@@ -171,9 +172,11 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .filter(file -> file.recordCount() == 3)
         .findAny()
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
+    PositionDelete<Record> posDel = PositionDelete.create();
+    PositionDelete<Record> posDel2 = PositionDelete.create();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
-        new PositionDelete<Record>().set(dataFile.path(), 0L, null),
-        new PositionDelete<Record>().set(dataFile.path(), 2L, null)
+        posDel.set(dataFile.path(), 0L, null),
+        posDel2.set(dataFile.path(), 2L, null)
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
         fileFormat, ImmutableMap.of("customer_id", 0L), deletes);
@@ -211,9 +214,11 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
     List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Laura", "Yellow").add(0L, "Blake", "Blue").build();
+    PositionDelete<Record> posDel = PositionDelete.create();
+    PositionDelete<Record> posDel2 = PositionDelete.create();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
-        new PositionDelete<Record>().set(dataFile.path(), 0L, rowsToDel.get(0)),
-        new PositionDelete<Record>().set(dataFile.path(), 2L, rowsToDel.get(1))
+        posDel.set(dataFile.path(), 0L, rowsToDel.get(0)),
+        posDel2.set(dataFile.path(), 2L, rowsToDel.get(1))
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
         fileFormat, ImmutableMap.of("customer_id", 0L), deletes);
@@ -226,5 +231,53 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
     Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
     Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
+  }
+
+  @Test
+  public void testDeleteStatementsUnpartitioned() {
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(0L, "BBB", "CCC")
+        .add(1L, "Blobbbb", "GHYH")
+        .add(1L, "Bob", "Green")
+        .add(1L, "FFF", "DDD")
+        .add(1L, "FFF", "Milla")
+        .add(2L, "GGG", "BLU")
+        .add(2L, "Trudy", "Pink")
+        .add(2L, "Trudy", "Bubba")
+        .build();
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, records, 2);
+    shell.executeStatement("insert into customers values (1, 'Jason', 'Derulo'), (0, 'k', 's'), (4, 'Buh', 'Bubba')");
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=1 or last_name='Bubba'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
+    Assert.assertEquals(5, objects.size());
+  }
+
+  @Test
+  public void testDeleteStatementsPartitioned() {
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(0L, "BBB", "CCC")
+        .add(1L, "Blobbbb", "GHYH")
+        .add(1L, "Bob", "Green")
+        .add(1L, "FFF", "DDD")
+        .add(1L, "FFF", "Milla")
+        .add(2L, "GGG", "BLU")
+        .add(2L, "Trudy", "Pink")
+        .add(2L, "Trudy", "Bubba")
+        .build();
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, records, 2);
+    shell.executeStatement("insert into customers values (1, 'Jason', 'Derulo'), (0, 'k', 's'), (4, 'Buh', 'Bubba')");
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=1 or last_name='Bubba'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
+    Assert.assertEquals(5, objects.size());
   }
 }

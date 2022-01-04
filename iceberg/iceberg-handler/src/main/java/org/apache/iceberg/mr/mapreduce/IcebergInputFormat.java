@@ -21,12 +21,11 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
@@ -43,7 +42,7 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -80,6 +79,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
 
@@ -226,6 +226,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private CloseableIterator<T> currentIterator;
     private FileIO io;
     private EncryptionManager encryptionManager;
+    private Table table;
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -233,14 +234,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
-      Table table = ((IcebergSplit) split).table();
+      table = ((IcebergSplit) split).table();
       this.io = table.io();
       this.encryptionManager = table.encryption();
       this.tasks = task.files().iterator();
       this.tableSchema = InputFormatConfig.tableSchema(conf);
       this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
       this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
-      this.expectedSchema = readSchema(conf, tableSchema, caseSensitive);
+      this.expectedSchema = readSchema(conf, table, caseSensitive);
       this.reuseContainers = conf.getBoolean(InputFormatConfig.REUSE_CONTAINERS, false);
       this.inMemoryDataModel = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
               InputFormatConfig.InMemoryDataModel.GENERIC);
@@ -445,18 +446,15 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
-      PartitionSpec spec = task.spec();
-      Set<Integer> idColumns = spec.identitySourceIds();
-      Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
-      boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
-      if (projectsIdentityPartitionColumns) {
-        return PartitionUtil.constantsMap(task, converter);
+      if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
+        Types.StructType partitionType = Partitioning.partitionType(table);
+        return PartitionUtil.constantsMap(task, partitionType, converter);
       } else {
-        return Collections.emptyMap();
+        return PartitionUtil.constantsMap(task, converter);
       }
     }
 
-    private static Schema readSchema(Configuration conf, Schema tableSchema, boolean caseSensitive) {
+    private static Schema readSchema(Configuration conf, Table table, boolean caseSensitive) {
       Schema readSchema = InputFormatConfig.readSchema(conf);
 
       if (readSchema != null) {
@@ -465,10 +463,22 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
       String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
       if (selectedColumns == null) {
-        return tableSchema;
+        return table.schema();
       }
 
-      return caseSensitive ? tableSchema.select(selectedColumns) : tableSchema.caseInsensitiveSelect(selectedColumns);
+      readSchema = caseSensitive ? table.schema().select(selectedColumns) :
+          table.schema().caseInsensitiveSelect(selectedColumns);
+
+      if (HiveIcebergStorageHandler.isDelete(conf)) {
+        List<Types.NestedField> cols = new ArrayList<>(readSchema.columns());
+        cols.add(MetadataColumns.FILE_PATH);
+        cols.add(MetadataColumns.ROW_POSITION);
+        cols.add(MetadataColumns.SPEC_ID);
+        cols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
+        readSchema = new Schema(cols);
+      }
+
+      return readSchema;
     }
   }
 

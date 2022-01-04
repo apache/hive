@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -135,7 +136,20 @@ public class MapOperator extends AbstractMapOperator {
       if (hasVC()) {
         rowWithPartAndVC[0] = row;
         if (context != null) {
-          populateVirtualColumnValues(context, vcs, vcValues, deserializer);
+          List<Object> rowElems = null;
+          // pass in the row elements as well, as they might contain useful info for the virtual columns
+          if (deserializer.getObjectInspector() instanceof StructObjectInspector) {
+            try {
+              rowElems = new ArrayList<>();
+              ObjectInspectorUtils.copyToStandardObject(rowElems, row,
+                  (StructObjectInspector) deserializer.getObjectInspector(),
+                  ObjectInspectorUtils.ObjectInspectorCopyOption.JAVA);
+            } catch (Exception e) {
+              // no op, let's continue without using row elements if they can't be copied
+              rowElems = null;
+            }
+          }
+          populateVirtualColumnValues(context, vcs, vcValues, deserializer, rowElems);
         }
         int vcPos = isPartitioned() ? 2 : 1;
         rowWithPartAndVC[vcPos] = vcValues;
@@ -605,7 +619,7 @@ public class MapOperator extends AbstractMapOperator {
   }
 
   public static Object[] populateVirtualColumnValues(ExecMapperContext ctx,
-      List<VirtualColumn> vcs, Object[] vcValues, Deserializer deserializer) {
+      List<VirtualColumn> vcs, Object[] vcValues, Deserializer deserializer, List<Object> row) {
     if (vcs == null) {
       return vcValues;
     }
@@ -673,7 +687,19 @@ public class MapOperator extends AbstractMapOperator {
             ctx.getIoCxt().setRecordIdentifier(null);//so we don't accidentally cache the value; shouldn't
             //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
           }
-	  break;
+          break;
+        case POS_DEL_PATH:
+          vcValues[i] = null;
+          if (row != null) {
+            vcValues[i] = new Text(row.get(row.size() - 2).toString());
+          }
+          break;
+        case POS_DEL_POS:
+          vcValues[i] = null;
+          if (row != null) {
+            vcValues[i] = new LongWritable(Long.parseLong(row.get(row.size() - 1).toString()));
+          }
+          break;
         case ROWISDELETED:
           vcValues[i] = new BooleanWritable(ctx.getIoCxt().isDeletedRecord());
           break;
