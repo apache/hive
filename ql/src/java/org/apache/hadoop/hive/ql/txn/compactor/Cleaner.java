@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -78,6 +79,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private long cleanerCheckInterval = 0;
+  private boolean metricsEnabled = false;
 
   private ReplChangeManager replChangeManager;
   private ExecutorService cleanerExecutor;
@@ -91,14 +93,15 @@ public class Cleaner extends MetaStoreCompactorThread {
     cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
+    metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
   }
 
   @Override
   public void run() {
     LOG.info("Starting Cleaner thread");
     try {
-      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
-          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
       Counter failuresCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
@@ -172,6 +175,13 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (cleanerExecutor != null) {
         this.cleanerExecutor.shutdownNow();
       }
+    }
+  }
+
+  private void updateDeltaFilesMetrics(String dbName, String tableName, String partName, int deletedFilesCount) {
+    if (metricsEnabled) {
+      DeltaFilesMetricReporter.getInstance().updateMetricsFromCleaner(dbName, tableName, partName,
+          deletedFilesCount, conf);
     }
   }
 
@@ -385,6 +395,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       fs.delete(dead, true);
     }
+
+    updateDeltaFilesMetrics(ci.dbname, ci.tableName, ci.partName, filesToDelete.size());
     return true;
   }
 
