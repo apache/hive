@@ -699,4 +699,51 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   MetricsInfo getMetricsInfo() throws MetaException;
+
+  /**
+   * Returns ACID metrics related info for a specific resource and metric type. If no record is found matching the
+   * filter criteria, an empty object ({@link CompactionMetricsData#isEmpty()} == true) will be returned.
+   * @param dbName name of database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, can be null
+   * @param type type of the delta metric, non-null
+   * @return instance of delta metrics info, always not null.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param dbName name of the database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, non-null
+   * @param type type of the delta metric, non-null
+   * @throws MetaException
+   */
+  @RetrySemantics.SafeToRetry
+  void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Returns the top ACID metrics from each type {@link CompactionMetricsData.MetricType}
+   * @oaram limit number of returned records for each type
+   * @return list of metrics, always non-null
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)
+      throws MetaException;
+
+  /**
+   * Update or create one record in the compaction metrics cache. This operation uses an optimistic locking mechanism.
+   * If update fails, due to version mismatch, the operation won't be retried.
+   * @param data the object that is used for the update or create operation
+   * @return true, if update finished successfully
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException;
+
 }

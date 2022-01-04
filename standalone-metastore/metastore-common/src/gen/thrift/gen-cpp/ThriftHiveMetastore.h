@@ -224,6 +224,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void mark_cleaned(const CompactionInfoStruct& cr) = 0;
   virtual void mark_compacted(const CompactionInfoStruct& cr) = 0;
   virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
+  virtual bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) = 0;
+  virtual void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) = 0;
   virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
   virtual void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
@@ -941,6 +943,13 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void mark_failed(const CompactionInfoStruct& /* cr */) {
+    return;
+  }
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& /* data */) {
+    bool _return = false;
+    return _return;
+  }
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& /* request */) {
     return;
   }
   void set_hadoop_jobid(const std::string& /* jobId */, const int64_t /* cq_id */) {
@@ -25479,6 +25488,222 @@ class ThriftHiveMetastore_mark_failed_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_update_compaction_metrics_data_args__isset {
+  _ThriftHiveMetastore_update_compaction_metrics_data_args__isset() : data(false) {}
+  bool data :1;
+} _ThriftHiveMetastore_update_compaction_metrics_data_args__isset;
+
+class ThriftHiveMetastore_update_compaction_metrics_data_args {
+ public:
+
+  ThriftHiveMetastore_update_compaction_metrics_data_args(const ThriftHiveMetastore_update_compaction_metrics_data_args&);
+  ThriftHiveMetastore_update_compaction_metrics_data_args& operator=(const ThriftHiveMetastore_update_compaction_metrics_data_args&);
+  ThriftHiveMetastore_update_compaction_metrics_data_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_compaction_metrics_data_args() noexcept;
+  CompactionMetricsDataStruct data;
+
+  _ThriftHiveMetastore_update_compaction_metrics_data_args__isset __isset;
+
+  void __set_data(const CompactionMetricsDataStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_update_compaction_metrics_data_args & rhs) const
+  {
+    if (!(data == rhs.data))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_compaction_metrics_data_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_compaction_metrics_data_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_compaction_metrics_data_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_compaction_metrics_data_pargs() noexcept;
+  const CompactionMetricsDataStruct* data;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_compaction_metrics_data_result__isset {
+  _ThriftHiveMetastore_update_compaction_metrics_data_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_update_compaction_metrics_data_result__isset;
+
+class ThriftHiveMetastore_update_compaction_metrics_data_result {
+ public:
+
+  ThriftHiveMetastore_update_compaction_metrics_data_result(const ThriftHiveMetastore_update_compaction_metrics_data_result&);
+  ThriftHiveMetastore_update_compaction_metrics_data_result& operator=(const ThriftHiveMetastore_update_compaction_metrics_data_result&);
+  ThriftHiveMetastore_update_compaction_metrics_data_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_update_compaction_metrics_data_result() noexcept;
+  bool success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_compaction_metrics_data_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_compaction_metrics_data_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_compaction_metrics_data_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_compaction_metrics_data_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_compaction_metrics_data_presult__isset {
+  _ThriftHiveMetastore_update_compaction_metrics_data_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_update_compaction_metrics_data_presult__isset;
+
+class ThriftHiveMetastore_update_compaction_metrics_data_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_compaction_metrics_data_presult() noexcept;
+  bool* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_compaction_metrics_data_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_compaction_metrics_data_args__isset {
+  _ThriftHiveMetastore_remove_compaction_metrics_data_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_remove_compaction_metrics_data_args__isset;
+
+class ThriftHiveMetastore_remove_compaction_metrics_data_args {
+ public:
+
+  ThriftHiveMetastore_remove_compaction_metrics_data_args(const ThriftHiveMetastore_remove_compaction_metrics_data_args&);
+  ThriftHiveMetastore_remove_compaction_metrics_data_args& operator=(const ThriftHiveMetastore_remove_compaction_metrics_data_args&);
+  ThriftHiveMetastore_remove_compaction_metrics_data_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_remove_compaction_metrics_data_args() noexcept;
+  CompactionMetricsDataRequest request;
+
+  _ThriftHiveMetastore_remove_compaction_metrics_data_args__isset __isset;
+
+  void __set_request(const CompactionMetricsDataRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_remove_compaction_metrics_data_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_remove_compaction_metrics_data_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_remove_compaction_metrics_data_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_remove_compaction_metrics_data_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_remove_compaction_metrics_data_pargs() noexcept;
+  const CompactionMetricsDataRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_compaction_metrics_data_result__isset {
+  _ThriftHiveMetastore_remove_compaction_metrics_data_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_remove_compaction_metrics_data_result__isset;
+
+class ThriftHiveMetastore_remove_compaction_metrics_data_result {
+ public:
+
+  ThriftHiveMetastore_remove_compaction_metrics_data_result(const ThriftHiveMetastore_remove_compaction_metrics_data_result&);
+  ThriftHiveMetastore_remove_compaction_metrics_data_result& operator=(const ThriftHiveMetastore_remove_compaction_metrics_data_result&);
+  ThriftHiveMetastore_remove_compaction_metrics_data_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_remove_compaction_metrics_data_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_remove_compaction_metrics_data_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_remove_compaction_metrics_data_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_remove_compaction_metrics_data_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_remove_compaction_metrics_data_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_remove_compaction_metrics_data_presult__isset {
+  _ThriftHiveMetastore_remove_compaction_metrics_data_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_remove_compaction_metrics_data_presult__isset;
+
+class ThriftHiveMetastore_remove_compaction_metrics_data_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_remove_compaction_metrics_data_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_remove_compaction_metrics_data_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_set_hadoop_jobid_args__isset {
   _ThriftHiveMetastore_set_hadoop_jobid_args__isset() : jobId(false), cq_id(false) {}
   bool jobId :1;
@@ -33855,6 +34080,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void mark_failed(const CompactionInfoStruct& cr);
   void send_mark_failed(const CompactionInfoStruct& cr);
   void recv_mark_failed();
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
+  void send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
+  bool recv_update_compaction_metrics_data();
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request);
+  void send_remove_compaction_metrics_data(const CompactionMetricsDataRequest& request);
+  void recv_remove_compaction_metrics_data();
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void recv_set_hadoop_jobid();
@@ -34267,6 +34498,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_mark_cleaned(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_compacted(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_remove_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_latest_committed_compaction_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -34537,6 +34770,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["mark_cleaned"] = &ThriftHiveMetastoreProcessor::process_mark_cleaned;
     processMap_["mark_compacted"] = &ThriftHiveMetastoreProcessor::process_mark_compacted;
     processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
+    processMap_["update_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_update_compaction_metrics_data;
+    processMap_["remove_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_remove_compaction_metrics_data;
     processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
     processMap_["get_latest_committed_compaction_info"] = &ThriftHiveMetastoreProcessor::process_get_latest_committed_compaction_info;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
@@ -36536,6 +36771,24 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->mark_failed(cr);
   }
 
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_compaction_metrics_data(data);
+    }
+    return ifaces_[i]->update_compaction_metrics_data(data);
+  }
+
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->remove_compaction_metrics_data(request);
+    }
+    ifaces_[i]->remove_compaction_metrics_data(request);
+  }
+
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -37807,6 +38060,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void mark_failed(const CompactionInfoStruct& cr);
   int32_t send_mark_failed(const CompactionInfoStruct& cr);
   void recv_mark_failed(const int32_t seqid);
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
+  int32_t send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
+  bool recv_update_compaction_metrics_data(const int32_t seqid);
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request);
+  int32_t send_remove_compaction_metrics_data(const CompactionMetricsDataRequest& request);
+  void recv_remove_compaction_metrics_data(const int32_t seqid);
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   int32_t send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void recv_set_hadoop_jobid(const int32_t seqid);

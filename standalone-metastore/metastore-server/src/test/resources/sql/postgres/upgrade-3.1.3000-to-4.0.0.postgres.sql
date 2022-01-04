@@ -118,6 +118,16 @@ UPDATE "DBS" SET "TYPE"= 'NATIVE' WHERE "TYPE" IS NULL;
 -- HIVE-25737
 ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_CLEANER_START" bigint;
 
+-- HIVE-25842
+CREATE TABLE "COMPACTION_METRICS_CACHE" (
+    "CMC_DATABASE" varchar(128) NOT NULL,
+    "CMC_TABLE" varchar(128) NOT NULL,
+    "CMC_PARTITION" varchar(767),
+    "CMC_METRIC_TYPE" varchar(128) NOT NULL,
+    "CMC_METRIC_VALUE" integer NOT NULL,
+    "CMC_VERSION" integer NOT NULL
+);
+
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0';

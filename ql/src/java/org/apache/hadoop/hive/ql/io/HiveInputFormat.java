@@ -862,7 +862,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
           currentTable, result);
     }
-    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, newjob);
 
     Utilities.clearWorkMapForConf(job);
     LOG.info("number of splits " + result.size());

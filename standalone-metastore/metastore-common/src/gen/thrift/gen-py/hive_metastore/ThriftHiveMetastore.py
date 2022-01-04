@@ -1735,6 +1735,22 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def update_compaction_metrics_data(self, data):
+        """
+        Parameters:
+         - data
+
+        """
+        pass
+
+    def remove_compaction_metrics_data(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
     def set_hadoop_jobid(self, jobId, cq_id):
         """
         Parameters:
@@ -9556,6 +9572,72 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         return
 
+    def update_compaction_metrics_data(self, data):
+        """
+        Parameters:
+         - data
+
+        """
+        self.send_update_compaction_metrics_data(data)
+        return self.recv_update_compaction_metrics_data()
+
+    def send_update_compaction_metrics_data(self, data):
+        self._oprot.writeMessageBegin('update_compaction_metrics_data', TMessageType.CALL, self._seqid)
+        args = update_compaction_metrics_data_args()
+        args.data = data
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_compaction_metrics_data(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_compaction_metrics_data_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "update_compaction_metrics_data failed: unknown result")
+
+    def remove_compaction_metrics_data(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_remove_compaction_metrics_data(request)
+        self.recv_remove_compaction_metrics_data()
+
+    def send_remove_compaction_metrics_data(self, request):
+        self._oprot.writeMessageBegin('remove_compaction_metrics_data', TMessageType.CALL, self._seqid)
+        args = remove_compaction_metrics_data_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_remove_compaction_metrics_data(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = remove_compaction_metrics_data_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
+
     def set_hadoop_jobid(self, jobId, cq_id):
         """
         Parameters:
@@ -12106,6 +12188,8 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["mark_cleaned"] = Processor.process_mark_cleaned
         self._processMap["mark_compacted"] = Processor.process_mark_compacted
         self._processMap["mark_failed"] = Processor.process_mark_failed
+        self._processMap["update_compaction_metrics_data"] = Processor.process_update_compaction_metrics_data
+        self._processMap["remove_compaction_metrics_data"] = Processor.process_remove_compaction_metrics_data
         self._processMap["set_hadoop_jobid"] = Processor.process_set_hadoop_jobid
         self._processMap["get_latest_committed_compaction_info"] = Processor.process_get_latest_committed_compaction_info
         self._processMap["get_next_notification"] = Processor.process_get_next_notification
@@ -17880,6 +17964,58 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("mark_failed", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_update_compaction_metrics_data(self, seqid, iprot, oprot):
+        args = update_compaction_metrics_data_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_compaction_metrics_data_result()
+        try:
+            result.success = self._handler.update_compaction_metrics_data(args.data)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_compaction_metrics_data", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_remove_compaction_metrics_data(self, seqid, iprot, oprot):
+        args = remove_compaction_metrics_data_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = remove_compaction_metrics_data_result()
+        try:
+            self._handler.remove_compaction_metrics_data(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("remove_compaction_metrics_data", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -50793,6 +50929,267 @@ class mark_failed_result(object):
         return not (self == other)
 all_structs.append(mark_failed_result)
 mark_failed_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class update_compaction_metrics_data_args(object):
+    """
+    Attributes:
+     - data
+
+    """
+
+
+    def __init__(self, data=None,):
+        self.data = data
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.data = CompactionMetricsDataStruct()
+                    self.data.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_compaction_metrics_data_args')
+        if self.data is not None:
+            oprot.writeFieldBegin('data', TType.STRUCT, 1)
+            self.data.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_compaction_metrics_data_args)
+update_compaction_metrics_data_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'data', [CompactionMetricsDataStruct, None], None, ),  # 1
+)
+
+
+class update_compaction_metrics_data_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_compaction_metrics_data_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_compaction_metrics_data_result)
+update_compaction_metrics_data_result.thrift_spec = (
+    (0, TType.BOOL, 'success', None, None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class remove_compaction_metrics_data_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = CompactionMetricsDataRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('remove_compaction_metrics_data_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(remove_compaction_metrics_data_args)
+remove_compaction_metrics_data_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [CompactionMetricsDataRequest, None], None, ),  # 1
+)
+
+
+class remove_compaction_metrics_data_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('remove_compaction_metrics_data_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(remove_compaction_metrics_data_result)
+remove_compaction_metrics_data_result.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )

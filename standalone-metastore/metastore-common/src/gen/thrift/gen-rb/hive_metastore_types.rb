@@ -183,6 +183,14 @@ module GetTablesExtRequestFields
   VALID_VALUES = Set.new([ACCESS_TYPE, PROCESSOR_CAPABILITIES, ALL]).freeze
 end
 
+module CompactionMetricsMetricType
+  NUM_OBSOLETE_DELTAS = 0
+  NUM_DELTAS = 1
+  NUM_SMALL_DELTAS = 2
+  VALUE_MAP = {0 => "NUM_OBSOLETE_DELTAS", 1 => "NUM_DELTAS", 2 => "NUM_SMALL_DELTAS"}
+  VALID_VALUES = Set.new([NUM_OBSOLETE_DELTAS, NUM_DELTAS, NUM_SMALL_DELTAS]).freeze
+end
+
 module FileMetadataExprType
   ORC_SARG = 1
   VALUE_MAP = {1 => "ORC_SARG"}
@@ -533,6 +541,12 @@ class CompactionRequest; end
 class CompactionInfoStruct; end
 
 class OptionalCompactionInfoStruct; end
+
+class CompactionMetricsDataStruct; end
+
+class CompactionMetricsDataResponse; end
+
+class CompactionMetricsDataRequest; end
 
 class CompactionResponse; end
 
@@ -4520,6 +4534,85 @@ class OptionalCompactionInfoStruct
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CompactionMetricsDataStruct
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  PARTITIONNAME = 3
+  TYPE = 4
+  METRICVALUE = 5
+  VERSION = 6
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblname'},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType},
+    METRICVALUE => {:type => ::Thrift::Types::I32, :name => 'metricvalue'},
+    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblname is unset!') unless @tblname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metricvalue is unset!') unless @metricvalue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field version is unset!') unless @version
+    unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CompactionMetricsDataResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DATA = 1
+
+  FIELDS = {
+    DATA => {:type => ::Thrift::Types::STRUCT, :name => 'data', :class => ::CompactionMetricsDataStruct, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CompactionMetricsDataRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  PARTITIONNAME = 3
+  TYPE = 4
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionName'},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionName is unset!') unless @partitionName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

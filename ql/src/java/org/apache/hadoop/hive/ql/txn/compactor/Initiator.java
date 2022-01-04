@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -95,6 +97,7 @@ public class Initiator extends MetaStoreCompactorThread {
   private long checkInterval;
   private ExecutorService compactionExecutor;
   private Optional<Cache<String, Table>> tableCache = Optional.empty();
+  private boolean metricsEnabled;
 
   @Override
   public void run() {
@@ -109,8 +112,6 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
-      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
-          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
       Counter failuresCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
@@ -299,6 +300,13 @@ public class Initiator extends MetaStoreCompactorThread {
     if (tableCacheOn) {
       this.tableCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
     }
+    metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
+    if (metricsEnabled) {
+      MetricsFactory.init(conf);
+      DeltaFilesMetricReporter.init(conf, txnHandler);
+    }
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -355,6 +363,14 @@ public class Initiator extends MetaStoreCompactorThread {
     }
     return false;
   }
+  
+  private void updateDeltaFilesMetrics(AcidDirectory directory, String dbName, String tableName, String partName,
+      long baseSize, Map<Path, Long> deltaSizes) {
+    if (metricsEnabled) {
+      DeltaFilesMetricReporter.updateMetricsFromInitiator(directory, dbName, tableName, partName, conf, txnHandler,
+          baseSize, deltaSizes);
+    }
+  }
 
   private CompactionType checkForCompaction(final CompactionInfo ci,
                                             final ValidWriteIdList writeIds,
@@ -378,9 +394,18 @@ public class Initiator extends MetaStoreCompactorThread {
           + "Initiating minor compaction.");
       return CompactionType.MINOR;
     }
+    AcidDirectory acidDirectory = getAcidDirectory(sd, writeIds);
+    long baseSize = getBaseSize(acidDirectory);
+    FileSystem fs = acidDirectory.getFs();
+    Map<Path, Long> deltaSizes = new HashMap<>();
+    for (AcidUtils.ParsedDelta delta : acidDirectory.getCurrentDirectories()) {
+      deltaSizes.put(delta.getPath(), getDirSize(fs, delta));
+    }
+    long deltaSize = deltaSizes.values().stream().reduce(0L, Long::sum);
+    updateDeltaFilesMetrics(acidDirectory, ci.dbname, ci.tableName, ci.partName, baseSize, deltaSizes);
 
     if (runJobAsSelf(runAs)) {
-      return determineCompactionType(ci, writeIds, sd, tblproperties);
+      return determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize);
     } else {
       LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs,
@@ -390,7 +415,7 @@ public class Initiator extends MetaStoreCompactorThread {
         compactionType = ugi.doAs(new PrivilegedExceptionAction<CompactionType>() {
           @Override
           public CompactionType run() throws Exception {
-            return determineCompactionType(ci, writeIds, sd, tblproperties);
+            return determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize);
           }
         });
       } finally {
@@ -405,29 +430,16 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
-  private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
-                                                 StorageDescriptor sd, Map<String, String> tblproperties)
-      throws IOException {
-
-    boolean noBase = false;
+  private AcidDirectory getAcidDirectory(StorageDescriptor sd, ValidWriteIdList writeIds) throws IOException {
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidDirectory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
-    long baseSize = 0;
-    if (dir.getBase() != null) {
-      baseSize = sumDirSize(fs, dir.getBase());
-    } else {
-      for (HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
-        baseSize += origStat.getFileStatus().getLen();
-      }
-    }
+    return AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
+  }
 
-    long deltaSize = 0;
+  private CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir, Map<String,
+      String> tblproperties, long baseSize, long deltaSize) throws IOException {
+    boolean noBase = false;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
-    for (AcidUtils.ParsedDelta delta : deltas) {
-      deltaSize += sumDirSize(fs, delta);
-    }
-
     if (baseSize == 0 && deltaSize > 0) {
       noBase = true;
     } else {
@@ -487,7 +499,19 @@ public class Initiator extends MetaStoreCompactorThread {
     return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
-  private long sumDirSize(FileSystem fs, ParsedDirectory dir) throws IOException {
+  private long getBaseSize(AcidDirectory dir) throws IOException {
+    long baseSize = 0;
+    if (dir.getBase() != null) {
+      baseSize = getDirSize(dir.getFs(), dir.getBase());
+    } else {
+      for (HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
+        baseSize += origStat.getFileStatus().getLen();
+      }
+    }
+    return baseSize;
+  }
+
+  private long getDirSize(FileSystem fs, ParsedDirectory dir) throws IOException {
     long size = dir.getFiles(fs, Ref.from(false)).stream()
         .map(HdfsFileStatusWithId::getFileStatus)
         .mapToLong(FileStatus::getLen)

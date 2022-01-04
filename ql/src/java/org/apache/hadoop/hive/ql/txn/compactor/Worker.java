@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.thrift.TException;
@@ -86,6 +87,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
+  private boolean metricsEnabled;
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   //  don't go through Initiator for user initiated compactions)
@@ -144,6 +146,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     super.init(stop);
     this.workerName = getWorkerId();
     setName(workerName);
+    // To enable delta metrics collection, initiator must be enabled on HMS side
+    metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
 
   @VisibleForTesting
@@ -493,6 +498,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             + compactionTxn + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
         compactionTxn.wasSuccessful();
+
+        updateDeltaFilesMetrics(dir, ci.dbname, ci.tableName, ci.partName, ci.type);
+
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -648,6 +656,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     name.append("-");
     name.append(getId());
     return name.toString();
+  }
+
+  private void updateDeltaFilesMetrics(AcidDirectory directory, String dbName, String tableName, String partName,
+      CompactionType type) {
+    if (metricsEnabled) {
+      DeltaFilesMetricReporter.updateMetricsFromWorker(directory, dbName, tableName, partName, type, conf, msc);
+    }
   }
 
   /**
