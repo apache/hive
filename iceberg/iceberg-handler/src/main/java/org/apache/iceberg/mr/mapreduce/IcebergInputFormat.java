@@ -175,6 +175,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
     }
 
+    // if enabled, do not serialize FileIO hadoop config to decrease split size
+    HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, table);
+
     return splits;
   }
 
@@ -234,6 +237,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
       Table table = ((IcebergSplit) split).table();
+      HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
       this.io = table.io();
       this.encryptionManager = table.encryption();
       this.tasks = task.files().iterator();
