@@ -17,10 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * JUnit TestRule for Mssql.
  */
-public class Mssql extends DatabaseRule {
+public class Mssql extends AbstractDatabase {
 
   @Override
   public String getDockerImageName() {
@@ -28,16 +34,11 @@ public class Mssql extends DatabaseRule {
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray(
-        "-p",
-        "1433:1433",
-        "-e",
-        "ACCEPT_EULA=Y",
-        "-e",
-        "SA_PASSWORD=" + getDbRootPassword(),
-        "-d"
-    );
+  public List<String> getDockerBaseArgs() {
+    return new ArrayList(Arrays.asList("-p", "1433:1433",
+        "-e", "ACCEPT_EULA=Y",
+        "-e", "SA_PASSWORD=" + getDbRootPassword(),
+        "-d"));
   }
 
   @Override
@@ -63,7 +64,8 @@ public class Mssql extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + HIVE_DB + ";";
+    //Mssql doesn't support database parameter in docker
+    return useDockerDatabaseArg ? getInitialJdbcUrl(hostAddress) : "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + getDb() + ";";
   }
 
   @Override

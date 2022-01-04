@@ -17,13 +17,17 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * JUnit TestRule for Derby.
  */
-public class Derby extends DatabaseRule {
+public class Derby extends AbstractDatabase {
 
   boolean purgeInAfter;
 
@@ -42,7 +46,7 @@ public class Derby extends DatabaseRule {
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
+  public List<String> getDockerBaseArgs() {
     return null;
   }
 

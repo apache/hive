@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall;
 
-import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.junit.Rule;
 
@@ -27,10 +26,10 @@ import org.junit.Rule;
 public class ITestPostgres extends DbInstallBase {
 
   @Rule
-  public final DatabaseRule databaseRule = new Postgres();
+  public final AbstractDatabase databaseRule = new Postgres();
 
   @Override
-  protected DatabaseRule getRule() {
+  protected AbstractDatabase getRule() {
     return databaseRule;
   }
 }

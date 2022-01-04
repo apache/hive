@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall;
 
-import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
 import org.junit.Rule;
 
@@ -27,10 +26,10 @@ import org.junit.Rule;
 public class ITestOracle extends DbInstallBase {
 
   @Rule
-  public final DatabaseRule databaseRule = new Oracle();
+  public final AbstractDatabase databaseRule = new Oracle();
 
   @Override
-  protected DatabaseRule getRule() {
+  protected AbstractDatabase getRule() {
     return databaseRule;
   }
 }

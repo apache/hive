@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall;
 
-import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
 import org.junit.Rule;
 
@@ -27,10 +26,10 @@ import org.junit.Rule;
 public class ITestDerby extends DbInstallBase {
 
   @Rule
-  public final DatabaseRule databaseRule = new Derby(true);
+  public final AbstractDatabase databaseRule = new Derby(true);
 
   @Override
-  protected DatabaseRule getRule() {
+  protected AbstractDatabase getRule() {
     return databaseRule;
   }
 }

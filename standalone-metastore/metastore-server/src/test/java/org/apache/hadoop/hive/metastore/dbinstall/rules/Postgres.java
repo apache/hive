@@ -17,18 +17,31 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * JUnit TestRule for Postgres.
  */
-public class Postgres extends DatabaseRule {
+public class Postgres extends AbstractDatabase {
   @Override
   public String getDockerImageName() {
     return "postgres:11.6";
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(), "-d");
+  public List<String> getDockerBaseArgs() {
+    return new ArrayList(Arrays.asList("-p", "5432:5432",
+        "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(),
+        "-e", "POSTGRES_USER=" + getDbRootUser(),
+        "-d"));
+  }
+
+  @Override public String getDockerDatabaseArg() {
+    return "POSTGRES_DB=" + getDb();
   }
 
   @Override
@@ -53,7 +66,7 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:postgresql://" + hostAddress + ":5432/" + HIVE_DB;
+    return "jdbc:postgresql://" + hostAddress + ":5432/" + getDb();
   }
 
   @Override
@@ -65,10 +78,5 @@ public class Postgres extends DatabaseRule {
   public boolean isContainerReady(ProcessResults pr) {
     return pr.stdout.contains("database system is ready to accept connections") &&
         pr.stderr.contains("database system is ready to accept connections");
-  }
-
-  @Override
-  public String getHivePassword() {
-    return HIVE_PASSWORD;
   }
 }

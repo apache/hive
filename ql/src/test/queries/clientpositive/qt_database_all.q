@@ -13,8 +13,8 @@ TBLPROPERTIES (
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
     "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.dbcp.username" = "postgres",
+    "hive.sql.dbcp.password" = "its-a-secret",
     "hive.sql.table" = "country"
     );
 SELECT * FROM country;
@@ -30,14 +30,14 @@ TBLPROPERTIES (
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
     "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
     "hive.sql.dbcp.username" = "root",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.dbcp.password" = "its-a-secret",
     "hive.sql.table" = "state"
     );
 SELECT * FROM state;
 
 CREATE EXTERNAL TABLE city
 (
-    name       varchar(255),
+    name varchar(255),
     state int
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -46,14 +46,14 @@ TBLPROPERTIES (
     "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
     "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/qtestDB",
     "hive.sql.dbcp.username" = "root",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.dbcp.password" = "its-a-secret",
     "hive.sql.table" = "city"
 );
 SELECT * FROM city;
 
 CREATE EXTERNAL TABLE author
 (
-    id    int,
+    id int,
     fname varchar(20),
     lname varchar(20)
 )
@@ -74,13 +74,13 @@ CREATE EXTERNAL TABLE book
     title varchar(100),
     author int
 )
-    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-    TBLPROPERTIES (
-        "hive.sql.database.type" = "ORACLE",
-        "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
-        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
-        "hive.sql.dbcp.username" = "SYS as SYSDBA",
-        "hive.sql.dbcp.password" = "oracle",
-        "hive.sql.table" = "BOOK"
-        );
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+    "hive.sql.dbcp.username" = "SYS as SYSDBA",
+    "hive.sql.dbcp.password" = "oracle",
+    "hive.sql.table" = "BOOK"
+    );
 SELECT * FROM book;

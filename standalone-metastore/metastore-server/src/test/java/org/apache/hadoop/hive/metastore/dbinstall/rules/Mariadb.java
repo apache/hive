@@ -18,10 +18,15 @@
 
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Mariadb extends DatabaseRule {
+public class Mariadb extends AbstractDatabase {
 
   @Override
   public String getDockerImageName() {
@@ -29,8 +34,15 @@ public class Mariadb extends DatabaseRule {
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray("-p", "3306:3306", "-e", "MYSQL_ROOT_PASSWORD=" + getDbRootPassword(), "-d");
+  public String getDockerDatabaseArg() {
+    return "MARIADB_DATABASE=" + getDb();
+  }
+
+  @Override
+  public List<String> getDockerBaseArgs() {
+    return new ArrayList(Arrays.asList("-p", "3309:3306",
+        "-e", "MARIADB_ROOT_PASSWORD=" + getDbRootPassword(),
+        "-d"));
   }
 
   @Override
@@ -55,12 +67,12 @@ public class Mariadb extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:mariadb://" + hostAddress + ":3306/" + HIVE_DB;
+    return "jdbc:mariadb://" + hostAddress + ":3309/" + getDb();
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:mariadb://" + hostAddress + ":3306/?allowPublicKeyRetrieval=true";
+    return "jdbc:mariadb://" + hostAddress + ":3309/?allowPublicKeyRetrieval=true";
   }
 
   @Override
@@ -68,10 +80,5 @@ public class Mariadb extends DatabaseRule {
     Pattern pat = Pattern.compile("ready for connections");
     Matcher m = pat.matcher(pr.stderr);
     return m.find() && m.find();
-  }
-
-  @Override
-  public String getHivePassword() {
-    return HIVE_PASSWORD;
   }
 }

@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.PostgresTPCDS;
+import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ public class QTestMetaStoreHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestMetaStoreHandler.class);
 
   private final String metastoreType;
-  private final DatabaseRule rule;
+  private final AbstractDatabase rule;
 
   public QTestMetaStoreHandler(String metastore) {
     this.metastoreType = Objects.requireNonNull(metastore);
@@ -51,7 +52,7 @@ public class QTestMetaStoreHandler {
     LOG.info(String.format("initialized metastore type '%s' for qtests", metastoreType));
   }
 
-  public DatabaseRule getRule() {
+  public AbstractDatabase getRule() {
     return rule;
   }
 
@@ -75,7 +76,7 @@ public class QTestMetaStoreHandler {
     return this;
   }
 
-  private DatabaseRule getDatabaseRule(String metastoreType) {
+  private AbstractDatabase getDatabaseRule(String metastoreType) {
     switch (metastoreType) {
     case "postgres":
       return new Postgres();
@@ -99,6 +100,7 @@ public class QTestMetaStoreHandler {
 
   public void beforeTest() throws Exception {
     getRule().before();
+    MetastoreSchemaTool.setHomeDirForTesting();
     if (!isDerby()) {// derby is handled with old QTestUtil logic (TxnDbUtil stuff)
       getRule().install();
     }

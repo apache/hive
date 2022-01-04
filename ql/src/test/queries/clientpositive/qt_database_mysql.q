@@ -10,7 +10,7 @@ TBLPROPERTIES (
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
     "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
     "hive.sql.dbcp.username" = "root",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.dbcp.password" = "its-a-secret",
     "hive.sql.table" = "country"
     );
 SELECT * FROM country;

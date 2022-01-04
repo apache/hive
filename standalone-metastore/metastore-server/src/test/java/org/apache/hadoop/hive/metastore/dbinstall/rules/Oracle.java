@@ -17,10 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * JUnit TestRule for Oracle.
  */
-public class Oracle extends DatabaseRule {
+public class Oracle extends AbstractDatabase {
 
   @Override
   public String getDockerImageName() {
@@ -28,12 +34,8 @@ public class Oracle extends DatabaseRule {
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray(
-        "-p",
-        "1521:1521",
-        "-d"
-    );
+  public List<String> getDockerBaseArgs() {
+    return new ArrayList(Arrays.asList( "-p", "1521:1521", "-d" ));
   }
 
   @Override
@@ -69,11 +71,6 @@ public class Oracle extends DatabaseRule {
   @Override
   public boolean isContainerReady(ProcessResults pr) {
     return pr.stdout.contains("DATABASE IS READY TO USE!");
-  }
-
-  @Override
-  public String getHivePassword() {
-    return HIVE_PASSWORD;
   }
 
   @Override

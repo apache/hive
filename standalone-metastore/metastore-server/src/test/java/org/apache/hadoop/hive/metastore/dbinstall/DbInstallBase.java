@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.dbinstall;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,9 +38,5 @@ public abstract class DbInstallBase {
     Assert.assertEquals(0, getRule().validateSchema());
   }
 
-  protected abstract DatabaseRule getRule();
-
-  protected String[] buildArray(String... strs) {
-    return strs;
-  }
+  protected abstract AbstractDatabase getRule();
 }

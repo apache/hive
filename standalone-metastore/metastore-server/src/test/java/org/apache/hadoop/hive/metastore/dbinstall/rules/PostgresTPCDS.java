@@ -53,13 +53,13 @@ public class PostgresTPCDS extends Postgres {
     try (InputStream script = PostgresTPCDS.class.getClassLoader()
         .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-4.0.0.postgres.sql")) {
       new MetastoreSchemaTool().runScript(
-          buildArray(
+          new String[] {
               "-upgradeSchema",
               "-dbType", getDbType(),
               "-userName", getHiveUser(),
               "-passWord", getHivePassword(),
               "-url", getJdbcUrl(),
-              "-driver", getJdbcDriver()),
+              "-driver", getJdbcDriver()},
           script);
     } catch (IOException exception) {
       throw new UncheckedIOException(exception);

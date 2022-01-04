@@ -17,13 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.qoption;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
-import org.apache.hadoop.hive.ql.externalDB.MSSQLServer;
-import org.apache.hadoop.hive.ql.externalDB.MariaDB;
-import org.apache.hadoop.hive.ql.externalDB.MySQLExternalDB;
-import org.apache.hadoop.hive.ql.externalDB.Oracle;
-import org.apache.hadoop.hive.ql.externalDB.PostgresExternalDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,32 +54,32 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
   private enum DatabaseType {
     POSTGRES {
       @Override
-      AbstractExternalDB create() {
-        return new PostgresExternalDB();
+      AbstractDatabase create() {
+        return new Postgres();
       }
     }, MYSQL {
       @Override
-      AbstractExternalDB create() {
-        return new MySQLExternalDB();
+      AbstractDatabase create() {
+        return new Mysql();
       }
     }, MARIADB {
       @Override
-      AbstractExternalDB create() {
-        return new MariaDB();
+      AbstractDatabase create() {
+        return new Mariadb();
       }
     }, MSSQL {
       @Override
-      AbstractExternalDB create() {
-        return new MSSQLServer();
+      AbstractDatabase create() {
+        return new Mssql();
       }
     }, ORACLE {
       @Override
-      AbstractExternalDB create() {
+      AbstractDatabase create() {
         return new Oracle();
       }
     };
 
-    abstract AbstractExternalDB create();
+    abstract AbstractDatabase create();
   }
 
   private final Map<DatabaseType, String> databaseToScript = new EnumMap<>(DatabaseType.class);
@@ -107,8 +107,10 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
     for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
       String scriptsDir = QTestUtil.getScriptsDir(qt.getConf());
       Path dbScript = Paths.get(scriptsDir, dbEntry.getValue());
-      AbstractExternalDB db = dbEntry.getKey().create();
-      db.launchDockerContainer();
+      AbstractDatabase db = dbEntry.getKey().create()
+          .setDb("qtestDB")
+          .setUseDockerDatabaseArg(true);
+      db.before();
       if (Files.exists(dbScript)) {
         db.execute(dbScript.toString());
       } else {
@@ -120,9 +122,9 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
     for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
-      AbstractExternalDB db = dbEntry.getKey().create();
+      AbstractDatabase db = dbEntry.getKey().create();
       try {
-        db.cleanupDockerContainer();
+        db.after();
       } catch (Exception e) {
         LOG.error("Failed to cleanup database {}", dbEntry.getKey(), e);
       }

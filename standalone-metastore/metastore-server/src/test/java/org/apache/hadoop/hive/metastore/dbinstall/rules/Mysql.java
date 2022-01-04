@@ -17,13 +17,18 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * JUnit TestRule for MySql.
  */
-public class Mysql extends DatabaseRule {
+public class Mysql extends AbstractDatabase {
 
   @Override
   public String getDockerImageName() {
@@ -31,8 +36,14 @@ public class Mysql extends DatabaseRule {
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray("-p", "3306:3306", "-e", "MYSQL_ROOT_PASSWORD=" + getDbRootPassword(), "-d");
+  public List<String> getDockerBaseArgs() {
+    return new ArrayList(Arrays.asList("-p", "3306:3306",
+        "-e", "MYSQL_ROOT_PASSWORD=" + getDbRootPassword(),
+        "-d"));
+  }
+
+  @Override public String getDockerDatabaseArg() {
+    return "MYSQL_DATABASE=" + getDb();
   }
 
   @Override
@@ -57,7 +68,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:mysql://" + hostAddress + ":3306/" + HIVE_DB;
+    return "jdbc:mysql://" + hostAddress + ":3306/" + getDb();
   }
 
   @Override
@@ -72,8 +83,4 @@ public class Mysql extends DatabaseRule {
     return m.find() && m.find();
   }
 
-  @Override
-  public String getHivePassword() {
-    return HIVE_PASSWORD;
-  }
 }

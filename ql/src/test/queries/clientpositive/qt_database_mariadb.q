@@ -10,7 +10,7 @@ TBLPROPERTIES (
     "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
     "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/qtestDB",
     "hive.sql.dbcp.username" = "root",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.dbcp.password" = "its-a-secret",
     "hive.sql.table" = "country"
     );
 -- hive.sql.database.type above is not MARIADB cause at the moment it doesn't exist in org.apache.hive.storage.jdbc.conf.DatabaseType
