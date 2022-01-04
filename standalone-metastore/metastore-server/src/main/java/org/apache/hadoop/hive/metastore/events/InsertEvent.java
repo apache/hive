@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.metastore.events;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -44,7 +46,7 @@ public class InsertEvent extends ListenerEvent {
   private final Table tableObj;
   private final Partition ptnObj;
   private final boolean replace;
-  private final List<String> files;
+  private final Set<String> files;
   private List<String> fileChecksums = new ArrayList<>();
 
   /**
@@ -85,7 +87,7 @@ public class InsertEvent extends ListenerEvent {
 
     // If replace flag is not set by caller, then by default set it to true to maintain backward compatibility
     this.replace = (insertData.isSetReplace() ? insertData.isReplace() : true);
-    this.files = insertData.getFilesAdded();
+    this.files = new LinkedHashSet<>(insertData.getFilesAdded());
     if (insertData.isSetFilesAddedChecksum()) {
       fileChecksums = insertData.getFilesAddedChecksum();
     }
@@ -117,7 +119,7 @@ public class InsertEvent extends ListenerEvent {
    *
    * @return list of new files
    */
-  public List<String> getFiles() {
+  public Set<String> getFiles() {
     return files;
   }
 

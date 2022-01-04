@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -607,9 +606,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onInsert(InsertEvent insertEvent) throws MetaException {
     Table tableObj = insertEvent.getTableObj();
+    List<String> eventFiles = new ArrayList<>(insertEvent.getFiles());
+    List<String> eventCheckSums = insertEvent.getFileChecksums();
+    if(eventFiles != null && eventCheckSums != null && eventCheckSums.size() != eventFiles.size()) {
+      throw new IllegalStateException("Number of files and checksums do not match for insert event");
+    }
     InsertMessage msg = MessageBuilder.getInstance().buildInsertMessage(tableObj,
-        insertEvent.getPartitionObj(), insertEvent.isReplace(),
-        new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()));
+        insertEvent.getPartitionObj(), insertEvent.isReplace(), new FileChksumIterator(eventFiles, eventCheckSums));
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.INSERT.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -859,9 +862,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAcidWrite(AcidWriteEvent acidWriteEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
+    List<String> eventFiles = new ArrayList<>(acidWriteEvent.getFiles());
+    List<String> eventCheckSums = acidWriteEvent.getChecksums();
+    if(eventFiles != null && eventCheckSums != null && eventCheckSums.size() != eventFiles.size()) {
+      throw new IllegalStateException("Number of files and checksums do not match for acid write event");
+    }
     AcidWriteMessage msg = MessageBuilder.getInstance().buildAcidWriteMessage(acidWriteEvent,
-            new FileChksumIterator(acidWriteEvent.getFiles(), acidWriteEvent.getChecksums(),
-                    acidWriteEvent.getSubDirs()));
+            new FileChksumIterator(eventFiles, eventCheckSums, acidWriteEvent.getSubDirs()));
     NotificationEvent event = new NotificationEvent(0, now(), EventType.ACID_WRITE.toString(),
             msgEncoder.getSerializer().serialize(msg));
     event.setMessageFormat(msgEncoder.getMessageFormat());
@@ -885,9 +892,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       AcidWriteEvent acidWriteEvent = new AcidWriteEvent(batchAcidWriteEvent.getPartition(i),
               batchAcidWriteEvent.getTableObj(i), batchAcidWriteEvent.getPartitionObj(i),
               batchAcidWriteEvent.getNotificationRequest(i));
+      List<String> eventFiles = new ArrayList<>(batchAcidWriteEvent.getFiles(i));
+      List<String> eventCheckSums = batchAcidWriteEvent.getChecksums(i);
+      if(eventFiles != null && eventCheckSums != null && eventCheckSums.size() != eventFiles.size()) {
+        throw new IllegalStateException("Number of files and checksums do not match for batchacidwrite event");
+      }
       AcidWriteMessage msg = MessageBuilder.getInstance().buildAcidWriteMessage(acidWriteEvent,
-              new FileChksumIterator(batchAcidWriteEvent.getFiles(i), batchAcidWriteEvent.getChecksums(i),
-                      batchAcidWriteEvent.getSubDirs(i)));
+              new FileChksumIterator(eventFiles, eventCheckSums, batchAcidWriteEvent.getSubDirs(i)));
       NotificationEvent event = new NotificationEvent(0, now(), EventType.ACID_WRITE.toString(),
               msgEncoder.getSerializer().serialize(msg));
       event.setMessageFormat(msgEncoder.getMessageFormat());

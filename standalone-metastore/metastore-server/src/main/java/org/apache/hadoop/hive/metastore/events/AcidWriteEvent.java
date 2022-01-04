@@ -25,7 +25,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * AcidWriteEvent
@@ -52,8 +54,8 @@ public class AcidWriteEvent extends ListenerEvent {
     return writeNotificationLogRequest.getTxnId();
   }
 
-  public List<String> getFiles() {
-    return writeNotificationLogRequest.getFileInfo().getFilesAdded();
+  public Set<String> getFiles() {
+    return new LinkedHashSet<>(writeNotificationLogRequest.getFileInfo().getFilesAdded());
   }
 
   public List<String> getChecksums() {
