@@ -104,6 +104,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.metastore.HMSHandlerContextMap.getLocalConfigurationOrNull;
+import static org.apache.hadoop.hive.metastore.HMSHandlerContextMap.getLocalHMSHandlerOrNull;
+import static org.apache.hadoop.hive.metastore.HMSHandlerContextMap.getLocalModifiedConfigNotNull;
+import static org.apache.hadoop.hive.metastore.HMSHandlerContextMap.getLocalRawStoreOrNull;
+import static org.apache.hadoop.hive.metastore.HMSHandlerContextMap.getLocalThreadIdNotNull;
 import static org.apache.hadoop.hive.metastore.MetaStoreAuditLog.logAndAudit;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
@@ -166,18 +171,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private static Striped<Lock> tablelocks;
 
   public static RawStore getRawStore() {
-    return HMSHandlerContextMap.getLocalRawStoreOrNull();
+    return getLocalRawStoreOrNull();
   }
 
   static void cleanupRawStore() {
     try {
-      RawStore rs = HMSHandlerContextMap.getLocalRawStoreOrNull();
+      RawStore rs = getLocalRawStoreOrNull();
       if (rs != null) {
         logAndAudit("Cleaning up thread local RawStore...");
         rs.shutdown();
       }
     } finally {
-      HMSHandler handler = HMSHandlerContextMap.getLocalHMSHandlerOrNull();
+      HMSHandler handler = getLocalHMSHandlerOrNull();
       if (handler != null) {
         handler.notifyMetaListenersOnShutDown();
       }
@@ -224,8 +229,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    */
   private void notifyMetaListenersOnShutDown() {
     try {
-      Map<String, String> modifiedConf = HMSHandlerContextMap.getLocalModifiedConfigNotNull();
-      Configuration conf = HMSHandlerContextMap.getLocalConfigurationOrNull();
+      Map<String, String> modifiedConf = getLocalModifiedConfigNotNull();
+      Configuration conf = getLocalConfigurationOrNull();
       if (conf == null) {
         throw new MetaException("Unexpected: modifiedConf is non-null but conf is null");
       }
@@ -265,12 +270,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    */
   @Deprecated
   public static Integer get() {
-    return HMSHandlerContextMap.getLocalThreadIdNotNull();
+    return getLocalThreadIdNotNull();
   }
 
   @Override
   public int getThreadId() {
-    return HMSHandlerContextMap.getLocalThreadIdNotNull();
+    return getLocalThreadIdNotNull();
   }
 
   public HMSHandler(String name) throws MetaException {
@@ -519,21 +524,21 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private static String addPrefix(String s) {
-    return HMSHandlerContextMap.getLocalThreadIdNotNull() + ": " + s;
+    return getLocalThreadIdNotNull() + ": " + s;
   }
 
   /**
    * Set copy of invoking HMSHandler on thread local
    */
   private static void setHMSHandler(HMSHandler handler) {
-    if (HMSHandlerContextMap.getLocalHMSHandlerOrNull() == null) {
+    if (getLocalHMSHandlerOrNull() == null) {
       HMSHandlerContextMap.setLocalHMSHandler(handler);
     }
   }
   @Override
   public void setConf(Configuration conf) {
     HMSHandlerContextMap.setLocalConfiguration(conf);
-    RawStore ms = HMSHandlerContextMap.getLocalRawStoreOrNull();
+    RawStore ms = getLocalRawStoreOrNull();
     if (ms != null) {
       ms.setConf(conf); // reload if DS related configuration is changed
     }
@@ -541,7 +546,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public Configuration getConf() {
-    Configuration conf = HMSHandlerContextMap.getLocalConfigurationOrNull();
+    Configuration conf = getLocalConfigurationOrNull();
     if (conf == null) {
       conf = new Configuration(this.conf);
       HMSHandlerContextMap.setLocalConfiguration(conf);
@@ -569,7 +574,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Configuration configuration = getConf();
     String oldValue = MetastoreConf.get(configuration, key);
     // Save prev val of the key on threadLocal
-    Map<String, String> modifiedConf = HMSHandlerContextMap.getLocalModifiedConfigNotNull();
+    Map<String, String> modifiedConf = getLocalModifiedConfigNotNull();
     if (!modifiedConf.containsKey(key)) {
       modifiedConf.put(key, oldValue);
     }
@@ -606,7 +611,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   public static RawStore getMSForConf(Configuration conf) throws MetaException {
-    RawStore ms = HMSHandlerContextMap.getLocalRawStoreOrNull();
+    RawStore ms = getLocalRawStoreOrNull();
     if (ms == null) {
       ms = newRawStoreForConf(conf);
       try {
@@ -616,8 +621,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw e;
       }
       HMSHandlerContextMap.setLocalRawStore(ms);
-      ms = HMSHandlerContextMap.getLocalRawStoreOrNull();
-      LOG.info("Created RawStore: " + ms + " from thread id: " + HMSHandlerContextMap.getLocalThreadIdNotNull());
+      ms = getLocalRawStoreOrNull();
+      LOG.info("Created RawStore: " + ms + " from thread id: " + getLocalThreadIdNotNull());
     }
     return ms;
   }
@@ -631,7 +636,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Configuration newConf = new Configuration(conf);
     String rawStoreClassName = MetastoreConf.getVar(newConf, ConfVars.RAW_STORE_IMPL);
     LOG.info(addPrefix("Opening raw store with implementation class:" + rawStoreClassName));
-    return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName, HMSHandlerContextMap.getLocalThreadIdNotNull());
+    return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName, getLocalThreadIdNotNull());
   }
 
   @VisibleForTesting
