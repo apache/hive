@@ -84,6 +84,7 @@ import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -795,7 +796,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    return client.translate_table_dryrun(tbl);
+    CreateTableRequest request = new CreateTableRequest(tbl);
+    return client.translate_table_dryrun(request);
   }
 
   /**
@@ -1601,7 +1603,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm);
+    return client.get_materialization_invalidation_info(cm, null);
+  }
+
+  @Deprecated
+  /**
+   * Use {@link HiveMetaStoreClientPreCatalog#getMaterializationInvalidationInfo(CreationMetadata)} instead.
+   */
+  @Override
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(cm, validTxnList);
   }
 
   /** {@inheritDoc} */
@@ -2725,13 +2737,27 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
-    NotificationEventResponse rsp = client.get_next_notification(rqst);
+    return getNextNotificationEventsInternal(rqst, false, filter);
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return getNextNotificationEventsInternal(request, allowGapsInEventIds, filter);
+  }
+
+  @NotNull
+  private NotificationEventResponse getNextNotificationEventsInternal(
+      NotificationEventRequest request, boolean allowGapsInEventIds,
+      NotificationFilter filter) throws TException {
+    long lastEventId = request.getLastEvent();
+    NotificationEventResponse rsp = client.get_next_notification(request);
     LOG.debug("Got back " + rsp.getEventsSize() + " events");
     NotificationEventResponse filtered = new NotificationEventResponse();
     if (rsp != null && rsp.getEvents() != null) {
       long nextEventId = lastEventId + 1;
       for (NotificationEvent e : rsp.getEvents()) {
-        if (e.getEventId() != nextEventId) {
+        if (!allowGapsInEventIds && e.getEventId() != nextEventId) {
           LOG.error("Requested events are found missing in NOTIFICATION_LOG table. Expected: {}, Actual: {}. "
                   + "Probably, cleaner would've cleaned it up. "
                   + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "

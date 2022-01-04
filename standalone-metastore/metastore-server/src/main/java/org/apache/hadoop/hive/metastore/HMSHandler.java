@@ -1970,14 +1970,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Table translate_table_dryrun(final Table tbl) throws AlreadyExistsException,
+  public Table translate_table_dryrun(final CreateTableRequest req) throws AlreadyExistsException,
           MetaException, InvalidObjectException, InvalidInputException {
     Table transformedTbl = null;
+    Table tbl = req.getTable();
+    List<String> processorCapabilities = req.getProcessorCapabilities();
+    String processorId = req.getProcessorIdentifier();
     if (!tbl.isSetCatName()) {
       tbl.setCatName(getDefaultCatalog(conf));
     }
     if (transformer != null) {
-      transformedTbl = transformer.transformCreateTable(tbl, null, null);
+      transformedTbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
     return transformedTbl != null ? transformedTbl : tbl;
   }
@@ -3521,8 +3524,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Materialization get_materialization_invalidation_info(final CreationMetadata cm) throws MetaException {
-    return getTxnHandler().getMaterializationInvalidationInfo(cm);
+  public Materialization get_materialization_invalidation_info(final CreationMetadata cm, String validTxnList) throws MetaException {
+    if (validTxnList == null) {
+      return getTxnHandler().getMaterializationInvalidationInfo(cm);
+    }
+    return getTxnHandler().getMaterializationInvalidationInfo(cm, validTxnList);
   }
 
   @Override

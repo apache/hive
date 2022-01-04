@@ -22,6 +22,13 @@ package org.apache.hadoop.hive.ql.ddl.table.create.show;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -45,9 +52,20 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
     try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       Table table = context.getDb().getTable(desc.getDatabaseName(), desc.getTableName());
       DDLPlanUtils ddlObj = new DDLPlanUtils();
-      String command = table.isView() ? ddlObj.getCreateViewCommand(table, desc.isRelative())
-          : ddlObj.getCreateTableCommand(table, desc.isRelative());
-
+      String command;
+      if (table.isView()) {
+        command = ddlObj.getCreateViewCommand(table, desc.isRelative());
+      } else {
+        List<String> commands = new ArrayList<>();
+        commands.add(ddlObj.getCreateTableCommand(table, desc.isRelative()));
+        String primaryKeyStmt = ddlObj.getAlterTableStmtPrimaryKeyConstraint(table.getPrimaryKeyInfo());
+        if (primaryKeyStmt != null) {
+          commands.add(primaryKeyStmt);
+        }
+        commands.addAll(ddlObj.populateConstraints(table,
+          new HashSet<>(Collections.singletonList(table.getTableName()))));
+        command = String.join("\n", commands);
+      }
       outStream.write(command.getBytes(StandardCharsets.UTF_8));
       return 0;
     } catch (IOException e) {

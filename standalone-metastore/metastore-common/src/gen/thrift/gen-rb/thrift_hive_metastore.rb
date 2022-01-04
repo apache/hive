@@ -686,13 +686,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def translate_table_dryrun(tbl)
-      send_translate_table_dryrun(tbl)
+    def translate_table_dryrun(request)
+      send_translate_table_dryrun(request)
       return recv_translate_table_dryrun()
     end
 
-    def send_translate_table_dryrun(tbl)
-      send_message('translate_table_dryrun', Translate_table_dryrun_args, :tbl => tbl)
+    def send_translate_table_dryrun(request)
+      send_message('translate_table_dryrun', Translate_table_dryrun_args, :request => request)
     end
 
     def recv_translate_table_dryrun()
@@ -947,13 +947,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name_req failed: unknown result')
     end
 
-    def get_materialization_invalidation_info(creation_metadata)
-      send_get_materialization_invalidation_info(creation_metadata)
+    def get_materialization_invalidation_info(creation_metadata, validTxnList)
+      send_get_materialization_invalidation_info(creation_metadata, validTxnList)
       return recv_get_materialization_invalidation_info()
     end
 
-    def send_get_materialization_invalidation_info(creation_metadata)
-      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata)
+    def send_get_materialization_invalidation_info(creation_metadata, validTxnList)
+      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata, :validTxnList => validTxnList)
     end
 
     def recv_get_materialization_invalidation_info()
@@ -4975,7 +4975,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Translate_table_dryrun_args)
       result = Translate_table_dryrun_result.new()
       begin
-        result.success = @handler.translate_table_dryrun(args.tbl)
+        result.success = @handler.translate_table_dryrun(args.request)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::InvalidObjectException => o2
@@ -5165,7 +5165,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_materialization_invalidation_info_args)
       result = Get_materialization_invalidation_info_result.new()
       begin
-        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata)
+        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata, args.validTxnList)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::InvalidOperationException => o2
@@ -9188,10 +9188,10 @@ module ThriftHiveMetastore
 
   class Translate_table_dryrun_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    TBL = 1
+    REQUEST = 1
 
     FIELDS = {
-      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CreateTableRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -9770,9 +9770,11 @@ module ThriftHiveMetastore
   class Get_materialization_invalidation_info_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     CREATION_METADATA = 1
+    VALIDTXNLIST = 2
 
     FIELDS = {
-      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata}
+      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata},
+      VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
     }
 
     def struct_fields; FIELDS; end

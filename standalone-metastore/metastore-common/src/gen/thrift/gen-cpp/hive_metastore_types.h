@@ -3683,9 +3683,10 @@ void swap(SourceTable &a, SourceTable &b);
 std::ostream& operator<<(std::ostream& out, const SourceTable& obj);
 
 typedef struct _CreationMetadata__isset {
-  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
+  _CreationMetadata__isset() : validTxnList(false), materializationTime(false), sourceTables(false) {}
   bool validTxnList :1;
   bool materializationTime :1;
+  bool sourceTables :1;
 } _CreationMetadata__isset;
 
 class CreationMetadata : public virtual ::apache::thrift::TBase {
@@ -3700,9 +3701,10 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::string tblName;
-  std::set<SourceTable>  tablesUsed;
+  std::set<std::string>  tablesUsed;
   std::string validTxnList;
   int64_t materializationTime;
+  std::set<SourceTable>  sourceTables;
 
   _CreationMetadata__isset __isset;
 
@@ -3712,11 +3714,13 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
 
   void __set_tblName(const std::string& val);
 
-  void __set_tablesUsed(const std::set<SourceTable> & val);
+  void __set_tablesUsed(const std::set<std::string> & val);
 
   void __set_validTxnList(const std::string& val);
 
   void __set_materializationTime(const int64_t val);
+
+  void __set_sourceTables(const std::set<SourceTable> & val);
 
   bool operator == (const CreationMetadata & rhs) const
   {
@@ -3735,6 +3739,10 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
     if (__isset.materializationTime != rhs.__isset.materializationTime)
       return false;
     else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
+      return false;
+    if (__isset.sourceTables != rhs.__isset.sourceTables)
+      return false;
+    else if (__isset.sourceTables && !(sourceTables == rhs.sourceTables))
       return false;
     return true;
   }
@@ -10407,7 +10415,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -10422,6 +10430,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool workerVersion :1;
   bool initiatorId :1;
   bool initiatorVersion :1;
+  bool cleanerStart :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -10429,7 +10438,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage(), enqueueTime(0), workerVersion(), initiatorId(), initiatorVersion() {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage(), enqueueTime(0), workerVersion(), initiatorId(), initiatorVersion(), cleanerStart(0) {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -10455,6 +10464,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   std::string workerVersion;
   std::string initiatorId;
   std::string initiatorVersion;
+  int64_t cleanerStart;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -10493,6 +10503,8 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_initiatorId(const std::string& val);
 
   void __set_initiatorVersion(const std::string& val);
+
+  void __set_cleanerStart(const int64_t val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -10559,6 +10571,10 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
     if (__isset.initiatorVersion != rhs.__isset.initiatorVersion)
       return false;
     else if (__isset.initiatorVersion && !(initiatorVersion == rhs.initiatorVersion))
+      return false;
+    if (__isset.cleanerStart != rhs.__isset.cleanerStart)
+      return false;
+    else if (__isset.cleanerStart && !(cleanerStart == rhs.cleanerStart))
       return false;
     return true;
   }

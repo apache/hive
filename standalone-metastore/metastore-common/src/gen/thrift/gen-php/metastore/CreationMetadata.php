@@ -40,10 +40,9 @@ class CreationMetadata
             'var' => 'tablesUsed',
             'isRequired' => true,
             'type' => TType::SET,
-            'etype' => TType::STRUCT,
+            'etype' => TType::STRING,
             'elem' => array(
-                'type' => TType::STRUCT,
-                'class' => '\metastore\SourceTable',
+                'type' => TType::STRING,
                 ),
         ),
         5 => array(
@@ -55,6 +54,16 @@ class CreationMetadata
             'var' => 'materializationTime',
             'isRequired' => false,
             'type' => TType::I64,
+        ),
+        7 => array(
+            'var' => 'sourceTables',
+            'isRequired' => false,
+            'type' => TType::SET,
+            'etype' => TType::STRUCT,
+            'elem' => array(
+                'type' => TType::STRUCT,
+                'class' => '\metastore\SourceTable',
+                ),
         ),
     );
 
@@ -71,7 +80,7 @@ class CreationMetadata
      */
     public $tblName = null;
     /**
-     * @var \metastore\SourceTable[]
+     * @var string[]
      */
     public $tablesUsed = null;
     /**
@@ -82,6 +91,10 @@ class CreationMetadata
      * @var int
      */
     public $materializationTime = null;
+    /**
+     * @var \metastore\SourceTable[]
+     */
+    public $sourceTables = null;
 
     public function __construct($vals = null)
     {
@@ -103,6 +116,9 @@ class CreationMetadata
             }
             if (isset($vals['materializationTime'])) {
                 $this->materializationTime = $vals['materializationTime'];
+            }
+            if (isset($vals['sourceTables'])) {
+                $this->sourceTables = $vals['sourceTables'];
             }
         }
     }
@@ -155,9 +171,8 @@ class CreationMetadata
                         $xfer += $input->readSetBegin($_etype236, $_size233);
                         for ($_i237 = 0; $_i237 < $_size233; ++$_i237) {
                             $elem238 = null;
-                            $elem238 = new \metastore\SourceTable();
-                            $xfer += $elem238->read($input);
-                            $this->tablesUsed[] = $elem238;
+                            $xfer += $input->readString($elem238);
+                            $this->tablesUsed[$elem238] = true;
                         }
                         $xfer += $input->readSetEnd();
                     } else {
@@ -174,6 +189,23 @@ class CreationMetadata
                 case 6:
                     if ($ftype == TType::I64) {
                         $xfer += $input->readI64($this->materializationTime);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 7:
+                    if ($ftype == TType::SET) {
+                        $this->sourceTables = array();
+                        $_size239 = 0;
+                        $_etype242 = 0;
+                        $xfer += $input->readSetBegin($_etype242, $_size239);
+                        for ($_i243 = 0; $_i243 < $_size239; ++$_i243) {
+                            $elem244 = null;
+                            $elem244 = new \metastore\SourceTable();
+                            $xfer += $elem244->read($input);
+                            $this->sourceTables[] = $elem244;
+                        }
+                        $xfer += $input->readSetEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -212,9 +244,9 @@ class CreationMetadata
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
             $xfer += $output->writeFieldBegin('tablesUsed', TType::SET, 4);
-            $output->writeSetBegin(TType::STRUCT, count($this->tablesUsed));
-            foreach ($this->tablesUsed as $iter239 => $iter240) {
-                $xfer += $iter240->write($output);
+            $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
+            foreach ($this->tablesUsed as $iter245 => $iter246) {
+                $xfer += $output->writeString($iter245);
             }
             $output->writeSetEnd();
             $xfer += $output->writeFieldEnd();
@@ -227,6 +259,18 @@ class CreationMetadata
         if ($this->materializationTime !== null) {
             $xfer += $output->writeFieldBegin('materializationTime', TType::I64, 6);
             $xfer += $output->writeI64($this->materializationTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->sourceTables !== null) {
+            if (!is_array($this->sourceTables)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('sourceTables', TType::SET, 7);
+            $output->writeSetBegin(TType::STRUCT, count($this->sourceTables));
+            foreach ($this->sourceTables as $iter247 => $iter248) {
+                $xfer += $iter248->write($output);
+            }
+            $output->writeSetEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

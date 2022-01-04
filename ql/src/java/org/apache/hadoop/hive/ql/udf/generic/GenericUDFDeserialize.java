@@ -72,9 +72,6 @@ public class GenericUDFDeserialize extends GenericUDF {
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
         String value = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), stringOI);
         String compressionFormat = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), this.compressionFormat);
-        if (value == null || StringUtils.isEmpty(compressionFormat)) {
-            return value;
-        }
         MessageEncoder encoder;
         try {
             encoder = MessageFactory.getInstance(compressionFormat);

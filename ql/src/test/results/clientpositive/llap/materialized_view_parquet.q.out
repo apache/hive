@@ -219,6 +219,10 @@ Original Query:     	select * from emps_parquet_n3 where empid < 150
 Expanded Query:     	select `emps_parquet_n3`.`empid`, `emps_parquet_n3`.`deptno`, `emps_parquet_n3`.`name`, `emps_parquet_n3`.`salary`, `emps_parquet_n3`.`commission` from `default`.`emps_parquet_n3` where `emps_parquet_n3`.`empid` < 150	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.emps_parquet_n3	0/0/0               	 
 PREHOOK: query: explain cbo
 select *
 from (select * from emps_parquet_n3 where empid < 120) t

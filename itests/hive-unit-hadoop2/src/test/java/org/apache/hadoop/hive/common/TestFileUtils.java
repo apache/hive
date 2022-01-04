@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -27,6 +29,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.RemoteIterator;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -72,6 +76,83 @@ public class TestFileUtils {
         // Do nothing
       }
     }
+  }
+
+  @Test
+  public void testXAttrsPreserved() throws Exception {
+    //Case 1) src and dst are files.
+    Path src = new Path(basePath, "src.txt");
+    fs.create(src).close();
+    setXAttrsRecursive(src);
+    Path dst = new Path(basePath, "dst.txt");
+    Assert.assertFalse(fs.exists(dst));
+    Assert.assertTrue(FileUtils.copy(fs, fs.getFileStatus(src), fs, dst, false, true, true, conf));
+    Assert.assertTrue(fs.exists(dst));
+    verifyXAttrsPreserved(src, dst);
+    //Case 2) src is file and dst directory does not exist.
+    dst = new Path(basePath, "dummyDstDir");
+    Assert.assertFalse(fs.exists(dst));
+    Assert.assertTrue(FileUtils.copy(fs, fs.getFileStatus(src), fs, dst, false, true, true, conf));
+    Assert.assertTrue(fs.exists(dst));
+    Assert.assertTrue(fs.exists(new Path(dst, new Path(basePath, "src.txt"))));
+    verifyXAttrsPreserved(src, dst);
+    //Case 3) src is a file and dst directory exists.
+    dst = new Path(basePath, "dummyDstDir1");
+    fs.mkdirs(dst);
+    Assert.assertTrue(fs.exists(dst));
+    Assert.assertTrue(FileUtils.copy(fs, fs.getFileStatus(src), fs, dst, false, true, true, conf));
+    Assert.assertTrue(fs.exists(dst));
+    Assert.assertTrue(fs.exists(new Path(dst, "src.txt")));
+    verifyXAttrsPreserved(src, new Path(dst, "src.txt"));
+    //Case 4) src & dst are directories and dst does not exist.
+    src = new Path(basePath, "dummySrcDir2");
+    dst = new Path(basePath, "dummyDstDir2");
+    fs.create(new Path(src, "src.txt"));
+    setXAttrsRecursive(src);
+    Assert.assertFalse(fs.exists(dst));
+    Assert.assertTrue(FileUtils.copy(fs, fs.getFileStatus(src), fs, dst, false, true, true, conf));
+    Assert.assertTrue(fs.exists(dst));
+    Assert.assertTrue(fs.exists(new Path(dst, "src.txt")));
+    verifyXAttrsPreserved(src, dst);
+    //Case 5) src & dst are directories and dst directory exists
+    src = new Path(basePath, "dummySrcDir3");
+    dst = new Path(basePath, "dummyDstDir3");
+    fs.create(new Path(src, "src.txt"));
+    fs.mkdirs(dst);
+    setXAttrsRecursive(src);
+    Assert.assertTrue(fs.exists(dst));
+    Assert.assertTrue(FileUtils.copy(fs, fs.getFileStatus(src), fs, dst, false, true, true, conf));
+    Assert.assertTrue(fs.exists(new Path(dst, "dummySrcDir3/src.txt")));
+    verifyXAttrsPreserved(src, new Path(dst, src.getName()));
+  }
+
+  private void verifyXAttrsPreserved(Path src, Path dst) throws Exception {
+    FileStatus srcStatus = fs.getFileStatus(src);
+    FileStatus dstStatus = fs.getFileStatus(dst);
+    if (srcStatus.isDirectory()) {
+      Assert.assertTrue(dstStatus.isDirectory());
+      for(FileStatus srcContent: fs.listStatus(src)) {
+        Path dstContent = new Path(dst, srcContent.getPath().getName());
+        Assert.assertTrue(fs.exists(dstContent));
+        verifyXAttrsPreserved(srcContent.getPath(), dstContent);
+      }
+    } else {
+      Assert.assertFalse(dstStatus.isDirectory());
+    }
+    Map<String, byte[]> values = fs.getXAttrs(dst);
+    for(Map.Entry<String, byte[]> value : fs.getXAttrs(src).entrySet()) {
+      Assert.assertEquals(new String(value.getValue()), new String(values.get(value.getKey())));
+    }
+  }
+
+  private void setXAttrsRecursive(Path path) throws Exception {
+    if (fs.getFileStatus(path).isDirectory()) {
+      RemoteIterator<FileStatus> content = fs.listStatusIterator(path);
+      while(content.hasNext()) {
+        setXAttrsRecursive(content.next().getPath());
+      }
+    }
+    fs.setXAttr(path, "user.random", "value".getBytes(StandardCharsets.UTF_8));
   }
 
   @Test

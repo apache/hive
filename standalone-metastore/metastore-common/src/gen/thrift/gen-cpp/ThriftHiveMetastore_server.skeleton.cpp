@@ -220,7 +220,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_check_constraint\n");
   }
 
-  void translate_table_dryrun(Table& _return, const Table& tbl) {
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
     // Your implementation goes here
     printf("translate_table_dryrun\n");
   }
@@ -300,7 +300,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_table_objects_by_name_req\n");
   }
 
-  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata) {
+  void get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList) {
     // Your implementation goes here
     printf("get_materialization_invalidation_info\n");
   }

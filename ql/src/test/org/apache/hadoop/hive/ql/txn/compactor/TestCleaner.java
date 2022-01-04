@@ -591,6 +591,7 @@ public class TestCleaner extends CompactorTest {
     // unblock the cleaner and run again
     txnHandler.commitTxn(new CommitTxnRequest(blockingTxn));
     startCleaner();
+    startCleaner();
 
     // make sure cleaner removed everything below base_24, and both compactions are successful
     paths = getDirectories(conf, t, p);

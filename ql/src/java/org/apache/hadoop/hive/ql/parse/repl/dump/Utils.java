@@ -130,7 +130,9 @@ public class Utils {
             outStream.write(Utilities.newLineCode);
           }
         } finally {
-          IOUtils.closeStream(outStream);
+          if (outStream != null) {
+            outStream.close();
+          }
         }
         return null;
       });
@@ -198,7 +200,9 @@ public class Utils {
           outStream.writeBytes(content);
           outStream.write(Utilities.newLineCode);
         } finally {
-          IOUtils.closeStream(outStream);
+          if (outStream != null) {
+            outStream.close();
+          }
         }
         return null;
       });
