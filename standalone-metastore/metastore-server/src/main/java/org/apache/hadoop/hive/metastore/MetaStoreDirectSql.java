@@ -2952,14 +2952,28 @@ class MetaStoreDirectSql {
   }
 
   public void deleteColumnStatsState(long tbl_id) throws MetaException {
-    // @formatter:off
-    String queryText = ""
-        + "delete from " + PARTITION_PARAMS + " "
-            + " where "
+    String queryText;
+    switch (dbType.dbType) {
+      case MYSQL:
+        // @formatter:off
+        queryText = ""
+            + "delete pp from " + PARTITION_PARAMS + " pp, " + PARTITIONS + " p"
+            + " where"
+            + "   p.\"PART_ID\" = pp.\"PART_ID\" AND"
+            + "   p.\"TBL_ID\" = " + tbl_id
+            + "  and \"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE + "'";
+        // @formatter:on
+        break;
+      default:
+        // @formatter:off
+        queryText = ""
+            + "delete from " + PARTITION_PARAMS
+            + " where"
             + "   \"PART_ID\" in (select p.\"PART_ID\"  from " + PARTITIONS + " p where"
             + "   p.\"TBL_ID\" =  " + tbl_id + ")"
             + "  and \"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE + "'";
-    // @formatter:on
+        // @formatter:on
+    }
 
     try {
       executeNoResult(queryText);
