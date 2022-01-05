@@ -167,7 +167,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       // if we have both $0 and EXPR($0), then create only IS NOT NULL($0)
       if (!rexNode.isA(SqlKind.INPUT_REF) && rexNodeInputRefs.size() == 1
           && joinExprInputRefs.contains(rexNodeInputRefs.iterator().next())) {
-        continue;
+        //continue;
       }
       RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexNode);
       String digest = cond.toString();
