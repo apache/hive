@@ -24,14 +24,17 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.nodes.PersistentNode;
+import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -273,11 +276,17 @@ public class ZooKeeperHiveHelper {
       }
       setDeregisteredWithZooKeeper(false);
       final String znodePath = znode.getActualPath();
-      if (zooKeeperClient.checkExists().usingWatcher(watcher).forPath(znodePath) == null) {
-        // No node exists, throw exception
-        throw new Exception("Unable to create znode with path prefix " + znodePathPrefix +
-                " and data " + znodeData + " on ZooKeeper.");
-      }
+      zooKeeperClient.getConnectionStateListenable().addListener((client, newState) -> {
+        if (newState == ConnectionState.RECONNECTED) {
+          try {
+            addWatcher(watcher, znodePath);
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        }
+      });
+
+      addWatcher(watcher, znodePath);
       LOG.info("Created a znode (actual path " + znodePath + ") on ZooKeeper with path prefix " +
                       znodePathPrefix + " and data " + znodeData);
     } catch (Exception e) {
@@ -287,6 +296,13 @@ public class ZooKeeperHiveHelper {
         znode.close();
       }
       throw (e);
+    }
+  }
+
+  private void addWatcher(Watcher watcher, String znodePath) throws Exception {
+    if (zooKeeperClient.checkExists().usingWatcher(watcher).forPath(znodePath) == null) {
+      // No node exists, throw exception
+      throw new Exception("Unable to create znode with path " + znodePath + " on ZooKeeper.");
     }
   }
 
@@ -360,6 +376,16 @@ public class ZooKeeperHiveHelper {
       zooKeeperClient.close();
     }
     LOG.info("Server instance removed from ZooKeeper.");
+  }
+
+  @VisibleForTesting
+  CuratorFramework getZookeeperClient() {
+    return zooKeeperClient;
+  }
+
+  @VisibleForTesting
+  PersistentNode getZNode() {
+    return znode;
   }
 
 
