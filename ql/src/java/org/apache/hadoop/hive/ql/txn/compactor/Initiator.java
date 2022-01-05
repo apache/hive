@@ -164,8 +164,8 @@ public class Initiator extends MetaStoreCompactorThread {
 
           for (CompactionInfo ci : potentials) {
             try {
-              Table t = cacheAndResolveTable(ci);
-              Partition p = cacheAndResolvePartition(ci);
+              Table t = resolveTableAndCache(ci);
+              Partition p = resolvePartitionAndCache(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
                     ", assuming it has been dropped and moving on.");
@@ -524,7 +524,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      Table t = cacheAndResolveTable(ci);
+      Table t = resolveTableAndCache(ci);
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
             "table or has been dropped and moving on.");

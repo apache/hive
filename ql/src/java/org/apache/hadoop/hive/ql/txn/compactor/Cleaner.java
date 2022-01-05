@@ -204,7 +204,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       Partition p = resolvePartition(ci);
 
       if (!location.isPresent()) {
-        t = cacheAndResolveTable(ci);
+        t = resolveTableAndCache(ci);
         if (t == null) {
           // The table was dropped before we got around to cleaning it.
           LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
@@ -427,7 +427,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
-      FileSystem fs, StringBuilder extraDebugInfo) 
+      FileSystem fs, StringBuilder extraDebugInfo)
       throws NoSuchObjectException, MetaException, IOException {
 
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');

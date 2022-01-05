@@ -34,6 +34,7 @@ import org.apache.thrift.TException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +52,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   protected TxnStore txnHandler;
   protected int threadId;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
-  protected CompactorMetadataCache metadataCache;
+  protected Optional<CompactorMetadataCache> metadataCache = Optional.empty();
 
   @Override
   public void setThreadId(int threadId) {
@@ -105,19 +106,19 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
   @Override
   public void setCache(CompactorMetadataCache metadataCache) {
-    this.metadataCache = metadataCache;
+    this.metadataCache = Optional.ofNullable(metadataCache);
   }
 
-  protected Table cacheAndResolveTable(CompactionInfo ci) throws MetaException {
-    if (metadataCache != null) {
-      return metadataCache.resolveTable(ci, () -> resolveTable(ci));
+  protected Table resolveTableAndCache(CompactionInfo ci) throws MetaException {
+    if (metadataCache.isPresent()) {
+      return metadataCache.get().resolveTable(ci, () -> resolveTable(ci));
     }
     return resolveTable(ci);
   }
 
-  protected Partition cacheAndResolvePartition(CompactionInfo ci) throws MetaException {
-    if (metadataCache != null) {
-      return metadataCache.resolvePartition(ci, () -> resolvePartition(ci));
+  protected Partition resolvePartitionAndCache(CompactionInfo ci) throws MetaException {
+    if (metadataCache.isPresent()) {
+      return metadataCache.get().resolvePartition(ci, () -> resolvePartition(ci));
     }
     return resolvePartition(ci);
   }

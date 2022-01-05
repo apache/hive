@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +42,8 @@ public interface CacheAwareCompactor {
 
   class CompactorMetadataCache {
 
-    private final Cache<TableCacheKey, Table> tableCache;
-    private final Cache<PartitionCacheKey, Partition> partitionCache;
+    private final Cache<String, Table> tableCache;
+    private final Cache<String, Partition> partitionCache;
 
     @VisibleForTesting
     public CompactorMetadataCache(long timeout, TimeUnit unit) {
@@ -63,8 +62,7 @@ public interface CacheAwareCompactor {
 
     public Table resolveTable(CompactionInfo ci, Callable<Table> loader) {
       try {
-        TableCacheKey key = new TableCacheKey(ci);
-        return tableCache.get(key, loader);
+        return tableCache.get(ci.getFullTableName(), loader);
       } catch (ExecutionException e) {
         throw new UncheckedExecutionException(e);
       }
@@ -75,62 +73,9 @@ public interface CacheAwareCompactor {
         if (ci.partName == null) {
           return null;
         }
-        PartitionCacheKey key = new PartitionCacheKey(ci);
-        return partitionCache.get(key, loader);
+        return partitionCache.get(ci.getFullPartitionName(), loader);
       } catch (ExecutionException e) {
         throw new UncheckedExecutionException(e);
-      }
-    }
-
-    private final class TableCacheKey {
-      private final String dbname;
-      private final String tableName;
-
-      private TableCacheKey(CompactionInfo ci) {
-        this.dbname = ci.dbname;
-        this.tableName = ci.tableName;
-      }
-
-      @Override
-      public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TableCacheKey that = (TableCacheKey) o;
-        return Objects.equals(dbname, that.dbname) &&
-          Objects.equals(tableName, that.tableName);
-      }
-
-      @Override
-      public int hashCode() {
-
-        return Objects.hash(dbname, tableName);
-      }
-    }
-
-    private final class PartitionCacheKey {
-      private final String dbname;
-      private final String tableName;
-      private final String partName;
-
-      private PartitionCacheKey(CompactionInfo ci) {
-        this.dbname = ci.dbname;
-        this.tableName = ci.tableName;
-        this.partName = ci.partName;
-      }
-
-      @Override
-      public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PartitionCacheKey that = (PartitionCacheKey) o;
-        return Objects.equals(dbname, that.dbname) &&
-          Objects.equals(tableName, that.tableName) &&
-          Objects.equals(partName, that.partName);
-      }
-
-      @Override
-      public int hashCode() {
-        return Objects.hash(dbname, tableName, partName);
       }
     }
   }
