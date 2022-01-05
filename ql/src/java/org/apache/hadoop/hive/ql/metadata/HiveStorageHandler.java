@@ -354,6 +354,11 @@ public interface HiveStorageHandler extends Configurable {
         HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
   }
 
+  /**
+   * Validates whether the sink operation is permitted for the specific storage handler, based
+   * on information contained in the sinkDesc. If the operation is not allowed, the method should throw an exception.
+   * @param sinkDesc The sink descriptor
+   */
   default void validateSinkOperation(FileSinkDesc sinkDesc) {
   }
 }
