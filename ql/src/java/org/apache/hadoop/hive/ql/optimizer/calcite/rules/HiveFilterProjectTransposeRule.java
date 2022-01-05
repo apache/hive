@@ -187,9 +187,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       }
     }
 
-    if (filterCondToPushBelowProj != null
-        && !isRedundantIsNotNull(origproject, filterCondToPushBelowProj)) {
-
+    if (filterCondToPushBelowProj != null) {
       RelNode newProjRel = getNewProject(filterCondToPushBelowProj, unPushedFilCondAboveProj, origproject, filter.getCluster()
           .getTypeFactory(), call.builder());
 
