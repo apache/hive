@@ -638,6 +638,16 @@ public interface TxnStore extends Configurable {
        * Releases all locks associated with this handle.
        */
       void releaseLocks();
+
+      /**
+       * Returns the value of the last update time persisted during the appropriate lock release call.
+       */
+      Long getLastUpdateTime();
+
+      /**
+       * Releases all locks associated with this handle, and persist the value of the last update time.
+       */
+      void releaseLocks(Long timestamp);
     }
   }
 
