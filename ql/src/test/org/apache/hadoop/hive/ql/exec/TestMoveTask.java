@@ -41,7 +41,7 @@ public class TestMoveTask {
 
     new MoveTask().flattenUnionSubdirectories(new MockFileSystem.MockPath(fs, initialPath));
 
-    assertFalse(fs.exists(new MockFileSystem.MockPath(fs, initialPath));
+    assertFalse(fs.exists(new MockFileSystem.MockPath(fs, initialPath)));
     assertTrue(fs.exists(new MockFileSystem.MockPath(fs, flattenPath)));
   }
 }
