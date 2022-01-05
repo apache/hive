@@ -243,7 +243,7 @@ public class HiveSQLException extends SQLException {
   private static Throwable newInstance(String className, String message) {
     try {
       return (Throwable)Class.forName(className).getConstructor(String.class).newInstance(message);
-    } catch (Throwable e) {
+    } catch (Exception e) {
       return new RuntimeException(className + ":" + message);
     }
   }
