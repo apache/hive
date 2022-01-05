@@ -523,10 +523,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         isServerFilterEnabled, filterHook, catName, dbName, tblName);
   }
 
-  private static String addPrefix(String s) {
-    return getLocalThreadIdNotNull() + ": " + s;
-  }
-
   /**
    * Set copy of invoking HMSHandler on thread local
    */
@@ -635,7 +631,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   static RawStore newRawStoreForConf(Configuration conf) throws MetaException {
     Configuration newConf = new Configuration(conf);
     String rawStoreClassName = MetastoreConf.getVar(newConf, ConfVars.RAW_STORE_IMPL);
-    LOG.info(addPrefix("Opening raw store with implementation class:" + rawStoreClassName));
+    LOG.info("{}: Opening raw store with implementation class: {}", getLocalThreadIdNotNull(), rawStoreClassName);
     return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName, getLocalThreadIdNotNull());
   }
 
@@ -5463,8 +5459,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Partition oldPart = null;
     try {
-      Table table = null;
-      table = getMS().getTable(catName, db_name, tbl_name, null);
+      Table table = getMS().getTable(catName, db_name, tbl_name, null);
 
       firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, part_vals, new_part, this));
       if (part_vals != null && !part_vals.isEmpty()) {
