@@ -997,7 +997,8 @@ enum TxnType {
     REPL_CREATED = 1,
     READ_ONLY    = 2,
     COMPACTION   = 3,
-    MATER_VIEW_REBUILD = 4
+    MATER_VIEW_REBUILD = 4,
+    SOFT_DELETE = 5
 }
 
 // specifies which info to return with GetTablesExtRequest

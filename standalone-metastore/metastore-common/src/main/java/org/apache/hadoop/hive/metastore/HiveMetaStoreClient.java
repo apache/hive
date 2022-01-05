@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1759,10 +1760,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
+    
+    EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+      context = getEnvironmentContextWithIfPurgeSet();
     }
+    if (options.writeId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("writeId", options.writeId.toString());
+    }
+    if (options.txnId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", options.txnId.toString());
+    }
+    req.setEnvironmentContext(context);
+    
     return client.drop_partitions_req(req).getPartitions();
   }
 

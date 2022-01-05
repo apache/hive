@@ -19,13 +19,10 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -35,6 +32,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -42,11 +40,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -58,10 +51,13 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
@@ -137,8 +133,8 @@ public class Cleaner extends MetaStoreCompactorThread {
             // when min_history_level is finally dropped, than every HMS will commit compaction the new way
             // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
             for (CompactionInfo compactionInfo : readyToClean) {
-              cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                      clean(compactionInfo, cleanerWaterMark, metricsEnabled)), cleanerExecutor));
+              cleanerList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(
+                  () -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)), cleanerExecutor));
             }
             CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
           }
@@ -184,91 +180,58 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (metricsEnabled) {
         perfLogger.perfLogBegin(CLASS_NAME, cleanerMetric);
       }
+      String location = Optional.ofNullable(ci.properties).map(StringableMap::new)
+          .map(config -> config.get("location")).orElse(null);
+      
+      Callable<Boolean> cleanUpTask;
       Table t = resolveTable(ci);
-      if (t == null) {
-        // The table was dropped before we got around to cleaning it.
-        LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
+      Partition p = resolvePartition(ci);
+
+      if (location == null) {
+        if (t == null) {
+          // The table was dropped before we got around to cleaning it.
+          LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
             idWatermark(ci));
-        txnHandler.markCleaned(ci);
-        return;
-      }
-      if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
-        // The table was marked no clean up true.
-        LOG.info("Skipping table " + ci.getFullTableName() + " clean up, as NO_CLEANUP set to true");
-        txnHandler.markCleaned(ci);
-        return;
-      }
-
-      Partition p = null;
-      if (ci.partName != null) {
-        p = resolvePartition(ci);
-        if (p == null) {
-          // The partition was dropped before we got around to cleaning it.
-          LOG.info("Unable to find partition " + ci.getFullPartitionName() +
+          txnHandler.markCleaned(ci);
+          return;
+        }
+        if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
+          // The table was marked no clean up true.
+          LOG.info("Skipping table " + ci.getFullTableName() + " clean up, as NO_CLEANUP set to true");
+          txnHandler.markCleaned(ci);
+          return;
+        }
+        if (ci.partName != null) {
+          if (p == null) {
+            // The partition was dropped before we got around to cleaning it.
+            LOG.info("Unable to find partition " + ci.getFullPartitionName() +
               ", assuming it was dropped." + idWatermark(ci));
-          txnHandler.markCleaned(ci);
-          return;
-        }
-        if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
-          // The partition was marked no clean up true.
-          LOG.info("Skipping partition " + ci.getFullPartitionName() + " clean up, as NO_CLEANUP set to true");
-          txnHandler.markCleaned(ci);
-          return;
+            txnHandler.markCleaned(ci);
+            return;
+          }
+          if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
+            // The partition was marked no clean up true.
+            LOG.info("Skipping partition " + ci.getFullPartitionName() + " clean up, as NO_CLEANUP set to true");
+            txnHandler.markCleaned(ci);
+            return;
+          }
         }
       }
-
       txnHandler.markCleanerStart(ci);
-
+      
       StorageDescriptor sd = resolveStorageDescriptor(t, p);
-      final String location = sd.getLocation();
-      ValidTxnList validTxnList =
-          TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
-      //save it so that getAcidState() sees it
-      conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
-      /**
-       * {@code validTxnList} is capped by minOpenTxnGLB so if
-       * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
-       * produced by a compactor, that means every reader that could be active right now see it
-       * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
-       * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
-       *
-       *
-       * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
-       * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
-       * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
-       * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
-       * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
-       * writeId:17.  Compactor will produce base_17_c160.
-       * Suppose txnid:149 writes delta_18_18
-       * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
-       * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
-       * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
-       * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
-       * metadata that says that 18 is aborted.
-       * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
-       * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
-       * it (since it has nothing but aborted data).  But we can't tell which actually happened
-       * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
-       *
-       * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
-       * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
-       * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
-       * useful if there is all of a sudden a flood of aborted txns.  (For another day).
-       */
-
-      // Creating 'reader' list since we are interested in the set of 'obsolete' files
-      final ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, t, validTxnList);
-      LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
+      cleanUpTask = () -> removeFiles(Optional.ofNullable(location).orElse(sd.getLocation()), 
+          minOpenTxnGLB, ci, ci.partName != null && p == null);
 
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
-        removedFiles.value = removeFiles(location, validWriteIdList, ci);
+        removedFiles.value = cleanUpTask.call();
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
-        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-          removedFiles.value = removeFiles(location, validWriteIdList, ci);
+        ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+          removedFiles.value = cleanUpTask.call();
           return null;
         });
         try {
@@ -296,9 +259,9 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
   }
 
-  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, Table t, ValidTxnList validTxnList)
+  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
       throws NoSuchTxnException, MetaException {
-    List<String> tblNames = Collections.singletonList(TableName.getDbTable(t.getDbName(), t.getTableName()));
+    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(ci.dbname, ci.tableName));
     GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
     request.setValidTxnList(validTxnList.writeToString());
     GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
@@ -320,7 +283,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
-    return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
+    return Optional.ofNullable(t).map(Table::getPartitionKeys).filter(pk -> pk.size() > 0).isPresent()
         && ci.partName == null;
   }
 
@@ -328,14 +291,89 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
 
+  private boolean removeFiles(String location, long minOpenTxnGLB, CompactionInfo ci, boolean dropPartition)
+      throws MetaException, IOException, NoSuchObjectException, NoSuchTxnException {
+
+    if (dropPartition) {
+      LockRequest lockRequest = createLockRequest(ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
+      LockResponse res = null;
+      
+      try {
+        res = txnHandler.lock(lockRequest);
+        if (res.getState() == LockState.ACQUIRED) {
+          if (resolvePartition(ci) == null) {
+            Path path = new Path(location);
+            StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
+
+            boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
+              .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
+
+            return remove(location, ci, Collections.singletonList(path), ifPurge,
+              path.getFileSystem(conf), extraDebugInfo);
+          }
+        }
+      } catch (NoSuchTxnException | TxnAbortedException e) {
+        LOG.error(e.getMessage());
+      } finally {
+        if (res != null && res.getState() != LockState.NOT_ACQUIRED) {
+          try {
+            txnHandler.unlock(new UnlockRequest(res.getLockid()));
+          } catch (NoSuchLockException | TxnOpenException e) {
+            LOG.error(e.getMessage());
+          }
+        }
+      }
+    }
+      
+    ValidTxnList validTxnList =
+      TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+    //save it so that getAcidState() sees it
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    /**
+     * {@code validTxnList} is capped by minOpenTxnGLB so if
+     * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
+     * produced by a compactor, that means every reader that could be active right now see it
+     * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
+     * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
+     *
+     *
+     * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
+     * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
+     * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
+     * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
+     * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
+     * writeId:17.  Compactor will produce base_17_c160.
+     * Suppose txnid:149 writes delta_18_18
+     * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
+     * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
+     * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
+     * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
+     * metadata that says that 18 is aborted.
+     * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
+     * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
+     * it (since it has nothing but aborted data).  But we can't tell which actually happened
+     * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
+     *
+     * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
+     * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
+     * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
+     * useful if there is all of a sudden a flood of aborted txns.  (For another day).
+     */
+
+    // Creating 'reader' list since we are interested in the set of 'obsolete' files
+    ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+    LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
+    
+    return removeFiles(location, validWriteIdList, ci);
+  }
   /**
    * @return true if any files were removed
    */
   private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
-    Path locPath = new Path(location);
-    AcidDirectory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
-        false), false);
+    Path path = new Path(location);
+    FileSystem fs = path.getFileSystem(conf);
+    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -356,16 +394,15 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
+    StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
+        .map(Path::getName).collect(Collectors.joining(",")));
+    return remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
+  }
 
-    StringBuilder extraDebugInfo = new StringBuilder("[");
-    for (Path stat : obsoleteDirs) {
-      filesToDelete.add(stat);
-      extraDebugInfo.append(stat.getName()).append(",");
-      if (!FileUtils.isPathWithinSubtree(stat, locPath)) {
-        LOG.info(idWatermark(ci) + " found unexpected file: " + stat);
-      }
-    }
+  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge, 
+      FileSystem fs, StringBuilder extraDebugInfo) 
+      throws NoSuchObjectException, MetaException, IOException {
+    
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
@@ -374,16 +411,15 @@ public class Cleaner extends MetaStoreCompactorThread {
           ", that hardly seems right.");
       return false;
     }
-
-    FileSystem fs = dir.getFs();
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
-
+    boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
+    
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      if (ReplChangeManager.shouldEnableCm(db, table)) {
-        replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
+      if (needCmRecycle) {
+        replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, ifPurge);
       }
-      fs.delete(dead, true);
+      FileUtils.moveToTrash(fs, dead, conf, ifPurge);
     }
     return true;
   }

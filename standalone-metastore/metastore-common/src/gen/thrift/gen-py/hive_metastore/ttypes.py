@@ -377,6 +377,7 @@ class TxnType(object):
     READ_ONLY = 2
     COMPACTION = 3
     MATER_VIEW_REBUILD = 4
+    SOFT_DELETE = 5
 
     _VALUES_TO_NAMES = {
         0: "DEFAULT",
@@ -384,6 +385,7 @@ class TxnType(object):
         2: "READ_ONLY",
         3: "COMPACTION",
         4: "MATER_VIEW_REBUILD",
+        5: "SOFT_DELETE",
     }
 
     _NAMES_TO_VALUES = {
@@ -392,6 +394,7 @@ class TxnType(object):
         "READ_ONLY": 2,
         "COMPACTION": 3,
         "MATER_VIEW_REBUILD": 4,
+        "SOFT_DELETE": 5,
     }
 
 

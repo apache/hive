@@ -55,6 +55,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -167,6 +168,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 
+import static org.apache.commons.lang3.StringUtils.repeat;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
@@ -3814,6 +3816,74 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  @Override
+  @RetrySemantics.Idempotent
+  public boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException {
+    // Put a compaction request in the queue.
+    try {
+      Connection dbConn = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        lockInternal();
+
+        List<String> params = new ArrayList<String>() {{
+          add(rqst.getDbname());
+          add(rqst.getTablename());
+        }};
+        long cqId;
+        try (Statement stmt = dbConn.createStatement()) {
+          cqId = generateCompactionQueueId(stmt);
+        }
+        StringBuilder buf = new StringBuilder(
+          "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TXN_ID\", \"CQ_ENQUEUE_TIME\", \"CQ_DATABASE\", \"CQ_TABLE\", ");
+        String partName = rqst.getPartitionname();
+        if (partName != null) {
+          buf.append("\"CQ_PARTITION\", ");
+          params.add(partName);
+        }
+        buf.append("\"CQ_STATE\", \"CQ_TYPE\"");
+        params.add(String.valueOf(READY_FOR_CLEANING));
+        params.add(thriftCompactionType2DbType(rqst.getType()).toString());
+
+        if (rqst.getProperties() != null) {
+          buf.append(", \"CQ_TBLPROPERTIES\"");
+          params.add(new StringableMap(rqst.getProperties()).toString());
+        }
+        if (rqst.getRunas() != null) {
+          buf.append(", \"CQ_RUN_AS\"");
+          params.add(rqst.getRunas());
+        }
+        buf.append(") values (")
+          .append(
+            Stream.of(cqId, highestWriteId, txnId, getEpochFn(dbProduct))
+              .map(Object::toString)
+              .collect(Collectors.joining(", ")))
+          .append(repeat(", ?", params.size()))
+          .append(")");
+
+        String s = buf.toString();
+        try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params)) {
+          LOG.debug("Going to execute update <" + s + ">");
+          pst.executeUpdate();
+        }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return true;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback: ", e);
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "submitForCleanup(" + rqst + ")");
+        throw new MetaException("Failed to submit cleanup request: " +
+          StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return submitForCleanup(rqst, highestWriteId, txnId);
+    }
+  }
+  
   private static String compactorStateToResponse(char s) {
     switch (s) {
       case INITIATED_STATE: return INITIATED_RESPONSE;
@@ -4274,6 +4344,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               partVals = p.getValues();
               partName = Warehouse.makePartName(partCols, partVals);
 
+              buff.setLength(0);
               buff.append("DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_DATABASE\"='");
               buff.append(dbName);
               buff.append("' AND \"TC_TABLE\"='");

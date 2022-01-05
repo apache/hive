@@ -366,6 +366,7 @@ class CompactionTxnHandler extends TxnHandler {
             info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
             info.runAs = rs.getString(6);
             info.highestWriteId = rs.getLong(7);
+            info.properties = rs.getString(8);
             if (LOG.isDebugEnabled()) {
               LOG.debug("Found ready to clean: " + info.toString());
             }
@@ -1503,7 +1504,7 @@ class CompactionTxnHandler extends TxnHandler {
   protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
       long tempId) throws SQLException, MetaException {
     super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
-    if (txnType == TxnType.COMPACTION) {
+    if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
       stmt.executeUpdate(
           "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
               getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);

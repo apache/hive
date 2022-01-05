@@ -128,8 +128,8 @@ public class LockComponentBuilder {
     return component;
   }
 
-  public LockComponent setLock(LockType type) {
+  public LockComponentBuilder setLock(LockType type) {
     component.setType(type);
-    return component;
+    return this;
   }
 }

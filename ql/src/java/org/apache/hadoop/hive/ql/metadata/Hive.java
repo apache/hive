@@ -58,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -1530,7 +1531,7 @@ public class Hive {
                         final String metaTableName, boolean throwException) throws HiveException {
     return this.getTable(dbName, tableName, metaTableName, throwException, false);
   }
-  
+
   /**
    * Returns metadata of the table
    *
@@ -3804,6 +3805,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table table = getTable(dbName, tableName);
+      if (!dropOptions.deleteData) {
+        AcidUtils.TableSnapshot snapshot = AcidUtils.getTableSnapshot(conf, table, true);
+        if (snapshot != null) {
+          dropOptions.setWriteId(snapshot.getWriteId());
+        }
+        long txnId = Optional.ofNullable(SessionState.get())
+          .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+        dropOptions.setTxnId(txnId);
+      }
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
           partitionExpressions, dropOptions);
       return convertFromMetastore(table, partitions);

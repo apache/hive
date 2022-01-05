@@ -3071,6 +3071,11 @@ public class HiveConf extends Configuration {
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     
+    HIVE_ACID_DROP_PARTITION_USE_BASE("hive.acid.droppartition.usebase", false,
+        "Enables non-blocking DROP PARTITION operation.\n" +
+        "If enabled, drop for transactional tables will not delete the data directories,\n" +
+        "rather create a new base directory with no datafiles.\")"),
+    
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
     HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
