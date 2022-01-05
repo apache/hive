@@ -110,7 +110,7 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
       AbstractDatabase db = dbEntry.getKey().create()
           .setDb("qtestDB")
           .setUseDockerDatabaseArg(true);
-      db.before();
+      db.launchDockerContainer();
       if (Files.exists(dbScript)) {
         db.execute(dbScript.toString());
       } else {
@@ -124,7 +124,7 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
     for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
       AbstractDatabase db = dbEntry.getKey().create();
       try {
-        db.after();
+        db.cleanupDockerContainer();
       } catch (Exception e) {
         LOG.error("Failed to cleanup database {}", dbEntry.getKey(), e);
       }

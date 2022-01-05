@@ -20,7 +20,7 @@ CREATE EXTERNAL TABLE country_0 (id int, name varchar(20))
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
         "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/bob",
         "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.dbcp.password" = "its-a-secret",
         "hive.sql.table" = "country");
 
 EXPLAIN CBO SELECT COUNT(*) FROM country_0;
@@ -35,7 +35,7 @@ CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
         "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/bob",
         "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.dbcp.password" = "its-a-secret",
         "hive.sql.schema" = "bob",
         "hive.sql.table" = "country");
 
@@ -49,7 +49,7 @@ CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
         "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/alice",
         "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.dbcp.password" = "its-a-secret",
         "hive.sql.table" = "country");
 
 EXPLAIN CBO SELECT COUNT(*) FROM country_2;
@@ -64,7 +64,7 @@ CREATE EXTERNAL TABLE country_3 (id int, name varchar(20))
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
         "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/bob",
         "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.dbcp.password" = "its-a-secret",
         "hive.sql.schema" = "alice",
         "hive.sql.table" = "country");
 

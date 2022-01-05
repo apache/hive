@@ -148,8 +148,7 @@ public abstract class AbstractDatabase extends ExternalResource {
     return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
   }
 
-  @Override
-  public void before() throws Exception { //runDockerContainer
+  public void launchDockerContainer() throws Exception {
     runCmdAndPrintStreams(buildRmCmd(), 600);
     if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
@@ -169,17 +168,27 @@ public abstract class AbstractDatabase extends ExternalResource {
     }
   }
 
+  public void cleanupDockerContainer() throws IOException, InterruptedException {
+    if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+      throw new RuntimeException("Unable to remove docker container");
+    }
+  }
+
   @Override
-  public void after() { // stopAndRmDockerContainer
+  public void before() throws Exception {
+    launchDockerContainer();
+    MetastoreSchemaTool.setHomeDirForTesting();
+  }
+
+  @Override
+  public void after() {
     if ("true".equalsIgnoreCase(System.getProperty("metastore.itest.no.stop.container"))) {
       LOG.warn("Not stopping container " + getDockerContainerName() + " at user request, please "
           + "be sure to shut it down before rerunning the test.");
       return;
     }
     try {
-      if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
-        throw new RuntimeException("Unable to remove docker container");
-      }
+      cleanupDockerContainer();
     } catch (InterruptedException | IOException e) {
       e.printStackTrace();
     }

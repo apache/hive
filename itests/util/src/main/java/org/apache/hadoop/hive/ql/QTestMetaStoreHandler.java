@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.PostgresTPCDS;
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +99,6 @@ public class QTestMetaStoreHandler {
 
   public void beforeTest() throws Exception {
     getRule().before();
-    MetastoreSchemaTool.setHomeDirForTesting();
     if (!isDerby()) {// derby is handled with old QTestUtil logic (TxnDbUtil stuff)
       getRule().install();
     }

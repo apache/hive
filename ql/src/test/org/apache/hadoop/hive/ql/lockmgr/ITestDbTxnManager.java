@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
@@ -65,7 +64,6 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
     // Start the docker container and create the hive user
     database.before();
-    MetastoreSchemaTool.setHomeDirForTesting();
     database.install();
   }
 
