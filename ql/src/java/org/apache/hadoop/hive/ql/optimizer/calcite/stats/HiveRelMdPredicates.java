@@ -388,6 +388,30 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
               }));
 
       equivalence = BitSets.closure(equivalence);
+      reduceToRepresentativesIndexes(equivalence);
+    }
+
+    private void reduceToRepresentativesIndexes(SortedMap<Integer, BitSet> equivalence) {
+      boolean fromLHS;
+      Set<Integer> toDelete = new HashSet<>();
+
+      for (Entry<Integer, BitSet> e : equivalence.entrySet()) {
+        if (toDelete.contains(e.getKey())) {
+          continue;
+        }
+        fromLHS = leftFieldsBitSet.get(e.getKey());
+        BitSet bitSet = e.getValue();
+        int index = bitSet.nextSetBit(0);
+        while (index >= 0) {
+          if (e.getKey() != index && fromLHS == leftFieldsBitSet.get(index)) {
+            toDelete.add(index);
+            bitSet.set(index, false);
+          }
+          index = bitSet.nextSetBit(index + 1);
+        }
+      }
+
+      toDelete.forEach(equivalence::remove);
     }
 
     /**
