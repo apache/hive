@@ -163,32 +163,14 @@ public class RetryingHMSHandler implements InvocationHandler {
         }
         return new Result(object, retryCount);
 
-      } catch (UndeclaredThrowableException e) {
-        ex = e.getCause();
-        if (e.getCause() != null) {
-          if (e.getCause() instanceof javax.jdo.JDOException) {
-            // Due to reflection, the jdo exception is wrapped in
-            // invocationTargetException
-            caughtException = e.getCause();
-          } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-              && e.getCause().getCause() instanceof javax.jdo.JDOException) {
-            // The JDOException may be wrapped further in a MetaException
-            caughtException = e.getCause().getCause();
-          } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
-            throw e.getCause();
-          }
-        } else {
-          LOG.error(ExceptionUtils.getStackTrace(e));
-          throw e;
-        }
-      } catch (InvocationTargetException e) {
+      } catch (UndeclaredThrowableException | InvocationTargetException e) {
         ex = e.getCause();
         if (e.getCause() instanceof javax.jdo.JDOException) {
           // Due to reflection, the jdo exception is wrapped in
           // invocationTargetException
           caughtException = e.getCause();
-        } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
+        } else if (e.getCause() instanceof NoSuchObjectException || e instanceof InvocationTargetException &&
+                ((InvocationTargetException)e).getTargetException().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
           if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
               && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")
