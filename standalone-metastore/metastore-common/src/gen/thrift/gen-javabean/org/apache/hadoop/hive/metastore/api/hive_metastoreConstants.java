@@ -81,4 +81,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String CTAS_LEGACY_CONFIG = "create_table_as_external";
 
+  public static final java.lang.String DEFAULT_TABLE_TYPE = "defaultTableType";
+
 }

@@ -51,6 +51,7 @@ class hive_metastoreConstants {
   std::string PARTITION_TRANSFORM_SPEC;
   std::string NO_CLEANUP;
   std::string CTAS_LEGACY_CONFIG;
+  std::string DEFAULT_TABLE_TYPE;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;
