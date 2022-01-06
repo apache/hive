@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -370,18 +371,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new URI(ICEBERG_URI_PREFIX + table.location());
   }
 
-  /**
-   * Validates whether the sink operation is allowed for Iceberg tables.
-   * The logic goes through a series of validation checks:
-   *  - Insert overwrite disallowed for bucketed tables
-   */
   @Override
-  public void validateSinkOperation(FileSinkDesc sinkDesc) {
-    HiveStorageHandler.super.validateSinkOperation(sinkDesc);
+  public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
+    HiveStorageHandler.super.validateSinkDesc(sinkDesc);
     if (sinkDesc.getInsertOverwrite()) {
       Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
       if (IcebergTableUtil.isBucketed(table)) {
-        throw new IllegalStateException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
+        throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
     }
   }

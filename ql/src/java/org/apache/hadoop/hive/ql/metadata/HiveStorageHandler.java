@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -356,9 +357,10 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Validates whether the sink operation is permitted for the specific storage handler, based
-   * on information contained in the sinkDesc. If the operation is not allowed, the method should throw an exception.
+   * on information contained in the sinkDesc.
    * @param sinkDesc The sink descriptor
+   * @throws SemanticException if the sink operation is not allowed
    */
-  default void validateSinkOperation(FileSinkDesc sinkDesc) {
+  default void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
   }
 }
