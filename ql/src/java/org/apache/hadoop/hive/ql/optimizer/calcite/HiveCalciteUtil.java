@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -25,6 +26,9 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
@@ -64,6 +68,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
+import org.apache.calcite.util.BitSets;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
@@ -892,6 +897,73 @@ public class HiveCalciteUtil {
       bldr.add(new RexInputRef(i, inputRel.getRowType().getFieldList().get(i).getType()));
     }
     return bldr.build();
+  }
+
+  public static SortedMap<Integer, BitSet> equivalenceFromJoinCondition(Join joinRel, int pos) {
+    int nFieldsLeft = joinRel.getLeft().getRowType().getFieldList().size();
+    int nFieldsRight = joinRel.getRight().getRowType().getFieldList().size();
+    int nSysFields = joinRel.getSystemFieldList().size();
+
+    SortedMap<Integer, BitSet> equivalence = Maps.newTreeMap();
+    for (int i = 0; i < nSysFields + nFieldsLeft + nFieldsRight; i++) {
+      equivalence.put(i, BitSets.of(i));
+    }
+
+    for (RexNode pred: RelOptUtil.conjunctions(joinRel.getCondition())) {
+      if (!(pred instanceof RexCall)) {
+        continue;
+      }
+      RexCall call = (RexCall) pred;
+      if (call.getOperator().getKind() == SqlKind.EQUALS) {
+        int lPos = pos(call.getOperands().get(0));
+        int rPos = pos(call.getOperands().get(1));
+        if (lPos != -1 && rPos != -1) {
+          equivalence.get(lPos).set(rPos);
+          equivalence.get(rPos).set(lPos);
+        }
+      }
+    }
+
+    equivalence = BitSets.closure(equivalence);
+
+    if (pos == 0) {
+      for (int i = nFieldsLeft; i <= nFieldsLeft + nFieldsRight + nSysFields; ++i) {
+        equivalence.remove(i);
+      }
+
+      for (Entry<Integer, BitSet> e : equivalence.entrySet()) {
+        List<Integer> scaledBits = e.getValue().stream()
+            .filter(b -> b < nFieldsLeft)
+            .boxed()
+            .collect(Collectors.toList());
+        BitSet scaledBitSet = BitSets.of(scaledBits);
+        equivalence.replace(e.getKey(), scaledBitSet);
+      }
+    } else {
+      SortedMap<Integer, BitSet> scaledEquivalence = new TreeMap<>();
+      for (Entry<Integer, BitSet> e : equivalence.entrySet()) {
+        // skip RHS elements
+        if (e.getKey() < nFieldsLeft) {
+          continue;
+        }
+        List<Integer> scaledBits = e.getValue().stream()
+            .filter(b -> b >= nFieldsLeft && b < nFieldsLeft + nFieldsRight)
+            .map(b -> b - nFieldsLeft)
+            .boxed()
+            .collect(Collectors.toList());
+        scaledEquivalence.put(e.getKey() - nFieldsLeft, BitSets.of(scaledBits));
+      }
+      equivalence = scaledEquivalence;
+    }
+
+    return equivalence;
+  }
+
+  private static int pos(RexNode expr) {
+    if (expr instanceof RexInputRef) {
+      return ((RexInputRef) expr).getIndex();
+    }
+    return -1;
   }
 
   public static ExprNodeDesc getExprNode(Integer inputRefIndx, RelNode inputRel,
