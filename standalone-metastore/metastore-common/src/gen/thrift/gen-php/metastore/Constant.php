@@ -54,6 +54,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $PARTITION_TRANSFORM_SPEC;
     static protected $NO_CLEANUP;
     static protected $CTAS_LEGACY_CONFIG;
+    static protected $DEFAULT_TABLE_TYPE;
 
     protected static function init_DDL_TIME()
     {
@@ -233,5 +234,10 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_CTAS_LEGACY_CONFIG()
     {
         return "create_table_as_external";
+    }
+
+    protected static function init_DEFAULT_TABLE_TYPE()
+    {
+        return "defaultTableType";
     }
 }

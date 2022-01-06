@@ -79,3 +79,5 @@ NO_CLEANUP = %q"no_cleanup"
 
 CTAS_LEGACY_CONFIG = %q"create_table_as_external"
 
+DEFAULT_TABLE_TYPE = %q"defaultTableType"
+
