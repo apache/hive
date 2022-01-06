@@ -99,6 +99,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Generic utility functions needed for Calcite based Hive CBO.
  */
@@ -891,12 +893,47 @@ public class HiveCalciteUtil {
     return bldr.build();
   }
 
-  public static ImmutableList<RexNode> getInputRef(List<Integer> inputRefs, RelNode inputRel) {
+  public static ImmutableList<RexNode> getRexInputRefs(List<Integer> inputRefs, RelNode inputRel) {
     ImmutableList.Builder<RexNode> bldr = ImmutableList.<RexNode> builder();
     for (int i : inputRefs) {
       bldr.add(new RexInputRef(i, inputRel.getRowType().getFieldList().get(i).getType()));
     }
     return bldr.build();
+  }
+
+  public static boolean isRedundantPredicate(RexBuilder rexBuilder, RexInputRef inputRef,
+      SortedMap<Integer, BitSet> equivalence, Set<String> pushedPredicates, RexNode cond) {
+    for (Integer i : BitSets.toIter(equivalence.get(inputRef.getIndex()))) {
+      if (inputRef.getIndex() == i) {
+        continue;
+      }
+      RexInputRef eqInputRef = rexBuilder.makeInputRef(inputRef.getType(), i);
+      RexReplacer rexReplacer = new RexReplacer(ImmutableMap.of(inputRef, eqInputRef));
+      RexNode eqCond = rexReplacer.apply(cond);
+      if (pushedPredicates.contains(eqCond.toString())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Replaces expressions with their equivalences. Note that we only have to
+   * look for RexInputRef.
+   */
+  private static class RexReplacer extends RexShuttle {
+    private final Map<RexInputRef, RexNode> replacementValues;
+
+    RexReplacer(Map<RexInputRef, RexNode> replacementValues) {
+      this.replacementValues = replacementValues;
+    }
+
+    @Override public RexNode visitInputRef(RexInputRef inputRef) {
+      return requireNonNull(
+          replacementValues.get(inputRef),
+          () -> "no replacement found for inputRef " + inputRef);
+    }
   }
 
   public static SortedMap<Integer, BitSet> equivalenceFromJoinCondition(Join joinRel, int pos) {
@@ -979,7 +1016,7 @@ public class HiveCalciteUtil {
   public static List<ExprNodeDesc> getExprNodes(List<Integer> inputRefs, RelNode inputRel,
       String inputTabAlias) {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
-    List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
+    List<RexNode> rexInputRefs = getRexInputRefs(inputRefs, inputRel);
     List<RexNode> exprs = inputRel instanceof Project ? ((Project) inputRel).getProjects() : null;
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
@@ -1204,27 +1241,35 @@ public class HiveCalciteUtil {
   }
 
   public static Set<Integer> getInputRefs(RexNode expr) {
-    InputRefsCollector irefColl = new InputRefsCollector(true);
+    RexInputRefsCollector irefColl = new RexInputRefsCollector(true);
     expr.accept(irefColl);
-    return irefColl.getInputRefSet();
+    return irefColl.getRexInputRefsSet().stream()
+        .map(RexInputRef::getIndex)
+        .collect(Collectors.toSet());
   }
 
-  private static class InputRefsCollector extends RexVisitorImpl<Void> {
+  public static Set<RexInputRef> getRexInputRefs(RexNode expr) {
+    RexInputRefsCollector irefColl = new RexInputRefsCollector(true);
+    expr.accept(irefColl);
+    return irefColl.getRexInputRefsSet();
+  }
 
-    private final Set<Integer> inputRefSet = new HashSet<Integer>();
+  private static class RexInputRefsCollector extends RexVisitorImpl<Void> {
 
-    private InputRefsCollector(boolean deep) {
+    private final Set<RexInputRef> rexInputRefsSet = new HashSet<>();
+
+    private RexInputRefsCollector(boolean deep) {
       super(deep);
     }
 
     @Override
     public Void visitInputRef(RexInputRef inputRef) {
-      inputRefSet.add(inputRef.getIndex());
+      rexInputRefsSet.add(inputRef);
       return null;
     }
 
-    public Set<Integer> getInputRefSet() {
-      return inputRefSet;
+    public Set<RexInputRef> getRexInputRefsSet() {
+      return rexInputRefsSet;
     }
   }
 

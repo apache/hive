@@ -56,6 +56,7 @@ import com.google.common.collect.Sets;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.equivalenceFromJoinCondition;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.isRedundantPredicate;
 
 /**
  * Responsible for adding not null rules to joins, when the declaration of a join implies that some coulmns
@@ -175,7 +176,6 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
         .map(RexInputRef::getIndex)
         .collect(Collectors.toSet());
 
-    joinExprLoop:
     for (RexNode rexNode : inputJoinExprs) {
       Set<Integer> rexNodeInputRefs = HiveCalciteUtil.getInputRefs(rexNode);
       // if we have both $0 and EXPR($0), then create only IS NOT NULL($0)
@@ -186,17 +186,9 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexNode);
 
       if (rexNode.isA(SqlKind.INPUT_REF)) {
-        RexInputRef inputRef = (RexInputRef) rexNode;
-        for (Integer i : BitSets.toIter(equivalence.get(inputRef.getIndex()))) {
-          if (inputRef.getIndex() == i) {
-            continue;
-          }
-          RexInputRef eqInputRef = rexBuilder.makeInputRef(inputRef.getType(), i);
-          RexReplacer rexReplacer = new RexReplacer(ImmutableMap.of(inputRef, eqInputRef));
-          RexNode eqCond = rexReplacer.apply(cond);
-          if (pushedPredicates.contains(eqCond.toString())) {
-            continue joinExprLoop;
-          }
+        RexInputRef rexInputRef = (RexInputRef) rexNode;
+        if (isRedundantPredicate(rexBuilder, rexInputRef, equivalence, pushedPredicates, cond)) {
+          continue;
         }
       }
       String digest = cond.toString();
@@ -205,24 +197,6 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       }
     }
     return newConditions;
-  }
-
-  /**
-   * Replaces expressions with their equivalences. Note that we only have to
-   * look for RexInputRef.
-   */
-  private static class RexReplacer extends RexShuttle {
-    private final Map<RexInputRef, RexNode> replacementValues;
-
-    RexReplacer(Map<RexInputRef, RexNode> replacementValues) {
-      this.replacementValues = replacementValues;
-    }
-
-    @Override public RexNode visitInputRef(RexInputRef inputRef) {
-      return requireNonNull(
-          replacementValues.get(inputRef),
-          () -> "no replacement found for inputRef " + inputRef);
-    }
   }
 
   private RelNode getNewChild(RelOptRuleCall call, RelNode child, RexNode newPredicate) {

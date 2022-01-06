@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
@@ -95,11 +97,11 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     RelNode rChild = join.getRight();
 
     Set<String> leftPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 0));
-    List<RexNode> leftPreds = getValidPreds(join.getCluster(), lChild,
-            leftPushedPredicates, preds.leftInferredPredicates, lChild.getRowType());
+    List<RexNode> leftPreds = getValidPreds(join, 0,
+            leftPushedPredicates, preds.leftInferredPredicates);
     Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
-    List<RexNode> rightPreds = getValidPreds(join.getCluster(), rChild,
-            rightPushedPredicates, preds.rightInferredPredicates, rChild.getRowType());
+    List<RexNode> rightPreds = getValidPreds(join, 1,
+            rightPushedPredicates, preds.rightInferredPredicates);
 
     RexNode newLeftPredicate = RexUtil.composeConjunction(rB, leftPreds, false);
     RexNode newRightPredicate = RexUtil.composeConjunction(rB, rightPreds, false);
@@ -130,8 +132,10 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     call.transformTo(newRel);
   }
 
-  private ImmutableList<RexNode> getValidPreds(RelOptCluster cluster, RelNode child,
-      Set<String> predicatesToExclude, List<RexNode> rexs, RelDataType rType) {
+  private ImmutableList<RexNode> getValidPreds(Join join, int pos,
+      Set<String> predicatesToExclude, List<RexNode> rexs) {
+    RelNode child = pos == 0 ? join.getLeft() : join.getRight();
+    RelDataType rType = child.getRowType();
     InputRefValidator validator = new InputRefValidator(rType.getFieldList());
     List<RexNode> valids = new ArrayList<RexNode>(rexs.size());
     for (RexNode rex : rexs) {
@@ -147,7 +151,24 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     // and ii) those that were already in the subtree rooted at child
     ImmutableList<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude,
             child, valids);
-    return toPush;
+
+    SortedMap<Integer, BitSet> equivalence =
+        HiveCalciteUtil.equivalenceFromJoinCondition(join, pos);
+
+    ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
+
+    for (RexNode pred : toPush) {
+      Set<RexInputRef> inputRefs = HiveCalciteUtil.getRexInputRefs(pred);
+      if (inputRefs.size() != 1) {
+        continue;
+      }
+      if(!HiveCalciteUtil.isRedundantPredicate(join.getCluster().getRexBuilder(),
+          inputRefs.iterator().next(), equivalence, predicatesToExclude, pred)) {
+        builder.add(pred);
+      }
+    }
+
+    return builder.build();
   }
 
   private RexNode getTypeSafePred(RelOptCluster cluster, RexNode rex, RelDataType rType) {
