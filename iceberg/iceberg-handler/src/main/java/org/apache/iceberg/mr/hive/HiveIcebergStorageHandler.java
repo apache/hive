@@ -370,6 +370,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new URI(ICEBERG_URI_PREFIX + table.location());
   }
 
+  /**
+   * Validates whether the sink operation is allowed for Iceberg tables.
+   * The logic goes through a series of validation checks:
+   *  - Insert overwrite disallowed for bucketed tables
+   */
   @Override
   public void validateSinkOperation(FileSinkDesc sinkDesc) {
     HiveStorageHandler.super.validateSinkOperation(sinkDesc);

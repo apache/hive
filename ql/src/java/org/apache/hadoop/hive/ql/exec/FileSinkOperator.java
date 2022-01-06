@@ -1617,7 +1617,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   @Override
   public void augmentPlan() {
-    PlanUtils.configureOutputJobPropertiesForStorageHandler(getConf().getTableInfo());
+    PlanUtils.configureOutputJobPropertiesForStorageHandler(
+        getConf().getTableInfo());
   }
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
