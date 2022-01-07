@@ -1819,6 +1819,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           new HivePreFilteringRule(maxCNFNodeCount));
 
+      generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
+          HiveJoinAddNotNullRule.INSTANCE_JOIN, HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN,
+          HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
+
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
@@ -1862,32 +1866,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE);
       rules.add(HiveUnionPullUpConstantsRule.INSTANCE);
       rules.add(HiveAggregatePullUpConstantsRule.INSTANCE);
-      generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          rules.toArray(new RelOptRule[0]));
-
-
-      rules.clear();
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
-        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING);
-      } else {
-        rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
-      }
-      rules.add(HiveProjectFilterPullUpConstantsRule.INSTANCE);
-      rules.add(HiveFilterJoinRule.JOIN);
-      rules.add(HiveFilterJoinRule.FILTER_ON_JOIN);
-      rules.add(HiveFilterMergeRule.INSTANCE);
-      rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
-      rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
-      rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
-      rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
-      rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
-      rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
-      rules.add(HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
-        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
-      }
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
           rules.toArray(new RelOptRule[0]));
 
