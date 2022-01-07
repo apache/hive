@@ -1759,7 +1759,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
-      final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
@@ -1844,11 +1843,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
-        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
-      }
       rules.add(HiveProjectJoinTransposeRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
@@ -2201,21 +2195,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
-      double factor = conf.getFloatVar(ConfVars.HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR);
+      final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
+      final double factor = conf.getFloatVar(ConfVars.HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR);
       if (factor > 0.0) {
         generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
             new HiveCardinalityPreservingJoinRule(factor));
       }
 
       // 1. Run other optimizations that do not need stats
+      List<RelOptRule> rules = new ArrayList<>();
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
+        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
+      }
+      rules.add(ProjectRemoveRule.Config.DEFAULT.toRule());
+      rules.add(HiveUnionMergeRule.INSTANCE);
+      rules.add(new HiveUnionSimpleSelectsToInlineTableRule(dummyTableScan));
+      rules.add(HiveAggregateProjectMergeRule.INSTANCE);
+      rules.add(HiveProjectMergeRule.INSTANCE_NO_FORCE);
+      rules.add(HiveJoinCommuteRule.INSTANCE);
+      rules.add(new HiveAggregateSortLimitRule(conf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
+
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-          ProjectRemoveRule.Config.DEFAULT.toRule(),
-          HiveUnionMergeRule.INSTANCE,
-          new HiveUnionSimpleSelectsToInlineTableRule(dummyTableScan),
-          HiveAggregateProjectMergeRule.INSTANCE,
-          HiveProjectMergeRule.INSTANCE_NO_FORCE,
-          HiveJoinCommuteRule.INSTANCE,
-          new HiveAggregateSortLimitRule(conf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
+          rules.toArray(new RelOptRule[0]));
 
       // 2. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
@@ -2271,7 +2274,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 8. Apply JDBC transformation rules
       if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
-        List<RelOptRule> rules = Lists.newArrayList();
+        rules = Lists.newArrayList();
         rules.add(JDBCExpandExpressionsRule.FILTER_INSTANCE);
         rules.add(JDBCExpandExpressionsRule.JOIN_INSTANCE);
         rules.add(JDBCExpandExpressionsRule.PROJECT_INSTANCE);
