@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -167,6 +167,19 @@
   </properties>
 
   <repositories>
+    <repository>
+      <id>avro-util-repository</id>
+      <name>datanucleus maven repository</name>
+      <url>https://linkedin.jfrog.io/artifactory/avro-util</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
