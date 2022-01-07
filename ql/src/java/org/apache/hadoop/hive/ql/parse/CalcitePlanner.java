@@ -1819,10 +1819,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           new HivePreFilteringRule(maxCNFNodeCount));
 
-      generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          HiveJoinAddNotNullRule.INSTANCE_JOIN, HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN,
-          HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
-
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
@@ -1858,16 +1854,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
         rules.add(HiveJoinConstraintsRule.INSTANCE);
       }
-      rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
-      rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
-      rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_ANTIJOIN);
       rules.add(HiveSortMergeRule.INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE);
       rules.add(HiveUnionPullUpConstantsRule.INSTANCE);
       rules.add(HiveAggregatePullUpConstantsRule.INSTANCE);
+
+      List<RelOptRule> rules2 = new ArrayList<>(rules);
+      rules2.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
+      rules2.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
+      rules2.add(HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          rules.toArray(new RelOptRule[0]));
+          rules2.toArray(new RelOptRule[0]));
+
+      rules2 = new ArrayList<>(rules);
+      rules2.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
+      rules2.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
+      rules2.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_ANTIJOIN);
+      generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
+          rules2.toArray(new RelOptRule[0]));
 
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.
