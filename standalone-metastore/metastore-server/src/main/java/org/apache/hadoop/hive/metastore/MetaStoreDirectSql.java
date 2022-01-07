@@ -2682,7 +2682,7 @@ class MetaStoreDirectSql {
     dropDanglingSerDeInfos(serdeIdSet);
     Deadline.checkTimeout();
 
-    dropDanglingColumnDescriptors(Arrays.asList(columnDescriptorIdSet.toArray()));
+    dropDanglingColumnDescriptors(columnDescriptorIdSet);
   }
 
   /**
@@ -2809,7 +2809,7 @@ class MetaStoreDirectSql {
    * @throws MetaException If there is an SQL exception during the execution it converted to
    * MetaException
    */
-  private void dropDanglingColumnDescriptors(List<Long> columnDescriptorIdList)
+  private void dropDanglingColumnDescriptors(Collection<Long> columnDescriptorIdList)
       throws MetaException {
     if (columnDescriptorIdList.isEmpty()) {
       return;
