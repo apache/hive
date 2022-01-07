@@ -49,7 +49,7 @@ public class MetaStoreSchemaInfo {
   private static final Map<String, String> EQUIVALENT_VERSIONS =
       ImmutableMap.of("0.13.1", "0.13.0",
           "1.0.0", "0.14.0", "1.0.1", "1.0.0",
-          "1.0.2", "1.0.0");
+          "1.0.1-avro", "1.0.0");
 
   public MetaStoreSchemaInfo(String hiveHome, HiveConf hiveConf, String dbType) throws HiveMetaException {
     this.hiveHome = hiveHome;

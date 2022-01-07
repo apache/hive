@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.1-avro</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
