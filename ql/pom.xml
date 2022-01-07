@@ -188,7 +188,7 @@
       <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
-          in hive's use of datanucleus.
+          in hive's use of datanucleus. 
         -->
         <exclusion>
           <groupId>org.hsqldb</groupId>
@@ -199,14 +199,14 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency>   
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-avatica</artifactId>
       <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
-          in hive's use of datanucleus.
+          in hive's use of datanucleus. 
         -->
         <exclusion>
           <groupId>org.hsqldb</groupId>

@@ -203,7 +203,7 @@
                   <exclude>net.sf.opencsv:*</exclude>
                   <exclude>org.antlr:*</exclude>
                 </excludes>
-              </artifactSet>
+              </artifactSet>      
             </configuration>
           </execution>
         </executions>
