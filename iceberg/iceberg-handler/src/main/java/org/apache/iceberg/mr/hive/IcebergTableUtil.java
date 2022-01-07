@@ -194,4 +194,8 @@ public class IcebergTableUtil {
 
     updatePartitionSpec.commit();
   }
+
+  public static boolean isBucketed(Table table) {
+    return table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
+  }
 }

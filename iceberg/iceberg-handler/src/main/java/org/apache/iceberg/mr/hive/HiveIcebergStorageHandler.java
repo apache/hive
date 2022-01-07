@@ -48,11 +48,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -367,6 +369,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public URI getURIForAuth(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws URISyntaxException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable);
     return new URI(ICEBERG_URI_PREFIX + table.location());
+  }
+
+  @Override
+  public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
+    HiveStorageHandler.super.validateSinkDesc(sinkDesc);
+    if (sinkDesc.getInsertOverwrite()) {
+      Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
+      if (IcebergTableUtil.isBucketed(table)) {
+        throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
+      }
+    }
   }
 
   private void setCommonJobConf(JobConf jobConf) {
