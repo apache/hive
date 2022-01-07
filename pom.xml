@@ -169,7 +169,7 @@
   <repositories>
     <repository>
       <id>avro-util-repository</id>
-      <name>datanucleus maven repository</name>
+      <name>Avro util repository</name>
       <url>https://linkedin.jfrog.io/artifactory/avro-util</url>
       <layout>default</layout>
       <releases>
