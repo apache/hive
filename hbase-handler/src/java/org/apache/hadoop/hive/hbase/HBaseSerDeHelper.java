@@ -58,7 +58,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Autogenerates the columns from the given serialization class
-   *
+   * 
    * @param tbl the hive table properties
    * @param columnsMapping the hbase columns mapping determining hbase column families and
    *          qualifiers
@@ -120,7 +120,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Autogenerates the column types from the given serialization class
-   *
+   * 
    * @param tbl the hive table properties
    * @param columnsMapping the hbase columns mapping determining hbase column families and
    *          qualifiers
@@ -374,7 +374,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Auto-generates the key struct for composite keys
-   *
+   * 
    * @param compositeKeyParts map of composite key part name to its type. Usually this would be
    *          provided by the custom implementation of {@link HBaseCompositeKey composite key}
    * @param sb StringBuilder object to construct the struct
@@ -393,7 +393,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Auto-generates the key struct for composite keys
-   *
+   * 
    * @param compositeKeyTypes comma separated list of composite key types in order
    * @param sb StringBuilder object to construct the struct
    * */
@@ -416,7 +416,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Auto-generates the column struct
-   *
+   * 
    * @param serType serialization type
    * @param serClassName serialization class name
    * @param schemaLiteral schema string
@@ -442,7 +442,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Auto-generate the avro struct from class
-   *
+   * 
    * @param serClassName serialization class for avro struct
    * @param sb StringBuilder to hold the generated struct
    * @throws SerDeException if something goes wrong while generating the struct
@@ -463,7 +463,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Auto-generate the avro struct from schema
-   *
+   * 
    * @param schemaLiteral schema for the avro struct as string
    * @param sb StringBuilder to hold the generated struct
    * @throws SerDeException if something goes wrong while generating the struct
@@ -477,7 +477,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Auto-generate the avro struct from schema
-   *
+   * 
    * @param schema schema for the avro struct
    * @param sb StringBuilder to hold the generated struct
    * @throws SerDeException if something goes wrong while generating the struct
@@ -508,7 +508,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Trims by removing the trailing "," if any
-   *
+   * 
    * @param sb StringBuilder to trim
    * @return StringBuilder trimmed StringBuilder
    * */
@@ -529,7 +529,7 @@ public class HBaseSerDeHelper {
 
   /**
    * Return the types for the composite key.
-   *
+   * 
    * @param tbl Properties for the table
    * @return a comma-separated list of composite key types
    * @throws SerDeException if something goes wrong while getting the composite key parts
