@@ -40,6 +40,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataTableScan;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
@@ -175,8 +176,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
     }
 
-    // if enabled, do not serialize FileIO hadoop config to decrease split size
-    HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, table);
+    // If enabled, do not serialize FileIO hadoop config to decrease split size
+    // However, skip serialization for metatable queries, because some metadata tasks cache the IO object and we
+    // wouldn't be able to inject the config into these tasks on the deser-side, unlike for standard data file queries
+    if (scan instanceof DataTableScan) {
+      HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, table);
+    }
 
     return splits;
   }
