@@ -177,8 +177,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     // If enabled, do not serialize FileIO hadoop config to decrease split size
-    // However, skip serialization for metatable queries, because some metadata tasks cache the IO object and we
-    // wouldn't be able to inject the config into these tasks on the deser-side, unlike for standard data file queries
+    // However, do not skip serialization for metatable queries, because some metadata tasks cache the IO object and we
+    // wouldn't be able to inject the config into these tasks on the deserializer-side, unlike for standard queries
     if (scan instanceof DataTableScan) {
       HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, table);
     }
