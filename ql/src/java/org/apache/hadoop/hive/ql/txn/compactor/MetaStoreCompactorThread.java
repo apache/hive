@@ -116,13 +116,6 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
     return resolveTable(ci);
   }
 
-  protected Partition resolvePartitionAndCache(CompactionInfo ci) throws MetaException {
-    if (metadataCache.isPresent()) {
-      return metadataCache.get().resolvePartition(ci, () -> resolvePartition(ci));
-    }
-    return resolvePartition(ci);
-  }
-
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {
     if (cycleUpdaterExecutorService == null) {
       if (updateInterval > 0) {

@@ -165,7 +165,7 @@ public class Initiator extends MetaStoreCompactorThread {
           for (CompactionInfo ci : potentials) {
             try {
               Table t = resolveTableAndCache(ci);
-              Partition p = resolvePartitionAndCache(ci);
+              Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
                     ", assuming it has been dropped and moving on.");

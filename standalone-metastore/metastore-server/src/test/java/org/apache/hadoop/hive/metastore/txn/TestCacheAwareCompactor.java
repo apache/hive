@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
@@ -74,30 +73,6 @@ public class TestCacheAwareCompactor {
   }
 
   @Test
-  public void testPartitionCache() {
-    Configuration conf = new Configuration();
-    CacheAwareCompactor.CompactorMetadataCache cache =
-      CacheAwareCompactor.CompactorMetadataCache.createIfEnabled(conf);
-    Partition part = Mockito.mock(Partition.class);
-    CompactionInfo ci = new CompactionInfo("testdb", "testtbl", "testpart", null);
-    Partition res = cache.resolvePartition(ci, () -> part);
-    Assert.assertEquals(part, res);
-    res = cache.resolvePartition(ci, () -> new Partition());
-    // It should return the cached value
-    Assert.assertEquals(part, res);
-  }
-
-  @Test
-  public void testNoPartitionNameIsSet() {
-    Configuration conf = new Configuration();
-    CacheAwareCompactor.CompactorMetadataCache cache =
-      CacheAwareCompactor.CompactorMetadataCache.createIfEnabled(conf);
-    CompactionInfo ci = new CompactionInfo("testdb", "testtbl", null, null);
-    Partition res = cache.resolvePartition(ci, () -> new Partition());
-    Assert.assertNull(res);
-  }
-
-  @Test
   public void testTableCacheTimeout() throws Exception {
     CacheAwareCompactor.CompactorMetadataCache cache =
       new CacheAwareCompactor.CompactorMetadataCache(1, TimeUnit.MILLISECONDS);
@@ -109,22 +84,6 @@ public class TestCacheAwareCompactor {
 
     Table recent = Mockito.mock(Table.class);
     res = cache.resolveTable(ci, () -> recent);
-    // It should return the recent value
-    Assert.assertEquals(recent, res);
-  }
-
-  @Test
-  public void testPartitionCacheTimeout() throws Exception {
-    CacheAwareCompactor.CompactorMetadataCache cache =
-      new CacheAwareCompactor.CompactorMetadataCache(1, TimeUnit.MILLISECONDS);
-    Partition old = Mockito.mock(Partition.class);
-    CompactionInfo ci = new CompactionInfo("testdb", "testtbl", "testpart", null);
-    Partition res = cache.resolvePartition(ci, () -> old);
-    Assert.assertEquals(old, res);
-    Thread.sleep(2);
-
-    Partition recent = Mockito.mock(Partition.class);
-    res = cache.resolvePartition(ci, () -> recent);
     // It should return the recent value
     Assert.assertEquals(recent, res);
   }

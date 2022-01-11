@@ -22,7 +22,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
@@ -43,12 +42,10 @@ public interface CacheAwareCompactor {
   class CompactorMetadataCache {
 
     private final Cache<String, Table> tableCache;
-    private final Cache<String, Partition> partitionCache;
 
     @VisibleForTesting
     public CompactorMetadataCache(long timeout, TimeUnit unit) {
       this.tableCache = CacheBuilder.newBuilder().expireAfterAccess(timeout, unit).softValues().build();
-      this.partitionCache = CacheBuilder.newBuilder().expireAfterAccess(timeout, unit).softValues().build();
     }
 
     public static CompactorMetadataCache createIfEnabled(Configuration conf) {
@@ -63,17 +60,6 @@ public interface CacheAwareCompactor {
     public Table resolveTable(CompactionInfo ci, Callable<Table> loader) {
       try {
         return tableCache.get(ci.getFullTableName(), loader);
-      } catch (ExecutionException e) {
-        throw new UncheckedExecutionException(e);
-      }
-    }
-
-    public Partition resolvePartition(CompactionInfo ci, Callable<Partition> loader) {
-      try {
-        if (ci.partName == null) {
-          return null;
-        }
-        return partitionCache.get(ci.getFullPartitionName(), loader);
       } catch (ExecutionException e) {
         throw new UncheckedExecutionException(e);
       }
