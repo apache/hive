@@ -56,6 +56,6 @@ public class TSetIpAddressProcessor<I extends Iface> extends ThriftHiveMetastore
   }
 
   protected void setIpAddress(final Socket inSocket) {
-    HMSHandlerContextMap.setLocalIpAddress(inSocket.getInetAddress().getHostAddress());
+    HMSHandlerContext.setIpAddress(inSocket.getInetAddress().getHostAddress());
   }
 }
