@@ -3263,7 +3263,7 @@ public class HiveConf extends Configuration {
      * config instead which is honoured by both the MR and Query based compaction.
      */
     @Deprecated
-    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", false, "If set to true MAJOR compaction " +
         "will gather stats if there are stats already associated with the table/partition.\n" +
         "Turn this off to save some resources and the stats are not used anyway.\n" +
         "Works only for MR based compaction, CRUD based compaction uses hive.stats.autogather."),
