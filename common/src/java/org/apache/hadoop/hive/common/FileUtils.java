@@ -679,10 +679,10 @@ public final class FileUtils {
         return false;
       }
 
-      RemoteIterator<FileStatus> fileIterator = srcFS.listStatusIterator(src);
-      while(fileIterator.hasNext()) {
-        FileStatus file = fileIterator.next();
-        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs, conf);
+      FileStatus[] fileStatus = srcFS.listStatus(src);
+      for (FileStatus file : fileStatus) {
+        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs,
+            conf);
       }
       if (preserveXAttrs) {
         preserveXAttr(srcFS, src, dstFS, dst);
