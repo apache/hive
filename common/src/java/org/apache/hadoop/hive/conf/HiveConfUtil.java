@@ -258,7 +258,7 @@ public class HiveConfUtil {
 
   /**
    * Sets a "keyName=newKeyValue" pair to a jobConf to a given property.
-   * If the property is empty, is simply inserts keyName=newKeyValue,
+   * If the property is empty, it simply inserts keyName=newKeyValue,
    * if it's already filled, it takes care of appending or replacing it in the currently present value.
    * The property in jobConf contains a value like: "key1=value1,key2=value2".
    * @param jobConf
