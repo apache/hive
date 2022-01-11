@@ -17,7 +17,28 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.collect.Lists;
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -40,9 +61,9 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -67,25 +88,8 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.google.common.collect.Lists;
 
-import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
-import static org.apache.hadoop.hive.ql.TestTxnCommands2.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Compaction related unit tests.
@@ -374,12 +378,23 @@ public class TestCompactor {
 
     //Check basic stats are collected
     org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
-    Map<String, String> parameters = Hive.get().getPartitions(hiveTable).get(0).getParameters();
+    List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = Hive.get().getPartitions(hiveTable);
+    Map<String, String> parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=0"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
     Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
 
-    parameters = Hive.get().getPartitions(hiveTable).get(1).getParameters();
+    parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=1"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
     Assert.assertEquals("The total table size is differing from the expected", "1442", parameters.get("totalSize"));
@@ -398,13 +413,22 @@ public class TestCompactor {
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
     //Check basic stats are updated for partition bkt=0, but not updated for partition bkt=1
-    hiveTable = Hive.get().getTable(tblName);
-    parameters = Hive.get().getPartitions(hiveTable).get(0).getParameters();
+    parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=0"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
     Assert.assertEquals("The total table size is differing from the expected", "776", parameters.get("totalSize"));
 
-    parameters = Hive.get().getPartitions(hiveTable).get(1).getParameters();
+    parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=1"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
     Assert.assertEquals("The total table size is differing from the expected", "1442", parameters.get("totalSize"));
