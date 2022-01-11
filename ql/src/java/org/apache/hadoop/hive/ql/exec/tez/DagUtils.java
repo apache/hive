@@ -1304,7 +1304,7 @@ public class DagUtils {
       if (uri.endsWith(".jar")) {
         return uri;
       }
-    } catch (URISyntaxException ignored) {}
+    } catch (Exception ignored) {}
     //Fall back to hive config, if the uri could not get, or it does not point to a .jar file
     String jar = configuration.get(ConfVars.HIVEJAR.varname);
     if (!StringUtils.isBlank(jar)) {

@@ -95,6 +95,9 @@ import static org.junit.Assert.assertEquals;
 public class TestCompactor {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestCompactor.class);
+  private static final Pattern regexNumFiles = Pattern.compile("numFiles=([0-9]+),");
+  private static final Pattern regexNumRows = Pattern.compile("numRows=([0-9]+),");
+  private static final Pattern regexTotalSize = Pattern.compile("totalSize=([0-9]+),");
   private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("java.io.tmpdir") +
     File.separator + TestCompactor.class.getCanonicalName() + "-" + System.currentTimeMillis() + "_" +
     salt.getAndIncrement());
@@ -331,10 +334,9 @@ public class TestCompactor {
   }
 
   /**
-   * After each major compaction, stats need to be updated on each column of the
-   * table/partition which previously had stats.
-   * 1. create a bucketed ORC backed table (Orc is currently required by ACID)
-   * 2. populate 2 partitions with data
+   * After each major compaction, stats need to be updated on the table
+   * 1. create an ORC backed table (Orc is currently required by ACID)
+   * 2. populate with data
    * 3. compute stats
    * 4. Trigger major compaction (which should update stats)
    * 5. check that stats have been updated
@@ -344,61 +346,43 @@ public class TestCompactor {
    *                   4. add a test with sorted table?
    */
   @Test
-  public void testStatsAfterCompactionPartTbl() throws Exception {
+  public void testStatsAfterCompactionTbl() throws Exception {
     //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
     String dbName = "default";
     String tblName = "compaction_test";
-    String tblNameStg = tblName + "_stg";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
-    executeStatementOnDriver("drop table if exists " + tblNameStg, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
-      " PARTITIONED BY(bkt INT)" +
       " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("CREATE EXTERNAL TABLE " + tblNameStg + "(a INT, b STRING)" +
-      " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n'" +
-      " STORED AS TEXTFILE" +
-      " LOCATION '" + stagingFolder.newFolder().toURI().getPath() + "'", driver);
-
-    executeStatementOnDriver("load data local inpath '" + BASIC_FILE_NAME +
-      "' overwrite into table " + tblNameStg, driver);
-    execSelectAndDumpData("select * from " + tblNameStg, driver, "Dumping data for " +
-      tblNameStg + " after load:");
-    executeStatementOnDriver("FROM " + tblNameStg +
-      " INSERT INTO TABLE " + tblName + " PARTITION(bkt=0) " +
-      "SELECT a, b where a < 2", driver);
-    executeStatementOnDriver("FROM " + tblNameStg +
-      " INSERT INTO TABLE " + tblName + " PARTITION(bkt=1) " +
-      "SELECT a, b where a >= 2", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+      " values(55, 'London')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+      " values(56, 'Paris')", driver);
     execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
       tblName + " after load:");
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     //compute stats before compaction
-    CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);
-    Table table = msClient.getTable("default", tblName);
-    Worker.StatsUpdater.gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
-    ci = new CompactionInfo("default", tblName, "bkt=1", CompactionType.MAJOR);
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
+    Table table = msClient.getTable(dbName, tblName);
     Worker.StatsUpdater.gatherStats(ci, conf,
             System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
-    executeStatementOnDriver("describe extended " + tblName, driver);
+    executeStatementOnDriver("describe extended default." + tblName, driver);
     List res = new ArrayList();
     driver.getFetchTask().fetch(res);
-    String tableDescription = res.get(8).toString();
+    String tableDescription = res.get(3).toString();
 
-    Matcher numFiles = Pattern.compile("numFiles=([0-9]+),").matcher(tableDescription);
-    Matcher numRows = Pattern.compile("numRows=([0-9]+),").matcher(tableDescription);
-    Matcher totalSize = Pattern.compile("totalSize=([0-9]+),").matcher(tableDescription);
+    Matcher numFiles = regexNumFiles.matcher(tableDescription);
+    Matcher numRows = regexNumRows.matcher(tableDescription);
+    Matcher totalSize = regexTotalSize.matcher(tableDescription);
     numFiles.find();
     numRows.find();
     totalSize.find();
 
-    Assert.assertEquals("The number of files is differing from the expected", "3", numFiles.group(1));
-    Assert.assertEquals("The number of rows is differing from the expected", "9", numRows.group(1));
-    Assert.assertEquals("The total table size is differing from the expected", "2195", totalSize.group(1));
-
+    Assert.assertEquals("The number of files is differing from the expected", "2", numFiles.group(1));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", numRows.group(1));
+    Assert.assertEquals("The total table size is differing from the expected", "1434", totalSize.group(1));
 
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -411,21 +395,21 @@ public class TestCompactor {
     }
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
-    executeStatementOnDriver("describe extended " + tblName, driver);
+    executeStatementOnDriver("describe extended default." + tblName, driver);
     res.clear();
     driver.getFetchTask().fetch(res);
-    tableDescription = res.get(8).toString();
+    tableDescription = res.get(3).toString();
 
-    numFiles = Pattern.compile("numFiles=([0-9]+),").matcher(tableDescription);
-    numRows = Pattern.compile("numRows=([0-9]+),").matcher(tableDescription);
-    totalSize = Pattern.compile("totalSize=([0-9]+),").matcher(tableDescription);
+    numFiles = regexNumFiles.matcher(tableDescription);
+    numRows = regexNumRows.matcher(tableDescription);
+    totalSize = regexTotalSize.matcher(tableDescription);
     numFiles.find();
     numRows.find();
     totalSize.find();
 
-    Assert.assertEquals("The number of files is differing from the expected", "3", numFiles.group(1));
-    Assert.assertEquals("The number of rows is differing from the expected", "9", numRows.group(1));
-    Assert.assertEquals("The total table size is differing from the expected", "2195", totalSize.group(1));
+    Assert.assertEquals("The number of files is differing from the expected", "1", numFiles.group(1));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", numRows.group(1));
+    Assert.assertEquals("The total table size is differing from the expected", "776", totalSize.group(1));
   }
 
   @Test

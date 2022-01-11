@@ -87,7 +87,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private String workerName;
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
-  //  ,mdon't go through Initiator for user initiated compactions)
+  //  don't go through Initiator for user initiated compactions)
   @Override
   public void run() {
     LOG.info("Starting Worker thread");
@@ -330,6 +330,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     String workerMetric = null;
 
     CompactionInfo ci = null;
+    boolean computeStats = false;
+    Table t1 = null;
     try (CompactionTxn compactionTxn = new CompactionTxn()) {
       if (msc == null) {
         try {
@@ -361,7 +363,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
 
       // Find the table we will be working with.
-      Table t1;
       try {
         t1 = resolveTable(ci);
         if (t1 == null) {
@@ -472,7 +473,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         task (currently we're using Tez split grouping).
         */
         QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
-        boolean computeStats = (queryCompactor == null && (collectMrStats || collectGenericStats)) || collectGenericStats;
+        computeStats = (queryCompactor == null && collectMrStats) || collectGenericStats;
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " +
                 compactionTxn + " with compute stats set to " + computeStats);
@@ -490,11 +491,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             + compactionTxn + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
         compactionTxn.wasSuccessful();
-
-        if (computeStats) {
-          StatsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner(),
-                  CompactorUtil.getCompactorJobQueueName(conf, ci, t));
-        }
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -532,6 +528,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (workerMetric != null && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
+    }
+    if (computeStats) {
+      StatsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
+              CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
     }
     return true;
   }
