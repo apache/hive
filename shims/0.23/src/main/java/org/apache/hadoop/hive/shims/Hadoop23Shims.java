@@ -277,6 +277,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
   }
 
+  private boolean checkFileSystemXAttrSupport(FileSystem fs) throws IOException {
+    try {
+      fs.getXAttrs(new Path(Path.SEPARATOR));
+      return true;
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("XAttr won't be preserved since it is not supported for file system: " + fs.getUri());
+      return false;
+    }
+  }
+
   /**
    * Returns a shim to wrap MiniMrCluster
    */
@@ -1100,6 +1110,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
+
   List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
     // -update and -delete are mandatory options for directory copy to work.
     List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
@@ -1118,7 +1130,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
                                                     FileSystem sourceFs) throws IOException {
     List<String> params = new ArrayList<String>();
     boolean needToAddPreserveOption = true;
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()){
+    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
       String distCpOption = entry.getKey();
       String distCpVal = entry.getValue();
       if (distCpOption.startsWith("p")) {
@@ -1130,8 +1142,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
     if (needToAddPreserveOption) {
-      params.add((Utils.checkFileSystemXAttrSupport(dstFs)
-              && Utils.checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
+      params.add((checkFileSystemXAttrSupport(dstFs) && checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
     }
     if (!params.contains("-update")) {
       params.add("-update");
