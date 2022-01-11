@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.Retry;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -81,8 +82,6 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.*;
@@ -95,9 +94,6 @@ import static org.junit.Assert.assertEquals;
 public class TestCompactor {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestCompactor.class);
-  private static final Pattern regexNumFiles = Pattern.compile("numFiles=([0-9]+),");
-  private static final Pattern regexNumRows = Pattern.compile("numRows=([0-9]+),");
-  private static final Pattern regexTotalSize = Pattern.compile("totalSize=([0-9]+),");
   private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("java.io.tmpdir") +
     File.separator + TestCompactor.class.getCanonicalName() + "-" + System.currentTimeMillis() + "_" +
     salt.getAndIncrement());
@@ -335,6 +331,87 @@ public class TestCompactor {
 
   /**
    * After each major compaction, stats need to be updated on the table
+   * 1. create a partitioned ORC backed table (Orc is currently required by ACID)
+   * 2. populate with data
+   * 3. compute stats
+   * 4. Trigger major compaction on one of the partitions (which should update stats)
+   * 5. check that stats have been updated for that partition only
+   *
+   * @throws Exception todo:
+   *                   4. add a test with sorted table?
+   */
+  @Test
+  public void testStatsAfterCompactionPartTbl() throws Exception {
+    //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
+    String dbName = "default";
+    String tblName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " PARTITIONED BY(bkt INT)" +
+      " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=0)" +
+      " values(55, 'London')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=0)" +
+      " values(56, 'Paris')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+      " values(57, 'Budapest')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(58, 'Milano')", driver);
+    execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
+      tblName + " after load:");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    //compute stats before compaction
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=0", CompactionType.MAJOR);
+    Worker.StatsUpdater.gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+    ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MAJOR);
+    Worker.StatsUpdater.gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+
+    //Check basic stats are collected
+    org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
+    Map<String, String> parameters = Hive.get().getPartitions(hiveTable).get(0).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
+
+    parameters = Hive.get().getPartitions(hiveTable).get(1).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "1442", parameters.get("totalSize"));
+
+    //Do a major compaction
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    rqst.setPartitionname("bkt=0");
+    txnHandler.compact(rqst);
+    runWorker(conf);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (1 != compacts.size()) {
+      Assert.fail("Expecting 1 file and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    //Check basic stats are updated for partition bkt=0, but not updated for partition bkt=1
+    hiveTable = Hive.get().getTable(tblName);
+    parameters = Hive.get().getPartitions(hiveTable).get(0).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "776", parameters.get("totalSize"));
+
+    parameters = Hive.get().getPartitions(hiveTable).get(1).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "1442", parameters.get("totalSize"));
+  }
+
+  /**
+   * After each major compaction, stats need to be updated on the table
    * 1. create an ORC backed table (Orc is currently required by ACID)
    * 2. populate with data
    * 3. compute stats
@@ -342,7 +419,6 @@ public class TestCompactor {
    * 5. check that stats have been updated
    *
    * @throws Exception todo:
-   *                   2. add non-partitioned test
    *                   4. add a test with sorted table?
    */
   @Test
@@ -352,38 +428,30 @@ public class TestCompactor {
     String tblName = "compaction_test";
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
-      " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
-      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+            " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
+            " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("INSERT INTO TABLE " + tblName +
-      " values(55, 'London')", driver);
+            " values(55, 'London')", driver);
     executeStatementOnDriver("INSERT INTO TABLE " + tblName +
-      " values(56, 'Paris')", driver);
+            " values(56, 'Paris')", driver);
     execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
-      tblName + " after load:");
+            tblName + " after load:");
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    Table table = msClient.getTable(dbName, tblName);
     Worker.StatsUpdater.gatherStats(ci, conf,
             System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
-    executeStatementOnDriver("describe extended default." + tblName, driver);
-    List res = new ArrayList();
-    driver.getFetchTask().fetch(res);
-    String tableDescription = res.get(3).toString();
+    //Check basic stats are collected
+    Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
 
-    Matcher numFiles = regexNumFiles.matcher(tableDescription);
-    Matcher numRows = regexNumRows.matcher(tableDescription);
-    Matcher totalSize = regexTotalSize.matcher(tableDescription);
-    numFiles.find();
-    numRows.find();
-    totalSize.find();
-
-    Assert.assertEquals("The number of files is differing from the expected", "2", numFiles.group(1));
-    Assert.assertEquals("The number of rows is differing from the expected", "2", numRows.group(1));
-    Assert.assertEquals("The total table size is differing from the expected", "1434", totalSize.group(1));
-
+    //Do a major compaction
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
     txnHandler.compact(rqst);
     runWorker(conf);
@@ -395,21 +463,11 @@ public class TestCompactor {
     }
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
-    executeStatementOnDriver("describe extended default." + tblName, driver);
-    res.clear();
-    driver.getFetchTask().fetch(res);
-    tableDescription = res.get(3).toString();
-
-    numFiles = regexNumFiles.matcher(tableDescription);
-    numRows = regexNumRows.matcher(tableDescription);
-    totalSize = regexTotalSize.matcher(tableDescription);
-    numFiles.find();
-    numRows.find();
-    totalSize.find();
-
-    Assert.assertEquals("The number of files is differing from the expected", "1", numFiles.group(1));
-    Assert.assertEquals("The number of rows is differing from the expected", "2", numRows.group(1));
-    Assert.assertEquals("The total table size is differing from the expected", "776", totalSize.group(1));
+    //Check basic stats are updated
+    parameters = Hive.get().getTable(tblName).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "776", parameters.get("totalSize"));
   }
 
   @Test
