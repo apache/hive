@@ -157,18 +157,20 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
         id.getMasterKeyId());
       reloadKeys();
     }
+    long res;
+    DelegationTokenInformation newTokenInfo;
     // reuse super renewal logic
     synchronized (this) {
-      super.currentTokens.put(id,  tokenInfo);
+      super.currentTokens.put(id, tokenInfo);
       try {
-        long res = super.renewToken(token, renewer);
-        this.tokenStore.removeToken(id);
-        this.tokenStore.addToken(id, super.currentTokens.get(id));
-        return res;
+        res = super.renewToken(token, renewer);
       } finally {
-        super.currentTokens.remove(id);
+        newTokenInfo = super.currentTokens.remove(id);
       }
     }
+    this.tokenStore.removeToken(id);
+    this.tokenStore.addToken(id, newTokenInfo);
+    return res;
   }
 
   public static String encodeWritable(Writable key) throws IOException {
