@@ -2681,7 +2681,7 @@ public class Hive {
           }
         }
         if (filesForStats != null) {
-          MetaStoreServerUtils.populateQuickStats(filesForStats, newTPart.getParameters());
+          MetaStoreServerUtils.populateQuickStats(filesForStats, newTPart.getParameters(), false);
         } else {
           // The ACID state is probably absent. Warning is logged in the get method.
           MetaStoreServerUtils.clearQuickStats(newTPart.getParameters());

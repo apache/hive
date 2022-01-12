@@ -463,7 +463,7 @@ public class MetaStoreServerUtils {
       // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
       List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
       LOG.info("Updating table stats for {}", tbl.getTableName());
-      populateQuickStats(fileStatus, params);
+      populateQuickStats(fileStatus, params, false);
     }
     LOG.info("Updated size of table {} to {}",
         tbl.getTableName(), params.get(StatsSetupConst.TOTAL_SIZE));
@@ -478,43 +478,25 @@ public class MetaStoreServerUtils {
   }
 
   /** This method is invalid for MM and ACID tables unless fileStatus comes from AcidUtils. */
-  public static void populateQuickStats(List<FileStatus> fileStatus, Map<String, String> params) {
+  public static void populateQuickStats(List<FileStatus> fileStatus, Map<String, String> params,
+      boolean usePreviousStats) {
     // Why is this even in metastore?
     LOG.trace("Populating quick stats based on {} files", fileStatus.size());
     int numFiles = 0;
     long tableSize = 0L;
     int numErasureCodedFiles = 0;
-    for (FileStatus status : fileStatus) {
-      // don't take directories into account for quick stats TODO: wtf?
-      if (!status.isDir()) {
-        tableSize += status.getLen();
-        numFiles += 1;
-        if (status.isErasureCoded()) {
-          numErasureCodedFiles++;
-        }
-      }
-    }
-    params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
-    params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
-    params.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, Integer.toString(numErasureCodedFiles));
-  }
-
-  public static void populateQuickStatsWithPrevStats(List<FileStatus> fileStatus, Map<String,String> params){
-    int numFiles = 0;
-    if(params.containsKey(StatsSetupConst.NUM_FILES)) {
+    if(usePreviousStats && params.containsKey(StatsSetupConst.NUM_FILES)) {
       numFiles = Integer.parseInt(params.get(StatsSetupConst.NUM_FILES));
     }
-    long tableSize = 0l;
-    if(params.containsKey(StatsSetupConst.TOTAL_SIZE)){
+    if(usePreviousStats && params.containsKey(StatsSetupConst.TOTAL_SIZE)){
       tableSize = Long.parseLong(params.get(StatsSetupConst.TOTAL_SIZE));
     }
-    int numErasureCodedFiles = 0;
-    if(params.containsKey(StatsSetupConst.NUM_ERASURE_CODED_FILES)){
+    if(usePreviousStats && params.containsKey(StatsSetupConst.NUM_ERASURE_CODED_FILES)){
       numErasureCodedFiles = Integer.parseInt(params.get(StatsSetupConst.NUM_ERASURE_CODED_FILES));
     }
     for (FileStatus status : fileStatus) {
+      // don't take directories into account for quick stats TODO: wtf?
       if (!status.isDir()) {
-        LOG.warn(status.toString());
         tableSize += status.getLen();
         numFiles += 1;
         if (status.isErasureCoded()) {
@@ -612,7 +594,7 @@ public class MetaStoreServerUtils {
       LOG.info("Updating partition stats fast for: {}", part.getTableName());
       List<FileStatus> fileStatus = wh.getFileStatusesForLocation(part.getLocation());
       // TODO: this is invalid for ACID tables, and we cannot access AcidUtils here.
-      populateQuickStats(fileStatus, params);
+      populateQuickStats(fileStatus, params, false);
       LOG.info("Updated size to {}", params.get(StatsSetupConst.TOTAL_SIZE));
       updateBasicState(environmentContext, params);
     }
