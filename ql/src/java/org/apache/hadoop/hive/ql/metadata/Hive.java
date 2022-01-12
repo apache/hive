@@ -28,6 +28,8 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
+
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
@@ -104,7 +106,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -128,7 +129,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
@@ -1273,6 +1273,15 @@ public class Hive {
           principalPrivs.setRolePrivileges(grants.getRoleGrants());
           tTbl.setPrivileges(principalPrivs);
         }
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          boolean createTableUseSuffix = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+
+          if (createTableUseSuffix) {
+            tbl.setProperty(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+          }
+          tTbl.setTxnId(ss.getTxnMgr().getCurrentTxnId());
+        }
       }
       // Set table snapshot to api.Table to make it persistent. A transactional table being
       // replicated may have a valid write Id copied from the source. Use that instead of
@@ -1280,7 +1289,7 @@ public class Hive {
       if (tTbl.getWriteId() <= 0) {
         TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
         if (tableSnapshot != null) {
-          tbl.getTTable().setWriteId(tableSnapshot.getWriteId());
+          tTbl.setWriteId(tableSnapshot.getWriteId());
         }
       }
 
@@ -1332,6 +1341,19 @@ public class Hive {
   public void dropTable(String tableName, boolean ifPurge) throws HiveException {
     String[] names = Utilities.getDbTableName(tableName);
     dropTable(names[0], names[1], true, true, ifPurge);
+  }
+
+  public void dropTable(Table table, boolean ifPurge) throws HiveException {
+    boolean tableWithSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+      && AcidUtils.isTransactionalTable(table)
+      && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
+    
+    long txnId = Optional.ofNullable(SessionState.get())
+      .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+    table.getTTable().setTxnId(txnId);
+
+    dropTable(table.getTTable(), !tableWithSuffix, true, ifPurge);
   }
 
   /**
@@ -1404,7 +1426,14 @@ public class Hive {
     }
   }
 
-
+  public void dropTable(org.apache.hadoop.hive.metastore.api.Table table, 
+      boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
+    try {
+      getMSC().dropTable(table, deleteData, ignoreUnknownTab, ifPurge);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
 
   /**
    * Truncates the table/partition as per specifications. Just trash the data files

@@ -3110,6 +3110,11 @@ public class AcidUtils {
       return TxnType.COMPACTION;
     }
     // check if soft delete
+    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE 
+      && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))){
+      return TxnType.SOFT_DELETE;
+    }
     if (tree.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS
         && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE)
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))) {
@@ -3118,7 +3123,7 @@ public class AcidUtils {
     return TxnType.DEFAULT;
   }
 
-  public static boolean isReadOnlyTxn(ASTNode tree) {
+  private static boolean isReadOnlyTxn(ASTNode tree) {
     final ASTSearcher astSearcher = new ASTSearcher();
     return READ_TXN_TOKENS.contains(tree.getToken().getType())
       || (tree.getToken().getType() == HiveParser.TOK_QUERY && Stream.of(

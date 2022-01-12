@@ -1793,6 +1793,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void dropTable(Table tbl, boolean deleteData, boolean ignoreUnknownTbl, boolean ifPurge) throws TException {
+    EnvironmentContext context = null;
+    if (ifPurge) {
+      context = getEnvironmentContextWithIfPurgeSet();
+    }
+    if (tbl.isSetTxnId()) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", String.valueOf(tbl.getTxnId()));
+    }
+    String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
+
+    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData, 
+        ignoreUnknownTbl, context);
+  }
+
+  @Override
   public void dropTable(String dbname, String name) throws TException {
     dropTable(getDefaultCatalog(conf), dbname, name, true, true, null);
   }
@@ -1809,7 +1825,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       envContext = new EnvironmentContext(warehouseOptions);
     }
     dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
-
   }
 
   /**

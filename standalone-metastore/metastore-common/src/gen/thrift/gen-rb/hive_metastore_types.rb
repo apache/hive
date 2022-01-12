@@ -2342,6 +2342,7 @@ class Table
   ID = 25
   FILEMETADATA = 26
   DICTIONARY = 27
+  TXNID = 28
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -2370,7 +2371,8 @@ class Table
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true},
-    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :optional => true}
   }
 
   def struct_fields; FIELDS; end

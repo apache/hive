@@ -346,7 +346,7 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
-  @RetrySemantics.Idempotent
+  @RetrySemantics.SafeToRetry
   boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException;
 
   /**
@@ -393,8 +393,14 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException;
+  default void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, false);
+  }
+
+  @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,

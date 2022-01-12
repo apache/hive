@@ -77,7 +77,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * Hive Configuration.
  */
@@ -3066,6 +3065,10 @@ public class HiveConf extends Configuration {
 
     HIVE_ACID_LOCKLESS_READS_ENABLED("hive.acid.lockless.reads.enabled", false,
         "Enables lockless reads"),
+     
+    HIVE_ACID_CREATE_TABLE_USE_SUFFIX("hive.acid.createtable.softdelete", false,
+        "Enables non-blocking DROP TABLE operation.\n" +
+        "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
     
     HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +

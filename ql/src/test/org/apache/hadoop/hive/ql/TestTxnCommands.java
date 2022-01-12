@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -81,6 +82,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
+
 /**
  * The LockManager is not ready, but for no-concurrency straight-line path we can
  * test AC=true, and AC=false with commit/rollback/exception and test resulting data.
@@ -108,6 +111,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
   }
 
@@ -1678,6 +1682,90 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       if (0 != stat.length) {
         Assert.fail("Expecting partition data to be removed from FS");
       }
+    }
+  }
+
+  @Test
+  public void testDropTableWithSuffix() throws Exception {
+    String tableName = "tab_acid";
+    runStatementOnDriver("drop table if exists " + tableName);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, true);
+    
+    runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
+    runStatementOnDriver("drop table " + tableName);
+
+    int count = TestTxnDbUtil.countQueryAgent(hiveConf, 
+      "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
+    Assert.assertEquals(1, count);
+    
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches(tableName + SOFT_DELETE_TABLE_PATTERN));
+    if (1 != stat.length) {
+      Assert.fail("Table data was removed from FS");
+    }
+    MetastoreTaskThread houseKeeperService = new AcidHouseKeeperService();
+    houseKeeperService.setConf(hiveConf);
+    
+    houseKeeperService.run();
+    count = TestTxnDbUtil.countQueryAgent(hiveConf,
+      "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
+    Assert.assertEquals(0, count);
+
+    try {
+      runStatementOnDriver("select * from " + tableName);
+    } catch (Exception ex) {
+      Assert.assertTrue(ex.getMessage().contains(
+        ErrorMsg.INVALID_TABLE.getMsg(StringUtils.wrap(tableName, "'"))));
+    }
+    // Check status of compaction job
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state",
+      TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+
+    runCleaner(hiveConf);
+    
+    FileStatus[] status = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches(tableName + SOFT_DELETE_TABLE_PATTERN));
+    Assert.assertEquals(0, status.length);
+  }
+
+  @Test
+  public void testDropTableWithoutSuffix() throws Exception {
+    String tableName = "tab_acid";
+    runStatementOnDriver("drop table if exists " + tableName);
+    
+    for (boolean enabled : Arrays.asList(false, true)) {
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, enabled);
+      runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+      runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
+      
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, !enabled);
+      runStatementOnDriver("drop table " + tableName);
+
+      int count = TestTxnDbUtil.countQueryAgent(hiveConf,
+        "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
+      Assert.assertEquals(0, count);
+
+      FileSystem fs = FileSystem.get(hiveConf);
+      FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+        t -> t.getName().equals(tableName));
+      Assert.assertEquals(0, stat.length);
+
+      try {
+        runStatementOnDriver("select * from " + tableName);
+      } catch (Exception ex) {
+        Assert.assertTrue(ex.getMessage().contains(
+          ErrorMsg.INVALID_TABLE.getMsg(StringUtils.wrap(tableName, "'"))));
+      }
+      // Check status of compaction job
+      TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+      ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+      Assert.assertEquals("Unexpected number of compactions in history", 0, resp.getCompactsSize());
     }
   }
 }

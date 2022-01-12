@@ -443,9 +443,8 @@ public interface IMetaStoreClient {
    *           A thrift communication error occurred
    *
    */
-  void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab) throws MetaException, TException,
-      NoSuchObjectException;
+  void dropTable(String dbname, String tableName, boolean deleteData, boolean ignoreUnknownTab) 
+      throws MetaException, TException, NoSuchObjectException;
 
   /**
    * Drop the table.
@@ -469,8 +468,11 @@ public interface IMetaStoreClient {
    */
   @Deprecated // TODO: deprecate all methods without a catalog here; a single layer (e.g. Hive.java) should handle current-catalog
   void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
-      NoSuchObjectException;
+      boolean ignoreUnknownTab, boolean ifPurge) 
+      throws MetaException, TException, NoSuchObjectException;
+
+  void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) 
+      throws TException;
 
   /**
    * Drop the table.

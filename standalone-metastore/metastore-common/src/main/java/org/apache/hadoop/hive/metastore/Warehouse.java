@@ -57,6 +57,9 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
+
 /**
  * This class represents a warehouse where data of Hive tables is stored
  */
@@ -363,8 +366,14 @@ public class Warehouse {
     } else {
       dbPath = getDatabaseManagedPath(db);
     }
-    return getDnsPath(
-        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+    if (!isExternal && tableName.matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
+      String[] groups = tableName.split(SOFT_DELETE_PATH_SUFFIX);
+      tableName = String.join(SOFT_DELETE_PATH_SUFFIX, 
+          MetaStoreUtils.encodeTableName(groups[0].toLowerCase()), groups[1]);
+    } else {
+      tableName = MetaStoreUtils.encodeTableName(tableName.toLowerCase());
+    }
+    return getDnsPath(new Path(dbPath, tableName));
   }
 
   public Path getDefaultManagedTablePath(Database db, String tableName) throws MetaException {

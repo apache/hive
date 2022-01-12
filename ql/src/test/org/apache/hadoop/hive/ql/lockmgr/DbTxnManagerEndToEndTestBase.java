@@ -61,6 +61,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, getWarehouseDir());
     TestTxnDbUtil.setConfValues(conf);
   }
+  
   @BeforeClass
   public static void setUpDB() throws Exception{
     TestTxnDbUtil.prepDb(conf);

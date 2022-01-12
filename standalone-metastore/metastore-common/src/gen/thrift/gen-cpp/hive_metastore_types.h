@@ -4782,7 +4782,7 @@ void swap(ObjectDictionary &a, ObjectDictionary &b);
 std::ostream& operator<<(std::ostream& out, const ObjectDictionary& obj);
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false), dictionary(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false), dictionary(false), txnId(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4810,6 +4810,7 @@ typedef struct _Table__isset {
   bool id :1;
   bool fileMetadata :1;
   bool dictionary :1;
+  bool txnId :1;
 } _Table__isset;
 
 class Table : public virtual ::apache::thrift::TBase {
@@ -4817,7 +4818,7 @@ class Table : public virtual ::apache::thrift::TBase {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0), accessType(0), id(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0), accessType(0), id(0), txnId(0) {
     ownerType = (PrincipalType::type)1;
 
   }
@@ -4854,6 +4855,7 @@ class Table : public virtual ::apache::thrift::TBase {
   int64_t id;
   FileMetadata fileMetadata;
   ObjectDictionary dictionary;
+  int64_t txnId;
 
   _Table__isset __isset;
 
@@ -4910,6 +4912,8 @@ class Table : public virtual ::apache::thrift::TBase {
   void __set_fileMetadata(const FileMetadata& val);
 
   void __set_dictionary(const ObjectDictionary& val);
+
+  void __set_txnId(const int64_t val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4996,6 +5000,10 @@ class Table : public virtual ::apache::thrift::TBase {
     if (__isset.dictionary != rhs.__isset.dictionary)
       return false;
     else if (__isset.dictionary && !(dictionary == rhs.dictionary))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
       return false;
     return true;
   }

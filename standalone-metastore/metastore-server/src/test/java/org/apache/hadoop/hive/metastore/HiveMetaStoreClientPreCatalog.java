@@ -1148,6 +1148,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
     dropTable(dbname, name, deleteData, ignoreUnknownTab, envContext);
   }
+  
+  @Override
+  public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) throws TException {
+    dropTable(table.getDbName(), table.getTableName(), deleteData, ignoreUnknownTab, ifPurge);
+  }
 
   /**
    * @see #dropTable(String, String, boolean, boolean, EnvironmentContext)
