@@ -413,6 +413,7 @@ public class TestCompactor {
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
     //Check basic stats are updated for partition bkt=0, but not updated for partition bkt=1
+    partitions = Hive.get().getPartitions(hiveTable);
     parameters = partitions
             .stream()
             .filter(p -> p.getName().equals("bkt=0"))
