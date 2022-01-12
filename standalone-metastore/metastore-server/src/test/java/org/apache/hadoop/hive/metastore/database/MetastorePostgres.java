@@ -15,21 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall;
+package org.apache.hadoop.hive.metastore.database;
 
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
-import org.junit.Rule;
+import org.apache.hive.testutils.database.Postgres;
 
-/**
- * Oracle-specific DbInstallBase child test class.
- */
-public class ITestOracle extends DbInstallBase {
+public class MetastorePostgres extends MetastoreDatabaseWrapper {
 
-  @Rule
-  public final AbstractDatabase databaseRule = new Oracle();
-
-  @Override
-  protected AbstractDatabase getRule() {
-    return databaseRule;
+  public MetastorePostgres() {
+    this.database = new Postgres();
   }
 }

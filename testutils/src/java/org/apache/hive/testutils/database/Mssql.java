@@ -15,72 +15,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall.rules;
+package org.apache.hive.testutils.database;
 
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-/**
- * JUnit TestRule for MySql.
- */
-public class Mysql extends AbstractDatabase {
+public class Mssql extends AbstractDatabase {
 
   @Override
   public String getDockerImageName() {
-    return "mysql:5.7";
+    return "mcr.microsoft.com/mssql/server:2019-latest";
   }
 
   @Override
   public List<String> getDockerBaseArgs() {
-    return new ArrayList(Arrays.asList("-p", "3306:3306",
-        "-e", "MYSQL_ROOT_PASSWORD=" + getDbRootPassword(),
-        "-d"));
-  }
-
-  @Override public String getDockerDatabaseArg() {
-    return "MYSQL_DATABASE=" + getDb();
+    return Arrays.asList("-p", "1433:1433",
+        "-e", "ACCEPT_EULA=Y",
+        "-e", "SA_PASSWORD=" + getDbRootPassword(),
+        "-d");
   }
 
   @Override
   public String getDbType() {
-    return "mysql";
+    return "mssql";
   }
 
   @Override
   public String getDbRootUser() {
-    return "root";
+    return "SA";
   }
 
   @Override
   public String getDbRootPassword() {
-    return "its-a-secret";
+    return "Its-a-s3cret";
   }
 
   @Override
   public String getJdbcDriver() {
-    return "com.mysql.jdbc.Driver";
+    return com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
+    // return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
   }
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:mysql://" + hostAddress + ":3306/" + getDb();
+    //Mssql doesn't support database parameter in docker
+    return useDockerDatabaseArg ? getInitialJdbcUrl(hostAddress) : "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + getDb() + ";";
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:mysql://" + hostAddress + ":3306/?allowPublicKeyRetrieval=true";
+    return "jdbc:sqlserver://" + hostAddress + ":1433";
   }
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    Pattern pat = Pattern.compile("ready for connections");
-    Matcher m = pat.matcher(pr.stderr);
-    return m.find() && m.find();
+    return pr.stdout
+        .contains(
+        "Recovery is complete. This is an informational message only. No user action is required.");
   }
 
+  @Override
+  public String getHivePassword() {
+    return "h1vePassword!";
+  }
 }

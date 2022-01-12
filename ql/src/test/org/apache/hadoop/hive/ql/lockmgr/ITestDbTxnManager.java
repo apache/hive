@@ -20,13 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
+import org.apache.hadoop.hive.metastore.database.MetastoreDatabaseWrapper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
@@ -41,21 +35,21 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
   private static final Logger LOG = LoggerFactory.getLogger(TestDbTxnManager2.class);
 
   private static final String SYS_PROP_METASTORE_DB = "test.metastore.db";
-  private static AbstractDatabase database;
+  private static MetastoreDatabaseWrapper metastoreDb;
 
   @BeforeClass
   public static void setupDb() throws Exception {
     String metastoreType =
         System.getProperty(SYS_PROP_METASTORE_DB) == null ? "derby" : System.getProperty(SYS_PROP_METASTORE_DB)
             .toLowerCase();
-    database = getDatabase(metastoreType).setVerbose(false);
+    metastoreDb = MetastoreDatabaseWrapper.getMetastoreDatabase(metastoreType);
 
     conf.setVar(HiveConf.ConfVars.METASTOREDBTYPE, metastoreType.toUpperCase());
 
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, database.getJdbcUrl());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, database.getJdbcDriver());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, database.getHiveUser());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, database.getHivePassword());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, metastoreDb.getDatabase().getJdbcUrl());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, metastoreDb.getDatabase().getJdbcDriver());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, metastoreDb.getDatabase().getHiveUser());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, metastoreDb.getDatabase().getHivePassword());
     // In this case we disable auto_create which is enabled by default for every test
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
     DatabaseProduct.reset();
@@ -63,29 +57,12 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
     LOG.info("Set metastore connection to url: {}",
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
     // Start the docker container and create the hive user
-    database.before();
-    database.install();
+    metastoreDb.before();
+    metastoreDb.install();
   }
 
   @AfterClass
   public static void tearDownDb() {
-    database.after();
-  }
-
-  private static AbstractDatabase getDatabase(String metastoreType) {
-    switch (metastoreType) {
-      case "postgres":
-        return new Postgres();
-      case "oracle":
-        return new Oracle();
-      case "mysql":
-        return new Mysql();
-      case "mariadb":
-        return new Mariadb();
-      case "mssql":
-        return new Mssql();
-      default:
-        return new Derby();
-    }
+    metastoreDb.after();
   }
 }

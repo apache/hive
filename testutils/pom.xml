@@ -29,11 +29,29 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+
+    <!-- Dependency versions -->
+    <sqlline.version>1.9.0</sqlline.version>
   </properties>
 
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- inter-project -->
+    <dependency>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>sqlline</groupId>
+      <artifactId>sqlline</artifactId>
+      <version>${sqlline.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.google.code.tempus-fugit</groupId>
       <artifactId>tempus-fugit</artifactId>
@@ -51,6 +69,7 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>${junit.jupiter.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -61,6 +80,11 @@
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 

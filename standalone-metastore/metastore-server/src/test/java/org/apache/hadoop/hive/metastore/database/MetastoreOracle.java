@@ -15,21 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall;
+package org.apache.hadoop.hive.metastore.database;
 
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
-import org.junit.Rule;
+import org.apache.hive.testutils.database.Oracle;
 
-/**
- * Mssql-specific DbInstallBase child test class.
- */
-public class ITestMssql extends DbInstallBase {
+public class MetastoreOracle extends MetastoreDatabaseWrapper {
 
-  @Rule
-  public final AbstractDatabase databaseRule = new Mssql();
-
-  @Override
-  protected AbstractDatabase getRule() {
-    return databaseRule;
+  public MetastoreOracle() {
+    this.database = new Oracle();
   }
 }

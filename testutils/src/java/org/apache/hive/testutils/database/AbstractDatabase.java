@@ -1,8 +1,23 @@
-package org.apache.hadoop.hive.metastore.dbinstall;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hive.testutils.database;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
-import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
@@ -20,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractDatabase extends ExternalResource {
+public abstract class AbstractDatabase {
 
   private final Logger LOG = LoggerFactory.getLogger(AbstractDatabase.class);
 
@@ -29,13 +44,7 @@ public abstract class AbstractDatabase extends ExternalResource {
   private final String HIVE_PASSWORD = "hivepassword";
 
   private String db = "hivedb";
-  private boolean verbose = System.getProperty("verbose.schematool") != null;
   protected boolean useDockerDatabaseArg = false;
-
-  public AbstractDatabase setVerbose(boolean verbose) {
-    this.verbose = verbose;
-    return this;
-  }
 
   public AbstractDatabase setUseDockerDatabaseArg(boolean useDockerDatabaseArg) {
     this.useDockerDatabaseArg = useDockerDatabaseArg;
@@ -49,9 +58,9 @@ public abstract class AbstractDatabase extends ExternalResource {
 
   protected abstract String getDockerImageName();
   protected abstract List<String> getDockerBaseArgs();
-  protected abstract String getDbType();
-  protected abstract String getDbRootUser();
-  protected abstract String getDbRootPassword();
+  public abstract String getDbType();
+  public abstract String getDbRootUser();
+  public abstract String getDbRootPassword();
   public abstract String getJdbcDriver();
   protected abstract String getJdbcUrl(String hostAddress);
   protected abstract boolean isContainerReady(ProcessResults pr);
@@ -83,16 +92,16 @@ public abstract class AbstractDatabase extends ExternalResource {
     return HIVE_PASSWORD;
   }
 
-  protected String getDb() {
+  public String getDb() {
     return db;
   }
 
-  private String getDockerContainerName() {
+  public String getDockerContainerName() {
     return String.format("testDb-%s", getClass().getSimpleName());
   }
 
   private List<String> getDockerAdditionalArgs() {
-    List<String> dockerArgs = getDockerBaseArgs();
+    List<String> dockerArgs = new ArrayList(getDockerBaseArgs());
     if (useDockerDatabaseArg && StringUtils.isNotEmpty(getDockerDatabaseArg())) {
       dockerArgs.addAll(Arrays.asList("-e", getDockerDatabaseArg()));
     }
@@ -172,90 +181,6 @@ public abstract class AbstractDatabase extends ExternalResource {
     if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
       throw new RuntimeException("Unable to remove docker container");
     }
-  }
-
-  @Override
-  public void before() throws Exception {
-    launchDockerContainer();
-    MetastoreSchemaTool.setHomeDirForTesting();
-  }
-
-  @Override
-  public void after() {
-    if ("true".equalsIgnoreCase(System.getProperty("metastore.itest.no.stop.container"))) {
-      LOG.warn("Not stopping container " + getDockerContainerName() + " at user request, please "
-          + "be sure to shut it down before rerunning the test.");
-      return;
-    }
-    try {
-      cleanupDockerContainer();
-    } catch (InterruptedException | IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public void install() {
-    createUser();
-    installLatest();
-  }
-
-  public int createUser() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(new String[] {
-        "-createUser",
-        "-dbType", getDbType(),
-        "-userName", getDbRootUser(),
-        "-passWord", getDbRootPassword(),
-        "-hiveUser", getHiveUser(),
-        "-hivePassword", getHivePassword(),
-        "-hiveDb", getDb(),
-        "-url", getInitialJdbcUrl(),
-        "-driver", getJdbcDriver()
-    });
-  }
-
-  public int installLatest() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(new String[] {
-        "-initSchema",
-        "-dbType", getDbType(),
-        "-userName", getHiveUser(),
-        "-passWord", getHivePassword(),
-        "-url", getJdbcUrl(),
-        "-driver", getJdbcDriver(),
-        "-verbose"
-    });
-  }
-
-  public int installAVersion(String version) {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(new String[] {
-        "-initSchemaTo", version,
-        "-dbType", getDbType(),
-        "-userName", getHiveUser(),
-        "-passWord", getHivePassword(),
-        "-url", getJdbcUrl(),
-        "-driver", getJdbcDriver()
-    });
-  }
-
-  public int upgradeToLatest() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(new String[] {
-        "-upgradeSchema",
-        "-dbType", getDbType(),
-        "-userName", getHiveUser(),
-        "-passWord", getHivePassword(),
-        "-url", getJdbcUrl(),
-        "-driver", getJdbcDriver()
-    });
-  }
-
-  public int validateSchema() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(new String[] {
-        "-validate",
-        "-dbType", getDbType(),
-        "-userName", getHiveUser(),
-        "-passWord", getHivePassword(),
-        "-url", getJdbcUrl(),
-        "-driver", getJdbcDriver()
-    });
   }
 
   private String[] SQLLineCmdBuild(String sqlScriptFile) {

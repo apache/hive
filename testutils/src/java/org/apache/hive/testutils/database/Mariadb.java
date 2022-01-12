@@ -6,52 +6,50 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+package org.apache.hive.testutils.database;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * JUnit TestRule for Postgres.
- */
-public class Postgres extends AbstractDatabase {
+public class Mariadb extends AbstractDatabase {
+
   @Override
   public String getDockerImageName() {
-    return "postgres:11.6";
+    return "mariadb:10.2";
+  }
+
+  @Override
+  public String getDockerDatabaseArg() {
+    return "MARIADB_DATABASE=" + getDb();
   }
 
   @Override
   public List<String> getDockerBaseArgs() {
-    return new ArrayList(Arrays.asList("-p", "5432:5432",
-        "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(),
-        "-e", "POSTGRES_USER=" + getDbRootUser(),
-        "-d"));
-  }
-
-  @Override public String getDockerDatabaseArg() {
-    return "POSTGRES_DB=" + getDb();
+    return Arrays.asList("-p", "3309:3306",
+        "-e", "MARIADB_ROOT_PASSWORD=" + getDbRootPassword(),
+        "-d");
   }
 
   @Override
   public String getDbType() {
-    return "postgres";
+    return "mysql";
   }
 
   @Override
   public String getDbRootUser() {
-    return "postgres";
+    return "root";
   }
 
   @Override
@@ -61,22 +59,23 @@ public class Postgres extends AbstractDatabase {
 
   @Override
   public String getJdbcDriver() {
-    return org.postgresql.Driver.class.getName();
+    return "org.mariadb.jdbc.Driver";
   }
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:postgresql://" + hostAddress + ":5432/" + getDb();
+    return "jdbc:mariadb://" + hostAddress + ":3309/" + getDb();
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:postgresql://" + hostAddress + ":5432/postgres";
+    return "jdbc:mariadb://" + hostAddress + ":3309/?allowPublicKeyRetrieval=true";
   }
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout.contains("database system is ready to accept connections") &&
-        pr.stderr.contains("database system is ready to accept connections");
+    Pattern pat = Pattern.compile("ready for connections");
+    Matcher m = pat.matcher(pr.stderr);
+    return m.find() && m.find();
   }
 }

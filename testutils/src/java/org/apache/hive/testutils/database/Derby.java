@@ -15,30 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall.rules;
+package org.apache.hive.testutils.database;
 
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-/**
- * JUnit TestRule for Derby.
- */
 public class Derby extends AbstractDatabase {
-
-  boolean purgeInAfter;
-
-  public Derby() {
-    this(false);
-  }
-
-  public Derby(boolean purgeInAfter) {
-    super();
-    this.purgeInAfter = purgeInAfter;
-  }
 
   @Override
   public String getDockerImageName() {
@@ -47,7 +29,7 @@ public class Derby extends AbstractDatabase {
 
   @Override
   public List<String> getDockerBaseArgs() {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -82,7 +64,6 @@ public class Derby extends AbstractDatabase {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-
     return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
@@ -91,35 +72,9 @@ public class Derby extends AbstractDatabase {
     return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
-  public String getDb() {
-    return MetaStoreServerUtils.JUNIT_DATABASE_PREFIX;
-  };
-
   @Override
   public boolean isContainerReady(ProcessResults pr) {
     return true;
   }
 
-  @Override
-  public void before() throws Exception {
-    MetastoreSchemaTool.setHomeDirForTesting();
-  }
-
-  @Override
-  public void after() {
-    if(purgeInAfter) {
-      try {
-        java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s;drop=true", getDb())).close();
-      } catch(Exception e) {
-        if(!e.getMessage().contains("dropped")) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-  }
-
-  @Override
-  public int createUser() {
-    return 0; // no-op
-  }
 }

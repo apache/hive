@@ -80,8 +80,8 @@ public abstract class CliAdapter {
             CliAdapter.this.beforeClass(); // instantiating QTestUtil
 
             LOG.debug("will initialize metastore database in class rule");
-            metaStoreHandler.getRule().before();
-            metaStoreHandler.getRule().install();
+            metaStoreHandler.getMetastoreDb().before();
+            metaStoreHandler.getMetastoreDb().install();
 
             if (getQt() != null) {
               metaStoreHandler.setMetaStoreConfiguration(getQt().getConf());

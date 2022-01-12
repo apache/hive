@@ -6,16 +6,16 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall.rules;
+package org.apache.hadoop.hive.metastore.database;
 
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 
@@ -23,28 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
-/**
- * JUnit TestRule for Postgres metastore with TPCDS schema and stat information.
- */
-public class PostgresTPCDS extends Postgres {
-  @Override
-  public String getDockerImageName() {
-    return "zabetak/postgres-tpcds-metastore:1.3";
-  }
+public class MetastorePostgresTPCDS extends MetastoreDatabaseWrapper {
 
-  @Override
-  public String getJdbcUrl(String hostAddress) {
-    return "jdbc:postgresql://" + hostAddress + ":5432/metastore";
-  }
-
-  @Override
-  public String getHiveUser() {
-    return "hive";
-  }
-
-  @Override
-  public String getHivePassword() {
-    return "hive";
+  public MetastorePostgresTPCDS() {
+    this.database = new PostgresTPCDS();
   }
 
   @Override
@@ -55,15 +37,14 @@ public class PostgresTPCDS extends Postgres {
       new MetastoreSchemaTool().runScript(
           new String[] {
               "-upgradeSchema",
-              "-dbType", getDbType(),
-              "-userName", getHiveUser(),
-              "-passWord", getHivePassword(),
-              "-url", getJdbcUrl(),
-              "-driver", getJdbcDriver()},
+              "-dbType", database.getDbType(),
+              "-userName", database.getHiveUser(),
+              "-passWord", database.getHivePassword(),
+              "-url", database.getJdbcUrl(),
+              "-driver", database.getJdbcDriver()},
           script);
     } catch (IOException exception) {
       throw new UncheckedIOException(exception);
     }
   }
 }
-

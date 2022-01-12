@@ -15,21 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall;
+package org.apache.hadoop.hive.metastore.database;
 
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
-import org.junit.Rule;
+import org.apache.hive.testutils.database.Mariadb;
 
-/**
- * Mssql-specific DbInstallBase child test class.
- */
-public class ITestDerby extends DbInstallBase {
+public class MetastoreMariadb extends MetastoreDatabaseWrapper {
 
-  @Rule
-  public final AbstractDatabase databaseRule = new Derby(true);
-
-  @Override
-  protected AbstractDatabase getRule() {
-    return databaseRule;
+  public MetastoreMariadb() {
+    this.database = new Mariadb();
   }
 }

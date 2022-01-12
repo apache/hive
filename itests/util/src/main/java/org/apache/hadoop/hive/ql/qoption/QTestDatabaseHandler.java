@@ -17,13 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.qoption;
 
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hive.testutils.database.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,66 +15,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall.rules;
-
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+package org.apache.hive.testutils.database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * JUnit TestRule for Oracle.
- */
-public class Oracle extends AbstractDatabase {
+public class Mysql extends AbstractDatabase {
 
   @Override
   public String getDockerImageName() {
-    return "pvargacl/oracle-xe-18.4.0";
+    return "mysql:5.7";
   }
 
   @Override
   public List<String> getDockerBaseArgs() {
-    return new ArrayList(Arrays.asList( "-p", "1521:1521", "-d" ));
+    return Arrays.asList("-p", "3306:3306",
+        "-e", "MYSQL_ROOT_PASSWORD=" + getDbRootPassword(),
+        "-d");
+  }
+
+  @Override public String getDockerDatabaseArg() {
+    return "MYSQL_DATABASE=" + getDb();
   }
 
   @Override
   public String getDbType() {
-    return "oracle";
+    return "mysql";
   }
 
   @Override
   public String getDbRootUser() {
-    return "SYS as SYSDBA";
+    return "root";
   }
 
   @Override
   public String getDbRootPassword() {
-    return "oracle";
+    return "its-a-secret";
   }
 
   @Override
   public String getJdbcDriver() {
-    return "oracle.jdbc.OracleDriver";
+    return "com.mysql.jdbc.Driver";
   }
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
+    return "jdbc:mysql://" + hostAddress + ":3306/" + getDb();
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
+    return "jdbc:mysql://" + hostAddress + ":3306/?allowPublicKeyRetrieval=true";
   }
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout.contains("DATABASE IS READY TO USE!");
+    Pattern pat = Pattern.compile("ready for connections");
+    Matcher m = pat.matcher(pr.stderr);
+    return m.find() && m.find();
   }
 
-  @Override
-  public String getHiveUser() {
-    return "c##"+ super.getHiveUser();
-  }
 }

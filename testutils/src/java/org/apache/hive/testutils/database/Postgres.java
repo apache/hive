@@ -15,73 +15,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.dbinstall.rules;
-
-import org.apache.hadoop.hive.metastore.dbinstall.AbstractDatabase;
+package org.apache.hive.testutils.database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * JUnit TestRule for Mssql.
- */
-public class Mssql extends AbstractDatabase {
-
+public class Postgres extends AbstractDatabase {
   @Override
   public String getDockerImageName() {
-    return "mcr.microsoft.com/mssql/server:2019-latest";
+    return "postgres:11.6";
   }
 
   @Override
   public List<String> getDockerBaseArgs() {
-    return new ArrayList(Arrays.asList("-p", "1433:1433",
-        "-e", "ACCEPT_EULA=Y",
-        "-e", "SA_PASSWORD=" + getDbRootPassword(),
-        "-d"));
+    return Arrays.asList("-p", "5432:5432",
+        "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(),
+        "-e", "POSTGRES_USER=" + getDbRootUser(),
+        "-d");
+  }
+
+  @Override public String getDockerDatabaseArg() {
+    return "POSTGRES_DB=" + getDb();
   }
 
   @Override
   public String getDbType() {
-    return "mssql";
+    return "postgres";
   }
 
   @Override
   public String getDbRootUser() {
-    return "SA";
+    return "postgres";
   }
 
   @Override
   public String getDbRootPassword() {
-    return "Its-a-s3cret";
+    return "its-a-secret";
   }
 
   @Override
   public String getJdbcDriver() {
-    return com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
-    // return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    return org.postgresql.Driver.class.getName();
   }
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    //Mssql doesn't support database parameter in docker
-    return useDockerDatabaseArg ? getInitialJdbcUrl(hostAddress) : "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + getDb() + ";";
+    return "jdbc:postgresql://" + hostAddress + ":5432/" + getDb();
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:sqlserver://" + hostAddress + ":1433";
+    return "jdbc:postgresql://" + hostAddress + ":5432/postgres";
   }
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout
-        .contains(
-        "Recovery is complete. This is an informational message only. No user action is required.");
-  }
-
-  @Override
-  public String getHivePassword() {
-    return "h1vePassword!";
+    return pr.stdout.contains("database system is ready to accept connections") &&
+        pr.stderr.contains("database system is ready to accept connections");
   }
 }
