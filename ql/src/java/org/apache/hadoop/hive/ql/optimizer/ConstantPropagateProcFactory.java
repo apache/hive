@@ -589,7 +589,7 @@ public final class ConstantPropagateProcFactory {
        if(children.size() % 2 == 1) {
          i = children.size()-1;
          children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
-             Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
+             Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0).clone())));
        }
        // after constant folding of child expression the return type of UDFWhen might have changed,
        // so recreate the expression
@@ -604,7 +604,7 @@ public final class ConstantPropagateProcFactory {
         if(children.size() % 2 == 0) {
           i = children.size()-1;
           children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
-              Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
+              Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0).clone())));
         }
        // after constant folding of child expression the return type of UDFCase might have changed,
        // so recreate the expression
