@@ -38,10 +38,12 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
@@ -67,6 +70,7 @@ import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
 import static org.mockito.Mockito.doAnswer;
@@ -74,6 +78,61 @@ import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
+
+  /**
+   * After each major compaction, stats need to be updated on the table
+   * 1. create an ORC backed table (Orc is currently required by ACID)
+   * 2. populate with data
+   * 3. compute stats
+   * 4. Trigger major compaction (which should update stats)
+   * 5. check that stats have been updated
+   */
+  @Test
+  public void testStatsAfterQueryCompactionOnTez() throws Exception {
+    //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
+    String dbName = "default";
+    String tblName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+            " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
+            " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " values(55, 'London')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " values(56, 'Paris')", driver);
+    execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
+            tblName + " after load:");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    //compute stats before compaction
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
+    Worker.StatsUpdater.gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+
+    //Check basic stats are collected
+    Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
+
+    //Do a major compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (1 != compacts.size()) {
+      Assert.fail("Expecting 1 file and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    //Check basic stats are updated
+    parameters = Hive.get().getTable(tblName).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "727", parameters.get("totalSize"));
+  }
 
   @Test
   public void testMajorCompactionNotPartitionedWithoutBuckets() throws Exception {
