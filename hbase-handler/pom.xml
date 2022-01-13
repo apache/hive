@@ -102,6 +102,11 @@
       <artifactId>hbase-hadoop-compat</artifactId>
       <version>${hbase.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <version>${disruptor.version}</version>
+    </dependency>
 
     <!-- test inter-project -->
     <dependency>
