@@ -4859,7 +4859,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       inputRR.setCheckForAmbiguity(false);
-      return new Pair<RelNode, RowResolver>(outputRel, null);
+      return new Pair<>(outputRel, outputRR);
     }
 
     Integer genRexNodeRegex(String colRegex, String tabAlias, ASTNode sel,
