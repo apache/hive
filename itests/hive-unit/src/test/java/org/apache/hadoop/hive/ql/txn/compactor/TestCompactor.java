@@ -354,10 +354,26 @@ public class TestCompactor {
       " PARTITIONED BY(bkt INT)" +
       " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=0)" +
-      " values(55, 'London')", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=0)" +
-      " values(56, 'Paris')", driver);
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+            .withFieldDelimiter(',')
+            .build();
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+            .withDatabase(dbName)
+            .withTable(tblName)
+            .withStaticPartitionValues(Arrays.asList("0"))
+            .withAgentInfo("UT_" + Thread.currentThread().getName())
+            .withHiveConf(conf)
+            .withRecordWriter(writer)
+            .connect();
+    connection.beginTransaction();
+    connection.write("55, 'London'".getBytes());
+    connection.commitTransaction();
+    connection.beginTransaction();
+    connection.write("56, 'Paris'".getBytes());
+    connection.commitTransaction();
+    connection.close();
+
     executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
       " values(57, 'Budapest')", driver);
     executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
@@ -387,7 +403,7 @@ public class TestCompactor {
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "1373", parameters.get("totalSize"));
 
     parameters = partitions
             .stream()
@@ -422,7 +438,7 @@ public class TestCompactor {
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "776", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "801", parameters.get("totalSize"));
 
     parameters = partitions
             .stream()

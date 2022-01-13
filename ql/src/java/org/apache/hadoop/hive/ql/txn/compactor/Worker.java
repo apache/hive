@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -146,8 +147,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   @VisibleForTesting
-  public static final class StatsUpdater {
-    static final private Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
+  @ThreadSafe
+  static final class StatsUpdater {
+    private static final Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
 
     /**
      * This doesn't throw any exceptions because we don't want the Compaction to appear as failed
@@ -475,8 +477,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
         computeStats = (queryCompactor == null && collectMrStats) || collectGenericStats;
 
-        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " +
-                compactionTxn + " with compute stats set to " + computeStats);
+        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
+                ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
 
         if (queryCompactor != null) {
           LOG.info("Will compact id: " + ci.id + " with query-based compactor class: "
