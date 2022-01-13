@@ -56,6 +56,7 @@ abstract class QueryCompactor {
    * @param storageDescriptor this is the resolved storage descriptor
    * @param writeIds valid write IDs used to filter rows while they're being read for compaction
    * @param compactionInfo provides info about the type of compaction
+   * @param dir provides ACID directory layout information
    * @throws IOException compaction cannot be finished.
    */
   abstract void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
