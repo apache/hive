@@ -753,7 +753,7 @@ struct TGetTypeInfoResp {
 
 // UploadData()
 //
-// UploadData data to table/path.
+// UploadData data to table or path. One of tableName or path must be set.
 struct TUploadDataReq {
   // The session to execute the statement against
   1: required TSessionHandle sessionHandle
@@ -775,7 +775,7 @@ struct TUploadDataResp {
 
 // DownloadData()
 //
-// Download data to JDBC client.
+// Download data to JDBC client. One of tableName or query must be set.
 struct TDownloadDataReq {
   // The session to download data
   1: required TSessionHandle sessionHandle
@@ -783,13 +783,13 @@ struct TDownloadDataReq {
   // The download table name
   2: optional TPatternOrIdentifier tableName
 
-  // The download query
+  // The download query. For example: SELECT * FROM t1 JOIN t2 ON t1.id = t2.id
   3: optional string query
 
-  // The download file format
+  // The download file format. For example: Parquet, ORC, CSV, JSON, Avro, etc.
   4: optional string format
 
-  // The download options
+  // The download options. For example: dateFormat=yyyy-MM-dd, compression=gzip
   5: optional map<string, string> downloadOptions
 }
 
