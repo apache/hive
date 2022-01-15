@@ -14,7 +14,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class TGetTablesReq
+class TUploadDataReq
 {
     static public $isValidate = false;
 
@@ -26,28 +26,19 @@ class TGetTablesReq
             'class' => '\TSessionHandle',
         ),
         2 => array(
-            'var' => 'catalogName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        3 => array(
-            'var' => 'schemaName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        4 => array(
             'var' => 'tableName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
-        5 => array(
-            'var' => 'tableTypes',
+        3 => array(
+            'var' => 'path',
             'isRequired' => false,
-            'type' => TType::LST,
-            'etype' => TType::STRING,
-            'elem' => array(
-                'type' => TType::STRING,
-                ),
+            'type' => TType::STRING,
+        ),
+        4 => array(
+            'var' => 'values',
+            'isRequired' => true,
+            'type' => TType::STRING,
         ),
     );
 
@@ -58,19 +49,15 @@ class TGetTablesReq
     /**
      * @var string
      */
-    public $catalogName = null;
-    /**
-     * @var string
-     */
-    public $schemaName = null;
-    /**
-     * @var string
-     */
     public $tableName = null;
     /**
-     * @var string[]
+     * @var string
      */
-    public $tableTypes = null;
+    public $path = null;
+    /**
+     * @var string
+     */
+    public $values = null;
 
     public function __construct($vals = null)
     {
@@ -78,24 +65,21 @@ class TGetTablesReq
             if (isset($vals['sessionHandle'])) {
                 $this->sessionHandle = $vals['sessionHandle'];
             }
-            if (isset($vals['catalogName'])) {
-                $this->catalogName = $vals['catalogName'];
-            }
-            if (isset($vals['schemaName'])) {
-                $this->schemaName = $vals['schemaName'];
-            }
             if (isset($vals['tableName'])) {
                 $this->tableName = $vals['tableName'];
             }
-            if (isset($vals['tableTypes'])) {
-                $this->tableTypes = $vals['tableTypes'];
+            if (isset($vals['path'])) {
+                $this->path = $vals['path'];
+            }
+            if (isset($vals['values'])) {
+                $this->values = $vals['values'];
             }
         }
     }
 
     public function getName()
     {
-        return 'TGetTablesReq';
+        return 'TUploadDataReq';
     }
 
 
@@ -122,37 +106,21 @@ class TGetTablesReq
                     break;
                 case 2:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catalogName);
+                        $xfer += $input->readString($this->tableName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 3:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->schemaName);
+                        $xfer += $input->readString($this->path);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 4:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->tableName);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 5:
-                    if ($ftype == TType::LST) {
-                        $this->tableTypes = array();
-                        $_size170 = 0;
-                        $_etype173 = 0;
-                        $xfer += $input->readListBegin($_etype173, $_size170);
-                        for ($_i174 = 0; $_i174 < $_size170; ++$_i174) {
-                            $elem175 = null;
-                            $xfer += $input->readString($elem175);
-                            $this->tableTypes []= $elem175;
-                        }
-                        $xfer += $input->readListEnd();
+                        $xfer += $input->readString($this->values);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -170,7 +138,7 @@ class TGetTablesReq
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('TGetTablesReq');
+        $xfer += $output->writeStructBegin('TUploadDataReq');
         if ($this->sessionHandle !== null) {
             if (!is_object($this->sessionHandle)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -179,31 +147,19 @@ class TGetTablesReq
             $xfer += $this->sessionHandle->write($output);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->catalogName !== null) {
-            $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 2);
-            $xfer += $output->writeString($this->catalogName);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->schemaName !== null) {
-            $xfer += $output->writeFieldBegin('schemaName', TType::STRING, 3);
-            $xfer += $output->writeString($this->schemaName);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->tableName !== null) {
-            $xfer += $output->writeFieldBegin('tableName', TType::STRING, 4);
+            $xfer += $output->writeFieldBegin('tableName', TType::STRING, 2);
             $xfer += $output->writeString($this->tableName);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->tableTypes !== null) {
-            if (!is_array($this->tableTypes)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('tableTypes', TType::LST, 5);
-            $output->writeListBegin(TType::STRING, count($this->tableTypes));
-            foreach ($this->tableTypes as $iter176) {
-                $xfer += $output->writeString($iter176);
-            }
-            $output->writeListEnd();
+        if ($this->path !== null) {
+            $xfer += $output->writeFieldBegin('path', TType::STRING, 3);
+            $xfer += $output->writeString($this->path);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->values !== null) {
+            $xfer += $output->writeFieldBegin('values', TType::STRING, 4);
+            $xfer += $output->writeString($this->values);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

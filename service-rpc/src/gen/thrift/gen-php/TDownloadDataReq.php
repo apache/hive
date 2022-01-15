@@ -14,7 +14,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class TGetTablesReq
+class TDownloadDataReq
 {
     static public $isValidate = false;
 
@@ -26,26 +26,30 @@ class TGetTablesReq
             'class' => '\TSessionHandle',
         ),
         2 => array(
-            'var' => 'catalogName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        3 => array(
-            'var' => 'schemaName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        4 => array(
             'var' => 'tableName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
-        5 => array(
-            'var' => 'tableTypes',
+        3 => array(
+            'var' => 'query',
             'isRequired' => false,
-            'type' => TType::LST,
-            'etype' => TType::STRING,
-            'elem' => array(
+            'type' => TType::STRING,
+        ),
+        4 => array(
+            'var' => 'format',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        5 => array(
+            'var' => 'downloadOptions',
+            'isRequired' => false,
+            'type' => TType::MAP,
+            'ktype' => TType::STRING,
+            'vtype' => TType::STRING,
+            'key' => array(
+                'type' => TType::STRING,
+            ),
+            'val' => array(
                 'type' => TType::STRING,
                 ),
         ),
@@ -58,19 +62,19 @@ class TGetTablesReq
     /**
      * @var string
      */
-    public $catalogName = null;
-    /**
-     * @var string
-     */
-    public $schemaName = null;
-    /**
-     * @var string
-     */
     public $tableName = null;
     /**
-     * @var string[]
+     * @var string
      */
-    public $tableTypes = null;
+    public $query = null;
+    /**
+     * @var string
+     */
+    public $format = null;
+    /**
+     * @var array
+     */
+    public $downloadOptions = null;
 
     public function __construct($vals = null)
     {
@@ -78,24 +82,24 @@ class TGetTablesReq
             if (isset($vals['sessionHandle'])) {
                 $this->sessionHandle = $vals['sessionHandle'];
             }
-            if (isset($vals['catalogName'])) {
-                $this->catalogName = $vals['catalogName'];
-            }
-            if (isset($vals['schemaName'])) {
-                $this->schemaName = $vals['schemaName'];
-            }
             if (isset($vals['tableName'])) {
                 $this->tableName = $vals['tableName'];
             }
-            if (isset($vals['tableTypes'])) {
-                $this->tableTypes = $vals['tableTypes'];
+            if (isset($vals['query'])) {
+                $this->query = $vals['query'];
+            }
+            if (isset($vals['format'])) {
+                $this->format = $vals['format'];
+            }
+            if (isset($vals['downloadOptions'])) {
+                $this->downloadOptions = $vals['downloadOptions'];
             }
         }
     }
 
     public function getName()
     {
-        return 'TGetTablesReq';
+        return 'TDownloadDataReq';
     }
 
 
@@ -122,37 +126,40 @@ class TGetTablesReq
                     break;
                 case 2:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catalogName);
+                        $xfer += $input->readString($this->tableName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 3:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->schemaName);
+                        $xfer += $input->readString($this->query);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 4:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->tableName);
+                        $xfer += $input->readString($this->format);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 5:
-                    if ($ftype == TType::LST) {
-                        $this->tableTypes = array();
-                        $_size170 = 0;
-                        $_etype173 = 0;
-                        $xfer += $input->readListBegin($_etype173, $_size170);
-                        for ($_i174 = 0; $_i174 < $_size170; ++$_i174) {
-                            $elem175 = null;
-                            $xfer += $input->readString($elem175);
-                            $this->tableTypes []= $elem175;
+                    if ($ftype == TType::MAP) {
+                        $this->downloadOptions = array();
+                        $_size161 = 0;
+                        $_ktype162 = 0;
+                        $_vtype163 = 0;
+                        $xfer += $input->readMapBegin($_ktype162, $_vtype163, $_size161);
+                        for ($_i165 = 0; $_i165 < $_size161; ++$_i165) {
+                            $key166 = '';
+                            $val167 = '';
+                            $xfer += $input->readString($key166);
+                            $xfer += $input->readString($val167);
+                            $this->downloadOptions[$key166] = $val167;
                         }
-                        $xfer += $input->readListEnd();
+                        $xfer += $input->readMapEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -170,7 +177,7 @@ class TGetTablesReq
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('TGetTablesReq');
+        $xfer += $output->writeStructBegin('TDownloadDataReq');
         if ($this->sessionHandle !== null) {
             if (!is_object($this->sessionHandle)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -179,31 +186,32 @@ class TGetTablesReq
             $xfer += $this->sessionHandle->write($output);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->catalogName !== null) {
-            $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 2);
-            $xfer += $output->writeString($this->catalogName);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->schemaName !== null) {
-            $xfer += $output->writeFieldBegin('schemaName', TType::STRING, 3);
-            $xfer += $output->writeString($this->schemaName);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->tableName !== null) {
-            $xfer += $output->writeFieldBegin('tableName', TType::STRING, 4);
+            $xfer += $output->writeFieldBegin('tableName', TType::STRING, 2);
             $xfer += $output->writeString($this->tableName);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->tableTypes !== null) {
-            if (!is_array($this->tableTypes)) {
+        if ($this->query !== null) {
+            $xfer += $output->writeFieldBegin('query', TType::STRING, 3);
+            $xfer += $output->writeString($this->query);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->format !== null) {
+            $xfer += $output->writeFieldBegin('format', TType::STRING, 4);
+            $xfer += $output->writeString($this->format);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->downloadOptions !== null) {
+            if (!is_array($this->downloadOptions)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('tableTypes', TType::LST, 5);
-            $output->writeListBegin(TType::STRING, count($this->tableTypes));
-            foreach ($this->tableTypes as $iter176) {
-                $xfer += $output->writeString($iter176);
+            $xfer += $output->writeFieldBegin('downloadOptions', TType::MAP, 5);
+            $output->writeMapBegin(TType::STRING, TType::STRING, count($this->downloadOptions));
+            foreach ($this->downloadOptions as $kiter168 => $viter169) {
+                $xfer += $output->writeString($kiter168);
+                $xfer += $output->writeString($viter169);
             }
-            $output->writeListEnd();
+            $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
