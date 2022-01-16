@@ -22,9 +22,13 @@ public class MetricsConstants {
   public static final String API_PREFIX = "api_";
   public static final String COMPACTION_STATUS_PREFIX = "compaction_num_";
   public static final String COMPACTION_OLDEST_ENQUEUE_AGE = "compaction_oldest_enqueue_age_in_sec";
+  public static final String COMPACTION_OLDEST_WORKING_AGE = "compaction_oldest_working_age_in_sec";
+  public static final String COMPACTION_OLDEST_CLEANING_AGE = "compaction_oldest_cleaning_age_in_sec";
   public static final String COMPACTION_INITIATOR_CYCLE = "compaction_initiator_cycle";
+  public static final String COMPACTION_INITIATOR_CYCLE_DURATION = "compaction_initiator_cycle_duration";
   public static final String COMPACTION_INITIATOR_FAILURE_COUNTER = "compaction_initiator_failure_counter";
   public static final String COMPACTION_CLEANER_CYCLE = "compaction_cleaner_cycle";
+  public static final String COMPACTION_CLEANER_CYCLE_DURATION = "compaction_cleaner_cycle_duration";
   public static final String COMPACTION_CLEANER_FAILURE_COUNTER = "compaction_cleaner_failure_counter";
   public static final String COMPACTION_WORKER_CYCLE = "compaction_worker_cycle";
 

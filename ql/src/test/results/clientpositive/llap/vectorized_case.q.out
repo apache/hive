@@ -75,13 +75,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [1, 18, 23]
                           selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 15:stringcol 17:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 14:boolean, ConstantVectorExpression(val a) -> 15:string, IfExprStringScalarStringScalar(col 16:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 16:boolean) -> 17:string) -> 18:string, IfExprColumnCondExpr(col 19:boolean, col 20:stringcol 22:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 19:boolean, ConstantVectorExpression(val a) -> 20:string, IfExprStringScalarStringScalar(col 21:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 21:boolean) -> 22:string) -> 23:string
-                      Statistics: Num rows: 7 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 7 Data size: 1214 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 7 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 7 Data size: 1214 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -229,13 +229,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [1, 19, 25]
                           selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 15:stringcol 18:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 14:boolean, ConstantVectorExpression(val a) -> 15:string, IfExprColumnNull(col 16:boolean, col 17:string, null)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 16:boolean, ConstantVectorExpression(val b) -> 17:string) -> 18:string) -> 19:string, IfExprColumnCondExpr(col 20:boolean, col 21:stringcol 24:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 20:boolean, ConstantVectorExpression(val a) -> 21:string, IfExprNullColumn(col 22:boolean, null, col 23)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 22:boolean, ConstantVectorExpression(val c) -> 23:string) -> 24:string) -> 25:string
-                      Statistics: Num rows: 7 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 7 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 7 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 7 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -977,13 +977,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [6]
                         selectExpressions: IfExprNullCondExpr(col 4:boolean, null, col 5:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 4:boolean, LongColAddLongScalar(col 1:bigint, val 2) -> 5:bigint) -> 6:bigint
-                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1062,13 +1062,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [6]
                         selectExpressions: IfExprCondExprNull(col 4:boolean, col 5:bigint, null)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 4:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 5:bigint) -> 6:bigint
-                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

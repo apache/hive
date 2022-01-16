@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -35,12 +36,14 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -80,6 +83,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.channels.ClosedByInterruptException;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -445,12 +449,29 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // Handle the special header/footer skipping cases here.
       innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
-      innerReader = HiveIOExceptionHandlerUtil
-          .handleRecordReaderCreationException(e, job);
+      Throwable rootCause = JavaUtils.findRootCause(e);
+      if (checkLimitReached(job)
+          && (rootCause instanceof InterruptedException || rootCause instanceof ClosedByInterruptException)) {
+        LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
+        innerReader = new NullRowsRecordReader(job, split);
+      } else {
+        innerReader = HiveIOExceptionHandlerUtil
+            .handleRecordReaderCreationException(e, job);
+      }
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
+  }
+
+  private boolean checkLimitReached(JobConf job) {
+    /*
+     * Assuming that "tez.mapreduce.vertex.name" is present in case of tez.
+     * If it's not present (e.g. different execution engine), then checkLimitReachedForVertex will return
+     * false due to an invalid cache key (like: "null_limit_reached"), so this will silently acts as
+     * limit hasn't been reached, which is a proper behavior in case we don't support early bailout.
+     */
+    return LimitOperator.checkLimitReachedForVertex(job, job.get("tez.mapreduce.vertex.name"));
   }
 
   protected void init(JobConf job) {

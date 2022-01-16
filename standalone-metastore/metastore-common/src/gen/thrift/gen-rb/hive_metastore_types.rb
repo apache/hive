@@ -170,8 +170,9 @@ module TxnType
   READ_ONLY = 2
   COMPACTION = 3
   MATER_VIEW_REBUILD = 4
-  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD"}
-  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD]).freeze
+  SOFT_DELETE = 5
+  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD", 5 => "SOFT_DELETE"}
+  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD, SOFT_DELETE]).freeze
 end
 
 module GetTablesExtRequestFields
@@ -1848,14 +1849,16 @@ class CreationMetadata
   TABLESUSED = 4
   VALIDTXNLIST = 5
   MATERIALIZATIONTIME = 6
+  SOURCETABLES = 7
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SourceTable}},
+    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
     VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
-    MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true}
+    MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true},
+    SOURCETABLES => {:type => ::Thrift::Types::SET, :name => 'sourceTables', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SourceTable}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2339,6 +2342,7 @@ class Table
   ID = 25
   FILEMETADATA = 26
   DICTIONARY = 27
+  TXNID = 28
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -2367,7 +2371,8 @@ class Table
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true},
-    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4578,6 +4583,7 @@ class ShowCompactResponseElement
   WORKERVERSION = 16
   INITIATORID = 17
   INITIATORVERSION = 18
+  CLEANERSTART = 19
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4597,7 +4603,8 @@ class ShowCompactResponseElement
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
     WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
-    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
+    CLEANERSTART => {:type => ::Thrift::Types::I64, :name => 'cleanerStart', :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -8,7 +8,7 @@ insert into px_n0 values (2,2),(3,3),(5,5),(7,7),(11,11);
 set hive.explain.user=true;
 set hive.query.reexecution.enabled=true;
 set hive.query.reexecution.always.collect.operator.stats=true;
-set hive.query.reexecution.strategies=overlay,reoptimize;
+set hive.query.reexecution.strategies=overlay,reoptimize,recompile_without_cbo;
 set hive.query.reexecution.stats.persist.scope=hiveserver;
 
 -- join output estimate is underestimated: 1 row

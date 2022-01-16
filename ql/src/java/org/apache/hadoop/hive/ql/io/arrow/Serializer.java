@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.io.arrow;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.netty.buffer.ArrowBuf;
+import org.apache.arrow.memory.ArrowBuf;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.BitVectorHelper;

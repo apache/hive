@@ -24,8 +24,52 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.Materialization;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
+import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 
 import java.sql.SQLException;
@@ -158,8 +202,11 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  Materialization getMaterializationInvalidationInfo(
-      final CreationMetadata cm)
+  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm)
+          throws MetaException;
+
+  @RetrySemantics.Idempotent
+  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm, String validTxnList)
           throws MetaException;
 
   @RetrySemantics.ReadOnly
@@ -299,6 +346,9 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
+  @RetrySemantics.SafeToRetry
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException;
+
   /**
    * Show list of current compactions.
    * @param rqst info on which compactions to show
@@ -343,8 +393,14 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException;
+  default void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, false);
+  }
+
+  @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
@@ -382,7 +438,7 @@ public interface TxnStore extends Configurable {
    * @param compactionTxnId - txnid in which Compactor is running
    */
   @RetrySemantics.Idempotent
-  public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException;
+  void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException;
 
   /**
    * This will grab the next compaction request off of
@@ -421,6 +477,22 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
+
+  /**
+   * Sets the cleaning start time for a particular compaction
+   *
+   * @param info info on the compaction entry
+   */
+  @RetrySemantics.CannotRetry
+  void markCleanerStart(CompactionInfo info) throws MetaException;
+
+  /**
+   * Removes the cleaning start time for a particular compaction
+   *
+   * @param info info on the compaction entry
+   */
+  @RetrySemantics.CannotRetry
+  void clearCleanerStart(CompactionInfo info) throws MetaException;
 
   /**
    * This will remove an entry from the queue after

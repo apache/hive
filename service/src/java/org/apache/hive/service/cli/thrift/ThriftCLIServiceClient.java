@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,8 @@ import org.apache.hive.service.rpc.thrift.TCloseOperationReq;
 import org.apache.hive.service.rpc.thrift.TCloseOperationResp;
 import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
 import org.apache.hive.service.rpc.thrift.TCloseSessionResp;
+import org.apache.hive.service.rpc.thrift.TDownloadDataReq;
+import org.apache.hive.service.rpc.thrift.TDownloadDataResp;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementResp;
 import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
@@ -86,6 +89,8 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
+import org.apache.hive.service.rpc.thrift.TUploadDataReq;
+import org.apache.hive.service.rpc.thrift.TUploadDataResp;
 import org.apache.thrift.TException;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -574,6 +579,49 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
       req.putToConfiguration("ApplicationName", value);
       TSetClientInfoResp resp = cliService.SetClientInfo(req);
       checkStatus(resp.getStatus());
+    } catch (TException e) {
+      throw new HiveSQLException(e);
+    }
+  }
+
+  @Override
+  public OperationHandle uploadData(
+      SessionHandle sessionHandle,
+      ByteBuffer values,
+      String tableName,
+      String path) throws HiveSQLException {
+    try {
+      TUploadDataReq req = new TUploadDataReq(sessionHandle.toTSessionHandle(), values);
+      req.setTableName(tableName);
+      req.setPath(path);
+      TUploadDataResp resp = cliService.UploadData(req);
+      checkStatus(resp.getStatus());
+      TProtocolVersion protocol = sessionHandle.getProtocolVersion();
+      return new OperationHandle(resp.getOperationHandle(), protocol);
+    } catch (HiveSQLException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveSQLException(e);
+    }
+  }
+
+  @Override
+  public OperationHandle downloadData(
+      SessionHandle sessionHandle,
+      String tableName,
+      String query,
+      String format,
+      Map<String, String> options) throws HiveSQLException {
+    try {
+      TDownloadDataReq req = new TDownloadDataReq(sessionHandle.toTSessionHandle());
+      req.setTableName(tableName);
+      req.setQuery(query);
+      req.setFormat(format);
+      req.setDownloadOptions(options);
+      TDownloadDataResp resp = cliService.DownloadData(req);
+      checkStatus(resp.getStatus());
+      TProtocolVersion protocol = sessionHandle.getProtocolVersion();
+      return new OperationHandle(resp.getOperationHandle(), protocol);
     } catch (TException e) {
       throw new HiveSQLException(e);
     }

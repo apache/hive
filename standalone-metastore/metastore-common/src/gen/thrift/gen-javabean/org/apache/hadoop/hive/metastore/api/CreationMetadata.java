@@ -17,6 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)4);
   private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField MATERIALIZATION_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("materializationTime", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField SOURCE_TABLES_FIELD_DESC = new org.apache.thrift.protocol.TField("sourceTables", org.apache.thrift.protocol.TType.SET, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CreationMetadataStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CreationMetadataTupleSchemeFactory();
@@ -24,9 +25,10 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // required
-  private @org.apache.thrift.annotation.Nullable java.util.Set<SourceTable> tablesUsed; // required
+  private @org.apache.thrift.annotation.Nullable java.util.Set<java.lang.String> tablesUsed; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String validTxnList; // optional
   private long materializationTime; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.Set<SourceTable> sourceTables; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +37,8 @@ package org.apache.hadoop.hive.metastore.api;
     TBL_NAME((short)3, "tblName"),
     TABLES_USED((short)4, "tablesUsed"),
     VALID_TXN_LIST((short)5, "validTxnList"),
-    MATERIALIZATION_TIME((short)6, "materializationTime");
+    MATERIALIZATION_TIME((short)6, "materializationTime"),
+    SOURCE_TABLES((short)7, "sourceTables");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -63,6 +66,8 @@ package org.apache.hadoop.hive.metastore.api;
           return VALID_TXN_LIST;
         case 6: // MATERIALIZATION_TIME
           return MATERIALIZATION_TIME;
+        case 7: // SOURCE_TABLES
+          return SOURCE_TABLES;
         default:
           return null;
       }
@@ -106,7 +111,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __MATERIALIZATIONTIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.MATERIALIZATION_TIME};
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.MATERIALIZATION_TIME,_Fields.SOURCE_TABLES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -118,11 +123,14 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLES_USED, new org.apache.thrift.meta_data.FieldMetaData("tablesUsed", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SourceTable.class))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.VALID_TXN_LIST, new org.apache.thrift.meta_data.FieldMetaData("validTxnList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.MATERIALIZATION_TIME, new org.apache.thrift.meta_data.FieldMetaData("materializationTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.SOURCE_TABLES, new org.apache.thrift.meta_data.FieldMetaData("sourceTables", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SourceTable.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CreationMetadata.class, metaDataMap);
   }
@@ -134,7 +142,7 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.String catName,
     java.lang.String dbName,
     java.lang.String tblName,
-    java.util.Set<SourceTable> tablesUsed)
+    java.util.Set<java.lang.String> tablesUsed)
   {
     this();
     this.catName = catName;
@@ -158,16 +166,20 @@ package org.apache.hadoop.hive.metastore.api;
       this.tblName = other.tblName;
     }
     if (other.isSetTablesUsed()) {
-      java.util.Set<SourceTable> __this__tablesUsed = new java.util.HashSet<SourceTable>(other.tablesUsed.size());
-      for (SourceTable other_element : other.tablesUsed) {
-        __this__tablesUsed.add(new SourceTable(other_element));
-      }
+      java.util.Set<java.lang.String> __this__tablesUsed = new java.util.HashSet<java.lang.String>(other.tablesUsed);
       this.tablesUsed = __this__tablesUsed;
     }
     if (other.isSetValidTxnList()) {
       this.validTxnList = other.validTxnList;
     }
     this.materializationTime = other.materializationTime;
+    if (other.isSetSourceTables()) {
+      java.util.Set<SourceTable> __this__sourceTables = new java.util.HashSet<SourceTable>(other.sourceTables.size());
+      for (SourceTable other_element : other.sourceTables) {
+        __this__sourceTables.add(new SourceTable(other_element));
+      }
+      this.sourceTables = __this__sourceTables;
+    }
   }
 
   public CreationMetadata deepCopy() {
@@ -183,6 +195,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.validTxnList = null;
     setMaterializationTimeIsSet(false);
     this.materializationTime = 0;
+    this.sourceTables = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -262,23 +275,23 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<SourceTable> getTablesUsedIterator() {
+  public java.util.Iterator<java.lang.String> getTablesUsedIterator() {
     return (this.tablesUsed == null) ? null : this.tablesUsed.iterator();
   }
 
-  public void addToTablesUsed(SourceTable elem) {
+  public void addToTablesUsed(java.lang.String elem) {
     if (this.tablesUsed == null) {
-      this.tablesUsed = new java.util.HashSet<SourceTable>();
+      this.tablesUsed = new java.util.HashSet<java.lang.String>();
     }
     this.tablesUsed.add(elem);
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Set<SourceTable> getTablesUsed() {
+  public java.util.Set<java.lang.String> getTablesUsed() {
     return this.tablesUsed;
   }
 
-  public void setTablesUsed(@org.apache.thrift.annotation.Nullable java.util.Set<SourceTable> tablesUsed) {
+  public void setTablesUsed(@org.apache.thrift.annotation.Nullable java.util.Set<java.lang.String> tablesUsed) {
     this.tablesUsed = tablesUsed;
   }
 
@@ -343,6 +356,46 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MATERIALIZATIONTIME_ISSET_ID, value);
   }
 
+  public int getSourceTablesSize() {
+    return (this.sourceTables == null) ? 0 : this.sourceTables.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<SourceTable> getSourceTablesIterator() {
+    return (this.sourceTables == null) ? null : this.sourceTables.iterator();
+  }
+
+  public void addToSourceTables(SourceTable elem) {
+    if (this.sourceTables == null) {
+      this.sourceTables = new java.util.HashSet<SourceTable>();
+    }
+    this.sourceTables.add(elem);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Set<SourceTable> getSourceTables() {
+    return this.sourceTables;
+  }
+
+  public void setSourceTables(@org.apache.thrift.annotation.Nullable java.util.Set<SourceTable> sourceTables) {
+    this.sourceTables = sourceTables;
+  }
+
+  public void unsetSourceTables() {
+    this.sourceTables = null;
+  }
+
+  /** Returns true if field sourceTables is set (has been assigned a value) and false otherwise */
+  public boolean isSetSourceTables() {
+    return this.sourceTables != null;
+  }
+
+  public void setSourceTablesIsSet(boolean value) {
+    if (!value) {
+      this.sourceTables = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CAT_NAME:
@@ -373,7 +426,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (value == null) {
         unsetTablesUsed();
       } else {
-        setTablesUsed((java.util.Set<SourceTable>)value);
+        setTablesUsed((java.util.Set<java.lang.String>)value);
       }
       break;
 
@@ -390,6 +443,14 @@ package org.apache.hadoop.hive.metastore.api;
         unsetMaterializationTime();
       } else {
         setMaterializationTime((java.lang.Long)value);
+      }
+      break;
+
+    case SOURCE_TABLES:
+      if (value == null) {
+        unsetSourceTables();
+      } else {
+        setSourceTables((java.util.Set<SourceTable>)value);
       }
       break;
 
@@ -417,6 +478,9 @@ package org.apache.hadoop.hive.metastore.api;
     case MATERIALIZATION_TIME:
       return getMaterializationTime();
 
+    case SOURCE_TABLES:
+      return getSourceTables();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -440,6 +504,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetValidTxnList();
     case MATERIALIZATION_TIME:
       return isSetMaterializationTime();
+    case SOURCE_TABLES:
+      return isSetSourceTables();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -511,6 +577,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_sourceTables = true && this.isSetSourceTables();
+    boolean that_present_sourceTables = true && that.isSetSourceTables();
+    if (this_present_sourceTables || that_present_sourceTables) {
+      if (!(this_present_sourceTables && that_present_sourceTables))
+        return false;
+      if (!this.sourceTables.equals(that.sourceTables))
+        return false;
+    }
+
     return true;
   }
 
@@ -541,6 +616,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetMaterializationTime()) ? 131071 : 524287);
     if (isSetMaterializationTime())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(materializationTime);
+
+    hashCode = hashCode * 8191 + ((isSetSourceTables()) ? 131071 : 524287);
+    if (isSetSourceTables())
+      hashCode = hashCode * 8191 + sourceTables.hashCode();
 
     return hashCode;
   }
@@ -613,6 +692,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetSourceTables(), other.isSetSourceTables());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSourceTables()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sourceTables, other.sourceTables);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -679,6 +768,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("materializationTime:");
       sb.append(this.materializationTime);
+      first = false;
+    }
+    if (isSetSourceTables()) {
+      if (!first) sb.append(", ");
+      sb.append("sourceTables:");
+      if (this.sourceTables == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.sourceTables);
+      }
       first = false;
     }
     sb.append(")");
@@ -770,12 +869,11 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
                 org.apache.thrift.protocol.TSet _set264 = iprot.readSetBegin();
-                struct.tablesUsed = new java.util.HashSet<SourceTable>(2*_set264.size);
-                @org.apache.thrift.annotation.Nullable SourceTable _elem265;
+                struct.tablesUsed = new java.util.HashSet<java.lang.String>(2*_set264.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem265;
                 for (int _i266 = 0; _i266 < _set264.size; ++_i266)
                 {
-                  _elem265 = new SourceTable();
-                  _elem265.read(iprot);
+                  _elem265 = iprot.readString();
                   struct.tablesUsed.add(_elem265);
                 }
                 iprot.readSetEnd();
@@ -797,6 +895,25 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.materializationTime = iprot.readI64();
               struct.setMaterializationTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // SOURCE_TABLES
+            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+              {
+                org.apache.thrift.protocol.TSet _set267 = iprot.readSetBegin();
+                struct.sourceTables = new java.util.HashSet<SourceTable>(2*_set267.size);
+                @org.apache.thrift.annotation.Nullable SourceTable _elem268;
+                for (int _i269 = 0; _i269 < _set267.size; ++_i269)
+                {
+                  _elem268 = new SourceTable();
+                  _elem268.read(iprot);
+                  struct.sourceTables.add(_elem268);
+                }
+                iprot.readSetEnd();
+              }
+              struct.setSourceTablesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -832,10 +949,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.tablesUsed != null) {
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
-          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.tablesUsed.size()));
-          for (SourceTable _iter267 : struct.tablesUsed)
+          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
+          for (java.lang.String _iter270 : struct.tablesUsed)
           {
-            _iter267.write(oprot);
+            oprot.writeString(_iter270);
           }
           oprot.writeSetEnd();
         }
@@ -852,6 +969,20 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(MATERIALIZATION_TIME_FIELD_DESC);
         oprot.writeI64(struct.materializationTime);
         oprot.writeFieldEnd();
+      }
+      if (struct.sourceTables != null) {
+        if (struct.isSetSourceTables()) {
+          oprot.writeFieldBegin(SOURCE_TABLES_FIELD_DESC);
+          {
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.sourceTables.size()));
+            for (SourceTable _iter271 : struct.sourceTables)
+            {
+              _iter271.write(oprot);
+            }
+            oprot.writeSetEnd();
+          }
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -875,9 +1006,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.tablesUsed.size());
-        for (SourceTable _iter268 : struct.tablesUsed)
+        for (java.lang.String _iter272 : struct.tablesUsed)
         {
-          _iter268.write(oprot);
+          oprot.writeString(_iter272);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -887,12 +1018,24 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetMaterializationTime()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetSourceTables()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetValidTxnList()) {
         oprot.writeString(struct.validTxnList);
       }
       if (struct.isSetMaterializationTime()) {
         oprot.writeI64(struct.materializationTime);
+      }
+      if (struct.isSetSourceTables()) {
+        {
+          oprot.writeI32(struct.sourceTables.size());
+          for (SourceTable _iter273 : struct.sourceTables)
+          {
+            _iter273.write(oprot);
+          }
+        }
       }
     }
 
@@ -906,18 +1049,17 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set269 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.tablesUsed = new java.util.HashSet<SourceTable>(2*_set269.size);
-        @org.apache.thrift.annotation.Nullable SourceTable _elem270;
-        for (int _i271 = 0; _i271 < _set269.size; ++_i271)
+        org.apache.thrift.protocol.TSet _set274 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRING);
+        struct.tablesUsed = new java.util.HashSet<java.lang.String>(2*_set274.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem275;
+        for (int _i276 = 0; _i276 < _set274.size; ++_i276)
         {
-          _elem270 = new SourceTable();
-          _elem270.read(iprot);
-          struct.tablesUsed.add(_elem270);
+          _elem275 = iprot.readString();
+          struct.tablesUsed.add(_elem275);
         }
       }
       struct.setTablesUsedIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.validTxnList = iprot.readString();
         struct.setValidTxnListIsSet(true);
@@ -925,6 +1067,20 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.materializationTime = iprot.readI64();
         struct.setMaterializationTimeIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TSet _set277 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.sourceTables = new java.util.HashSet<SourceTable>(2*_set277.size);
+          @org.apache.thrift.annotation.Nullable SourceTable _elem278;
+          for (int _i279 = 0; _i279 < _set277.size; ++_i279)
+          {
+            _elem278 = new SourceTable();
+            _elem278.read(iprot);
+            struct.sourceTables.add(_elem278);
+          }
+        }
+        struct.setSourceTablesIsSet(true);
       }
     }
   }

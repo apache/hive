@@ -183,8 +183,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                     "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
             ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
           } else {
-            LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
-            throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+            LOG.warn("Database " + dbNameOrPattern + " is marked as target of replication (repl.target.for), Will "
+                + "trigger failover.");
           }
         }
       } else {

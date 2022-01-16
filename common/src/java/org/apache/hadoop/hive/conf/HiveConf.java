@@ -77,7 +77,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * Hive Configuration.
  */
@@ -1836,6 +1835,8 @@ public class HiveConf extends Configuration {
     HIVEALIAS("hive.alias", "", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", false, "Whether there is skew in data to optimize group by queries"),
+    HIVE_JOIN_SHORTCUT_UNMATCHED_ROWS("hive.join.shortcut.unmatched.rows", true,
+        "Enables to shortcut processing of known filtered rows in merge joins. internal use only. may affect correctness"),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000,
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,
@@ -3064,10 +3065,19 @@ public class HiveConf extends Configuration {
 
     HIVE_ACID_LOCKLESS_READS_ENABLED("hive.acid.lockless.reads.enabled", false,
         "Enables lockless reads"),
+     
+    HIVE_ACID_CREATE_TABLE_USE_SUFFIX("hive.acid.createtable.softdelete", false,
+        "Enables non-blocking DROP TABLE operation.\n" +
+        "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
     
     HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
+    
+    HIVE_ACID_DROP_PARTITION_USE_BASE("hive.acid.droppartition.usebase", false,
+        "Enables non-blocking DROP PARTITION operation.\n" +
+        "If enabled, drop for transactional tables will not delete the data directories,\n" +
+        "rather create a new base directory with no datafiles.\")"),
     
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
@@ -3190,6 +3200,22 @@ public class HiveConf extends Configuration {
         "has had a transaction done on it since the last major compaction. So decreasing this\n" +
         "value will increase the load on the NameNode."),
 
+    HIVE_COMPACTOR_INITIATOR_DURATION_UPDATE_INTERVAL("hive.compactor.initiator.duration.update.interval", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Time in seconds that drives the update interval of compaction_initiator_duration metric.\n" +
+            "Smaller value results in a fine grained metric update.\n" +
+            "This updater can be turned off if its value less than or equals to zero.\n"+
+            "In this case the above metric will be update only after the initiator completed one cycle.\n" +
+            "The hive.compactor.initiator.on must be turned on (true) in-order to enable the Initiator,\n" +
+            "otherwise this setting has no effect."),
+
+    HIVE_COMPACTOR_CLEANER_DURATION_UPDATE_INTERVAL("hive.compactor.cleaner.duration.update.interval", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Time in seconds that drives the update interval of compaction_cleaner_duration metric.\n" +
+            "Smaller value results in a fine grained metric update.\n" +
+            "This updater can be turned off if its value less than or equals to zero.\n"+
+            "In this case the above metric will be update only after the cleaner completed one cycle."),
+
     HIVE_COMPACTOR_REQUEST_QUEUE("hive.compactor.request.queue", 1,
         "Enables parallelization of the checkForCompaction operation, that includes many file metadata checks\n" +
         "and may be expensive"),
@@ -3234,10 +3260,22 @@ public class HiveConf extends Configuration {
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
 
-    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+    /**
+     * @deprecated This config value is honoured by the MR based compaction only.
+     * Use the {@link HiveConf.ConfVars#HIVE_COMPACTOR_GATHER_STATS}
+     * config instead which is honoured by both the MR and Query based compaction.
+     */
+    @Deprecated
+    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", false, "If set to true MAJOR compaction " +
         "will gather stats if there are stats already associated with the table/partition.\n" +
         "Turn this off to save some resources and the stats are not used anyway.\n" +
         "Works only for MR based compaction, CRUD based compaction uses hive.stats.autogather."),
+
+    HIVE_COMPACTOR_GATHER_STATS("hive.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+            "will gather stats if there are stats already associated with the table/partition.\n" +
+            "Turn this off to save some resources and the stats are not used anyway.\n" +
+            "This is a replacement for the HIVE_MR_COMPACTOR_GATHER_STATS config, and works both for MR and Query based " +
+            "compaction."),
 
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_INITIATOR_FAILED_THRESHOLD
@@ -3326,7 +3364,7 @@ public class HiveConf extends Configuration {
     MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
       "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
         "table there is at most 1 matching row in the source table per SQL Specification."),
-    MERGE_SPLIT_UPDATE("hive.merge.split.update", false,
+    MERGE_SPLIT_UPDATE("hive.merge.split.update", true,
         "If true, SQL Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
             "branches of a multi-insert, representing delete of existing row and an insert of\n" +
             "the new version of the row.  Updating bucketing and partitioning columns should\n" +
@@ -4325,7 +4363,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH("hive.server2.job.credential.provider.path", "",
         "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
         "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
-        "credential providers for jobs run using MR and Spark execution engines. This functionality has not been tested against Tez."),
+        "credential providers for jobs run using Tez, MR, Spark execution engines."),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),
@@ -5520,10 +5558,12 @@ public class HiveConf extends Configuration {
 
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
         "Enable query reexecutions"),
-    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize,reexecute_lost_am,dagsubmit",
+    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies",
+        "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
+            + "  recompile_without_cbo: recompiles query after a CBO failure\n"
             + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
@@ -5545,7 +5585,8 @@ public class HiveConf extends Configuration {
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
     HIVE_QUERY_PLANMAPPER_LINK_RELNODES("hive.query.planmapper.link.relnodes", true,
         "Whether to link Calcite nodes to runtime statistics."),
-
+    HIVE_QUERY_MAX_RECOMPILATION_COUNT("hive.query.recompilation.max.count", 1,
+        "Maximum number of re-compilations for a single query."),
     HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED("hive.scheduled.queries.executor.enabled", true,
         "Controls whether HS2 will run scheduled query executor."),
     HIVE_SCHEDULED_QUERIES_NAMESPACE("hive.scheduled.queries.namespace", "hive",

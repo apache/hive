@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,6 +87,7 @@ import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1229,7 +1231,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    return client.translate_table_dryrun(tbl);
+    CreateTableRequest request = new CreateTableRequest(tbl);
+
+    if (processorCapabilities != null) {
+      request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      request.setProcessorIdentifier(processorIdentifier);
+    }
+    return client.translate_table_dryrun(request);
   }
 
   /**
@@ -1752,10 +1760,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
+    
+    EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+      context = getEnvironmentContextWithIfPurgeSet();
     }
+    if (options.writeId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("writeId", options.writeId.toString());
+    }
+    if (options.txnId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", options.txnId.toString());
+    }
+    req.setEnvironmentContext(context);
+    
     return client.drop_partitions_req(req).getPartitions();
   }
 
@@ -1770,6 +1790,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws TException {
     dropTable(getDefaultCatalog(conf), dbname, name, deleteData, ignoreUnknownTab, ifPurge);
+  }
+
+  @Override
+  public void dropTable(Table tbl, boolean deleteData, boolean ignoreUnknownTbl, boolean ifPurge) throws TException {
+    EnvironmentContext context = null;
+    if (ifPurge) {
+      context = getEnvironmentContextWithIfPurgeSet();
+    }
+    if (tbl.isSetTxnId()) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", String.valueOf(tbl.getTxnId()));
+    }
+    String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
+
+    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData, 
+        ignoreUnknownTbl, context);
   }
 
   @Override
@@ -1789,7 +1825,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       envContext = new EnvironmentContext(warehouseOptions);
     }
     dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
-
   }
 
   /**
@@ -2642,10 +2677,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
 
-  @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm);
+    return client.get_materialization_invalidation_info(cm, null);
+  }
+
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(cm, validTxnList);
   }
 
   @Override
@@ -4201,6 +4240,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
+    return getNextNotificationsInternal(rqst, false, filter);
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return getNextNotificationsInternal(request, allowGapsInEventIds, filter);
+  }
+
+  @Nullable
+  private NotificationEventResponse getNextNotificationsInternal(
+      NotificationEventRequest rqst, boolean allowGapsInEventIds,
+      NotificationFilter filter) throws TException {
+    long lastEventId = rqst.getLastEvent();
     NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back {} events", rsp!= null ? rsp.getEventsSize() : 0);
     NotificationEventResponse filtered = new NotificationEventResponse();
@@ -4209,7 +4262,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       long prevEventId = lastEventId;
       for (NotificationEvent e : rsp.getEvents()) {
         LOG.debug("Got event with id : {}", e.getEventId());
-        if (e.getEventId() != nextEventId) {
+        if (!allowGapsInEventIds && e.getEventId() != nextEventId) {
           if (e.getEventId() == prevEventId) {
             LOG.error("NOTIFICATION_LOG table has multiple events with the same event Id {}. " +
                     "Something went wrong when inserting notification events.  Bootstrap the system " +

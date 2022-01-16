@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -1056,4 +1057,49 @@ public class HiveSessionImpl implements HiveSession {
       "TRANSLATION", "TRIM", "TRUE", "UNION", "UNIQUE", "UNKNOWN", "UPDATE", "UPPER", "USAGE",
       "USER", "USING", "VALUE", "VALUES", "VARCHAR", "VARYING", "VIEW", "WHEN", "WHENEVER",
       "WHERE", "WITH", "WORK", "WRITE", "YEAR", "ZONE")));
+
+  @Override
+  public OperationHandle uploadData(
+      ByteBuffer values, String tableName, String path) throws HiveSQLException {
+    acquire(true, true);
+
+    OperationManager operationManager = getOperationManager();
+    Operation operation = operationManager.newUploadDataOperation(
+        getSession(), values, tableName, path);
+    OperationHandle opHandle = operation.getHandle();
+    try {
+      operation.run();
+      opHandleSet.add(opHandle);
+      return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
+    } finally {
+      release(true, true);
+    }
+  }
+
+  @Override
+  public OperationHandle downloadData(
+      String tableName,
+      String query,
+      String format,
+      Map<String, String> options) throws HiveSQLException {
+    acquire(true, true);
+
+    OperationManager operationManager = getOperationManager();
+    Operation operation = operationManager.newDownloadDataOperation(
+        getSession(), tableName, query, format, options);
+    OperationHandle opHandle = operation.getHandle();
+    try {
+      operation.run();
+      opHandleSet.add(opHandle);
+      return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
+    } finally {
+      release(true, true);
+    }
+  }
 }

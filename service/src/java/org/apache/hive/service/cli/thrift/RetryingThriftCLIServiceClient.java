@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -244,6 +245,25 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     @Override
     public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
       cliService.setApplicationName(sh, value);
+    }
+
+    @Override
+    public OperationHandle uploadData(
+        SessionHandle sessionHandle,
+        ByteBuffer values,
+        String tableName,
+        String path) throws HiveSQLException {
+      return cliService.uploadData(sessionHandle, values, tableName, path);
+    }
+
+    @Override
+    public OperationHandle downloadData(
+        SessionHandle sessionHandle,
+        String tableName,
+        String query,
+        String format,
+        Map<String, String> options) throws HiveSQLException {
+      return cliService.downloadData(sessionHandle, tableName, query, format, options);
     }
   }
 

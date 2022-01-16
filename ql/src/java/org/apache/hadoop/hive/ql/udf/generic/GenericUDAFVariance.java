@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,14 +106,9 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
    */
   public static double calculateIntermediate(
       long count, double sum, double value, double variance) {
-    BigDecimal bcount,bsum,bvalue,bvariance;
-    bvariance = new BigDecimal(variance);
-    bsum = new BigDecimal(sum);
-    bvalue = new BigDecimal(value);
-    bcount = new BigDecimal(count);
-    BigDecimal t = bcount.multiply(bvalue).subtract(bsum);
-    bvariance = bvariance.add(t.multiply(t).divide(bcount.multiply(bcount.subtract(BigDecimal.ONE)),MathContext.DECIMAL128));
-    return bvariance.doubleValue();
+    double t = count * value - sum;
+    variance += (t * t) / ((double) count * (count - 1));
+    return variance;
   }
 
   /*
@@ -127,16 +120,14 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
       long partialCount, long mergeCount, double partialSum, double mergeSum,
       double partialVariance, double mergeVariance) {
 
-    final BigDecimal bPartialCount = new BigDecimal(partialCount);
-    final BigDecimal bMergeCount = new BigDecimal(mergeCount);
-    BigDecimal bmergeVariance = new BigDecimal(mergeVariance);
+    final double doublePartialCount = (double) partialCount;
+    final double doubleMergeCount = (double) mergeCount;
 
-    BigDecimal t =
-        bPartialCount.divide(bMergeCount, MathContext.DECIMAL128).multiply(new BigDecimal(mergeSum)).subtract(new BigDecimal(partialSum));
-
-    bmergeVariance = bmergeVariance.add(new BigDecimal(partialVariance).add(
-        (bMergeCount.divide(bPartialCount,MathContext.DECIMAL128).divide(bMergeCount.add(bPartialCount),MathContext.DECIMAL128)).multiply(t).multiply(t)));
-    return bmergeVariance.doubleValue();
+    double t = (doublePartialCount / doubleMergeCount) * mergeSum - partialSum;
+    mergeVariance +=
+        partialVariance + ((doubleMergeCount / doublePartialCount) /
+            (doubleMergeCount + doublePartialCount)) * t * t;
+    return mergeVariance;
   }
 
   /*

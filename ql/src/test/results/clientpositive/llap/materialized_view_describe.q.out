@@ -92,6 +92,10 @@ Original Query:     	select a, c from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: show tblproperties cmv_mat_view_n8
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view_n8
@@ -185,6 +189,10 @@ Original Query:     	select a from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: select a from cmv_mat_view2_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n3
@@ -268,6 +276,10 @@ Original Query:     	select * from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`b`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: select a, b, c from cmv_mat_view3_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view3_n0
@@ -360,6 +372,10 @@ Original Query:     	select a from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: select a from cmv_mat_view4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view4_n0

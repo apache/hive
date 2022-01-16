@@ -22,23 +22,23 @@ class ThriftHiveMetastore_translate_table_dryrun_args
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'tbl',
+            'var' => 'request',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\Table',
+            'class' => '\metastore\CreateTableRequest',
         ),
     );
 
     /**
-     * @var \metastore\Table
+     * @var \metastore\CreateTableRequest
      */
-    public $tbl = null;
+    public $request = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['tbl'])) {
-                $this->tbl = $vals['tbl'];
+            if (isset($vals['request'])) {
+                $this->request = $vals['request'];
             }
         }
     }
@@ -64,8 +64,8 @@ class ThriftHiveMetastore_translate_table_dryrun_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->tbl = new \metastore\Table();
-                        $xfer += $this->tbl->read($input);
+                        $this->request = new \metastore\CreateTableRequest();
+                        $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -84,12 +84,12 @@ class ThriftHiveMetastore_translate_table_dryrun_args
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_translate_table_dryrun_args');
-        if ($this->tbl !== null) {
-            if (!is_object($this->tbl)) {
+        if ($this->request !== null) {
+            if (!is_object($this->request)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('tbl', TType::STRUCT, 1);
-            $xfer += $this->tbl->write($output);
+            $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
+            $xfer += $this->request->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

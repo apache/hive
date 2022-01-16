@@ -313,14 +313,14 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_check_constraint(\metastore\AddCheckConstraintRequest $req);
     /**
-     * @param \metastore\Table $tbl
+     * @param \metastore\CreateTableRequest $request
      * @return \metastore\Table
      * @throws \metastore\AlreadyExistsException
      * @throws \metastore\InvalidObjectException
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
      */
-    public function translate_table_dryrun(\metastore\Table $tbl);
+    public function translate_table_dryrun(\metastore\CreateTableRequest $request);
     /**
      * @param string $dbname
      * @param string $name
@@ -428,12 +428,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function get_table_objects_by_name_req(\metastore\GetTablesRequest $req);
     /**
      * @param \metastore\CreationMetadata $creation_metadata
+     * @param string $validTxnList
      * @return \metastore\Materialization
      * @throws \metastore\MetaException
      * @throws \metastore\InvalidOperationException
      * @throws \metastore\UnknownDBException
      */
-    public function get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata);
+    public function get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata, $validTxnList);
     /**
      * @param string $catName
      * @param string $dbname

@@ -177,6 +177,10 @@ Original Query:     	select key from masking_test_n_mv
 Expanded Query:     	select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.masking_test_n_mv	0/0/0               	 
 PREHOOK: query: explain cbo
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY

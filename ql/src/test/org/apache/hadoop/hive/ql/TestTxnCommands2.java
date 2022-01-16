@@ -725,11 +725,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_10000001_10000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_10000002_10000002_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_10000002_10000002_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_10000003_10000003_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00000_0", buckets[0].getPath().getName());
         }
@@ -738,7 +738,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_10000001_10000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delete_delta_10000002_10000002_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         }
@@ -785,7 +785,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000002_v0000028", status[i].getPath().getName());
+          Assert.assertEquals("base_10000003_v0000029", status[i].getPath().getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -812,7 +812,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     status = fs.listStatus(new Path(getWarehouseDir() + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_10000002_v0000028", status[0].getPath().getName());
+    Assert.assertEquals("base_10000003_v0000029", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -824,6 +824,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
   }
+
   @Test
   public void testValidTxnsBookkeeping() throws Exception {
     // 1. Run a query against a non-ACID table, and we shouldn't have txn logged in conf
@@ -2192,7 +2193,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
-            3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
+            4, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
     txnMgr.commitTxn();

@@ -298,7 +298,8 @@ struct TxnType {
     REPL_CREATED = 1,
     READ_ONLY = 2,
     COMPACTION = 3,
-    MATER_VIEW_REBUILD = 4
+    MATER_VIEW_REBUILD = 4,
+    SOFT_DELETE = 5
   };
 };
 
@@ -3683,9 +3684,10 @@ void swap(SourceTable &a, SourceTable &b);
 std::ostream& operator<<(std::ostream& out, const SourceTable& obj);
 
 typedef struct _CreationMetadata__isset {
-  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
+  _CreationMetadata__isset() : validTxnList(false), materializationTime(false), sourceTables(false) {}
   bool validTxnList :1;
   bool materializationTime :1;
+  bool sourceTables :1;
 } _CreationMetadata__isset;
 
 class CreationMetadata : public virtual ::apache::thrift::TBase {
@@ -3700,9 +3702,10 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::string tblName;
-  std::set<SourceTable>  tablesUsed;
+  std::set<std::string>  tablesUsed;
   std::string validTxnList;
   int64_t materializationTime;
+  std::set<SourceTable>  sourceTables;
 
   _CreationMetadata__isset __isset;
 
@@ -3712,11 +3715,13 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
 
   void __set_tblName(const std::string& val);
 
-  void __set_tablesUsed(const std::set<SourceTable> & val);
+  void __set_tablesUsed(const std::set<std::string> & val);
 
   void __set_validTxnList(const std::string& val);
 
   void __set_materializationTime(const int64_t val);
+
+  void __set_sourceTables(const std::set<SourceTable> & val);
 
   bool operator == (const CreationMetadata & rhs) const
   {
@@ -3735,6 +3740,10 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
     if (__isset.materializationTime != rhs.__isset.materializationTime)
       return false;
     else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
+      return false;
+    if (__isset.sourceTables != rhs.__isset.sourceTables)
+      return false;
+    else if (__isset.sourceTables && !(sourceTables == rhs.sourceTables))
       return false;
     return true;
   }
@@ -4773,7 +4782,7 @@ void swap(ObjectDictionary &a, ObjectDictionary &b);
 std::ostream& operator<<(std::ostream& out, const ObjectDictionary& obj);
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false), dictionary(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false), dictionary(false), txnId(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4801,6 +4810,7 @@ typedef struct _Table__isset {
   bool id :1;
   bool fileMetadata :1;
   bool dictionary :1;
+  bool txnId :1;
 } _Table__isset;
 
 class Table : public virtual ::apache::thrift::TBase {
@@ -4808,7 +4818,7 @@ class Table : public virtual ::apache::thrift::TBase {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0), accessType(0), id(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0), accessType(0), id(0), txnId(0) {
     ownerType = (PrincipalType::type)1;
 
   }
@@ -4845,6 +4855,7 @@ class Table : public virtual ::apache::thrift::TBase {
   int64_t id;
   FileMetadata fileMetadata;
   ObjectDictionary dictionary;
+  int64_t txnId;
 
   _Table__isset __isset;
 
@@ -4901,6 +4912,8 @@ class Table : public virtual ::apache::thrift::TBase {
   void __set_fileMetadata(const FileMetadata& val);
 
   void __set_dictionary(const ObjectDictionary& val);
+
+  void __set_txnId(const int64_t val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4987,6 +5000,10 @@ class Table : public virtual ::apache::thrift::TBase {
     if (__isset.dictionary != rhs.__isset.dictionary)
       return false;
     else if (__isset.dictionary && !(dictionary == rhs.dictionary))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
       return false;
     return true;
   }
@@ -10407,7 +10424,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -10422,6 +10439,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool workerVersion :1;
   bool initiatorId :1;
   bool initiatorVersion :1;
+  bool cleanerStart :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -10429,7 +10447,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage(), enqueueTime(0), workerVersion(), initiatorId(), initiatorVersion() {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage(), enqueueTime(0), workerVersion(), initiatorId(), initiatorVersion(), cleanerStart(0) {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -10455,6 +10473,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   std::string workerVersion;
   std::string initiatorId;
   std::string initiatorVersion;
+  int64_t cleanerStart;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -10493,6 +10512,8 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_initiatorId(const std::string& val);
 
   void __set_initiatorVersion(const std::string& val);
+
+  void __set_cleanerStart(const int64_t val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -10559,6 +10580,10 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
     if (__isset.initiatorVersion != rhs.__isset.initiatorVersion)
       return false;
     else if (__isset.initiatorVersion && !(initiatorVersion == rhs.initiatorVersion))
+      return false;
+    if (__isset.cleanerStart != rhs.__isset.cleanerStart)
+      return false;
+    else if (__isset.cleanerStart && !(cleanerStart == rhs.cleanerStart))
       return false;
     return true;
   }
