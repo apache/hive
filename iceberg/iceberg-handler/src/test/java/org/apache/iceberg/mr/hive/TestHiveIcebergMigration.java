@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -225,12 +226,15 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
   private void validateTblProps(Table hmsTable, boolean migrationSucceeded) {
     String migratedProp = hmsTable.getParameters().get(HiveIcebergMetaHook.MIGRATED_TO_ICEBERG);
     String tableTypeProp = hmsTable.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
+    String nameMappingProp = hmsTable.getParameters().get(TableProperties.DEFAULT_NAME_MAPPING);
     if (migrationSucceeded) {
       Assert.assertTrue(Boolean.parseBoolean(migratedProp));
       Assert.assertEquals(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(), tableTypeProp);
+      Assert.assertTrue(nameMappingProp != null && !nameMappingProp.isEmpty());
     } else {
       Assert.assertNull(migratedProp);
       Assert.assertNotEquals(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(), tableTypeProp);
+      Assert.assertTrue(nameMappingProp == null);
     }
   }
 }

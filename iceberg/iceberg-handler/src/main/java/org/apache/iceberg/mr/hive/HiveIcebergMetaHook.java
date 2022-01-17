@@ -71,6 +71,9 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.mapping.MappingUtil;
+import org.apache.iceberg.mapping.NameMapping;
+import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -285,6 +288,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // files do not contain Iceberg field IDs. This makes certain schema evolution operations problematic, so we
       // want to disable these ops for now using this new table prop
       hmsTable.getParameters().put(MIGRATED_TO_ICEBERG, "true");
+      NameMapping nameMapping = MappingUtil.create(preAlterTableProperties.schema);
+      hmsTable.getParameters().put(TableProperties.DEFAULT_NAME_MAPPING, NameMappingParser.toJson(nameMapping));
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {

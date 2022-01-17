@@ -82,7 +82,6 @@ public class HiveTableUtil {
     MetricsConfig metricsConfig = MetricsConfig.fromProperties(icebergTable.properties());
     String nameMappingString = icebergTable.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
     NameMapping nameMapping = nameMappingString != null ? NameMappingParser.fromJson(nameMappingString) : null;
-
     try {
       if (partitionSpecProxy.size() == 0) {
         List<DataFile> dataFiles = getDataFiles(filesIterator, Collections.emptyMap(), format, spec, metricsConfig,
