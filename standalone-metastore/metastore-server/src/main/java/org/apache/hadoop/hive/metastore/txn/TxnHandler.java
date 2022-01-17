@@ -77,7 +77,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
@@ -5917,7 +5916,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     boolean needToCloseConn = true;
     try {
       try {
-        String sqlStmt = sqlGenerator.addForUpdateClause("SELECT \"MT_COMMENT\" FROM \"AUX_TABLE\" WHERE \"MT_KEY1\"=" + quoteString(key) + " and \"MT_KEY2\"=0");
+        String sqlStmt = sqlGenerator.addForUpdateClause("SELECT \"MT_COMMENT\", \"MT_KEY2\" FROM \"AUX_TABLE\" WHERE \"MT_KEY1\"=" + quoteString(key));
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
         stmt = dbConn.createStatement();
@@ -5998,7 +5997,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     private final Statement stmt;
     private final ResultSet rs;
     private final Semaphore derbySemaphore;
-    private final List<String> keys = new ArrayList<>();
+    private final String key;
+    private final Long lastUpdateTime;
+
     LockHandleImpl(Connection conn, Statement stmt, ResultSet rs, String key, Semaphore derbySemaphore) {
       this.dbConn = conn;
       this.stmt = stmt;
@@ -6008,12 +6009,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //oterwise it may later release permit acquired by someone else
         assert derbySemaphore.availablePermits() == 0 : "Expected locked Semaphore";
       }
-      keys.add(key);
-    }
-    void addKey(String key) {
-      //keys.add(key);
-      //would need a list of (stmt,rs) pairs - 1 for each key
-      throw new NotImplementedException("addKey(String) is not implemented, would require a list of (stmt,rs) pairs / key");
+      this.key = key;
+      Long lastUpdateTime;
+      try {
+        lastUpdateTime = rs.getLong("MT_KEY2");
+      } catch (SQLException e) {
+        LOG.warn("Couldn't resolve MT_KEY2 for MT_KEY1=" + quoteString(this.key), e);
+        lastUpdateTime = -1L;
+      }
+      this.lastUpdateTime = lastUpdateTime;
     }
 
     @Override
@@ -6023,9 +6027,28 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if(derbySemaphore != null) {
         derbySemaphore.release();
       }
-      for(String key : keys) {
-        LOG.debug(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
+      LOG.debug(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
+    }
+
+    @Override
+    public Long getLastUpdateTime() {
+      return lastUpdateTime;
+    }
+
+    @Override
+    public void releaseLocks(Long timestamp) {
+      try {
+        stmt.executeUpdate("UPDATE \"AUX_TABLE\" SET \"MT_KEY2\" = "+ timestamp + " WHERE \"MT_KEY1\"=" + quoteString(key));
+        dbConn.commit();
+      } catch (SQLException ex) {
+        LOG.warn("Unable to update MT_KEY2 value for MT_KEY1=" + key, ex);
+        rollbackDBConn(dbConn);
       }
+      close(rs, stmt, dbConn);
+      if(derbySemaphore != null) {
+        derbySemaphore.release();
+      }
+      LOG.debug(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
     }
   }
 
