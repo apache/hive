@@ -1312,8 +1312,10 @@ class MetaStoreDirectSql {
         nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(nodeValue);
       }
 
+      boolean isEqPredicate = node.operator == Operator.EQUALS || node.operator == Operator.NOTEQUALS
+              || node.operator == Operator.NOTEQUALS2;
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
-      if ((colType != valType) && (!isDefaultPartition)) {
+      if ((colType != valType) && (!isDefaultPartition) && (!isEqPredicate)) {
         // It's not clear how filtering for e.g. "stringCol > 5" should work (which side is
         // to be coerced?). Let the expression evaluation sort this one out, not metastore.
         filterBuffer.setError("Cannot push down filter for "
