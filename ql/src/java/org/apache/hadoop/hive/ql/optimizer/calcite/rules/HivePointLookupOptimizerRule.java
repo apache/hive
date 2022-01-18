@@ -80,8 +80,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /** Rule adapter to apply the transformation to Filter conditions. */
   public static class FilterCondition extends HivePointLookupOptimizerRule {
-    public FilterCondition (int minNumORClauses) {
-      super(operand(Filter.class, any()), minNumORClauses);
+    public FilterCondition (int minNumORClauses, boolean closeExprs) {
+      super(operand(Filter.class, any()), minNumORClauses, closeExprs);
     }
 
     @Override
@@ -104,8 +104,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /** Rule adapter to apply the transformation to Join conditions. */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
-    public JoinCondition (int minNumORClauses) {
-      super(operand(Join.class, any()), minNumORClauses);
+    public JoinCondition (int minNumORClauses, boolean closeExprs) {
+      super(operand(Join.class, any()), minNumORClauses, closeExprs);
     }
 
     @Override
@@ -134,8 +134,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /** Rule adapter to apply the transformation to Projections. */
   public static class ProjectionExpressions extends HivePointLookupOptimizerRule {
-    public ProjectionExpressions(int minNumORClauses) {
-      super(operand(Project.class, any()), minNumORClauses);
+    public ProjectionExpressions(int minNumORClauses, boolean closeExprs) {
+      super(operand(Project.class, any()), minNumORClauses, closeExprs);
     }
 
     @Override
@@ -167,11 +167,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   // Minimum number of OR clauses needed to transform into IN clauses
   protected final int minNumORClauses;
+  // Controls whether expressions should be left as closed
+  protected final boolean closeExprs;
 
   protected HivePointLookupOptimizerRule(
-    RelOptRuleOperand operand, int minNumORClauses) {
+    RelOptRuleOperand operand, int minNumORClauses, boolean closeExprs) {
     super(operand);
     this.minNumORClauses = minNumORClauses;
+    this.closeExprs = closeExprs;
   }
 
   public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
@@ -183,10 +186,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
 
-    // 3. Close BETWEEN expressions if possible
-    RexTransformIntoBetween t = new RexTransformIntoBetween(rexBuilder);
-    newCondition = t.apply(newCondition);
-    return newCondition;
+    if (closeExprs) {
+      // 3a. Close BETWEEN expressions, if possible
+      RexTransformIntoBetween t = new RexTransformIntoBetween(rexBuilder);
+      return t.apply(newCondition);
+    } else {
+      // 3b. Open IN/BETWEEN expressions
+      HiveInBetweenExpandRule.RexInBetweenExpander expander =
+          new HiveInBetweenExpandRule.RexInBetweenExpander(rexBuilder);
+      return expander.apply(newCondition);
+    }
   }
 
   /**

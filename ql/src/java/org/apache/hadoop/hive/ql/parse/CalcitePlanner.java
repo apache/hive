@@ -1759,6 +1759,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
+      final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
@@ -1843,6 +1844,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
+        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses, false));
+        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses, false));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses, false));
+      }
       rules.add(HiveProjectJoinTransposeRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
@@ -2205,9 +2211,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Run other optimizations that do not need stats
       List<RelOptRule> rules = new ArrayList<>();
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
-        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
-        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses, true));
+        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses, true));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses, true));
       }
       rules.add(ProjectRemoveRule.Config.DEFAULT.toRule());
       rules.add(HiveUnionMergeRule.INSTANCE);

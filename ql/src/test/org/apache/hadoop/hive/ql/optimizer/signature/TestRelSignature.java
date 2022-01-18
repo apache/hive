@@ -81,7 +81,7 @@ public class TestRelSignature {
   @Before
   public void before() {
     HepProgramBuilder programBuilder = new HepProgramBuilder();
-    programBuilder.addRuleInstance(new HivePointLookupOptimizerRule.FilterCondition(2));
+    programBuilder.addRuleInstance(new HivePointLookupOptimizerRule.FilterCondition(2, true));
 
     planner = new HepPlanner(programBuilder.build());
 
