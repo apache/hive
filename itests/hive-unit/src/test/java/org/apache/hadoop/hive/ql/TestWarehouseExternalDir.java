@@ -16,28 +16,23 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,103 +40,74 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-@org.junit.Ignore("HIVE-25266")
 public class TestWarehouseExternalDir {
-  private static final Logger LOG = LoggerFactory.getLogger(TestWarehouseExternalDir.class);
 
-  static MiniHS2 miniHS2;
-  static Hive db;
-  static Connection conn;
+  private static MiniHS2 miniHS2;
+  private static Hive db;
+  private static Connection conn;
 
-  String whRootExternal = "/wh_ext";
-  Path whRootExternalPath;
-  Path whRootManagedPath;
-  FileSystem fs;
+  private static String whRootExternal = "/wh_ext";
+  private static String dbName = "twed_db1";
+  private static Path whRootExternalPath;
+  private static Path whRootManagedPath;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-  }
-
-  @AfterClass
-  public static void afterTest() throws Exception {
-    if (db != null) {
-      db.closeCurrent();
-      db = null;
-    }
-
-    if (conn != null) {
-      // TODO: delete tables/databases?
-      try (Statement stmt = conn.createStatement()) {
-        stmt.execute("drop database if exists twed_db1 cascade");
-      }
-      conn.close();
-      conn = null;
-    }
-
-    if (miniHS2 != null) {
-      miniHS2.stop();
-      miniHS2.cleanup();
-      MiniHS2.cleanupLocalDir();
-      miniHS2 = null;
-    }
-  }
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
-  }
-
-  public TestWarehouseExternalDir() throws Exception {
     HiveConf conf = new HiveConf();
 
     // Specify the external warehouse root
     conf.setVar(ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, whRootExternal);
-
-    // Settings borrowed from TestJdbcWithMiniHS2
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
 
-    MiniHS2.Builder builder = new MiniHS2.Builder()
+    miniHS2 = new MiniHS2.Builder()
         .withConf(conf)
         .cleanupLocalDirOnStartup(true)
         .withMiniMR()
-        .withRemoteMetastore();
-    miniHS2 = builder.build();
-
-    Map<String, String> confOverlay = new HashMap<String, String>();
-    miniHS2.start(confOverlay);
+        .withRemoteMetastore()
+        .build();
+    miniHS2.start(new HashMap<>());
 
     HiveConf dbConf = miniHS2.getHiveConf();
     db = Hive.get(dbConf);
 
-    fs = miniHS2.getDfs().getFileSystem();
+    FileSystem fs = miniHS2.getDfs().getFileSystem();
     whRootExternalPath = fs.makeQualified(new Path(whRootExternal));
-    whRootManagedPath = fs.makeQualified(new Path(dbConf.getVar(ConfVars.METASTOREWAREHOUSE)));
+    whRootManagedPath = fs.makeQualified(new Path(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE)));
+    createDb();
+  }
 
-    LOG.info("fs: {}", miniHS2.getDfs().getFileSystem().getUri());
-    LOG.info("warehouse location: {}", whRootManagedPath);
-    LOG.info("whRootExternalPath: {}", whRootExternalPath);
+  @AfterClass
+  public static void afterTest() throws Exception {
+    if (miniHS2 != null) {
+      miniHS2.stop();
+      miniHS2.cleanup();
+    }
 
-    conn = getConnection();
-    try (Statement stmt = conn.createStatement()) {
-      stmt.execute("create database if not exists twed_db1");
+    MiniHS2.cleanupLocalDir();
+    Hive.closeCurrent();
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    conn = DriverManager.getConnection(miniHS2.getJdbcURL(dbName),
+        System.getProperty("user.name"), "bar");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (conn != null) {
+      conn.close();
     }
   }
 
-  private static Connection getConnection() throws Exception {
-    return getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
-  }
-
-  private static Connection getConnection(String dbName) throws Exception {
-    return getConnection(miniHS2.getJdbcURL(dbName), System.getProperty("user.name"), "bar");
+  private static void createDb() throws Exception {
+    Connection conn =  getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    try (Statement stmt = conn.createStatement()) {
+      stmt.execute("create database if not exists " + dbName);
+    }
+    conn.close();
   }
 
   private static Connection getConnection(String jdbcURL, String user, String pwd)
@@ -152,7 +118,6 @@ public class TestWarehouseExternalDir {
   }
 
   static void checkTableLocation(Table table, Path expectedPath) throws Exception {
-    LOG.info("Table {}: location {}", table.getTableName(), table.getDataLocation());
     assertEquals(table.getTableName(), expectedPath, table.getDataLocation());
     assertTrue(miniHS2.getDfs().getFileSystem().exists(table.getDataLocation()));
   }
