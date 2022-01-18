@@ -1097,11 +1097,9 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
-    CompactorMetadataCache cache = new CompactorMetadataCache(60, TimeUnit.SECONDS);
     Initiator initiator = Mockito.spy(new Initiator());
     initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
-    initiator.setCache(cache);
     initiator.init(new AtomicBoolean(true));
     initiator.run();
 

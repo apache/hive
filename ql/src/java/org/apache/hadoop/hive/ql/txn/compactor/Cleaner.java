@@ -199,12 +199,13 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       Optional<String> location = Optional.ofNullable(ci.properties).map(StringableMap::new)
           .map(config -> config.get("location"));
+      
       Callable<Boolean> cleanUpTask;
       Table t = null;
       Partition p = resolvePartition(ci);
 
       if (!location.isPresent()) {
-        t = resolveTableAndCache(ci);
+        t = resolveTable(ci);
         if (t == null) {
           // The table was dropped before we got around to cleaning it.
           LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
@@ -238,12 +239,12 @@ public class Cleaner extends MetaStoreCompactorThread {
 
       if (t != null) {
         StorageDescriptor sd = resolveStorageDescriptor(t, p);
-        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci,
+        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci, 
             ci.partName != null && p == null);
       } else {
         cleanUpTask = () -> removeFiles(location.get(), ci);
       }
-
+      
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
         removedFiles.value = cleanUpTask.call();
@@ -318,7 +319,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     if (dropPartition) {
       LockRequest lockRequest = createLockRequest(ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
       LockResponse res = null;
-
+      
       try {
         res = txnHandler.lock(lockRequest);
         if (res.getState() == LockState.ACQUIRED) {
@@ -339,7 +340,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         }
       }
     }
-
+      
     ValidTxnList validTxnList =
       TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
     //save it so that getAcidState() sees it
@@ -378,7 +379,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
-
+    
     return removeFiles(location, validWriteIdList, ci);
   }
   /**
@@ -425,11 +426,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     return remove(location, ci, Collections.singletonList(path), ifPurge,
       path.getFileSystem(conf), extraDebugInfo);
   }
-
-  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
-      FileSystem fs, StringBuilder extraDebugInfo)
+  
+  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge, 
+      FileSystem fs, StringBuilder extraDebugInfo) 
       throws NoSuchObjectException, MetaException, IOException {
-
+    
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
@@ -440,7 +441,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
-
+    
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
       if (needCmRecycle) {

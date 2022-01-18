@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor;
 import org.apache.hadoop.hive.metastore.utils.CommonCliOptions;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
@@ -59,7 +58,6 @@ import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -74,8 +72,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor.CompactorMetadataCache;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -654,9 +650,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
 
           if (isLeader) {
-            CompactorMetadataCache cache = CompactorMetadataCache.createIfEnabled(conf);
-            startCompactorInitiator(conf, cache);
-            startCompactorCleaner(conf, cache);
+            startCompactorInitiator(conf);
+            startCompactorCleaner(conf);
             startRemoteOnlyTasks(conf);
             startStatsUpdater(conf);
             HMSHandler.startAlwaysTaskThreads(conf);
@@ -698,12 +693,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     initializeAndStartThread(t, conf);
   }
 
-  private static void startCompactorInitiator(Configuration conf, @Nullable CompactorMetadataCache cache)
-    throws Exception {
+  private static void startCompactorInitiator(Configuration conf) throws Exception {
     if (MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
       MetaStoreThread initiator =
           instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Initiator");
-      initializeAndStartThread(initiator, conf, cache);
+      initializeAndStartThread(initiator, conf);
       LOG.info("This HMS instance will act as a Compactor Initiator.");
     }
   }
@@ -718,12 +712,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("This HMS instance will act as a Compactor Worker with {} threads", numWorkers);
   }
 
-  private static void startCompactorCleaner(Configuration conf, @Nullable CompactorMetadataCache cache)
-    throws Exception {
+  private static void startCompactorCleaner(Configuration conf) throws Exception {
     if (MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
       MetaStoreThread cleaner =
           instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
-      initializeAndStartThread(cleaner, conf, cache);
+      initializeAndStartThread(cleaner, conf);
       LOG.info("This HMS instance will act as a Compactor Cleaner.");
     }
   }
@@ -744,18 +737,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   private static void initializeAndStartThread(MetaStoreThread thread, Configuration conf) throws
       Exception {
-    initializeAndStartThread(thread, conf, null);
-  }
-
-  private static void initializeAndStartThread(MetaStoreThread thread, Configuration conf,
-    @Nullable CompactorMetadataCache cache) throws Exception {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean());
-    if (cache != null) {
-      CacheAwareCompactor.trySetCache(thread, cache);
-    }
     thread.start();
   }
 

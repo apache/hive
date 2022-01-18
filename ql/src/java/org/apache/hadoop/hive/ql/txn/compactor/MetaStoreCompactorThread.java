@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -34,7 +33,6 @@ import org.apache.thrift.TException;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -47,12 +45,11 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
  * Compactor threads that runs in the metastore. It uses a {@link TxnStore}
  * to access the internal database.
  */
-public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread, CacheAwareCompactor {
+public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
 
   protected TxnStore txnHandler;
   protected int threadId;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
-  protected Optional<CompactorMetadataCache> metadataCache = Optional.empty();
 
   @Override
   public void setThreadId(int threadId) {
@@ -102,18 +99,6 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
       LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
       throw new MetaException(e.toString());
     }
-  }
-
-  @Override
-  public void setCache(CompactorMetadataCache metadataCache) {
-    this.metadataCache = Optional.ofNullable(metadataCache);
-  }
-
-  protected Table resolveTableAndCache(CompactionInfo ci) throws MetaException {
-    if (metadataCache.isPresent()) {
-      return metadataCache.get().resolveTable(ci, () -> resolveTable(ci));
-    }
-    return resolveTable(ci);
   }
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {

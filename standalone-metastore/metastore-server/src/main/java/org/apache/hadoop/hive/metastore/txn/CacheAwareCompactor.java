@@ -64,5 +64,9 @@ public interface CacheAwareCompactor {
         throw new UncheckedExecutionException(e);
       }
     }
+
+    public void invalidateAll() {
+      tableCache.invalidateAll();
+    }
   }
 }

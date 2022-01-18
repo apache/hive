@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+import org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -68,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
@@ -82,7 +84,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isNoAutoComp
  * A class to initiate compactions.  This will run in a separate thread.
  * It's critical that there exactly 1 of these in a given warehouse.
  */
-public class Initiator extends MetaStoreCompactorThread {
+public class Initiator extends MetaStoreCompactorThread implements CacheAwareCompactor {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
@@ -91,6 +93,7 @@ public class Initiator extends MetaStoreCompactorThread {
   private long checkInterval;
   private long prevStart = -1;
   private ExecutorService compactionExecutor;
+  private Optional<CompactorMetadataCache> metadataCache = Optional.empty();
 
   @Override
   public void run() {
@@ -142,6 +145,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
+          metadataCache.ifPresent(c -> c.invalidateAll());
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -242,6 +246,18 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
+  @Override
+  public void setCache(CompactorMetadataCache metadataCache) {
+    this.metadataCache = Optional.ofNullable(metadataCache);
+  }
+
+  private Table resolveTableAndCache(CompactionInfo ci) throws MetaException {
+    if (metadataCache.isPresent()) {
+      return metadataCache.get().resolveTable(ci, () -> resolveTable(ci));
+    }
+    return resolveTable(ci);
+  }
+
   private ValidWriteIdList resolveValidWriteIds(Table t) throws NoSuchTxnException, MetaException {
     ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
     // The response will have one entry per table and hence we get only one ValidWriteIdList
@@ -275,6 +291,7 @@ public class Initiator extends MetaStoreCompactorThread {
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
+    setCache(CompactorMetadataCache.createIfEnabled(conf));
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
