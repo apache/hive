@@ -102,7 +102,7 @@ package org.apache.hadoop.hive.metastore.api;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "Table")));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
     tmpMap.put(_Fields.INSERTED_COUNT, new org.apache.thrift.meta_data.FieldMetaData("insertedCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.UPDATED_COUNT, new org.apache.thrift.meta_data.FieldMetaData("updatedCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -505,6 +505,9 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     // check for sub-struct validity
+    if (table != null) {
+      table.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
