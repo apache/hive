@@ -1958,6 +1958,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
               .equals("DUMMY");
+      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       final RelNode calcitePreMVRewritingPlan = basePlan;
       final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
 
@@ -2023,6 +2024,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       planner.addRule(new HivePartitionPruneRule(conf));
 
       // Optimize plan
+      if (!ruleExclusionRegex.isEmpty()) {
+        planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
+      }
       planner.setRoot(basePlan);
       basePlan = planner.findBestExp();
       // Remove view-based rewriting rules from planner
@@ -2416,6 +2420,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
         List<HiveRelOptMaterialization> materializations) {
 
+      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
+
       // Create planner and copy context
       HepPlanner planner = new HepPlanner(program,
           basePlan.getCluster().getPlanner().getContext());
@@ -2441,6 +2447,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
+      if (!ruleExclusionRegex.isEmpty()) {
+        planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
+      }
       planner.setRoot(basePlan);
 
       return planner.findBestExp();
