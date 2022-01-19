@@ -144,7 +144,6 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       return;
     }
 
-    boolean isConversionDone = false;
     if (RexOver.containsOver(origproject.getProjects(), null)) {
       RexNode origFilterCond = filterCondToPushBelowProj;
       filterCondToPushBelowProj = null;
@@ -170,8 +169,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
             RexNode newCondition = RelOptUtil.pushPastProject(ce, origproject);
             if (HiveCalciteUtil.isDeterministicFuncWithSingleInputRef(newCondition,
                 commonPartitionKeys)) {
-              newPartKeyFilConds.add(newCondition);
-              isConversionDone = true;
+              newPartKeyFilConds.add(ce);
             } else {
               unpushedFilConds.add(ce);
             }
@@ -193,20 +191,17 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
         && !isRedundantIsNotNull(origproject, filterCondToPushBelowProj)) {
 
       RelNode newProjRel = getNewProject(filterCondToPushBelowProj, unPushedFilCondAboveProj, origproject, filter.getCluster()
-          .getTypeFactory(), call.builder(), isConversionDone);
+          .getTypeFactory(), call.builder());
 
       call.transformTo(newProjRel);
     }
   }
 
   private static RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
-      RelDataTypeFactory typeFactory, RelBuilder relBuilder, boolean isConversionDone) {
+      RelDataTypeFactory typeFactory, RelBuilder relBuilder) {
 
-    // convert the filter to one that references the child of the project if its not done by caller.
-    RexNode newPushedCondition = filterCondToPushBelowProj;
-    if (!isConversionDone) {
-      newPushedCondition = RelOptUtil.pushPastProject(filterCondToPushBelowProj, oldProj);
-    }
+    // convert the filter to one that references the child of the project.
+    RexNode newPushedCondition = RelOptUtil.pushPastProject(filterCondToPushBelowProj, oldProj);
 
     // Remove cast of BOOLEAN NOT NULL to BOOLEAN or vice versa. Filter accepts
     // nullable and not-nullable conditions, but a CAST might get in the way of
