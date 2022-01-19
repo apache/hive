@@ -573,7 +573,7 @@ public class MetastoreConf {
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
     COMPACTOR_INITIATOR_TABLECACHE_ON("metastore.compactor.initiator.tablecache.on",
-      "hive.metastore.compactor.initiator.tablecache.on", true,
+      "hive.compactor.initiator.tablecache.on", true,
       "Enable table caching in the initiator. Currently the cache is cleaned after each cycle."),
     COMPACTOR_WORKER_THREADS("metastore.compactor.worker.threads",
         "hive.compactor.worker.threads", 0,
