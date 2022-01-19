@@ -295,7 +295,7 @@ public class Initiator extends MetaStoreCompactorThread {
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_CACHE_ON);
+        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
     if (tableCacheOn) {
       this.tableCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
     }
