@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.codahale.metrics.Counter;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -45,7 +47,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.CacheAwareCompactor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -71,6 +72,7 @@ import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +86,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isNoAutoComp
  * A class to initiate compactions.  This will run in a separate thread.
  * It's critical that there exactly 1 of these in a given warehouse.
  */
-public class Initiator extends MetaStoreCompactorThread implements CacheAwareCompactor {
+public class Initiator extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
@@ -93,7 +95,7 @@ public class Initiator extends MetaStoreCompactorThread implements CacheAwareCom
   private long checkInterval;
   private long prevStart = -1;
   private ExecutorService compactionExecutor;
-  private Optional<CompactorMetadataCache> metadataCache = Optional.empty();
+  private Optional<Cache<String, Table>> tableCache = Optional.empty();
 
   @Override
   public void run() {
@@ -145,7 +147,9 @@ public class Initiator extends MetaStoreCompactorThread implements CacheAwareCom
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          metadataCache.ifPresent(c -> c.invalidateAll());
+          // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
+          // table property hive.repl.first.inc.pending which would be cached.
+          tableCache.ifPresent(c -> c.invalidateAll());
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -246,14 +250,13 @@ public class Initiator extends MetaStoreCompactorThread implements CacheAwareCom
     }
   }
 
-  @Override
-  public void setCache(CompactorMetadataCache metadataCache) {
-    this.metadataCache = Optional.ofNullable(metadataCache);
-  }
-
   private Table resolveTableAndCache(CompactionInfo ci) throws MetaException {
-    if (metadataCache.isPresent()) {
-      return metadataCache.get().resolveTable(ci, () -> resolveTable(ci));
+    if (tableCache.isPresent()) {
+      try {
+        return tableCache.get().get(ci.getFullTableName(), () -> resolveTable(ci));
+      } catch (ExecutionException e) {
+        throw (MetaException) e.getCause();
+      }
     }
     return resolveTable(ci);
   }
@@ -291,7 +294,11 @@ public class Initiator extends MetaStoreCompactorThread implements CacheAwareCom
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
-    setCache(CompactorMetadataCache.createIfEnabled(conf));
+    boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_CACHE_ON);
+    if (tableCacheOn) {
+      this.tableCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
+    }
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {

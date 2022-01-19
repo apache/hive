@@ -572,6 +572,9 @@ public class MetastoreConf {
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
+    COMPACTOR_INITIATOR_TABLE_CACHE_ON("metastore.compactor.initiator.table.cache.on",
+      "hive.metastore.compactor.initiator.table.cache.on", true,
+      "Enable table caching in the initiator. Currently the cache is cleaned after each cycle."),
     COMPACTOR_WORKER_THREADS("metastore.compactor.worker.threads",
         "hive.compactor.worker.threads", 0,
         "How many compactor worker threads to run on this metastore instance. Set this to a\n" +
@@ -589,9 +592,6 @@ public class MetastoreConf {
             "in which a warning is being raised if multiple worker version are detected.\n" +
             "The setting has no effect if the metastore.metrics.enabled is disabled \n" +
             "or the metastore.acidmetrics.thread.on is turned off."),
-    COMPACTOR_METADATA_CACHE_TIMEOUT("metastore.compactor.metadata.cache.timeout",
-      "hive.metastore.compactor.metadata.cache.timeout", 60, TimeUnit.SECONDS,
-      "Number of seconds the table metadata are cached by the compactor. Setting it to zero disables the feature."),
     COMPACTOR_MINOR_STATS_COMPRESSION(
         "metastore.compactor.enable.stats.compression",
         "metastore.compactor.enable.stats.compression", true,
