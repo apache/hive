@@ -58,6 +58,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import org.mockito.Mockito;
 
+import static org.mockito.Mockito.times;
+
 /**
  * Tests for the compactor Initiator thread.
  */
@@ -1067,6 +1069,50 @@ public class TestInitiator extends CompactorTest {
     String[] parts = compacts.get(0).getInitiatorId().split("-");
     Assert.assertTrue(parts.length > 1);
     Assert.assertEquals(ServerUtils.hostname(), String.join("-", Arrays.copyOfRange(parts, 0, parts.length - 1)));
+  }
+
+  @Test
+  public void testMetaCache() throws Exception {
+    String dbname = "default";
+    String tableName = "tmc";
+    Table t = newTable(dbname, tableName, true);
+    List<LockComponent> components = new ArrayList<>();
+
+    for (int i = 0; i < 2; i++) {
+      Partition p = newPartition(t, "part" + (i + 1));
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbname);
+      comp.setTablename(tableName);
+      comp.setPartitionname("ds=part" + (i + 1));
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions(dbname, tableName, 23);
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId(dbname, tableName, txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
+    Initiator initiator = Mockito.spy(new Initiator());
+    initiator.setThreadId((int) t.getId());
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    initiator.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(2, compacts.size());
+    Mockito.verify(initiator, times(1)).resolveTable(Mockito.any());
   }
 
   private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {

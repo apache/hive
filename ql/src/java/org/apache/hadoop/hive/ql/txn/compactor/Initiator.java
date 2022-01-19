@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.codahale.metrics.Counter;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -68,7 +70,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +94,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
   private long checkInterval;
   private ExecutorService compactionExecutor;
+  private Optional<Cache<String, Table>> tableCache = Optional.empty();
 
   @Override
   public void run() {
@@ -142,6 +147,9 @@ public class Initiator extends MetaStoreCompactorThread {
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
+          // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
+          // table property hive.repl.first.inc.pending which would be cached.
+          tableCache.ifPresent(c -> c.invalidateAll());
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -164,7 +172,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
           for (CompactionInfo ci : potentials) {
             try {
-              Table t = resolveTable(ci);
+              Table t = resolveTableAndCache(ci);
               Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
@@ -242,6 +250,17 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
+  private Table resolveTableAndCache(CompactionInfo ci) throws MetaException {
+    if (tableCache.isPresent()) {
+      try {
+        return tableCache.get().get(ci.getFullTableName(), () -> resolveTable(ci));
+      } catch (ExecutionException e) {
+        throw (MetaException) e.getCause();
+      }
+    }
+    return resolveTable(ci);
+  }
+
   private ValidWriteIdList resolveValidWriteIds(Table t) throws NoSuchTxnException, MetaException {
     ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
     // The response will have one entry per table and hence we get only one ValidWriteIdList
@@ -275,6 +294,11 @@ public class Initiator extends MetaStoreCompactorThread {
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
+    boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
+    if (tableCacheOn) {
+      this.tableCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
+    }
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -524,8 +548,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      //TODO: avoid repeated HMS lookup for same table (e.g partitions within table)
-      Table t = resolveTable(ci);
+      Table t = resolveTableAndCache(ci);
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
             "table or has been dropped and moving on.");
