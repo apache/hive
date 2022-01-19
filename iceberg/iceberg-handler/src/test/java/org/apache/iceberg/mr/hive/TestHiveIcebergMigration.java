@@ -234,7 +234,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     } else {
       Assert.assertNull(migratedProp);
       Assert.assertNotEquals(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(), tableTypeProp);
-      Assert.assertTrue(nameMappingProp == null);
+      Assert.assertNull(nameMappingProp);
     }
   }
 }
