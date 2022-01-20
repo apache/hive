@@ -1884,7 +1884,9 @@ public class HiveConf extends Configuration {
     HIVE_CBO_COST_MODEL_HDFS_READ("hive.cbo.costmodel.hdfs.read", "1.5", "Default cost of reading a byte from HDFS;"
                                                                  + " expressed as multiple of Local FS read cost"),
     HIVE_CBO_RULE_EXCLUSION_REGEX("hive.cbo.rule.exclusion.regex", "",
-        "Regex over rule descriptions to exclude them from planning."),
+        "Regex over rule descriptions to exclude them from planning. "
+            + "The intended usage is to allow to disable rules from problematic queries, it is *not* a performance tuning property. "
+            + "The property is experimental, it can be changed or removed without any notice."),
     HIVE_CBO_SHOW_WARNINGS("hive.cbo.show.warnings", true,
          "Toggle display of CBO warnings like missing column stats"),
     HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS("hive.cbo.stats.correlated.multi.key.joins", true,
