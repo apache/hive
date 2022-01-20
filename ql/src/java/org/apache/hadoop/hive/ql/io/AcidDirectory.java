@@ -184,6 +184,15 @@ public final class AcidDirectory implements AcidUtils.Directory {
     return currentDirectories.stream().filter(AcidUtils.ParsedDeltaLight::isDeleteDelta).collect(Collectors.toList());
   }
 
+  public boolean hasDataBelowWatermark(long highWaterMark) throws IOException {
+    for (AcidUtils.ParsedDelta parsedDelta : currentDirectories) {
+      if (parsedDelta.getMaxWriteId() < highWaterMark) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * All original, base and delta bucket files that should be read by this reader
    * @throws IOException ex

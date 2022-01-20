@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
@@ -210,9 +209,13 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(2, paths.size());
     boolean sawBase = false, sawDelta = false;
     for (Path p : paths) {
-      if (p.getName().equals("base_20")) sawBase = true;
-      else if (p.getName().equals(makeDeltaDirName(21, 24))) sawDelta = true;
-      else Assert.fail("Unexpected file " + p.getName());
+      if (p.getName().equals("base_20")) {
+        sawBase = true;
+      } else if (p.getName().equals(makeDeltaDirName(21, 24))) {
+        sawDelta = true;
+      } else {
+        Assert.fail("Unexpected file " + p.getName());
+      }
     }
     Assert.assertTrue(sawBase);
     Assert.assertTrue(sawDelta);
@@ -246,9 +249,13 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(2, paths.size());
     boolean sawBase = false, sawDelta = false;
     for (Path path : paths) {
-      if (path.getName().equals("base_20")) sawBase = true;
-      else if (path.getName().equals(makeDeltaDirNameCompacted(21, 24))) sawDelta = true;
-      else Assert.fail("Unexpected file " + path.getName());
+      if (path.getName().equals("base_20")) {
+        sawBase = true;
+      } else if (path.getName().equals(makeDeltaDirNameCompacted(21, 24))) {
+        sawDelta = true;
+      } else {
+        Assert.fail("Unexpected file " + path.getName());
+      }
     }
     Assert.assertTrue(sawBase);
     Assert.assertTrue(sawDelta);
@@ -721,5 +728,25 @@ public class TestCleaner extends CompactorTest {
     }
     Assert.assertTrue(sawBase);
     Assert.assertTrue(sawDelta);
+  }
+
+  @Test
+  public void withSingleBaseCleanerSucceeds() throws Exception {
+    Map<String, String> parameters = new HashMap<>();
+
+    Table t = newTable("default", "dcamc", false, parameters);
+
+    addBaseFile(t, null, 25L, 25);
+
+    burnThroughTransactions("default", "dcamc", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    compactInTxn(rqst);
+
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
   }
 }
