@@ -49,7 +49,8 @@ public class HiveInBetweenExpandRule {
   private static class FilterRule extends RelOptRule {
 
     FilterRule() {
-      super(operand(Filter.class, any()), HiveRelFactories.HIVE_BUILDER, null);
+      super(operand(Filter.class, any()), HiveRelFactories.HIVE_BUILDER,
+          "HiveInBetweenExpandRule(FilterRule)");
     }
 
     @Override
@@ -74,7 +75,8 @@ public class HiveInBetweenExpandRule {
   private static class JoinRule extends RelOptRule {
 
     JoinRule() {
-      super(operand(Join.class, any()), HiveRelFactories.HIVE_BUILDER, null);
+      super(operand(Join.class, any()), HiveRelFactories.HIVE_BUILDER,
+          "HiveInBetweenExpandRule(JoinRule)");
     }
 
     @Override
@@ -103,7 +105,8 @@ public class HiveInBetweenExpandRule {
   private static class ProjectRule extends RelOptRule {
 
     ProjectRule() {
-      super(operand(Project.class, any()), HiveRelFactories.HIVE_BUILDER, null);
+      super(operand(Project.class, any()), HiveRelFactories.HIVE_BUILDER,
+          "HiveInBetweenExpandRule(ProjectRule)");
     }
 
     @Override
