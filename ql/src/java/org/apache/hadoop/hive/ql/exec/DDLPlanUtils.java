@@ -258,7 +258,7 @@ public class DDLPlanUtils {
 
   public String getPartitionActualName(Partition pt) {
     Map<String, String> colTypeMap = getTableColumnsToType(pt.getTable());
-    String[] partColsDef = pt.getName().split(",");
+    String[] partColsDef = pt.getName().split("/");
     List<String> ptParam = new ArrayList<>();
     for (String partCol : partColsDef) {
       String[] colValue = partCol.split("=");
