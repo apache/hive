@@ -195,14 +195,11 @@ public final class AcidDirectory implements AcidUtils.Directory {
     return currentDirectories.stream().filter(AcidUtils.ParsedDeltaLight::isDeleteDelta).collect(Collectors.toList());
   }
 
-  public boolean hasDataBelowWatermark(long highWaterMark) throws IOException {
-    for (ParsedDirectory parsedDelta : currentDirectories) {
-      if (parsedDelta.getMaxWriteId() < highWaterMark) {
-        return true;
-      }
-    }
+  public boolean hasDataBelowWatermark() throws IOException {
+    if(currentDirectories.isEmpty())
+      
     for (ParsedDirectory parsedDelta : invisibleDirectories) {
-      if (parsedDelta.getMaxWriteId() < highWaterMark) {
+      if (parsedDelta.getMaxWriteId() < ) {
         return true;
       }
     }

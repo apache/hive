@@ -776,17 +776,22 @@ public class TestCleaner extends CompactorTest {
     Map<String, String> parameters = new HashMap<>();
 
     Table t = newTable("default", "camtc", false);
-    long longQuery = openTxn();
 
-    addBaseFile(t, null, 20L, 20);
-    burnThroughTransactions("default", "dcamc", 20);
+//    addBaseFile(t, null, 20L, 20);
+//    burnThroughTransactions("default", "dcamc", 20);
 
-    //    addBaseFile(t, null, 19L, 20);
-    //    addBaseFile(t, null, 20L, 20);
-    //    addDeltaFile(t, null, 21L, 22L, 2);
-    //    burnThroughTransactions("default", "camtc", 22);
-    //    addDeltaFile(t, null, 24L, 25L, 2);
-    //    burnThroughTransactions("default", "camtc", 3);
+        addBaseFile(t, null, 19L, 20);
+        addBaseFile(t, null, 20L, 20);
+        addDeltaFile(t, null, 21L, 22L, 2);
+        burnThroughTransactions("default", "camtc", 22);
+        long longQuery = openTxn();
+        addDeltaFile(t, null, 24L, 25L, 2);
+
+        25 v(longQuery)
+
+        26 v(longQuery)
+
+        burnThroughTransactions("default", "camtc", 3);
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
 
     txnHandler.commitTxn(new CommitTxnRequest(longQuery));
