@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.ql.io.AcidUtils.FileInfo;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hive.common.util.Ref;
 
@@ -55,6 +56,7 @@ public final class AcidDirectory implements AcidUtils.Directory {
   private final List<Path> originalDirectories = new ArrayList<>();
   private final List<Path> obsolete = new ArrayList<>();
   private final List<AcidUtils.ParsedDelta> currentDirectories = new ArrayList<>();
+  private final List<AcidUtils.ParsedDirectory> invisibleDirectories = new ArrayList<>();
 
   public AcidDirectory(Path path, FileSystem fs, Ref<Boolean> useFileId) {
     this.path = path;
@@ -138,6 +140,15 @@ public final class AcidDirectory implements AcidUtils.Directory {
   }
 
   /**
+   * Returns the list of not visible directories.
+   *
+   * These could be hidden due to the fact that they are not yet visible (being written by a not yet visible transaction).
+   */
+  public List<ParsedDirectory> getInvisibleDirectories() {
+    return invisibleDirectories;
+  }
+
+  /**
    * Get the list of obsolete directories. After filtering out bases and
    * deltas that are not selected by the valid transaction/write ids list, return the
    * list of original files, bases, and deltas that have been replaced by
@@ -182,6 +193,17 @@ public final class AcidDirectory implements AcidUtils.Directory {
    */
   public List<AcidUtils.ParsedDelta> getDeleteDeltas() {
     return currentDirectories.stream().filter(AcidUtils.ParsedDeltaLight::isDeleteDelta).collect(Collectors.toList());
+  }
+
+  public boolean hasDataBelowWatermark() throws IOException {
+    if(currentDirectories.isEmpty())
+      
+    for (ParsedDirectory parsedDelta : invisibleDirectories) {
+      if (parsedDelta.getMaxWriteId() < ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

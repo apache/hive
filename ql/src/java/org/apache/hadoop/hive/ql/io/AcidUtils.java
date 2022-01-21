@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -740,7 +741,10 @@ public class AcidUtils {
       AcidOperationalProperties obj = new AcidOperationalProperties();
       String[] options = propertiesStr.split("\\|");
       for (String option : options) {
-        if (option.trim().length() == 0) continue; // ignore empty strings
+        if (option.trim().length() == 0)
+         {
+          continue; // ignore empty strings
+        }
         switch (option) {
           case SPLIT_UPDATE_STRING:
             obj.setSplitUpdate(true);
@@ -873,6 +877,8 @@ public class AcidUtils {
   }
 
   public interface ParsedDirectory {
+    public long getMinWriteId();
+    public long getMaxWriteId();
     public List<HdfsFileStatusWithId> getFiles(FileSystem fs, Ref<Boolean> useFileIds) throws IOException;
   }
 
@@ -949,6 +955,16 @@ public class AcidUtils {
 
     public void setRawFormat(boolean rawFormat) {
       this.rawFormat = rawFormat;
+    }
+
+    @Override
+    public long getMinWriteId() {
+      return writeId;
+    }
+
+    @Override
+    public long getMaxWriteId() {
+      return writeId;
     }
 
     /**
@@ -1822,9 +1838,35 @@ public class AcidUtils {
           directory.getObsolete().add(directory.getBase().getBaseDirPath());
         }
         directory.setBase(new ParsedBase(parsedBase, files));
+      } else {
+        directory.getInvisibleDirectories().add(new ParsedBase(parsedBase, getPoisonedList()));
       }
     } else {
       directory.getObsolete().add(baseDir);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> List<T> getPoisonedList() {
+    return (List<T>) PoisonedList.INSTANCE;
+
+  }
+
+  static class PoisonedList<T> extends AbstractList<T> {
+
+    public static final PoisonedList<?> INSTANCE = new PoisonedList<Object>();
+
+    public PoisonedList() {
+    }
+
+    @Override
+    public T get(int index) {
+      throw new RuntimeException("Illegal operation on poisioned list");
+    }
+
+    @Override
+    public int size() {
+      throw new RuntimeException("Illegal operation on poisioned list");
     }
   }
 
@@ -1832,6 +1874,10 @@ public class AcidUtils {
       throws IOException {
     ParsedDelta delta = parsedDelta(deltadir, directory.getFs(), dirSnapshot);
     if (!isDirUsable(deltadir, delta.getVisibilityTxnId(), directory.getAbortedDirectories(), validTxnList)) {
+      if (writeIdList.isWriteIdRangeValid(delta.minWriteId, delta.maxWriteId) != ValidWriteIdList.RangeResponse.NONE) {
+
+      }
+      directory.getInvisibleDirectories().add(delta);
       return;
     }
     ValidWriteIdList.RangeResponse abortRange = writeIdList.isWriteIdRangeAborted(delta.minWriteId, delta.maxWriteId);
@@ -2185,13 +2231,22 @@ public class AcidUtils {
     }
     boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
     if (transactionalProp == null) {
-      if (isSetToTxn || tbl == null) return false; // Assume the full ACID table.
+      if (isSetToTxn || tbl == null)
+       {
+        return false; // Assume the full ACID table.
+      }
       throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
           + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
     }
-    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
+    if (!"insert_only".equalsIgnoreCase(transactionalProp))
+     {
+      return false; // Not MM.
+    }
     if (!isSetToTxn) {
-      if (tbl == null) return true; // No table information yet; looks like it could be valid.
+      if (tbl == null)
+       {
+        return true; // No table information yet; looks like it could be valid.
+      }
       throw new RuntimeException("Cannot set '"
           + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
           + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
@@ -3110,7 +3165,7 @@ public class AcidUtils {
       return TxnType.COMPACTION;
     }
     // check if soft delete
-    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE 
+    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE
       && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))){
       return TxnType.SOFT_DELETE;
