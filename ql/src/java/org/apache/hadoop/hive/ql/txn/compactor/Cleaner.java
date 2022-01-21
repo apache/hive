@@ -409,8 +409,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    new FileGenerator(context, () -> dir.getFileSystem(conf), dir, useFileIds, ugi);
-
     if (obsoleteDirs.isEmpty() && !dir.hasDataBelowWatermark(writeIdList.getHighWatermark())) {
       LOG.info("nothing to do");
       return true;
