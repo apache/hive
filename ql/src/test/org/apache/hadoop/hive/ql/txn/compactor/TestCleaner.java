@@ -749,4 +749,59 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
   }
+
+  @Test
+  public void withSingleBaseCleanerSucceeds2() throws Exception {
+    Table t = newTable("default", "camtc", false);
+    long longQuery = openTxn();
+
+    addBaseFile(t, null, 20L, 20);
+    burnThroughTransactions("default", "dcamc", 20);
+
+    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+
+    txnHandler.commitTxn(new CommitTxnRequest(longQuery));
+
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+  }
+
+  @Test
+  public void withSingleBaseCleanerSucceeds3() throws Exception {
+    Map<String, String> parameters = new HashMap<>();
+
+    Table t = newTable("default", "camtc", false);
+    long longQuery = openTxn();
+
+    addBaseFile(t, null, 20L, 20);
+    burnThroughTransactions("default", "dcamc", 20);
+
+    //    addBaseFile(t, null, 19L, 20);
+    //    addBaseFile(t, null, 20L, 20);
+    //    addDeltaFile(t, null, 21L, 22L, 2);
+    //    burnThroughTransactions("default", "camtc", 22);
+    //    addDeltaFile(t, null, 24L, 25L, 2);
+    //    burnThroughTransactions("default", "camtc", 3);
+    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+
+    txnHandler.commitTxn(new CommitTxnRequest(longQuery));
+
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+    startCleaner();
+
+    //    CompactionRequest rqst2 = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    //    compactInTxn(rqst2);
+    //    startCleaner();
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+  }
+
 }
