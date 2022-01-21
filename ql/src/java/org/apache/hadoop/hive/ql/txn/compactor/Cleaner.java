@@ -388,7 +388,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       throws IOException, NoSuchObjectException, MetaException {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
-    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
+    AcidDirectory dir = AcidUtils.getFullAcidState(fs, path, conf, writeIdList);
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
