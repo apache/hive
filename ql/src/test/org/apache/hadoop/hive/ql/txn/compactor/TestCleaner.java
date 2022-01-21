@@ -751,20 +751,45 @@ public class TestCleaner extends CompactorTest {
   }
 
   @Test
+  public void withNewerBaseCleanerSucceeds() throws Exception {
+    Map<String, String> parameters = new HashMap<>();
+
+    Table t = newTable("default", "dcamc", false, parameters);
+
+    addBaseFile(t, null, 25L, 25);
+
+    burnThroughTransactions("default", "dcamc", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    compactInTxn(rqst);
+
+    burnThroughTransactions("default", "dcamc", 1);
+    addBaseFile(t, null, 26L, 26);
+
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    List<Path> paths = getDirectories(conf, t, null);
+    // we should retain both 25 and 26
+    Assert.assertEquals(2, paths.size());
+  }
+
+  @Test
   public void withNotYetVisibleBase() throws Exception {
 
     String dbName = "default";
     String tableName = "camtc";
     Table t = newTable(dbName, tableName, false);
-    long longQuery = openTxn();
 
     addBaseFile(t, null, 20L, 20);
-    burnThroughTransactions(dbName, tableName, 22);
+    burnThroughTransactions(dbName, tableName, 25);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
 
     long compactTxn = compactInTxn(rqst);
-    txnHandler.commitTxn(new CommitTxnRequest(longQuery));
     addBaseFile(t, null, 25L, 25, compactTxn);
     startCleaner();
 
