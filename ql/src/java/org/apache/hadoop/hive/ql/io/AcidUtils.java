@@ -740,10 +740,7 @@ public class AcidUtils {
       AcidOperationalProperties obj = new AcidOperationalProperties();
       String[] options = propertiesStr.split("\\|");
       for (String option : options) {
-        if (option.trim().length() == 0)
-         {
-          continue; // ignore empty strings
-        }
+        if (option.trim().length() == 0) continue; // ignore empty strings
         switch (option) {
           case SPLIT_UPDATE_STRING:
             obj.setSplitUpdate(true);
@@ -876,8 +873,6 @@ public class AcidUtils {
   }
 
   public interface ParsedDirectory {
-    public long getMinWriteId();
-    public long getMaxWriteId();
     public List<HdfsFileStatusWithId> getFiles(FileSystem fs, Ref<Boolean> useFileIds) throws IOException;
   }
 
@@ -954,16 +949,6 @@ public class AcidUtils {
 
     public void setRawFormat(boolean rawFormat) {
       this.rawFormat = rawFormat;
-    }
-
-    @Override
-    public long getMinWriteId() {
-      return writeId;
-    }
-
-    @Override
-    public long getMaxWriteId() {
-      return writeId;
     }
 
     /**
@@ -1309,22 +1294,7 @@ public class AcidUtils {
    */
   public static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
-    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null, false);
-  }
-
-  /**
-   * Gets the full ACID state of the given directory.
-   * Includes empty files and invisible directories.
-   *
-   * @param fileSystem optional, it it is not provided, it will be derived from the candidateDirectory
-   * @param candidateDirectory the partition directory to analyze
-   * @param conf the configuration
-   * @param writeIdList the list of write ids that we are reading
-   * @throws IOException on filesystem errors
-   */
-  public static AcidDirectory getFullAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
-      ValidWriteIdList writeIdList) throws IOException {
-    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, Ref.from(false), false, null, true);
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
   }
 
   /**
@@ -1342,11 +1312,11 @@ public class AcidUtils {
    */
   private static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
-          HdfsDirSnapshot> dirSnapshots, boolean collectInvisibleDirs) throws IOException {
+      HdfsDirSnapshot> dirSnapshots) throws IOException {
     ValidTxnList validTxnList = getValidTxnList(conf);
 
     FileSystem fs = fileSystem == null ? candidateDirectory.getFileSystem(conf) : fileSystem;
-    AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds, collectInvisibleDirs);
+    AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds);
 
     List<HdfsFileStatusWithId> childrenWithId = HdfsUtils.tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, hiddenFileFilter);
 
@@ -1852,10 +1822,6 @@ public class AcidUtils {
           directory.getObsolete().add(directory.getBase().getBaseDirPath());
         }
         directory.setBase(new ParsedBase(parsedBase, files));
-      } else {
-        if (directory.getInvisibleDirectories() != null) {
-          directory.getInvisibleDirectories().add(new ParsedBase(parsedBase, PoisonedList.get()));
-        }
       }
     } else {
       directory.getObsolete().add(baseDir);
@@ -1866,9 +1832,6 @@ public class AcidUtils {
       throws IOException {
     ParsedDelta delta = parsedDelta(deltadir, directory.getFs(), dirSnapshot);
     if (!isDirUsable(deltadir, delta.getVisibilityTxnId(), directory.getAbortedDirectories(), validTxnList)) {
-      if (directory.getInvisibleDirectories() != null) {
-        directory.getInvisibleDirectories().add(delta);
-      }
       return;
     }
     ValidWriteIdList.RangeResponse abortRange = writeIdList.isWriteIdRangeAborted(delta.minWriteId, delta.maxWriteId);
@@ -2222,22 +2185,13 @@ public class AcidUtils {
     }
     boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
     if (transactionalProp == null) {
-      if (isSetToTxn || tbl == null)
-       {
-        return false; // Assume the full ACID table.
-      }
+      if (isSetToTxn || tbl == null) return false; // Assume the full ACID table.
       throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
           + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
     }
-    if (!"insert_only".equalsIgnoreCase(transactionalProp))
-     {
-      return false; // Not MM.
-    }
+    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
     if (!isSetToTxn) {
-      if (tbl == null)
-       {
-        return true; // No table information yet; looks like it could be valid.
-      }
+      if (tbl == null) return true; // No table information yet; looks like it could be valid.
       throw new RuntimeException("Cannot set '"
           + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
           + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
@@ -2626,7 +2580,7 @@ public class AcidUtils {
     }
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
-    AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots, false);
+    AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
@@ -3156,7 +3110,7 @@ public class AcidUtils {
       return TxnType.COMPACTION;
     }
     // check if soft delete
-    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE
+    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE 
       && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))){
       return TxnType.SOFT_DELETE;

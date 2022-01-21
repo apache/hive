@@ -187,7 +187,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     MetricsFactory.init(conf);
     DeltaFilesMetricReporter.init(conf);
 
-    AcidDirectory dir = new AcidDirectory(new Path("/"), FileSystem.get(conf), null, false);
+    AcidDirectory dir = new AcidDirectory(new Path("/"), FileSystem.get(conf), null);
     long checkThresholdInSec = HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
     float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -198,7 +199,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       Optional<String> location = Optional.ofNullable(ci.properties).map(StringableMap::new)
           .map(config -> config.get("location"));
-
+      
       Callable<Boolean> cleanUpTask;
       Table t = null;
       Partition p = resolvePartition(ci);
@@ -238,12 +239,12 @@ public class Cleaner extends MetaStoreCompactorThread {
 
       if (t != null) {
         StorageDescriptor sd = resolveStorageDescriptor(t, p);
-        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci,
+        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci, 
             ci.partName != null && p == null);
       } else {
         cleanUpTask = () -> removeFiles(location.get(), ci);
       }
-
+      
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
         removedFiles.value = cleanUpTask.call();
@@ -318,7 +319,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     if (dropPartition) {
       LockRequest lockRequest = createLockRequest(ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
       LockResponse res = null;
-
+      
       try {
         res = txnHandler.lock(lockRequest);
         if (res.getState() == LockState.ACQUIRED) {
@@ -339,7 +340,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         }
       }
     }
-
+      
     ValidTxnList validTxnList =
       TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
     //save it so that getAcidState() sees it
@@ -378,7 +379,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
-
+    
     return removeFiles(location, validWriteIdList, ci);
   }
   /**
@@ -388,7 +389,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       throws IOException, NoSuchObjectException, MetaException {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
-    AcidDirectory dir = AcidUtils.getFullAcidState(fs, path, conf, writeIdList);
+    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -409,10 +410,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    if (obsoleteDirs.isEmpty() && !dir.hasDataBelowWatermark(writeIdList.getHighWatermark())) {
-      LOG.info("nothing to do");
-      return true;
-    }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
         .map(Path::getName).collect(Collectors.joining(",")));
     return remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
@@ -429,11 +426,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     return remove(location, ci, Collections.singletonList(path), ifPurge,
       path.getFileSystem(conf), extraDebugInfo);
   }
-
-  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
-      FileSystem fs, StringBuilder extraDebugInfo)
+  
+  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge, 
+      FileSystem fs, StringBuilder extraDebugInfo) 
       throws NoSuchObjectException, MetaException, IOException {
-
+    
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
@@ -444,7 +441,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
-
+    
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
       if (needCmRecycle) {
