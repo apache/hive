@@ -784,8 +784,8 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tableName, 22);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
-    compactInTxn(rqst);
     addBaseFile(t, null, 22L, 22);
+    compactInTxn(rqst);
     compactInTxn(rqst);
 
     startCleaner();
@@ -798,7 +798,5 @@ public class TestCleaner extends CompactorTest {
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
     Assert.assertEquals("base_22", paths.get(0).getName());
-
   }
-
 }
