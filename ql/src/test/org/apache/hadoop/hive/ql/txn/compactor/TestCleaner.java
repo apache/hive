@@ -760,9 +760,9 @@ public class TestCleaner extends CompactorTest {
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
 
-    txnHandler.commitTxn(new CommitTxnRequest(longQuery));
 
     long compactTxn = compactInTxn(rqst);
+    txnHandler.commitTxn(new CommitTxnRequest(longQuery));
     addBaseFile(t, null, 25L, 25, compactTxn);
     startCleaner();
 
