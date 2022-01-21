@@ -3958,6 +3958,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
+      throws MetaException, TException {
+    return client.update_compaction_metrics_data(struct);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
+    client.remove_compaction_metrics_data(request);
+  }
+
+  @Override
   public void setHadoopJobid(String jobId, long cqId) throws MetaException, TException {
     client.set_hadoop_jobid(jobId, cqId);
   }

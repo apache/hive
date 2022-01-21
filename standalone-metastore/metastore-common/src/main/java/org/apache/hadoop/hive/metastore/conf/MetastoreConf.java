@@ -567,6 +567,30 @@ public class MetastoreConf {
         "hive.metastore.acidmetrics.table.aborted.txns.threshold", 1500,
         "The acid metrics system will collect the number of tables which have a large number of aborted transactions." +
             "This parameter controls the minimum number of aborted transaction required so that a table will be counted."),
+    METASTORE_DELTAMETRICS_MAX_CACHE_SIZE("metastore.deltametrics.max.cache.size",
+        "hive.txn.acid.metrics.max.cache.size",
+        100, new RangeValidator(0, 500),
+        "Size of the ACID metrics cache, i.e. max number of partitions and unpartitioned tables with the "
+        + "most deltas that will be included in the lists of active, obsolete and small deltas. "
+        + "Allowed range is 0 to 500."),
+    METASTORE_DELTAMETRICS_REPORTING_INTERVAL("metastore.deltametrics.reporting.interval",
+        "hive.txn.acid.metrics.reporting.interval", 30,
+        TimeUnit.SECONDS,
+        "Reporting period for ACID metrics in seconds."),
+    METASTORE_DELTAMETRICS_LOGGER_FREQUENCY("metastore.deltametrics.logger.frequency",
+        "hive.compactor.acid.metrics.logger.frequency", 360, TimeUnit.MINUTES,
+        "Logging frequency of delta metrics logger. Set this value to 0 to completely turn off logging. " +
+            "Default time unit: minutes"),
+    METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD("metastore.deltametrics.delta.num.threshold",
+        "hive.txn.acid.metrics.delta.num.threshold", 100,
+        "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
+    METASTORE_DELTAMETRICS_OBSOLETE_DELTA_NUM_THRESHOLD("metastore.deltametrics.obsolete.delta.num.threshold",
+        "hive.txn.acid.metrics.obsolete.delta.num.threshold", 100,
+        "The minimum number of obsolete delta files a table/partition must have in order to be included in the ACID metrics report."),
+    METASTORE_DELTAMETRICS_DELTA_PCT_THRESHOLD("metastore.deltametrics.delta.pct.threshold",
+        "hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
+        "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
+            "count as small deltas. Default 0.01 = 1%.)"),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +

@@ -323,6 +323,20 @@ std::ostream& operator<<(std::ostream& out, const GetTablesExtRequestFields::typ
 
 std::string to_string(const GetTablesExtRequestFields::type& val);
 
+struct CompactionMetricsMetricType {
+  enum type {
+    NUM_OBSOLETE_DELTAS = 0,
+    NUM_DELTAS = 1,
+    NUM_SMALL_DELTAS = 2
+  };
+};
+
+extern const std::map<int, const char*> _CompactionMetricsMetricType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const CompactionMetricsMetricType::type& val);
+
+std::string to_string(const CompactionMetricsMetricType::type& val);
+
 struct FileMetadataExprType {
   enum type {
     ORC_SARG = 1
@@ -715,6 +729,12 @@ class CompactionRequest;
 class CompactionInfoStruct;
 
 class OptionalCompactionInfoStruct;
+
+class CompactionMetricsDataStruct;
+
+class CompactionMetricsDataResponse;
+
+class CompactionMetricsDataRequest;
 
 class CompactionResponse;
 
@@ -10345,6 +10365,178 @@ class OptionalCompactionInfoStruct : public virtual ::apache::thrift::TBase {
 void swap(OptionalCompactionInfoStruct &a, OptionalCompactionInfoStruct &b);
 
 std::ostream& operator<<(std::ostream& out, const OptionalCompactionInfoStruct& obj);
+
+typedef struct _CompactionMetricsDataStruct__isset {
+  _CompactionMetricsDataStruct__isset() : partitionname(false) {}
+  bool partitionname :1;
+} _CompactionMetricsDataStruct__isset;
+
+class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
+ public:
+
+  CompactionMetricsDataStruct(const CompactionMetricsDataStruct&);
+  CompactionMetricsDataStruct& operator=(const CompactionMetricsDataStruct&);
+  CompactionMetricsDataStruct() : dbname(), tblname(), partitionname(), type((CompactionMetricsMetricType::type)0), metricvalue(0), version(0) {
+  }
+
+  virtual ~CompactionMetricsDataStruct() noexcept;
+  std::string dbname;
+  std::string tblname;
+  std::string partitionname;
+  /**
+   * 
+   * @see CompactionMetricsMetricType
+   */
+  CompactionMetricsMetricType::type type;
+  int32_t metricvalue;
+  int32_t version;
+
+  _CompactionMetricsDataStruct__isset __isset;
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tblname(const std::string& val);
+
+  void __set_partitionname(const std::string& val);
+
+  void __set_type(const CompactionMetricsMetricType::type val);
+
+  void __set_metricvalue(const int32_t val);
+
+  void __set_version(const int32_t val);
+
+  bool operator == (const CompactionMetricsDataStruct & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tblname == rhs.tblname))
+      return false;
+    if (__isset.partitionname != rhs.__isset.partitionname)
+      return false;
+    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(metricvalue == rhs.metricvalue))
+      return false;
+    if (!(version == rhs.version))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionMetricsDataStruct &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionMetricsDataStruct & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CompactionMetricsDataStruct &a, CompactionMetricsDataStruct &b);
+
+std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataStruct& obj);
+
+typedef struct _CompactionMetricsDataResponse__isset {
+  _CompactionMetricsDataResponse__isset() : data(false) {}
+  bool data :1;
+} _CompactionMetricsDataResponse__isset;
+
+class CompactionMetricsDataResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  CompactionMetricsDataResponse(const CompactionMetricsDataResponse&);
+  CompactionMetricsDataResponse& operator=(const CompactionMetricsDataResponse&);
+  CompactionMetricsDataResponse() {
+  }
+
+  virtual ~CompactionMetricsDataResponse() noexcept;
+  CompactionMetricsDataStruct data;
+
+  _CompactionMetricsDataResponse__isset __isset;
+
+  void __set_data(const CompactionMetricsDataStruct& val);
+
+  bool operator == (const CompactionMetricsDataResponse & rhs) const
+  {
+    if (__isset.data != rhs.__isset.data)
+      return false;
+    else if (__isset.data && !(data == rhs.data))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionMetricsDataResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionMetricsDataResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CompactionMetricsDataResponse &a, CompactionMetricsDataResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataResponse& obj);
+
+
+class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  CompactionMetricsDataRequest(const CompactionMetricsDataRequest&);
+  CompactionMetricsDataRequest& operator=(const CompactionMetricsDataRequest&);
+  CompactionMetricsDataRequest() : dbName(), tblName(), partitionName(), type((CompactionMetricsMetricType::type)0) {
+  }
+
+  virtual ~CompactionMetricsDataRequest() noexcept;
+  std::string dbName;
+  std::string tblName;
+  std::string partitionName;
+  /**
+   * 
+   * @see CompactionMetricsMetricType
+   */
+  CompactionMetricsMetricType::type type;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_partitionName(const std::string& val);
+
+  void __set_type(const CompactionMetricsMetricType::type val);
+
+  bool operator == (const CompactionMetricsDataRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(partitionName == rhs.partitionName))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionMetricsDataRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionMetricsDataRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CompactionMetricsDataRequest &a, CompactionMetricsDataRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataRequest& obj);
 
 
 class CompactionResponse : public virtual ::apache::thrift::TBase {

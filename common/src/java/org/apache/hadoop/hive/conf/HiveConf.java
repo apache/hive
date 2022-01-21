@@ -3085,24 +3085,38 @@ public class HiveConf extends Configuration {
     
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_MAX_CACHE_SIZE
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
         new RangeValidator(0, 500),
         "Size of the ACID metrics cache, i.e. max number of partitions and unpartitioned tables with the "
             + "most deltas that will be included in the lists of active, obsolete and small deltas. "
             + "Allowed range is 0 to 500."),
-    HIVE_TXN_ACID_METRICS_CACHE_DURATION("hive.txn.acid.metrics.cache.duration", "7200s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Maximum lifetime in seconds for an entry in the ACID metrics cache."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_REPORTING_INTERVAL
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL("hive.txn.acid.metrics.reporting.interval", "30s",
         new TimeValidator(TimeUnit.SECONDS),
         "Reporting period for ACID metrics in seconds."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.delta.num.threshold", 100,
         "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_OBSOLETE_DELTA_NUM_THRESHOLD
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.obsolete.delta.num.threshold", 100,
         "The minimum number of obsolete delta files a table/partition must have in order to be included in the ACID metrics report."),
-    HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD("hive.txn.acid.metrics.delta.check.threshold", "300s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Deltas not older than this value will not be included in the ACID metrics report."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_DELTA_PCT_THRESHOLD
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD("hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
         "count as small deltas. Default 0.01 = 1%.)"),
@@ -3255,6 +3269,10 @@ public class HiveConf extends Configuration {
         "If the number of small delta directories under a table/partition passes this threshold, a " +
             "warning message will be logged."),
 
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_LOGGER_FREQUENCY
+     */
+    @Deprecated
     HIVE_COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY(
         "hive.compactor.acid.metrics.logger.frequency",
         "360m", new TimeValidator(TimeUnit.MINUTES),

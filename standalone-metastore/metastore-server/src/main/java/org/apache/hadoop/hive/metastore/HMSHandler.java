@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -8837,6 +8838,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void mark_failed(CompactionInfoStruct cr) throws MetaException {
     getTxnHandler().markFailed(CompactionInfo.compactionStructToInfo(cr));
+  }
+
+  @Override
+  public boolean update_compaction_metrics_data(CompactionMetricsDataStruct struct) throws MetaException, TException {
+      return getTxnHandler().updateCompactionMetricsData(CompactionMetricsDataConverter.structToData(struct));
+  }
+
+  @Override
+  public void remove_compaction_metrics_data(CompactionMetricsDataRequest request)
+      throws MetaException, TException {
+    getTxnHandler().removeCompactionMetricsData(request.getDbName(), request.getTblName(), request.getPartitionName(),
+        CompactionMetricsDataConverter.thriftCompactionMetricType2DbType(request.getType()));
   }
 
   @Override

@@ -308,7 +308,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
 
 
-
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
   // Maximum number of open transactions that's allowed
@@ -4111,6 +4110,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+
   private static void shouldNeverHappen(long txnid) {
     throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid));
   }
@@ -4265,6 +4265,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buff.append("'");
             queries.add(buff.toString());
 
+            buff.setLength(0);
+            buff.append("DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE \"CMC_DATABASE\"='");
+            buff.append(dbName);
+            buff.append("'");
+            queries.add(buff.toString());
+
             break;
           }
           case TABLE: {
@@ -4324,6 +4330,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               buff.append("'");
               queries.add(buff.toString());
             }
+            buff.setLength(0);
+            buff.append("DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE \"CMC_DATABASE\"='");
+            buff.append(dbName);
+            buff.append("' AND \"CMC_TABLE\"='");
+            buff.append(tblName);
+            buff.append("'");
+            queries.add(buff.toString());
+
             break;
           }
           case PARTITION: {
@@ -4380,6 +4394,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               buff.append("' AND \"CC_TABLE\"='");
               buff.append(tblName);
               buff.append("' AND \"CC_PARTITION\"='");
+              buff.append(partName);
+              buff.append("'");
+              queries.add(buff.toString());
+
+              buff.setLength(0);
+              buff.append("DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE \"CMC_DATABASE\"='");
+              buff.append(dbName);
+              buff.append("' AND \"CMC_TABLE\"='");
+              buff.append(tblName);
+              buff.append("' AND \"CMC_PARTITION\"='");
               buff.append(partName);
               buff.append("'");
               queries.add(buff.toString());
@@ -4563,6 +4587,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if(oldDbName != null) {
           update += "\"NWI_DATABASE\" = " + quoteString(normalizeCase(newDbName));
           where += "\"NWI_DATABASE\" = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "UPDATE \"COMPACTION_METRICS_CACHE\" SET";
+        where = " WHERE ";
+        if (oldPartName != null) {
+          update += "\"CMC_PARTITION\" = " + quoteString(normalizeCase(newPartName)) + ", ";
+          where += "\"CMC_PARTITION\" = " + quoteString(normalizeCase(oldPartName)) + " AND ";
+        }
+        if (oldTabName != null) {
+          update += "\"CMC_TABLE\" = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "\"CMC_TABLE\" = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if (oldDbName != null) {
+          update += "\"CMC_DATABASE\" = " + quoteString(normalizeCase(newDbName));
+          where += "\"CMC_DATABASE\" = " + quoteString(normalizeCase(oldDbName));
         }
         queries.add(update + where);
 

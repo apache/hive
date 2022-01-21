@@ -214,9 +214,6 @@ public class HiveServer2 extends CompositeService {
     try {
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
         MetricsFactory.init(hiveConf);
-        if (MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
-          DeltaFilesMetricReporter.init(hiveConf);
-        }
       }
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
@@ -937,7 +934,6 @@ public class HiveServer2 extends CompositeService {
         LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
           + e.getMessage(), e);
       }
-      DeltaFilesMetricReporter.close();
     }
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
     if (serviceDiscovery && !activePassiveHA) {
