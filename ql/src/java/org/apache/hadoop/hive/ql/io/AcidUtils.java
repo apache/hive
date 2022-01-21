@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1310,7 +1309,22 @@ public class AcidUtils {
    */
   public static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
-    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null, false);
+  }
+
+  /**
+   * Gets the full ACID state of the given directory.
+   * Includes empty files and invisible directories.
+   *
+   * @param fileSystem optional, it it is not provided, it will be derived from the candidateDirectory
+   * @param candidateDirectory the partition directory to analyze
+   * @param conf the configuration
+   * @param writeIdList the list of write ids that we are reading
+   * @throws IOException on filesystem errors
+   */
+  public static AcidDirectory getFullAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
+      ValidWriteIdList writeIdList) throws IOException {
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, Ref.from(false), false, null, true);
   }
 
   /**
@@ -1328,11 +1342,11 @@ public class AcidUtils {
    */
   private static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
-      HdfsDirSnapshot> dirSnapshots) throws IOException {
+          HdfsDirSnapshot> dirSnapshots, boolean collectInvisibleDirs) throws IOException {
     ValidTxnList validTxnList = getValidTxnList(conf);
 
     FileSystem fs = fileSystem == null ? candidateDirectory.getFileSystem(conf) : fileSystem;
-    AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds);
+    AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds, collectInvisibleDirs);
 
     List<HdfsFileStatusWithId> childrenWithId = HdfsUtils.tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, hiddenFileFilter);
 
@@ -1839,34 +1853,12 @@ public class AcidUtils {
         }
         directory.setBase(new ParsedBase(parsedBase, files));
       } else {
-        directory.getInvisibleDirectories().add(new ParsedBase(parsedBase, getPoisonedList()));
+        if (directory.getInvisibleDirectories() != null) {
+          directory.getInvisibleDirectories().add(new ParsedBase(parsedBase, PoisonedList.get()));
+        }
       }
     } else {
       directory.getObsolete().add(baseDir);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> List<T> getPoisonedList() {
-    return (List<T>) PoisonedList.INSTANCE;
-
-  }
-
-  static class PoisonedList<T> extends AbstractList<T> {
-
-    public static final PoisonedList<?> INSTANCE = new PoisonedList<Object>();
-
-    public PoisonedList() {
-    }
-
-    @Override
-    public T get(int index) {
-      throw new RuntimeException("Illegal operation on poisioned list");
-    }
-
-    @Override
-    public int size() {
-      throw new RuntimeException("Illegal operation on poisioned list");
     }
   }
 
@@ -1874,7 +1866,9 @@ public class AcidUtils {
       throws IOException {
     ParsedDelta delta = parsedDelta(deltadir, directory.getFs(), dirSnapshot);
     if (!isDirUsable(deltadir, delta.getVisibilityTxnId(), directory.getAbortedDirectories(), validTxnList)) {
-      directory.getInvisibleDirectories().add(delta);
+      if (directory.getInvisibleDirectories() != null) {
+        directory.getInvisibleDirectories().add(delta);
+      }
       return;
     }
     ValidWriteIdList.RangeResponse abortRange = writeIdList.isWriteIdRangeAborted(delta.minWriteId, delta.maxWriteId);
@@ -2632,7 +2626,7 @@ public class AcidUtils {
     }
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
-    AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
+    AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots, false);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(

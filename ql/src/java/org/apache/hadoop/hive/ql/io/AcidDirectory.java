@@ -56,14 +56,19 @@ public final class AcidDirectory implements AcidUtils.Directory {
   private final List<Path> originalDirectories = new ArrayList<>();
   private final List<Path> obsolete = new ArrayList<>();
   private final List<AcidUtils.ParsedDelta> currentDirectories = new ArrayList<>();
-  private final List<AcidUtils.ParsedDirectory> invisibleDirectories = new ArrayList<>();
+  private final List<AcidUtils.ParsedDirectory> invisibleDirectories;
 
-  public AcidDirectory(Path path, FileSystem fs, Ref<Boolean> useFileId) {
+  public AcidDirectory(Path path, FileSystem fs, Ref<Boolean> useFileId, boolean collectInvisibleDirs) {
     this.path = path;
     this.fs = fs;
     this.useFileId = useFileId;
     if (!(this.fs instanceof DistributedFileSystem) && this.useFileId != null) {
       this.useFileId.value = false;
+    }
+    if (collectInvisibleDirs) {
+      invisibleDirectories = new ArrayList<>();
+    } else {
+      invisibleDirectories = null;
     }
   }
 
@@ -195,14 +200,14 @@ public final class AcidDirectory implements AcidUtils.Directory {
     return currentDirectories.stream().filter(AcidUtils.ParsedDeltaLight::isDeleteDelta).collect(Collectors.toList());
   }
 
-  public boolean hasDataBelowWatermark(long highWaterMark) throws IOException {
+  public boolean hasDataBelowWatermark(long waterMark) throws IOException {
     for (ParsedDirectory parsedDelta : currentDirectories) {
-      if (parsedDelta.getMaxWriteId() < highWaterMark) {
+      if (parsedDelta.getMaxWriteId() < waterMark) {
         return true;
       }
     }
     for (ParsedDirectory parsedDelta : invisibleDirectories) {
-      if (parsedDelta.getMaxWriteId() < highWaterMark) {
+      if (parsedDelta.getMaxWriteId() < waterMark) {
         return true;
       }
     }
