@@ -751,15 +751,17 @@ public class TestCleaner extends CompactorTest {
   }
 
   @Test
-  public void withSingleBaseCleanerSucceeds2() throws Exception {
-    Table t = newTable("default", "camtc", false);
+  public void withNotYetVisibleBase() throws Exception {
+
+    String dbName = "default";
+    String tableName = "camtc";
+    Table t = newTable(dbName, tableName, false);
     long longQuery = openTxn();
 
     addBaseFile(t, null, 20L, 20);
-    burnThroughTransactions("default", "dcamc", 20);
+    burnThroughTransactions(dbName, tableName, 22);
 
-    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
-
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
 
     long compactTxn = compactInTxn(rqst);
     txnHandler.commitTxn(new CommitTxnRequest(longQuery));
@@ -770,4 +772,33 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
   }
+
+  @Test
+  public void cleanMultipleTimesWithSameWatermark() throws Exception {
+    String dbName = "default";
+    String tableName = "camtc";
+    Table t = newTable(dbName, tableName, false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    burnThroughTransactions(dbName, tableName, 22);
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    compactInTxn(rqst);
+    addBaseFile(t, null, 22L, 22);
+    compactInTxn(rqst);
+
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(1, paths.size());
+    Assert.assertEquals("base_22", paths.get(0).getName());
+
+  }
+
 }
