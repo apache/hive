@@ -29,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpBrowserClientServlet extends HttpServlet {
-  private final HiveJdbcBrowserClient browserClient;
+  private static final long serialVersionUID = 1L;
+
+  private final transient HiveJdbcBrowserClient browserClient;
   private static final Logger LOG = LoggerFactory.getLogger(
       HttpBrowserClientServlet.class);
   HttpBrowserClientServlet(HiveJdbcBrowserClient browserClient) {

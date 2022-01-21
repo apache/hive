@@ -953,6 +953,8 @@ public class HiveConnection implements java.sql.Connection {
       context.init(keyManagerFactory.getKeyManagers(),
         trustManagerFactory.getTrustManagers(), new SecureRandom());
       socketFactory = new SSLConnectionSocketFactory(context);
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception e) {
       throw new SQLException("Error while initializing 2 way ssl socket factory ", e);
     }

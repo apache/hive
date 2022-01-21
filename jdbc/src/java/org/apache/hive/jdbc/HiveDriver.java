@@ -109,6 +109,8 @@ public class HiveDriver implements Driver {
       if(tokens != null && tokens.length > 0 && tokens[0] != null) {
         version = Integer.parseInt(tokens[0]);
       }
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception e) {
       // Possible reasons to end up here:
       // - Unable to read version from manifest.mf
@@ -133,6 +135,8 @@ public class HiveDriver implements Driver {
       if(tokens != null && tokens.length > 1 && tokens[1] != null) {
         version = Integer.parseInt(tokens[1]);
       }
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception e) {
       // Possible reasons to end up here:
       // - Unable to read version from manifest.mf

@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import java.awt.Desktop;
 import java.awt.Desktop.Action;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -256,7 +257,8 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
   }
 
   private void sendBrowserMsg(Socket socket, boolean success) throws IOException {
-    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+    PrintWriter out = new PrintWriter(new OutputStreamWriter(
+        socket.getOutputStream(), StandardCharsets.UTF_8), true);
 
     List<String> content = new ArrayList<>();
     content.add("HTTP/1.0 200 OK");

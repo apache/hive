@@ -20,6 +20,8 @@ package org.apache.hive.jdbc;
 
 import java.io.IOException;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -64,8 +66,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
       // 3. The server returns a 401, which sometimes means the cookie has expired
       // 4. The cookie is secured where as the client connect does not use SSL
       if (!isCookieEnabled || ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
-          (cookieStore == null || (cookieStore != null &&
-          Utils.needToSendCredentials(cookieStore, cookieName, isSSL)))) ||
+          (cookieStore == null || Utils.needToSendCredentials(cookieStore, cookieName, isSSL))) ||
           (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
           httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
           equals(Utils.HIVE_SERVER2_CONST_TRUE)))) {
@@ -85,18 +86,18 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
       }
       // Add custom cookies if passed to the jdbc driver
       if (customCookies != null) {
-        String cookieHeaderKeyValues = "";
+        StringBuffer cookieHeaderKeyValues = new StringBuffer();
         Header cookieHeaderServer = httpRequest.getFirstHeader("Cookie");
         if ((cookieHeaderServer != null) && (cookieHeaderServer.getValue() != null)) {
-          cookieHeaderKeyValues = cookieHeaderServer.getValue();
+          cookieHeaderKeyValues.append(cookieHeaderServer.getValue());
         }
         for (Map.Entry<String, String> entry : customCookies.entrySet()) {
-          cookieHeaderKeyValues += ";" + entry.getKey() + "=" + entry.getValue();
+          cookieHeaderKeyValues.append(";" + entry.getKey() + "=" + entry.getValue());
         }
-        if (cookieHeaderKeyValues.startsWith(";")) {
-          cookieHeaderKeyValues = cookieHeaderKeyValues.substring(1);
+        if (StringUtils.startsWith(cookieHeaderKeyValues, ";")) {
+          cookieHeaderKeyValues.deleteCharAt(0);
         }
-        httpRequest.addHeader("Cookie", cookieHeaderKeyValues);
+        httpRequest.addHeader("Cookie", cookieHeaderKeyValues.toString());
       }
     } catch (Exception e) {
       throw new HttpException(e.getMessage(), e);

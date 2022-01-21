@@ -25,14 +25,7 @@ import java.util.List;
 
 public abstract class HiveMetaDataResultSet<M> extends HiveBaseResultSet {
 
-  protected List<M> data = Collections.emptyList();
-
-  public HiveMetaDataResultSet(final List<String> columnNames, final List<String> columnTypes,
-    final List<M> data) throws SQLException {
-
-    if (data != null) {
-      this.data = new ArrayList<M>(data);
-    }
+  public HiveMetaDataResultSet(final List<String> columnNames, final List<String> columnTypes) throws SQLException {
 
     if (columnTypes != null) {
       this.columnTypes = new ArrayList<String>(columnTypes);

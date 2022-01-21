@@ -573,16 +573,10 @@ public class Utils {
         // jdbc:hive2://localhost:10000;principal=hive/HiveServer2Host@YOUR-REALM.COM
         if (jdbcBaseURI.getAuthority() != null) {
           String host = jdbcBaseURI.getHost();
-          int port = jdbcBaseURI.getPort();
           if (host == null) {
             throw new JdbcUriParseException(
                 "Bad URL format. Hostname not found " + " in authority part of the url: "
                     + jdbcBaseURI.getAuthority() + ". Are you missing a '/' after the hostname ?");
-          }
-          // Set the port to default value; we do support jdbc url like:
-          // jdbc:hive2://localhost/db
-          if (port <= 0) {
-            port = Integer.parseInt(Utils.DEFAULT_PORT);
           }
           connParams.setHost(jdbcBaseURI.getHost());
           connParams.setPort(jdbcBaseURI.getPort());

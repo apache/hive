@@ -164,7 +164,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     private int index = -1;
 
     public ClientInfoPropertiesResultSet() throws SQLException {
-      super(Arrays.asList(COLUMNS), Arrays.asList(COLUMN_TYPES), null);
+      super(Arrays.asList(COLUMNS), Arrays.asList(COLUMN_TYPES));
       List<FieldSchema> fieldSchemas = new ArrayList<>(COLUMNS.length);
       for (int i = 0; i < COLUMNS.length; ++i) {
         fieldSchemas.add(new FieldSchema(COLUMNS[i], COLUMN_TYPES[i], null));
@@ -536,7 +536,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getProcedureTerm() throws SQLException {
-    return new String("UDF");
+    return "UDF";
   }
 
   public ResultSet getProcedures(String catalog, String schemaPattern,
@@ -725,8 +725,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     return new HiveMetaDataResultSet<Object>(
             Arrays.asList("TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "CLASS_NAME", "DATA_TYPE"
                     , "REMARKS", "BASE_TYPE")
-            , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING", "INT")
-            , null) {
+            , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING", "INT")) {
 
       public boolean next() throws SQLException {
         return false;
