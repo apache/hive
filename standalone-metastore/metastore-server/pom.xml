@@ -518,26 +518,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>com.github.os72</groupId>
-        <artifactId>protoc-jar-maven-plugin</artifactId>
-        <version>3.5.1.1</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <protocArtifact>${protobuf.group}:protoc:${protobuf-exc.version}</protocArtifact>
-              <addSources>none</addSources>
-              <inputDirectories>
-                <include>${basedir}/src/main/protobuf/org/apache/hadoop/hive/metastore</include>
-              </inputDirectories>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <!-- TODO MS-SPLIT javadoc plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -640,33 +620,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>*.patch</exclude>
-            <exclude>binary-package-licenses/**</exclude>
-            <exclude>DEV-README</exclude>
-            <exclude>**/src/main/sql/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>**/*.txt</exclude>
-            <exclude>**/*.log</exclude>
-            <exclude>**/*.arcconfig</exclude>
-            <exclude>**/package-info.java</exclude>
-            <exclude>**/*.properties</exclude>
-            <exclude>**/*.q</exclude>
-            <exclude>**/*.q.out</exclude>
-            <exclude>**/*.xml</exclude>
-            <exclude>**/gen/**</exclude>
-            <exclude>**/patchprocess/**</exclude>
-            <exclude>**/metastore_db/**</exclude>
-            <exclude>**/test/resources/**/*.ldif</exclude>
-            <exclude>**/test/resources/sql/**</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <executions>
@@ -690,7 +643,6 @@
             </goals>
             <configuration>
               <sources>
-                <source>src/gen/thrift/gen-javabean</source>
                 <source>build/generated-sources</source>
                 <source>src/gen/version</source>
               </sources>
@@ -757,6 +709,4 @@
       </plugin>
     </plugins>
   </build>
-
-
 </project>
