@@ -380,7 +380,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         case PIG:
         case HIVE:
           // TODO implement value readers for Pig and Hive
-          throw new UnsupportedOperationException("Avro support not yet supported for Pig and Hive");
+          throw new UnsupportedOperationException("Vectorized execution is not yet supported for Iceberg avro " +
+              "tables. Please turn off vectorization and retry the query.");
         case GENERIC:
           avroReadBuilder.createReaderFunc(
               (expIcebergSchema, expAvroSchema) ->
@@ -407,7 +408,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         case PIG:
         case HIVE:
           // TODO implement value readers for Pig and Hive
-          throw new UnsupportedOperationException("Parquet support not yet supported for Pig and Hive");
+          throw new UnsupportedOperationException("Vectorized execution is not yet supported for Iceberg parquet " +
+              "tables. Please turn off vectorization and retry the query.");
         case GENERIC:
           parquetReadBuilder.createReaderFunc(
               fileSchema -> GenericParquetReaders.buildReader(
