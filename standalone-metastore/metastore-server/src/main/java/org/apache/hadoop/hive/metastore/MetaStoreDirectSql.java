@@ -159,7 +159,7 @@ class MetaStoreDirectSql {
 
   // Table names with schema name, if necessary
   @TableName
-  private String DBS, TBLS, PARTITIONS, DATABASE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
+  private String VERSION, DBS, TBLS, PARTITIONS, DATABASE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
       SDS, SERDES, SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, BUCKETING_COLS, SKEWED_COL_NAMES,
       SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
       TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS,
@@ -308,6 +308,7 @@ class MetaStoreDirectSql {
   }
 
   private boolean runTestQuery() {
+    boolean doTrace = LOG.isDebugEnabled();
     Transaction tx = pm.currentTransaction();
     boolean doCommit = false;
     if (!tx.isActive()) {
@@ -316,11 +317,13 @@ class MetaStoreDirectSql {
     }
     Query query = null;
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
-    String selfTestQuery = "select \"DB_ID\" from " + DBS + "";
+    String selfTestQuery = "select \"VER_ID\" from " + VERSION;
     try {
       prepareTxn();
+      long start = doTrace ? System.nanoTime() : 0;
       query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
       query.execute();
+      MetastoreDirectSqlUtils.timingTrace(doTrace, selfTestQuery, start, doTrace ? System.nanoTime() : 0);
       return true;
     } catch (Throwable t) {
       doCommit = false;
