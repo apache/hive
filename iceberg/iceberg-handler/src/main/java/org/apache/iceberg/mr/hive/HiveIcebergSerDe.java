@@ -154,9 +154,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
-    serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
     serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
-
     // build partition spec, if any
     if (!getPartitionColumnNames().isEmpty()) {
       List<FieldSchema> partitionFields = IntStream.range(0, getPartitionColumnNames().size())
@@ -182,6 +180,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private Properties getCTASTableCreationProperties(Properties serDeProperties) {
     Properties tblProps = (Properties) serDeProperties.clone();
+
+    // remove the serialization-only related props
     tblProps.remove(serdeConstants.LIST_PARTITION_COLUMNS);
     tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
     tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS);
@@ -193,6 +193,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     tblProps.remove(serdeConstants.COLUMN_NAME_DELIMITER);
     tblProps.remove(serdeConstants.SERIALIZATION_LIB);
     tblProps.remove(hive_metastoreConstants.TABLE_IS_CTAS);
+
+    // add the commonly-needed table properties
+    HiveIcebergMetaHook.COMMON_HMS_PROPERTIES.forEach(tblProps::putIfAbsent);
+    tblProps.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
+
     return tblProps;
   }
 

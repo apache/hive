@@ -89,6 +89,10 @@ import org.slf4j.LoggerFactory;
 
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
+  public static final Map<String, String> COMMON_HMS_PROPERTIES = ImmutableMap.of(
+      BaseMetastoreTableOperations.TABLE_TYPE_PROP, BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(),
+      InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE"
+  );
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
   private static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet
@@ -452,24 +456,20 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // Set the table type even for non HiveCatalog based tables
-    hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
-
-    // Allow purging table data if the table is created now and not set otherwise
-    hmsTable.getParameters().putIfAbsent(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE");
-
     // If the table is not managed by Hive catalog then the location should be set
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       Preconditions.checkArgument(hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null,
           "Table location not set");
     }
 
+    Map<String, String> hmsParams = hmsTable.getParameters();
+    COMMON_HMS_PROPERTIES.forEach(hmsParams::putIfAbsent);
+
     // Remove null values from hms table properties
-    hmsTable.getParameters().entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null);
+    hmsParams.entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null);
 
     // Remove creation related properties
-    PARAMETERS_TO_REMOVE.forEach(hmsTable.getParameters()::remove);
+    PARAMETERS_TO_REMOVE.forEach(hmsParams::remove);
   }
 
   /**
