@@ -37,6 +37,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
@@ -50,6 +52,8 @@ public class Utils {
 
   private static final boolean IBM_JAVA = System.getProperty("java.vendor")
       .contains("IBM");
+
+  public static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
   public static UserGroupInformation getUGI() throws LoginException, IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
@@ -154,6 +158,16 @@ public class Utils {
           filterClass, e.getClass().getName());
     }
     return Utils.constructXSRFFilter();
+  }
+
+  public static boolean checkFileSystemXAttrSupport(FileSystem fs) throws IOException {
+    try {
+      fs.getXAttrs(new Path(Path.SEPARATOR));
+      return true;
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("XAttr won't be preserved since it is not supported for file system: " + fs.getUri());
+      return false;
+    }
   }
 
   private static Filter constructXSRFFilter() {

@@ -41,17 +41,24 @@ public final class DDLWork implements Serializable {
   /** List of WriteEntities that are passed to the hooks. */
   private Set<WriteEntity> outputs;
   private boolean isReplication;
+  private boolean executeInParallel;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc, boolean isReplication,
                  String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this(inputs, outputs, ddlDesc, isReplication, dumpDirectory, metricCollector, false);
+  }
+
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc, boolean isReplication,
+                 String dumpDirectory, ReplicationMetricCollector metricCollector, boolean executeInParallel) {
     this.inputs = inputs;
     this.outputs = outputs;
     this.ddlDesc = ddlDesc;
     this.isReplication = isReplication;
     this.dumpDirectory = dumpDirectory;
     this.metricCollector = metricCollector;
+    this.executeInParallel = executeInParallel;
   }
 
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc) {
@@ -91,5 +98,9 @@ public final class DDLWork implements Serializable {
   @Explain(skipHeader = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public DDLDesc getDDLDesc() {
     return ddlDesc;
+  }
+
+  public boolean canExecuteInParallel() {
+    return executeInParallel;
   }
 }

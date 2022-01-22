@@ -58,9 +58,7 @@ final class ProxyUserSupport {
         Set<String> groups;
         if("*".equals(confEnt.getValue())) {
           groups = WILD_CARD;
-          if(LOG.isDebugEnabled()) {
-            LOG.debug("User [" + proxyUser + "] is authorized to do doAs any user.");
-          }
+          LOG.debug("User [{}] is authorized to do doAs any user.", proxyUser);
         }
         else if(confEnt.getValue() != null && confEnt.getValue().trim().length() > 0) {
           groups = new HashSet<String>(Arrays.asList(confEnt.getValue().trim().split(",")));
@@ -72,10 +70,7 @@ final class ProxyUserSupport {
         }
         else {
           groups = Collections.emptySet();
-          if(LOG.isDebugEnabled()) {
-            LOG.debug("User [" + proxyUser + 
-                "] is authorized to do doAs for users in the following groups: []");
-          }
+          LOG.debug("User [{}] is authorized to do doAs for users in the following groups: []", proxyUser);
         }
         proxyUserGroups.put(proxyUser, groups);
       }
@@ -87,9 +82,7 @@ final class ProxyUserSupport {
         Set<String> hosts;
         if("*".equals(confEnt.getValue())) {
           hosts = WILD_CARD;
-          if(LOG.isDebugEnabled()) {
-            LOG.debug("User [" + proxyUser + "] is authorized to do doAs from any host.");
-          }
+          LOG.debug("User [{}] is authorized to do doAs from any host.", proxyUser);
         }
         else if(confEnt.getValue() != null && confEnt.getValue().trim().length() > 0) {
           String[] hostValues = confEnt.getValue().trim().split(",");
@@ -108,10 +101,7 @@ final class ProxyUserSupport {
         }
         else {
           hosts = Collections.emptySet();
-          if(LOG.isDebugEnabled()) {
-            LOG.debug("User [" + proxyUser
-                + "] is authorized to do doAs from the following hosts: []");
-          }
+          LOG.debug("User [{}] is authorized to do doAs from the following hosts: []", proxyUser);
         }
         proxyUserHosts.put(proxyUser, hosts);
       }

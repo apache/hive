@@ -31,6 +31,7 @@ import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -77,10 +78,26 @@ public class ASTBuilder {
 
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
-    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
-        ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
+    ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
+    if (hTbl.getHiveTableMD().getMetaTable() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
+    }
+
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);
+
+    if (hTbl.getHiveTableMD().getAsOfTimestamp() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_TIME, "TOK_AS_OF_TIME")
+          .add(HiveParser.StringLiteral, hTbl.getHiveTableMD().getAsOfTimestamp());
+      b.add(asOfBuilder);
+    }
+
+    if (hTbl.getHiveTableMD().getAsOfVersion() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_VERSION, "TOK_AS_OF_VERSION")
+          .add(HiveParser.Number, hTbl.getHiveTableMD().getAsOfVersion());
+      b.add(asOfBuilder);
+    }
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
@@ -141,6 +158,13 @@ public class ASTBuilder {
       // We need to carry the insideView information from calcite into the ast.
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"insideView\"")
+              .add(HiveParser.StringLiteral, "\"TRUE\""));
+    }
+
+    if (hts.getTableScanTrait() != null) {
+      // We need to carry the fetchDeletedRows information from calcite into the ast.
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+              .add(HiveParser.StringLiteral, String.format("\"%s\"", hts.getTableScanTrait().getPropertyKey()))
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
 

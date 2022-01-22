@@ -31,6 +31,7 @@ public class ColStatistics {
   private boolean isPrimaryKey;
   private boolean isEstimated;
   private boolean isFilteredColumn;
+  private byte[] bitVectors;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -109,6 +110,14 @@ public class ColStatistics {
 
   public void setRange(Range r) {
     this.range = r;
+  }
+
+  public byte[] getBitVectors() {
+    return bitVectors;
+  }
+
+  public void setBitVectors(byte[] bitVectors) {
+    this.bitVectors = bitVectors;
   }
 
   @Override

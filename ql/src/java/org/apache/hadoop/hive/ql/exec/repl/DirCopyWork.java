@@ -18,10 +18,13 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import java.io.Serializable;
+
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.SnapshotCopyMode.FALLBACK_COPY;
 
 /**
  * DirCopyWork, mainly to be used to copy External table data.
@@ -30,27 +33,43 @@ import java.io.Serializable;
         Explain.Level.DEFAULT,
         Explain.Level.EXTENDED })
 public class DirCopyWork implements Serializable, StringConvertibleObject {
-  private static final String URI_SEPARATOR = "#";
+  public static final String URI_SEPARATOR = "#";
   private static final long serialVersionUID = 1L;
+  private String tableName;
   private Path fullyQualifiedSourcePath;
   private Path fullyQualifiedTargetPath;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
+  private SnapshotUtils.SnapshotCopyMode copyMode = FALLBACK_COPY;
+  private String snapshotPrefix = "";
 
   public DirCopyWork(ReplicationMetricCollector metricCollector, String dumpDirectory) {
     this.metricCollector = metricCollector;
     this.dumpDirectory = dumpDirectory;
   }
 
-  public DirCopyWork(Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
+  public DirCopyWork(String tableName, Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
+    this.tableName = tableName;
     this.fullyQualifiedSourcePath = fullyQualifiedSourcePath;
     this.fullyQualifiedTargetPath = fullyQualifiedTargetPath;
   }
+
+  public DirCopyWork(String tableName, Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath,
+      SnapshotUtils.SnapshotCopyMode copyMode, String snapshotPrefix) {
+    this(tableName, fullyQualifiedSourcePath, fullyQualifiedTargetPath);
+    this.copyMode = copyMode;
+    this.snapshotPrefix = snapshotPrefix;
+  }
+
+
   @Override
   public String toString() {
     return "DirCopyWork{"
             + "fullyQualifiedSourcePath=" + getFullyQualifiedSourcePath()
             + ", fullyQualifiedTargetPath=" + getFullyQualifiedTargetPath()
+            + ", tableName=" + tableName
+            + ", copyMode="+ getCopyMode()
+            + ", snapshotPrefix="+ getSnapshotPrefix()
             + '}';
   }
 
@@ -70,12 +89,31 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
     return dumpDirectory;
   }
 
+  public SnapshotUtils.SnapshotCopyMode getCopyMode() {
+    return copyMode;
+  }
+
+  public String getSnapshotPrefix() {
+    return snapshotPrefix;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
   @Override
   public String convertToString() {
     StringBuilder objInStr = new StringBuilder();
     objInStr.append(fullyQualifiedSourcePath)
             .append(URI_SEPARATOR)
-            .append(fullyQualifiedTargetPath);
+            .append(fullyQualifiedTargetPath)
+            .append(URI_SEPARATOR)
+            .append(tableName)
+            .append(URI_SEPARATOR)
+            .append(copyMode)
+            .append(URI_SEPARATOR)
+            .append(snapshotPrefix);
+
     return objInStr.toString();
   }
 
@@ -84,5 +122,10 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
     String paths[] = objectInStr.split(URI_SEPARATOR);
     this.fullyQualifiedSourcePath = new Path(paths[0]);
     this.fullyQualifiedTargetPath = new Path(paths[1]);
+    if (paths.length > 3) {
+      this.tableName = paths[2];
+      this.copyMode = SnapshotUtils.SnapshotCopyMode.valueOf(paths[3]);
+      this.snapshotPrefix = paths[4];
+    }
   }
 }

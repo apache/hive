@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -77,14 +78,16 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +106,9 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
+  
+  public static final String MANUALLY_INITIATED_COMPACTION = "manual";
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -289,13 +295,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return (ThriftHiveMetastore.Iface) method.invoke(null, conf);
     } catch (InvocationTargetException e) {
       if (e.getCause() != null) {
-        MetaStoreUtils.logAndThrowMetaException((Exception) e.getCause());
+        MetaStoreUtils.throwMetaException((Exception) e.getCause());
       }
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (ClassNotFoundException
         | NoSuchMethodException
         | IllegalAccessException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -328,7 +334,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 serviceDiscoveryMode);
       }
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
 
     if (metastoreUrisString.isEmpty() && "zookeeper".equalsIgnoreCase(serviceDiscoveryMode)) {
@@ -349,15 +355,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         if (uriResolverHook != null) {
           metastoreURIArray.addAll(uriResolverHook.resolveURI(tmpUri));
         } else {
-          metastoreURIArray.add(new URI(
-                  tmpUri.getScheme(),
-                  tmpUri.getUserInfo(),
-                  HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
-                  tmpUri.getPort(),
-                  tmpUri.getPath(),
-                  tmpUri.getQuery(),
-                  tmpUri.getFragment()
-          ));
+          metastoreURIArray.add(tmpUri);
         }
       }
       metastoreUris = new URI[metastoreURIArray.size()];
@@ -373,7 +371,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     } catch (IllegalArgumentException e) {
       throw (e);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
   }
 
@@ -518,7 +516,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
       req.setProcessorIdentifier(processorIdentifier);
     }
-    client.alter_table_req(req);
+    boolean success = false;
+    try {
+      client.alter_table_req(req);
+      if (hook != null) {
+        PartitionSpecProxy partitionSpecProxy = listPartitionSpecs(dbname, tbl_name, Integer.MAX_VALUE);
+        hook.commitAlterTable(new_tbl, envContext, partitionSpecProxy);
+      }
+      success = true;
+    } finally {
+      if (!success && (hook != null)) {
+        hook.rollbackAlterTable(new_tbl, envContext);
+      }
+    }
   }
 
   @Override
@@ -551,7 +561,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
       req.setProcessorIdentifier(processorIdentifier);
     }
-    client.alter_table_req(req);
+    boolean success = false;
+    try {
+      client.alter_table_req(req);
+      if (hook != null) {
+        PartitionSpecProxy partitionSpecProxy = listPartitionSpecs(catName, dbName, tbl_name, Integer.MAX_VALUE);
+        hook.commitAlterTable(new_tbl, envContext, partitionSpecProxy);
+      }
+      success = true;
+    } finally {
+      if (!success && (hook != null)) {
+        hook.rollbackAlterTable(new_tbl, envContext);
+      }
+    }
   }
 
   @Deprecated
@@ -624,7 +646,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               throw new MetaException(e.toString());
             }
           } else {
-            transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+            try {
+              transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(), clientSocketTimeout);
+            } catch (TTransportException e) {
+              tte = e;
+              throw new MetaException(e.toString());
+            }
           }
 
           if (usePasswordAuth) {
@@ -649,7 +676,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               }
               // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
               transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
-            } catch (IOException sasle) {
+            } catch (IOException | TTransportException sasle) {
               // IOException covers SaslException
               LOG.error("Could not create client transport", sasle);
               throw new MetaException(sasle.toString());
@@ -689,7 +716,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           } else {
             if (useFramedTransport) {
-              transport = new TFramedTransport(transport);
+              try {
+                transport = new TFramedTransport(transport);
+              } catch (TTransportException e) {
+                LOG.error("Failed to create client transport", e);
+                throw new MetaException(e.toString());
+              }
             }
           }
 
@@ -1111,6 +1143,93 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       db.setCatalogName(getDefaultCatalog(conf));
     }
     client.create_database(db);
+  }
+
+  /**
+   * Create a new DataConnector // TODO
+   *
+   * @param connector
+   * @throws AlreadyExistsException
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_dataconnector(DataConnector)
+   */
+  @Override
+  public void createDataConnector(DataConnector connector)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    client.create_dataconnector(connector);
+  }
+
+  /**
+   * Drop an existing DataConnector by name // TODO
+   * @param name name of the dataconnector to drop.
+   * @throws NoSuchObjectException
+   * @throws InvalidOperationException
+   * @throws MetaException
+   * @throws TException
+   */
+  @Override
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    client.drop_dataconnector(name, ifNotExists, checkReferences);
+  }
+
+  /**
+   * Alter an existing dataconnector.
+   * @param name dataconnector name.
+   * @param connector new dataconnector object.
+   * @throws NoSuchObjectException No dataconnector with this name exists.
+   * @throws MetaException Operation could not be completed, usually in the RDBMS.
+   * @throws TException thrift transport layer error.
+   */
+  @Override
+  public void alterDataConnector(String name, DataConnector connector)
+      throws NoSuchObjectException, MetaException, TException {
+    client.alter_dataconnector(name, connector);
+  }
+
+  /**
+   * Get the dataconnector by name
+   * @return DataConnector if there is a match
+   * @throws MetaException error complete the operation
+   * @throws TException thrift transport error
+   */
+  @Override
+  public DataConnector getDataConnector(String name)
+      throws MetaException, TException {
+    GetDataConnectorRequest request = new GetDataConnectorRequest(name);
+    return client.get_dataconnector_req(request);
+  }
+
+  /**
+   * Get the names of all dataconnectors in the MetaStore.
+   * @return List of dataconnector names.
+   * @throws MetaException error accessing RDBMS.
+   * @throws TException thrift transport error
+   */
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException, TException {
+    return client.get_dataconnectors();
+  }
+
+  /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  @Override
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    CreateTableRequest request = new CreateTableRequest(tbl);
+
+    if (processorCapabilities != null) {
+      request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      request.setProcessorIdentifier(processorIdentifier);
+    }
+    return client.translate_table_dryrun(request);
   }
 
   /**
@@ -1633,10 +1752,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
+    
+    EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+      context = getEnvironmentContextWithIfPurgeSet();
     }
+    if (options.writeId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("writeId", options.writeId.toString());
+    }
+    if (options.txnId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", options.txnId.toString());
+    }
+    req.setEnvironmentContext(context);
+    
     return client.drop_partitions_req(req).getPartitions();
   }
 
@@ -1651,6 +1782,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws TException {
     dropTable(getDefaultCatalog(conf), dbname, name, deleteData, ignoreUnknownTab, ifPurge);
+  }
+
+  @Override
+  public void dropTable(Table tbl, boolean deleteData, boolean ignoreUnknownTbl, boolean ifPurge) throws TException {
+    EnvironmentContext context = null;
+    if (ifPurge) {
+      context = getEnvironmentContextWithIfPurgeSet();
+    }
+    if (tbl.isSetTxnId()) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", String.valueOf(tbl.getTxnId()));
+    }
+    String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
+
+    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData, 
+        ignoreUnknownTbl, context);
   }
 
   @Override
@@ -1670,7 +1817,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       envContext = new EnvironmentContext(warehouseOptions);
     }
     dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
-
   }
 
   /**
@@ -1704,7 +1850,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
-      hook.preDropTable(tbl);
+      hook.preDropTable(tbl, deleteData || (envContext != null && "TRUE".equals(envContext.getProperties().get("ifPurge"))));
     }
     boolean success = false;
     try {
@@ -1726,30 +1872,45 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException {
+    truncateTableInternal(getDefaultCatalog(conf),
+        dbName, tableName, partNames, validWriteIds, writeId, deleteData);
+  }
+  
+  @Override
+  public void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException {
     truncateTableInternal(getDefaultCatalog(conf),
-        dbName, tableName, partNames, validWriteIds, writeId);
+        dbName, tableName, partNames, validWriteIds, writeId, true);
   }
 
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames) throws TException {
-    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, null, -1);
+    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, null, -1, true);
   }
 
   @Override
   public void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws TException {
-    truncateTableInternal(catName, dbName, tableName, partNames, null, -1);
+    truncateTableInternal(catName, dbName, tableName, partNames, null, -1, true);
   }
 
   private void truncateTableInternal(String catName, String dbName, String tableName,
-      List<String> partNames, String validWriteIds, long writeId)
-          throws MetaException, TException {
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
+          throws TException {
+    Table table = getTable(catName, dbName, tableName);
+    HiveMetaHook hook = getHook(table);
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
+    if (hook != null) {
+      hook.preTruncateTable(table, context);
+    }
     TruncateTableRequest req = new TruncateTableRequest(
         prependCatalogToDbName(catName, dbName, conf), tableName);
     req.setPartNames(partNames);
     req.setValidWriteIdList(validWriteIds);
     req.setWriteId(writeId);
+    req.setEnvironmentContext(context);
     client.truncate_table_req(req);
   }
 
@@ -2196,6 +2357,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return res;
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
@@ -2203,6 +2368,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
@@ -2211,12 +2380,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       validWriteIdList, tableId);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names, String validWriteIdList, Long tableId) throws TException {
@@ -2224,6 +2401,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       validWriteIdList, tableId);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
@@ -2232,6 +2413,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       null, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
@@ -2313,82 +2498,141 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopy(FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param dbname
+   * @param name
+   * @return
+   * @throws TException
+   */
   @Override
+  @Deprecated
   public Table getTable(String dbname, String name) throws TException {
-    return getTable(getDefaultCatalog(conf), dbname, name);
+    GetTableRequest req = new GetTableRequest(dbname, name);
+    req.setCatName(getDefaultCatalog(conf));
+    return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param dbname
+   * @param name
+   * @param getColumnStats
+   *          get the column stats, if available, when true
+   * @param engine engine sending the request
+   * @return
+   * @throws TException
+   */
   @Override
+  @Deprecated
   public Table getTable(String dbname, String name, boolean getColumnStats, String engine) throws TException {
-    return getTable(getDefaultCatalog(conf), dbname, name, getColumnStats, engine);
+    GetTableRequest req = new GetTableRequest(dbname, name);
+    req.setCatName(getDefaultCatalog(conf));
+    req.setGetColumnStats(getColumnStats);
+    if (getColumnStats) {
+      req.setEngine(engine);
+    }
+    return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @return
+   * @throws TException
+   */
   @Override
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName) throws TException {
-    return getTable(catName, dbName, tableName, false, null);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName
+   * @param dbName
+   * @param tableName
+   * @param getColumnStats
+   * @param engine
+   * @return
+   * @throws TException
+   */
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName,
       boolean getColumnStats, String engine) throws TException {
-    long t1 = System.currentTimeMillis();
-
-    try {
       GetTableRequest req = new GetTableRequest(dbName, tableName);
       req.setCatName(catName);
-      req.setCapabilities(version);
       req.setGetColumnStats(getColumnStats);
       if (getColumnStats) {
         req.setEngine(engine);
       }
-      if (processorCapabilities != null)
-        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      if (processorIdentifier != null)
-        req.setProcessorIdentifier(processorIdentifier);
-
-      Table t = getTableInternal(req).getTable();
-
-      return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
-    } finally {
-      long diff = System.currentTimeMillis() - t1;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTable",
-            diff, "HMS client");
-      }
-    }
+      return getTable(req);
   }
 
   protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
     return client.get_table_req(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param validWriteIdList applicable snapshot
+   * @return
+   * @throws TException
+   */
   @Override
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName,
       String validWriteIdList) throws TException {
-    return getTable(catName, dbName, tableName, validWriteIdList, false, null);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setValidWriteIdList(validWriteIdList);
+    return getTable(req);
   }
 
-
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param validWriteIdList applicable snapshot
+   * @param getColumnStats get the column stats, if available, when true
+   * @param engine engine sending the request
+   * @return
+   * @throws TException
+   */
   @Override
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
       boolean getColumnStats, String engine) throws TException {
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setValidWriteIdList(validWriteIdList);
+    req.setGetColumnStats(getColumnStats);
+    if (getColumnStats) {
+      req.setEngine(engine);
+    }
+    return getTable(req);
+  }
+
+  @Override
+  public Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
     long t1 = System.currentTimeMillis();
 
     try {
-      GetTableRequest req = new GetTableRequest(dbName, tableName);
-      req.setCatName(catName);
-      req.setCapabilities(version);
-      req.setValidWriteIdList(validWriteIdList);
-      req.setGetColumnStats(getColumnStats);
-      if (getColumnStats) {
-        req.setEngine(engine);
-      }
+      getTableRequest.setCapabilities(version);
       if (processorCapabilities != null)
-        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+        getTableRequest.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
       if (processorIdentifier != null)
-        req.setProcessorIdentifier(processorIdentifier);
+        getTableRequest.setProcessorIdentifier(processorIdentifier);
 
-      Table t = getTableInternal(req).getTable();
-
+      Table t = getTableInternal(getTableRequest).getTable();
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
       long diff = System.currentTimeMillis() - t1;
@@ -2425,7 +2669,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
 
-  @Override
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(cm, null);
+  }
+
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
@@ -2480,7 +2728,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2488,8 +2736,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern)
       throws TException {
-    List<String> tables = client.get_tables(prependCatalogToDbName(catName, dbName, conf), tablePattern);
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
+    List<String> tables = new ArrayList<>();
+    GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
+    projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
+    GetTablesRequest req = new GetTablesRequest(dbName);
+    req.setCatName(catName);
+    req.setCapabilities(version);
+    req.setTblNames(null);
+    if(tablePattern == null){
+      tablePattern = ".*";
+    }
+    req.setTablesPattern(tablePattern);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    req.setProjectionSpec(projectionsSpec);
+    List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
+    tableObjects = deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
+    for (Table tbl : tableObjects) {
+      tables.add(tbl.getTableName());
+    }
+    return tables;
   }
 
   @Override
@@ -2497,7 +2765,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern, tableType);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2534,7 +2802,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<Table> views = client.get_all_materialized_view_objects_for_rewriting();
       return FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, views);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2552,7 +2820,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           client.get_materialized_views_for_rewriting(prependCatalogToDbName(catName, dbname, conf));
       return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbname, views);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2563,7 +2831,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTableMeta(getDefaultCatalog(conf), dbPatterns, tablePatterns, tableTypes);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2581,7 +2849,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getAllTables(getDefaultCatalog(conf), dbname);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -3121,6 +3389,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
+    client.update_transaction_statistics(req);
+  }
+
+  @Override
   public List<FieldSchema> getSchema(String db, String tableName) throws TException {
     return getSchema(getDefaultCatalog(conf), db, tableName);
   }
@@ -3650,10 +3923,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException {
     // As this is called from replication task, the user is the user who has fired the repl command.
     // This is required for standalone metastore authentication.
-    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds != null ? srcTxnIds.size() : 1, replPolicy, srcTxnIds, null);
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds != null ? srcTxnIds.size() : 1,
+                                        replPolicy, srcTxnIds, txnType);
     return txns.getTxn_ids();
   }
 
@@ -3673,11 +3947,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
     if (replPolicy != null) {
-      assert srcTxnIds != null;
-      assert numTxns == srcTxnIds.size();
-      // need to set this only for replication tasks
       rqst.setReplPolicy(replPolicy);
-      rqst.setReplSrcTxnIds(srcTxnIds);
+      if (txnType == TxnType.REPL_CREATED) {
+        assert srcTxnIds != null;
+        assert numTxns == srcTxnIds.size();
+        rqst.setReplSrcTxnIds(srcTxnIds);
+      }
     } else {
       assert srcTxnIds == null;
     }
@@ -3693,9 +3968,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void replRollbackTxn(long srcTxnId, String replPolicy) throws NoSuchTxnException, TException {
+  public void replRollbackTxn(long srcTxnId, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException {
     AbortTxnRequest rqst = new AbortTxnRequest(srcTxnId);
     rqst.setReplPolicy(replPolicy);
+    rqst.setTxn_type(txnType);
     client.abort_txn(rqst);
   }
 
@@ -3890,6 +4166,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     cr.setType(type);
     cr.setProperties(tblproperties);
+    cr.setInitiatorId(JavaUtils.hostname() + "-" + MANUALLY_INITIATED_COMPACTION);
+    cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
   }
 
@@ -3899,6 +4177,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
             filterHook, getDefaultCatalog(conf), response.getCompacts()));
     return response;
+  }
+
+  @Override
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest request)
+      throws TException {
+    GetLatestCommittedCompactionInfoResponse response = client.get_latest_committed_compaction_info(request);
+    return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isClientFilterEnabled, filterHook,
+        getDefaultCatalog(conf), request.getDbname(), request.getTablename(), response);
   }
 
   @Deprecated
@@ -3945,6 +4232,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
+    return getNextNotificationsInternal(rqst, false, filter);
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return getNextNotificationsInternal(request, allowGapsInEventIds, filter);
+  }
+
+  @Nullable
+  private NotificationEventResponse getNextNotificationsInternal(
+      NotificationEventRequest rqst, boolean allowGapsInEventIds,
+      NotificationFilter filter) throws TException {
+    long lastEventId = rqst.getLastEvent();
     NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back {} events", rsp!= null ? rsp.getEventsSize() : 0);
     NotificationEventResponse filtered = new NotificationEventResponse();
@@ -3953,7 +4254,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       long prevEventId = lastEventId;
       for (NotificationEvent e : rsp.getEvents()) {
         LOG.debug("Got event with id : {}", e.getEventId());
-        if (e.getEventId() != nextEventId) {
+        if (!allowGapsInEventIds && e.getEventId() != nextEventId) {
           if (e.getEventId() == prevEventId) {
             LOG.error("NOTIFICATION_LOG table has multiple events with the same event Id {}. " +
                     "Something went wrong when inserting notification events.  Bootstrap the system " +
@@ -4007,6 +4308,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
     client.add_write_notification_log(rqst);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  @Override
+  public void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {
+    client.add_write_notification_log_in_batch(rqst);
   }
 
   /**
@@ -4637,9 +4944,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_partitions_with_specs(request);
   }
 
+  @Deprecated
   @Override
   public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
     return client.find_next_compact(workerId);
+  }
+
+  @Override
+  public OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
+    return client.find_next_compact2(rqst);
   }
 
   @Override
@@ -4665,6 +4978,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
     client.mark_failed(cr);
+  }
+
+  @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
+      throws MetaException, TException {
+    return client.update_compaction_metrics_data(struct);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
+    client.remove_compaction_metrics_data(request);
   }
 
   @Override
@@ -4747,5 +5071,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void dropPackage(DropPackageRequest request) throws TException {
     client.drop_package(request);
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
+      throws TException {
+    return client.get_all_write_event_info(request);
   }
 }

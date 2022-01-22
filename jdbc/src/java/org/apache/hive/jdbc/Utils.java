@@ -32,7 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -86,7 +85,7 @@ public class Utils {
     // Client param names:
 
     // Retry setting
-    static final String RETRIES = "retries";
+    public static final String RETRIES = "retries";
     public static final String RETRY_INTERVAL = "retryInterval";
 
     public static final String AUTH_TYPE = "auth";
@@ -100,6 +99,20 @@ public class Utils {
     public static final String AUTH_PASSWD = "password";
     public static final String AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
     public static final String AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
+    // JdbcConnection param which specifies if we need to use a browser to do
+    // authentication.
+    // JdbcConnectionParam which specifies if the authMode is done via a browser
+    public static final String AUTH_SSO_BROWSER_MODE = "browser";
+    public static final String AUTH_SSO_TOKEN_MODE = "token";
+    // connection parameter used to specify a port number to listen on in case of
+    // browser mode.
+    public static final String AUTH_BROWSER_RESPONSE_PORT = "browserResponsePort";
+    // connection parameter used to specify the timeout in seconds for the browser mode
+    public static final String AUTH_BROWSER_RESPONSE_TIMEOUT_SECS = "browserResponseTimeout";
+    // connection parameter to optionally disable the SSL validation done when using
+    // browser based authentication. Useful mostly for testing/dev purposes.
+    // By default, SSL validation is done unless this parameter is set to true.
+    public static final String AUTH_BROWSER_DISABLE_SSL_VALIDATION = "browserDisableSslCheck";
     public static final String ANONYMOUS_USER = "anonymous";
     public static final String ANONYMOUS_PASSWD = "anonymous";
     public static final String USE_SSL = "ssl";
@@ -660,8 +673,7 @@ public class Utils {
      */
     int fromIndex = Utils.URL_PREFIX.length();
     int toIndex = -1;
-    ArrayList<String> toIndexChars = new ArrayList<String>(Arrays.asList("/", "?", "#"));
-    for (String toIndexChar : toIndexChars) {
+    for (String toIndexChar : Arrays.asList("/", "?", "#")) {
       toIndex = uri.indexOf(toIndexChar, fromIndex);
       if (toIndex > 0) {
         break;

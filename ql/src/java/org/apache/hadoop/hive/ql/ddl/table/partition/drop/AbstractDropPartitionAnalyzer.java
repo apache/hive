@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * Analyzer for drop partition commands.
  */
 abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer {
+
   AbstractDropPartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -90,21 +93,30 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
         throw se;
       }
     }
+    validateAlterTableType(table, AlterTableType.DROPPARTITION, expectView());
+
     Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(command, table,
         conf, canGroupExprs);
     if (partitionSpecs.isEmpty()) { // nothing to do
       return;
     }
 
-    validateAlterTableType(table, AlterTableType.DROPPARTITION, expectView());
     ReadEntity re = new ReadEntity(table);
     re.noLockNeeded();
     inputs.add(re);
 
-    addTableDropPartsOutputs(table, partitionSpecs.values(), !ifExists);
-
+    boolean dropPartUseBase = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
+      && AcidUtils.isTransactionalTable(table);
+    
+    addTableDropPartsOutputs(table, partitionSpecs.values(), !ifExists, dropPartUseBase);
+    
     AlterTableDropPartitionDesc desc =
-        new AlterTableDropPartitionDesc(tableName, partitionSpecs, mustPurge, replicationSpec);
+        new AlterTableDropPartitionDesc(tableName, partitionSpecs, mustPurge, replicationSpec, !dropPartUseBase, table);
+
+    if (desc.mayNeedWriteId()) {
+      setAcidDdlDesc(desc);
+    }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
@@ -115,15 +127,18 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
    * pre-execution hook. If the partition does not exist, throw an error if
    * throwIfNonExistent is true, otherwise ignore it.
    */
-  private void addTableDropPartsOutputs(Table tab, Collection<List<ExprNodeGenericFuncDesc>> partitionSpecs,
-      boolean throwIfNonExistent) throws SemanticException {
+  private void addTableDropPartsOutputs(Table table, Collection<List<ExprNodeGenericFuncDesc>> partitionSpecs,
+      boolean throwIfNonExistent, boolean  dropPartUseBase) throws SemanticException {
+    WriteType writeType =
+        dropPartUseBase ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
+    
     for (List<ExprNodeGenericFuncDesc> specs : partitionSpecs) {
       for (ExprNodeGenericFuncDesc partitionSpec : specs) {
         List<Partition> parts = new ArrayList<>();
 
         boolean hasUnknown = false;
         try {
-          hasUnknown = db.getPartitionsByExpr(tab, partitionSpec, conf, parts);
+          hasUnknown = db.getPartitionsByExpr(table, partitionSpec, conf, parts);
         } catch (Exception e) {
           throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partitionSpec.getExprString()), e);
         }
@@ -140,7 +155,7 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
           }
         }
         for (Partition p : parts) {
-          outputs.add(new WriteEntity(p, WriteEntity.WriteType.DDL_EXCLUSIVE));
+          outputs.add(new WriteEntity(p, writeType));
         }
       }
     }

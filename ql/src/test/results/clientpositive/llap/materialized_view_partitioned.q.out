@@ -204,6 +204,7 @@ POSTHOOK: Output: default@partition_mv_1@key=244
 POSTHOOK: Output: default@partition_mv_1@key=247
 POSTHOOK: Output: default@partition_mv_1@key=248
 POSTHOOK: Output: default@partition_mv_1@key=249
+POSTHOOK: Lineage: partition_mv_1.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=201).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=202).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=203).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
@@ -279,6 +280,10 @@ Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 25
 Expanded Query:     	SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY
@@ -365,6 +370,7 @@ POSTHOOK: Output: default@partition_mv_2@value=val_244
 POSTHOOK: Output: default@partition_mv_2@value=val_247
 POSTHOOK: Output: default@partition_mv_2@value=val_248
 POSTHOOK: Output: default@partition_mv_2@value=val_249
+POSTHOOK: Lineage: partition_mv_2.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_2 PARTITION(value=val_201).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_2 PARTITION(value=val_202).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_2 PARTITION(value=val_203).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
@@ -906,6 +912,7 @@ POSTHOOK: Output: default@partition_mv_3@key=244
 POSTHOOK: Output: default@partition_mv_3@key=247
 POSTHOOK: Output: default@partition_mv_3@key=248
 POSTHOOK: Output: default@partition_mv_3@key=249
+POSTHOOK: Lineage: partition_mv_3.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_3 PARTITION(key=201).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_3 PARTITION(key=202).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_3 PARTITION(key=203).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]

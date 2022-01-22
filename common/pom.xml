@@ -68,6 +68,10 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
+       <groupId>org.apache.commons</groupId>
+       <artifactId>commons-math3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
     </dependency>
@@ -190,6 +194,11 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.tez</groupId>
+    <artifactId>tez-api</artifactId>
+    <version>${tez.version}</version>
   </dependency>
     <!-- test inter-project -->
     <dependency>

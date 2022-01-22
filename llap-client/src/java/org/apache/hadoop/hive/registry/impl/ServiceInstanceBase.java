@@ -38,9 +38,7 @@ public class ServiceInstanceBase implements ServiceInstance {
   }
 
   public ServiceInstanceBase(ServiceRecord srv, String rpcName) throws IOException {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Working with ServiceRecord: {}", srv);
-    }
+    LOG.trace("Working with ServiceRecord: {}", srv);
     final Endpoint rpc = srv.getInternalEndpoint(rpcName);
     this.host = RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
         AddressTypes.ADDRESS_HOSTNAME_FIELD);

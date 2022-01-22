@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPA
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Sets;
 
 /**
  * GenTezUtils is a collection of shared helper methods to produce TezWork.
@@ -216,6 +218,71 @@ public class GenTezUtils {
         context.inputs, partitions, root, alias, context.conf, false);
   }
 
+  /**
+   * Temporarily truncates the operator tree to avoid full cloning of the tree.
+   *
+   * It does the following simplifications:
+   * <ul>
+   *  <li> hides UNION operator parents which are unrelated to the current set of roots
+   *  <li> hides childs from RS and FS operators
+   * <ul>
+   */
+  static class TruncatedOperatorTree implements AutoCloseable {
+
+    List<Runnable> undoSteps = new ArrayList<>();
+
+    public TruncatedOperatorTree(List<Operator<?>> roots) {
+      Set<Operator<?>> known = Sets.newIdentityHashSet();
+      // do a forward discovery from all roots
+      runDFS(known, roots);
+      for (Operator<?> o : known) {
+        if (o instanceof UnionOperator) {
+          List<Operator<?>> orig = o.getParentOperators();
+          undoSteps.add(() -> {
+            o.setParentOperators(orig);
+          });
+          List<Operator<? extends OperatorDesc>> newParents =
+              o.getParentOperators().stream().filter(p -> known.contains(p)).collect(Collectors.toList());
+
+          o.setParentOperators(newParents);
+        }
+        if (isTerminal(o)) {
+          List<Operator<?>> orig = o.getChildOperators();
+          undoSteps.add(() -> {
+            o.setChildOperators(orig);
+          });
+          o.setChildOperators(null);
+        }
+      }
+    }
+
+    private void runDFS(Set<Operator<?>> known, List<Operator<?>> roots, Class<?>... terminals) {
+
+      Queue<Operator<?>> pending = new LinkedList<>();
+      pending.addAll(roots);
+
+      while (!pending.isEmpty()) {
+        Operator<?> o = pending.poll();
+        known.add(o);
+        if (!isTerminal(o)) {
+          pending.addAll(o.getChildOperators());
+        }
+      }
+    }
+
+    private boolean isTerminal(Operator<?> o) {
+      return o instanceof FileSinkOperator || o instanceof ReduceSinkOperator;
+    }
+
+    @Override
+    public void close() {
+      for (Runnable runnable : undoSteps) {
+        runnable.run();
+      }
+    }
+
+  }
+
   // removes any union operator and clones the plan
   public static void removeUnionOperators(GenTezProcContext context, BaseWork work, int indexForTezUnion)
     throws SemanticException {
@@ -228,7 +295,10 @@ public class GenTezUtils {
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
+    List<Operator<?>> newRoots;
+    try (TruncatedOperatorTree truncator = new TruncatedOperatorTree(roots)) {
+      newRoots = SerializationUtilities.cloneOperatorTree(roots);
+    }
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map
@@ -484,6 +554,12 @@ public class GenTezUtils {
     List<ExprNodeDesc> keys = work.getEventSourcePartKeyExprMap().get(sourceName);
     keys.add(eventDesc.getPartKey());
 
+    // store the partition pruning predicate in map-work, have at least a list of nulls if none applicable
+    if (!work.getEventSourcePredicateExprMap().containsKey(sourceName)) {
+      work.getEventSourcePredicateExprMap().put(sourceName, new LinkedList<ExprNodeDesc>());
+    }
+    List<ExprNodeDesc> predicates = work.getEventSourcePredicateExprMap().get(sourceName);
+    predicates.add(eventDesc.getPredicate());
   }
 
   /**
@@ -883,11 +959,9 @@ public class GenTezUtils {
           groupByOperator.getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL) {
         // Check configuration and value is -1, infer value
         int result = defaultTinyBufferSize == -1 ?
-            (int) Math.ceil((double) groupByOperator.getStatistics().getDataSize() / 1E6) :
+            (int) Math.ceil(groupByOperator.getStatistics().getDataSize() / 1E6) :
             defaultTinyBufferSize;
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
-        }
+        LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
         return result;
       }
     }

@@ -1037,30 +1037,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or (cstring2 like '%b%')) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 1137584 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or ((UDFToShort(ctinyint) >= csmallint) and (cboolean2 = 1) and (UDFToInteger(ctinyint) = 3569)) or (cstring2 like '%b%')) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDecimal64ColNotEqualDecimal64Scalar(col 13:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 13:decimal(13,3)/DECIMAL_64), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
-                    predicate: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or (cstring2 like '%b%')) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 1137584 Basic stats: COMPLETE Column stats: COMPLETE
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimal64ColNotEqualDecimal64Scalar(col 14:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 14:decimal(13,3)/DECIMAL_64), FilterDoubleColLessDoubleColumn(col 15:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 15:double), FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint), FilterLongColEqualLongScalar(col 11:boolean, val 1), FilterLongColEqualLongScalar(col 0:int, val 3569)(children: col 0:tinyint)), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
+                    predicate: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or ((UDFToShort(ctinyint) >= csmallint) and (cboolean2 = 1) and (UDFToInteger(ctinyint) = 3569)) or (cstring2 like '%b%')) (type: boolean)
+                    Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cbigint (type: bigint), cfloat (type: float), ctinyint (type: tinyint), UDFToDouble(cbigint) (type: double), (UDFToDouble(cbigint) * UDFToDouble(cbigint)) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 4, 0, 15, 18]
-                          selectExpressions: CastLongToDouble(col 3:bigint) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 3:bigint) -> 16:double, CastLongToDouble(col 3:bigint) -> 17:double) -> 18:double
-                      Statistics: Num rows: 12288 Data size: 1137584 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [3, 4, 0, 16, 19]
+                          selectExpressions: CastLongToDouble(col 3:bigint) -> 16:double, DoubleColMultiplyDoubleColumn(col 17:double, col 18:double)(children: CastLongToDouble(col 3:bigint) -> 17:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double
+                      Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0), count(_col0), sum(_col4), sum(_col3), count(), sum(_col1), min(_col2)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                            aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 16:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
@@ -1211,7 +1211,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM `default`.`alltypesparquet`
-WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n' AND CHARACTER_LENGTH(`cstring1`) > 0
+WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR (`cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) < 50 AND (`cstring1` LIKE '%n' AND CHARACTER_LENGTH(`cstring1`) > 0))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30022,7 +30022,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
 FROM `default`.`alltypesparquet`
-WHERE `cint` = 49 AND `cfloat` = 3.5 OR `cint` = 47 AND `cfloat` = 2.09 OR `cint` = 45 AND `cfloat` = 3.02
+WHERE `cint` = 49 AND `cfloat` = 3.5 OR (`cint` = 47 AND `cfloat` = 2.09 OR `cint` = 45 AND `cfloat` = 3.02)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30133,7 +30133,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
 FROM `default`.`alltypesparquet`
-WHERE ROW(`cint`, `cfloat`) IN (ROW(49, 3.5), ROW(47, 2.09), ROW(45, 3.02))
+WHERE  (`cint`, `cfloat`) IN ( (49, 3.5),  (47, 2.09),  (45, 3.02))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30244,7 +30244,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
 FROM `default`.`alltypesparquet`
-WHERE (`cint` = 49 OR `cfloat` = 3.5) AND (`cint` = 47 OR `cfloat` = 2.09) AND (`cint` = 45 OR `cfloat` = 3.02)
+WHERE (`cint` = 49 OR `cfloat` = 3.5) AND ((`cint` = 47 OR `cfloat` = 2.09) AND (`cint` = 45 OR `cfloat` = 3.02))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -117,6 +117,9 @@ public class Driver implements IDriver {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
     driverTxnHandler = new DriverTxnHandler(driverContext, driverState);
+    if (SessionState.get() != null) {
+      SessionState.get().addQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname), queryState);
+    }
   }
 
   @Override
@@ -213,6 +216,11 @@ public class Driver implements IDriver {
         releaseResources();
       }
 
+      if (SessionState.get() != null) {
+        // Remove any query state reference from the session state
+        SessionState.get().removeQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname));
+      }
+      
       driverState.executionFinishedWithLocking(isFinishedWithError);
     }
 
@@ -466,6 +474,7 @@ public class Driver implements IDriver {
    * @param resetTaskIds Resets taskID counter if true.
    * @return 0 for ok
    */
+  @VisibleForTesting
   public int compile(String command, boolean resetTaskIds) {
     try {
       compile(command, resetTaskIds, false);
@@ -486,7 +495,7 @@ public class Driver implements IDriver {
    */
   @VisibleForTesting
   public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
-    preparForCompile(resetTaskIds);
+    prepareForCompile(resetTaskIds);
 
     Compiler compiler = new Compiler(context, driverContext, driverState);
     QueryPlan plan = compiler.compile(command, deferClose);
@@ -495,7 +504,7 @@ public class Driver implements IDriver {
     compileFinished(deferClose);
   }
 
-  private void preparForCompile(boolean resetTaskIds) throws CommandProcessorException {
+  private void prepareForCompile(boolean resetTaskIds) throws CommandProcessorException {
     driverTxnHandler.createTxnManager();
     DriverState.setDriverState(driverState);
     prepareContext();
@@ -507,6 +516,7 @@ public class Driver implements IDriver {
   }
 
   private void prepareContext() throws CommandProcessorException {
+    String originalCboInfo = context != null ? context.cboInfo : null;
     if (context != null && context.getExplainAnalyze() != AnalyzeState.RUNNING) {
       // close the existing ctx etc before compiling a new query, but does not destroy driver
       closeInProcess(false);
@@ -514,7 +524,8 @@ public class Driver implements IDriver {
 
     if (context == null) {
       context = new Context(driverContext.getConf());
-      }
+      context.setCboInfo(originalCboInfo);
+    }
 
     context.setHiveTxnManager(driverContext.getTxnManager());
     context.setStatsSource(driverContext.getStatsSource());

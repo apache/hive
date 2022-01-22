@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -134,6 +135,7 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
+  ParseContext pCtx = null;
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
@@ -392,15 +394,20 @@ public abstract class BaseSemanticAnalyzer {
   public static Map.Entry<String, String> getDbTableNamePair(ASTNode tableNameNode) throws SemanticException {
 
     if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
-        (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2)) {
+        (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2
+            && tableNameNode.getChildCount() != 3)) {
       throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE_NAME.getMsg(), tableNameNode));
     }
 
-    if (tableNameNode.getChildCount() == 2) {
+    if (tableNameNode.getChildCount() == 2 || tableNameNode.getChildCount() == 3) {
       String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
       if (dbName.contains(".") || tableName.contains(".")) {
         throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
+      }
+      if (tableNameNode.getChildCount() == 3) {
+        String metaTable = unescapeIdentifier(tableNameNode.getChild(2).getText());
+        tableName = tableName + "." + metaTable;
       }
       return Pair.of(dbName, tableName);
     } else {
@@ -417,9 +424,17 @@ public abstract class BaseSemanticAnalyzer {
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
       Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
-      return TableName.fromString(dbTablePair.getValue(),
+      String tableName = dbTablePair.getValue();
+      String metaTable = null;
+      if (tableName.contains(".")) {
+        String[] tmpNames = tableName.split("\\.");
+        tableName = tmpNames[0];
+        metaTable = tmpNames[1];
+      }
+      return TableName.fromString(tableName,
           null,
-          dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey())
+          dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey(),
+          metaTable)
           .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
       return unescapeSQLString(tableOrColumnNode.getText());
@@ -448,10 +463,18 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static TableName getQualifiedTableName(ASTNode tabNameNode, String catalogName) throws SemanticException {
     if (tabNameNode.getType() != HiveParser.TOK_TABNAME || (tabNameNode.getChildCount() != 1
-        && tabNameNode.getChildCount() != 2)) {
+        && tabNameNode.getChildCount() != 2 && tabNameNode.getChildCount() != 3)) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.INVALID_TABLE_NAME.getMsg(), tabNameNode));
     }
+
+    if (tabNameNode.getChildCount() == 3) {
+      final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+      final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      final String metaTableName = unescapeIdentifier(tabNameNode.getChild(2).getText());
+      return HiveTableName.fromString(tableName, catalogName, dbName, metaTableName);
+    }
+
     if (tabNameNode.getChildCount() == 2) {
       final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
@@ -482,14 +505,18 @@ public abstract class BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
-    assert node.getChildCount() <= 2;
+    assert node.getChildCount() <= 3;
     assert node.getType() == HiveParser.TOK_TABNAME;
 
-    if (node.getChildCount() == 2) {
+    if (node.getChildCount() == 2 || node.getChildCount() == 3) {
       node = (ASTNode) node.getChild(1);
     }
 
-    return getUnescapedName(node);
+    String tableName = getUnescapedName(node);
+    if (node.getChildCount() == 3) {
+      tableName = tableName + "." + node.getChild(2);
+    }
+    return tableName;
   }
 
   public static String getTableAlias(ASTNode node) throws SemanticException {
@@ -499,12 +526,61 @@ public abstract class BaseSemanticAnalyzer {
     if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
       return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
     }
-    if (node.getChildCount() == 1) {
-      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
-    }
-    return unescapeIdentifier(node.getChild(node.getChildCount() - 1).getText().toLowerCase());
+    String alias = getSimpleTableNameBase(node);
+    return alias != null ? alias.toLowerCase() : null;
   }
 
+  protected static String getSimpleTableNameBase(ASTNode n) throws SemanticException {
+    switch (n.getType()) {
+    case HiveParser.TOK_TABREF:
+      int aliasIndex = findTabRefIdxs(n)[0];
+      if (aliasIndex != 0) {
+        return n.getChild(aliasIndex).getText(); //the alias
+      }
+      return getSimpleTableNameBase((ASTNode) n.getChild(0));
+    case HiveParser.TOK_TABNAME:
+      if (n.getChildCount() == 2) {
+        //db.table -> return table
+        return n.getChild(1).getText();
+      }
+      return n.getChild(0).getText();
+    case HiveParser.TOK_SUBQUERY:
+      return n.getChild(1).getText(); //the alias
+    default:
+      throw raiseWrongType("TOK_TABREF|TOK_TABNAME|TOK_SUBQUERY", n);
+    }
+  }
+
+  protected static IllegalArgumentException raiseWrongType(String expectedTokName, ASTNode n) {
+    return new IllegalArgumentException("Expected " + expectedTokName + "; got " + n.getType());
+  }
+
+  protected static int[] findTabRefIdxs(ASTNode tabref) {
+    assert tabref.getType() == HiveParser.TOK_TABREF;
+    int aliasIndex = 0;
+    int propsIndex = -1;
+    int tsampleIndex = -1;
+    int ssampleIndex = -1;
+    int asOfTimeIndex = -1;
+    int asOfVersionIndex = -1;
+    for (int index = 1; index < tabref.getChildCount(); index++) {
+      ASTNode ct = (ASTNode) tabref.getChild(index);
+      if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE) {
+        tsampleIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE) {
+        ssampleIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TABLEPROPERTIES) {
+        propsIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_TIME) {
+        asOfTimeIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_VERSION) {
+        asOfVersionIndex = index;
+      } else {
+        aliasIndex = index;
+      }
+    }
+    return new int[] {aliasIndex, propsIndex, tsampleIndex, ssampleIndex, asOfTimeIndex, asOfVersionIndex};
+  }
 
   /**
    * Remove the encapsulating "`" pair from the identifier. We allow users to
@@ -1560,8 +1636,27 @@ public abstract class BaseSemanticAnalyzer {
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    validateUnsupportedPartitionClause(tbl, partSpec != null && !partSpec.isEmpty());
+
     tbl.validatePartColumnNames(partSpec, shouldBeFull);
     validatePartColumnType(tbl, partSpec, astNode, conf);
+  }
+
+  /**
+   * Throws an UnsupportedOperationException in case the query has a partition clause but the table is never partitioned
+   * on the HMS-level. Even though table is not partitioned from the HMS's point of view, it might have some other
+   * notion of partitioning under the hood (e.g. Iceberg tables). In these cases, we might decide to proactively throw a
+   * more descriptive, unified error message instead of failing on some other semantic analysis validation step, which
+   * could provide a more counter-intuitive exception message.
+   *
+   * @param tbl The table object, should not be null.
+   * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(last_name='Don'))
+   */
+  protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent) {
+    if (partitionClausePresent && tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+      throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
+          " backed by: " + tbl.getStorageHandler().toString());
+    }
   }
 
   public static void validatePartColumnType(Table tbl, Map<String, String> partSpec,
@@ -1719,28 +1814,50 @@ public abstract class BaseSemanticAnalyzer {
     return database;
   }
 
+  protected DataConnector getDataConnector(String dbName) throws SemanticException {
+    return getDataConnector(dbName, true);
+  }
+
+  protected DataConnector getDataConnector(String dcName, boolean throwException) throws SemanticException {
+    DataConnector connector;
+    try {
+      connector = db.getDataConnector(dcName);
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+    if (connector == null && throwException) {
+      throw new SemanticException(ErrorMsg.DATACONNECTOR_NOT_EXISTS.getMsg(dcName));
+    }
+    return connector;
+  }
+
   protected Table getTable(TableName tn) throws SemanticException {
     return getTable(tn, true);
   }
 
   protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
-    return getTable(tn.getDb(), tn.getTable(), throwException);
+    return getTable(tn.getDb(), tn.getTable(), tn.getMetaTable(), throwException);
   }
 
   protected Table getTable(String tblName) throws SemanticException {
-    return getTable(null, tblName, true);
+    return getTable(null, tblName, null, true);
   }
 
   protected Table getTable(String tblName, boolean throwException) throws SemanticException {
-    return getTable(null, tblName, throwException);
+    return getTable(null, tblName, null, throwException);
   }
 
-  protected Table getTable(String database, String tblName, boolean throwException)
+  protected Table getTable(String database, String tblName, boolean throwException) throws SemanticException {
+    return getTable(database, tblName, null, throwException);
+  }
+
+  protected Table getTable(String database, String tblName, String metaTableName, boolean throwException)
       throws SemanticException {
     Table tab;
     try {
-      tab = database == null ? db.getTable(tblName, false)
-          : db.getTable(database, tblName, false);
+      String tableName = metaTableName == null ? tblName : tblName + "." + metaTableName;
+      tab = database == null ? db.getTable(tableName, false)
+          : db.getTable(database, tblName, metaTableName, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
@@ -1861,6 +1978,10 @@ public abstract class BaseSemanticAnalyzer {
    */
   public void endAnalysis() {
     // Nothing to do
+  }
+
+  public ParseContext getParseContext() {
+    return pCtx;
   }
 
 }

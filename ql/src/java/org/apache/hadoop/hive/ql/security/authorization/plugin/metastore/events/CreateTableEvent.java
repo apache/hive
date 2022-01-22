@@ -59,18 +59,13 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> CreateTableEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> CreateTableEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
     String                    uri   = getSdLocation(table.getSd());
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, table.getDbName(), null, null, null,
-        HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-        table.getOwner(), table.getOwnerType()));
     ret.add(getHivePrivilegeObject(table));
 
     if (StringUtils.isNotEmpty(uri)) {
@@ -79,9 +74,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

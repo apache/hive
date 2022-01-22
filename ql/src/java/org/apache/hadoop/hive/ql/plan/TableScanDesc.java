@@ -31,11 +31,15 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -102,6 +106,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String FILTER_OBJECT_CONF_STR =
       "hive.io.filter.object";
 
+  public static final String PARTITION_PRUNING_FILTER =
+      "hive.io.pruning.filter";
+
+  public static final String AS_OF_TIMESTAMP =
+      "hive.io.as.of.timestamp";
+
+  public static final String AS_OF_VERSION =
+      "hive.io.as.of.version";
+
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
 
@@ -125,6 +138,10 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private BitSet includedBuckets;
 
   private int numBuckets = -1;
+
+  private String asOfVersion = null;
+
+  private String asOfTimestamp = null;
 
   public TableScanDesc() {
     this(null, null);
@@ -153,6 +170,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
       dbName = tblMetadata.getDbName();
       tableName = tblMetadata.getTableName();
       numBuckets = tblMetadata.getNumBuckets();
+      asOfTimestamp = tblMetadata.getAsOfTimestamp();
+      asOfVersion = tblMetadata.getAsOfVersion();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
@@ -480,7 +499,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean isNeedSkipHeaderFooters() {
     boolean rtn = false;
-    if (tableMetadata != null && tableMetadata.getTTable() != null) {
+    if (tableMetadata != null && tableMetadata.getTTable() != null
+        && TextInputFormat.class
+        .isAssignableFrom(tableMetadata.getInputFormatClass())) {
       Map<String, String> params = tableMetadata.getTTable().getParameters();
       if (params != null) {
         String skipHVal = params.get(serdeConstants.HEADER_COUNT);
@@ -503,6 +524,16 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return storageHandler == null
             ? opProps
             : storageHandler.getOperatorDescProperties(this, opProps);
+  }
+
+  @Explain(displayName = "As of version")
+  public String getAsOfVersion() {
+    return asOfVersion;
+  }
+
+  @Explain(displayName = "As of timestamp")
+  public String getAsOfTimestamp() {
+    return asOfTimestamp;
   }
 
   public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {

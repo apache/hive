@@ -18,24 +18,37 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.concurrent.ScheduledExecutorService;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hive.common.util.Ref;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,19 +57,17 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,33 +87,21 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
-
-  /**
-   * Get the hostname that this worker is run on.  Made static and public so that other classes
-   * can use the same method to know what host their worker threads are running on.
-   * @return hostname
-   */
-  public static String hostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
-  }
+  private boolean metricsEnabled;
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
-  // don't go through Initiator for user initiated compactions)
+  //  don't go through Initiator for user initiated compactions)
   @Override
   public void run() {
     LOG.info("Starting Worker thread");
-    boolean computeStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
+    boolean genericStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS);
+    boolean mrStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
     long timeout = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
     boolean launchedJob;
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
       do {
-        Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(computeStats));
+        Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException te) {
@@ -142,57 +141,20 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
-  private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
-    Table currentTable = resolveTable(ci);
-    if (originalTable.getId() != currentTable.getId()) {
-      throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
-          + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
-          + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
-          + " Marking compaction as failed.");
-    }
-  }
-
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
-
-    StringBuilder name = new StringBuilder(hostname());
-    name.append("-");
-    name.append(getId());
-    this.workerName = name.toString();
-    setName(name.toString());
+    this.workerName = getWorkerId();
+    setName(workerName);
+    // To enable delta metrics collection, initiator must be enabled on HMS side
+    metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
 
+  @VisibleForTesting
+  @ThreadSafe
   static final class StatsUpdater {
-    static final private Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
-
-    public static StatsUpdater init(CompactionInfo ci, List<String> columnListForStats,
-        HiveConf conf, String userName) {
-      return new StatsUpdater(ci, columnListForStats, conf, userName);
-    }
-
-    /**
-     * list columns for which to compute stats.  This maybe empty which means no stats gathering
-     * is needed.
-     */
-    private final List<String> columnList;
-    private final HiveConf conf;
-    private final String userName;
-    private final CompactionInfo ci;
-
-    private StatsUpdater(CompactionInfo ci, List<String> columnListForStats,
-        HiveConf conf, String userName) {
-      this.conf = new HiveConf(conf);
-      //so that Driver doesn't think it's arleady in a transaction
-      this.conf.unset(ValidTxnList.VALID_TXNS_KEY);
-      this.userName = userName;
-      this.ci = ci;
-      if (!ci.isMajorCompaction() || columnListForStats == null || columnListForStats.isEmpty()) {
-        columnList = Collections.emptyList();
-        return;
-      }
-      columnList = columnListForStats;
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
 
     /**
      * This doesn't throw any exceptions because we don't want the Compaction to appear as failed
@@ -202,16 +164,21 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      *
      * todo: longer term we should write something COMPACTION_QUEUE.CQ_META_INFO.  This is a binary
      * field so need to figure out the msg format and how to surface it in SHOW COMPACTIONS, etc
+     *
+     * @param ci Information about the compaction being run
+     * @param conf The hive configuration object
+     * @param userName The user to run the statistic collection with
+     * @param compactionQueueName The name of the compaction queue
      */
-    void gatherStats() {
+    static void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
       try {
         if (!ci.isMajorCompaction()) {
           return;
         }
-        if (columnList.isEmpty()) {
-          LOG.debug(ci + ": No existing stats found.  Will not run analyze.");
-          return;//nothing to do
-        }
+
+        HiveConf statusUpdaterConf = new HiveConf(conf);
+        statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
+
         //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
         // compute statistics for columns viewtime
         StringBuilder sb = new StringBuilder("analyze table ")
@@ -225,36 +192,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           sb.setLength(sb.length() - 1); //remove trailing ,
           sb.append(")");
         }
-        sb.append(" compute statistics for columns ");
-        for (String colName : columnList) {
-          sb.append(colName).append(",");
+        sb.append(" compute statistics");
+        LOG.info(ci + ": running '" + sb + "'");
+        statusUpdaterConf.setVar(HiveConf.ConfVars.METASTOREURIS,"");
+        if (compactionQueueName != null && compactionQueueName.length() > 0) {
+          statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
         }
-        sb.setLength(sb.length() - 1); //remove trailing ,
-        LOG.info(ci + ": running '" + sb.toString() + "'");
-        conf.setVar(HiveConf.ConfVars.METASTOREURIS,"");
-
-        //todo: use DriverUtils.runOnDriver() here
-        QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
-        SessionState localSession = null;
-        try (Driver d = new Driver(queryState)) {
-          if (SessionState.get() == null) {
-            localSession = new SessionState(conf);
-            SessionState.start(localSession);
-          }
-          try {
-            d.run(sb.toString());
-          } catch (CommandProcessorException e) {
-            LOG.warn(ci + ": " + sb.toString() + " failed due to: " + e);
-          }
-        } finally {
-          if (localSession != null) {
-            try {
-              localSession.close();
-            } catch (IOException ex) {
-              LOG.warn(ci + ": localSession.close() failed due to: " + ex.getMessage(), ex);
-            }
-          }
-        }
+        SessionState sessionState = DriverUtils.setUpSessionState(statusUpdaterConf, userName, true);
+        DriverUtils.runOnDriver(statusUpdaterConf, userName, sessionState, sb.toString());
       } catch (Throwable t) {
         LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
                       ") failed due to: " + t.getMessage(), t);
@@ -264,47 +209,42 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   static final class CompactionHeartbeater extends Thread {
     static final private Logger LOG = LoggerFactory.getLogger(CompactionHeartbeater.class);
-    private final AtomicBoolean stop = new AtomicBoolean();
     private final CompactionTxn compactionTxn;
     private final String tableName;
     private final HiveConf conf;
-    private final long interval;
-    public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
-      this.tableName = tableName;
-      this.compactionTxn = compactionTxn;
-      this.conf = conf;
+    private final AtomicBoolean errorLogEnabled;
 
-      this.interval =
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2;
+    public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
+      this.tableName = Objects.requireNonNull(tableName);
+      this.compactionTxn = Objects.requireNonNull(compactionTxn);
+      this.conf = Objects.requireNonNull(conf);
+      this.errorLogEnabled = new AtomicBoolean(true);
+
       setDaemon(true);
       setPriority(MIN_PRIORITY);
       setName("CompactionHeartbeater-" + compactionTxn.getTxnId());
     }
+
+    public void shouldLogError(boolean shouldLogError) {
+      this.errorLogEnabled.set(shouldLogError);
+    }
+
     @Override
     public void run() {
+      LOG.debug("Heartbeating compaction transaction id {} for table: {}", compactionTxn, tableName);
       IMetaStoreClient msc = null;
       try {
-        // We need to create our own metastore client since the thrifts clients
-        // are not thread safe.
+        // Create a metastore client for each thread since it is not thread safe
         msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
-        LOG.debug("Heartbeating compaction transaction id {} for table: {}", compactionTxn, tableName);
-        while(!stop.get()) {
-          msc.heartbeat(compactionTxn.getTxnId(), 0);
-          Thread.sleep(interval);
-        }
+        msc.heartbeat(compactionTxn.getTxnId(), compactionTxn.getLockId());
       } catch (Exception e) {
-        LOG.error("Error while heartbeating txn {} in {}, error: ", compactionTxn, Thread.currentThread().getName(), e.getMessage());
+        if (errorLogEnabled.get()) {
+          LOG.error("Error while heartbeating transaction id {} for table: {}", compactionTxn, tableName, e);
+        }
       } finally {
         if (msc != null) {
           msc.close();
         }
-      }
-    }
-
-    public void cancel() {
-      if(!this.stop.get()) {
-        LOG.debug("Successfully stop the heartbeating the transaction {}", this.compactionTxn);
-        this.stop.set(true);
       }
     }
   }
@@ -385,16 +325,20 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   /**
    * Finds the next compaction and executes it. The main thread might interrupt the execution of this method
    * in case of timeout.
-   * @param computeStats If true then for MR compaction the stats are regenerated
+   * @param collectGenericStats If true then for both MR and Query based compaction the stats are regenerated
+   * @param collectMrStats If true then for MR compaction the stats are regenerated
    * @return Returns true, if there was compaction in the queue, and we started working on it.
-   * @throws InterruptedException is thrown when the process is interrupted because of timeout for example
    */
   @VisibleForTesting
-  protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
+  protected Boolean findNextCompactionAndExecute(boolean collectGenericStats, boolean collectMrStats) {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
-    CompactionHeartbeater heartbeater = null;
+    PerfLogger perfLogger = SessionState.getPerfLogger(false);
+    String workerMetric = null;
+
     CompactionInfo ci = null;
+    boolean computeStats = false;
+    Table t1 = null;
     try (CompactionTxn compactionTxn = new CompactionTxn()) {
       if (msc == null) {
         try {
@@ -404,17 +348,28 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           return false;
         }
       }
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
+
+      FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+      findNextCompactRequest.setWorkerId(workerName);
+      findNextCompactRequest.setWorkerVersion(runtimeVersion);
+      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
       LOG.debug("Processing compaction request " + ci);
 
       if (ci == null) {
         return false;
       }
-
+      if ((runtimeVersion != null || ci.initiatorVersion != null) && !runtimeVersion.equals(ci.initiatorVersion)) {
+        LOG.warn("Worker and Initiator versions do not match. Worker: v{}, Initiator: v{}", runtimeVersion, ci.initiatorVersion);
+      }
       checkInterrupt();
 
+      if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+        workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" +
+            (ci.type != null ? ci.type.toString().toLowerCase() : null);
+        perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
+      }
+
       // Find the table we will be working with.
-      Table t1;
       try {
         t1 = resolveTable(ci);
         if (t1 == null) {
@@ -463,7 +418,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
 
       if (ci.runAs == null) {
-        ci.runAs = findUserToRunAs(sd.getLocation(), t);
+        ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), t, conf);
       }
 
       checkInterrupt();
@@ -475,9 +430,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
        * this case some of the statements are DDL, even in the future will not be allowed in a
        * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
       compactionTxn.open(ci);
-
-      heartbeater = new CompactionHeartbeater(compactionTxn, fullTableName, conf);
-      heartbeater.start();
 
       ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
       //with this ValidWriteIdList is capped at whatever HWM validTxnList has
@@ -518,12 +470,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       checkInterrupt();
 
-      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " +
-                   compactionTxn + " with compute stats set to " + computeStats);
-      final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
-          CompactionInfo.compactionInfoToStruct(ci)), conf,
-          runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner()) : null;
-
       try {
         failCompactionIfSetForTest();
 
@@ -534,27 +480,50 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         task (currently we're using Tez split grouping).
         */
         QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
+        computeStats = (queryCompactor == null && collectMrStats) || collectGenericStats;
+
+        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
+                ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
+
         if (queryCompactor != null) {
           LOG.info("Will compact id: " + ci.id + " with query-based compactor class: "
               + queryCompactor.getClass().getName());
           queryCompactor.runCompaction(conf, t, p, sd, tblValidWriteIds, ci, dir);
         } else {
           LOG.info("Will compact id: " + ci.id + " via MR job");
-          runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir, su);
+          runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir);
         }
-
-        heartbeater.cancel();
-
-        verifyTableIdHasNotChanged(ci, t1);
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
         compactionTxn.wasSuccessful();
+
+        updateDeltaFilesMetrics(dir, ci.dbname, ci.tableName, ci.partName, ci.type);
+
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
-            ".  Marking failed to avoid repeated failures", e);
+            ". Marking failed to avoid repeated failures", e);
+        final CompactionType ctype = ci.type;
         markFailed(ci, e);
+
+        if (runJobAsSelf(ci.runAs)) {
+          cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
+        } else {
+          LOG.info("Cleaning as user " + ci.runAs);
+          UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
+              UserGroupInformation.getLoginUser());
+
+          ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+            cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
+            return null;
+          });
+          try {
+            FileSystem.closeAllForUGI(ugi);
+          } catch (IOException ex) {
+            LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
+          }
+        }
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
@@ -566,9 +535,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
     } finally {
-      if (heartbeater != null) {
-        heartbeater.cancel();
+      if (workerMetric != null && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+        perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
+    }
+    if (computeStats) {
+      StatsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
+              CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
     }
     return true;
   }
@@ -598,6 +571,28 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
+  private void cleanupResultDirs(StorageDescriptor sd, ValidWriteIdList writeIds, CompactionType ctype, AcidDirectory dir) {
+    // result directory for compactor to write new files
+    Path resultDir = QueryCompactor.Util.getCompactionResultDir(sd, writeIds, conf,
+        ctype == CompactionType.MAJOR, false, false, dir);
+    LOG.info("Deleting result directories created by the compactor:\n");
+    try {
+      FileSystem fs = resultDir.getFileSystem(conf);
+      LOG.info(resultDir.toString());
+      fs.delete(resultDir, true);
+
+      if (ctype == CompactionType.MINOR) {
+        Path deleteDeltaDir = QueryCompactor.Util.getCompactionResultDir(sd, writeIds, conf,
+            false, true, false, dir);
+
+        LOG.info(deleteDeltaDir.toString());
+        fs.delete(deleteDeltaDir, true);
+      }
+    } catch (IOException ex) {
+      LOG.error("Caught exception while cleaning result directories:", ex);
+    }
+  }
+
   private void failCompactionIfSetForTest() {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
@@ -605,15 +600,15 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   private void runCompactionViaMrJob(CompactionInfo ci, Table t, Partition p, StorageDescriptor sd,
-      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidDirectory dir, StatsUpdater su)
-      throws IOException, HiveException, InterruptedException {
-    final CompactorMR mr = new CompactorMR();
+      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidDirectory dir)
+      throws IOException, InterruptedException {
+    final CompactorMR mr = getMrCompactor();
     if (runJobAsSelf(ci.runAs)) {
-      mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+      mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, msc, dir);
     } else {
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
       ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+        mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, msc, dir);
         return null;
       });
       try {
@@ -623,6 +618,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             exception);
       }
     }
+  }
+
+  @VisibleForTesting
+  public CompactorMR getMrCompactor() {
+    return new CompactorMR();
   }
 
   private void markFailed(CompactionInfo ci, Throwable e) {
@@ -635,8 +635,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
     try {
       msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-    } catch (TException e1) {
-      LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
+    } catch (Throwable t) {
+      LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, t);
     }
   }
 
@@ -651,13 +651,31 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         && ci.partName == null;
   }
 
+  private String getWorkerId() {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(getId());
+    return name.toString();
+  }
+
+  private void updateDeltaFilesMetrics(AcidDirectory directory, String dbName, String tableName, String partName,
+      CompactionType type) {
+    if (metricsEnabled) {
+      DeltaFilesMetricReporter.updateMetricsFromWorker(directory, dbName, tableName, partName, type, conf, msc);
+    }
+  }
+
   /**
    * Keep track of the compaction's transaction and its operations.
    */
   private class CompactionTxn implements AutoCloseable {
     private long txnId = 0;
+    private long lockId = 0;
+
     private TxnStatus status = TxnStatus.UNKNOWN;
     private boolean succeessfulCompaction = false;
+    private CompactionHeartbeater heartbeater;
+    private ScheduledExecutorService heartbeatExecutor;
 
     /**
      * Try to open a new txn.
@@ -670,6 +688,19 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
       this.txnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
       status = TxnStatus.OPEN;
+
+      LockRequest lockRequest = createLockRequest(ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
+      LockResponse res = msc.lock(lockRequest);
+      if (res.getState() != LockState.ACQUIRED) {
+        throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()
+            + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
+      }
+      lockId = res.getLockid();
+
+      heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
+      long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+      heartbeater = new CompactionHeartbeater(this, TxnUtils.getFullTableName(ci.dbname, ci.tableName), conf);
+      heartbeatExecutor.scheduleAtFixedRate(heartbeater, txnTimeout / 4, txnTimeout / 2, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -684,13 +715,29 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      * @throws Exception
      */
     @Override public void close() throws Exception {
-      if (status == TxnStatus.UNKNOWN) {
-        return;
+      if (status != TxnStatus.UNKNOWN) {
+        // turn off error logging in heartbeater in case of race condition between commit/abort and heartbeating
+        heartbeater.shouldLogError(false);
+        if (succeessfulCompaction) {
+          commit();
+        } else {
+          abort();
+        }
       }
-      if (succeessfulCompaction) {
-        commit();
-      } else {
-        abort();
+      shutdownHeartbeater();
+    }
+
+    private void shutdownHeartbeater() {
+      if (heartbeatExecutor != null) {
+        heartbeatExecutor.shutdownNow();
+        try {
+          if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+            heartbeatExecutor.shutdownNow();
+          }
+          LOG.debug("Successfully stopped heartbeating for transaction {}", this);
+        } catch (InterruptedException ex) {
+          heartbeatExecutor.shutdownNow();
+        }
       }
     }
 
@@ -698,8 +745,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       return txnId;
     }
 
+    long getLockId() {
+      return lockId;
+    }
+
     @Override public String toString() {
-      return "txnId=" + txnId + " (TxnStatus: " + status + ")";
+      return "txnId=" + txnId + ", lockId=" + lockId + " (TxnStatus: " + status + ")";
     }
 
     /**

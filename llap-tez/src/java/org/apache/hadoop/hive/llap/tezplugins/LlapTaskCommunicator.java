@@ -164,9 +164,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     } else {
       this.token = null;
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Task communicator with a token " + token);
-    }
+    LOG.info("Task communicator with a token " + token);
     Preconditions.checkState((token != null) == UserGroupInformation.isSecurityEnabled());
 
     // Not closing this at the moment at shutdown, since this could be a shared instance.
@@ -377,7 +375,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   /**
    * @param node
    * @param callback
-   * @return if it was possible to attemp the registration. Sometimes it's
+   * @return if it was possible to attempt the registration. Sometimes it's
    * not possible because is a dag is not running
    */
   public boolean registerDag(NodeInfo node, final OperationCallback<QueryIdentifierProto, Void> callback) {
@@ -779,9 +777,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     Long old = knownNodeMap.putIfAbsent(nodeId,
         TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS));
     if (old == null) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Added new known node: {}", nodeId);
-      }
+      LOG.info("Added new known node: {}", nodeId);
     }
   }
 
@@ -790,9 +786,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     PingingNodeInfo ni = new PingingNodeInfo(currentTs);
     PingingNodeInfo old = pingedNodeMap.put(nodeId, ni);
     if (old == null) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Added new pinging node: [{}] with uniqueId: {}", nodeId, uniqueId);
-      }
+      LOG.info("Added new pinging node: [{}] with uniqueId: {}", nodeId, uniqueId);
     } else {
       old.pingCount.incrementAndGet();
     }

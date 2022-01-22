@@ -25,6 +25,8 @@ k=3;
 }
 
 @members {
+  public List<Pair<String, String>> tables = new ArrayList<Pair<String, String>>();
+
   @Override
   public Object recoverFromMismatchedSet(IntStream input,
       RecognitionException re, BitSet follow) throws RecognitionException {
@@ -200,8 +202,19 @@ tableSample
 tableSource
 @init { gParent.pushMsg("table source", state); }
 @after { gParent.popMsg(state); }
-    : tabname=tableName props=tableProperties? ts=tableSample? (KW_AS? alias=identifier)?
-    -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
+    : tabname=tableName props=tableProperties? ts=tableSample? (asOf=asOfClause)? (KW_AS? alias=identifier)?
+    -> ^(TOK_TABREF $tabname $props? $ts? $alias? $asOf?)
+    ;
+
+asOfClause
+@init { gParent.pushMsg("as of system_time / system_version clause for table", state); }
+@after { gParent.popMsg(state); }
+    :
+    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
+    -> ^(TOK_AS_OF_TIME $asOfTime)
+    |
+    (KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF asOfVersion=Number)
+    -> ^(TOK_AS_OF_VERSION $asOfVersion)
     ;
 
 uniqueJoinTableSource
@@ -215,10 +228,12 @@ tableName
 @init { gParent.pushMsg("table name", state); }
 @after { gParent.popMsg(state); }
     :
-    db=identifier DOT tab=identifier
-    -> ^(TOK_TABNAME $db $tab)
+    db=identifier DOT tab=identifier (DOT meta=identifier)?
+    {tables.add(new ImmutablePair<>($db.text, $tab.text));}
+    -> ^(TOK_TABNAME $db $tab $meta?)
     |
     tab=identifier
+    {tables.add(new ImmutablePair<>(null, $tab.text));}
     -> ^(TOK_TABNAME $tab)
     ;
 

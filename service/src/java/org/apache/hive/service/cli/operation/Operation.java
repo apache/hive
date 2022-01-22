@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.log.LogDivertAppender;
-import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -68,7 +66,6 @@ public abstract class Operation {
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
-  private ScheduledExecutorService scheduledExecutorService;
 
   private long operationTimeout;
   private volatile long lastAccessTime;
@@ -103,7 +100,6 @@ public abstract class Operation {
     lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
-    scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     currentStateScope = updateOperationStateMetrics(null, MetricsConstant.OPERATION_PREFIX,
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
@@ -230,11 +226,8 @@ public abstract class Operation {
 
   protected void createOperationLog() {
     if (parentSession.isOperationLogEnabled()) {
-      File operationLogFile = new File(parentSession.getOperationLogSessionDir(), queryState.getQueryId());
+      operationLog = OperationLogManager.createOperationLog(this, queryState);
       isOperationLogEnabled = true;
-
-      // create OperationLog object with above log file
-      operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
     }
   }
 
@@ -309,10 +302,6 @@ public abstract class Operation {
   }
 
   protected synchronized void cleanupOperationLog(final long operationLogCleanupDelayMs) {
-    // stop the appenders for the operation log
-    String queryId = queryState.getQueryId();
-    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
-    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         log.warn("Operation seems to be in invalid state, opHandle is null");
@@ -324,8 +313,10 @@ public abstract class Operation {
             + "Perhaps the operation has already terminated.");
       } else {
         if (operationLogCleanupDelayMs > 0) {
+          ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
           scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
             TimeUnit.MILLISECONDS);
+          scheduledExecutorService.shutdown();
         } else {
           log.info("Closing operation log {} without delay", operationLog);
           operationLog.close();

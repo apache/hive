@@ -23,11 +23,9 @@ import java.nio.IntBuffer;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.conf.Constants;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.api.events.CustomProcessorEvent;
@@ -35,12 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
@@ -185,6 +182,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
     Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
     this.jobConf = new JobConf(conf);
+    this.jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
     this.processorContext = getContext();
     initTezAttributes();
     ExecutionContext execCtx = processorContext.getExecutionContext();
@@ -244,7 +242,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     }
 
     synchronized (this) {
-      boolean limitReached = checkLimitReached();
+      boolean limitReached = LimitOperator.checkLimitReached(jobConf);
       if (limitReached) {
         LOG.info(
             "TezProcessor exits early as query limit already reached, vertex: {}, task: {}, attempt: {}",
@@ -279,23 +277,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     // TODO HIVE-14042. In case of an abort request, throw an InterruptedException
   }
 
-  private boolean checkLimitReached() {
-    String queryId = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
-    String limitReachedKey = LimitOperator.getLimitReachedKey(jobConf);
-
-    try {
-      return ObjectCacheFactory.getCache(jobConf, queryId, false, true)
-          .retrieve(limitReachedKey, new Callable<AtomicBoolean>() {
-            @Override
-            public AtomicBoolean call() {
-              return new AtomicBoolean(false);
-            }
-          }).get();
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   protected void initializeAndRunProcessor(Map<String, LogicalInput> inputs,
       Map<String, LogicalOutput> outputs)
       throws Exception {
@@ -310,18 +291,9 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
-      // commit the output tasks
-      for (LogicalOutput output : outputs.values()) {
-        if (output instanceof MROutput) {
-          MROutput mrOutput = (MROutput) output;
-          if (mrOutput.isCommitRequired()) {
-            mrOutput.commit();
-          }
-        }
-      }
-
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
+      rproc.setAborted(true);
       originalThrowable = t;
     } finally {
       if (originalThrowable != null && (originalThrowable instanceof Error ||
@@ -341,6 +313,23 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
           originalThrowable = t;
         }
       }
+
+      // commit the output tasks
+      try {
+        for (LogicalOutput output : outputs.values()) {
+          if (output instanceof MROutput) {
+            MROutput mrOutput = (MROutput) output;
+            if (mrOutput.isCommitRequired()) {
+              mrOutput.commit();
+            }
+          }
+        }
+      } catch (Throwable t) {
+        if (originalThrowable == null) {
+          originalThrowable = t;
+        }
+      }
+
       if (originalThrowable != null) {
         LOG.error("Failed initializeAndRunProcessor", originalThrowable);
         // abort the output tasks

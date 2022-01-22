@@ -85,7 +85,7 @@ public class BaseReplicationScenariosAcidTables {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     HashMap<String, String> acidEnableConf = new HashMap<String, String>() {{
       put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
       put("hive.support.concurrency", "true");
@@ -347,7 +347,7 @@ public class BaseReplicationScenariosAcidTables {
     return txns;
   }
 
-  List<Long> allocateWriteIdsForTablesAndAquireLocks(String primaryDbName, Map<String, Long> tables,
+  List<Long> allocateWriteIdsForTablesAndAcquireLocks(String primaryDbName, Map<String, Long> tables,
                                                      TxnStore txnHandler,
                                                      List<Long> txns, HiveConf primaryConf) throws Throwable {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest();

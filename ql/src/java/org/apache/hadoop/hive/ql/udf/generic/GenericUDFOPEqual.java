@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
@@ -155,6 +156,14 @@ public class GenericUDFOPEqual extends GenericUDFBaseCompare {
           converted_o1, compareOI) == 0);
     }
     return result;
+  }
+
+  @Override
+  protected boolean supportsCategory(ObjectInspector.Category c) {
+    return super.supportsCategory(c) ||
+        c == ObjectInspector.Category.MAP ||
+        c == ObjectInspector.Category.STRUCT ||
+        c == ObjectInspector.Category.LIST;
   }
 
   @Override

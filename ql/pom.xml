@@ -89,6 +89,10 @@
       <version>${commons-configuration.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-vector-code-gen</artifactId>
       <version>${project.version}</version>
@@ -161,6 +165,15 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-bundle</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws.secretsmanager</groupId>
+      <artifactId>aws-secretsmanager-caching-java</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.esotericsoftware</groupId>
       <artifactId>kryo</artifactId>
     </dependency>
@@ -172,10 +185,11 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
-      <dependency>
-        <groupId>org.apache.hbase</groupId>
-        <artifactId>hbase-common</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-common</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-hadoop-bundle</artifactId>
@@ -387,7 +401,7 @@
     </dependency>
     <dependency>
       <groupId>org.jodd</groupId>
-      <artifactId>jodd-core</artifactId>
+      <artifactId>jodd-util</artifactId>
       <version>${jodd.version}</version>
     </dependency>
     <dependency>
@@ -401,6 +415,10 @@
     <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
@@ -517,6 +535,22 @@
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.arrow</groupId>
+      <artifactId>arrow-memory-netty</artifactId>
+      <version>${arrow.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-buffer</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-common</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -554,6 +588,11 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -791,6 +830,10 @@
          <groupId>org.glassfish.jersey.core</groupId>
          <artifactId>*</artifactId>
        </exclusion>
+       <exclusion>
+         <groupId>io.netty</groupId>
+         <artifactId>netty</artifactId>
+        </exclusion>
      </exclusions>
    </dependency>
     <dependency>
@@ -1010,26 +1053,6 @@
             </goals>
           </execution>
           <execution>
-            <!--this 'execution' will produce a hive-exec-$version-core.jar which has
-            all classes from ql module, i.e. the same contents as hive-exec-$version.jar would
-            have had if there was shade plugin below.  The way shade was configured since 0.13, is
-            to override the default jar for ql module with the saded one but keep the same name.
-            In other words, ql modules producesd a single uber jar under the module's coordinates,
-            i.e. w/o a classifier.  We also need a slim jar that only has classes from ql.  This
-            jar will now be with a 'core' classifier to ensure that prior behavior is preserved.
-            It would have been better to have a slim jar called hive-exec-$version.jar and a fat
-            jar called hive-exec-$version-shaded.jar but doing this now will cause backwards compat.
-            issues-->
-            <id>core-jar</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-            <configuration>
-              <classifier>core</classifier>
-            </configuration>
-          </execution>
-          <execution>
             <id>fallbackauthorizer-jar</id>
             <phase>package</phase>
             <goals>
@@ -1055,7 +1078,6 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-                <!--also see maven-jar-plugin execution.id=core-jar-->
               <artifactSet>
                 <includes>
                   <!-- order is meant to be the same as the ant build -->
@@ -1080,7 +1102,7 @@
                   <include>org.datanucleus:javax.jdo</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
-                  <include>org.jodd:jodd-core</include>
+                  <include>org.jodd:jodd-util</include>
                   <include>com.tdunning:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
@@ -1096,6 +1118,7 @@
                   <include>com.fasterxml.jackson.core:jackson-core</include>
                   <include>com.fasterxml.jackson.core:jackson-annotations</include>
                   <include>com.fasterxml.jackson.core:jackson-databind</include>
+                  <include>com.fasterxml.jackson.dataformat:jackson-dataformat-yaml</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:hive-spark-client</include>
@@ -1115,6 +1138,16 @@
                   <include>org.apache.calcite.avatica:avatica</include>
                 </includes>
               </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>org.apache.calcite.avatica:avatica</artifact>
+                  <excludes>
+                    <exclude>org/slf4j/**</exclude>
+                    <exclude>META-INF/maven/org.slf4j/**</exclude>
+                    <exclude>META-INF/licenses/slf4j*/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <relocations>
                 <relocation>
                   <pattern>com.esotericsoftware</pattern>

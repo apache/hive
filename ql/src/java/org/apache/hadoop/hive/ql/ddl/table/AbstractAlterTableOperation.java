@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -136,10 +136,51 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
 
     try {
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, desc.getType().name());
+      if (desc.getType() == AlterTableType.ADDPROPS) {
+        Map<String, String> oldTableParameters = oldTable.getParameters();
+        environmentContext.putToProperties(HiveMetaHook.SET_PROPERTIES,
+            table.getParameters().entrySet().stream()
+                .filter(e -> !oldTableParameters.containsKey(e.getKey()) ||
+                    !oldTableParameters.get(e.getKey()).equals(e.getValue()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(HiveMetaHook.PROPERTIES_SEPARATOR)));
+      } else if (desc.getType() == AlterTableType.DROPPROPS) {
+        Map<String, String> newTableParameters = table.getParameters();
+        environmentContext.putToProperties(HiveMetaHook.UNSET_PROPERTIES,
+            oldTable.getParameters().entrySet().stream()
+                .filter(e -> !newTableParameters.containsKey(e.getKey()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(HiveMetaHook.PROPERTIES_SEPARATOR)));
+      }
       if (partitions == null) {
         long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
-        context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true,
-            writeId);
+        try {
+          context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+        } catch (HiveException ex) {
+          if (Boolean.valueOf(environmentContext.getProperties()
+              .getOrDefault(HiveMetaHook.INITIALIZE_ROLLBACK_MIGRATION, "false"))) {
+            // in case of rollback of alter table do the following:
+            // 1. restore serde info and input/output format
+            // 2. remove table columns which are used to be partition columns
+            // 3. add partition columns
+            table.getSd().setInputFormat(oldTable.getSd().getInputFormat());
+            table.getSd().setOutputFormat(oldTable.getSd().getOutputFormat());
+            table.getSd().setSerdeInfo(oldTable.getSd().getSerdeInfo());
+            table.getSd().getCols().removeAll(oldTable.getPartitionKeys());
+            table.setPartCols(oldTable.getPartitionKeys());
+
+            table.getParameters().clear();
+            table.getParameters().putAll(oldTable.getParameters());
+            context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+            throw new HiveException("Error occurred during hive table migration to iceberg. Table properties "
+                + "and serde info was reverted to its original value. Partition info was lost during the migration "
+                + "process, but it can be reverted by running MSCK REPAIR on table/partition level.\n"
+                + "Retrying the migration without issuing MSCK REPAIR on a partitioned table will result in an empty "
+                + "iceberg table.");
+          } else {
+            throw ex;
+          }
+        }
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.

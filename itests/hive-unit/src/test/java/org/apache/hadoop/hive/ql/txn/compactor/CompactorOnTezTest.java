@@ -22,12 +22,18 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -37,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +54,7 @@ import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeState
 /**
  * Superclass for Test[Crud|Mm]CompactorOnTez, for setup and helper classes.
  */
-public class CompactorOnTezTest {
+public abstract class CompactorOnTezTest {
   private static final AtomicInteger RANDOM_INT = new AtomicInteger(new Random().nextInt());
   private static final String TEST_DATA_DIR = new File(
       System.getProperty("java.io.tmpdir") + File.separator + TestCrudCompactorOnTez.class
@@ -67,6 +74,11 @@ public class CompactorOnTezTest {
   @Before
   // Note: we create a new conf and driver object before every test
   public void setup() throws Exception {
+    HiveConf hiveConf = new HiveConf(this.getClass());
+    setupWithConf(hiveConf);
+  }
+
+  protected void setupWithConf(HiveConf hiveConf) throws Exception {
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -74,12 +86,13 @@ public class CompactorOnTezTest {
     if (!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
       throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
     }
-    HiveConf hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
+
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.cleanDb(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
@@ -126,6 +139,21 @@ public class CompactorOnTezTest {
       driver.close();
     }
     conf = null;
+  }
+
+  /**
+   * Verify that the expected number of transactions have run, and their state is "succeeded".
+   *
+   * @param expectedSuccessfulCompactions number of compactions already run
+   * @throws MetaException
+   */
+  protected void verifySuccessfulCompaction(int expectedSuccessfulCompactions) throws MetaException {
+    List<ShowCompactResponseElement> compacts =
+        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals("Completed compaction queue must contain " + expectedSuccessfulCompactions + " element(s)",
+        expectedSuccessfulCompactions, compacts.size());
+    compacts.forEach(
+        c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
   }
 
   protected class TestDataProvider {

@@ -352,12 +352,20 @@ STAGE PLANS:
 
 PREHOOK: query: alter table stats_nonpart2 add constraint primary_key primary key (key2) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
 POSTHOOK: query: alter table stats_nonpart2 add constraint primary_key primary key (key2) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
 PREHOOK: query: alter table stats_nonpart2 drop constraint primary_key
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
 POSTHOOK: query: alter table stats_nonpart2 drop constraint primary_key
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
 PREHOOK: query: explain select count(key2) from stats_nonpart2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_nonpart2

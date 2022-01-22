@@ -23,6 +23,9 @@ import java.util.Map;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -61,4 +64,11 @@ public abstract class AbstractAlterTableAnalyzer extends AbstractBaseAlterTableA
 
   protected abstract void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException;
+
+  protected void setAcidDdlDesc(Table table, DDLDescWithWriteId desc) {
+
+    if (AcidUtils.isTransactionalTable(table)) {
+      setAcidDdlDesc(desc);
+    }
+  }
 }

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,11 +28,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -44,21 +41,26 @@ import java.lang.reflect.*;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
@@ -105,6 +107,7 @@ import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -140,6 +143,7 @@ public abstract class TestHiveMetaStore {
     conf.set("hive.key4", "0");
     conf.set("datanucleus.autoCreateTables", "false");
     conf.set("hive.in.test", "true");
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
@@ -1277,6 +1281,52 @@ public abstract class TestHiveMetaStore {
 
 
   @Test
+  public void testDatabaseLocationOnDrop() throws Throwable {
+    try {
+      // clear up any existing databases
+      silentDropDatabase(TEST_DB1_NAME);
+
+      String dbLocation =
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db";
+      String mgdLocation =
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb1.db";
+      new DatabaseBuilder()
+          .setName(TEST_DB1_NAME)
+          .setLocation(dbLocation)
+          .setManagedLocation(mgdLocation)
+          .create(client, conf);
+
+      Database db = client.getDatabase(TEST_DB1_NAME);
+
+      assertEquals("name of returned db is different from that of inserted db",
+          TEST_DB1_NAME, db.getName());
+      assertEquals("location of the returned db is different from that of inserted db",
+          warehouse.getDnsPath(new Path(dbLocation)).toString(), db.getLocationUri());
+      assertEquals("managed location of the returned db is different from that of inserted db",
+          warehouse.getDnsPath(new Path(mgdLocation)).toString(), db.getManagedLocationUri());
+
+      client.dropDatabase(TEST_DB1_NAME, true, false, true);
+
+      boolean objectNotExist = false;
+      try {
+        client.getDatabase(TEST_DB1_NAME);
+      } catch (NoSuchObjectException e) {
+        objectNotExist = true;
+      }
+      assertTrue("Database " + TEST_DB1_NAME + " exists ", objectNotExist);
+
+      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
+      assertFalse("Database's location not deleted", fs.exists(new Path(dbLocation)));
+      fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
+      assertFalse("Database's managed location not deleted", fs.exists(new Path(mgdLocation)));
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDatabaseLocationOnDrop() failed.");
+      throw e;
+    }
+  }
+
+  @Test
   public void testSimpleTypeApi() throws Exception {
     try {
       client.dropType(ColumnType.INT_TYPE_NAME);
@@ -2197,7 +2247,7 @@ public abstract class TestHiveMetaStore {
         client.dropTable(dbName, tableName);
       }
       client.dropDatabase(dbName);
-    } catch (NoSuchObjectException|InvalidOperationException e) {
+    } catch (NoSuchObjectException|InvalidOperationException|MetaException e) {
       // NOP
     }
   }
@@ -2966,8 +3016,8 @@ public abstract class TestHiveMetaStore {
    * @param tableName the table name to be created
    */
 
-  private void createTable(String dbName, String tableName) throws TException {
-    new TableBuilder()
+  private Table createTable(String dbName, String tableName) throws TException {
+    return new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .addCol("foo", "string")
@@ -2975,13 +3025,27 @@ public abstract class TestHiveMetaStore {
         .create(client, conf);
   }
 
-  private void createMaterializedView(String dbName, String tableName, Set<String> tablesUsed)
+  public static SourceTable createSourceTable(Table table) {
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTable(table);
+    sourceTable.setInsertedCount(0L);
+    sourceTable.setUpdatedCount(0L);
+    sourceTable.setDeletedCount(0L);
+    return sourceTable;
+  }
+
+  private void createMaterializedView(String dbName, String tableName, Set<Table> tablesUsed)
       throws TException {
+    Set<SourceTable> sourceTables = new HashSet<>(tablesUsed.size());
+    for (Table table : tablesUsed) {
+      sourceTables.add(createSourceTable(table));
+    }
+
     Table t = new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .setType(TableType.MATERIALIZED_VIEW.name())
-        .addMaterializedViewReferencedTables(tablesUsed)
+        .addMaterializedViewReferencedTables(sourceTables)
         .addCol("foo", "string")
         .addCol("bar", "string")
         .create(client, conf);
@@ -3092,13 +3156,14 @@ public abstract class TestHiveMetaStore {
     // Setup
     silentDropDatabase(dbName);
 
+    Set<Table> tablesUsed = new HashSet<>();
     new DatabaseBuilder()
         .setName(dbName)
         .create(client, conf);
     for (String tableName : tableNames) {
-      createTable(dbName, tableName);
+      tablesUsed.add(createTable(dbName, tableName));
     }
-    createMaterializedView(dbName, "mv1", Sets.newHashSet("db.table1", "db.table2"));
+    createMaterializedView(dbName, "mv1", tablesUsed);
 
     // Test
     List<Table> tableObjs = client.getTableObjectsByName(dbName, tableNames);
@@ -3128,13 +3193,13 @@ public abstract class TestHiveMetaStore {
     Database db1 = new Database();
     db1.setName(dbName1);
     client.createDatabase(db1);
-    createTable(dbName1, tableName1);
+    Table table1 = createTable(dbName1, tableName1);
     Database db2 = new Database();
     db2.setName(dbName2);
     client.createDatabase(db2);
-    createTable(dbName2, tableName2);
+    Table table2 = createTable(dbName2, tableName2);
 
-    createMaterializedView(dbName2, mvName, Sets.newHashSet("db1.table1", "db2.table2"));
+    createMaterializedView(dbName2, mvName, Sets.newHashSet(table1, table2));
 
     boolean exceptionFound = false;
     try {
@@ -3487,5 +3552,137 @@ public abstract class TestHiveMetaStore {
     client.alter_table(dbName, tblName, tblUpdated);
 
     silentDropDatabase(dbName);
+  }
+
+  @Test
+  public void testDataConnector() throws Throwable {
+    final String connector_name1 = "test_connector1";
+    final String connector_name2 = "test_connector2";
+    final String mysql_type = "mysql";
+    final String mysql_url = "jdbc:mysql://nightly1.apache.org:3306/hive1";
+    final String postgres_type = "postgres";
+    final String postgres_url = "jdbc:postgresql://localhost:5432";
+
+    try {
+      DataConnector connector = new DataConnector(connector_name1, mysql_type, mysql_url);
+      Map<String, String> params = new HashMap<>();
+      params.put(AbstractJDBCConnectorProvider.JDBC_USERNAME, "hive");
+      params.put(AbstractJDBCConnectorProvider.JDBC_PASSWORD, "hive");
+      connector.setParameters(params);
+      client.createDataConnector(connector);
+
+      DataConnector dConn = client.getDataConnector(connector_name1);
+      assertNotNull(dConn);
+      assertEquals("name of returned data connector is different from that of inserted connector", connector_name1,
+          dConn.getName());
+      assertEquals("type of data connector returned is different from the type inserted", mysql_type, dConn.getType());
+      assertEquals("url of the data connector returned is different from the url inserted", mysql_url, dConn.getUrl());
+      // assertEquals(SecurityUtils.getUser(), dConn.getOwnerName());
+      assertEquals(PrincipalType.USER, dConn.getOwnerType());
+      assertNotEquals("Size of data connector parameters not as expected", 0, dConn.getParametersSize());
+
+      try {
+        client.createDataConnector(connector);
+        fail("Creating duplicate connector should fail");
+      } catch (Exception e) { /* as expected */ }
+
+      connector = new DataConnector(connector_name2, postgres_type, postgres_url);
+      params = new HashMap<>();
+      params.put(AbstractJDBCConnectorProvider.JDBC_USERNAME, "hive");
+      params.put(AbstractJDBCConnectorProvider.JDBC_PASSWORD, "hive");
+      connector.setParameters(params);
+      client.createDataConnector(connector);
+
+      dConn = client.getDataConnector(connector_name2);
+      assertEquals("name of returned data connector is different from that of inserted connector", connector_name2,
+          dConn.getName());
+      assertEquals("type of data connector returned is different from the type inserted", postgres_type, dConn.getType());
+      assertEquals("url of the data connector returned is different from the url inserted", postgres_url, dConn.getUrl());
+
+      List<String> connectors = client.getAllDataConnectorNames();
+      assertEquals("Number of dataconnectors returned is not as expected", 2, connectors.size());
+
+      DataConnector connector1 = new DataConnector(connector);
+      connector1.setUrl(mysql_url);
+      client.alterDataConnector(connector.getName(), connector1);
+
+      dConn = client.getDataConnector(connector.getName());
+      assertEquals("url of the data connector returned is different from the url inserted", mysql_url, dConn.getUrl());
+
+      // alter data connector parameters
+      params.put(AbstractJDBCConnectorProvider.JDBC_NUM_PARTITIONS, "5");
+      connector1.setParameters(params);
+      client.alterDataConnector(connector.getName(), connector1);
+
+      dConn = client.getDataConnector(connector.getName());
+      assertEquals("Size of data connector parameters not as expected", 3, dConn.getParametersSize());
+
+      // alter data connector parameters
+      connector1.setOwnerName("hiveadmin");
+      connector1.setOwnerType(PrincipalType.ROLE);
+      client.alterDataConnector(connector.getName(), connector1);
+
+      dConn = client.getDataConnector(connector.getName());
+      assertEquals("Data connector owner name not as expected", "hiveadmin", dConn.getOwnerName());
+      assertEquals("Data connector owner type not as expected", PrincipalType.ROLE, dConn.getOwnerType());
+
+      client.dropDataConnector(connector_name1, false, false);
+      connectors = client.getAllDataConnectorNames();
+      assertEquals("Number of dataconnectors returned is not as expected", 1, connectors.size());
+
+      client.dropDataConnector(connector_name2, false, false);
+      connectors = client.getAllDataConnectorNames();
+      assertEquals("Number of dataconnectors returned is not as expected", 0, connectors.size());
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDataConnector() failed.");
+      throw e;
+    }
+  }
+
+  @Test
+  public void testRemoteDatabase() throws Throwable {
+    final String connector_name1 = "test_connector1";
+    final String mysql_type = "mysql";
+    final String mysql_url = "jdbc:mysql://nightly1.apache.org:3306/hive1";
+    final String db_name = "mysql_remote";
+    final String db2 = "mysql_dup";
+
+    try {
+      DataConnector connector = new DataConnector(connector_name1, mysql_type, mysql_url);
+      Map<String, String> params = new HashMap<>();
+      params.put(AbstractJDBCConnectorProvider.JDBC_USERNAME, "hive");
+      params.put(AbstractJDBCConnectorProvider.JDBC_PASSWORD, "hive");
+      connector.setParameters(params);
+      client.createDataConnector(connector);
+
+      DataConnector dConn = client.getDataConnector(connector_name1);
+      new DatabaseBuilder().setName(db_name).setType(DatabaseType.REMOTE).setConnectorName(connector_name1)
+          .setRemoteDBName(db_name).create(client, conf);
+
+      Database db = client.getDatabase(db_name);
+      assertNotNull(db);
+      assertEquals(db.getType(), DatabaseType.REMOTE);
+      assertEquals(db.getConnector_name(), connector_name1);
+      assertEquals(db.getRemote_dbname(), db_name);
+
+      // new db in hive pointing to same remote db.
+      new DatabaseBuilder().setName(db2).setType(DatabaseType.REMOTE).setConnectorName(connector_name1)
+          .setRemoteDBName(db_name).create(client, conf);
+
+      db = client.getDatabase(db2);
+      assertNotNull(db);
+      assertEquals(db.getType(), DatabaseType.REMOTE);
+      assertEquals(db.getConnector_name(), connector_name1);
+      assertEquals(db.getRemote_dbname(), db_name);
+
+      client.dropDataConnector(connector_name1, false, false);
+      client.dropDatabase(db_name);
+      client.dropDatabase(db2);
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testRemoteDatabase() failed.");
+      throw e;
+    }
   }
 }

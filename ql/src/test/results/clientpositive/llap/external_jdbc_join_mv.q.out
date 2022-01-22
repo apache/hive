@@ -1,0 +1,182 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: dboutput
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: dboutput
+PREHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE person ("id" INTEGER, "name" VARCHAR(25), "jid" INTEGER, "cid" INTEGER)' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE person ("id" INTEGER, "name" VARCHAR(25), "jid" INTEGER, "cid" INTEGER)' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE country ("id" INTEGER, "name" VARCHAR(25))' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE country ("id" INTEGER, "name" VARCHAR(25))' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE EXTERNAL TABLE person
+(
+ id int,
+ name varchar(25),
+ jid int,
+ cid int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "PERSON",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@person
+POSTHOOK: query: CREATE EXTERNAL TABLE person
+(
+ id int,
+ name varchar(25),
+ jid int,
+ cid int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "PERSON",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@person
+PREHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(25)
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "DERBY",
+        "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+        "hive.sql.dbcp.username" = "APP",
+        "hive.sql.dbcp.password" = "mine",
+        "hive.sql.table" = "COUNTRY",
+        "hive.sql.dbcp.maxActive" = "1"
+        )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country
+POSTHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(25)
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "DERBY",
+        "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+        "hive.sql.dbcp.username" = "APP",
+        "hive.sql.dbcp.password" = "mine",
+        "hive.sql.table" = "COUNTRY",
+        "hive.sql.dbcp.maxActive" = "1"
+        )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country
+PREHOOK: query: CREATE TABLE job (
+    id int,
+    title varchar(20)
+) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@job
+POSTHOOK: query: CREATE TABLE job (
+    id int,
+    title varchar(20)
+) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@job
+PREHOOK: query: CREATE MATERIALIZED VIEW mv1 AS SELECT id, title FROM job WHERE title = 'Software Engineer'
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@job
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: CREATE MATERIALIZED VIEW mv1 AS SELECT id, title FROM job WHERE title = 'Software Engineer'
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@job
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.id SIMPLE [(job)job.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.title SIMPLE []
+PREHOOK: query: explain cbo 
+select * 
+from person 
+join job on person.jid = job.id
+join country on person.cid = country.id
+where job.title = 'Software Engineer'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country
+PREHOOK: Input: default@job
+PREHOOK: Input: default@mv1
+PREHOOK: Input: default@person
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo 
+select * 
+from person 
+join job on person.jid = job.id
+join country on person.cid = country.id
+where job.title = 'Software Engineer'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country
+POSTHOOK: Input: default@job
+POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@person
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$0], name=[$1], jid=[$2], cid=[$3], id1=[$4], title=[CAST(_UTF-16LE'Software Engineer':VARCHAR(20) CHARACTER SET "UTF-16LE"):VARCHAR(20) CHARACTER SET "UTF-16LE"], id2=[$5], name1=[$6])
+  HiveJoin(condition=[=($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($2, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(id=[$0], name=[$1], jid=[$2], cid=[$3])
+        HiveJdbcConverter(convention=[JDBC.DERBY])
+          JdbcFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($3))])
+            JdbcHiveTableScan(table=[[default, person]], table:alias=[person])
+      HiveProject(id=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
+    HiveProject(id=[$0], name=[$1])
+      HiveJdbcConverter(convention=[JDBC.DERBY])
+        JdbcFilter(condition=[IS NOT NULL($0)])
+          JdbcHiveTableScan(table=[[default, country]], table:alias=[country])
+
+PREHOOK: query: DROP MATERIALIZED VIEW mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: DROP MATERIALIZED VIEW mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1

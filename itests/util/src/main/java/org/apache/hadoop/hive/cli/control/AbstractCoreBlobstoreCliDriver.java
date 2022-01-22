@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
@@ -54,81 +53,50 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new QTestUtil(
-          QTestArguments.QTestArgumentsBuilder.instance()
-            .withOutDir(cliConfig.getResultsDir())
-            .withLogDir(cliConfig.getLogDir())
-            .withClusterType(miniMR)
-            .withConfDir(hiveConfDir)
-            .withInitScript(initScript)
-            .withCleanupScript(cleanupScript)
-            .withLlapIo(true)
-            .build());
+    qt = new QTestUtil(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(cliConfig.getResultsDir())
+          .withLogDir(cliConfig.getLogDir())
+          .withClusterType(miniMR)
+          .withConfDir(hiveConfDir)
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(true)
+          .build());
 
-      if (Strings.isNullOrEmpty(qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH))) {
-        fail(String.format("%s must be set. Try setting in blobstore-conf.xml", HCONF_TEST_BLOBSTORE_PATH));
-      }
-
-      // do a one time initialization
-      setupUniqueTestPath();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization", e);
+    if (Strings.isNullOrEmpty(qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH))) {
+      fail(String.format("%s must be set. Try setting in blobstore-conf.xml", HCONF_TEST_BLOBSTORE_PATH));
     }
+
+    // do a one time initialization
+    setupUniqueTestPath();
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      qt.newSession();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
 
   @Override
   @After
-  public void tearDown() {
-    try {
-      qt.clearTestSideEffects();
-      qt.clearPostTestEffects();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearTestSideEffects();
+    qt.clearPostTestEffects();
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      qt.shutdown();
-      if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) == null) {
-        qt.executeAdhocCommand("dfs -rmdir " + testBlobstorePathUnique);
-      }
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
+  public void shutdown() throws Exception {
+    qt.shutdown();
+    if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) == null) {
+      qt.executeAdHocCommand("dfs -rmdir " + testBlobstorePathUnique);
     }
   }
 
@@ -146,11 +114,11 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     try {
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
         if (!expectSuccess) {
           qt.failedQuery(null, 0, fname, debugHint);
         }
@@ -160,7 +128,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         }
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
             debugHint : "\r\n" + result.getCapturedOutput();

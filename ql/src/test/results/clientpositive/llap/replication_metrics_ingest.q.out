@@ -45,6 +45,10 @@ PREHOOK: query: alter scheduled query repl1 execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query repl1 execute
 POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl1 disabled
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl1 disabled
+POSTHOOK: type: ALTER SCHEDULED QUERY
 PREHOOK: query: create scheduled query repl2 every 15 minutes as repl load src into destination
 #### A masked pattern was here ####
 PREHOOK: type: CREATE SCHEDULED QUERY
@@ -55,6 +59,10 @@ PREHOOK: query: alter scheduled query repl2 execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query repl2 execute
 POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl2 disabled
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl2 disabled
+POSTHOOK: type: ALTER SCHEDULED QUERY
 PREHOOK: query: show databases
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: show databases
@@ -64,13 +72,27 @@ destination
 information_schema
 src
 sys
-PREHOOK: query: select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics
+PREHOOK: query: select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
+from sys.replication_metrics_orig order by dump_execution_id
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@replication_metrics_orig
+#### A masked pattern was here ####
+POSTHOOK: query: select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
+from sys.replication_metrics_orig order by dump_execution_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@replication_metrics_orig
+#### A masked pattern was here ####
+repl1	0	{"dbName":"src","replicationType":"BOOTSTRAP","stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0}	H4sIAAAAAAAAAG2PwQ6CMBBE/2XPHOTKTSsmJojEwskQ02gDJKUl2+2J9N8tEohEb7sz83ayI1gS5CwkwCvGUs4hmqRGBuk+gha9DN4tLbLHsboUs/sHQCq7KbqLQOrXOveSsHtubp2qnJXnaz6BT4coNTHjNH3yZEioZfXRCpX7Q5b+EvGWiH0d6hENZqYpBLWQaKdUBCgHxbUYbGsW9MsID9lZ8LV/A7NIwGISAQAA	gzip(json-2.0)
+repl2	1	{"dbName":"destination","replicationType":"BOOTSTRAP","stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0}	H4sIAAAAAAAAAG2PwQqDMBBE/yVnD/XqzUYLBbFS9VSkBF1UiImsm5Pk3xu1CtLedmb3zbAzm0iQmVjA8pLzOM+Zt1gtOOs1MyUGcLtnnCXv5BFG2/YPgFT0y+nFY6CaYx6AsK9PWbcy5cX9kS5gbRBBEddG0XpPmoTcpfUOqAivSfxL+GfCt5WrR9SY6DYT1LFAGSk9hjDKXIlx6vSOumgzcARB0KzVTkYgYZP2y7hfpy3EVvYDvpfiNy0BAAA=	gzip(json-2.0)
+PREHOOK: query: select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@replication_metrics
+PREHOOK: Input: sys@replication_metrics_orig
 #### A masked pattern was here ####
-POSTHOOK: query: select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics
+POSTHOOK: query: select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@replication_metrics
+POSTHOOK: Input: sys@replication_metrics_orig
 #### A masked pattern was here ####
-1	repl1	0
-2	repl2	1
+repl1	0	{"dbName":"src","replicationType":"BOOTSTRAP","stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0}	{"status":"SUCCESS","stages":[{"name":"REPL_DUMP","status":"SUCCESS","startTime":0,"endTime":0,"metrics":[{"name":"FUNCTIONS","currentCount":0,"totalCount":0},{"name":"TABLES","currentCount":1,"totalCount":1}],"errorLogPath":null,"replSnapshotCount":null,"replStats":null}]}
+repl2	1	{"dbName":"destination","replicationType":"BOOTSTRAP","stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0}	{"status":"SUCCESS","stages":[{"name":"REPL_LOAD","status":"SUCCESS","startTime":0,"endTime":0,"metrics":[{"name":"FUNCTIONS","currentCount":0,"totalCount":0},{"name":"TABLES","currentCount":1,"totalCount":1}],"errorLogPath":null,"replSnapshotCount":{"numCreated":0,"numDeleted":0},"replStats":null}]}

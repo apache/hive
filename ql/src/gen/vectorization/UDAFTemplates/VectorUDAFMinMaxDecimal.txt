@@ -99,17 +99,17 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
-        int aggregrateIndex,
+        int aggregateIndex,
         int row) {
       VectorAggregationBufferRow mySet = aggregationBufferSets[row];
-      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregrateIndex);
+      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregateIndex);
       return myagg;
     }
 
     @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       VectorizedRowBatch batch) throws HiveException {
 
       int batchSize = batch.size;
@@ -129,32 +129,32 @@ public class <ClassName> extends VectorAggregateExpression {
       if (inputVector.noNulls) {
         if (inputVector.isRepeating) {
           iterateNoNullsRepeatingWithAggregationSelection(
-            aggregationBufferSets, aggregrateIndex,
+            aggregationBufferSets, aggregateIndex,
             vector[0], inputVector.scale, batchSize);
         } else {
           if (batch.selectedInUse) {
             iterateNoNullsSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               vector, inputVector.scale, batch.selected, batchSize);
           } else {
             iterateNoNullsWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               vector, inputVector.scale, batchSize);
           }
         }
       } else {
         if (inputVector.isRepeating) {
           iterateHasNullsRepeatingWithAggregationSelection(
-            aggregationBufferSets, aggregrateIndex,
+            aggregationBufferSets, aggregateIndex,
             vector[0], inputVector.scale, batchSize, inputVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               vector, inputVector.scale, batchSize, batch.selected, inputVector.isNull);
           } else {
             iterateHasNullsWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               vector, inputVector.scale, batchSize, inputVector.isNull);
           }
         }
@@ -163,7 +163,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       HiveDecimalWritable value,
       short scale,
       int batchSize) {
@@ -171,7 +171,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         myagg.minmaxValue(value, scale);
       }
@@ -179,7 +179,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       HiveDecimalWritable[] vector,
       short scale,
       int[] selection,
@@ -188,7 +188,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         myagg.minmaxValue(vector[selection[i]], scale);
       }
@@ -196,14 +196,14 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       HiveDecimalWritable[] vector,
       short scale,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         myagg.minmaxValue(vector[i], scale);
       }
@@ -211,7 +211,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       HiveDecimalWritable value,
       short scale,
       int batchSize,
@@ -224,7 +224,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         myagg.minmaxValue(value, scale);
       }
@@ -232,7 +232,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateHasNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       HiveDecimalWritable[] vector,
       short scale,
       int batchSize,
@@ -244,7 +244,7 @@ public class <ClassName> extends VectorAggregateExpression {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
             aggregationBufferSets,
-            aggregrateIndex,
+            aggregateIndex,
             j);
           myagg.minmaxValue(vector[i], scale);
         }
@@ -253,7 +253,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateHasNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       HiveDecimalWritable[] vector,
       short scale,
       int batchSize,
@@ -263,7 +263,7 @@ public class <ClassName> extends VectorAggregateExpression {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
             aggregationBufferSets,
-            aggregrateIndex,
+            aggregateIndex,
             i);
           myagg.minmaxValue(vector[i], scale);
         }

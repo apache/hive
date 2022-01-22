@@ -64,9 +64,9 @@ public class TestGenericUDFLastDay {
     runAndVerify("2016-02-29 10:30:45", "2016-02-29", udf);
 
     // negative Unix time
-    runAndVerifyTs("1966-01-31 00:00:01", "1966-01-31", udf);
-    runAndVerifyTs("1966-01-31 10:00:01", "1966-01-31", udf);
-    runAndVerifyTs("1966-01-31 23:59:59", "1966-01-31", udf);
+    runAndVerify("1966-01-31 00:00:01", "1966-01-31", udf);
+    runAndVerify("1966-01-31 10:00:01", "1966-01-31", udf);
+    runAndVerify("1966-01-31 23:59:59", "1966-01-31", udf);
   }
 
   @Test
@@ -77,8 +77,8 @@ public class TestGenericUDFLastDay {
 
     udf.initialize(arguments);
 
-    runAndVerify("2016-02-30", "2016-03-31", udf);
-    runAndVerify("2014-01-32", "2014-02-28", udf);
+    runAndVerify("2016-02-30", null, udf);
+    runAndVerify("2014-01-32", null, udf);
     runAndVerify("01/14/2014", null, udf);
     runAndVerify(null, null, udf);
   }
@@ -91,8 +91,8 @@ public class TestGenericUDFLastDay {
 
     udf.initialize(arguments);
 
-    runAndVerify("2016-02-30 10:30:45", "2016-03-31", udf);
-    runAndVerify("2014-01-32 10:30:45", "2014-02-28", udf);
+    runAndVerify("2016-02-30 10:30:45", null, udf);
+    runAndVerify("2014-01-32 10:30:45", null, udf);
     runAndVerify("01/14/2014 10:30:45", null, udf);
     runAndVerify("2016-02-28T10:30:45", "2016-02-29", udf);
   }

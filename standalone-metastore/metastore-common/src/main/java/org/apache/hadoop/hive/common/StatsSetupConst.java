@@ -102,6 +102,10 @@ public class StatsSetupConst {
 
   public static final String RUN_TIME_ROW_COUNT = "runTimeNumRows";
 
+  public static final String INSERT_COUNT = "insertCount";
+  public static final String UPDATE_COUNT = "updateCount";
+  public static final String DELETE_COUNT = "deleteCount";
+
   /**
    * The name of the statistic Raw Data Size to be published or gathered.
    */
@@ -312,7 +316,7 @@ public class StatsSetupConst {
   }
 
   public static void clearColumnStatsState(Map<String, String> params) {
-    if (params == null) {
+    if (params == null || params.get(COLUMN_STATS_ACCURATE) == null) {
       return;
     }
 

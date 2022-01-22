@@ -678,10 +678,7 @@ public final class GenMapRedUtils {
         if (p == null) {
           continue;
         }
-        String path = p.toString();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding " + path + " of table " + alias_id);
-        }
+        LOG.debug("Adding {} of table {}", p, alias_id);
 
         partDir.add(p);
         try {
@@ -1962,7 +1959,7 @@ public final class GenMapRedUtils {
       // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
       // number of reducers are few, so the number of files anyway are small.
       // However, with this optimization, we are increasing the number of files
-      // possibly by a big margin. So, merge aggresively.
+      // possibly by a big margin. So, merge aggressively.
       return (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
           hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES));
     }

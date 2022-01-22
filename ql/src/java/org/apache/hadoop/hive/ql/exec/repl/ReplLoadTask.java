@@ -17,6 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -68,7 +74,9 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.mapreduce.JobContext;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -80,10 +88,17 @@ import java.util.Map;
 import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.prepareTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
 
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -112,22 +127,33 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      long loadTaskStartTime = System.currentTimeMillis();
       SecurityUtils.reloginExpiringKeytabUser();
+      //Don't proceed if target db is replication incompatible.
+      if (MetaStoreUtils.isDbReplIncompatible(getHive().getDatabase(work.getTargetDatabase()))) {
+        throw new SemanticException(ErrorMsg.REPL_INCOMPATIBLE_EXCEPTION, work.dbNameToLoadIn);
+      }
       Task<?> rootTask = work.getRootTask();
       if (rootTask != null) {
         rootTask.setChildTasks(null);
       }
       work.setRootTask(this);
       this.parentTasks = null;
+      // Set distCp custom name corresponding to the replication policy.
+      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameToLoadIn);
+      conf.set(JobContext.JOB_NAME, mapRedCustomName);
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
+      }
+      if (conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_HANDLE_DENY_POLICY_TARGET)) {
+        initiateRangerDenytask();
       }
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
       LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
       if (work.isIncrementalLoad()) {
-        return executeIncrementalLoad();
+        return executeIncrementalLoad(loadTaskStartTime);
       } else {
         return executeBootStrapLoad();
       }
@@ -157,6 +183,22 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private boolean shouldLoadAuthorizationMetadata() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
+  }
+
+  private void initiateRangerDenytask() throws SemanticException {
+    if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
+      LOG.info("Adding Ranger Deny Policy Task for {} ", work.dbNameToLoadIn);
+      RangerDenyWork rangerDenyWork = new RangerDenyWork(new Path(work.getDumpDirectory()), work.getSourceDbName(),
+              work.dbNameToLoadIn, work.getMetricCollector());
+      if (childTasks == null) {
+        childTasks = new ArrayList<>();
+      }
+      childTasks.add(TaskFactory.get(rangerDenyWork, conf));
+    } else {
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Authorizer: " +
+              conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for deny policy creation. Currently Only supports: ", ReplUtils.REPL_RANGER_SERVICE));
+    }
   }
 
   private void initiateAuthorizationLoadTask() throws SemanticException {
@@ -200,13 +242,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Context loadContext = new Context(work.dumpDirectory, conf, getHive(),
         work.sessionStateLineageState, context);
     TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
-    addLazyDataCopyTask(loadTaskTracker);
+    BootstrapEventsIterator iterator = work.bootstrapIterator();
+
+    addLazyDataCopyTask(loadTaskTracker, iterator.replLogger());
     /*
         for now for simplicity we are doing just one directory ( one database ), come back to use
         of multiple databases once we have the basic flow to chain creating of tasks in place for
         a database ( directory )
     */
-    BootstrapEventsIterator iterator = work.bootstrapIterator();
     ConstraintEventsIterator constraintIterator = work.constraintsIterator();
     /*
     This is used to get hold of a reference during the current creation of tasks and is initialized
@@ -320,7 +363,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
 
       if (dbEventFound && conf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)) {
-        // Force the database creation before the other event like table/parttion etc, so that data copy path creation
+        // Force the database creation before the other event like table/partition etc, so that data copy path creation
         // can be achieved.
         LOG.info("Database event found, will be processed exclusively");
         break;
@@ -357,22 +400,39 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       createReplLoadCompleteAckTask();
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
+
+    if (conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY)) {
+      Path snapPath = SnapshotUtils.getSnapshotFileListPath(new Path(work.dumpDirectory));
+      try {
+        SnapshotUtils.getDFS(getExternalTableBaseDir(conf), conf)
+            .rename(new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT),
+                new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD), Options.Rename.OVERWRITE);
+      } catch (FileNotFoundException fnf) {
+        // Ignore if no file.
+      }
+    }
     return 0;
   }
 
-  private void addLazyDataCopyTask(TaskTracker loadTaskTracker) throws IOException {
+  private void addLazyDataCopyTask(TaskTracker loadTaskTracker, ReplLogger replLogger) throws IOException {
     boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (dataCopyAtLoad) {
       if (work.getExternalTableDataCopyItr() == null) {
         Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILE_LIST_EXTERNAL);
-        try(FileList fileList = new FileList(extTableBackingFile, 0, conf)) {
+        try(FileList fileList = new FileList(extTableBackingFile, conf)) {
           work.setExternalTableDataCopyItr(fileList);
         }
       }
       if (childTasks == null) {
         childTasks = new ArrayList<>();
       }
-      childTasks.addAll(work.externalTableCopyTasks(loadTaskTracker, conf));
+      List<Task<?>> externalTableCopyTasks = work.externalTableCopyTasks(loadTaskTracker, conf);
+      LOG.debug("Scheduled {} external table copy tasks", externalTableCopyTasks.size());
+      childTasks.addAll(externalTableCopyTasks);
+      // If external table data copy tasks are present add a task to mark the end of data copy
+      if (!externalTableCopyTasks.isEmpty() && !work.getExternalTableDataCopyItr().hasNext()) {
+        ReplUtils.addLoggerTask(replLogger, childTasks, conf);
+      }
     }
   }
 
@@ -424,29 +484,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return functionsTracker;
   }
 
-  public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf)
-      throws SemanticException {
-    Table table = new Table(metaData.getTable());
-    String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
-    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
-    String dbDotView = tableName.getNotEmptyDbTable();
-
-    String viewOriginalText = table.getViewOriginalText();
-    String viewExpandedText = table.getViewExpandedText();
-    if (!dbName.equals(table.getDbName())) {
-      // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
-      // texts using new DB name. Currently it refers to the source database name.
-    }
-
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
-        table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
-
-    desc.setReplicationSpec(metaData.getReplicationSpec());
-    desc.setOwnerName(table.getOwner());
-
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), conf);
-  }
-
   public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf,
                                        String dumpDirectory, ReplicationMetricCollector metricCollector)
           throws SemanticException {
@@ -462,7 +499,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // texts using new DB name. Currently it refers to the source database name.
     }
 
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getCols(), null, table.getParameters(),
             table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
 
     desc.setReplicationSpec(metaData.getReplicationSpec());
@@ -522,6 +559,29 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           }
         }
       });
+      if (work.shouldFailover()) {
+        listOfPreAckTasks.add(new PreAckTask() {
+          @Override
+          public void run() throws SemanticException {
+            try {
+              Database db = getHive().getDatabase(work.getTargetDatabase());
+              if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+                return;
+              }
+              Map<String, String> params = db.getParameters();
+              if (params == null) {
+                params = new HashMap<>();
+                db.setParameters(params);
+              }
+              LOG.info("Setting failover endpoint:{} to TARGET for database: {}", ReplConst.REPL_FAILOVER_ENDPOINT, db.getName());
+              params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.TARGET.toString());
+              getHive().alterDatabase(work.getTargetDatabase(), db);
+            } catch (HiveException e) {
+              throw new SemanticException(e);
+            }
+          }
+        });
+      }
       AckWork replLoadAckWork = new AckWork(new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()),
               work.getMetricCollector(), listOfPreAckTasks);
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
@@ -546,7 +606,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps,
                                                         (new Path(work.dumpDirectory).getParent()).toString(),
-                                                        work.getMetricCollector());
+                                                        work.getMetricCollector(), work.shouldFailover());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
@@ -617,11 +677,53 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
   }
 
-  private int executeIncrementalLoad() throws Exception {
+  private int executeIncrementalLoad(long loadStartTime) throws Exception {
     // If replication policy is changed between previous and current repl load, then drop the tables
     // that are excluded in the new replication policy.
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
+    }
+    Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
+    Map<String, String> props = new HashMap<>();
+
+    // Check if it is a optimised bootstrap failover.
+    if (work.isFailover) {
+      // Check it should be marked as target of replication & not source of replication.
+      if (MetaStoreUtils.isTargetOfReplication(targetDb)) {
+        LOG.error("The database {} is already marked as target for replication", targetDb.getName());
+        throw new Exception("Failover target is already marked as target");
+      }
+      if (!ReplChangeManager.isSourceOfReplication(targetDb)) {
+        LOG.error("The database {} is already source of replication.", targetDb.getName());
+        throw new Exception("Failover target was not source of replication");
+      }
+      boolean isTableDiffPresent =
+          checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf));
+      if (!isTableDiffPresent) {
+        prepareTableDiffFile(eventId, getHive(), work, conf);
+        if (this.childTasks == null) {
+          this.childTasks = new ArrayList<>();
+        }
+        createReplLoadCompleteAckTask();
+        return 0;
+      }
+    }
+    if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
+      props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
+    }
+    if (!work.shouldFailover() && MetaStoreUtils.isDbBeingFailedOver(targetDb)) {
+      props.put(ReplConst.REPL_FAILOVER_ENDPOINT, "");
+    }
+    if (!props.isEmpty()) {
+      AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+      Task<?> addReplTargetPropTask =
+              TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,
+                      work.dumpDirectory, work.getMetricCollector()), conf);
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.add(addReplTargetPropTask);
     }
     IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
     // If incremental events are already applied, then check and perform if need to bootstrap any tables.
@@ -635,7 +737,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     List<Task<?>> childTasks = new ArrayList<>();
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     TaskTracker tracker = new TaskTracker(maxTasks);
-    addLazyDataCopyTask(tracker);
+    addLazyDataCopyTask(tracker, builder.getReplLogger());
     childTasks.add(builder.build(context, getHive(), LOG, tracker));
     // If there are no more events to be applied, add a task to update the last.repl.id of the
     // target database to the event id of the last event considered by the dump. Next
@@ -680,6 +782,16 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     this.childTasks.addAll(childTasks);
     createReplLoadCompleteAckTask();
+    // Clean-up snapshots
+    if (conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY)) {
+      cleanupSnapshots(new Path(work.getDumpDirectory()).getParent().getParent().getParent(),
+          work.getSourceDbName().toLowerCase(), conf, null, true);
+    }
+
+    //pass the current time at the end of repl-load stage as the starting time of the first event.
+    long currentTimestamp = System.currentTimeMillis();
+    ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
+    LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
     return 0;
   }
 }

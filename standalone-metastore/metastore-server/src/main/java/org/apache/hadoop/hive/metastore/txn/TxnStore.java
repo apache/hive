@@ -24,8 +24,53 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.Materialization;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
+import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
+import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -146,17 +191,22 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
+  void updateTransactionStatistics(UpdateTransactionalStatsRequest req) throws MetaException;
+
   /**
    * Get invalidation info for the materialization. Currently, the materialization information
    * only contains information about whether there was update/delete operations on the source
-   * tables used by the materialization since it was created.
+   * tables and were any of the insert-only source tables compacted used by the materialization
+   * since it was created.
    * @param cm creation metadata for the materialization
-   * @param validTxnList valid transaction list for snapshot taken for current query
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  Materialization getMaterializationInvalidationInfo(
-      final CreationMetadata cm, final String validTxnList)
+  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm)
+          throws MetaException;
+
+  @RetrySemantics.Idempotent
+  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm, String validTxnList)
           throws MetaException;
 
   @RetrySemantics.ReadOnly
@@ -296,6 +346,9 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
+  @RetrySemantics.SafeToRetry
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException;
+
   /**
    * Show list of current compactions.
    * @param rqst info on which compactions to show
@@ -304,6 +357,21 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
+
+  /**
+   * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
+   * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
+   * Is is assumed to be done by the caller.
+   * Note that partition names should be supplied with the request for a partitioned table; otherwise,
+   * no records will be returned.
+   * @param rqst info on which compaction to retrieve
+   * @return one latest compaction record for a non partitioned table or one latest record for each
+   * partition specified by the request.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException;
 
   /**
    * Add information on a set of dynamic partitions that participated in a transaction.
@@ -325,8 +393,14 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException;
+  default void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, false);
+  }
+
+  @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
@@ -364,16 +438,27 @@ public interface TxnStore extends Configurable {
    * @param compactionTxnId - txnid in which Compactor is running
    */
   @RetrySemantics.Idempotent
-  public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException;
+  void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException;
 
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
+   * @deprecated Replaced by
+   *     {@link TxnStore#findNextToCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)}
    * @param workerId id of the worker calling this, will be recorded in the db
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
+  @Deprecated
   @RetrySemantics.ReadOnly
   CompactionInfo findNextToCompact(String workerId) throws MetaException;
+
+  /**
+   * This will grab the next compaction request off of the queue, and assign it to the worker.
+   * @param rqst request to find next compaction to run
+   * @return an info element for next compaction in the queue, or null if there is no work to do now.
+   */
+  @RetrySemantics.ReadOnly
+  CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException;
 
   /**
    * This will mark an entry in the queue as compacted
@@ -394,9 +479,25 @@ public interface TxnStore extends Configurable {
   List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
 
   /**
+   * Sets the cleaning start time for a particular compaction
+   *
+   * @param info info on the compaction entry
+   */
+  @RetrySemantics.CannotRetry
+  void markCleanerStart(CompactionInfo info) throws MetaException;
+
+  /**
+   * Removes the cleaning start time for a particular compaction
+   *
+   * @param info info on the compaction entry
+   */
+  @RetrySemantics.CannotRetry
+  void clearCleanerStart(CompactionInfo info) throws MetaException;
+
+  /**
    * This will remove an entry from the queue after
    * it has been compacted.
-   * 
+   *
    * @param info info on the compaction entry to remove
    */
   @RetrySemantics.CannotRetry
@@ -418,6 +519,12 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.SafeToRetry
   void cleanTxnToWriteIdTable() throws MetaException;
+
+  /**
+   * De-duplicate entries from COMPLETED_TXN_COMPONENTS table.
+   */
+  @RetrySemantics.SafeToRetry
+  void removeDuplicateCompletedTxnComponents() throws MetaException;
 
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
@@ -473,8 +580,8 @@ public interface TxnStore extends Configurable {
   void purgeCompactionHistory() throws MetaException;
 
   /**
-   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the 
-   * transaction metadata once it becomes unnecessary.  
+   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the
+   * transaction metadata once it becomes unnecessary.
    */
   @RetrySemantics.SafeToRetry
   void performWriteSetGC() throws MetaException;
@@ -506,10 +613,10 @@ public interface TxnStore extends Configurable {
   MutexAPI getMutexAPI();
 
   /**
-   * This is primarily designed to provide coarse grained mutex support to operations running
-   * inside the Metastore (of which there could be several instances).  The initial goal is to 
+   * This is primarily designed to provide coarse-grained mutex support to operations running
+   * inside the Metastore (of which there could be several instances).  The initial goal is to
    * ensure that various sub-processes of the Compactor don't step on each other.
-   * 
+   *
    * In RDMBS world each {@code LockHandle} uses a java.sql.Connection so use it sparingly.
    */
   interface MutexAPI {
@@ -520,7 +627,7 @@ public interface TxnStore extends Configurable {
     LockHandle acquireLock(String key) throws MetaException;
 
     /**
-     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This 
+     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This
      * will associate the lock on {@code key} with the same handle.  All locks associated with
      * the same handle will be released together.
      * @param handle not NULL
@@ -531,6 +638,16 @@ public interface TxnStore extends Configurable {
        * Releases all locks associated with this handle.
        */
       void releaseLocks();
+
+      /**
+       * Returns the value of the last update time persisted during the appropriate lock release call.
+       */
+      Long getLastUpdateTime();
+
+      /**
+       * Releases all locks associated with this handle, and persist the value of the last update time.
+       */
+      void releaseLocks(Long timestamp);
     }
   }
 
@@ -547,7 +664,7 @@ public interface TxnStore extends Configurable {
    * @param acidWriteEvent
    */
   @RetrySemantics.Idempotent
-  void addWriteNotificationLog(AcidWriteEvent acidWriteEvent) throws MetaException;
+  void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException;
 
   /**
    * Return the currently seen minimum open transaction ID.
@@ -575,4 +692,58 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   @Deprecated
   long findMinTxnIdSeenOpen() throws MetaException;
+
+  /**
+   * Returns ACID metadata related metrics info.
+   * @return metrics info object
+   */
+  @RetrySemantics.ReadOnly
+  MetricsInfo getMetricsInfo() throws MetaException;
+
+  /**
+   * Returns ACID metrics related info for a specific resource and metric type. If no record is found matching the
+   * filter criteria, an empty object ({@link CompactionMetricsData#isEmpty()} == true) will be returned.
+   * @param dbName name of database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, can be null
+   * @param type type of the delta metric, non-null
+   * @return instance of delta metrics info, always not null.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param dbName name of the database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, non-null
+   * @param type type of the delta metric, non-null
+   * @throws MetaException
+   */
+  @RetrySemantics.SafeToRetry
+  void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Returns the top ACID metrics from each type {@link CompactionMetricsData.MetricType}
+   * @oaram limit number of returned records for each type
+   * @return list of metrics, always non-null
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)
+      throws MetaException;
+
+  /**
+   * Update or create one record in the compaction metrics cache. This operation uses an optimistic locking mechanism.
+   * If update fails, due to version mismatch, the operation won't be retried.
+   * @param data the object that is used for the update or create operation
+   * @return true, if update finished successfully
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException;
+
 }

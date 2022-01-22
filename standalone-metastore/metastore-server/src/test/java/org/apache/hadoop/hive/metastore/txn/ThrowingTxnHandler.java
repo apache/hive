@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import java.util.Iterator;
@@ -32,10 +34,27 @@ public class ThrowingTxnHandler extends CompactionTxnHandler {
 
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException {
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
     if (doThrow) {
       throw new RuntimeException("during transactional cleanup");
     }
-    super.cleanupRecords(type, db, table, partitionIterator);
+    super.cleanupRecords(type, db, table, partitionIterator, keepTxnToWriteIdMetaData);
+  }
+
+  @Override
+  public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
+    if (doThrow) {
+      throw new RuntimeException("during showCompact");
+    }
+    return super.showCompact(rqst);
+
+  }
+
+  @Override
+  public long findMinOpenTxnIdForCleaner() throws MetaException {
+    if (doThrow) {
+      throw new RuntimeException("during findMinOpenTxnIdForCleaner");
+    }
+    return super.findMinOpenTxnIdForCleaner();
   }
 }

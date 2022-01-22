@@ -30,6 +30,8 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <spark.home>${basedir}/${hive.path.to.root}/itests/hive-unit/target/spark</spark.home>
+    <testcontainers.version>1.15.2</testcontainers.version>
+    <htmlunit.version>2.45.0</htmlunit.version>
   </properties>
 
   <dependencies>
@@ -233,6 +235,7 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
+      <scope>test</scope>
         <exclusions>
           <exclusion>
             <groupId>org.glassfish.web</groupId>
@@ -243,6 +246,7 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
+      <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
@@ -425,6 +429,18 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>${plexus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.htmlunit</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>${htmlunit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -208,6 +208,10 @@ sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -244,6 +248,10 @@ sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -457,12 +465,15 @@ columns_v2	column_name
 columns_v2	comment
 columns_v2	integer_idx
 columns_v2	type_name
+compaction_queue	cq_cleaner_start
 compaction_queue	cq_database
 compaction_queue	cq_enqueue_time
 compaction_queue	cq_error_message
 #### A masked pattern was here ####
 compaction_queue	cq_highest_write_id
 compaction_queue	cq_id
+compaction_queue	cq_initiator_id
+compaction_queue	cq_initiator_version
 compaction_queue	cq_partition
 compaction_queue	cq_run_as
 compaction_queue	cq_start
@@ -471,8 +482,11 @@ compaction_queue	cq_table
 compaction_queue	cq_tblproperties
 compaction_queue	cq_type
 compaction_queue	cq_worker_id
+compaction_queue	cq_worker_version
 compactions	c_catalog
 compactions	c_catalog
+compactions	c_cleaner_start
+compactions	c_cleaner_start
 compactions	c_database
 compactions	c_database
 compactions	c_duration
@@ -482,10 +496,14 @@ compactions	c_enqueue_time
 #### A masked pattern was here ####
 compactions	c_highest_write_id
 compactions	c_highest_write_id
-compactions	c_hostname
-compactions	c_hostname
 compactions	c_id
 compactions	c_id
+compactions	c_initiator_host
+compactions	c_initiator_host
+compactions	c_initiator_id
+compactions	c_initiator_id
+compactions	c_initiator_version
+compactions	c_initiator_version
 compactions	c_partition
 compactions	c_partition
 compactions	c_run_as
@@ -498,8 +516,12 @@ compactions	c_table
 compactions	c_table
 compactions	c_type
 compactions	c_type
+compactions	c_worker_host
+compactions	c_worker_host
 compactions	c_worker_id
 compactions	c_worker_id
+compactions	c_worker_version
+compactions	c_worker_version
 completed_compactions	cc_database
 completed_compactions	cc_end
 completed_compactions	cc_enqueue_time
@@ -507,6 +529,8 @@ completed_compactions	cc_error_message
 #### A masked pattern was here ####
 completed_compactions	cc_highest_write_id
 completed_compactions	cc_id
+completed_compactions	cc_initiator_id
+completed_compactions	cc_initiator_version
 completed_compactions	cc_partition
 completed_compactions	cc_run_as
 completed_compactions	cc_start
@@ -515,6 +539,7 @@ completed_compactions	cc_table
 completed_compactions	cc_tblproperties
 completed_compactions	cc_type
 completed_compactions	cc_worker_id
+completed_compactions	cc_worker_version
 database_params	db_id
 database_params	param_key
 database_params	param_value
@@ -609,6 +634,15 @@ mv_creation_metadata	tbl_name
 mv_creation_metadata	txn_list
 mv_tables_used	mv_creation_metadata_id
 mv_tables_used	tbl_id
+notification_log	cat_name
+notification_log	db_name
+notification_log	event_id
+notification_log	event_time
+notification_log	event_type
+notification_log	message
+notification_log	message_format
+notification_log	nl_id
+notification_log	tbl_name
 part	p_brand
 part	p_comment
 part	p_container
@@ -689,6 +723,12 @@ replication_metrics	metadata
 replication_metrics	policy_name
 replication_metrics	progress
 replication_metrics	scheduled_execution_id
+replication_metrics_orig	dump_execution_id
+replication_metrics_orig	message_format
+replication_metrics_orig	metadata
+replication_metrics_orig	policy_name
+replication_metrics_orig	progress
+replication_metrics_orig	scheduled_execution_id
 role_map	add_time
 role_map	grant_option
 role_map	grantor
@@ -1188,7 +1228,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-73
+75
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1515,8 +1555,8 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1586,6 +1626,7 @@ default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	notification_log	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1594,7 +1635,8 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	replication_metrics	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	replication_metrics_orig	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	scheduled_executions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1718,6 +1760,7 @@ information_schema	views
 sys	compactions
 sys	locks
 sys	partition_stats_view
+sys	replication_metrics
 sys	table_stats_view
 sys	transactions
 sys	version
@@ -1741,5 +1784,5 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL

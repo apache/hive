@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  *
@@ -69,6 +70,7 @@ public class DataWritableWriter {
   protected final RecordConsumer recordConsumer;
   private final GroupType schema;
   private final boolean defaultDateProleptic;
+  private final boolean isLegacyZoneConversion;
   private Configuration conf;
 
   /* This writer will be created when writing the first row in order to get
@@ -80,6 +82,8 @@ public class DataWritableWriter {
     this.recordConsumer = recordConsumer;
     this.schema = schema;
     this.defaultDateProleptic = defaultDateProleptic;
+    this.isLegacyZoneConversion =
+        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED.defaultBoolVal;
   }
 
 	public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema,
@@ -88,6 +92,8 @@ public class DataWritableWriter {
     this.schema = schema;
     this.defaultDateProleptic = defaultDateProleptic;
     this.conf = conf;
+    this.isLegacyZoneConversion =
+        HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED);
   }
 
   /**
@@ -536,7 +542,8 @@ public class DataWritableWriter {
         Long int64value = ParquetTimestampUtils.getInt64(ts, timeUnit);
         recordConsumer.addLong(int64value);
       } else {
-        recordConsumer.addBinary(NanoTimeUtils.getNanoTime(ts, false).toBinary());
+        recordConsumer.addBinary(
+            NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId(), isLegacyZoneConversion).toBinary());
       }
     }
 

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
@@ -50,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -101,6 +105,13 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   };
 
   final static public String DEFAULT_PREFIX = "default.";
+
+  /** HBase prefix to form the URI for authentication */
+  private static final String HBASE_PREFIX = "hbase:";
+  /** HBase config for determining the host name based on hbase-site.xml */
+  private static final String HBASE_HOST_NAME = "hbase.zookeeper.quorum";
+  /** HBase config for determining the client port based on hbase-site.xml */
+  private static final String HBASE_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 
   //Check if the configure job properties is called from input
   // or output for setting asymmetric properties
@@ -278,6 +289,20 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     } // output job properties
   }
 
+  @Override
+  public URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
+    hbaseConf = getConf();
+    String hbase_host = tableProperties.containsKey(HBASE_HOST_NAME)? tableProperties.get(HBASE_HOST_NAME) : hbaseConf.get(HBASE_HOST_NAME);
+    String hbase_port = tableProperties.containsKey(HBASE_CLIENT_PORT)? tableProperties.get(HBASE_CLIENT_PORT) : hbaseConf.get(HBASE_CLIENT_PORT);
+    String table_name = tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME, null);
+    String column_family = tableProperties.getOrDefault(HBaseSerDe.HBASE_COLUMNS_MAPPING, null);
+    if (column_family != null)
+      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name+"/"+column_family);
+    else
+      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name);
+  }
+
   /**
    * Return true when HBaseStorageHandler should generate hfiles instead of operate against the
    * online table. This mode is implicitly applied when "hive.hbase.generatehfiles" is true.
@@ -332,6 +357,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     LOG.debug("Configuring JobConf for table {}.{}", tableDesc.getDbName(), tableDesc.getTableName());
     try {
+      HBaseConfiguration.addHbaseResources(jobConf);
       HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*
        * HIVE-6356

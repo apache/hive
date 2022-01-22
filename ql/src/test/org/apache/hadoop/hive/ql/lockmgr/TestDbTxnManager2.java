@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -32,11 +35,12 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.TestTxnCommands2;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,12 +52,19 @@ import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
+
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
 
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
@@ -530,11 +541,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
-    TestTxnCommands2.runWorker(conf);
+    runWorker(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='r' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
-    TestTxnCommands2.runCleaner(conf);
+    runCleaner(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11'");
     Assert.assertEquals(0, count);
@@ -547,12 +558,12 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
-    TestTxnCommands2.runWorker(conf);
+    runWorker(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='r' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
-    TestTxnCommands2.runCleaner(conf);
+    runCleaner(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p'");
     Assert.assertEquals(0, count);
@@ -569,7 +580,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
-    TestTxnCommands2.runWorker(conf); // will fail
+    runWorker(conf); // will fail
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(0, count);
@@ -582,7 +593,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
-    TestTxnCommands2.runWorker(conf); // will fail
+    runWorker(conf); // will fail
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
@@ -2286,7 +2297,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     swapTxnManager(txnMgr);
     driver.run("select * from target");
-    List res = new ArrayList();
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Duplicate records " + (extectedDuplicates ? "" : "not") + "found",
       extectedDuplicates ? 5 : 4, res.size());
@@ -2332,7 +2343,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     swapTxnManager(txnMgr);
     driver.run("select * from target");
-    List res = new ArrayList();
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals(2, res.size());
     Assert.assertEquals("Lost Update", "5\t8", res.get(1));
@@ -2379,7 +2390,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     swapTxnManager(txnMgr);
     driver.run("select * from target where age=10");
-    List res = new ArrayList();
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals(2, res.size());
     Assert.assertEquals("Lost Update", "[earl\t10, amy\t10]", res.toString());
@@ -2417,7 +2428,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     swapTxnManager(txnMgr);
     driver.run("select * from target");
-    List res = new ArrayList();
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals(conflict ? 3 : 4, res.size());
   }
@@ -2450,7 +2461,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("merge into target t using source s on t.a = s.a " +
       "when not matched then insert values (s.a, s.b, s.c)");
     driver.run("select * from target");
-    List res = new ArrayList();
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     // The merge should see all three partition and not create duplicates
     Assert.assertEquals("Duplicate records found", 6, res.size());
@@ -2521,7 +2532,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     swapTxnManager(txnMgr);
     driver.run("select * from target");
-    List res = new ArrayList();
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     // The merge should see all three partition and not create duplicates
     Assert.assertEquals("Duplicate records found", 6, res.size());
@@ -3071,7 +3082,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnManager1.commitTxn();
     txnMgr.commitTxn();
 
-    long replTxnId = txnMgr.openTxn(ctx, "u0", TxnType.REPL_CREATED);
+    long replTxnId = txnMgr.replOpenTxn("default.*", Arrays.asList(1L), "u0").get(0);
     txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnManager1.openTxn(ctx, "u0");
     //Excludes open read only txns by default
@@ -3087,7 +3098,10 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.READ_ONLY));
     Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
     Assert.assertEquals(replTxnId, validTxns.getInvalidTransactions()[0]);
-    txnMgr.commitTxn();
+    CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1L);
+    commitTxnRequest.setReplPolicy("default.*");
+    commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
+    txnMgr.replCommitTxn(commitTxnRequest);
 
     //Transaction is committed. So no open txn
     validTxns = txnManager1.getValidTxns();
@@ -3174,7 +3188,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   private void testTruncate(boolean useBaseDir) throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, useBaseDir);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, useBaseDir);
     dropTable(new String[] {"T"});
     driver.run("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     driver.run("insert into T values(0,2),(1,4)");
@@ -3222,7 +3236,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   @Test
   public void testFullTableReadLock() throws Exception {
     dropTable(new String[] {"tab_acid", "tab_not_acid"});
-    conf.setIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 2);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 2);
 
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -3238,5 +3252,344 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+  }
+
+  @Test
+  public void testRemoveDuplicateCompletedTxnComponents() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    driver.run("insert into tab_acid values(1,'foo'),(3,'bar')");
+    driver.run("insert into tab_acid values(2,'foo'),(4,'bar')");
+    driver.run("delete from tab_acid where a=2");
+
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      5, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
+    houseKeeper.setConf(conf);
+    houseKeeper.run();
+
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      2, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
+        "where \"CTC_PARTITION\"='p=bar' and \"CTC_TXNID\"=4"));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
+        "where \"CTC_PARTITION\"='p=foo' and \"CTC_TXNID\"=5"));
+
+    driver.run("insert into tab_acid values(3,'foo')");
+    driver.run("insert into tab_acid values(4,'foo')");
+
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      4, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    houseKeeper.run();
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      3, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    Assert.assertEquals(2, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
+        "where \"CTC_PARTITION\"='p=foo' and \"CTC_TXNID\" IN (5,7)"));
+  }
+
+  @Test
+  public void testSkipAcquireLocksForExplain() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid values(1,'foo'),(3,'bar')");
+
+    driver.compileAndRespond("explain update tab_acid set a = a+2 where a > 2", true);
+    driver.lockAndRespond();
+
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 0, locks.size());
+  }
+
+  @Test
+  public void testInsertSnapshotIsolationMinHistoryDisabled() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
+    testInsertSnapshotIsolation();
+  }
+
+  @Test
+  public void testInsertSnapshotIsolation() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int, b int) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.compileAndRespond("insert into tab_acid values(1,2)");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("select * from tab_acid");
+    swapTxnManager(txnMgr);
+
+    driver.run();
+    txnHandler.cleanTxnToWriteIdTable();
+    swapTxnManager(txnMgr2);
+
+    driver2.run();
+    List<String> res = new ArrayList<>();
+    driver2.getFetchTask().fetch(res);
+    Assert.assertEquals(0, res.size());
+  }
+
+  @Test
+  public void testUpdateSnapshotIsolationMinHistoryDisabled() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
+    testUpdateSnapshotIsolation();
+  }
+
+  @Test
+  public void testUpdateSnapshotIsolation() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int, b int) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid values(1,2)");
+    driver.compileAndRespond("update tab_acid set a=2");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("select * from tab_acid");
+    swapTxnManager(txnMgr);
+
+    driver.run();
+    txnHandler.cleanTxnToWriteIdTable();
+    swapTxnManager(txnMgr2);
+
+    driver2.run();
+    List<String> res = new ArrayList<>();
+    driver2.getFetchTask().fetch(res);
+    Assert.assertEquals(1, res.size());
+    Assert.assertEquals("1\t2", res.get(0));
+  }
+
+  @Test
+  public void testDropPartitionNonBlocking() throws Exception {
+    testDropPartition(false);
+  }
+  @Test
+  public void testDropPartitionBlocking() throws Exception {
+    testDropPartition(true);
+  }
+
+  private void testDropPartition(boolean blocking) throws Exception {
+    dropTable(new String[] {"tab_acid"});
+    FileSystem fs = FileSystem.get(conf);
+    
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
+    driver = Mockito.spy(driver);
+
+    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, !blocking);
+    driver2 = Mockito.spy(driver2);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.compileAndRespond("select * from tab_acid");
+    List<String> res = new ArrayList<>();
+
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("alter table tab_acid drop partition (p='foo')");
+
+    if (blocking) {
+      txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
+      locks = getLocks();
+
+      ShowLocksResponseElement checkLock = checkLock(LockType.EXCLUSIVE,
+        LockState.WAITING, "default", "tab_acid", "p=foo", locks);
+
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+
+      driver.getFetchTask().fetch(res);
+      swapTxnManager(txnMgr2);
+
+      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      txnMgr2.getMS().unlock(checkLock.getLockid());
+    }
+    driver2.lockAndRespond();
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", blocking ? 1 : 2, locks.size());
+
+    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
+      LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
+
+    Mockito.doNothing().when(driver2).lockAndRespond();
+    driver2.run();
+
+    if (!blocking) {
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+    }
+    Mockito.reset(driver, driver2);
+    
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), "tab_acid" + (blocking ? "" : "/p=foo")),
+      (blocking ? path -> path.getName().equals("p=foo") : AcidUtils.baseFileFilter));
+    if ((blocking ? 0 : 1) != stat.length) {
+      Assert.fail("Partition data was " + (blocking ? "not " : "") + "removed from FS");
+    }
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
+    
+    driver.run("select * from tab_acid where p='foo'");
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 0 rows and found " + res.size(), 0, res.size());
+
+    //re-create partition with the same name
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo')");
+    
+    driver.run("select * from tab_acid where p='foo'");
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 1 rows and found " + res.size(), 1, res.size());
+  }
+  
+  @Test
+  public void testDropTableNonBlocking() throws Exception {
+    testDropTable(false);
+  }
+  @Test
+  public void testDropTableBlocking() throws Exception {
+    testDropTable(true);
+  }
+
+  private void testDropTable(boolean blocking) throws Exception {
+    dropTable(new String[] {"tab_acid"});
+    FileSystem fs = FileSystem.get(conf);
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
+    driver = Mockito.spy(driver);
+
+    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, !blocking);
+    driver2 = Mockito.spy(driver2);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.compileAndRespond("select * from tab_acid");
+    List<String> res = new ArrayList<>();
+    
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("drop table if exists tab_acid");
+
+    if (blocking) {
+      txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
+      locks = getLocks();
+
+      ShowLocksResponseElement checkLock = checkLock(LockType.EXCLUSIVE,
+        LockState.WAITING, "default", "tab_acid", null, locks);
+
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+      
+      driver.getFetchTask().fetch(res);
+      swapTxnManager(txnMgr2);
+      
+      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      txnMgr2.getMS().unlock(checkLock.getLockid());
+    }
+    driver2.lockAndRespond();
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", blocking ? 1 : 2, locks.size());
+    
+    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE, 
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    
+    Mockito.doNothing().when(driver2).lockAndRespond();
+    driver2.run();
+
+    if (!blocking) {
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+    }
+    Mockito.reset(driver, driver2);
+    
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches("tab_acid" + (blocking ? "" : SOFT_DELETE_TABLE_PATTERN)));
+    if ((blocking ? 0 : 1) != stat.length) {
+      Assert.fail("Table data was " + (blocking ? "not" : "") + "removed from FS");
+    }
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
+
+    try {
+      driver.run("select * from tab_acid");
+    } catch (CommandProcessorException ex) {
+      Assert.assertEquals(ErrorMsg.INVALID_TABLE.getErrorCode(), ex.getResponseCode());
+    }
+    
+    //re-create table with the same name
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+    
+    driver.run("select * from tab_acid ");
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
+  }
+  
+  @Test
+  public void testDropTableNonBlocking2() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, true);
+    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, true);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.compileAndRespond("select * from tab_acid");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    // when running this, valid writeid list is not yet fetched by the `select` operation, 
+    // so we should keep TXN_TO_WRITE_ID entries until the Cleaner runs. 
+    driver2.run("drop table if exists tab_acid");
+
+    swapTxnManager(txnMgr);
+    driver.run();
+
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches("tab_acid" + SOFT_DELETE_TABLE_PATTERN));
+    if (1 != stat.length) {
+      Assert.fail("Table data was removed from FS");
+    }
+
+    List<String> res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("No records found", 2, res.size());
   }
 }

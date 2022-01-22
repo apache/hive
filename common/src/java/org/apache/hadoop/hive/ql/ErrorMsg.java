@@ -471,6 +471,13 @@ public enum ErrorMsg {
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
   OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
   WITH_COL_LIST_NUM_OVERFLOW(10425, "WITH-clause query {0} returns {1} columns, but {2} labels were specified. The number of column labels must be smaller or equal to the number of expressions returned by the query.", true),
+  NULL_TREATMENT_NOT_SUPPORTED(10426, "Function {0} does not support null treatment.", true),
+  DATACONNECTOR_ALREADY_EXISTS(10427, "Dataconnector {0} already exists", true),
+  DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
+  TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
+  INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
+  METADATA_TABLE_NOT_SUPPORTED(10431, "Metadata tables are not supported for table {0}.", true),
+
 
   //========================== 20000 range starts here ========================//
 
@@ -622,7 +629,12 @@ public enum ErrorMsg {
   REPL_FAILED_WITH_NON_RECOVERABLE_ERROR(40011, "Replication failed with non recoverable error. Needs manual intervention"),
   REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true),
   REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
-  REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true)
+  REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true),
+  REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true),
+  RANGER_AUTHORIZATION_FAILED(40016, "Authorization Failure while communicating to Ranger admin", true),
+  RANGER_AUTHENTICATION_FAILED(40017, "Authentication Failure while communicating to Ranger admin", true),
+  REPL_INCOMPATIBLE_EXCEPTION(40018, "Cannot load into database {0} as it is replication incompatible.", true),
+  REPL_FAILOVER_TARGET_MODIFIED(40019,"Database event id changed post table diff generation.")
   ;
 
   private int errorCode;

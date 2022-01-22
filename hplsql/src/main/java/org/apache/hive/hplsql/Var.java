@@ -23,7 +23,6 @@ import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-
 import org.apache.hive.hplsql.executor.QueryResult;
 
 /**
@@ -32,7 +31,7 @@ import org.apache.hive.hplsql.executor.QueryResult;
 public class Var {
   // Data types
 	public enum Type {BOOL, CURSOR, DATE, DECIMAL, DERIVED_TYPE, DERIVED_ROWTYPE, DOUBLE, FILE, IDENT, BIGINT, INTERVAL, ROW, 
-	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL};
+	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL, HPL_OBJECT}
 	public static final String DERIVED_TYPE = "DERIVED%TYPE";
 	public static final String DERIVED_ROWTYPE = "DERIVED%ROWTYPE";
 	public static Var Empty = new Var();
@@ -46,7 +45,7 @@ public class Var {
 	int scale;
 	
 	boolean constant = false;
-	
+
 	public Var() {
 	  type = Type.NULL;  
 	}
@@ -159,54 +158,47 @@ public class Var {
 	 * Cast a new value to the variable 
 	 */
 	public Var cast(Var val) {
-	  if (constant) {
-	    return this;
-	  }
-	  else if (val == null || val.value == null) {
-	    value = null;
-	  }
- 	  else if (type == Type.DERIVED_TYPE) {
- 	    type = val.type;
- 	    value = val.value;
- 	  }
-	  else if (type == val.type && type == Type.STRING) {
-	    cast((String)val.value);
-	  }
-	  else if (type == val.type) {
-	    value = val.value;
-	  }
-	  else if (type == Type.STRING) {
-	    cast(val.toString());
-	  }
-	  else if (type == Type.BIGINT) {
-	    if (val.type == Type.STRING) {
-	      value = Long.parseLong((String)val.value);
-	    }
-    }
-	  else if (type == Type.DECIMAL) {
-	    if (val.type == Type.STRING) {
-        value = new BigDecimal((String)val.value);
+	  try {
+      if (constant) {
+        return this;
+      } else if (val == null || val.value == null) {
+        value = null;
+      } else if (type == Type.DERIVED_TYPE) {
+        type = val.type;
+        value = val.value;
+      } else if (type == val.type && type == Type.STRING) {
+        cast((String) val.value);
+      } else if (type == val.type) {
+        value = val.value;
+      } else if (type == Type.STRING) {
+        cast(val.toString());
+      } else if (type == Type.BIGINT) {
+        if (val.type == Type.STRING) {
+          value = Long.parseLong((String) val.value);
+        } else if (val.type == Type.DECIMAL) {
+          value = ((BigDecimal)val.value).longValue();
+        }
+      } else if (type == Type.DECIMAL) {
+        if (val.type == Type.STRING) {
+          value = new BigDecimal((String) val.value);
+        } else if (val.type == Type.BIGINT) {
+          value = BigDecimal.valueOf(val.longValue());
+        } else if (val.type == Type.DOUBLE) {
+          value = BigDecimal.valueOf(val.doubleValue());
+        }
+      } else if (type == Type.DOUBLE) {
+        if (val.type == Type.STRING) {
+          value = Double.valueOf((String) val.value);
+        } else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
+          value = Double.valueOf(val.doubleValue());
+        }
+      } else if (type == Type.DATE) {
+        value = Utils.toDate(val.toString());
+      } else if (type == Type.TIMESTAMP) {
+        value = Utils.toTimestamp(val.toString());
       }
-	    else if (val.type == Type.BIGINT) {
-	      value = BigDecimal.valueOf(val.longValue());
-	    }
-	    else if (val.type == Type.DOUBLE) {
-	      value = BigDecimal.valueOf(val.doubleValue());
-	    }
-	  }
-	  else if (type == Type.DOUBLE) {
-	    if (val.type == Type.STRING) {
-        value = Double.valueOf((String) val.value);
-      }
-	    else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
-        value = Double.valueOf(val.doubleValue());
-      }
-	  }
-	  else if (type == Type.DATE) {
-	    value = Utils.toDate(val.toString());
-    }
-    else if (type == Type.TIMESTAMP) {
-      value = Utils.toTimestamp(val.toString());
+    } catch (NumberFormatException e) {
+      throw new TypeException(null, type, val.type, val.value);
     }
 	  return this;
 	}
@@ -272,7 +264,7 @@ public class Var {
     return this;
   }
 
-  public Var setValues(QueryResult queryResult) {
+  public Var setRowValues(QueryResult queryResult) {
     Row row = (Row)this.value;
     int idx = 0;
     for (Column column : row.getColumns()) {
@@ -287,7 +279,7 @@ public class Var {
   /**
 	 * Set the data type from string representation
 	 */
-	void setType(String type) {
+	public void setType(String type) {
 	  this.type = defineType(type);
 	}
 	
@@ -352,6 +344,12 @@ public class Var {
     }
     else if (type.equalsIgnoreCase(Var.DERIVED_TYPE)) {
       return Type.DERIVED_TYPE;
+    }
+    else if (type.equalsIgnoreCase(Type.HPL_OBJECT.name())) {
+      return Type.HPL_OBJECT;
+    }
+    else if (type.equalsIgnoreCase(Type.ROW.name())) {
+      return Type.ROW;
     }
     return Type.NULL;
   }
@@ -444,6 +442,9 @@ public class Var {
     }
     else if (type == Type.BIGINT && v.type == Type.BIGINT) {
       return ((Long)value).compareTo((Long)v.value);
+    }
+    else if (type == Type.DOUBLE && v.type == Type.DECIMAL) {
+      return (new BigDecimal((double)value)).compareTo((BigDecimal)v.value);
     }
     else if (type == Type.STRING && v.type == Type.STRING) {
       return ((String)value).compareTo((String)v.value);

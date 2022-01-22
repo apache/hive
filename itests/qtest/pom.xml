@@ -404,19 +404,26 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+    <!-- JDBC drivers -->
     <dependency>
-      <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
-      believe we are fine. -->
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>${mariadb.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>${postgres.version}</version>
-      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc8</artifactId>
     </dependency>
   </dependencies>
   <profiles>
@@ -525,6 +532,7 @@
                 <property name="test.classpath" refid="maven.test.classpath"/>
                 <taskdef resource="net/sf/antcontrib/antcontrib.properties"
                   classpathref="maven.plugin.classpath" />
+                <delete dir="${project.build.directory}/localfs/"/>
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/perf" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientnegative/" />
@@ -539,6 +547,8 @@
                 <mkdir dir="${project.build.directory}/qfile-results/contribnegative"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientpositive"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientnegative"/>
+                <mkdir dir="${project.build.directory}/qfile-results/iceberg-handler/positive/"/>
+                <mkdir dir="${project.build.directory}/qfile-results/iceberg-handler/negative/"/>
               </target>
             </configuration>
             <goals>
@@ -572,7 +582,6 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
-            <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>

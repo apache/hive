@@ -1299,7 +1299,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: value (type: string), key (type: int)
                       outputColumnNames: _col1, _col2
-                      Statistics: Num rows: 11 Data size: 1067 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -4620,7 +4620,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: value (type: string), key (type: int)
                       outputColumnNames: _col1, _col2
-                      Statistics: Num rows: 11 Data size: 1067 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -7737,7 +7737,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 3:int
+                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 4:int
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
@@ -11518,7 +11518,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                      Statistics: Num rows: 11 Data size: 1067 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -11576,7 +11576,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 3:int
+                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 4:int
                       Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
@@ -16255,7 +16255,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                      Statistics: Num rows: 11 Data size: 1067 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -16310,7 +16310,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 3:int
+                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 4:int
                       Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
@@ -20944,7 +20944,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                      Statistics: Num rows: 11 Data size: 1067 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -21000,7 +21000,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 3:int
+                          selectExpressions: LongScalarMultiplyLongColumn(val 2, col 0:int) -> 4:int
                       Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:

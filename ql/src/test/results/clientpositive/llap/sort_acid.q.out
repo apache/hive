@@ -92,7 +92,7 @@ POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	777
 30	777
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 update acidtlb set b=350
 where a in (select a from acidtlb where a = 30)
@@ -118,7 +118,7 @@ HiveSortExchange(distribution=[any], collation=[[0]])
             HiveFilter(condition=[=($0, 30)])
               HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
 
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: update acidtlb set b=350
 where a in (select a from acidtlb where a = 30)
 PREHOOK: type: QUERY
@@ -259,7 +259,6 @@ PREHOOK: Input: default@acidtlb
 PREHOOK: Input: default@othertlb
 PREHOOK: Output: default@acidtlb
 PREHOOK: Output: default@acidtlb
-PREHOOK: Output: default@acidtlb
 PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain cbo
 merge into acidtlb as t using othertlb as s on t.a = s.c
@@ -269,7 +268,6 @@ when not matched then insert values (s.c, 2000 + s.d)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Input: default@othertlb
-POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@merge_tmp_table
@@ -291,7 +289,6 @@ PREHOOK: Input: default@acidtlb
 PREHOOK: Input: default@othertlb
 PREHOOK: Output: default@acidtlb
 PREHOOK: Output: default@acidtlb
-PREHOOK: Output: default@acidtlb
 PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 30 then delete
@@ -302,9 +299,10 @@ POSTHOOK: Input: default@acidtlb
 POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
-POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Lineage: acidtlb.a SIMPLE [(othertlb)s.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtlb.a SIMPLE [(othertlb)s.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtlb.b EXPRESSION [(othertlb)s.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtlb.b EXPRESSION [(othertlb)s.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(acidtlb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 PREHOOK: query: select * from acidtlb

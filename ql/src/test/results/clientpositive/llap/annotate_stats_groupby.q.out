@@ -1705,10 +1705,10 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
                       Select Operator
                         expressions: _col1 (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 9970 Data size: 79528 Basic stats: COMPLETE Column stats: COMPLETE
+                        outputColumnNames: _col1
+                        Statistics: Num rows: 9970 Data size: 39764 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1000000)
+                          aggregations: min(_col1), max(_col1), bloom_filter(_col1, expectedEntries=1000000)
                           minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2

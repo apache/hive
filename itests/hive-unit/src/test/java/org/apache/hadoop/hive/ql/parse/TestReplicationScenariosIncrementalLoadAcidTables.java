@@ -17,11 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import org.junit.rules.TestName;
@@ -34,6 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +75,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-           new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+           new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     HashMap<String, String> acidConfs = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");
@@ -130,6 +135,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   }
 
   @Test
+  @org.junit.Ignore("HIVE-25491")
   public void testAcidTableIncrementalReplication() throws Throwable {
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName)
@@ -240,6 +246,64 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     verifyResultsInReplicaInt(Lists.newArrayList("select count(*) from " + tableNameMM,
             "select count(*) from " + tableNameMM + "_nopart"),
             Lists.newArrayList(result, result));
+  }
+
+  @Test
+  public void testReplCommitTransactionOnSourceDeleteORC() throws Throwable {
+    // Run test with ORC format & with transactional true.
+    testReplCommitTransactionOnSourceDelete("STORED AS ORC", "'transactional'='true'");
+  }
+
+  @Test
+  public void testReplCommitTransactionOnSourceDeleteText() throws Throwable {
+    // Run test with TEXT format & with transactional false.
+    testReplCommitTransactionOnSourceDelete("STORED AS TEXTFILE", "'transactional'='false'");
+  }
+
+  public void testReplCommitTransactionOnSourceDelete(String tableStorage, String tableProperty) throws Throwable {
+    String tableName = "testReplCommitTransactionOnSourceDelete";
+    String[] result = new String[] { "5" };
+
+    // Do a bootstrap dump.
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName).run("REPL STATUS " + replicatedDbName)
+        .verifyResult(bootStrapDump.lastReplicationId);
+
+    // Add some data to the table & do a incremental dump.
+    ReplicationTestUtils.insertIntoDB(primary, primaryDbName, tableName, tableProperty, tableStorage,
+        new String[] { "1", "2", "3", "4", "5" });
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
+
+    // Keep a copy of the data, before we drop the table, so that we can copy it back to the location, in order to
+    // trigger source delete at the time of checksum verification.
+    Path tablePath = new Path(primary.getTable(primaryDbName, tableName).getSd().getLocation());
+    Path tablePath_dupe = new Path(primary.getTable(primaryDbName, tableName).getSd().getLocation() + "_dupe");
+    FileSystem fs = tablePath.getFileSystem(conf);
+    FileUtils.copy(fs, tablePath, fs, tablePath_dupe, false, false, conf);
+
+    // Drop the table.
+    primary.run("drop table " + primaryDbName + "." + tableName);
+
+    // Copy back the data to original location, so that copy happens from original location, not the CM location.
+    FileUtils.copy(fs, tablePath_dupe, fs, tablePath, false, false, conf);
+
+    // Add a util to delete the original source at the time of source checksum verification.
+    CopyUtils.testCallable = () -> {
+      try {
+        fs.delete(tablePath, true);
+      } catch (Throwable throwable) {
+        throwable.printStackTrace();
+      }
+      return null;
+    };
+
+    // Do an incremental load & verify if things are good.
+    replica.loadWithoutExplain(replicatedDbName, primaryDbName)
+        .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
+    verifyResultsInReplicaInt(Lists.newArrayList("select count(*) from " + tableName,
+        "select count(*) from " + tableName + "_nopart"),
+        Lists.newArrayList(result, result));
+
   }
 
   private void verifyResultsInReplicaInt(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {

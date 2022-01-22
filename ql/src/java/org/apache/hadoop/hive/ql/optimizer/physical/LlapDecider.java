@@ -314,7 +314,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       exprs.add(expr);
       while (!exprs.isEmpty()) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug(String.format("Checking '%s'",expr.getExprString()));
+          LOG.debug("Checking '{}'",expr.getExprString());
         }
 
         ExprNodeDesc cur = exprs.removeFirst();
@@ -344,7 +344,7 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private boolean checkAggregator(AggregationDesc agg) throws SemanticException {
       if (LOG.isDebugEnabled()) {
-        LOG.debug(String.format("Checking '%s'", agg.getExprString()));
+        LOG.debug("Checking '{}'", agg.getExprString());
       }
 
       boolean result = checkExpressions(agg.getParameters());

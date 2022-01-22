@@ -147,6 +147,17 @@
         </plugins>
       </build>
     </profile>
+    <!-- Add iceberg dependencies only with iceberg build -->
+    <profile>
+      <id>iceberg</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-iceberg-handler</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
 

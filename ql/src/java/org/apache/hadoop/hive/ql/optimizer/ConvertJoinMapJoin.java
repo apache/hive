@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -437,9 +438,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       memoryMonitorInfo = new MemoryMonitorInfo(false, 1, maxSlotsPerQuery, overSubscriptionFactor, maxSize, maxSize,
         memoryCheckInterval, inflationFactor);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
-    }
+    LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
     return memoryMonitorInfo;
   }
 
@@ -588,6 +587,18 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         int parentIndex = mergeJoinOp.getParentOperators().indexOf(parentOp);
         if (parentIndex == mapJoinConversionPos) {
           continue;
+        }
+
+        // In case of SMB join, the parent group by has to be FINAL where it streams the
+        // aggregate as and when its calculated. This is required, as the sort merge join
+        // pulls the data from the parent operators and expect it to get the records
+        // during join processing, not at the time of close.
+        if (parentOp instanceof GroupByOperator) {
+          GroupByOperator gpbyOp = (GroupByOperator )parentOp;
+          if (gpbyOp.getConf().getMode() == GroupByDesc.Mode.HASH) {
+            // No need to change for MERGE_PARTIAL etc.
+            gpbyOp.getConf().setMode(GroupByDesc.Mode.FINAL);
+          }
         }
 
         // insert the dummy store operator here

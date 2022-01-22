@@ -96,13 +96,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: a1 (type: string), a2 (type: string), CASE WHEN (a1 is not null) THEN (a1) ELSE (a2) END (type: string)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col2 (type: string)
-                        Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -118,13 +118,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: b1 (type: string), b2 (type: string), CASE WHEN (b1 is not null) THEN (b1) ELSE (b2) END (type: string)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col2 (type: string)
-                        Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -203,13 +203,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: a1 (type: string), a2 (type: string), CASE WHEN (a1 is not null) THEN (a1) ELSE (a2) END (type: string)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col2 (type: string)
-                        Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -225,13 +225,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: b1 (type: string), b2 (type: string), CASE WHEN (b1 is not null) THEN (b1) ELSE (b2) END (type: string)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col2 (type: string)
-                        Statistics: Num rows: 2 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

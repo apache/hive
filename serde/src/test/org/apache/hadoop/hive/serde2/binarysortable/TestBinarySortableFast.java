@@ -338,7 +338,7 @@ public class TestBinarySortableFast {
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparison failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -416,7 +416,7 @@ public class TestBinarySortableFast {
     Arrays.fill(columnNotNullMarker, BinarySortableSerDe.ONE);
 
     /*
-     * Acending.
+     * Ascending.
      */
     testBinarySortableFast(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,

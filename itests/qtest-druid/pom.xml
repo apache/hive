@@ -34,7 +34,7 @@
   <packaging>jar</packaging>
   <name>Hive Integration - QFile Druid Tests</name>
 
-  <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+  <!-- dependencies are always listed in sorted order by groupId, artifactId -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <druid.avatica.version>1.15.0</druid.avatica.version>

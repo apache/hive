@@ -96,6 +96,18 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@decimal_udf_n1
 POSTHOOK: Lineage: decimal_udf_n1.key EXPRESSION []
 POSTHOOK: Lineage: decimal_udf_n1.value EXPRESSION []
+PREHOOK: query: drop table if exists tbl_dates
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_dates
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tbl_dates (year string, month string, day string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_dates
+POSTHOOK: query: create table tbl_dates (year string, month string, day string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_dates
 PREHOOK: query: drop table if exists count_case_groupby
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists count_case_groupby
@@ -369,6 +381,124 @@ POSTHOOK: Input: default@varchar_udf_1_n0
 NULL	NULL	NULL
 replaced_238	replaced_238	true
 PREHOOK: query: explain vectorization expression
+select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_dates
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_dates
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_dates
+                  filterExpr: to_date(CAST( concat(year, '-', month, '-', day) AS TIMESTAMP)) BETWEEN DATE'2018-12-01' AND DATE'2021-03-01' (type: boolean)
+                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColumnBetween(col 7:date, left 17866, right 18687)(children: VectorUDFDateTimestamp(col 6:timestamp)(children: CastStringToTimestamp(col 5:string)(children: VectorUDFAdaptor(concat(year, '-', month, '-', day)) -> 5:string) -> 6:timestamp) -> 7:date)
+                    predicate: to_date(CAST( concat(year, '-', month, '-', day) AS TIMESTAMP)) BETWEEN DATE'2018-12-01' AND DATE'2021-03-01' (type: boolean)
+                    Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain vectorization expression
 select
   c2 regexp 'val',
   c4 regexp 'val',
@@ -492,8 +622,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5, 6, 9]
-                        selectExpressions: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 5:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 6:string, StringGroupColEqualStringGroupColumn(col 7:string, col 8:string)(children: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 7:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 8:string) -> 9:boolean
+                        projectedOutputColumnNums: [6, 7, 10]
+                        selectExpressions: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 6:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 7:string, StringGroupColEqualStringGroupColumn(col 8:string, col 9:string)(children: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 8:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 9:string) -> 10:boolean
                     Statistics: Num rows: 2 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -585,8 +715,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5, 6, 9]
-                        selectExpressions: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 5:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 6:string, StringGroupColEqualStringGroupColumn(col 7:string, col 8:string)(children: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 7:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 8:string) -> 9:boolean
+                        projectedOutputColumnNums: [6, 7, 10]
+                        selectExpressions: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 6:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 7:string, StringGroupColEqualStringGroupColumn(col 8:string, col 9:string)(children: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 8:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 9:string) -> 10:boolean
                     Statistics: Num rows: 2 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1037,13 +1167,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 7]
-                        selectExpressions: IfExprColumnCondExpr(col 1:boolean, col 3:intcol 6:int)(children: col 1:boolean, ConstantVectorExpression(val 1) -> 3:int, IfExprColumnNull(col 4:boolean, col 5:int, null)(children: NotCol(col 1:boolean) -> 4:boolean, ConstantVectorExpression(val 0) -> 5:int) -> 6:int) -> 7:int
+                        projectedOutputColumnNums: [0, 8]
+                        selectExpressions: IfExprColumnCondExpr(col 1:boolean, col 4:intcol 7:int)(children: col 1:boolean, ConstantVectorExpression(val 1) -> 4:int, IfExprColumnNull(col 5:boolean, col 6:int, null)(children: NotCol(col 1:boolean) -> 5:boolean, ConstantVectorExpression(val 0) -> 6:int) -> 7:int) -> 8:int
                     Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 7:int) -> bigint
+                          aggregators: VectorUDAFCount(col 8:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 0:string
@@ -1170,13 +1300,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 7]
-                        selectExpressions: IfExprColumnCondExpr(col 1:boolean, col 3:intcol 6:int)(children: col 1:boolean, ConstantVectorExpression(val 1) -> 3:int, IfExprColumnNull(col 4:boolean, col 5:int, null)(children: NotCol(col 1:boolean) -> 4:boolean, ConstantVectorExpression(val 0) -> 5:int) -> 6:int) -> 7:int
+                        projectedOutputColumnNums: [0, 8]
+                        selectExpressions: IfExprColumnCondExpr(col 1:boolean, col 4:intcol 7:int)(children: col 1:boolean, ConstantVectorExpression(val 1) -> 4:int, IfExprColumnNull(col 5:boolean, col 6:int, null)(children: NotCol(col 1:boolean) -> 5:boolean, ConstantVectorExpression(val 0) -> 6:int) -> 7:int) -> 8:int
                     Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 7:int) -> bigint
+                          aggregators: VectorUDAFCount(col 8:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 0:string
@@ -1288,6 +1418,14 @@ POSTHOOK: query: DROP TABLE DECIMAL_UDF_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_udf_n1
 POSTHOOK: Output: default@decimal_udf_n1
+PREHOOK: query: DROP TABLE tbl_dates
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_dates
+PREHOOK: Output: default@tbl_dates
+POSTHOOK: query: DROP TABLE tbl_dates
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_dates
+POSTHOOK: Output: default@tbl_dates
 PREHOOK: query: drop table count_case_groupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@count_case_groupby

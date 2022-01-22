@@ -367,7 +367,7 @@ STAGE PLANS:
                     predicate: (f1 = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: 1 (type: int)
                         outputColumnNames: _col0
@@ -391,7 +391,7 @@ STAGE PLANS:
                     predicate: (f1 = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: 1 (type: int)
                         outputColumnNames: _col0

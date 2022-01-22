@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator;
@@ -123,6 +124,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setAst(true);
       } else if (explainOptions == HiveParser.KW_DEBUG) {
         config.setDebug(true);
+      } else if (explainOptions == HiveParser.KW_DDL) {
+        config.setDDL(true);
+        config.setCbo(true);
+        config.setVectorization(true);
       } else {
         // UNDONE: UNKNOWN OPTION?
       }
@@ -152,7 +157,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
           while (driver.getResults(new ArrayList<String>())) {
           }
         } catch (CommandProcessorException e) {
-          throw new SemanticException(e.getMessage(), e);
+          if (e.getCause() instanceof ReCompileException) {
+            throw (ReCompileException) e.getCause();
+          } else {
+            throw new SemanticException(e.getMessage(), e);
+          }
         }
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
@@ -185,9 +194,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask.getWork().initializeForFetch(ctx.getOpContext());
     }
 
-    ParseContext pCtx = null;
     if (sem instanceof SemanticAnalyzer) {
-      pCtx = ((SemanticAnalyzer)sem).getParseContext();
+      pCtx = sem.getParseContext();
     }
 
     config.setUserLevelExplain(!config.isExtended()
@@ -285,5 +293,4 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return super.skipAuthorization();
   }
-
 }

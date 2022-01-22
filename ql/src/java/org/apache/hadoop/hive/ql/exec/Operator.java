@@ -917,6 +917,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     final int childSize = childOperatorsArray.length;
     if (childSize == 1) {
       childOperatorsArray[0].process(batch, childOperatorsTag[0]);
+      // if that single child is done, this operator is also done
+      if (childOperatorsArray[0].getDone()){
+        setDone(true);
+      }
     } else {
       int childrenDone = 0;
       for (int i = 0; i < childOperatorsArray.length; i++) {

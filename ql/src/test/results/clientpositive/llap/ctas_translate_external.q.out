@@ -1,0 +1,96 @@
+PREHOOK: query: create table ctas_ext_table AS SELECT from_unixtime(unix_timestamp("0002-01-01 09:57:21", "yyyy-MM-dd HH:mm:ss"))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_ext_table
+POSTHOOK: query: create table ctas_ext_table AS SELECT from_unixtime(unix_timestamp("0002-01-01 09:57:21", "yyyy-MM-dd HH:mm:ss"))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_ext_table
+POSTHOOK: Lineage: ctas_ext_table._c0 SIMPLE []
+PREHOOK: query: describe formatted ctas_ext_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ctas_ext_table
+POSTHOOK: query: describe formatted ctas_ext_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ctas_ext_table
+# col_name            	data_type           	comment             
+_c0                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	19                  
+	totalSize           	20                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table ctas_ext_transactional TBLPROPERTIES ('transactional'='false') AS SELECT from_unixtime(unix_timestamp("0002-01-01 09:57:21", "yyyy-MM-dd HH:mm:ss"))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_ext_transactional
+POSTHOOK: query: create table ctas_ext_transactional TBLPROPERTIES ('transactional'='false') AS SELECT from_unixtime(unix_timestamp("0002-01-01 09:57:21", "yyyy-MM-dd HH:mm:ss"))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_ext_transactional
+POSTHOOK: Lineage: ctas_ext_transactional._c0 SIMPLE []
+PREHOOK: query: describe formatted ctas_ext_transactional
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ctas_ext_transactional
+POSTHOOK: query: describe formatted ctas_ext_transactional
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ctas_ext_transactional
+# col_name            	data_type           	comment             
+_c0                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	19                  
+	totalSize           	20                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

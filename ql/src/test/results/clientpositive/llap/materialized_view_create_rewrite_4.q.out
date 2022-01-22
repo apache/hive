@@ -270,6 +270,9 @@ POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n5
+POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n5
@@ -318,6 +321,11 @@ Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, su
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -557,6 +565,11 @@ Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, su
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	Yes                 	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_2_n2	1/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1041,6 +1054,11 @@ Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, su
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1346,6 +1364,11 @@ Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, su
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1651,6 +1674,11 @@ Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, su
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -2062,6 +2090,11 @@ Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, su
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_2_n2	0/0/0               	 
+hive.default.cmv_basetable_n5	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)

@@ -45,7 +45,7 @@ public class FilterDecimal64ColumnNotBetween extends FilterLongColumnNotBetween 
     HiveDecimalWritable writable2 = new HiveDecimalWritable();
     writable2.deserialize64(rightValue, decimalTypeInfo2.scale());
     return
-        getColumnParamString(0, colNum) +
+        getColumnParamString(0, inputColumnNum[0]) +
         ", decimal64LeftVal " + leftValue + ", decimalLeftVal " + writable1.toString() +
         ", decimal64RightVal " + rightValue + ", decimalRightVal " + writable2.toString();
   }

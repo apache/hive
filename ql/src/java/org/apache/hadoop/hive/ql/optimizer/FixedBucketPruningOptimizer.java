@@ -165,16 +165,15 @@ public class FixedBucketPruningOptimizer extends Transform {
       } else if (expr.getOperator() == Operator.AND) {
         boolean found = false;
         for (ExpressionTree subExpr : expr.getChildren()) {
-          if (subExpr.getOperator() != Operator.LEAF) {
-            return;
-          }
-          // one of the branches is definitely a bucket-leaf
-          PredicateLeaf l = leaves.get(subExpr.getLeaf());
-          if (bucketLeaves.contains(l)) {
-            if (!addLiteral(literals, l)) {
-              return;
+          if (subExpr.getOperator() == Operator.LEAF) {
+            // one of the branches is definitely a bucket-leaf
+            PredicateLeaf l = leaves.get(subExpr.getLeaf());
+            if (bucketLeaves.contains(l)) {
+              if (!addLiteral(literals, l)) {
+                return;
+              }
+              found = true;
             }
-            found = true;
           }
         }
         if (!found) {

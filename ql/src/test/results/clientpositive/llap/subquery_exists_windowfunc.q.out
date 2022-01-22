@@ -1,0 +1,375 @@
+PREHOOK: query: create table alltypestiny(
+id int,
+int_col int,
+bigint_col bigint,
+bool_col boolean
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: create table alltypestiny(
+id int,
+int_col int,
+bigint_col bigint,
+bool_col boolean
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypestiny
+PREHOOK: query: insert into alltypestiny(id, int_col, bigint_col, bool_col) values
+(1, 1, 10, true),
+(2, 4, 5, false),
+(3, 5, 15, true),
+(10, 10, 30, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: insert into alltypestiny(id, int_col, bigint_col, bool_col) values
+(1, 1, 10, true),
+(2, 4, 5, false),
+(3, 5, 15, true),
+(10, 10, 30, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypestiny
+POSTHOOK: Lineage: alltypestiny.bigint_col SCRIPT []
+POSTHOOK: Lineage: alltypestiny.bool_col SCRIPT []
+POSTHOOK: Lineage: alltypestiny.id SCRIPT []
+POSTHOOK: Lineage: alltypestiny.int_col SCRIPT []
+PREHOOK: query: create table alltypesagg(
+id int,
+int_col int,
+bool_col boolean
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesagg
+POSTHOOK: query: create table alltypesagg(
+id int,
+int_col int,
+bool_col boolean
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesagg
+PREHOOK: query: insert into alltypesagg(id, int_col, bool_col) values
+(1, 1, true),
+(2, 4, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypesagg
+POSTHOOK: query: insert into alltypesagg(id, int_col, bool_col) values
+(1, 1, true),
+(2, 4, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypesagg
+POSTHOOK: Lineage: alltypesagg.bool_col SCRIPT []
+POSTHOOK: Lineage: alltypesagg.id SCRIPT []
+POSTHOOK: Lineage: alltypesagg.int_col SCRIPT []
+PREHOOK: query: explain cbo
+select id, int_col
+from alltypesagg a
+where exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypestiny b
+   where a.id = b.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select id, int_col
+from alltypesagg a
+where exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypestiny b
+   where a.id = b.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+  HiveProject(id=[$0], int_col=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, alltypesagg]], table:alias=[a])
+  HiveProject(id=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, alltypestiny]], table:alias=[b])
+
+PREHOOK: query: explain
+select id, int_col
+from alltypesagg a
+where exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypestiny b
+   where a.id = b.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select id, int_col
+from alltypesagg a
+where exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypestiny b
+   where a.id = b.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: int), int_col (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select id, int_col
+from alltypesagg a
+where exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypestiny b
+   where a.id = b.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: select id, int_col
+from alltypesagg a
+where exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypestiny b
+   where a.id = b.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+1	1
+2	4
+PREHOOK: query: explain cbo
+select id, int_col from alltypestiny t
+where not exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypesagg a where t.id = a.int_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select id, int_col from alltypestiny t
+where not exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypesagg a where t.id = a.int_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+  HiveProject(id=[$0], int_col=[$1])
+    HiveTableScan(table=[[default, alltypestiny]], table:alias=[t])
+  HiveProject(literalTrue=[true], int_col=[$1])
+    HiveFilter(condition=[IS NOT NULL($1)])
+      HiveTableScan(table=[[default, alltypesagg]], table:alias=[a])
+
+PREHOOK: query: explain
+select id, int_col from alltypestiny t
+where not exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypesagg a where t.id = a.int_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select id, int_col from alltypestiny t
+where not exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypesagg a where t.id = a.int_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: int), int_col (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: int_col is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: int_col is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: int_col (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Anti Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select id, int_col from alltypestiny t
+where not exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypesagg a where t.id = a.int_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: select id, int_col from alltypestiny t
+where not exists
+  (select sum(int_col) over (partition by bool_col)
+   from alltypesagg a where t.id = a.int_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+2	4
+3	5
+10	10

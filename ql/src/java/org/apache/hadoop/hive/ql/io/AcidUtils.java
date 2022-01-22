@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -105,10 +107,10 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.concurrent.Immutable;
@@ -181,9 +183,19 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
+  private static final Set<Integer> READ_TXN_TOKENS = new HashSet<>();
 
   private static Cache<String, DirInfoValue> dirCache;
   private static AtomicBoolean dirCacheInited = new AtomicBoolean();
+
+  static {
+    READ_TXN_TOKENS.addAll(Arrays.asList(
+      HiveParser.TOK_DESCDATABASE,
+      HiveParser.TOK_DESCTABLE,
+      HiveParser.TOK_EXPLAIN,
+      HiveParser.TOK_EXPLAIN_SQ_REWRITE
+    ));
+  }
 
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
@@ -565,7 +577,7 @@ public class AcidUtils {
   }
 
   /**
-   * If the direct insert is on for ACID tables, the files will contain an "_attempID" postfix.
+   * If the direct insert is on for ACID tables, the files will contain an "_attemptID" postfix.
    * In order to be able to read the files from the delete deltas, we need to know which
    * attemptId belongs to which delta. To make this lookup easy, this method created a map
    * to link the deltas to the attemptId.
@@ -674,7 +686,11 @@ public class AcidUtils {
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
     public static final int INSERT_ONLY_BIT = 0x04;
+    public static final int INSERT_ONLY_FETCH_BUCKET_ID_BIT = 0x08;
+    public static final int FETCH_DELETED_ROWS_BIT = 0x10;
     public static final String INSERT_ONLY_STRING = "insert_only";
+    public static final String INSERT_ONLY_FETCH_BUCKET_ID_STRING = "insert_only_fetch_bucket_id";
+    public static final String FETCH_DELETED_ROWS_STRING = "fetch_deleted_rows";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
     public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
@@ -756,6 +772,12 @@ public class AcidUtils {
       if ((properties & INSERT_ONLY_BIT) > 0) {
         obj.setInsertOnly(true);
       }
+      if ((properties & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0) {
+        obj.setInsertOnlyFetchBucketId(true);
+      }
+      if ((properties & FETCH_DELETED_ROWS_BIT) > 0) {
+        obj.setFetchDeletedRows(true);
+      }
       return obj;
     }
 
@@ -767,9 +789,7 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setSplitUpdate(boolean isSplitUpdate) {
-      description = (isSplitUpdate
-              ? (description | SPLIT_UPDATE_BIT) : (description & ~SPLIT_UPDATE_BIT));
-      return this;
+      return set(isSplitUpdate, SPLIT_UPDATE_BIT);
     }
 
     /**
@@ -779,14 +799,23 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setHashBasedMerge(boolean isHashBasedMerge) {
-      description = (isHashBasedMerge
-              ? (description | HASH_BASED_MERGE_BIT) : (description & ~HASH_BASED_MERGE_BIT));
-      return this;
+      return set(isHashBasedMerge, HASH_BASED_MERGE_BIT);
     }
 
     public AcidOperationalProperties setInsertOnly(boolean isInsertOnly) {
-      description = (isInsertOnly
-              ? (description | INSERT_ONLY_BIT) : (description & ~INSERT_ONLY_BIT));
+      return set(isInsertOnly, INSERT_ONLY_BIT);
+    }
+
+    public AcidOperationalProperties setInsertOnlyFetchBucketId(boolean fetchBucketId) {
+      return set(fetchBucketId, INSERT_ONLY_FETCH_BUCKET_ID_BIT);
+    }
+
+    public AcidOperationalProperties setFetchDeletedRows(boolean fetchDeletedRows) {
+      return set(fetchDeletedRows, FETCH_DELETED_ROWS_BIT);
+    }
+
+    private AcidOperationalProperties set(boolean value, int bit) {
+      description = (value ? (description | bit) : (description & ~bit));
       return this;
     }
 
@@ -800,6 +829,14 @@ public class AcidUtils {
 
     public boolean isInsertOnly() {
       return (description & INSERT_ONLY_BIT) > 0;
+    }
+
+    public boolean isFetchBucketId() {
+      return (description & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0;
+    }
+
+    public boolean isFetchDeletedRows() {
+      return (description & FETCH_DELETED_ROWS_BIT) > 0;
     }
 
     public int toInt() {
@@ -817,6 +854,12 @@ public class AcidUtils {
       }
       if (isInsertOnly()) {
         str.append("|" + INSERT_ONLY_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + INSERT_ONLY_FETCH_BUCKET_ID_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + FETCH_DELETED_ROWS_STRING);
       }
       return str.toString();
     }
@@ -1936,6 +1979,21 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
+  public static boolean isInsertOnlyFetchBucketId(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      return false;
+    }
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) {
+      return false;
+    }
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    if (!props.isInsertOnly()) {
+      return false;
+    }
+    return props.isFetchBucketId();
+  }
+
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
@@ -2347,7 +2405,7 @@ public class AcidUtils {
       }
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       try (FSDataInputStream strm = fs.open(formatFile)) {
-        Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
+        Map<String, String> metaData = new ObjectMapper().readValue((InputStream)strm, Map.class);
         if (!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION.toString()))) {
           throw new IllegalStateException("Unexpected Meta Data version: " + metaData.get(Field.VERSION));
         }
@@ -2438,8 +2496,7 @@ public class AcidUtils {
     }
 
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
-      try {
-        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+      try (Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()))) {
         /*
           acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed
@@ -2663,7 +2720,7 @@ public class AcidUtils {
         return (name.equals(baseDirName) && dpSpecs.contains(partitionSpec));
       }
       else {
-        return name.equals(baseDirName) 
+        return name.equals(baseDirName)
             || (isDeltaPrefix && (name.startsWith(deltaDirName) || name.startsWith(deleteDeltaDirName)))
             || (!isDeltaPrefix && (name.equals(deltaDirName) || name.equals(deleteDeltaDirName)));
       }
@@ -3040,15 +3097,8 @@ public class AcidUtils {
    * @param tree AST
    */
   public static TxnType getTxnType(Configuration conf, ASTNode tree) {
-    final ASTSearcher astSearcher = new ASTSearcher();
-
     // check if read-only txn
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
-        tree.getToken().getType() == HiveParser.TOK_QUERY &&
-        Stream.of(
-          new int[]{HiveParser.TOK_INSERT_INTO},
-          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
-          .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) && isReadOnlyTxn(tree)) {
       return TxnType.READ_ONLY;
     }
     // check if txn has a materialized view rebuild
@@ -3059,10 +3109,28 @@ public class AcidUtils {
     if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
       return TxnType.COMPACTION;
     }
+    // check if soft delete
+    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE 
+      && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))){
+      return TxnType.SOFT_DELETE;
+    }
+    if (tree.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS
+        && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))) {
+      return TxnType.SOFT_DELETE;
+    }
     return TxnType.DEFAULT;
   }
 
-
+  private static boolean isReadOnlyTxn(ASTNode tree) {
+    final ASTSearcher astSearcher = new ASTSearcher();
+    return READ_TXN_TOKENS.contains(tree.getToken().getType())
+      || (tree.getToken().getType() == HiveParser.TOK_QUERY && Stream.of(
+          new int[]{HiveParser.TOK_INSERT_INTO},
+          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+      .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
+  }
 
   private static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {

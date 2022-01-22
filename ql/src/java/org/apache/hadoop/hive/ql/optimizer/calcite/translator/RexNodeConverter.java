@@ -150,7 +150,7 @@ public class RexNodeConverter {
     ExprNodeDesc tmpExprNode;
     RexNode tmpRN;
 
-    List<RexNode> childRexNodeLst = new ArrayList<RexNode>();
+    List<RexNode> childRexNodeLst = new ArrayList<>();
     Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
 
     // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
@@ -164,7 +164,7 @@ public class RexNodeConverter {
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
     boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
     boolean isTransformableTimeStamp = func.getGenericUDF() instanceof GenericUDFUnixTimeStamp &&
-        func.getChildren().size() != 0;
+        !func.getChildren().isEmpty();
     boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
     boolean isIN = !isNumeric && tgtUdf instanceof GenericUDFIn;
     boolean isAllPrimitive = true;
@@ -244,7 +244,7 @@ public class RexNodeConverter {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         childRexNodeLst = rewriteCaseChildren(func.getFuncText(), childRexNodeLst, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a extract operator, we need to rewrite it
@@ -273,7 +273,7 @@ public class RexNodeConverter {
         // This allows to be further reduced to OR, if possible
         calciteOp = SqlStdOperatorTable.CASE;
         childRexNodeLst = rewriteCoalesceChildren(childRexNodeLst, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst, rexBuilder);
@@ -367,9 +367,15 @@ public class RexNodeConverter {
       for (int i = 1; i < length; i++) {
         if (i % 2 == 1) {
           // We rewrite it
+          RexNode node = childRexNodeLst.get(i);
+          if (node.isA(SqlKind.LITERAL) && !node.getType().equals(firstPred.getType())) {
+            // this effectively changes the type of the literal to that of the predicate
+            // to which it is anyway going to be compared with
+            // ex: CASE WHEN =($0:SMALLINT, 1:INTEGER) ... => CASE WHEN =($0:SMALLINT, 1:SMALLINT)
+            node = rexBuilder.makeCast(firstPred.getType(), node);
+          }
           newChildRexNodeLst.add(
-              rexBuilder.makeCall(
-                  SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
+              rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, firstPred, node));
         } else {
           newChildRexNodeLst.add(childRexNodeLst.get(i));
         }

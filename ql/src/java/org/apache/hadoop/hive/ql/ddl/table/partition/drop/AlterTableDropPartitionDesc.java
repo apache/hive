@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -65,10 +67,18 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
   private final ArrayList<PartitionDesc> partSpecs;
   private final boolean ifPurge;
   private final ReplicationSpec replicationSpec;
-  private Long writeId;
+  private final boolean deleteData;
+  private final boolean isTransactional;
+
+  private long writeId = 0;
 
   public AlterTableDropPartitionDesc(TableName tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
       boolean ifPurge, ReplicationSpec replicationSpec) {
+    this(tableName, partSpecs, ifPurge, replicationSpec, true, null);
+  }
+
+  public AlterTableDropPartitionDesc(TableName tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
+      boolean ifPurge, ReplicationSpec replicationSpec, boolean deleteData, Table table) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartitionDesc>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
@@ -79,6 +89,8 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
     }
     this.ifPurge = ifPurge;
     this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
+    this.isTransactional = AcidUtils.isTransactionalTable(table);
+    this.deleteData = deleteData;
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -108,13 +120,21 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
   }
 
   @Override
-  public String getFullTableName() {
-    return getTableName();
+  public boolean mayNeedWriteId() {
+    return isTransactional;
+  }
+
+  public long getWriteId() {
+    return writeId;
+  }
+
+  public boolean getDeleteData() {
+    return deleteData;
   }
 
   @Override
-  public boolean mayNeedWriteId() {
-    return true;
+  public String getFullTableName() {
+    return getTableName();
   }
 
 }

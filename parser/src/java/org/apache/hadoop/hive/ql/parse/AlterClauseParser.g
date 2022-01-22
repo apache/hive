@@ -51,6 +51,7 @@ alterStatement
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
+    | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
     ;
 
 alterTableStatementSuffix
@@ -71,6 +72,7 @@ alterTableStatementSuffix
     | alterTblPartitionStatementSuffix[false]
     | partitionSpec alterTblPartitionStatementSuffix[true] -> alterTblPartitionStatementSuffix partitionSpec
     | alterStatementSuffixSetOwner
+    | alterStatementSuffixSetPartSpec
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -443,6 +445,13 @@ alterStatementSuffixSetOwner
     -> ^(TOK_ALTERTABLE_OWNER principalName)
     ;
 
+alterStatementSuffixSetPartSpec
+@init { gParent.pushMsg("alter table set partition spec", state); }
+@after { gParent.popMsg(state); }
+    : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
+    -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
+    ;
+
 fileFormat
 @init { gParent.pushMsg("file format specification", state); }
 @after { gParent.popMsg(state); }
@@ -450,3 +459,33 @@ fileFormat
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
+
+alterDataConnectorStatementSuffix
+@init { gParent.pushMsg("alter connector statement", state); }
+@after { gParent.popMsg(state); }
+    : alterDataConnectorSuffixProperties
+    | alterDataConnectorSuffixSetOwner
+    | alterDataConnectorSuffixSetUrl
+    ;
+
+alterDataConnectorSuffixProperties
+@init { gParent.pushMsg("alter connector set properties statement", state); }
+@after { gParent.popMsg(state); }
+    : name=identifier KW_SET KW_DCPROPERTIES dcProperties
+    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name dcProperties)
+    ;
+
+alterDataConnectorSuffixSetOwner
+@init { gParent.pushMsg("alter connector set owner", state); }
+@after { gParent.popMsg(state); }
+    : dcName=identifier KW_SET KW_OWNER principalName
+    -> ^(TOK_ALTERDATACONNECTOR_OWNER $dcName principalName)
+    ;
+
+alterDataConnectorSuffixSetUrl
+@init { gParent.pushMsg("alter connector set url", state); }
+@after { gParent.popMsg(state); }
+    : dcName=identifier KW_SET KW_URL newUri=StringLiteral
+    -> ^(TOK_ALTERDATACONNECTOR_URL $dcName $newUri)
+    ;
+

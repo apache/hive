@@ -32,9 +32,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A servlet to configure log4j2.
@@ -239,15 +240,11 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
         // that user requested.
         if (!loggerName.equals(LogManager.ROOT_LOGGER_NAME) &&
           loggerConfig.getName().equals(LogManager.ROOT_LOGGER_NAME)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Requested logger ({}) not found. Adding as new logger with {} level", loggerName, logLevel);
-          }
+          LOG.debug("Requested logger ({}) not found. Adding as new logger with {} level", loggerName, logLevel);
           // requested logger not found. Add the new logger with the requested level
           conf.addLogger(loggerName, new LoggerConfig(loggerName, logLevel, true));
         } else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
-          }
+          LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
           // update the log level for the specified logger
           loggerConfig.setLevel(logLevel);
         }

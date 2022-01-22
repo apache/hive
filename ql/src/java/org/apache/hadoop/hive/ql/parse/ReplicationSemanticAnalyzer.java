@@ -23,10 +23,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -46,7 +47,6 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
@@ -177,9 +177,15 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (ReplUtils.isTargetOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
-          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+        if (MetaStoreUtils.isTargetOfReplication(database)) {
+          if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(database, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+            LOG.info("Proceeding with dump operation as database: {} is target of replication and" +
+                    "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
+            ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
+          } else {
+            LOG.warn("Database " + dbNameOrPattern + " is marked as target of replication (repl.target.for), Will "
+                + "trigger failover.");
+          }
         }
       } else {
         throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");

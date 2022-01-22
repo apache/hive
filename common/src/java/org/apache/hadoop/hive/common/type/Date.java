@@ -19,13 +19,14 @@ package org.apache.hadoop.hive.common.type;
 
 import org.apache.hive.common.util.SuppressFBWarnings;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
@@ -82,7 +83,7 @@ public class Date implements Comparable<Date> {
   private static final DateTimeFormatter PARSE_FORMATTER =
       new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
           .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
-          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.LENIENT);
+          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.STRICT);
 
   private static final DateTimeFormatter PRINT_FORMATTER =
       new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("uuuu-MM-dd")).toFormatter();
@@ -135,6 +136,10 @@ public class Date implements Comparable<Date> {
     return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
   }
 
+  public long toEpochMilli(ZoneId id) {
+    return localDate.atStartOfDay().atZone(id).toInstant().toEpochMilli();
+  }
+
   public void setYear(int year) {
     localDate = localDate.withYear(year);
   }
@@ -182,7 +187,7 @@ public class Date implements Comparable<Date> {
     LocalDate localDate;
     try {
       localDate = LocalDate.parse(s, PARSE_FORMATTER);
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error");
     }
     return new Date(localDate);

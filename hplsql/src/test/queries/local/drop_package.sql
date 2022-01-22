@@ -16,6 +16,5 @@ PRINT Counter.current();
 
 DROP PACKAGE Counter;
 
-PRINT Counter.current();
 
 DROP PACKAGE IF EXISTS Counter;

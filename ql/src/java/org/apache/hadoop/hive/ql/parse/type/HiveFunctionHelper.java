@@ -253,7 +253,7 @@ public class HiveFunctionHelper implements FunctionHelper {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         inputs = RexNodeConverter.rewriteCaseChildren(functionText, inputs, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         inputs = RexNodeConverter.adjustCaseBranchTypes(inputs, returnType, rexBuilder);
         checkForStatefulFunctions(inputs);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
@@ -292,7 +292,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         // This allows to be further reduced to OR, if possible
         calciteOp = SqlStdOperatorTable.CASE;
         inputs = RexNodeConverter.rewriteCoalesceChildren(inputs, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         inputs = RexNodeConverter.adjustCaseBranchTypes(inputs, returnType, rexBuilder);
         checkForStatefulFunctions(inputs);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
@@ -412,7 +412,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
             || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
           GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggregateName,
-              aggParameterOIs, isDistinct, isAllColumns);
+              aggParameterOIs, isDistinct, isAllColumns, true);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
               genericUDAFEvaluator, udafMode, aggParameterOIs);
           returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();

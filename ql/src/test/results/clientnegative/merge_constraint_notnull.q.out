@@ -50,7 +50,6 @@ PREHOOK: Input: default@testt
 PREHOOK: Output: default@merge_tmp_table
 PREHOOK: Output: default@testt
 PREHOOK: Output: default@testt
-PREHOOK: Output: default@testt
 Status: Failed
 Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
 #### A masked pattern was here ####
@@ -66,7 +65,9 @@ Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: E
 [Masked Vertex killed due to OTHER_VERTEX_FAILURE]
 [Masked Vertex killed due to OTHER_VERTEX_FAILURE]
 [Masked Vertex killed due to OTHER_VERTEX_FAILURE]
-DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:5
+[Masked Vertex killed due to OTHER_VERTEX_FAILURE]
+[Masked Vertex killed due to OTHER_VERTEX_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:7
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
@@ -75,4 +76,4 @@ Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: E
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
 #### A masked pattern was here ####
-]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:5
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:7

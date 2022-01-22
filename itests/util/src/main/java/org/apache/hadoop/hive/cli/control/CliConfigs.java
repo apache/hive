@@ -328,26 +328,6 @@ public class CliConfigs {
     }
   }
 
-  public static class CompareCliConfig extends AbstractCliConfig {
-    public CompareCliConfig() {
-      super(CoreCompareCliDriver.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientcompare");
-
-        setResultsDir("ql/src/test/results/clientcompare");
-        setLogDir("itests/qtest/target/qfile-results/clientcompare");
-
-        setInitScript("q_test_init_compare.sql");
-        setCleanupScript("q_test_cleanup_compare.sql");
-
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.NONE);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
@@ -404,26 +384,6 @@ public class CliConfigs {
 
         setInitScript("q_test_init_src_with_stats.sql");
         setCleanupScript("q_test_cleanup_src.sql");
-
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.NONE);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
-  public static class DummyConfig extends AbstractCliConfig {
-    public DummyConfig() {
-      super(CoreDummy.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientcompare");
-
-        setResultsDir("ql/src/test/results/clientcompare");
-        setLogDir("itests/qtest/target/qfile-results/clientcompare");
-
-        setInitScript("q_test_init_compare.sql");
-        setCleanupScript("q_test_cleanup_compare.sql");
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.NONE);
@@ -753,6 +713,66 @@ public class CliConfigs {
         setClusterType(MiniClusterType.TEZ_LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class IcebergCliConfig extends AbstractCliConfig {
+
+    public IcebergCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+        setHiveConfDir("data/conf/iceberg/tez");
+        setClusterType(MiniClusterType.TEZ);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class IcebergNegativeCliConfig extends AbstractCliConfig {
+
+    public IcebergNegativeCliConfig() {
+      super(CoreNegativeCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/negative");
+        setResultsDir("iceberg/iceberg-handler/src/test/results/negative");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/negative");
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+        setHiveConfDir("data/conf/iceberg/tez");
+        setClusterType(MiniClusterType.TEZ);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class IcebergLlapLocalCliConfig extends AbstractCliConfig {
+
+    public IcebergLlapLocalCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
       }
     }
   }

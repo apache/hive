@@ -38,6 +38,7 @@ public enum AlterTableType {
   DROPPARTITION("drop partition"),
   RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
   ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
+  SETPARTITIONSPEC("set partition spec"),
   // constraint
   ADD_CONSTRAINT("add constraint"),
   DROP_CONSTRAINT("drop constraint"),
@@ -59,8 +60,8 @@ public enum AlterTableType {
   TOUCH("touch"),
   RENAME("rename"),
   OWNER("set owner"),
-  ARCHIVE("archieve"),
-  UNARCHIVE("unarchieve"),
+  ARCHIVE("archive"),
+  UNARCHIVE("unarchive"),
   COMPACT("compact"),
   TRUNCATE("truncate"),
   MERGEFILES("merge files"),

@@ -1,0 +1,52 @@
+PREHOOK: query: CREATE EXTERNAL TABLE `nested_v1` (`_dc_timelabel` TIMESTAMP COMMENT 'from deserializer', `_dc_load_time` TIMESTAMP COMMENT 'from deserializer', `id` BIGINT COMMENT 'from deserializer', `name` STRING COMMENT 'from deserializer', `location` STRING COMMENT 'from deserializer', `primary_contact_user_id` BIGINT COMMENT 'from deserializer', `parent_id` BIGINT COMMENT 'from deserializer', `parent_office_external_id` STRING COMMENT 'from deserializer', `child_ids` STRING COMMENT 'from deserializer', `child_office_external_ids` STRING COMMENT 'from deserializer', `external_id` STRING COMMENT 'from deserializer') ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_v1
+POSTHOOK: query: CREATE EXTERNAL TABLE `nested_v1` (`_dc_timelabel` TIMESTAMP COMMENT 'from deserializer', `_dc_load_time` TIMESTAMP COMMENT 'from deserializer', `id` BIGINT COMMENT 'from deserializer', `name` STRING COMMENT 'from deserializer', `location` STRING COMMENT 'from deserializer', `primary_contact_user_id` BIGINT COMMENT 'from deserializer', `parent_id` BIGINT COMMENT 'from deserializer', `parent_office_external_id` STRING COMMENT 'from deserializer', `child_ids` STRING COMMENT 'from deserializer', `child_office_external_ids` STRING COMMENT 'from deserializer', `external_id` STRING COMMENT 'from deserializer') ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_v1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nested_sample_1.json' INTO TABLE `nested_v1`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@nested_v1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nested_sample_1.json' INTO TABLE `nested_v1`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@nested_v1
+PREHOOK: query: SELECT * FROM nested_v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_v1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM nested_v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_v1
+#### A masked pattern was here ####
+NULL	NULL	4020966003	Brooklyn-200	{"name":"Brooklyn, NY"}	4226871003	NULL	NULL	[]	[]	NULL
+2021-08-19 04:10:00	2021-08-19 04:20:19	4020965003	Brooklyn-199	{"name":"Brooklyn, NY"}	4226871003	NULL	NULL	[]	[]	NULL
+2021-08-19 04:10:00	2021-08-19 04:20:19	4020964003	Brooklyn-198	{"name":"Brooklyn, NY"}	4226871003	NULL	NULL	[]	[]	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE `nested_v2` (data STRING, messageid STRING, publish_time BIGINT, attributes STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_v2
+POSTHOOK: query: CREATE EXTERNAL TABLE `nested_v2` (data STRING, messageid STRING, publish_time BIGINT, attributes STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_v2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nested_sample_2.json' INTO TABLE nested_v2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@nested_v2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nested_sample_2.json' INTO TABLE nested_v2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@nested_v2
+PREHOOK: query: SELECT * FROM nested_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_v2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM nested_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_v2
+#### A masked pattern was here ####
+{"H":{"event":"track_active","platform":"Android"},"B":{"device_type":"Phone","uuid":"[36ffec24-f6a4-4f5d-aa39-72e5513d2cae,11883bee-a7aa-4010-8a66-6c3c63a73f16]"}}	2475185636801962	1622514629783	{"region":"IN"}

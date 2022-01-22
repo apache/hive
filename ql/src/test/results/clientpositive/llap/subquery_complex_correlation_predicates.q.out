@@ -1,0 +1,292 @@
+PREHOOK: query: create table author
+(
+    a_authorkey int,
+    a_name      varchar(50)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: create table author
+(
+    a_authorkey int,
+    a_name      varchar(50)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: create table book
+(
+    b_bookkey   int,
+    b_title     varchar(50),
+    b_authorkey int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@book
+POSTHOOK: query: create table book
+(
+    b_bookkey   int,
+    b_title     varchar(50),
+    b_authorkey int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@book
+PREHOOK: query: insert into author
+values (10, 'Victor Hugo')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: insert into author
+values (10, 'Victor Hugo')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.a_authorkey SCRIPT []
+POSTHOOK: Lineage: author.a_name SCRIPT []
+PREHOOK: query: insert into author
+values (20, 'Alexandre Dumas')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: insert into author
+values (20, 'Alexandre Dumas')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.a_authorkey SCRIPT []
+POSTHOOK: Lineage: author.a_name SCRIPT []
+PREHOOK: query: insert into author
+values (300, 'UNKNOWN1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: insert into author
+values (300, 'UNKNOWN1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.a_authorkey SCRIPT []
+POSTHOOK: Lineage: author.a_name SCRIPT []
+PREHOOK: query: insert into author
+values (null, 'UNKNOWN2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: insert into author
+values (null, 'UNKNOWN2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.a_authorkey EXPRESSION []
+POSTHOOK: Lineage: author.a_name SCRIPT []
+PREHOOK: query: insert into book
+values (1, 'Les Miserables', 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@book
+POSTHOOK: query: insert into book
+values (1, 'Les Miserables', 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@book
+POSTHOOK: Lineage: book.b_authorkey SCRIPT []
+POSTHOOK: Lineage: book.b_bookkey SCRIPT []
+POSTHOOK: Lineage: book.b_title SCRIPT []
+PREHOOK: query: insert into book
+values (2, 'The Count of Monte Cristo', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@book
+POSTHOOK: query: insert into book
+values (2, 'The Count of Monte Cristo', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@book
+POSTHOOK: Lineage: book.b_authorkey SCRIPT []
+POSTHOOK: Lineage: book.b_bookkey SCRIPT []
+POSTHOOK: Lineage: book.b_title SCRIPT []
+PREHOOK: query: insert into book
+values (3, 'Men Without Women', 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@book
+POSTHOOK: query: insert into book
+values (3, 'Men Without Women', 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@book
+POSTHOOK: Lineage: book.b_authorkey SCRIPT []
+POSTHOOK: Lineage: book.b_bookkey SCRIPT []
+POSTHOOK: Lineage: book.b_title SCRIPT []
+PREHOOK: query: insert into book
+values (4, 'Odyssey', null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@book
+POSTHOOK: query: insert into book
+values (4, 'Odyssey', null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@book
+POSTHOOK: Lineage: book.b_authorkey EXPRESSION []
+POSTHOOK: Lineage: book.b_bookkey SCRIPT []
+POSTHOOK: Lineage: book.b_title SCRIPT []
+PREHOOK: query: explain cbo
+select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 300) = a.a_authorkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 300) = a.a_authorkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(b_title=[$0])
+  HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
+    HiveProject(b_title=[$1], $f7=[CASE(IS NOT NULL($2), $2, 300)])
+      HiveTableScan(table=[[default, book]], table:alias=[b])
+    HiveProject(a_authorkey=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, author]], table:alias=[a])
+
+PREHOOK: query: select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 300) = a.a_authorkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 300) = a.a_authorkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+Les Miserables
+The Count of Monte Cristo
+Odyssey
+PREHOOK: query: explain cbo
+select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(b_title=[$0])
+  HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
+    HiveProject(b_title=[$1], $f7=[CASE(IS NOT NULL($2), $2, 400)])
+      HiveTableScan(table=[[default, book]], table:alias=[b])
+    HiveProject($f6=[CASE(IS NOT NULL($0), $0, 400)])
+      HiveTableScan(table=[[default, author]], table:alias=[a])
+
+PREHOOK: query: select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: select b.b_title
+from book b
+where exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+Les Miserables
+The Count of Monte Cristo
+Odyssey
+PREHOOK: query: explain cbo
+select b.b_title
+from book b
+where not exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select b.b_title
+from book b
+where not exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(b_title=[$0])
+  HiveAntiJoin(condition=[=($1, $3)], joinType=[anti])
+    HiveProject(b_title=[$1], $f7=[CASE(IS NOT NULL($2), $2, 400)])
+      HiveTableScan(table=[[default, book]], table:alias=[b])
+    HiveProject(literalTrue=[true], $f6=[CASE(IS NOT NULL($0), $0, 400)])
+      HiveTableScan(table=[[default, author]], table:alias=[a])
+
+PREHOOK: query: select b.b_title
+from book b
+where not exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: select b.b_title
+from book b
+where not exists
+          (select a_authorkey
+           from author a
+           where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+Men Without Women

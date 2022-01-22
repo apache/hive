@@ -90,6 +90,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_database\n");
   }
 
+  void create_dataconnector(const DataConnector& connector) {
+    // Your implementation goes here
+    printf("create_dataconnector\n");
+  }
+
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) {
+    // Your implementation goes here
+    printf("get_dataconnector_req\n");
+  }
+
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) {
+    // Your implementation goes here
+    printf("drop_dataconnector\n");
+  }
+
+  void get_dataconnectors(std::vector<std::string> & _return) {
+    // Your implementation goes here
+    printf("get_dataconnectors\n");
+  }
+
+  void alter_dataconnector(const std::string& name, const DataConnector& connector) {
+    // Your implementation goes here
+    printf("alter_dataconnector\n");
+  }
+
   void get_type(Type& _return, const std::string& name) {
     // Your implementation goes here
     printf("get_type\n");
@@ -193,6 +218,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_check_constraint(const AddCheckConstraintRequest& req) {
     // Your implementation goes here
     printf("add_check_constraint\n");
+  }
+
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
+    // Your implementation goes here
+    printf("translate_table_dryrun\n");
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -620,6 +650,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("update_partition_column_statistics_req\n");
   }
 
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& req) {
+    // Your implementation goes here
+    printf("update_transaction_statistics\n");
+  }
+
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
     // Your implementation goes here
     printf("get_table_column_statistics\n");
@@ -945,6 +980,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("find_next_compact\n");
   }
 
+  void find_next_compact2(OptionalCompactionInfoStruct& _return, const FindNextCompactRequest& rqst) {
+    // Your implementation goes here
+    printf("find_next_compact2\n");
+  }
+
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) {
     // Your implementation goes here
     printf("update_compactor_state\n");
@@ -970,9 +1010,24 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("mark_failed\n");
   }
 
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
+    // Your implementation goes here
+    printf("update_compaction_metrics_data\n");
+  }
+
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) {
+    // Your implementation goes here
+    printf("remove_compaction_metrics_data\n");
+  }
+
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) {
     // Your implementation goes here
     printf("set_hadoop_jobid\n");
+  }
+
+  void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst) {
+    // Your implementation goes here
+    printf("get_latest_committed_compaction_info\n");
   }
 
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
@@ -1003,6 +1058,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
     // Your implementation goes here
     printf("add_write_notification_log\n");
+  }
+
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log_in_batch\n");
   }
 
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
@@ -1293,6 +1353,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void drop_package(const DropPackageRequest& request) {
     // Your implementation goes here
     printf("drop_package\n");
+  }
+
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
+    // Your implementation goes here
+    printf("get_all_write_event_info\n");
   }
 
 };

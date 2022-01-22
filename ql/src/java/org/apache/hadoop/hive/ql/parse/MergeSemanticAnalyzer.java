@@ -424,6 +424,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     //since we take the RHS of set exactly as it was in Input, we don't need to deal with quoting/escaping column/table
     //names
     List<FieldSchema> nonPartCols = targetTable.getCols();
+    Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(targetTable);
     for(int i = 0; i < nonPartCols.size(); i++) {
       FieldSchema fs = nonPartCols.get(i);
       if(i > 0) {
@@ -441,6 +442,11 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         default:
           //do nothing
         }
+
+        if ("`default`".equalsIgnoreCase(rhsExp.trim())) {
+          rhsExp = MapUtils.getString(colNameToDefaultConstraint, name, "null");
+        }
+
         rewrittenQueryStr.append(rhsExp);
       } else {
         rewrittenQueryStr.append(getSimpleTableName(target))
@@ -611,7 +617,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     if (columnListNode != null) {
       rewrittenQueryStr.append(' ').append(getMatchedText(columnListNode));
     }
-    addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
 
     rewrittenQueryStr.append("    -- insert clause\n  SELECT ");
     if (hintStr != null) {

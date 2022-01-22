@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRexExprList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
@@ -294,33 +295,34 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     if (!allowNullValueConstantExpr && hd == null) {
       return null;
     }
-    DecimalTypeInfo type = adjustType(hd);
+    BigDecimal bd = hd != null ? hd.bigDecimalValue() : null;
+    DecimalTypeInfo type = adjustType(bd);
     return rexBuilder.makeExactLiteral(
-        hd != null ? hd.bigDecimalValue() : null,
-        TypeConverter.convert(type, rexBuilder.getTypeFactory()));
+        bd, TypeConverter.convert(type, rexBuilder.getTypeFactory()));
   }
 
   @Override
   protected TypeInfo adjustConstantType(PrimitiveTypeInfo targetType, Object constantValue) {
-    if (constantValue instanceof HiveDecimal) {
-      return adjustType((HiveDecimal) constantValue);
+    if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(targetType.getPrimitiveTypeEntry())) {
+      return adjustType((BigDecimal) constantValue);
     }
     return targetType;
   }
 
-  private DecimalTypeInfo adjustType(HiveDecimal hd) {
-    // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
-    //       precision and scale of the value by throwing away trailing zeroes. This may or may
-    //       not be desirable for the literals; however, this used to be the default behavior
-    //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
+  private DecimalTypeInfo adjustType(BigDecimal bd) {
     int prec = 1;
     int scale = 0;
-    if (hd != null) {
-      prec = hd.precision();
-      scale = hd.scale();
+    if (bd != null) {
+      prec = bd.precision();
+      scale = bd.scale();
+      if (prec < scale) {
+        // This can happen for numbers less than 0.1
+        // For 0.001234: prec=4, scale=6
+        // In this case, we'll set the type to have the same precision as the scale.
+        prec = scale;
+      }
     }
-    DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-    return typeInfo;
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
   }
 
   /**
@@ -343,9 +345,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).longValueExact();
         } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-          return Double.valueOf(constantToInterpret.toString());
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-          return Float.valueOf(constantToInterpret.toString());
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).byteValueExact();
         } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
@@ -367,17 +369,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       }
     }
 
-    // Comparision of decimal and float/double happens in float/double.
     if (constantToInterpret instanceof BigDecimal) {
-      BigDecimal bigDecimal = (BigDecimal) constantToInterpret;
-
-      PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
-      if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.doubleValue();
-      } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.floatValue();
-      }
-      return bigDecimal;
+      return constantToInterpret;
     }
 
     String constTypeInfoName = sourceType.getTypeName();
@@ -939,7 +932,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     // subqueryToRelNode might be null if subquery expression anywhere other than
     //  as expected in filter (where/having). We should throw an appropriate error
     // message
-    Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
+    Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode = ctx.getSubqueryToRelNode();
     if (subqueryToRelNode == null) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
           " Currently SubQuery expressions are only allowed as " +
@@ -947,11 +940,14 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
 
     ASTNode subqueryOp = (ASTNode) expr.getChild(0);
-    RelNode subqueryRel = subqueryToRelNode.get(expr);
+    RelNode subqueryRel = subqueryToRelNode.get(expr).getSubQueryRelNode();
     // For now because subquery is only supported in filter
     // we will create subquery expression of boolean type
     switch (subqueryType) {
       case EXISTS: {
+        if (subqueryToRelNode.get(expr).hasFullAggregate()) {
+          return createConstantExpr(TypeInfoFactory.booleanTypeInfo, true);
+        }
         return RexSubQuery.exists(subqueryRel);
       }
       case IN: {

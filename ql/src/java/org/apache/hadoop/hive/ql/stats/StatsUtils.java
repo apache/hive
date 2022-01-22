@@ -845,27 +845,32 @@ public class StatsUtils {
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
+      cs.setBitVectors(csd.getLongStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
+      cs.setBitVectors(csd.getLongStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
+      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
+      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
       cs.setCountDistint(csd.getStringStats().getNumDVs());
       cs.setNumNulls(csd.getStringStats().getNumNulls());
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
+      cs.setBitVectors(csd.getStringStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
         cs.setCountDistint(2);
@@ -906,6 +911,7 @@ public class StatsUtils {
           cs.setRange(minVal, maxVal);
         }
       }
+      cs.setBitVectors(csd.getDecimalStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
       cs.setNumNulls(csd.getDateStats().getNumNulls());
@@ -914,6 +920,7 @@ public class StatsUtils {
       Long highVal = (csd.getDateStats().getHighValue() != null) ? csd.getDateStats().getHighValue()
           .getDaysSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
+      cs.setBitVectors(csd.getDateStats().getBitVectors());
     } else {
       // Columns statistics for complex datatypes are not supported yet
       return null;
@@ -1913,17 +1920,6 @@ public class StatsUtils {
       }
     }
     return result;
-  }
-
-  public static long getAvailableMemory(Configuration conf) {
-    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
-    if (memory <= 0) {
-      memory = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-      if (memory <= 0) {
-        memory = 1024;
-      }
-    }
-    return memory;
   }
 
   /**

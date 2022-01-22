@@ -102,7 +102,7 @@ public class TestFirstInFirstOutComparator {
     assertEquals(r3, queue.peek());
     assertNull(queue.offer(r4, 0));
     assertEquals(r4, queue.peek());
-    // this offer will be accpeted and r1 evicted
+    // this offer will be accepted and r1 evicted
     assertEquals(r1, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r4, queue.take());

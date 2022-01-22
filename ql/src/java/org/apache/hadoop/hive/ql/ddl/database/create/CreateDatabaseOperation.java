@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.ddl.database.create;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.database.desc.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,14 +48,22 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         desc.getDatabaseProperties());
     database.setOwnerName(SessionState.getUserFromAuthenticator());
     database.setOwnerType(PrincipalType.USER);
-    if (desc.getManagedLocationUri() != null) {
-      database.setManagedLocationUri(desc.getManagedLocationUri());
-    }
-
+    database.setType(desc.getDatabaseType());
     try {
-      makeLocationQualified(database);
-      if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
-        throw new HiveException("Managed and external locations for database cannot be the same");
+      if (desc.getDatabaseType() == DatabaseType.NATIVE) {
+        if (desc.getManagedLocationUri() != null) {
+          database.setManagedLocationUri(desc.getManagedLocationUri());
+        }
+        makeLocationQualified(database);
+        if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
+          throw new HiveException("Managed and external locations for database cannot be the same");
+        }
+      } else if (desc.getDatabaseType() == DatabaseType.REMOTE) {
+        makeLocationQualified(database);
+        database.setConnector_name(desc.getConnectorName());
+        database.setRemote_dbname(desc.getRemoteDbName());
+      } else { // should never be here
+        throw new HiveException("Unsupported database type " + database.getType() + " for " + database.getName());
       }
       context.getDb().createDatabase(database, desc.getIfNotExists());
     } catch (AlreadyExistsException ex) {
@@ -83,9 +93,16 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
     }
 
     if (database.isSetManagedLocationUri()) {
-      // TODO should we enforce a location check here?
       database.setManagedLocationUri(Utilities.getQualifiedPath(context.getConf(),
           new Path(database.getManagedLocationUri())));
+    } else {
+      // ManagedLocation is not set we utilize WAREHOUSE together with database name 
+      String rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
+      Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      String qualifiedPath = Utilities.getQualifiedPath(context.getConf(), path);
+      if (!qualifiedPath.equals(database.getLocationUri())) {
+        database.setManagedLocationUri(qualifiedPath);
+      }
     }
   }
 }

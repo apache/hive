@@ -1,0 +1,825 @@
+PREHOOK: query: drop table employee_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table employee_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table employee_n1 (department_id int, gender varchar(10), education_level int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@employee_n1
+POSTHOOK: query: create table employee_n1 (department_id int, gender varchar(10), education_level int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@employee_n1
+PREHOOK: query: insert into employee_n1 values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@employee_n1
+POSTHOOK: query: insert into employee_n1 values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@employee_n1
+POSTHOOK: Lineage: employee_n1.department_id SCRIPT []
+POSTHOOK: Lineage: employee_n1.education_level SCRIPT []
+POSTHOOK: Lineage: employee_n1.gender SCRIPT []
+PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: employee_n1
+                  Statistics: Num rows: 9 Data size: 837 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: department_id (type: int), gender (type: varchar(10)), education_level (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 9 Data size: 837 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: int), _col1 (type: varchar(10)), _col2 (type: int), 0L (type: bigint)
+                      grouping sets: 3, 5, 6
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 13 Data size: 1313 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: bigint)
+                        null sort order: zzzz
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: bigint)
+                        Statistics: Num rows: 13 Data size: 1313 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: varchar(10)), KEY._col2 (type: int), KEY._col3 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 13 Data size: 1313 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: CASE WHEN (((_col3 = 3L) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 5L) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 6L) and _col2 is not null)) THEN (1) ELSE (null) END (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 13 Data size: 1313 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count(_col0), count(_col1), count(_col2)
+                    minReductionHashAggr: 0.9230769
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+4	2	3
+PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+4	2	3	3
+PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), 
+count(distinct education_level, department_id) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), 
+count(distinct education_level, department_id) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+4	2	3	7
+PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
+count(distinct education_level, department_id), count(distinct department_id, education_level) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
+count(distinct education_level, department_id), count(distinct department_id, education_level) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+2	4	2	3	7	7
+PREHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: employee_n1
+                  Statistics: Num rows: 9 Data size: 837 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: gender (type: varchar(10)), department_id (type: int), education_level (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 9 Data size: 837 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: varchar(10)), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                      grouping sets: 0, 3, 4, 5, 6
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 22 Data size: 2222 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(10)), _col1 (type: int), _col2 (type: int), _col3 (type: bigint)
+                        null sort order: zzzz
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: varchar(10)), _col1 (type: int), _col2 (type: int), _col3 (type: bigint)
+                        Statistics: Num rows: 22 Data size: 2222 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: varchar(10)), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 22 Data size: 2222 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: CASE WHEN (((_col3 = 3L) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 5L) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 6L) and _col2 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN ((_col3 = 4L)) THEN (1) ELSE (null) END (type: int), CASE WHEN ((_col3 = 0L)) THEN (1) ELSE (null) END (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 22 Data size: 2222 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count(_col0), count(_col1), count(_col2), count(_col3), count(_col4)
+                    minReductionHashAggr: 0.95454544
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2), count(VALUE._col3), count(VALUE._col4)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: bigint), _col1 (type: bigint), _col0 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+2	4	2	3	7	7	7
+PREHOOK: query: select count(case i when 3 then 1 else null end) as c0, count(case i when 5 then 1 else null end) as c1, 
+count(case i when 6 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
+education_level from employee_n1 group by department_id, gender, education_level grouping sets 
+(department_id, gender, education_level))subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(case i when 3 then 1 else null end) as c0, count(case i when 5 then 1 else null end) as c1, 
+count(case i when 6 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
+education_level from employee_n1 group by department_id, gender, education_level grouping sets 
+(department_id, gender, education_level))subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+4	2	3
+PREHOOK: query: select grouping__id as i, department_id, gender, education_level from employee_n1 
+group by department_id, gender, education_level grouping sets 
+(department_id, gender, education_level, (education_level, department_id))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select grouping__id as i, department_id, gender, education_level from employee_n1 
+group by department_id, gender, education_level grouping sets 
+(department_id, gender, education_level, (education_level, department_id))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+#### A masked pattern was here ####
+2	1	NULL	1
+2	2	NULL	1
+2	2	NULL	3
+2	3	NULL	2
+2	4	NULL	1
+3	4	NULL	NULL
+5	NULL	M	NULL
+6	NULL	NULL	1
+6	NULL	NULL	2
+6	NULL	NULL	3
+2	1	NULL	2
+2	1	NULL	3
+3	1	NULL	NULL
+3	2	NULL	NULL
+3	3	NULL	NULL
+5	NULL	F	NULL
+PREHOOK: query: create table test_count (c0 string, c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string,
+                         c8 string, c9 string, c10 string, c11 string, c12 string, c13 string, c14 string, c15 string,
+                         c16 string, c17 string, c18 string, c19 string, c20 string, c21 string, c22 string, c23 string,
+                         c24 string, c25 string, c26 string, c27 string, c28 string, c29 string, c30 string, c31 string,
+                         c32 string, c33 string, c34 string, c35 string, c36 string, c37 string, c38 string, c39 string,
+                         c40 string, c41 string, c42 string, c43 string, c44 string, c45 string, c46 string, c47 string,
+                         c48 string, c49 string, c50 string, c51 string, c52 string, c53 string, c54 string, c55 string,
+                         c56 string, c57 string, c58 string, c59 string, c60 string, c61 string, c62 string, c63 string,
+                         c64 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_count
+POSTHOOK: query: create table test_count (c0 string, c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string,
+                         c8 string, c9 string, c10 string, c11 string, c12 string, c13 string, c14 string, c15 string,
+                         c16 string, c17 string, c18 string, c19 string, c20 string, c21 string, c22 string, c23 string,
+                         c24 string, c25 string, c26 string, c27 string, c28 string, c29 string, c30 string, c31 string,
+                         c32 string, c33 string, c34 string, c35 string, c36 string, c37 string, c38 string, c39 string,
+                         c40 string, c41 string, c42 string, c43 string, c44 string, c45 string, c46 string, c47 string,
+                         c48 string, c49 string, c50 string, c51 string, c52 string, c53 string, c54 string, c55 string,
+                         c56 string, c57 string, c58 string, c59 string, c60 string, c61 string, c62 string, c63 string,
+                         c64 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_count
+PREHOOK: query: INSERT INTO test_count values ('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15',
+              'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24', 'c25', 'c26', 'c27', 'c28', 'c29', 'c30', 'c31', 'c32',
+              'c33', 'c34', 'c35', 'c36', 'c37', 'c38', 'c39', 'c40', 'c41', 'c42', 'c43', 'c44', 'c45', 'c46', 'c47', 'c48', 'c49',
+              'c50', 'c51', 'c52', 'c53', 'c54', 'c55', 'c56', 'c57', 'c58', 'c59', 'c60', 'c61', 'c62', 'c63', 'c64')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_count
+POSTHOOK: query: INSERT INTO test_count values ('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15',
+              'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24', 'c25', 'c26', 'c27', 'c28', 'c29', 'c30', 'c31', 'c32',
+              'c33', 'c34', 'c35', 'c36', 'c37', 'c38', 'c39', 'c40', 'c41', 'c42', 'c43', 'c44', 'c45', 'c46', 'c47', 'c48', 'c49',
+              'c50', 'c51', 'c52', 'c53', 'c54', 'c55', 'c56', 'c57', 'c58', 'c59', 'c60', 'c61', 'c62', 'c63', 'c64')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_count
+POSTHOOK: Lineage: test_count.c0 SCRIPT []
+POSTHOOK: Lineage: test_count.c1 SCRIPT []
+POSTHOOK: Lineage: test_count.c10 SCRIPT []
+POSTHOOK: Lineage: test_count.c11 SCRIPT []
+POSTHOOK: Lineage: test_count.c12 SCRIPT []
+POSTHOOK: Lineage: test_count.c13 SCRIPT []
+POSTHOOK: Lineage: test_count.c14 SCRIPT []
+POSTHOOK: Lineage: test_count.c15 SCRIPT []
+POSTHOOK: Lineage: test_count.c16 SCRIPT []
+POSTHOOK: Lineage: test_count.c17 SCRIPT []
+POSTHOOK: Lineage: test_count.c18 SCRIPT []
+POSTHOOK: Lineage: test_count.c19 SCRIPT []
+POSTHOOK: Lineage: test_count.c2 SCRIPT []
+POSTHOOK: Lineage: test_count.c20 SCRIPT []
+POSTHOOK: Lineage: test_count.c21 SCRIPT []
+POSTHOOK: Lineage: test_count.c22 SCRIPT []
+POSTHOOK: Lineage: test_count.c23 SCRIPT []
+POSTHOOK: Lineage: test_count.c24 SCRIPT []
+POSTHOOK: Lineage: test_count.c25 SCRIPT []
+POSTHOOK: Lineage: test_count.c26 SCRIPT []
+POSTHOOK: Lineage: test_count.c27 SCRIPT []
+POSTHOOK: Lineage: test_count.c28 SCRIPT []
+POSTHOOK: Lineage: test_count.c29 SCRIPT []
+POSTHOOK: Lineage: test_count.c3 SCRIPT []
+POSTHOOK: Lineage: test_count.c30 SCRIPT []
+POSTHOOK: Lineage: test_count.c31 SCRIPT []
+POSTHOOK: Lineage: test_count.c32 SCRIPT []
+POSTHOOK: Lineage: test_count.c33 SCRIPT []
+POSTHOOK: Lineage: test_count.c34 SCRIPT []
+POSTHOOK: Lineage: test_count.c35 SCRIPT []
+POSTHOOK: Lineage: test_count.c36 SCRIPT []
+POSTHOOK: Lineage: test_count.c37 SCRIPT []
+POSTHOOK: Lineage: test_count.c38 SCRIPT []
+POSTHOOK: Lineage: test_count.c39 SCRIPT []
+POSTHOOK: Lineage: test_count.c4 SCRIPT []
+POSTHOOK: Lineage: test_count.c40 SCRIPT []
+POSTHOOK: Lineage: test_count.c41 SCRIPT []
+POSTHOOK: Lineage: test_count.c42 SCRIPT []
+POSTHOOK: Lineage: test_count.c43 SCRIPT []
+POSTHOOK: Lineage: test_count.c44 SCRIPT []
+POSTHOOK: Lineage: test_count.c45 SCRIPT []
+POSTHOOK: Lineage: test_count.c46 SCRIPT []
+POSTHOOK: Lineage: test_count.c47 SCRIPT []
+POSTHOOK: Lineage: test_count.c48 SCRIPT []
+POSTHOOK: Lineage: test_count.c49 SCRIPT []
+POSTHOOK: Lineage: test_count.c5 SCRIPT []
+POSTHOOK: Lineage: test_count.c50 SCRIPT []
+POSTHOOK: Lineage: test_count.c51 SCRIPT []
+POSTHOOK: Lineage: test_count.c52 SCRIPT []
+POSTHOOK: Lineage: test_count.c53 SCRIPT []
+POSTHOOK: Lineage: test_count.c54 SCRIPT []
+POSTHOOK: Lineage: test_count.c55 SCRIPT []
+POSTHOOK: Lineage: test_count.c56 SCRIPT []
+POSTHOOK: Lineage: test_count.c57 SCRIPT []
+POSTHOOK: Lineage: test_count.c58 SCRIPT []
+POSTHOOK: Lineage: test_count.c59 SCRIPT []
+POSTHOOK: Lineage: test_count.c6 SCRIPT []
+POSTHOOK: Lineage: test_count.c60 SCRIPT []
+POSTHOOK: Lineage: test_count.c61 SCRIPT []
+POSTHOOK: Lineage: test_count.c62 SCRIPT []
+POSTHOOK: Lineage: test_count.c63 SCRIPT []
+POSTHOOK: Lineage: test_count.c64 SCRIPT []
+POSTHOOK: Lineage: test_count.c7 SCRIPT []
+POSTHOOK: Lineage: test_count.c8 SCRIPT []
+POSTHOOK: Lineage: test_count.c9 SCRIPT []
+PREHOOK: query: explain extended select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32) from test_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32) from test_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(`$f0`) AS `$f0`, COUNT(`$f1`) AS `$f1`, COUNT(`$f2`) AS `$f2`, COUNT(`$f3`) AS `$f3`, COUNT(`$f4`) AS `$f4`, COUNT(`$f5`) AS `$f5`, COUNT(`$f6`) AS `$f6`, COUNT(`$f7`) AS `$f7`, COUNT(`$f8`) AS `$f8`, COUNT(`$f9`) AS `$f9`, COUNT(`$f10`) AS `$f10`, COUNT(`$f11`) AS `$f11`, COUNT(`$f12`) AS `$f12`, COUNT(`$f13`) AS `$f13`, COUNT(`$f14`) AS `$f14`, COUNT(`$f15`) AS `$f15`, COUNT(`$f16`) AS `$f16`, COUNT(`$f17`) AS `$f17`, COUNT(`$f18`) AS `$f18`, COUNT(`$f19`) AS `$f19`, COUNT(`$f20`) AS `$f20`, COUNT(`$f21`) AS `$f21`, COUNT(`$f22`) AS `$f22`, COUNT(`$f23`) AS `$f23`, COUNT(`$f24`) AS `$f24`, COUNT(`$f25`) AS `$f25`, COUNT(`$f26`) AS `$f26`, COUNT(`$f27`) AS `$f27`, COUNT(`$f28`) AS `$f28`, COUNT(`$f29`) AS `$f29`, COUNT(`$f30`) AS `$f30`, COUNT(`$f31`) AS `$f31`, COUNT(`$f32`) AS `$f32`
+FROM (SELECT CASE WHEN GROUPING__ID() = 4294967295 AND `c0` IS NOT NULL THEN 1 ELSE NULL END AS `$f0`, CASE WHEN GROUPING__ID() = 6442450943 AND `c1` IS NOT NULL THEN 1 ELSE NULL END AS `$f1`, CASE WHEN GROUPING__ID() = 7516192767 AND `c2` IS NOT NULL THEN 1 ELSE NULL END AS `$f2`, CASE WHEN GROUPING__ID() = 8053063679 AND `c3` IS NOT NULL THEN 1 ELSE NULL END AS `$f3`, CASE WHEN GROUPING__ID() = 8321499135 AND `c4` IS NOT NULL THEN 1 ELSE NULL END AS `$f4`, CASE WHEN GROUPING__ID() = 8455716863 AND `c5` IS NOT NULL THEN 1 ELSE NULL END AS `$f5`, CASE WHEN GROUPING__ID() = 8522825727 AND `c6` IS NOT NULL THEN 1 ELSE NULL END AS `$f6`, CASE WHEN GROUPING__ID() = 8556380159 AND `c7` IS NOT NULL THEN 1 ELSE NULL END AS `$f7`, CASE WHEN GROUPING__ID() = 8573157375 AND `c8` IS NOT NULL THEN 1 ELSE NULL END AS `$f8`, CASE WHEN GROUPING__ID() = 8581545983 AND `c9` IS NOT NULL THEN 1 ELSE NULL END AS `$f9`, CASE WHEN GROUPING__ID() = 8585740287 AND `c10` IS NOT NULL THEN 1 ELSE NULL END AS `$f10`, CASE WHEN GROUPING__ID() = 8587837439 AND `c11` IS NOT NULL THEN 1 ELSE NULL END AS `$f11`, CASE WHEN GROUPING__ID() = 8588886015 AND `c12` IS NOT NULL THEN 1 ELSE NULL END AS `$f12`, CASE WHEN GROUPING__ID() = 8589410303 AND `c13` IS NOT NULL THEN 1 ELSE NULL END AS `$f13`, CASE WHEN GROUPING__ID() = 8589672447 AND `c14` IS NOT NULL THEN 1 ELSE NULL END AS `$f14`, CASE WHEN GROUPING__ID() = 8589803519 AND `c15` IS NOT NULL THEN 1 ELSE NULL END AS `$f15`, CASE WHEN GROUPING__ID() = 8589869055 AND `c16` IS NOT NULL THEN 1 ELSE NULL END AS `$f16`, CASE WHEN GROUPING__ID() = 8589901823 AND `c17` IS NOT NULL THEN 1 ELSE NULL END AS `$f17`, CASE WHEN GROUPING__ID() = 8589918207 AND `c18` IS NOT NULL THEN 1 ELSE NULL END AS `$f18`, CASE WHEN GROUPING__ID() = 8589926399 AND `c19` IS NOT NULL THEN 1 ELSE NULL END AS `$f19`, CASE WHEN GROUPING__ID() = 8589930495 AND `c20` IS NOT NULL THEN 1 ELSE NULL END AS `$f20`, CASE WHEN GROUPING__ID() = 8589932543 AND `c21` IS NOT NULL THEN 1 ELSE NULL END AS `$f21`, CASE WHEN GROUPING__ID() = 8589933567 AND `c22` IS NOT NULL THEN 1 ELSE NULL END AS `$f22`, CASE WHEN GROUPING__ID() = 8589934079 AND `c23` IS NOT NULL THEN 1 ELSE NULL END AS `$f23`, CASE WHEN GROUPING__ID() = 8589934335 AND `c24` IS NOT NULL THEN 1 ELSE NULL END AS `$f24`, CASE WHEN GROUPING__ID() = 8589934463 AND `c25` IS NOT NULL THEN 1 ELSE NULL END AS `$f25`, CASE WHEN GROUPING__ID() = 8589934527 AND `c26` IS NOT NULL THEN 1 ELSE NULL END AS `$f26`, CASE WHEN GROUPING__ID() = 8589934559 AND `c27` IS NOT NULL THEN 1 ELSE NULL END AS `$f27`, CASE WHEN GROUPING__ID() = 8589934575 AND `c28` IS NOT NULL THEN 1 ELSE NULL END AS `$f28`, CASE WHEN GROUPING__ID() = 8589934583 AND `c29` IS NOT NULL THEN 1 ELSE NULL END AS `$f29`, CASE WHEN GROUPING__ID() = 8589934587 AND `c30` IS NOT NULL THEN 1 ELSE NULL END AS `$f30`, CASE WHEN GROUPING__ID() = 8589934589 AND `c31` IS NOT NULL THEN 1 ELSE NULL END AS `$f31`, CASE WHEN GROUPING__ID() = 8589934590 AND `c32` IS NOT NULL THEN 1 ELSE NULL END AS `$f32`
+FROM `default`.`test_count`
+GROUP BY GROUPING SETS(`c0`, `c1`, `c2`, `c3`, `c4`, `c5`, `c6`, `c7`, `c8`, `c9`, `c10`, `c11`, `c12`, `c13`, `c14`, `c15`, `c16`, `c17`, `c18`, `c19`, `c20`, `c21`, `c22`, `c23`, `c24`, `c25`, `c26`, `c27`, `c28`, `c29`, `c30`, `c31`, `c32`)) AS `t1`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_count
+                  Statistics: Num rows: 1 Data size: 2861 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: c0 (type: string), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: string), c6 (type: string), c7 (type: string), c8 (type: string), c9 (type: string), c10 (type: string), c11 (type: string), c12 (type: string), c13 (type: string), c14 (type: string), c15 (type: string), c16 (type: string), c17 (type: string), c18 (type: string), c19 (type: string), c20 (type: string), c21 (type: string), c22 (type: string), c23 (type: string), c24 (type: string), c25 (type: string), c26 (type: string), c27 (type: string), c28 (type: string), c29 (type: string), c30 (type: string), c31 (type: string), c32 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
+                    Statistics: Num rows: 1 Data size: 2861 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), _col24 (type: string), _col25 (type: string), _col26 (type: string), _col27 (type: string), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
+                      Statistics: Num rows: 1 Data size: 2861 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), _col24 (type: string), _col25 (type: string), _col26 (type: string), _col27 (type: string), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: string)
+                        null sort order: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+                        numBuckets: -1
+                        sort order: +++++++++++++++++++++++++++++++++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), _col24 (type: string), _col25 (type: string), _col26 (type: string), _col27 (type: string), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: string)
+                        Statistics: Num rows: 1 Data size: 2861 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: true
+            Execution mode: llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: test_count
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,c54,c55,c56,c57,c58,c59,c60,c61,c62,c63,c64
+                    columns.types string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string
+#### A masked pattern was here ####
+                    name default.test_count
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,c54,c55,c56,c57,c58,c59,c60,c61,c62,c63,c64
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string
+#### A masked pattern was here ####
+                      name default.test_count
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.test_count
+                  name: default.test_count
+            Truncated Path -> Alias:
+              /test_count [test_count]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: string), KEY._col5 (type: string), KEY._col6 (type: string), KEY._col7 (type: string), KEY._col8 (type: string), KEY._col9 (type: string), KEY._col10 (type: string), KEY._col11 (type: string), KEY._col12 (type: string), KEY._col13 (type: string), KEY._col14 (type: string), KEY._col15 (type: string), KEY._col16 (type: string), KEY._col17 (type: string), KEY._col18 (type: string), KEY._col19 (type: string), KEY._col20 (type: string), KEY._col21 (type: string), KEY._col22 (type: string), KEY._col23 (type: string), KEY._col24 (type: string), KEY._col25 (type: string), KEY._col26 (type: string), KEY._col27 (type: string), KEY._col28 (type: string), KEY._col29 (type: string), KEY._col30 (type: string), KEY._col31 (type: string), KEY._col32 (type: string), 0L (type: bigint)
+                grouping sets: 4294967295, 6442450943, 7516192767, 8053063679, 8321499135, 8455716863, 8522825727, 8556380159, 8573157375, 8581545983, 8585740287, 8587837439, 8588886015, 8589410303, 8589672447, 8589803519, 8589869055, 8589901823, 8589918207, 8589926399, 8589930495, 8589932543, 8589933567, 8589934079, 8589934335, 8589934463, 8589934527, 8589934559, 8589934575, 8589934583, 8589934587, 8589934589, 8589934590
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33
+                Statistics: Num rows: 33 Data size: 94677 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  bucketingVersion: 2
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), _col24 (type: string), _col25 (type: string), _col26 (type: string), _col27 (type: string), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: string), _col33 (type: bigint)
+                  null sort order: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+                  numBuckets: -1
+                  sort order: ++++++++++++++++++++++++++++++++++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), _col24 (type: string), _col25 (type: string), _col26 (type: string), _col27 (type: string), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: string), _col33 (type: bigint)
+                  Statistics: Num rows: 33 Data size: 94677 Basic stats: COMPLETE Column stats: COMPLETE
+                  tag: -1
+                  auto parallelism: true
+        Reducer 3 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: string), KEY._col5 (type: string), KEY._col6 (type: string), KEY._col7 (type: string), KEY._col8 (type: string), KEY._col9 (type: string), KEY._col10 (type: string), KEY._col11 (type: string), KEY._col12 (type: string), KEY._col13 (type: string), KEY._col14 (type: string), KEY._col15 (type: string), KEY._col16 (type: string), KEY._col17 (type: string), KEY._col18 (type: string), KEY._col19 (type: string), KEY._col20 (type: string), KEY._col21 (type: string), KEY._col22 (type: string), KEY._col23 (type: string), KEY._col24 (type: string), KEY._col25 (type: string), KEY._col26 (type: string), KEY._col27 (type: string), KEY._col28 (type: string), KEY._col29 (type: string), KEY._col30 (type: string), KEY._col31 (type: string), KEY._col32 (type: string), KEY._col33 (type: bigint)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33
+                Statistics: Num rows: 33 Data size: 94677 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: CASE WHEN (((_col33 = 4294967295L) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 6442450943L) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 7516192767L) and _col2 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8053063679L) and _col3 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8321499135L) and _col4 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8455716863L) and _col5 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8522825727L) and _col6 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8556380159L) and _col7 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8573157375L) and _col8 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8581545983L) and _col9 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8585740287L) and _col10 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8587837439L) and _col11 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8588886015L) and _col12 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589410303L) and _col13 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589672447L) and _col14 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589803519L) and _col15 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589869055L) and _col16 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589901823L) and _col17 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589918207L) and _col18 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589926399L) and _col19 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589930495L) and _col20 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589932543L) and _col21 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589933567L) and _col22 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934079L) and _col23 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934335L) and _col24 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934463L) and _col25 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934527L) and _col26 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934559L) and _col27 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934575L) and _col28 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934583L) and _col29 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934587L) and _col30 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934589L) and _col31 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col33 = 8589934590L) and _col32 is not null)) THEN (1) ELSE (null) END (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
+                  Statistics: Num rows: 33 Data size: 94677 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count(_col0), count(_col1), count(_col2), count(_col3), count(_col4), count(_col5), count(_col6), count(_col7), count(_col8), count(_col9), count(_col10), count(_col11), count(_col12), count(_col13), count(_col14), count(_col15), count(_col16), count(_col17), count(_col18), count(_col19), count(_col20), count(_col21), count(_col22), count(_col23), count(_col24), count(_col25), count(_col26), count(_col27), count(_col28), count(_col29), count(_col30), count(_col31), count(_col32)
+                    minReductionHashAggr: 0.969697
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
+                    Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      null sort order: 
+                      numBuckets: -1
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: bigint), _col17 (type: bigint), _col18 (type: bigint), _col19 (type: bigint), _col20 (type: bigint), _col21 (type: bigint), _col22 (type: bigint), _col23 (type: bigint), _col24 (type: bigint), _col25 (type: bigint), _col26 (type: bigint), _col27 (type: bigint), _col28 (type: bigint), _col29 (type: bigint), _col30 (type: bigint), _col31 (type: bigint), _col32 (type: bigint)
+                      auto parallelism: false
+        Reducer 4 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2), count(VALUE._col3), count(VALUE._col4), count(VALUE._col5), count(VALUE._col6), count(VALUE._col7), count(VALUE._col8), count(VALUE._col9), count(VALUE._col10), count(VALUE._col11), count(VALUE._col12), count(VALUE._col13), count(VALUE._col14), count(VALUE._col15), count(VALUE._col16), count(VALUE._col17), count(VALUE._col18), count(VALUE._col19), count(VALUE._col20), count(VALUE._col21), count(VALUE._col22), count(VALUE._col23), count(VALUE._col24), count(VALUE._col25), count(VALUE._col26), count(VALUE._col27), count(VALUE._col28), count(VALUE._col29), count(VALUE._col30), count(VALUE._col31), count(VALUE._col32)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
+                Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21,_col22,_col23,_col24,_col25,_col26,_col27,_col28,_col29,_col30,_col31,_col32
+                        columns.types bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32) from test_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32) from test_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+PREHOOK: query: explain extended select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63), count(distinct c64) from test_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63), count(distinct c64) from test_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(DISTINCT `c0`) AS `_o__c0`, COUNT(DISTINCT `c1`) AS `_o__c1`, COUNT(DISTINCT `c2`) AS `_o__c2`, COUNT(DISTINCT `c3`) AS `_o__c3`, COUNT(DISTINCT `c4`) AS `_o__c4`, COUNT(DISTINCT `c5`) AS `_o__c5`, COUNT(DISTINCT `c6`) AS `_o__c6`, COUNT(DISTINCT `c7`) AS `_o__c7`, COUNT(DISTINCT `c8`) AS `_o__c8`, COUNT(DISTINCT `c9`) AS `_o__c9`, COUNT(DISTINCT `c10`) AS `_o__c10`, COUNT(DISTINCT `c11`) AS `_o__c11`, COUNT(DISTINCT `c12`) AS `_o__c12`, COUNT(DISTINCT `c13`) AS `_o__c13`, COUNT(DISTINCT `c14`) AS `_o__c14`, COUNT(DISTINCT `c15`) AS `_o__c15`, COUNT(DISTINCT `c16`) AS `_o__c16`, COUNT(DISTINCT `c17`) AS `_o__c17`, COUNT(DISTINCT `c18`) AS `_o__c18`, COUNT(DISTINCT `c19`) AS `_o__c19`, COUNT(DISTINCT `c20`) AS `_o__c20`, COUNT(DISTINCT `c21`) AS `_o__c21`, COUNT(DISTINCT `c22`) AS `_o__c22`, COUNT(DISTINCT `c23`) AS `_o__c23`, COUNT(DISTINCT `c24`) AS `_o__c24`, COUNT(DISTINCT `c25`) AS `_o__c25`, COUNT(DISTINCT `c26`) AS `_o__c26`, COUNT(DISTINCT `c27`) AS `_o__c27`, COUNT(DISTINCT `c28`) AS `_o__c28`, COUNT(DISTINCT `c29`) AS `_o__c29`, COUNT(DISTINCT `c30`) AS `_o__c30`, COUNT(DISTINCT `c31`) AS `_o__c31`, COUNT(DISTINCT `c32`) AS `_o__c32`, COUNT(DISTINCT `c33`) AS `_o__c33`, COUNT(DISTINCT `c34`) AS `_o__c34`, COUNT(DISTINCT `c35`) AS `_o__c35`, COUNT(DISTINCT `c36`) AS `_o__c36`, COUNT(DISTINCT `c37`) AS `_o__c37`, COUNT(DISTINCT `c38`) AS `_o__c38`, COUNT(DISTINCT `c39`) AS `_o__c39`, COUNT(DISTINCT `c40`) AS `_o__c40`, COUNT(DISTINCT `c41`) AS `_o__c41`, COUNT(DISTINCT `c42`) AS `_o__c42`, COUNT(DISTINCT `c43`) AS `_o__c43`, COUNT(DISTINCT `c44`) AS `_o__c44`, COUNT(DISTINCT `c45`) AS `_o__c45`, COUNT(DISTINCT `c46`) AS `_o__c46`, COUNT(DISTINCT `c47`) AS `_o__c47`, COUNT(DISTINCT `c48`) AS `_o__c48`, COUNT(DISTINCT `c49`) AS `_o__c49`, COUNT(DISTINCT `c50`) AS `_o__c50`, COUNT(DISTINCT `c51`) AS `_o__c51`, COUNT(DISTINCT `c52`) AS `_o__c52`, COUNT(DISTINCT `c53`) AS `_o__c53`, COUNT(DISTINCT `c54`) AS `_o__c54`, COUNT(DISTINCT `c55`) AS `_o__c55`, COUNT(DISTINCT `c56`) AS `_o__c56`, COUNT(DISTINCT `c57`) AS `_o__c57`, COUNT(DISTINCT `c58`) AS `_o__c58`, COUNT(DISTINCT `c59`) AS `_o__c59`, COUNT(DISTINCT `c62`) AS `_o__c60`, COUNT(DISTINCT `c61`) AS `_o__c61`, COUNT(DISTINCT `c62`) AS `_o__c62`, COUNT(DISTINCT `c63`) AS `_o__c63`, COUNT(DISTINCT `c64`) AS `_o__c64`
+FROM `default`.`test_count`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_count
+                  Statistics: Num rows: 1 Data size: 5558 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: c0 (type: string), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: string), c6 (type: string), c7 (type: string), c8 (type: string), c9 (type: string), c10 (type: string), c11 (type: string), c12 (type: string), c13 (type: string), c14 (type: string), c15 (type: string), c16 (type: string), c17 (type: string), c18 (type: string), c19 (type: string), c20 (type: string), c21 (type: string), c22 (type: string), c23 (type: string), c24 (type: string), c25 (type: string), c26 (type: string), c27 (type: string), c28 (type: string), c29 (type: string), c30 (type: string), c31 (type: string), c32 (type: string), c33 (type: string), c34 (type: string), c35 (type: string), c36 (type: string), c37 (type: string), c38 (type: string), c39 (type: string), c40 (type: string), c41 (type: string), c42 (type: string), c43 (type: string), c44 (type: string), c45 (type: string), c46 (type: string), c47 (type: string), c48 (type: string), c49 (type: string), c50 (type: string), c51 (type: string), c52 (type: string), c53 (type: string), c54 (type: string), c55 (type: string), c56 (type: string), c57 (type: string), c58 (type: string), c59 (type: string), c61 (type: string), c62 (type: string), c63 (type: string), c64 (type: string)
+                    outputColumnNames: c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37, c38, c39, c40, c41, c42, c43, c44, c45, c46, c47, c48, c49, c50, c51, c52, c53, c54, c55, c56, c57, c58, c59, c61, c62, c63, c64
+                    Statistics: Num rows: 1 Data size: 5558 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT c0), count(DISTINCT c1), count(DISTINCT c2), count(DISTINCT c3), count(DISTINCT c4), count(DISTINCT c5), count(DISTINCT c6), count(DISTINCT c7), count(DISTINCT c8), count(DISTINCT c9), count(DISTINCT c10), count(DISTINCT c11), count(DISTINCT c12), count(DISTINCT c13), count(DISTINCT c14), count(DISTINCT c15), count(DISTINCT c16), count(DISTINCT c17), count(DISTINCT c18), count(DISTINCT c19), count(DISTINCT c20), count(DISTINCT c21), count(DISTINCT c22), count(DISTINCT c23), count(DISTINCT c24), count(DISTINCT c25), count(DISTINCT c26), count(DISTINCT c27), count(DISTINCT c28), count(DISTINCT c29), count(DISTINCT c30), count(DISTINCT c31), count(DISTINCT c32), count(DISTINCT c33), count(DISTINCT c34), count(DISTINCT c35), count(DISTINCT c36), count(DISTINCT c37), count(DISTINCT c38), count(DISTINCT c39), count(DISTINCT c40), count(DISTINCT c41), count(DISTINCT c42), count(DISTINCT c43), count(DISTINCT c44), count(DISTINCT c45), count(DISTINCT c46), count(DISTINCT c47), count(DISTINCT c48), count(DISTINCT c49), count(DISTINCT c50), count(DISTINCT c51), count(DISTINCT c52), count(DISTINCT c53), count(DISTINCT c54), count(DISTINCT c55), count(DISTINCT c56), count(DISTINCT c57), count(DISTINCT c58), count(DISTINCT c59), count(DISTINCT c62), count(DISTINCT c61), count(DISTINCT c63), count(DISTINCT c64)
+                      keys: c0 (type: string), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: string), c6 (type: string), c7 (type: string), c8 (type: string), c9 (type: string), c10 (type: string), c11 (type: string), c12 (type: string), c13 (type: string), c14 (type: string), c15 (type: string), c16 (type: string), c17 (type: string), c18 (type: string), c19 (type: string), c20 (type: string), c21 (type: string), c22 (type: string), c23 (type: string), c24 (type: string), c25 (type: string), c26 (type: string), c27 (type: string), c28 (type: string), c29 (type: string), c30 (type: string), c31 (type: string), c32 (type: string), c33 (type: string), c34 (type: string), c35 (type: string), c36 (type: string), c37 (type: string), c38 (type: string), c39 (type: string), c40 (type: string), c41 (type: string), c42 (type: string), c43 (type: string), c44 (type: string), c45 (type: string), c46 (type: string), c47 (type: string), c48 (type: string), c49 (type: string), c50 (type: string), c51 (type: string), c52 (type: string), c53 (type: string), c54 (type: string), c55 (type: string), c56 (type: string), c57 (type: string), c58 (type: string), c59 (type: string), c62 (type: string), c61 (type: string), c63 (type: string), c64 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53, _col54, _col55, _col56, _col57, _col58, _col59, _col60, _col61, _col62, _col63, _col64, _col65, _col66, _col67, _col68, _col69, _col70, _col71, _col72, _col73, _col74, _col75, _col76, _col77, _col78, _col79, _col80, _col81, _col82, _col83, _col84, _col85, _col86, _col87, _col88, _col89, _col90, _col91, _col92, _col93, _col94, _col95, _col96, _col97, _col98, _col99, _col100, _col101, _col102, _col103, _col104, _col105, _col106, _col107, _col108, _col109, _col110, _col111, _col112, _col113, _col114, _col115, _col116, _col117, _col118, _col119, _col120, _col121, _col122, _col123, _col124, _col125, _col126, _col127
+                      Statistics: Num rows: 1 Data size: 6070 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), _col24 (type: string), _col25 (type: string), _col26 (type: string), _col27 (type: string), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: string), _col33 (type: string), _col34 (type: string), _col35 (type: string), _col36 (type: string), _col37 (type: string), _col38 (type: string), _col39 (type: string), _col40 (type: string), _col41 (type: string), _col42 (type: string), _col43 (type: string), _col44 (type: string), _col45 (type: string), _col46 (type: string), _col47 (type: string), _col48 (type: string), _col49 (type: string), _col50 (type: string), _col51 (type: string), _col52 (type: string), _col53 (type: string), _col54 (type: string), _col55 (type: string), _col56 (type: string), _col57 (type: string), _col58 (type: string), _col59 (type: string), _col60 (type: string), _col61 (type: string), _col62 (type: string), _col63 (type: string)
+                        null sort order: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+                        numBuckets: -1
+                        sort order: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        Statistics: Num rows: 1 Data size: 6070 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        auto parallelism: false
+            Execution mode: llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: test_count
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,c54,c55,c56,c57,c58,c59,c60,c61,c62,c63,c64
+                    columns.types string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string
+#### A masked pattern was here ####
+                    name default.test_count
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,c54,c55,c56,c57,c58,c59,c60,c61,c62,c63,c64
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string
+#### A masked pattern was here ####
+                      name default.test_count
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.test_count
+                  name: default.test_count
+            Truncated Path -> Alias:
+              /test_count [test_count]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), count(DISTINCT KEY._col0:2._col0), count(DISTINCT KEY._col0:3._col0), count(DISTINCT KEY._col0:4._col0), count(DISTINCT KEY._col0:5._col0), count(DISTINCT KEY._col0:6._col0), count(DISTINCT KEY._col0:7._col0), count(DISTINCT KEY._col0:8._col0), count(DISTINCT KEY._col0:9._col0), count(DISTINCT KEY._col0:10._col0), count(DISTINCT KEY._col0:11._col0), count(DISTINCT KEY._col0:12._col0), count(DISTINCT KEY._col0:13._col0), count(DISTINCT KEY._col0:14._col0), count(DISTINCT KEY._col0:15._col0), count(DISTINCT KEY._col0:16._col0), count(DISTINCT KEY._col0:17._col0), count(DISTINCT KEY._col0:18._col0), count(DISTINCT KEY._col0:19._col0), count(DISTINCT KEY._col0:20._col0), count(DISTINCT KEY._col0:21._col0), count(DISTINCT KEY._col0:22._col0), count(DISTINCT KEY._col0:23._col0), count(DISTINCT KEY._col0:24._col0), count(DISTINCT KEY._col0:25._col0), count(DISTINCT KEY._col0:26._col0), count(DISTINCT KEY._col0:27._col0), count(DISTINCT KEY._col0:28._col0), count(DISTINCT KEY._col0:29._col0), count(DISTINCT KEY._col0:30._col0), count(DISTINCT KEY._col0:31._col0), count(DISTINCT KEY._col0:32._col0), count(DISTINCT KEY._col0:33._col0), count(DISTINCT KEY._col0:34._col0), count(DISTINCT KEY._col0:35._col0), count(DISTINCT KEY._col0:36._col0), count(DISTINCT KEY._col0:37._col0), count(DISTINCT KEY._col0:38._col0), count(DISTINCT KEY._col0:39._col0), count(DISTINCT KEY._col0:40._col0), count(DISTINCT KEY._col0:41._col0), count(DISTINCT KEY._col0:42._col0), count(DISTINCT KEY._col0:43._col0), count(DISTINCT KEY._col0:44._col0), count(DISTINCT KEY._col0:45._col0), count(DISTINCT KEY._col0:46._col0), count(DISTINCT KEY._col0:47._col0), count(DISTINCT KEY._col0:48._col0), count(DISTINCT KEY._col0:49._col0), count(DISTINCT KEY._col0:50._col0), count(DISTINCT KEY._col0:51._col0), count(DISTINCT KEY._col0:52._col0), count(DISTINCT KEY._col0:53._col0), count(DISTINCT KEY._col0:54._col0), count(DISTINCT KEY._col0:55._col0), count(DISTINCT KEY._col0:56._col0), count(DISTINCT KEY._col0:57._col0), count(DISTINCT KEY._col0:58._col0), count(DISTINCT KEY._col0:59._col0), count(DISTINCT KEY._col0:60._col0), count(DISTINCT KEY._col0:61._col0), count(DISTINCT KEY._col0:62._col0), count(DISTINCT KEY._col0:63._col0)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53, _col54, _col55, _col56, _col57, _col58, _col59, _col60, _col61, _col62, _col63
+                Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: bigint), _col17 (type: bigint), _col18 (type: bigint), _col19 (type: bigint), _col20 (type: bigint), _col21 (type: bigint), _col22 (type: bigint), _col23 (type: bigint), _col24 (type: bigint), _col25 (type: bigint), _col26 (type: bigint), _col27 (type: bigint), _col28 (type: bigint), _col29 (type: bigint), _col30 (type: bigint), _col31 (type: bigint), _col32 (type: bigint), _col33 (type: bigint), _col34 (type: bigint), _col35 (type: bigint), _col36 (type: bigint), _col37 (type: bigint), _col38 (type: bigint), _col39 (type: bigint), _col40 (type: bigint), _col41 (type: bigint), _col42 (type: bigint), _col43 (type: bigint), _col44 (type: bigint), _col45 (type: bigint), _col46 (type: bigint), _col47 (type: bigint), _col48 (type: bigint), _col49 (type: bigint), _col50 (type: bigint), _col51 (type: bigint), _col52 (type: bigint), _col53 (type: bigint), _col54 (type: bigint), _col55 (type: bigint), _col56 (type: bigint), _col57 (type: bigint), _col58 (type: bigint), _col59 (type: bigint), _col60 (type: bigint), _col61 (type: bigint), _col60 (type: bigint), _col62 (type: bigint), _col63 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53, _col54, _col55, _col56, _col57, _col58, _col59, _col60, _col61, _col62, _col63, _col64
+                  Statistics: Num rows: 1 Data size: 520 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 520 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21,_col22,_col23,_col24,_col25,_col26,_col27,_col28,_col29,_col30,_col31,_col32,_col33,_col34,_col35,_col36,_col37,_col38,_col39,_col40,_col41,_col42,_col43,_col44,_col45,_col46,_col47,_col48,_col49,_col50,_col51,_col52,_col53,_col54,_col55,_col56,_col57,_col58,_col59,_col60,_col61,_col62,_col63,_col64
+                          columns.types bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63), count(distinct c64) from test_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61), count(distinct c62), count(distinct c63), count(distinct c64) from test_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+PREHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61) from test_count
+group by c64,c0||c1,c0||c2,c0||c3,c0||c4,c0||c5,c0||c6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct c0), count(distinct c1), count(distinct c2), count(distinct c3), count(distinct c4), count(distinct c5),
+       count(distinct c6), count(distinct c7), count(distinct c8), count(distinct c9), count(distinct c10), count(distinct c11),
+       count(distinct c12), count(distinct c13), count(distinct c14), count(distinct c15), count(distinct c16), count(distinct c17),
+       count(distinct c18), count(distinct c19), count(distinct c20), count(distinct c21), count(distinct c22), count(distinct c23),
+       count(distinct c24), count(distinct c25), count(distinct c26), count(distinct c27), count(distinct c28), count(distinct c29),
+       count(distinct c30), count(distinct c31), count(distinct c32), count(distinct c33), count(distinct c34), count(distinct c35),
+       count(distinct c36), count(distinct c37), count(distinct c38), count(distinct c39), count(distinct c40), count(distinct c41),
+       count(distinct c42), count(distinct c43), count(distinct c44), count(distinct c45), count(distinct c46), count(distinct c47),
+       count(distinct c48), count(distinct c49), count(distinct c50), count(distinct c51), count(distinct c52), count(distinct c53),
+       count(distinct c54), count(distinct c55), count(distinct c56), count(distinct c57), count(distinct c58), count(distinct c59),
+       count(distinct c62), count(distinct c61) from test_count
+group by c64,c0||c1,c0||c2,c0||c3,c0||c4,c0||c5,c0||c6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
+1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1

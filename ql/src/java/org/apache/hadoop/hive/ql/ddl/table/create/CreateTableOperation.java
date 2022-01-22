@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.create;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Operation process of creating a table.
@@ -63,9 +65,9 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       // trigger replace-mode semantics.
       Table existingTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName(), false);
       if (existingTable != null) {
-        if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
+        Map<String, String> dbParams = context.getDb().getDatabase(existingTable.getDbName()).getParameters();
+        if (desc.getReplicationSpec().allowEventReplacementInto(dbParams)) {
           desc.setReplaceMode(true); // we replace existing table.
-          ReplicationSpec.copyLastReplId(existingTable.getParameters(), tbl.getParameters());
           // If location of an existing managed table is changed, then need to delete the old location if exists.
           // This scenario occurs when a managed table is converted into external table at source. In this case,
           // at target, the table data would be moved to different location under base directory for external tables.
@@ -152,14 +154,15 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       if (!createdTable.isPartitioned() && AcidUtils.isTransactionalTable(createdTable)) {
         org.apache.hadoop.hive.metastore.api.Table tTable = createdTable.getTTable();
         Path tabLocation = new Path(tTable.getSd().getLocation());
-        List<Path> newFilesList;
+        List<FileStatus> newFilesList;
         try {
-          newFilesList = HdfsUtils.listPath(tabLocation.getFileSystem(context.getConf()), tabLocation, null, true);
+          newFilesList = HdfsUtils.listLocatedFileStatus(tabLocation.getFileSystem(context.getConf()), tabLocation, null, true);
         } catch (IOException e) {
           LOG.error("Error listing files", e);
           throw new HiveException(e);
         }
-        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList, tTable.getWriteId());
+        context.getDb().addWriteNotificationLog(createdTable, null,
+                newFilesList, tTable.getWriteId(), null);
       }
     }
   }

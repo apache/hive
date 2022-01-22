@@ -230,13 +230,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fsSupplier = getFsSupplier(split.getPath(), jobConf);
     fileKey = determineFileId(fsSupplier, split, daemonConf);
+    // Note: this makes a Tez-TR thread access the ORC file's tail (so this IO op is not handled by IO threads)
     fileMetadata = getFileFooterFromCacheOrDisk();
     final TypeDescription fileSchema = fileMetadata.getSchema();
-
-    fileIncludes = includes.generateFileIncludes(fileSchema);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
-    }
 
     // Do not allow users to override zero-copy setting. The rest can be taken from user config.
     boolean useZeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
@@ -247,6 +243,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.jobConf = jobConf;
     // TODO: setFileMetadata could just create schema. Called in two places; clean up later.
     this.evolution = sef.createSchemaEvolution(fileMetadata.getSchema());
+
+    fileIncludes = includes.generateFileIncludes(fileSchema);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
+    }
+
     consumer.setUseDecimal64ColumnVectors(HiveConf.getVar(jobConf,
       ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64"));
     consumer.setFileMetadata(fileMetadata);
@@ -282,7 +284,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     });
   }
 
-  private static Supplier<FileSystem> getFsSupplier(final Path path,
+  static Supplier<FileSystem> getFsSupplier(final Path path,
       final Configuration conf) {
     return () -> {
       try {
@@ -510,7 +512,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return determineFileId(fsSupplier, split.getPath(), daemonConf);
   }
 
-  private static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
+  static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
       throws IOException {
 
     boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);

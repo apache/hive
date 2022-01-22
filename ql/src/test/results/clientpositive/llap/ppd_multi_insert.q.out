@@ -41,7 +41,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@mi1
 PREHOOK: Output: default@mi2
 PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
@@ -53,7 +53,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@mi1
 POSTHOOK: Output: default@mi2
 POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4
@@ -200,7 +200,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col0 (type: int)
                       outputColumnNames: key
-                      Statistics: Num rows: 87 Data size: 16008 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key)
                         keys: '2008-04-08' (type: string), '12' (type: string)
@@ -364,7 +364,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@mi1
 PREHOOK: Output: default@mi2
 PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
 INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
@@ -375,7 +375,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@mi1
 POSTHOOK: Output: default@mi2
 POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -1462,7 +1462,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@mi1
 PREHOOK: Output: default@mi2
 PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
@@ -1474,7 +1474,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@mi1
 POSTHOOK: Output: default@mi2
 POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4
@@ -1621,7 +1621,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col0 (type: int)
                       outputColumnNames: key
-                      Statistics: Num rows: 87 Data size: 16008 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 87 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key)
                         keys: '2008-04-08' (type: string), '12' (type: string)
@@ -1785,7 +1785,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@mi1
 PREHOOK: Output: default@mi2
 PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
 INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
@@ -1796,7 +1796,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@mi1
 POSTHOOK: Output: default@mi2
 POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: target/warehouse/mi4.out
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

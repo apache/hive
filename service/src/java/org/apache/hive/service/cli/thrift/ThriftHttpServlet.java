@@ -27,8 +27,10 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -57,6 +59,11 @@ import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
+import org.apache.hive.service.auth.saml.HiveSaml2Client;
+import org.apache.hive.service.auth.saml.HiveSamlRelayStateStore;
+import org.apache.hive.service.auth.saml.HiveSamlUtils;
+import org.apache.hive.service.auth.saml.HttpSamlAuthenticationException;
+import org.apache.hive.service.auth.saml.HiveSamlAuthTokenGenerator;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TProcessor;
@@ -68,6 +75,9 @@ import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
+import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.credentials.TokenCredentials;
+import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +93,7 @@ public class ThriftHttpServlet extends TServlet {
   private final String authType;
   private final UserGroupInformation serviceUGI;
   private final UserGroupInformation httpUGI;
-  private HiveConf hiveConf = new HiveConf();
+  private final HiveConf hiveConf;
 
   // Class members for cookie based authentication.
   private CookieSigner signer;
@@ -101,8 +111,9 @@ public class ThriftHttpServlet extends TServlet {
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
-      HiveAuthFactory hiveAuthFactory) {
+      HiveAuthFactory hiveAuthFactory, HiveConf hiveConf) {
     super(processor, protocolFactory);
+    this.hiveConf = hiveConf;
     this.authType = authType;
     this.serviceUGI = serviceUGI;
     this.httpUGI = httpUGI;
@@ -201,10 +212,23 @@ public class ThriftHttpServlet extends TServlet {
             } else {
               clientUserName = doKerberosAuth(request);
             }
-          }
-          // For password based authentication
-          else {
-            clientUserName = doPasswdAuth(request, authType);
+          } else if (HiveSamlUtils.isSamlAuthMode(authType)) {
+            // check if this request needs a SAML redirect
+            if (needsRedirect(request, response)) {
+              doSamlRedirect(request, response);
+              return;
+            } else {
+              // redirect is not needed. Do SAML auth.
+              clientUserName = doSamlAuth(request, response);
+            }
+          } else {
+            String proxyHeader = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER).trim();
+            if (!proxyHeader.equals("") && request.getHeader(proxyHeader) != null) { //Trusted header is present, which means the user is already authorized.
+              clientUserName = getUsername(request, authType);
+            } else {
+              // For password based authentication
+              clientUserName = doPasswdAuth(request, authType);
+            }
           }
         }
       }
@@ -271,6 +295,81 @@ public class ThriftHttpServlet extends TServlet {
       SessionManager.clearProxyUserName();
       SessionManager.clearForwardedAddresses();
     }
+  }
+
+  /**
+   * A request needs redirect if it does not have a bearer token and it contains a valid
+   * response port in its header.
+   */
+  private boolean needsRedirect(HttpServletRequest request,
+      HttpServletResponse response) {
+    String token = extractBearerToken(request, response);
+    // if there is a bearer token; we use to authenticate else we look for
+    // the response port header just to make sure we are not generating
+    // SAML requests for any random http post requests.
+    if (token != null) {
+      return false;
+    }
+    try {
+      HiveSamlUtils.validateSamlResponsePort(request);
+      return true;
+    } catch (HttpSamlAuthenticationException e) {
+      LOG.debug("Response port could not be validated: " + e.getMessage());
+    }
+    return false;
+  }
+
+  /**
+   * Generate a SAML Authentication request using HTTP-Redirect binding.
+   */
+  private void doSamlRedirect(HttpServletRequest request, HttpServletResponse response)
+      throws HttpSamlAuthenticationException {
+    HiveSaml2Client.get(hiveConf).setRedirect(request, response);
+  }
+
+  /**
+   * This method validates the bearer token in the request. If the token is not or if the
+   * token is not valid it throws a {@link HttpSamlAuthenticationException}. A token is
+   * valid only if all the following conditions are met.
+   * 1. Token signature is valid.
+   * 2. Token is not expired.
+   * 3. Token maps to a relayState which has a matching client identifier in the request.
+   */
+  private String doSamlAuth(HttpServletRequest request, HttpServletResponse response)
+      throws HttpAuthenticationException {
+    String token = extractBearerToken(request, response);
+    if (token == null) {
+      throw new HttpSamlAuthenticationException("Token not found.");
+    }
+    String clientIdentifier = request.getHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER);
+    if (clientIdentifier == null) {
+      throw new HttpSamlAuthenticationException("Client identifier not found.");
+    }
+    String user = HiveSamlAuthTokenGenerator.get(hiveConf).validate(token);
+    LOG.info("Successfully validated the token for user {}", user);
+    // token is valid; now confirm if the client identifier matches with the relay state.
+    Map<String, String> keyValues = new HashMap<>();
+    if (HiveSamlAuthTokenGenerator.parse(token, keyValues)) {
+      String relayStateKey = keyValues.get(HiveSamlAuthTokenGenerator.RELAY_STATE);
+      if (!HiveSamlRelayStateStore.get()
+          .validateClientIdentifier(relayStateKey, clientIdentifier)) {
+        throw new HttpSamlAuthenticationException(
+            "Client identifier could not be validated");
+      }
+    }
+    return user;
+  }
+
+  /**
+   * Extracts the bearer authorization header from the request. If there is no bearer
+   * authorization token, returns null.
+   */
+  private String extractBearerToken(HttpServletRequest request,
+      HttpServletResponse response) {
+    BearerAuthExtractor extractor = new BearerAuthExtractor();
+    Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
+        request, response));
+    return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
   }
 
   /**

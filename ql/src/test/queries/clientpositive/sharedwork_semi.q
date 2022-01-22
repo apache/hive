@@ -2,6 +2,7 @@ set hive.explain.user=true;
 set hive.optimize.index.filter=true;
 set hive.auto.convert.join=true;
 set hive.vectorized.execution.enabled=true;
+set hive.optimize.shared.work.semijoin=true;
 
 drop table if exists x1_store_sales;
 drop table if exists x1_date_dim;

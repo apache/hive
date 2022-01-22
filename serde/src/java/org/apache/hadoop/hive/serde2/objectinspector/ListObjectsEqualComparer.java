@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * Compare two list of objects.
  * Two lists are expected to have same types. Type information for every object is
  * passed when calling Constructor to avoid the step of figuring out types from
- * ObjectInspetor and determine how to compare the types when comparing.
+ * ObjectInspector and determine how to compare the types when comparing.
  * Also, for string and text elements, it performs slightly better than
  * using ObjectInspectorUtils.compare() == 0, which instead of calling .compare()
  * calls .equalTo(), which compares size before byte by byte comparison.

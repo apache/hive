@@ -65,8 +65,6 @@ import org.apache.hadoop.io.Writable;
 public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
 
   private static final byte[] DEFAULT_SEPARATORS = {(byte) 1, (byte) 2, (byte) 3};
-  // Due to HIVE-6404, define our own constant
-  private static final String COLLECTION_DELIM = "collection.delim";
 
   // actual delimiter(fieldDelimited) is replaced by REPLACEMENT_DELIM in row.
   public static final String REPLACEMENT_DELIM_SEQUENCE = "\1";
@@ -107,8 +105,7 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     }
 
     // get the collection separator and map key separator
-    // TODO: use serdeConstants.COLLECTION_DELIM when the typo is fixed
-    collSep = LazyUtils.getByte(properties.getProperty(COLLECTION_DELIM),
+    collSep = LazyUtils.getByte(properties.getProperty(serdeConstants.COLLECTION_DELIM),
         DEFAULT_SEPARATORS[1]);
     keySep = LazyUtils.getByte(properties.getProperty(serdeConstants.MAPKEY_DELIM),
         DEFAULT_SEPARATORS[2]);

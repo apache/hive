@@ -102,7 +102,10 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
     }
 
-    if (table.isNonNative()) {
+    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
+
+    if (table.isNonNative()
+        && (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables())) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
     }
 
@@ -113,10 +116,13 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void addTruncateTableOutputs(ASTNode root, Table table, Map<String, String> partitionSpec)
       throws SemanticException {
-    boolean truncateKeepsDataFiles = AcidUtils.isTransactionalTable(table) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+    boolean truncateUseBase = (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE)
+        || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+      && AcidUtils.isTransactionalTable(table);
+    
     WriteEntity.WriteType writeType =
-        truncateKeepsDataFiles ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+        truncateUseBase ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+    
     if (partitionSpec == null) {
       if (!table.isPartitioned()) {
         outputs.add(new WriteEntity(table, writeType));

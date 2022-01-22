@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -35,6 +36,7 @@ import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 import javax.sql.DataSource;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,6 +49,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 /**
  * A data accessor that should in theory work with all JDBC compliant database drivers.
@@ -72,7 +76,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String query = JdbcStorageConfigManager.getOrigQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Order is important since we need to obtain the original (as specified by the user) column names. JDBC_QUERY
+      // may be a generated/optimized query set by CBO with potentially different aliases than the original columns. 
+      String query = firstNonNull(selectAllFromTable(tableName), conf.get(Constants.JDBC_QUERY));
       String metadataQuery = getMetaDataQuery(query);
       LOGGER.debug("Query to execute is [{}]", metadataQuery);
 
@@ -112,7 +119,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Always use JDBC_QUERY if available both for correctness and performance. JDBC_QUERY can be set by the user
+      // or the CBO including pushdown optimizations. SELECT all query should be used only when JDBC_QUERY is null.
+      String sql = firstNonNull(conf.get(Constants.JDBC_QUERY), selectAllFromTable(tableName));
       String countQuery = "SELECT COUNT(*) FROM (" + sql + ") tmptable";
       LOGGER.info("Query to execute is [{}]", countQuery);
 
@@ -152,8 +162,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String tableName = conf.get(Constants.JDBC_TABLE);
-      String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Always use JDBC_QUERY if available both for correctness and performance. JDBC_QUERY can be set by the user
+      // or the CBO including pushdown optimizations. SELECT all query should be used only when JDBC_QUERY is null.
+      String sql = firstNonNull(conf.get(Constants.JDBC_QUERY), selectAllFromTable(tableName));
       String partitionQuery;
       if (partitionColumn != null) {
         partitionQuery = addBoundaryToQuery(tableName, sql, partitionColumn, lowerBound, upperBound);
@@ -179,7 +191,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   public RecordWriter getRecordWriter(TaskAttemptContext context)
           throws IOException {
     Configuration conf = context.getConfiguration();
-    String tableName =  conf.get(JdbcStorageConfig.TABLE.getPropertyName());
+    String tableName = getQualifiedTableName(conf);
 
     if (tableName == null || tableName.isEmpty()) {
       throw new IllegalArgumentException("Table name should be defined");
@@ -340,8 +352,15 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
   }
 
+  private static String removeDbcpPrefix(String key) {
+    if (key.startsWith(DBCP_CONFIG_PREFIX + ".")) {
+      return key.substring(DBCP_CONFIG_PREFIX.length() + 1);
+    }
+    return key;
+  }
+
   private String getFromProperties(Properties dbProperties, String key) {
-    return dbProperties.getProperty(key.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""));
+    return dbProperties.getProperty(removeDbcpPrefix(key));
   }
 
   protected Properties getConnectionPoolProperties(Configuration conf) throws Exception {
@@ -352,20 +371,14 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     Map<String, String> userProperties = conf.getValByRegex(DBCP_CONFIG_PREFIX + "\\.*");
     if ((userProperties != null) && (!userProperties.isEmpty())) {
       for (Entry<String, String> entry : userProperties.entrySet()) {
-        dbProperties.put(entry.getKey().replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), entry.getValue());
+        dbProperties.put(removeDbcpPrefix(entry.getKey()), entry.getValue());
       }
     }
 
-    // handle password
-    String passwd = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD);
-    if (passwd == null) {
-      String keystore = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEYSTORE);
-      String key = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEY);
-      passwd = Utilities.getPasswdFromKeystore(keystore, key);
-    }
-
+    String passwd = JdbcStorageConfigManager.getPasswordFromProperties(dbProperties,
+        GenericJdbcDatabaseAccessor::removeDbcpPrefix);
     if (passwd != null) {
-      dbProperties.put(JdbcStorageConfigManager.CONFIG_PWD.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), passwd);
+      dbProperties.put(removeDbcpPrefix(JdbcStorageConfigManager.CONFIG_PWD), passwd);
     }
 
     // essential properties that shouldn't be overridden by users
@@ -401,7 +414,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     try {
       Preconditions.checkArgument(retrieveMin || retrieveMax);
       initializeDatabaseConnection(conf);
-      String sql = JdbcStorageConfigManager.getOrigQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Order is important since we need to retain the original (as specified by the user) column names. The partition
+      // column, used below, is user specified so the column names should match.
+      String sql = firstNonNull(selectAllFromTable(tableName), conf.get(Constants.JDBC_QUERY));
       String minClause = "MIN(" + quote() + partitionColumn  + quote() + ")";
       String maxClause = "MAX(" + quote() + partitionColumn  + quote() + ")";
       String countQuery = "SELECT ";
@@ -460,5 +476,18 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   @Override
   public boolean needColumnQuote() {
     return true;
+  }
+
+  private static String getQualifiedTableName(Configuration conf) {
+    String tableName = conf.get(Constants.JDBC_TABLE);
+    if (tableName == null) {
+      return null;
+    }
+    String schemaName = conf.get(Constants.JDBC_SCHEMA);
+    return schemaName == null ? tableName : schemaName + "." + tableName;
+  }
+
+  private static String selectAllFromTable(String tableName) {
+    return tableName == null ? null : "select * from " + tableName;
   }
 }

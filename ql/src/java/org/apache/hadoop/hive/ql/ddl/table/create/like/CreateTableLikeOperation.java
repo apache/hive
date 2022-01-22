@@ -200,10 +200,5 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
   private void setExternalProperties(Table tbl) {
     tbl.setProperty("EXTERNAL", "TRUE");
     tbl.setTableType(TableType.EXTERNAL_TABLE);
-    // if the partition discovery table property is already defined don't change it
-    if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
-      // partition discovery is on by default if it already doesn't exist
-      tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-    }
   }
 }

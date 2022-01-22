@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import static java.util.Arrays.asList;
+
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
@@ -27,7 +29,9 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.DoubleWritable;
@@ -149,4 +153,47 @@ public class TestGenericUDFNullif {
     Assert.assertEquals(TypeInfoFactory.intTypeInfo, oi.getTypeInfo());
     Assert.assertEquals(null, udf.evaluate(args));
   }
+
+  @Test
+  public void testArrayNull() throws Exception {
+    GenericUDFNullif udf = new GenericUDFNullif();
+
+    ObjectInspector[] inputOIs = {
+        ObjectInspectorFactory
+            .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableStringObjectInspector),
+        ObjectInspectorFactory
+            .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableStringObjectInspector) };
+
+    Object i1 = asList(new Text("aa"), new Text("dd"), new Text("cc"), new Text("bb"));
+    Object i2 = asList(new Text("aa"), new Text("dd"), new Text("cc"), new Text("bb"));
+
+    DeferredObject[] args = { new DeferredJavaObject(i1), new DeferredJavaObject(i2) };
+
+    StandardListObjectInspector oi = (StandardListObjectInspector) udf.initialize(inputOIs);
+    Assert.assertEquals("array<string>", oi.getTypeName());
+    Assert.assertEquals(null, udf.evaluate(args));
+
+  }
+
+  @Test
+  public void testArray1() throws Exception {
+    GenericUDFNullif udf = new GenericUDFNullif();
+
+    ObjectInspector[] inputOIs = {
+        ObjectInspectorFactory
+            .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableStringObjectInspector),
+        ObjectInspectorFactory
+            .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableStringObjectInspector) };
+
+    Object i1 = asList(new Text("aa"), new Text("dd"), new Text("cc"), new Text("bb"));
+    Object i2 = asList(new Text("aa"), new Text("dd"), new Text("cc"), new Text("xx"));
+
+    DeferredObject[] args = { new DeferredJavaObject(i1), new DeferredJavaObject(i2) };
+
+    StandardListObjectInspector oi = (StandardListObjectInspector) udf.initialize(inputOIs);
+    Assert.assertEquals("array<string>", oi.getTypeName());
+    Assert.assertEquals(i1, udf.evaluate(args));
+
+  }
+
 }

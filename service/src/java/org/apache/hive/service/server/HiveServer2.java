@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -100,6 +101,8 @@ import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.saml.HiveSaml2Client;
+import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -220,15 +223,14 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new HiveServer2OomHookRunner(hiveServer2);
     boolean isHttpTransportMode = isHttpTransportMode(hiveConf);
     boolean isAllTransportMode = isAllTransportMode(hiveConf);
     if (isHttpTransportMode || isAllTransportMode) {
-      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftHttpCLIService(cliService);
       addService(thriftCLIService);
     }
     if (!isHttpTransportMode || isAllTransportMode)  {
-      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftBinaryCLIService(cliService);
       addService(thriftCLIService); //thriftCliService instance is used for zookeeper purposes
     }
 
@@ -363,6 +365,8 @@ public class HiveServer2 extends CompositeService {
             builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
             builder.setKeyManagerFactoryAlgorithm(
                 hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
+            builder.setExcludeCiphersuites(
+                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES));
             builder.setUseSSL(true);
           }
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {
@@ -954,6 +958,12 @@ public class HiveServer2 extends CompositeService {
 
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
+    }
+    if (hiveConf != null && HiveSamlUtils
+        .isSamlAuthMode(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
+      // this is mostly for testing purposes to make sure that SAML client is
+      // reinitialized after a HS2 is restarted.
+      HiveSaml2Client.shutdown();
     }
   }
 

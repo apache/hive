@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -114,6 +115,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -561,7 +563,7 @@ public class TestObjectStore {
    * Checks if the directSQL partition drop removes every connected data from the RDBMS tables.
    */
   @Test
-  public void testDirectSQLDropParitionsCleanup() throws Exception {
+  public void testDirectSQLDropPartitionsCleanup() throws Exception {
 
     createPartitionedTable(true, true);
 
@@ -581,8 +583,8 @@ public class TestObjectStore {
     checkBackendTableSize("SERDES", 4); // Table has a serde
 
     // drop the partitions
-    try(AutoCloseable c =deadline()) {
-	    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
 	        Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
     }
 
@@ -600,6 +602,60 @@ public class TestObjectStore {
     checkBackendTableSize("SORT_COLS", 0);
     checkBackendTableSize("SERDE_PARAMS", 0);
     checkBackendTableSize("SERDES", 1); // Table has a serde
+  }
+
+  @Test
+  public void testDirectSQLCDsCleanup() throws Exception {
+    createPartitionedTable(true, true);
+    // Checks there is only one CD before altering partition
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("CDS", 1);
+    checkBackendTableSize("COLUMNS_V2", 5);
+    // Alters a partition to create a new column descriptor
+    List<String> partVals = Arrays.asList("a0");
+    try (AutoCloseable c = deadline()) {
+      Partition part = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals);
+      StorageDescriptor newSd = part.getSd().deepCopy();
+      newSd.addToCols(new FieldSchema("test_add_col", "int", null));
+      Partition newPart = part.deepCopy();
+      newPart.setSd(newSd);
+      objectStore.alterPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals, newPart, null);
+    }
+    // Checks now there is one more column descriptor
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("CDS", 2);
+    checkBackendTableSize("COLUMNS_V2", 11);
+    // drop the partitions
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
+    }
+    // Checks if the data connected to the partitions is dropped
+    checkBackendTableSize("PARTITIONS", 0);
+    checkBackendTableSize("CDS", 1); // Table has a CD
+    checkBackendTableSize("COLUMNS_V2", 5);
+  }
+
+  @Test
+  public void testGetPartitionStatistics() throws Exception {
+    createPartitionedTable(true, true);
+
+    List<List<ColumnStatistics>> stat;
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+              Arrays.asList("test_part_col"));
+    }
+
+    Assert.assertEquals(1, stat.size());
+    Assert.assertEquals(3, stat.get(0).size());
+    Assert.assertEquals(ENGINE, stat.get(0).get(0).getEngine());
+    Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().size());
+    Assert.assertTrue(stat.get(0).get(0).getStatsObj().get(0).getStatsData().isSetLongStats());
+    Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumNulls());
+    Assert.assertEquals(2, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumDVs());
+    Assert.assertEquals(3, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getLowValue());
+    Assert.assertEquals(4, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHighValue());
   }
 
   /**
@@ -683,11 +739,12 @@ public class TestObjectStore {
         stats.setEngine(ENGINE);
 
         ColumnStatisticsData data = new ColumnStatisticsData();
-        BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-        boolStats.setNumTrues(0);
-        boolStats.setNumFalses(0);
-        boolStats.setNumNulls(0);
-        data.setBooleanStats(boolStats);
+        LongColumnStatsData longStats = new LongColumnStatsData();
+        longStats.setNumNulls(1);
+        longStats.setNumDVs(2);
+        longStats.setLowValue(3);
+        longStats.setHighValue(4);
+        data.setLongStats(longStats);
 
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
@@ -1289,11 +1346,13 @@ public class TestObjectStore {
     creationMetadata.setDbName(matView1.getDbName());
     creationMetadata.setTblName(matView1.getTableName());
     creationMetadata.setTablesUsed(Collections.singleton(tbl1.getDbName() + "." + tbl1.getTableName()));
+    creationMetadata.setSourceTables(Collections.singleton(createSourceTable(tbl1)));
     matView1.setCreationMetadata(creationMetadata);
     objectStore.createTable(matView1);
 
     CreationMetadata newCreationMetadata = new CreationMetadata(matView1.getCatName(), matView1.getDbName(),
             matView1.getTableName(), ImmutableSet.copyOf(creationMetadata.getTablesUsed()));
+    newCreationMetadata.setSourceTables(Collections.unmodifiableSet(creationMetadata.getSourceTables()));
     objectStore.updateCreationMetadata(matView1.getCatName(), matView1.getDbName(), matView1.getTableName(), newCreationMetadata);
 
     assertThat(creationMetadata.getMaterializationTime(), is(not(0)));

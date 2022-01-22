@@ -168,6 +168,12 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testSqlFromCmdWithEmbeddedQuotes() {
+    verifyCMD(null, "hive", out,
+        new String[] { "-e", "select \"hive\"" }, ERRNO_OK, true);
+  }
+
+  @Test
   public void testInvalidOptions() {
     verifyCMD(null,
         "The '-e' and '-f' options cannot be specified simultaneously", err,

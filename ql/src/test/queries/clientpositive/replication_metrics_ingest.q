@@ -1,9 +1,6 @@
---! qt:disabled:disabled in HIVE-23801
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb
-
-set hive.repl.rootdir=${system:test.tmp.dir}/repl;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/repl/sentinel;
 dfs -rmr  ${system:test.tmp.dir}/repl;
@@ -29,6 +26,8 @@ alter scheduled query repl1 execute;
 
 !sleep 50;
 
+alter scheduled query repl1 disabled;
+
 create scheduled query repl2 every 15 minutes as repl load src into destination
 with ('hive.repl.rootdir'= '${system:test.tmp.dir}/repl');
 
@@ -36,6 +35,11 @@ alter scheduled query repl2 execute;
 
 !sleep 50;
 
+alter scheduled query repl2 disabled;
+
 show databases;
 
-select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics;
+select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
+from sys.replication_metrics_orig order by dump_execution_id;
+
+select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id;

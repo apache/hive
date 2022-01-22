@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.listener;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient.NotificationFilter;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -70,6 +73,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
@@ -265,6 +269,10 @@ public class TestDbNotificationListener {
 
     public void onAcidWrite(AcidWriteEvent acidWriteEvent) throws MetaException {
       pushEventId(EventType.ACID_WRITE, acidWriteEvent);
+    }
+
+    public void onBatchAcidWrite(BatchAcidWriteEvent batchAcidWriteEvent) throws MetaException {
+      pushEventId(EventType.BATCH_ACID_WRITE, batchAcidWriteEvent);
     }
   }
 
@@ -1674,6 +1682,41 @@ public class TestDbNotificationListener {
     NotificationEventResponse rsp2 = msClient.getNextNotification(firstEventId, 0, null);
     LOG.info("second trigger done");
     assertEquals(0, rsp2.getEventsSize());
+  }
+
+  /**
+   * Test makes sure that if you use the API {@link HiveMetaStoreClient#getNextNotification(NotificationEventRequest, boolean, NotificationFilter)}
+   * does not error out if the events are cleanedup.
+   */
+  @Test
+  public void skipCleanedUpEvents() throws Exception {
+    Database db = new Database("cleanup1", "no description", testTempDir, emptyParameters);
+    msClient.createDatabase(db);
+    msClient.dropDatabase("cleanup1");
+
+    // sleep for expiry time, and then fetch again
+    // sleep twice the TTL interval - things should have been cleaned by then.
+    Thread.sleep(EVENTS_TTL * 2 * 1000);
+
+    db = new Database("cleanup2", "no description", testTempDir, emptyParameters);
+    msClient.createDatabase(db);
+    msClient.dropDatabase("cleanup2");
+
+    // the firstEventId is before the cleanup happened, so we should just receive the
+    // events which remaining after cleanup.
+    NotificationEventRequest request = new NotificationEventRequest();
+    request.setLastEvent(firstEventId);
+    request.setMaxEvents(-1);
+    NotificationEventResponse rsp2 = msClient.getNextNotification(request, true, null);
+    assertEquals(2, rsp2.getEventsSize());
+    // when we pass the allowGapsInEvents as false the API should error out
+    Exception ex = null;
+    try {
+      NotificationEventResponse rsp = msClient.getNextNotification(request, false, null);
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertNotNull(ex);
   }
 
   @Test

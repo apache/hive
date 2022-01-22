@@ -128,7 +128,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 26 Data size: 8395 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -149,10 +149,10 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 8395 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 <= 3) (type: boolean)
-                    Statistics: Num rows: 8 Data size: 2346 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
@@ -287,7 +287,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: double)
                 outputColumnNames: _col0, _col2, _col3
-                Statistics: Num rows: 26 Data size: 8547 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 1579 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -308,10 +308,10 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 8547 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 1579 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 <= 3) (type: boolean)
-                    Statistics: Num rows: 8 Data size: 2378 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 234 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
@@ -444,7 +444,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 26 Data size: 10010 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 3042 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -465,10 +465,10 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 10010 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 3042 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 <= 3) (type: boolean)
-                    Statistics: Num rows: 8 Data size: 2686 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1

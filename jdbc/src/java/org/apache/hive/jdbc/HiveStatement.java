@@ -195,7 +195,9 @@ public class HiveStatement implements java.sql.Statement {
       if (stmtHandle.isPresent()) {
         TCloseOperationReq closeReq = new TCloseOperationReq(stmtHandle.get());
         TCloseOperationResp closeResp = client.CloseOperation(closeReq);
-        Utils.verifySuccessWithInfo(closeResp.getStatus());
+        if (!checkInvalidOperationHandle(closeResp)) {
+          Utils.verifySuccessWithInfo(closeResp.getStatus());
+        }
       }
     } catch (SQLException e) {
       throw e;
@@ -212,6 +214,42 @@ public class HiveStatement implements java.sql.Statement {
     } finally {
       stmtHandle = Optional.empty();
     }
+  }
+
+  /**
+   * Invalid OperationHandle is a special case in HS2, which sometimes could be considered as safe to ignore.
+   * For instance: if the client retried due to HIVE-24786, and the retried operation happened to be the
+   * closeOperation, we don't care as the query might have already been removed from HS2's scope.
+   * @return true, if the response from server contains "Invalid OperationHandle"
+   */
+  private boolean checkInvalidOperationHandle(TCloseOperationResp closeResp) {
+    List<String> messages = closeResp.getStatus().getInfoMessages();
+    if (messages != null && messages.size() > 0) {
+      /*
+       * Here we need to handle 2 different cases, which can happen in CLIService.closeOperation, which actually does:
+       * sessionManager.getOperationManager().getOperation(opHandle).getParentSession().closeOperation(opHandle);
+       */
+      String message = messages.get(0);
+      if (message.contains("Invalid OperationHandle")) {
+        /*
+         * This happens when the first request properly removes the operation handle, then second request arrives, calls
+         * sessionManager.getOperationManager().getOperation(opHandle), and it doesn't find the handle.
+         */
+        LOG.warn("'Invalid OperationHandle' on server side (messages: " + messages + ")");
+        return true;
+      } else if (message.contains("Operation does not exist")) {
+        /*
+         * This is an extremely rare case, which represents a race condition when the first and second request
+         * arrives almost at the same time, both can get the OperationHandle instance
+         * from sessionManager's OperationManager, but the second fails, because it cannot get it again from the
+         * session's OperationManager, because it has been already removed in the meantime.
+         */
+        LOG.warn("'Operation does not exist' on server side (messages: " + messages + ")");
+        return true;
+      }
+    }
+
+    return false;
   }
 
   void closeClientOperation() throws SQLException {
@@ -237,7 +275,9 @@ public class HiveStatement implements java.sql.Statement {
     closeClientOperation();
     client = null;
     if (resultSet != null) {
-      resultSet.close();
+      if (!resultSet.isClosed()){
+        resultSet.close();
+      }
       resultSet = null;
     }
     isClosed = true;
@@ -594,6 +634,10 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public boolean isClosed() throws SQLException {
     return isClosed;
+  }
+
+  public boolean isQueryClosed() throws SQLException {
+    return isQueryClosed;
   }
 
   @Override

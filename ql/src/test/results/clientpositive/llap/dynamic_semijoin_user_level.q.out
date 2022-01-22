@@ -879,9 +879,9 @@ Stage-0
                           <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_46]
                               Group By Operator [GBY_45] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=2200)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col1)","max(_col1)","bloom_filter(_col1, expectedEntries=2200)"]
                                 Select Operator [SEL_44] (rows=2200 width=178)
-                                  Output:["_col0"]
+                                  Output:["_col1"]
                                    Please refer to the previous Merge Join Operator [MERGEJOIN_49]
 
 PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)

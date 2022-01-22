@@ -265,6 +265,8 @@ public class TestCachedStoreUpdateUsingEvents {
     Table newTable = new Table(tbl);
     newTable.setOwner(tblOwner);
     newTable.setOwnerType(PrincipalType.ROLE);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("alter_table");
     hmsHandler.alter_table(dbName, tblName, newTable);
     newTable = rawStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
 
@@ -309,6 +311,8 @@ public class TestCachedStoreUpdateUsingEvents {
     String dbName = "Test_Table_Ops";
     String dbOwner = "user1";
     Database db = createTestDb(dbName, dbOwner);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("create_database");
     hmsHandler.create_database(db);
     db = rawStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
 
@@ -366,10 +370,10 @@ public class TestCachedStoreUpdateUsingEvents {
     compareTables(parentTableRead, parentTable);
 
     // Validating constraint values from CachedStore with rawStore for table
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, tblName));
 
     // Validating constraint values from CachedStore with rawStore for parent table
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, parentTableName));
 
     // Dropping all the constraint
     DropConstraintRequest dropConstraintRequest =
@@ -392,10 +396,10 @@ public class TestCachedStoreUpdateUsingEvents {
     sharedCache.refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, dbName, parentTableName, new SQLAllTableConstraints());
 
     // Validate cache store constraint is dropped
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, tblName));
 
     // Validate cache store constraint is dropped
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, parentTableName));
 
     // Adding keys back
     hmsHandler.add_primary_key(new AddPrimaryKeyRequest(parentPkBase));
@@ -421,20 +425,20 @@ public class TestCachedStoreUpdateUsingEvents {
     sharedCache.refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, dbName, parentTableName, constraintsParent);
 
     // Validating constraint values from Cache with rawStore
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, tblName));
 
     // Validating constraint values from Cache with rawStore
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, parentTableName));
 
     sharedCache.getDatabaseCache().clear();
     sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
-  public void assertRawStoreAndCachedStoreConstraint(String catName, String dbName, String tblName) throws TException {
-    SQLAllTableConstraints rawStoreConstraints = rawStore.getAllTableConstraints(catName, dbName, tblName);
+  public void assertRawStoreAndCachedStoreConstraint(AllTableConstraintsRequest request) throws TException {
+    SQLAllTableConstraints rawStoreConstraints = rawStore.getAllTableConstraints(request);
     AllTableConstraintsResponse
-        constraints = hmsHandler.get_all_table_constraints(new AllTableConstraintsRequest(dbName, tblName, catName));
+        constraints = hmsHandler.get_all_table_constraints(request);
     Assert.assertEquals(rawStoreConstraints, constraints.getAllTableConstraints());
   }
 

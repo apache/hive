@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -45,14 +46,15 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
+import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -96,47 +98,51 @@ public class HiveMaterializedViewUtils {
    * materialized view definition uses external tables.
    */
   public static Boolean isOutdatedMaterializedView(
-          String validTxnsList, HiveTxnManager txnMgr,
-          List<String> tablesUsed, Table materializedViewTable) throws LockException {
-    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
+      String validTxnsList, HiveTxnManager txnMgr,
+      Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
+    List<String> tablesUsedNames = tablesUsed.stream()
+        .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
+        .collect(Collectors.toList());
+    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames, validTxnsList);
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");
       return null;
     }
 
-    CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
-    if (creationMetadata.getValidTxnList() == null ||
-            creationMetadata.getValidTxnList().isEmpty()) {
+    MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
+    Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
+    if (mvMetadata.getValidTxnList() == null ||
+            mvMetadata.getValidTxnList().isEmpty()) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain materialization txn ids");
       return null;
     }
     boolean ignore = false;
     ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
-            creationMetadata.getValidTxnList());
-    for (String qName : tablesUsed) {
+            mvMetadata.getValidTxnList());
+    for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
       // is produced in those cases, it is because that additional table is joined with the
       // existing tables with an append-columns only join, i.e., PK-FK + not null.
-      if (!creationMetadata.getTablesUsed().contains(qName)) {
+      if (!storedTablesUsed.contains(fullyQualifiedTableName)) {
         continue;
       }
-      ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
+      ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(fullyQualifiedTableName);
       if (tableCurrentWriteIds == null) {
         // Uses non-transactional table, cannot be considered
         LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
                 " ignored for rewriting as it is outdated and cannot be considered for " +
-                " rewriting because it uses non-transactional table " + qName);
+                " rewriting because it uses non-transactional table " + fullyQualifiedTableName);
         ignore = true;
         break;
       }
-      ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
+      ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(fullyQualifiedTableName);
       if (tableWriteIds == null) {
         // This should not happen, but we ignore for safety
         LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as details about txn ids for table " + qName +
+                " ignored for rewriting as details about txn ids for table " + fullyQualifiedTableName +
                 " could not be found in " + mvTxnWriteIds);
         ignore = true;
         break;
@@ -185,7 +191,7 @@ public class HiveMaterializedViewUtils {
     augmentMaterializationPlanner.setRoot(materialization.queryRel);
     final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
     return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName, materialization.getScope());
+        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode());
   }
 
   /**
@@ -229,8 +235,8 @@ public class HiveMaterializedViewUtils {
     Preconditions.checkState(aggregateGroupingIdIndex != -1);
     int projectGroupingIdIndex = -1;
     if (project != null) {
-      for (int i = 0; i < project.getChildExps().size(); i++) {
-        RexNode expr = project.getChildExps().get(i);
+      for (int i = 0; i < project.getProjects().size(); i++) {
+        RexNode expr = project.getProjects().get(i);
         if (expr instanceof RexInputRef) {
           RexInputRef ref = (RexInputRef) expr;
           if (ref.getIndex() == aggregateGroupingIdIndex) {
@@ -288,7 +294,7 @@ public class HiveMaterializedViewUtils {
             .project(exprs, ImmutableList.of(), true)
             .build();
         List<RexNode> newNodes =
-            RelOptUtil.pushPastProject(project.getChildExps(), bottomProject);
+            RelOptUtil.pushPastProject(project.getProjects(), bottomProject);
         builder.push(bottomProject.getInput())
             .project(newNodes);
       } else {
@@ -307,7 +313,7 @@ public class HiveMaterializedViewUtils {
       materializationList.add(
           new HiveRelOptMaterialization(newTableRel, newQueryRel, null,
               ImmutableList.of(scanTable.getDbName(), scanTable.getTableName(),
-                  "#" + materializationList.size()), materialization.getScope()));
+                  "#" + materializationList.size()), materialization.getScope(), materialization.getRebuildMode()));
     }
     return materializationList;
   }
@@ -325,20 +331,11 @@ public class HiveMaterializedViewUtils {
     return value;
   }
 
-  public static RelOptMaterialization copyMaterializationToNewCluster(
-      RelOptCluster optCluster, RelOptMaterialization materialization) {
-    final RelNode viewScan = materialization.tableRel;
-    final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-            optCluster, viewScan);
-    return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-            materialization.qualifiedTableName);
-  }
-
   /**
    * Method that will recreate the plan rooted at node using the cluster given
    * as a parameter.
    */
-  private static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
+  public static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
     if (node instanceof Filter) {
       final Filter f = (Filter) node;
       return new HiveFilter(optCluster, f.getTraitSet(),
@@ -346,7 +343,7 @@ public class HiveMaterializedViewUtils {
     } else if (node instanceof Project) {
       final Project p = (Project) node;
       return HiveProject.create(optCluster, copyNodeNewCluster(optCluster, p.getInput()),
-          p.getChildExps(), p.getRowType(), Collections.emptyList());
+          p.getProjects(), p.getRowType(), Collections.emptyList());
     } else {
       return copyNodeScanNewCluster(optCluster, node);
     }
@@ -354,7 +351,7 @@ public class HiveMaterializedViewUtils {
 
   /**
    * Validate if given materialized view has SELECT privileges for current user
-   * @param cachedMVTable
+   * @param cachedMVTableList
    * @return false if user does not have privilege otherwise true
    * @throws HiveException
    */
@@ -404,5 +401,4 @@ public class HiveMaterializedViewUtils {
     }
     return newScan;
   }
-
 }

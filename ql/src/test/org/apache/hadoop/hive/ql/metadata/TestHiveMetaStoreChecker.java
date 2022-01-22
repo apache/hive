@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -87,7 +88,8 @@ public class TestHiveMetaStoreChecker {
     hive.getConf().setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(hive.getConf(), HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    SessionState.start(hive.getConf());
+    SessionState ss = SessionState.start(hive.getConf());
+    ss.initTxnMgr(hive.getConf());
 
     partCols = new ArrayList<>();
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));
@@ -124,7 +126,7 @@ public class TestHiveMetaStoreChecker {
   }
 
   @Test
-  public void testTableCheck() throws HiveException, IOException, TException, MetastoreException {
+  public void testTableCheck() throws HiveException, IOException, TException, MetastoreException,MetaException {
     CheckResult result = checker.checkMetastore(catName, dbName, null, null, null);
     // we haven't added anything so should return an all ok
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -214,7 +216,7 @@ public class ASTConverter {
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
 
     if (select instanceof Project) {
-      List<RexNode> childExps = ((Project) select).getChildExps();
+      List<RexNode> childExps = ((Project) select).getProjects();
       if (childExps.isEmpty()) {
         RexLiteral r = select.getCluster().getRexBuilder().makeExactLiteral(new BigDecimal(1));
         ASTNode selectExpr = ASTBuilder.selectExpr(ASTBuilder.literal(r), "1");
@@ -703,20 +705,28 @@ public class ASTConverter {
       ASTNode wRangeAst = null;
 
       ASTNode startAST = null;
+      boolean lbUnbounded = false;
       RexWindowBound lb = window.getLowerBound();
       if (lb != null) {
         startAST = getWindowBound(lb);
+        lbUnbounded = lb.isUnbounded();
       }
 
       ASTNode endAST = null;
+      boolean ubUnbounded = false;
       RexWindowBound ub = window.getUpperBound();
       if (ub != null) {
         endAST = getWindowBound(ub);
+        ubUnbounded = ub.isUnbounded();
       }
 
       if (startAST != null || endAST != null) {
         // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
-        if (window.isRows()) {
+        // In Calcite, "ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"
+        // is represented as "RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"
+        // since they are equivalent. However, in Hive, it is most commonly represented
+        // as "ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING".
+        if (window.isRows() || (lbUnbounded && ubUnbounded)) {
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWRANGE, "TOK_WINDOWRANGE");
         } else {
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWVALUES, "TOK_WINDOWVALUES");
@@ -755,6 +765,10 @@ public class ASTConverter {
       if (wRangeAst != null) {
         wSpec.addChild(wRangeAst);
       }
+      if (over.ignoreNulls()) {
+        ASTNode ignoreNulls = ASTBuilder.createAST(HiveParser.TOK_IGNORE_NULLS, "TOK_IGNORE_NULLS");
+        wSpec.addChild(ignoreNulls);
+      }
 
       return wUDAFAst;
     }
@@ -784,6 +798,12 @@ public class ASTConverter {
           }
         }
         break;
+      case IS_DISTINCT_FROM:
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
+        return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
+          Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
         assert(call.getOperands().size() == 1);
         if (call.getType().isStruct() ||
@@ -830,7 +850,7 @@ public class ASTConverter {
       if (isFlat(call)) {
         return SqlFunctionConverter.buildAST(op, astNodeLst, 0);
       } else {
-        return SqlFunctionConverter.buildAST(op, astNodeLst);
+        return SqlFunctionConverter.buildAST(op, astNodeLst, call.getType());
       }
     }
 
@@ -936,7 +956,7 @@ public class ASTConverter {
      * Assumption:<br>
      * 1. Project will always be child of Sort.<br>
      * 2. In Calcite every projection in Project is uniquely named
-     * (unambigous) without using table qualifier (table name).<br>
+     * (unambiguous) without using table qualifier (table name).<br>
      *
      * @param order
      *          Hive Sort Node

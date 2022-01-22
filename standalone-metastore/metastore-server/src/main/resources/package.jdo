@@ -72,7 +72,15 @@
       <field name="managedLocationUri">
         <column name="DB_MANAGED_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
-
+      <field name="type">
+        <column name="TYPE" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="connectorName">
+        <column name="DATACONNECTOR_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="remoteDatabaseName">
+        <column name="REMOTE_DBNAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
@@ -232,10 +240,10 @@
       </fetch-group>
     </class>
 
-    <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
-      <datastore-identity>
+    <class name="MCreationMetadata" identity-type="application" table="MV_CREATION_METADATA" detachable="true" objectid-class="MCreationMetadata$PK">
+      <field name="id" primary-key="true" value-strategy="native">
         <column name="MV_CREATION_METADATA_ID"/>
-      </datastore-identity>
+      </field>
       <field name="catalogName">
         <column name="CAT_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
@@ -245,15 +253,30 @@
       <field name="tblName">
         <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
-      <field name="tables" table="MV_TABLES_USED">
-        <collection element-type="MTable"/>
-        <join>
-          <column name="MV_CREATION_METADATA_ID"/>
-        </join>
-        <element column="TBL_ID"/>
+      <field name="tables" mapped-by="creationMetadata" dependent-element="true">
+        <collection element-type="MMVSource" dependent-element="true" />
+        <foreign-key name="MV_TABLES_USED_FK1" delete-action="cascade"/>
       </field>
       <field name="txnList">
-        <column name="TXN_LIST" jdbc-type="CLOB" allows-null="true"/>
+        <column name="TXN_LIST" length="32672" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+    </class>
+
+    <class name="MMVSource" identity-type="application" table="MV_TABLES_USED" detachable="true" objectid-class="MMVSource$PK">
+      <field name="table" primary-key="true">
+        <column name="TBL_ID"/>
+      </field>
+      <field name="creationMetadata" primary-key="true">
+        <column name="MV_CREATION_METADATA_ID"/>
+      </field>
+      <field name="insertedCount">
+        <column name="INSERTED_COUNT"/>
+      </field>
+      <field name="updatedCount">
+        <column name="UPDATED_COUNT"/>
+      </field>
+      <field name="deletedCount">
+        <column name="DELETED_COUNT"/>
       </field>
     </class>
 
@@ -384,6 +407,8 @@
    </class>
 
     <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
+      <foreign-key name="SDS_FK1" delete-action="cascade"/>
+      <foreign-key name="SDS_FK2" delete-action="cascade"/>
       <datastore-identity>
         <column name="SD_ID"/>
       </datastore-identity>
@@ -412,6 +437,7 @@
         <column name="SERDE_ID"/>
       </field>
       <field name="bucketCols" table="BUCKETING_COLS">
+        <foreign-key name="BUCKETING_COLS_FK1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -419,6 +445,7 @@
         <element column="BUCKET_COL_NAME"/>
       </field>
       <field name="sortCols" table="SORT_COLS">
+        <foreign-key name="SORT_COLS_FK1" delete-action="cascade"/>
         <collection element-type="MOrder"/>
         <join>
           <column name="SD_ID"/>
@@ -435,6 +462,7 @@
         </element>
       </field>
       <field name="parameters" table="SD_PARAMS">
+        <foreign-key name="SD_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -469,6 +497,7 @@
     </class>
 
     <class name="MPartition" table="PARTITIONS" identity-type="datastore" detachable="true">
+      <foreign-key name="PARTITIONS_FK1" delete-action="cascade"/>
       <index name="UniquePartition" unique="true">
         <column name="PART_NAME"/>
         <column name="TBL_ID"/>
@@ -489,6 +518,7 @@
         <column name="LAST_ACCESS_TIME" jdbc-type="integer"/>
       </field>
       <field name="values" table="PARTITION_KEY_VALS">
+        <foreign-key name="PARTITION_KEY_VALS_FK1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="PART_ID"/>
@@ -500,6 +530,7 @@
       </field>
       <field name="parameters" table="PARTITION_PARAMS">
         <map key-type="java.lang.String" value-type="java.lang.String"/>
+        <foreign-key name="PARTITION_PARAMS_FK1" delete-action="cascade"/>
         <join>
           <column name="PART_ID"/>
         </join>
@@ -752,6 +783,7 @@
 
     <class name="MPartitionPrivilege" table="PART_PRIVS" identity-type="datastore" detachable="true">
     
+      <foreign-key name="PART_PRIVS_FK1" delete-action="cascade"/>
       <index name="PartPrivilegeIndex" unique="false">
         <column name="AUTHORIZER"/>
         <column name="PART_ID"/>
@@ -845,6 +877,7 @@
     </class>
 
     <class name="MPartitionColumnPrivilege" table="PART_COL_PRIVS" identity-type="datastore" detachable="true">
+     <foreign-key name="PART_COL_PRIVS_FK1" delete-action="cascade"/>
     
      <index name="PartitionColumnPrivilegeIndex" unique="false">
         <column name="AUTHORIZER"/>
@@ -1019,6 +1052,7 @@
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
+      <foreign-key name="PART_COL_STATS_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="CS_ID"/>
       </datastore-identity>
@@ -1537,10 +1571,13 @@
         <column name="RM_METADATA" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
       <field name="progress">
-        <column name="RM_PROGRESS" jdbc-type="varchar" length="4000" allows-null="true"/>
+        <column name="RM_PROGRESS" jdbc-type="varchar" length="10000" allows-null="true"/>
       </field>
       <field name="startTime">
          <column name="RM_START_TIME" jdbc-type="integer" allows-null="false"/>
+      </field>
+      <field name="messageFormat">
+              <column name="MESSAGE_FORMAT" length="16" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <index name="PolicyIndex">
         <column name="RM_POLICY"/>
@@ -1601,6 +1638,84 @@
         <column name="DB_ID"/>
       </index>
     </class>
+    <class name="MDataConnector" table="DATACONNECTORS" identity-type="application" detachable="true">
+       <field name="name" primary-key="true">
+         <column name="NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+       </field>
+       <field name="type">
+         <column name="TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+       </field>
+       <field name="url">
+         <column name="URL" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
+       </field>
+       <field name="description">
+         <column name="COMMENT" length="256" jdbc-type="VARCHAR"/>
+       </field>
+       <field name="ownerName">
+         <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+       </field>
+       <field name="ownerType">
+         <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
+       </field>
+       <field name="createTime">
+         <column name="CREATE_TIME" jdbc-type="integer" allows-null="false"/>
+       </field>
+       <field name="parameters" table="DATACONNECTOR_PARAMS">
+         <map key-type="java.lang.String" value-type="java.lang.String"/>
+          <join>
+            <column name="NAME"/>
+          </join>
+          <key>
+            <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
+          </key>
+          <value>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
+          </value>
+       </field>
+    </class>
+    <class name="MDCPrivilege" table="DC_PRIVS" identity-type="datastore" detachable="true">
+          <index name="DCPrivilegeIndex" unique="true">
+            <column name="AUTHORIZER"/>
+            <column name="NAME"/>
+            <column name="PRINCIPAL_NAME"/>
+            <column name="PRINCIPAL_TYPE"/>
+            <column name="DC_PRIV"/>
+            <column name="GRANTOR"/>
+            <column name="GRANTOR_TYPE"/>
+          </index>
+
+          <datastore-identity>
+            <column name="DC_GRANT_ID"/>
+          </datastore-identity>
+
+          <field name="principalName">
+            <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="principalType">
+            <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="dataConnector">
+            <column name="NAME" />
+          </field>
+          <field name="privilege">
+            <column name="DC_PRIV" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="createTime">
+            <column name="CREATE_TIME" jdbc-type="integer"/>
+          </field>
+          <field name="grantor">
+            <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="grantorType">
+            <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="grantOption">
+            <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+          </field>
+          <field name="authorizer">
+            <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+          </field>
+        </class>
   </package>
 </jdo>
 

@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -130,6 +131,7 @@ public class SharedWorkOptimizer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
+    LOG.info("SharedWorkOptimizer start");
 
     final Map<String, TableScanOperator> topOps = pctx.getTopOps();
     if (topOps.size() < 2) {
@@ -146,13 +148,6 @@ public class SharedWorkOptimizer extends Transform {
     if (tablesReferencedOnlyOnce) {
       // Nothing to do, bail out
       return pctx;
-    }
-
-    try {
-      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/0.full.dot"));
-      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/0.joins.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
     }
 
     if (LOG.isDebugEnabled()) {
@@ -227,14 +222,8 @@ public class SharedWorkOptimizer extends Transform {
       // reduce sink operator.
       final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators =
           ArrayListMultimap.create();
-      final Set<Operator<?>> visitedOperators = new HashSet<>();
-      for (Entry<Operator<?>, Collection<Operator<?>>> e :
-          optimizerCache.operatorToWorkOperators.asMap().entrySet()) {
-        if (visitedOperators.contains(e.getKey())) {
-          // Already visited this work, we move on
-          continue;
-        }
-        for (Operator<?> op : e.getValue()) {
+      for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
+        for (Operator<?> op : workOperators) {
           if (op instanceof MapJoinOperator) {
             MapJoinOperator mapJoinOp = (MapJoinOperator) op;
             // Only allowed for mapjoin operator
@@ -244,7 +233,6 @@ public class SharedWorkOptimizer extends Transform {
                   obtainBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
             }
           }
-          visitedOperators.add(op);
         }
       }
       // For each group, set the cache key accordingly if there is more than one operator
@@ -295,13 +283,7 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    try {
-      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/1.full.dot"));
-      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/1.joins.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
-    }
-
+    LOG.info("SharedWorkOptimizer end");
     return pctx;
   }
 
@@ -402,6 +384,10 @@ public class SharedWorkOptimizer extends Transform {
         continue;
       }
       for (TableScanOperator retainableTsOp : retainedScans) {
+        if (optimizerCache.getWorkGroup(discardableTsOp).contains(retainableTsOp)) {
+          LOG.trace("No need check further {} and {} are in the same group", discardableTsOp, retainableTsOp);
+          continue;
+        }
         if (removedOps.contains(retainableTsOp)) {
           LOG.debug("Skip {} as it has already been removed", retainableTsOp);
           continue;
@@ -409,6 +395,14 @@ public class SharedWorkOptimizer extends Transform {
         LOG.debug("Can we merge {} into {} to remove a scan on {}?", discardableTsOp, retainableTsOp, tableName1);
 
         SharedResult sr;
+
+        // If Iceberg metadata tables are in the query, disable this optimisation.
+        String metaTable1 = retainableTsOp.getConf().getTableMetadata().getMetaTable();
+        String metaTable2 = discardableTsOp.getConf().getTableMetadata().getMetaTable();
+        if (metaTable1 != null || metaTable2 != null) {
+          LOG.info("Skip the schema merging as the query contains Iceberg metadata table.");
+          continue;
+        }
 
         if (!schemaMerge && !compatibleSchema(retainableTsOp, discardableTsOp)) {
           LOG.debug("incompatible schemas: {} {} for {} (and merge disabled)", discardableTsOp, retainableTsOp,
@@ -2016,14 +2010,12 @@ public class SharedWorkOptimizer extends Transform {
   // Stores result in cache
   private static Set<Operator<?>> findWorkOperators(
           SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
-    Set<Operator<?>> c = optimizerCache.operatorToWorkOperators.get(start);
+    Set<Operator<?>> c = optimizerCache.getWorkGroup(start);
     if (!c.isEmpty()) {
       return c;
     }
     c = findWorkOperators(start, new HashSet<Operator<?>>());
-    for (Operator<?> op : c) {
-      optimizerCache.operatorToWorkOperators.putAll(op, c);
-    }
+    optimizerCache.addWorkGroup(c);
     return c;
   }
 
@@ -2237,10 +2229,9 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   /** Cache to accelerate optimization */
-  private static class SharedWorkOptimizerCache {
+  static class SharedWorkOptimizerCache {
     // Operators that belong to each work
-    final HashMultimap<Operator<?>, Operator<?>> operatorToWorkOperators =
-            HashMultimap.<Operator<?>, Operator<?>>create();
+    private final Map<Operator<?>, Set<Operator<?>>> operatorToWorkOperators = new IdentityHashMap<>();
     // Table scan operators to DPP sources
     final Multimap<TableScanOperator, Operator<?>> tableScanToDPPSource =
             HashMultimap.<TableScanOperator, Operator<?>>create();
@@ -2248,14 +2239,34 @@ public class SharedWorkOptimizer extends Transform {
 
     // Add new operator to cache work group of existing operator (if group exists)
     void putIfWorkExists(Operator<?> opToAdd, Operator<?> existingOp) {
-      List<Operator<?>> c = ImmutableList.copyOf(operatorToWorkOperators.get(existingOp));
-      if (!c.isEmpty()) {
-        for (Operator<?> op : c) {
-          operatorToWorkOperators.get(op).add(opToAdd);
-        }
-        operatorToWorkOperators.putAll(opToAdd, c);
-        operatorToWorkOperators.put(opToAdd, opToAdd);
+      Set<Operator<?>> group = operatorToWorkOperators.get(existingOp);
+      if (group == null) {
+        return;
       }
+      group.add(opToAdd);
+      operatorToWorkOperators.put(opToAdd, group);
+    }
+
+    public void addWorkGroup(Collection<Operator<?>> c) {
+      Set<Operator<?>> group = Sets.newIdentityHashSet();
+      group.addAll(c);
+      for (Operator<?> op : c) {
+        operatorToWorkOperators.put(op, group);
+      }
+    }
+
+    public Set<Operator<?>> getWorkGroup(Operator<?> start) {
+      Set<Operator<?>> set = operatorToWorkOperators.get(start);
+      if (set == null) {
+        return Collections.emptySet();
+      }
+      return set;
+    }
+
+    public Set<Set<Operator<?>>> getWorkGroups() {
+      Set<Set<Operator<?>>> ret = Sets.newIdentityHashSet();
+      ret.addAll(operatorToWorkOperators.values());
+      return ret;
     }
 
     public boolean isKnownFilteringOperator(Operator<? extends OperatorDesc> op) {
@@ -2268,32 +2279,32 @@ public class SharedWorkOptimizer extends Transform {
 
     // Remove operator
     void removeOp(Operator<?> opToRemove) {
-      Set<Operator<?>> s = operatorToWorkOperators.get(opToRemove);
-      s.remove(opToRemove);
-      List<Operator<?>> c1 = ImmutableList.copyOf(s);
-      if (!c1.isEmpty()) {
-        for (Operator<?> op1 : c1) {
-          operatorToWorkOperators.remove(op1, opToRemove); // Remove operator
-        }
-        operatorToWorkOperators.removeAll(opToRemove); // Remove entry for operator
+      Set<Operator<?>> group = operatorToWorkOperators.get(opToRemove);
+      if (group == null) {
+        return;
       }
+      group.remove(opToRemove);
+      operatorToWorkOperators.remove(opToRemove);
     }
 
     // Remove operator and combine
     void removeOpAndCombineWork(Operator<?> opToRemove, Operator<?> replacementOp) {
-      Set<Operator<?>> s = operatorToWorkOperators.get(opToRemove);
-      s.remove(opToRemove);
-      List<Operator<?>> c1 = ImmutableList.copyOf(s);
-      List<Operator<?>> c2 = ImmutableList.copyOf(operatorToWorkOperators.get(replacementOp));
-      if (!c1.isEmpty() && !c2.isEmpty()) {
-        for (Operator<?> op1 : c1) {
-          operatorToWorkOperators.remove(op1, opToRemove); // Remove operator
-          operatorToWorkOperators.putAll(op1, c2); // Add ops of new collection
-        }
-        operatorToWorkOperators.removeAll(opToRemove); // Remove entry for operator
-        for (Operator<?> op2 : c2) {
-          operatorToWorkOperators.putAll(op2, c1); // Add ops to existing collection
-        }
+      Set<Operator<?>> group1 = operatorToWorkOperators.get(opToRemove);
+      Set<Operator<?>> group2 = operatorToWorkOperators.get(replacementOp);
+
+      group1.remove(opToRemove);
+      operatorToWorkOperators.remove(opToRemove);
+
+      if (group1.size() > group2.size()) {
+        Set<Operator<?>> t = group2;
+        group2 = group1;
+        group1 = t;
+      }
+
+      group2.addAll(group1);
+
+      for (Operator<?> o : group1) {
+        operatorToWorkOperators.put(o, group2);
       }
     }
 

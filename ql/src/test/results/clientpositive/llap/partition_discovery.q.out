@@ -50,7 +50,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -120,7 +119,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -190,7 +188,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -267,6 +264,7 @@ POSTHOOK: Input: default@repairtable_n9
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n10
 POSTHOOK: Output: default@repairtable_n10
+POSTHOOK: Lineage: repairtable_n10.col SIMPLE [(repairtable_n9)repairtable_n9.FieldSchema(name:col, type:string, comment:null), ]
 PREHOOK: query: describe formatted repairtable_n10
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@repairtable_n10
@@ -291,7 +289,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -357,7 +354,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -457,7 +453,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   

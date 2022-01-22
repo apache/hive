@@ -542,6 +542,16 @@ import com.google.common.annotations.VisibleForTesting;
     return result;
   }
 
+  public DataTypePhysicalVariation[] getAllDataTypePhysicalVariations() throws HiveException {
+    final int size = initialTypeInfos.size() + ocm.outputColCount;
+
+    DataTypePhysicalVariation[] result = new DataTypePhysicalVariation[size];
+    for (int i = 0; i < size; i++) {
+      result[i] = getDataTypePhysicalVariation(i);
+    }
+    return result;
+  }
+
   public static final Pattern decimalTypePattern = Pattern.compile("decimal.*",
       Pattern.CASE_INSENSITIVE);
 
@@ -1452,9 +1462,12 @@ import com.google.common.annotations.VisibleForTesting;
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
       return true;
-    } else {
-      return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
+    } else if (gudf instanceof GenericUDFConcat && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
     }
+    return false;
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {

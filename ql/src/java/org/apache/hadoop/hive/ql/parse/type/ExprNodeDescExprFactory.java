@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
@@ -808,7 +809,8 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
       Object thenVal = constThen.getValue();
       Object elseVal = constElse.getValue();
       if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-        return true;
+        //only convert to COALESCE when both branches are valid
+        return !thenVal.equals(elseVal);
       }
     }
     return false;
@@ -850,7 +852,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     // subqueryToRelNode might be null if subquery expression anywhere other than
     //  as expected in filter (where/having). We should throw an appropriate error
     // message
-    Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
+    Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode = ctx.getSubqueryToRelNode();
     if (subqueryToRelNode == null) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
           " Currently SubQuery expressions are only allowed as " +
@@ -858,11 +860,14 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     }
 
     ASTNode subqueryOp = (ASTNode) expr.getChild(0);
-    RelNode subqueryRel = subqueryToRelNode.get(expr);
+    RelNode subqueryRel = subqueryToRelNode.get(expr).getSubQueryRelNode();
     // For now because subquery is only supported in filter
     // we will create subquery expression of boolean type
     switch (subqueryType) {
       case EXISTS: {
+        if (subqueryToRelNode.get(expr).hasFullAggregate()) {
+          return createConstantExpr(TypeInfoFactory.booleanTypeInfo, true);
+        }
         return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
             SubqueryType.EXISTS);
       }

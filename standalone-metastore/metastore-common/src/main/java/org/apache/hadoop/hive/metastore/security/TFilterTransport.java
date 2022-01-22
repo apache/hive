@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.security;
 
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
@@ -96,4 +97,19 @@ import org.apache.thrift.transport.TTransportException;
    public void consumeBuffer(int len) {
      wrapped.consumeBuffer(len);
    }
- }
+
+  @Override
+  public TConfiguration getConfiguration() {
+    return null;
+  }
+
+  @Override
+  public void updateKnownMessageSize(long l) throws TTransportException {
+
+  }
+
+  @Override
+  public void checkReadBytesAvailable(long l) throws TTransportException {
+
+  }
+}

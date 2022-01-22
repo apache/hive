@@ -48,6 +48,9 @@
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
         <exclude>org.apache.hive:hive-contrib</exclude>
+        <exclude>com.oracle.database.jdbc:*</exclude>
+        <exclude>mysql:mysql-connector-java:*</exclude>
+        <exclude>org.mariadb.jdbc:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -191,6 +194,7 @@
         <include>hplsql.cmd</include>
         <include>beeline.cmd</include>
         <include>ext/**/*</include>
+        <include>replstats.sh</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
     </fileSet>

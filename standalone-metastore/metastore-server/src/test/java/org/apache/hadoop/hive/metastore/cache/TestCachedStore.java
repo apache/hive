@@ -2053,6 +2053,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     db.setOwnerType(PrincipalType.USER);
     db.setCatalogName(DEFAULT_CATALOG_NAME);
     db.setCreateTime((int) (System.currentTimeMillis() / 1000));
+    db.setType(DatabaseType.NATIVE);
     return db;
   }
 

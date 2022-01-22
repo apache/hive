@@ -1,0 +1,42 @@
+PREHOOK: query: create table limit_bailout_src_text(c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@limit_bailout_src_text
+POSTHOOK: query: create table limit_bailout_src_text(c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@limit_bailout_src_text
+PREHOOK: query: load data local inpath '../../data/files/smbdata.txt' into table limit_bailout_src_text
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@limit_bailout_src_text
+POSTHOOK: query: load data local inpath '../../data/files/smbdata.txt' into table limit_bailout_src_text
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@limit_bailout_src_text
+PREHOOK: query: create table limit_bailout(c string) clustered by (c) sorted by (c) into 5 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@limit_bailout
+POSTHOOK: query: create table limit_bailout(c string) clustered by (c) sorted by (c) into 5 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@limit_bailout
+PREHOOK: query: insert overwrite table limit_bailout select * from limit_bailout_src_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@limit_bailout_src_text
+PREHOOK: Output: default@limit_bailout
+POSTHOOK: query: insert overwrite table limit_bailout select * from limit_bailout_src_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@limit_bailout_src_text
+POSTHOOK: Output: default@limit_bailout
+POSTHOOK: Lineage: limit_bailout.c SIMPLE [(limit_bailout_src_text)limit_bailout_src_text.FieldSchema(name:c, type:string, comment:null), ]
+PREHOOK: query: select 1 from limit_bailout join limit_bailout t1 on limit_bailout.c=t1.c limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@limit_bailout
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select 1 from limit_bailout join limit_bailout t1 on limit_bailout.c=t1.c limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@limit_bailout
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1

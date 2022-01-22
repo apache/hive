@@ -328,15 +328,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int), (c2 > 15) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 4]
-                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 2, 5]
+                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 5:boolean
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -401,7 +401,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -504,15 +504,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int), (c2 > 15) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 4]
-                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 2, 5]
+                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 5:boolean
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -577,7 +577,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -680,15 +680,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int), (c2 > 15) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 4]
-                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 2, 5]
+                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 5:boolean
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -700,15 +700,15 @@ STAGE PLANS:
                         0 _col1 (type: int)
                         1 _col0 (type: int)
                       Map Join Vectorization:
-                          bigTableFilterExpressions: SelectColumnIsTrue(col 4:boolean)
+                          bigTableFilterExpressions: SelectColumnIsTrue(col 5:boolean)
                           bigTableKeyColumns: 1:int
                           bigTableRetainColumnNums: [0, 1, 2]
                           bigTableValueColumns: 0:int, 1:int, 2:int
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutput: 0:int, 1:int, 2:int, 5:char(2)
-                          smallTableValueMapping: 5:char(2)
+                          projectedOutput: 0:int, 1:int, 2:int, 6:char(2)
+                          smallTableValueMapping: 6:char(2)
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2, _col5
                       input vertices:
@@ -720,7 +720,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 1, 2, 5]
+                            projectedOutputColumnNums: [0, 1, 2, 6]
                         Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -757,7 +757,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -860,15 +860,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int), (c2 > 15) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 4]
-                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 2, 5]
+                        selectExpressions: LongColGreaterLongScalar(col 2:int, val 15) -> 5:boolean
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -880,15 +880,15 @@ STAGE PLANS:
                         0 _col1 (type: int)
                         1 _col0 (type: int)
                       Map Join Vectorization:
-                          bigTableFilterExpressions: SelectColumnIsTrue(col 4:boolean)
+                          bigTableFilterExpressions: SelectColumnIsTrue(col 5:boolean)
                           bigTableKeyColumns: 1:int
                           bigTableRetainColumnNums: [0, 1, 2]
                           bigTableValueColumns: 0:int, 1:int, 2:int
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutput: 0:int, 1:int, 2:int, 5:char(2)
-                          smallTableValueMapping: 5:char(2)
+                          projectedOutput: 0:int, 1:int, 2:int, 6:char(2)
+                          smallTableValueMapping: 6:char(2)
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2, _col5
                       input vertices:
@@ -900,7 +900,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 1, 2, 5]
+                            projectedOutputColumnNums: [0, 1, 2, 6]
                         Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -937,7 +937,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

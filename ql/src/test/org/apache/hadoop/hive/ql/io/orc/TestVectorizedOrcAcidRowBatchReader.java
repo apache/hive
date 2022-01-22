@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -51,9 +53,12 @@ import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.SortMerg
 
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -239,12 +244,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     //create 3 insert deltas so that we have 3 splits
     RecordUpdater updater = new OrcRecordUpdater(root, options);
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(1, 0, options.getMinimumWriteId(), bucket));
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(2, 1, options.getMinimumWriteId(), bucket));
-    updater.insert(options.getMinimumWriteId(),
-        new DummyRow(3, 2, options.getMinimumWriteId(), bucket));
+
+    //In the first delta add 2000 recs to simulate recs in multiple stripes.
+    int numRows = 2000;
+    for (int i = 1; i <= numRows; i++) {
+      updater.insert(options.getMinimumWriteId(),
+              new DummyRow(i, i-1, options.getMinimumWriteId(), bucket));
+    }
     updater.close(false);
 
     options.minimumWriteId(2)
@@ -323,7 +329,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     if(filterOn) {
       assertEquals(new OrcRawRecordMerger.KeyInterval(
           new RecordIdentifier(1, bucketProperty, 0),
-          new RecordIdentifier(1, bucketProperty, 2)),
+          new RecordIdentifier(1, bucketProperty, numRows - 1)),
           keyInterval);
     }
     else {
@@ -379,6 +385,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
     testDeleteEventFiltering2();
+  }
+  @Test
+  public void testDeleteEventFilteringOnWithoutIdx3() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    conf.set("orc.stripe.size", "1000");
+    testDeleteEventFiltering();
   }
 
   private void testDeleteEventFiltering2() throws Exception {
@@ -961,6 +974,21 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
   @Test
   public void testVectorizedOrcAcidRowBatchReader() throws Exception {
+    setupTestData();
+
+    testVectorizedOrcAcidRowBatchReader(ColumnizedDeleteEventRegistry.class.getName());
+
+    // To test the SortMergedDeleteEventRegistry, we need to explicitly set the
+    // HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY constant to a smaller value.
+    int oldValue = conf.getInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, 1000000);
+    conf.setInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, 1000);
+    testVectorizedOrcAcidRowBatchReader(SortMergedDeleteEventRegistry.class.getName());
+
+    // Restore the old value.
+    conf.setInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, oldValue);
+  }
+
+  private void setupTestData() throws IOException {
     conf.set("bucket_count", "1");
       conf.set(ValidTxnList.VALID_TXNS_KEY,
           new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
@@ -1030,17 +1058,6 @@ public class TestVectorizedOrcAcidRowBatchReader {
       }
     }
     updater.close(false);
-
-    testVectorizedOrcAcidRowBatchReader(ColumnizedDeleteEventRegistry.class.getName());
-
-    // To test the SortMergedDeleteEventRegistry, we need to explicitly set the
-    // HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY constant to a smaller value.
-    int oldValue = conf.getInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, 1000000);
-    conf.setInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, 1000);
-    testVectorizedOrcAcidRowBatchReader(SortMergedDeleteEventRegistry.class.getName());
-
-    // Restore the old value.
-    conf.setInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, oldValue);
   }
 
 
@@ -1085,6 +1102,75 @@ public class TestVectorizedOrcAcidRowBatchReader {
       }
     }
   }
+
+  @Test
+  public void testFetchDeletedRowsUsingColumnizedDeleteEventRegistry() throws Exception {
+    setupTestData();
+    testFetchDeletedRows();
+  }
+
+  @Test
+  public void testFetchDeletedRowsUsingSortMergedDeleteEventRegistry() throws Exception {
+    setupTestData();
+
+    // To test the SortMergedDeleteEventRegistry, we need to explicitly set the
+    // HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY constant to a smaller value.
+    int oldValue = conf.getInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, 1000000);
+    try {
+      conf.setInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, 1000);
+      testFetchDeletedRows();
+    }
+    finally {
+      // Restore the old value.
+      conf.setInt(HiveConf.ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY.varname, oldValue);
+    }
+  }
+
+  private void testFetchDeletedRows() throws Exception {
+    List<OrcInputFormat.SplitStrategy<?>> splitStrategies = getSplitStrategies();
+    List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy) splitStrategies.get(0)).getSplits();
+
+    // Mark one of the transactions as an exception to test that invalid transactions
+    // are being handled properly.
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "tbl:14:1:1:5"); // Exclude transaction 5
+
+    // enable fetching deleted rows
+    conf.set(Constants.ACID_FETCH_DELETED_ROWS, "true");
+
+    // Project ROW__IS__DELETED
+    VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx(
+            new String[] { "payload", VirtualColumn.ROWISDELETED.getName() },
+            new TypeInfo[] { TypeInfoFactory.longTypeInfo, VirtualColumn.ROWISDELETED.getTypeInfo() },
+            new DataTypePhysicalVariation[] { DataTypePhysicalVariation.NONE, DataTypePhysicalVariation.NONE },
+            new int[] { 0 }, 0, 1,
+            new VirtualColumn[] { VirtualColumn.ROWISDELETED },
+            new String[0],
+            new DataTypePhysicalVariation[] { DataTypePhysicalVariation.NONE, DataTypePhysicalVariation.NONE });
+    VectorizedOrcAcidRowBatchReader vectorizedReader =
+            new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL, rbCtx);
+    VectorizedRowBatch vectorizedRowBatch = rbCtx.createVectorizedRowBatch();
+    vectorizedRowBatch.setPartitionInfo(1, 0); // set data column count as 1.
+    long previousPayload = Long.MIN_VALUE;
+    while (vectorizedReader.next(null, vectorizedRowBatch)) {
+      LongColumnVector col = (LongColumnVector) vectorizedRowBatch.cols[0];
+      LongColumnVector rowIsDeletedColumnVector = (LongColumnVector) vectorizedRowBatch.cols[1];
+      for (int i = 0; i < vectorizedRowBatch.size; ++i) {
+        int idx = vectorizedRowBatch.selected[i];
+        long payload = col.vector[idx];
+        long owid = (payload / NUM_ROWID_PER_OWID) + 1;
+        long rowId = payload % NUM_ROWID_PER_OWID;
+        if (rowId % 2 == 0 || rowId % 3 == 0) {
+          assertEquals(1, rowIsDeletedColumnVector.vector[idx]);
+        } else {
+          assertEquals(0, rowIsDeletedColumnVector.vector[idx]);
+        }
+        assertTrue(owid != 5); // Check that writeid#5 has been excluded.
+        assertTrue(payload >= previousPayload); // Check that the data is in sorted order.
+        previousPayload = payload;
+      }
+    }
+  }
+
   private List<OrcInputFormat.SplitStrategy<?>> getSplitStrategies() throws Exception {
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());

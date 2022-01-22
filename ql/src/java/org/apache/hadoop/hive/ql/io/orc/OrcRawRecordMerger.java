@@ -64,7 +64,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   private final long length;
   private final ValidWriteIdList validWriteIdList;
   private final int columns;
-  private final ReaderKey prevKey = new ReaderKey();
+  protected final ReaderKey prevKey = new ReaderKey();
   // this is the key less than the lowest key we need to process
   private final RecordIdentifier minKey;
   // this is the last key we need to process
@@ -107,6 +107,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       setValues(originalWriteId, bucket, rowId);
       this.currentWriteId = currentWriteId;
       this.isDeleteEvent = isDelete;
+    }
+
+    public void setDeleteEvent(boolean deleteEvent) {
+      isDeleteEvent = deleteEvent;
     }
 
     @Override
@@ -170,6 +174,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       return "{originalWriteId: " + getWriteId() + ", " +
           bucketToString(getBucketProperty()) + ", row: " + getRowId() +
           ", currentWriteId " + currentWriteId + "}";
+    }
+
+    public boolean isDeleteEvent() {
+      return isDeleteEvent;
     }
   }
   interface ReaderPair {
@@ -485,9 +493,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             isLastFileForThisBucket = true;
             continue;
           }
-          Reader copyReader = OrcFile.createReader(f.getFileStatus().getPath(),
-            OrcFile.readerOptions(conf));
-          rowIdOffsetTmp += copyReader.getNumberOfRows();
+          try (Reader copyReader = OrcFile.createReader(f.getFileStatus().getPath(), OrcFile.readerOptions(conf))) {
+            rowIdOffsetTmp += copyReader.getNumberOfRows();
+          }
         }
         this.rowIdOffset = rowIdOffsetTmp;
         if (rowIdOffset > 0) {
@@ -1387,7 +1395,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       if (collapse || isSameRow) {
         // Note: for collapse == false, this just sets keysSame.
         keysSame = (collapse && prevKey.compareRow(recordIdentifier) == 0) || (isSameRow);
-        if (!keysSame) {
+        if (keysSame) {
+          keysSame = collapse(recordIdentifier);
+        } else {
           prevKey.set(recordIdentifier);
         }
       } else {
@@ -1401,8 +1411,12 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     return !keysSame;
   }
 
+  protected boolean collapse(RecordIdentifier recordIdentifier) {
+    return true;
+  }
+
   @Override
-  public RecordIdentifier createKey() {
+  public OrcRawRecordMerger.ReaderKey createKey() {
     return new ReaderKey();
   }
 

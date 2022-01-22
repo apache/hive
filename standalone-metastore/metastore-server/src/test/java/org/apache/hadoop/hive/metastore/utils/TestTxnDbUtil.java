@@ -229,6 +229,7 @@ public final class TestTxnDbUtil {
       success &= truncateTable(conn, conf, stmt, "REPL_TXN_MAP");
       success &= truncateTable(conn, conf, stmt, "MATERIALIZATION_REBUILD_LOCKS");
       success &= truncateTable(conn, conf, stmt, "MIN_HISTORY_LEVEL");
+      success &= truncateTable(conn, conf, stmt, "COMPACTION_METRICS_CACHE");
       try {
         String dbProduct = conn.getMetaData().getDatabaseProductName();
         DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
@@ -402,6 +403,14 @@ public final class TestTxnDbUtil {
     prop.setProperty("password", passwd);
     Connection conn = driver.connect(driverUrl, prop);
     conn.setAutoCommit(true);
+
+    DatabaseProduct dbProduct = determineDatabaseProduct(conn.getMetaData().getDatabaseProductName(), conf);
+    String initSql = dbProduct.getPrepareTxnStmt();
+    if (initSql != null) {
+      try (Statement stmt = conn.createStatement()) {
+        stmt.execute(initSql);
+      }
+    }
     return conn;
   }
 

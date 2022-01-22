@@ -6,6 +6,7 @@
 # thrift changes
 '**/*.thrift':
   - kgyrtkirk
+  - klcopp
 # parser changes
 '**/*.g':
   - kgyrtkirk
@@ -45,6 +46,7 @@
   - kasakrisz
 '**/*CardinalityPreserving*java':
   - kasakrisz
-# query optimizer
-'**/ql/optimizer/**':
-  - jcamachor
+# llap stuff
+'**/*Llap*java':
+  - pgaref
+

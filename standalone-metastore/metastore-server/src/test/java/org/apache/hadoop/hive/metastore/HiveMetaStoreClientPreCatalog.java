@@ -75,14 +75,16 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -265,7 +267,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     } catch (IllegalArgumentException e) {
       throw (e);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
   }
 
@@ -473,7 +475,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               throw new MetaException(e.toString());
             }
           } else {
-            transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+            try {
+              transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(), clientSocketTimeout);
+            } catch (TTransportException e) {
+              tte = e;
+              throw new MetaException(e.toString());
+            }
           }
 
           if (useSasl) {
@@ -511,7 +518,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
             }
           } else {
             if (useFramedTransport) {
-              transport = new TFramedTransport(transport);
+              try {
+                transport = new TFramedTransport(transport);
+              } catch (TTransportException e) {
+                LOG.error("Couldn't create client transport", e);
+                throw new MetaException(e.toString());
+              }
             }
           }
 
@@ -755,7 +767,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /**
    * Create a new Database
-   * @param db
+   * @param connector
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
@@ -763,9 +775,29 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_database(Database)
    */
   @Override
-  public void createDatabase(Database db)
+  public void createDatabase(Database connector)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
-    client.create_database(db);
+    client.create_database(connector);
+  }
+
+  @Override
+  public void createDataConnector(DataConnector connector)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    client.create_dataconnector(connector);
+  }
+
+  /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  @Override
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    CreateTableRequest request = new CreateTableRequest(tbl);
+    return client.translate_table_dryrun(request);
   }
 
   /**
@@ -948,6 +980,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     client.drop_database(name, deleteData, cascade);
   }
 
+  @Override
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    client.drop_dataconnector(name, ifNotExists, checkReferences);
+  }
+
   /**
    * @param tbl_name
    * @param db_name
@@ -1110,6 +1148,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
     dropTable(dbname, name, deleteData, ignoreUnknownTab, envContext);
   }
+  
+  @Override
+  public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) throws TException {
+    dropTable(table.getDbName(), table.getTableName(), deleteData, ignoreUnknownTab, ifPurge);
+  }
 
   /**
    * @see #dropTable(String, String, boolean, boolean, EnvironmentContext)
@@ -1244,7 +1287,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterDatabases(client.get_databases(databasePattern));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1255,7 +1298,18 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterDatabases(client.get_all_databases());
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+    try {
+      client.get_dataconnectors(); // TODO run thru filterhook
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1423,6 +1477,14 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return fastpath ? d :deepCopy(filterHook.filterDatabase(d));
   }
 
+  @Override
+  public DataConnector getDataConnector(String name) throws NoSuchObjectException,
+      MetaException, TException {
+    GetDataConnectorRequest request = new GetDataConnectorRequest();
+    request.setConnectorName(name);
+    return client.get_dataconnector_req(request); // TODO run thru filterhook
+  }
+
   /**
    * @param tbl_name
    * @param db_name
@@ -1544,6 +1606,16 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(cm, null);
+  }
+
+  @Deprecated
+  /**
+   * Use {@link HiveMetaStoreClientPreCatalog#getMaterializationInvalidationInfo(CreationMetadata)} instead.
+   */
+  @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
@@ -1582,7 +1654,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTableNames(null, dbname, client.get_tables(dbname, tablePattern));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1594,7 +1666,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       return filterHook.filterTableNames(null, dbname,
           client.get_tables_by_type(dbname, tablePattern, tableType.toString()));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1605,7 +1677,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTables(client.get_all_materialized_view_objects_for_rewriting());
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1616,7 +1688,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTableNames(null, dbname, client.get_materialized_views_for_rewriting(dbname));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1627,7 +1699,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterNames(client.get_table_meta(dbPatterns, tablePatterns, tableTypes));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1658,7 +1730,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTableNames(null, dbname, client.get_all_tables(dbname));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1762,6 +1834,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       throws MetaException, NoSuchObjectException, TException {
     client.alter_database(dbName, db);
   }
+
+  @Override
+  public void alterDataConnector(String dcName, DataConnector connector)
+      throws MetaException, NoSuchObjectException, TException {
+    client.alter_dataconnector(dcName, connector);
+  }
+
   /**
    * @param db
    * @param tableName
@@ -1915,6 +1994,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     InvalidInputException
   {
     return client.delete_table_column_statistics(dbName, tableName, colName, engine);
+  }
+
+  @Override
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
+    client.update_transaction_statistics(req);
   }
 
   /**
@@ -2380,10 +2464,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException {
     // As this is called from replication task, the user is the user who has fired the repl command.
     // This is required for standalone metastore authentication.
-    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds, null);
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds != null ? srcTxnIds.size() : 1, replPolicy, srcTxnIds, txnType);
     return txns.getTxn_ids();
   }
 
@@ -2398,11 +2482,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
     if (replPolicy != null) {
-      assert  srcTxnIds != null;
-      assert numTxns == srcTxnIds.size();
-      // need to set this only for replication tasks
       rqst.setReplPolicy(replPolicy);
-      rqst.setReplSrcTxnIds(srcTxnIds);
+      if (txnType == TxnType.REPL_CREATED) {
+        assert srcTxnIds != null;
+        assert numTxns == srcTxnIds.size();
+        rqst.setReplSrcTxnIds(srcTxnIds);
+      }
     } else {
       assert srcTxnIds == null;
     }
@@ -2418,9 +2503,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void replRollbackTxn(long srcTxnId, String replPolicy) throws NoSuchTxnException, TException {
+  public void replRollbackTxn(long srcTxnId, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException {
     AbortTxnRequest rqst = new AbortTxnRequest(srcTxnId);
     rqst.setReplPolicy(replPolicy);
+    rqst.setTxn_type(txnType);
     client.abort_txn(rqst);
   }
 
@@ -2605,6 +2691,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return client.show_compact(new ShowCompactRequest());
   }
 
+  @Override
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest request)
+      throws TException {
+    return client.get_latest_committed_compaction_info(request);
+  }
+
   @Deprecated
   @Override
   public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
@@ -2649,13 +2742,27 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
-    NotificationEventResponse rsp = client.get_next_notification(rqst);
+    return getNextNotificationEventsInternal(rqst, false, filter);
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return getNextNotificationEventsInternal(request, allowGapsInEventIds, filter);
+  }
+
+  @NotNull
+  private NotificationEventResponse getNextNotificationEventsInternal(
+      NotificationEventRequest request, boolean allowGapsInEventIds,
+      NotificationFilter filter) throws TException {
+    long lastEventId = request.getLastEvent();
+    NotificationEventResponse rsp = client.get_next_notification(request);
     LOG.debug("Got back " + rsp.getEventsSize() + " events");
     NotificationEventResponse filtered = new NotificationEventResponse();
     if (rsp != null && rsp.getEvents() != null) {
       long nextEventId = lastEventId + 1;
       for (NotificationEvent e : rsp.getEvents()) {
-        if (e.getEventId() != nextEventId) {
+        if (!allowGapsInEventIds && e.getEventId() != nextEventId) {
           LOG.error("Requested events are found missing in NOTIFICATION_LOG table. Expected: {}, Actual: {}. "
                   + "Probably, cleaner would've cleaned it up. "
                   + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "
@@ -2695,6 +2802,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
     client.add_write_notification_log(rqst);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  @Override
+  public void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {
+    client.add_write_notification_log_in_batch(rqst);
   }
 
   /**
@@ -3267,6 +3380,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<Table> getTableObjectsByName(String catName, String dbName,
                                            List<String> tableNames) throws MetaException,
       InvalidOperationException, UnknownDBException, TException {
@@ -3791,14 +3909,27 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void truncateTable(String dbName, String tableName, 
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData) 
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
       throws TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
+  @Deprecated
   public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
     return client.find_next_compact(workerId);
+  }
+
+  @Override
+  public OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
+    return client.find_next_compact2(rqst);
   }
 
   @Override
@@ -3824,6 +3955,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
     client.mark_failed(cr);
+  }
+
+  @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
+      throws MetaException, TException {
+    return client.update_compaction_metrics_data(struct);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
+    client.remove_compaction_metrics_data(request);
   }
 
   @Override
@@ -3895,6 +4037,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void dropPackage(DropPackageRequest request) throws TException {
     client.drop_package(request);
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
+      throws TException {
+    return client.get_all_write_event_info(request);
   }
 
   @Override

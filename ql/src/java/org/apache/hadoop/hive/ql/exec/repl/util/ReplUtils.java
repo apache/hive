@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -39,7 +40,10 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -59,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,12 +72,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Base64;
 
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 
 public class ReplUtils {
@@ -135,8 +143,6 @@ public class ReplUtils {
 
   public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
 
-  public static final String TARGET_OF_REPLICATION = "repl.target.for";
-
   // Service name for hive.
   public static final String REPL_HIVE_SERVICE = "hive";
 
@@ -158,6 +164,9 @@ public class ReplUtils {
   public enum MetricName {
     TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
   }
+
+  public static final String DISTCP_JOB_ID_CONF = "distcp.job.id";
+  public static final String DISTCP_JOB_ID_CONF_DEFAULT = "UNAVAILABLE";
 
   private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
@@ -194,13 +203,17 @@ public class ReplUtils {
     return partSpecs;
   }
 
-  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
-                                            ReplicationMetricCollector metricCollector)
-          throws SemanticException {
-    TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
-        tableDesc.getTableName(), tableType);
-    return TaskFactory.get(replLogWork, conf);
+  public static void unsetDbPropIfSet(Database db, String prop, Hive hiveDb) throws HiveException {
+    if (db == null) {
+      return;
+    }
+    Map<String, String> dbProps = db.getParameters();
+    if (dbProps == null || !dbProps.containsKey(prop)) {
+      return;
+    }
+    LOG.info("Removing property: {} from database: {}", prop, db.getName());
+    dbProps.remove(prop);
+    hiveDb.alterDatabase(db.getName(), db);
   }
 
   public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
@@ -211,18 +224,6 @@ public class ReplUtils {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
             tableDesc.getTableName(), tableType, dumpRoot);
     return TaskFactory.get(replLogWork, conf);
-  }
-
-
-  public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
-                                               String dumpRoot, HiveConf conf) throws SemanticException {
-    HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
-
-    final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
-    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
-        mapProp, false, false, null);
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
   }
 
   public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
@@ -251,15 +252,6 @@ public class ReplUtils {
     return false;
   }
 
-  public static boolean isTargetOfReplication(Database db) {
-    assert (db != null);
-    Map<String, String> m = db.getParameters();
-    if ((m != null) && (m.containsKey(TARGET_OF_REPLICATION))) {
-      return !StringUtils.isEmpty(m.get(TARGET_OF_REPLICATION));
-    }
-    return false;
-  }
-
   public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
           throws SemanticException {
     String val = hiveConf.get(configParam);
@@ -275,21 +267,6 @@ public class ReplUtils {
     List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
     return taskList;
-  }
-
-  public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
-                                                                              HiveConf conf,
-                                                                              UpdatedMetaDataTracker updatedMetadata,
-                                                                              org.apache.hadoop.hive.metastore.api.Table tableObj,
-                                                                              long writeId)
-          throws IOException, TException {
-    List<Task<?>> taskList = new ArrayList<>();
-    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats);
-    work.setWriteId(writeId);
-    Task<?> task = TaskFactory.get(work, conf);
-    taskList.add(task);
-    return taskList;
-
   }
 
   public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
@@ -335,7 +312,12 @@ public class ReplUtils {
 
   public static int handleException(boolean isReplication, Throwable e, String nonRecoverablePath,
                                     ReplicationMetricCollector metricCollector, String stageName, HiveConf conf){
-    int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    int errorCode;
+    if (isReplication && e instanceof SnapshotException) {
+      errorCode = ErrorMsg.getErrorMsg("SNAPSHOT_ERROR").getErrorCode();
+    } else {
+      errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    }
     if(isReplication){
       try {
         if (nonRecoverablePath != null) {
@@ -359,7 +341,7 @@ public class ReplUtils {
 
   private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
     if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
-            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD"){
+            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD" || stageName == "RANGER_DENY"){
       return stageName;
     }
     if(isDumpMetricCollector(metricCollector)){
@@ -380,13 +362,9 @@ public class ReplUtils {
   }
 
   public static boolean isFirstIncPending(Map<String, String> parameters) {
-    if (parameters == null) {
-      return false;
-    }
-    String firstIncPendFlag = parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
     // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
     // and not through replication.
-    return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);
+    return parameters != null && ReplConst.TRUE.equalsIgnoreCase(parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
   }
 
   public static EnvironmentContext setReplDataLocationChangedFlag(EnvironmentContext envContext) {
@@ -452,5 +430,48 @@ public class ReplUtils {
       }
     }
     return null;
+  }
+
+  public static String getDistCpCustomName(HiveConf conf, String dbName) {
+    String userChosenName = conf.get(JobContext.JOB_NAME);
+    if (StringUtils.isEmpty(userChosenName)) {
+      String policyName = conf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
+      if (policyName.isEmpty()) {
+        userChosenName = "Repl#" + dbName;
+      } else {
+        String executionId = conf.get(SCHEDULED_QUERY_EXECUTIONID, "");
+
+        userChosenName = "Repl#" + policyName + "#" + executionId + "#" + dbName;
+      }
+      LOG.info("Using {} as job name for map-reduce jobs.", userChosenName);
+    } else {
+      LOG.info("Job Name is explicitly configured as {}, not using " + "replication job custom name.", userChosenName);
+    }
+    return userChosenName;
+  }
+
+  /**
+   * Convert to a human time of minutes:seconds.millis.
+   * @param time time to humanize.
+   * @return a printable value.
+   */
+  public static String convertToHumanReadableTime(long time) {
+    long seconds = (time / 1000);
+    long minutes = (seconds / 60);
+    return String.format("%d:%02d.%03ds", minutes, seconds % 60, time % 1000);
+  }
+
+  /**
+   * Adds a logger task at the end of the tasks passed.
+   */
+  public static void addLoggerTask(ReplLogger replLogger, List<Task<?>> tasks, HiveConf conf) {
+    String message = "Completed all external table copy tasks.";
+    ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, message);
+    Task<ReplStateLogWork> task = TaskFactory.get(replStateLogWork, conf);
+    if (tasks.isEmpty()) {
+      tasks.add(task);
+    } else {
+      DAGTraversal.traverse(tasks, new AddDependencyToLeaves(Collections.singletonList(task)));
+    }
   }
 }

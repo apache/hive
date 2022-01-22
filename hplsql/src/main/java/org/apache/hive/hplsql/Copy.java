@@ -400,12 +400,12 @@ public class Copy {
       else if (option.T_SQLINSERT() != null) {
         sqlInsert = true;
         delimiter = ", ";
-        if (option.ident() != null) {
-          sqlInsertName = option.ident().getText();
+        if (option.qident() != null) {
+          sqlInsertName = option.qident().getText();
         }
       }
       else if (option.T_AT() != null) {
-        targetConn = option.ident().getText();
+        targetConn = option.qident().getText();
         if (ctx.copy_target().expr() != null) {
           sqlInsertName = evalPop(ctx.copy_target().expr()).toString();
         }

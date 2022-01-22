@@ -106,7 +106,7 @@ public class FlatFileInputFormat<T> extends
 
     /**
      * Implements configurable so it can use the configuration to find the right
-     * classes Note: ReflectionUtils will automatigically call setConf with the
+     * classes Note: ReflectionUtils will automagically call setConf with the
      * right configuration.
      */
     private Configuration conf;

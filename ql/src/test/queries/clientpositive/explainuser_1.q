@@ -327,20 +327,31 @@ select src1.key as k1, src1.value as v1,
 CREATE TABLE myinput1_n7(key int, value int);
 LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n7;
 
+explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value;
 explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value;
 
+explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key;
 explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key;
 
+explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key;
 explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key;
 
+explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value;
 explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value;
 
+explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value;
 explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value;
 
+explain cbo select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
 explain select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
+
+explain cbo select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
 explain select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
+
+explain cbo select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
 explain select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
 
+explain cbo select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value;
 explain select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value;
 
 CREATE TABLE smb_input_n0(key int, value int);
@@ -363,10 +374,19 @@ SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 analyze table smb_input1_n2 compute statistics;
 
+explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key;
 explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key;
+
+explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value;
 explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value;
+
+explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key;
 explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key;
+
+explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key;
 explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key;
+
+explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key;
 explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key;
 
 drop table sales_n0;

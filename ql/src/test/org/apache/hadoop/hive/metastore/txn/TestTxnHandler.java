@@ -18,6 +18,10 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
@@ -29,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
@@ -41,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -52,13 +58,17 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -77,7 +87,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -91,6 +105,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.LockTypeUtil.getEncoding;
 
 /**
@@ -239,12 +255,23 @@ public class TestTxnHandler {
 
   @Test
   public void testAbortTxns() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
     List<Long> txnList = openedTxns.getTxn_ids();
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
 
+    OpenTxnRequest replRqst = new OpenTxnRequest(2, "me", "localhost");
+    replRqst.setReplPolicy("default.*");
+    replRqst.setTxn_type(TxnType.REPL_CREATED);
+    replRqst.setReplSrcTxnIds(Arrays.asList(1L, 2L));
+    List<Long> targetTxns = txnHandler.openTxns(replRqst).getTxn_ids();
+
+    assertTrue(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+    txnHandler.abortTxns(new AbortTxnsRequest(targetTxns));
+    assertFalse(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
-    assertEquals(3, txnsInfo.getOpen_txns().size());
+    assertEquals(5, txnsInfo.getOpen_txns().size());
     txnsInfo.getOpen_txns().forEach(txn ->
       assertEquals(TxnState.ABORTED, txn.getState())
     );
@@ -1238,12 +1265,14 @@ public class TestTxnHandler {
 
   @Test
   public void testReplTimeouts() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     long timeout = txnHandler.setTimeout(1);
     try {
       OpenTxnRequest request = new OpenTxnRequest(3, "me", "localhost");
       OpenTxnsResponse response = txnHandler.openTxns(request);
       request.setReplPolicy("default.*");
       request.setReplSrcTxnIds(response.getTxn_ids());
+      request.setTxn_type(TxnType.REPL_CREATED);
       OpenTxnsResponse responseRepl = txnHandler.openTxns(request);
       Thread.sleep(1000);
       txnHandler.performTimeOuts();
@@ -1474,7 +1503,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn1, e, "thread t1");
+                    tHndlr.checkRetryable(e, "thread t1");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1504,7 +1533,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn2, e, "thread t2");
+                    tHndlr.checkRetryable(e, "thread t2");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1539,7 +1568,7 @@ public class TestTxnHandler {
   }
 
   /**
-   * This cannnot be run against Derby (thus in UT) but it can run againt MySQL.
+   * This cannnot be run against Derby (thus in UT) but it can run against MySQL.
    * 1. add to metastore/pom.xml
    *     <dependency>
    *      <groupId>mysql</groupId>
@@ -1653,7 +1682,7 @@ public class TestTxnHandler {
     rqst.setReplPolicy(replPolicy);
     rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
             .boxed().collect(Collectors.toList()));
-
+    rqst.setTxn_type(TxnType.REPL_CREATED);
     OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
     List<Long> txnList = openedTxns.getTxn_ids();
     assertEquals(txnList.size(), numTxn);
@@ -1670,6 +1699,7 @@ public class TestTxnHandler {
     for (Long txnId : txnList) {
       AbortTxnRequest rqst = new AbortTxnRequest(txnId);
       rqst.setReplPolicy(replPolicy);
+      rqst.setTxn_type(TxnType.REPL_CREATED);
       txnHandler.abortTxn(rqst);
     }
     checkReplTxnForTest(txnList.get(0), txnList.get(txnList.size() - 1), replPolicy, new ArrayList<>());
@@ -1687,12 +1717,32 @@ public class TestTxnHandler {
     }
   }
 
+  private boolean targetTxnsPresentInReplTxnMap(Long startTxnId, Long endTxnId, List<Long> targetTxnId) throws Exception {
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT \"RTM_TARGET_TXN_ID\" FROM \"REPL_TXN_MAP\" WHERE " +
+            " \"RTM_SRC_TXN_ID\" >=  " + startTxnId + "AND \"RTM_SRC_TXN_ID\" <=  " + endTxnId).split("\n");
+    List<Long> replayedTxns = new ArrayList<>();
+    for (int idx = 1; idx < output.length; idx++) {
+      replayedTxns.add(Long.parseLong(output[idx].trim()));
+    }
+    return replayedTxns.equals(targetTxnId);
+  }
+
+  private void createDatabaseForReplTests(String dbName, String catalog) throws Exception {
+    String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = '" + dbName + "' and \"CTLG_NAME\" = '" + catalog + "'";
+    String[] output = TestTxnDbUtil.queryToString(conf, query).split("\n");
+    if (output.length == 1) {
+      query = "INSERT INTO \"DBS\"(\"DB_ID\", \"NAME\", \"CTLG_NAME\", \"DB_LOCATION_URI\")  VALUES (1, '" + dbName + "','" + catalog + "','dummy')";
+      TestTxnDbUtil.executeUpdate(conf, query);
+    }
+  }
+
   @Test
   public void testReplOpenTxn() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     int numTxn = 50000;
     String[] output = TestTxnDbUtil.queryToString(conf, "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"").split("\n");
     long startTxnId = Long.parseLong(output[1].trim());
-    txnHandler.setOpenTxnTimeOutMillis(30000);
+    txnHandler.setOpenTxnTimeOutMillis(50000);
     List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
     txnHandler.setOpenTxnTimeOutMillis(1000);
     assert(txnList.size() == numTxn);
@@ -1822,6 +1872,96 @@ public class TestTxnHandler {
       // restore to original retry limit value
       MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, originalLimit);
     }
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfo() throws MetaException {
+    testGetMaterializationInvalidationInfo(
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenTableHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfo(
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenCurrentTxnListHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfo(
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  private void testGetMaterializationInvalidationInfo(
+          ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
+    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    }
+
+    Table table = new Table();
+    table.setDbName("default");
+    table.setTableName("t1");
+    HashMap<String, String> tableParameters = new HashMap<String, String>() {{
+      put(TABLE_IS_TRANSACTIONAL, "true");
+      put(TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
+    }};
+    table.setParameters(tableParameters);
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTable(table);
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setSourceTables(new HashSet<SourceTable>() {{ add(sourceTable); }});
+    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdListWhenTableHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdListWhenCurrentTxnListHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  private void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+          ValidReadTxnList currentValidTxnList, ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
+    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    }
+
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
+    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+            creationMetadata, currentValidTxnList.toString());
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
   }
 
   private void updateTxns(Connection conn) throws SQLException {

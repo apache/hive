@@ -55,8 +55,6 @@
     <test.warehouse.scheme>file://</test.warehouse.scheme>
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
-    <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests
-    </itest.jdbc.jars>
     <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
 
     <!-- Plugin versions -->
@@ -70,28 +68,32 @@
     <commons-lang3.version>3.9</commons-lang3.version>
     <commons-logging.version>1.1.3</commons-logging.version>
     <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
-    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
-    <datanucleus-core.version>5.2.2</datanucleus-core.version>
-    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
+    <datanucleus-api-jdo.version>5.2.4</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.4</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
     <derby.version>10.14.1.0</derby.version>
+    <mariadb.version>2.5.0</mariadb.version>
+    <mssql.version>6.2.1.jre8</mssql.version>
+    <mysql.version>8.0.27</mysql.version>
     <postgres.version>42.2.14</postgres.version>
+    <oracle.version>21.3.0.0</oracle.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.10.5</jackson.version>
+    <jackson.version>2.12.0</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.13.0</libthrift.version>
-    <log4j2.version>2.13.2</log4j2.version>
+    <libthrift.version>0.14.1</libthrift.version>
+    <log4j2.version>2.17.1</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
-    <orc.version>1.6.7</orc.version>
+    <orc.version>1.6.9</orc.version>
     <!-- com.google repo will be used except on Aarch64 platform. -->
     <protobuf.group>com.google.protobuf</protobuf.group>
     <protobuf.version>2.6.1</protobuf.version>
@@ -104,7 +106,7 @@
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>4.2.0</curator.version>
     <zookeeper.version>3.5.5</zookeeper.version>
-    <cron-utils.version>8.1.1</cron-utils.version>
+    <cron-utils.version>9.1.3</cron-utils.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
@@ -187,11 +189,6 @@
         <version>${commons-lang3.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.derby</groupId>
-        <artifactId>derby</artifactId>
-        <version>${derby.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
@@ -238,6 +235,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-mapreduce-client-core</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
@@ -325,15 +328,50 @@
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
-
-      <!-- test scope dependencies -->
-
+      <!-- JDBC drivers -->
       <dependency>
         <groupId>com.microsoft.sqlserver</groupId>
         <artifactId>mssql-jdbc</artifactId>
-        <version>6.2.1.jre8</version>
-        <scope>test</scope>
+        <version>${mssql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
       </dependency>
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc8</artifactId>
+        <version>${oracle.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>${derby.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
+        <version>${mariadb.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgres.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <!-- test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -371,12 +409,6 @@
         <version>${mockito-core.version}</version>
         <scope>test</scope>
       </dependency>
-      <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>${postgres.version}</version>
-        <scope>test</scope>
-      </dependency>
       <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
       <dependency>
         <groupId>org.hamcrest</groupId>
@@ -409,32 +441,8 @@
     <pluginManagement>
       <plugins>
         <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.rat</groupId>
-          <artifactId>apache-rat-plugin</artifactId>
-          <configuration>
-            <excludes>
-              <exclude>binary-package-licenses/**</exclude>
-              <exclude>DEV-README</exclude>
-              <exclude>**/src/main/sql/**</exclude>
-              <exclude>**/README.md</exclude>
-              <exclude>**/*.iml</exclude>
-              <exclude>**/*.txt</exclude>
-              <exclude>**/*.log</exclude>
-              <exclude>**/*.arcconfig</exclude>
-              <exclude>**/package-info.java</exclude>
-              <exclude>**/*.properties</exclude>
-              <exclude>**/*.q</exclude>
-              <exclude>**/*.q.out</exclude>
-              <exclude>**/*.xml</exclude>
-              <exclude>**/gen/**</exclude>
-              <exclude>**/patchprocess/**</exclude>
-              <exclude>**/metastore_db/**</exclude>
-            </excludes>
-          </configuration>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -481,6 +489,41 @@
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <excludes>
+            <exclude>*.patch</exclude>
+            <exclude>binary-package-licenses/**</exclude>
+            <exclude>DEV-README</exclude>
+            <exclude>**/src/main/sql/**</exclude>
+            <exclude>**/README.md</exclude>
+            <exclude>**/*.iml</exclude>
+            <exclude>**/*.txt</exclude>
+            <exclude>**/*.log</exclude>
+            <exclude>**/*.arcconfig</exclude>
+            <exclude>**/package-info.java</exclude>
+            <exclude>**/*.properties</exclude>
+            <exclude>**/*.q</exclude>
+            <exclude>**/*.q.out</exclude>
+            <exclude>**/*.xml</exclude>
+            <exclude>**/gen/**</exclude>
+            <exclude>**/patchprocess/**</exclude>
+            <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>**/test/resources/sql/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>

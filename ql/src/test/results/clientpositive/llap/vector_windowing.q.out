@@ -40,7 +40,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -95,7 +95,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -130,6 +130,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 1:string, col 1:string, col 3:double]
@@ -142,7 +143,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -259,7 +260,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
                     outputColumnNames: p_name, p_mfgr, p_size, p_retailprice
@@ -359,16 +360,28 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int), _col3 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col0:int, VALUE._col1:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -404,13 +417,35 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 1:string, col 1:string, col 2:int]
+                      functionNames: [rank, dense_rank, lag]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, int, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5]
                   Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int), _col3 (type: double), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col2 (type: int), (_col2 - lag_window_2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 2, 8]
+                        selectExpressions: LongColSubtractLongColumn(col 2:int, col 6:int) -> 8:int
                     Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -517,7 +552,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -616,16 +651,28 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int), _col3 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col0:int, VALUE._col1:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -661,13 +708,35 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 1:string, col 1:string, col 2:int]
+                      functionNames: [rank, dense_rank, lag]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, int, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5]
                   Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int), _col3 (type: double), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col2 (type: int), (_col2 - lag_window_2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 2, 8]
+                        selectExpressions: LongColSubtractLongColumn(col 2:int, col 6:int) -> 8:int
                     Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -764,7 +833,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -819,7 +888,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -840,6 +909,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorCount]
                       functionInputExpressions: [col 2:int]
@@ -852,7 +922,7 @@ STAGE PLANS:
                       outputTypes: [bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), count_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2
@@ -963,7 +1033,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -996,17 +1066,29 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, double, bigint, bigint, double, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1053,13 +1135,35 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorCount, VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 1:string, col 1:string, col 2:int, col 3:double, col 2:int]
+                      functionNames: [rank, dense_rank, count, sum, lag]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 7, 8, 1, 0, 2, 3]
+                      outputTypes: [int, int, bigint, double, int, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 7]
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), count_window_2 (type: bigint), _col7 (type: double), round(sum_window_3, 2) (type: double), _col5 (type: int), (_col5 - lag_window_4) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 4, 5, 6, 3, 10, 2, 11]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 7, decimalPlaces 2) -> 10:double, LongColSubtractLongColumn(col 2:int, col 8:int) -> 11:int
                     Statistics: Num rows: 26 Data size: 6734 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 6734 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1169,7 +1273,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -1202,17 +1306,29 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, double, bigint, bigint, double, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1259,13 +1375,35 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorCount, VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 1:string, col 1:string, col 2:int, col 3:double, col 2:int]
+                      functionNames: [rank, dense_rank, count, sum, lag]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 7, 8, 1, 0, 2, 3]
+                      outputTypes: [int, int, bigint, double, int, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 7]
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), count_window_2 (type: bigint), round(sum_window_3, 2) (type: double), (_col5 - lag_window_4) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4, 5, 6, 10, 11]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 7, decimalPlaces 2) -> 10:double, LongColSubtractLongColumn(col 2:int, col 8:int) -> 11:int
                     Statistics: Num rows: 26 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1381,7 +1519,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -1443,7 +1581,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1457,16 +1595,16 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -1490,17 +1628,29 @@ STAGE PLANS:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, bigint, bigint, double, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 27 Data size: 20709 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
+                Statistics: Num rows: 27 Data size: 6237 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1541,13 +1691,35 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 27 Data size: 20709 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double, col 2:int]
+                      functionNames: [rank, dense_rank, sum, lag]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 7, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, int, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
+                  Statistics: Num rows: 27 Data size: 6237 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col7 (type: double), round(sum_window_2, 2) (type: double), _col5 (type: int), (_col5 - lag_window_3) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 4, 5, 3, 9, 2, 10]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 9:double, LongColSubtractLongColumn(col 2:int, col 7:int) -> 10:int
                     Statistics: Num rows: 27 Data size: 6777 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 27 Data size: 6777 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1651,7 +1823,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string), p_size (type: int)
                     null sort order: aza
@@ -1704,7 +1876,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1726,6 +1898,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 1:string]
@@ -1738,7 +1911,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -1845,7 +2018,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -1900,7 +2073,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1935,6 +2108,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 1:string, col 1:string, col 3:double]
@@ -1947,7 +2121,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -2059,7 +2233,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -2114,7 +2288,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2149,6 +2323,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 1:string, col 1:string, col 3:double]
@@ -2161,7 +2336,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -2275,7 +2450,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -2312,13 +2487,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2350,7 +2525,7 @@ STAGE PLANS:
                               name: last_value
                               window function: GenericUDAFLastValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), first_value_window_1 (type: int), last_value_window_2 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -2463,7 +2638,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2478,11 +2653,11 @@ STAGE PLANS:
                       Map-reduce partition columns: 'Manufacturer#3' (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumns: 10:string, 1:string
-                          keyExpressions: ConstantVectorExpression(val Manufacturer#3) -> 10:string
+                          keyColumns: 11:string, 1:string
+                          keyExpressions: ConstantVectorExpression(val Manufacturer#3) -> 11:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumns: 11:string
+                          partitionColumns: 12:string
                           valueColumns: 5:int
                       Statistics: Num rows: 5 Data size: 1115 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: p_size (type: int)
@@ -2508,13 +2683,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col5
-                Statistics: Num rows: 5 Data size: 1965 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 625 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2553,7 +2728,7 @@ STAGE PLANS:
                               name: last_value
                               window function: GenericUDAFLastValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 5 Data size: 1965 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 625 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 'Manufacturer#3' (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), sum_window_1 (type: bigint), first_value_window_2 (type: int), last_value_window_3 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -2642,7 +2817,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -2679,13 +2854,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2711,7 +2886,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS CURRENT~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -2813,7 +2988,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -2868,7 +3043,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2897,6 +3072,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank]
                       functionInputExpressions: [col 1:string, col 1:string]
@@ -2909,7 +3085,7 @@ STAGE PLANS:
                       outputTypes: [int, int, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -3037,7 +3213,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -3074,13 +3250,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, lag, last_value, lead, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3159,30 +3335,30 @@ STAGE PLANS:
                               name: last_value
                               window function: GenericUDAFLastValueEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), percent_rank_window_3 (type: double), ntile_window_4 (type: int), count_window_5 (type: bigint), avg_window_6 (type: double), stddev_pop_window_7 (type: double), first_value_window_8 (type: int), last_value_window_9 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: rank_window_0, dense_rank_window_1, cume_dist_window_2, percent_rank_window_3, ntile_window_4, count_window_5, avg_window_6, stddev_pop_window_7, first_value_window_8, last_value_window_9, _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), percent_rank_window_3 (type: double), ntile_window_4 (type: int), count_window_5 (type: bigint), avg_window_6 (type: double), stddev_pop_window_7 (type: double), first_value_window_8 (type: int), last_value_window_9 (type: int), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: first_value only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: double), VALUE._col3 (type: double), VALUE._col4 (type: int), VALUE._col5 (type: bigint), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: int), VALUE._col9 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col13 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col11, _col12, _col15
-                Statistics: Num rows: 26 Data size: 14326 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 7358 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3202,7 +3378,7 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 14326 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 7358 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col12 (type: string), _col11 (type: string), _col15 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: double), _col3 (type: double), _col4 (type: int), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: int), _col9 (type: int), first_value_window_10 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
@@ -3334,7 +3510,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -3371,13 +3547,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, lag, last_value, lead, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3418,30 +3594,42 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), sum_window_3 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: rank_window_0, dense_rank_window_1, cume_dist_window_2, sum_window_3, _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col5 (type: int)
                       null sort order: az
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), sum_window_3 (type: bigint), _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 7
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:int, VALUE._col0:int, VALUE._col1:int, VALUE._col2:double, VALUE._col3:bigint, VALUE._col5:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: double), VALUE._col3 (type: bigint), VALUE._col5 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col9
-                Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [2, 3, 4, 5, 6, 0, 1]
+                Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3461,30 +3649,55 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(5)~CURRENT
-                  Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLongSum]
+                      functionInputExpressions: [col 1:int]
+                      functionNames: [sum]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2, 3, 4, 5, 6]
+                      orderExpressions: [col 1:int]
+                      outputColumns: [7, 2, 3, 4, 5, 6, 0, 1]
+                      outputTypes: [bigint, int, int, double, bigint, string, string, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_4 (type: bigint), _col0 (type: int), _col1 (type: int), _col2 (type: double), _col3 (type: bigint), _col5 (type: string), _col6 (type: string), _col9 (type: int)
                     outputColumnNames: sum_window_4, _col0, _col1, _col2, _col3, _col5, _col6, _col9
-                    Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [7, 2, 3, 4, 5, 6, 0, 1]
+                    Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col6 (type: string), _col5 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col6 (type: string)
-                      Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 0:string, 6:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          partitionColumns: 0:string
+                          valueColumns: 7:bigint, 2:int, 3:int, 4:double, 5:bigint, 1:int
+                      Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: sum_window_4 (type: bigint), _col0 (type: int), _col1 (type: int), _col2 (type: double), _col3 (type: bigint), _col9 (type: int)
         Reducer 4 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: first_value only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: double), VALUE._col4 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col8 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col7, _col10
-                Statistics: Num rows: 26 Data size: 13598 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6630 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3504,7 +3717,7 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 13598 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6630 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col7 (type: string), _col6 (type: string), _col10 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: double), _col4 (type: bigint), _col0 (type: bigint), first_value_window_5 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -3619,7 +3832,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -3674,7 +3887,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3701,6 +3914,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorCountStar, VectorPTFEvaluatorCount]
                       functionInputExpressions: [null, col 2:int]
@@ -3713,7 +3927,7 @@ STAGE PLANS:
                       outputTypes: [bigint, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: count_window_0 (type: bigint), count_window_1 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: count_window_0, count_window_1, _col1, _col2, _col5
@@ -3721,7 +3935,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3, 4, 1, 0, 2]
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
@@ -3734,20 +3948,20 @@ STAGE PLANS:
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           partitionColumns: 0:string
                           valueColumns: 3:bigint, 4:bigint, 2:int
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: count_window_0 (type: bigint), count_window_1 (type: bigint), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: first_value only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col5 (type: int)
                 outputColumnNames: _col0, _col1, _col3, _col4, _col7
-                Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3767,7 +3981,7 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col4 (type: string), _col3 (type: string), _col7 (type: int), _col0 (type: bigint), _col1 (type: bigint), first_value_window_2 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -3877,7 +4091,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: zz
@@ -3914,13 +4128,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3958,7 +4172,7 @@ STAGE PLANS:
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), round(sum_window_0, 2) (type: double), min_window_1 (type: double), max_window_2 (type: double), round(avg_window_3, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -4073,7 +4287,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
                     outputColumnNames: p_name, p_mfgr, p_size, p_retailprice
@@ -4177,7 +4391,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4326,7 +4540,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: zz
@@ -4369,7 +4583,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4413,7 +4627,7 @@ STAGE PLANS:
                               name: covar_pop
                               window function: GenericUDAFCovarianceEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), stddev_pop_window_0 (type: double), stddev_pop_window_0 (type: double), collect_set_window_1 (type: array<int>), var_pop_window_2 (type: double), round(corr_window_3, 5) (type: double), covar_pop_window_4 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -4527,7 +4741,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: zz
@@ -4570,7 +4784,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4602,7 +4816,7 @@ STAGE PLANS:
                               window function: GenericUDAFRowNumberEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), histogram_numeric_window_0 (type: array<struct<x:double,y:double>>), percentile_window_1 (type: double), row_number_window_2 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -4784,7 +4998,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5148 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: p_mfgr (type: string), p_brand (type: string), p_retailprice (type: double)
                     outputColumnNames: p_mfgr, p_brand, p_retailprice
@@ -5104,7 +5318,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 8294 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -5137,17 +5351,29 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col1:string, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col3, _col7
-                Statistics: Num rows: 26 Data size: 15262 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
+                Statistics: Num rows: 26 Data size: 8294 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5167,13 +5393,35 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(2)~CURRENT
-                  Statistics: Num rows: 26 Data size: 15262 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDoubleSum]
+                      functionInputExpressions: [col 3:double]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 1, 0, 2, 3]
+                      outputTypes: [double, string, string, string, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 26 Data size: 8294 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col3 (type: string), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 5]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 2) -> 5:double
                     Statistics: Num rows: 26 Data size: 5148 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 5148 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5266,22 +5514,22 @@ STAGE PLANS:
                   Select Operator
                     expressions: p_mfgr (type: string), p_name (type: string), p_size (type: int)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 26 Data size: 7254 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Lateral View Forward
-                      Statistics: Num rows: 26 Data size: 7254 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 26 Data size: 8710 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col2, _col4
-                          Statistics: Num rows: 26 Data size: 10166 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 26 Data size: 7254 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string), _col2 (type: int), _col4 (type: int)
                             null sort order: azz
                             sort order: +++
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 26 Data size: 10166 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 26 Data size: 7254 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: string)
                       Select Operator
                         expressions: Const array<int> [1, 2, 3] (type: array<int>)
@@ -5292,13 +5540,13 @@ STAGE PLANS:
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col1, _col2, _col4
-                            Statistics: Num rows: 26 Data size: 10166 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 26 Data size: 7254 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col2 (type: int), _col4 (type: int)
                               null sort order: azz
                               sort order: +++
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 26 Data size: 10166 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 26 Data size: 7254 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: all inputs
@@ -5309,16 +5557,28 @@ STAGE PLANS:
                 notVectorizedReason: Lateral View Forward (LATERALVIEWFORWARD) not supported
                 vectorized: false
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
-                vectorized: false
+                reduceColumnNullOrder: azz
+                reduceColumnSortOrder: +++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:int, KEY.reducesinkkey2:int, VALUE._col0:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int), KEY.reducesinkkey2 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col4
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 3, 1, 2]
                 Statistics: Num rows: 26 Data size: 6890 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -5339,13 +5599,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(2)~CURRENT
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLongSum]
+                      functionInputExpressions: [col 1:int]
+                      functionNames: [sum]
+                      keyInputColumns: [0, 1, 2]
+                      native: true
+                      nonKeyInputColumns: [3]
+                      orderExpressions: [col 1:int, col 2:int]
+                      outputColumns: [4, 0, 3, 1, 2]
+                      outputTypes: [bigint, string, string, int, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
                   Statistics: Num rows: 26 Data size: 6890 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col4 (type: int), _col2 (type: int), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 3, 2, 1, 4]
                     Statistics: Num rows: 26 Data size: 7098 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 7098 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5607,7 +5888,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -5737,7 +6018,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5772,6 +6053,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 1:string, col 1:string, col 3:double]
@@ -5784,7 +6066,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -5888,13 +6170,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, lag, last_value, lead, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5929,30 +6211,42 @@ STAGE PLANS:
                               window function: GenericUDAFCumeDistEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: rank_window_0, dense_rank_window_1, cume_dist_window_2, _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col5 (type: int)
                       null sort order: az
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), _col1 (type: string)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 6
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:int, VALUE._col0:int, VALUE._col1:int, VALUE._col2:double, VALUE._col4:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: double), VALUE._col4 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col8
-                Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
+                Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5972,30 +6266,55 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(5)~CURRENT
-                  Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLongSum]
+                      functionInputExpressions: [col 1:int]
+                      functionNames: [sum]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2, 3, 4, 5]
+                      orderExpressions: [col 1:int]
+                      outputColumns: [6, 2, 3, 4, 5, 0, 1]
+                      outputTypes: [bigint, int, int, double, string, string, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_3 (type: bigint), _col0 (type: int), _col1 (type: int), _col2 (type: double), _col4 (type: string), _col5 (type: string), _col8 (type: int)
                     outputColumnNames: sum_window_3, _col0, _col1, _col2, _col4, _col5, _col8
-                    Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6, 2, 3, 4, 5, 0, 1]
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col5 (type: string), _col4 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col5 (type: string)
-                      Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 0:string, 5:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          partitionColumns: 0:string
+                          valueColumns: 6:bigint, 2:int, 3:int, 4:double, 1:int
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: sum_window_3 (type: bigint), _col0 (type: int), _col1 (type: int), _col2 (type: double), _col8 (type: int)
         Reducer 6 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: first_value only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: double), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col7 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col9
-                Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6015,7 +6334,7 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col6 (type: string), _col5 (type: string), _col9 (type: int), _col1 (type: int), _col2 (type: int), UDFToInteger(_col3) (type: int), UDFToDouble(round(_col0, 1)) (type: double), first_value_window_4 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
@@ -6113,7 +6432,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6140,6 +6459,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorCountStar, VectorPTFEvaluatorCount]
                       functionInputExpressions: [null, col 2:int]
@@ -6152,7 +6472,7 @@ STAGE PLANS:
                       outputTypes: [bigint, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: count_window_0 (type: bigint), count_window_1 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: count_window_0, count_window_1, _col1, _col2, _col5
@@ -6160,7 +6480,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3, 4, 1, 0, 2]
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
@@ -6173,20 +6493,20 @@ STAGE PLANS:
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           partitionColumns: 0:string
                           valueColumns: 3:bigint, 4:bigint, 2:int
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: count_window_0 (type: bigint), count_window_1 (type: bigint), _col5 (type: int)
         Reducer 9 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: first_value only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: first_value UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col5 (type: int)
                 outputColumnNames: _col0, _col1, _col3, _col4, _col7
-                Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6206,7 +6526,7 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col4 (type: string), _col3 (type: string), _col7 (type: int), UDFToInteger(_col0) (type: int), UDFToInteger(_col1) (type: int), first_value_window_2 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -6516,7 +6836,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -6615,16 +6935,28 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int), _col3 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col0:int, VALUE._col1:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -6660,13 +6992,35 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 1:string, col 1:string, col 2:int]
+                      functionNames: [rank, dense_rank, lag]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, int, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5]
                   Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int), _col3 (type: double), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col2 (type: int), (_col2 - lag_window_2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 2, 8]
+                        selectExpressions: LongColSubtractLongColumn(col 2:int, col 6:int) -> 8:int
                     Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -6767,7 +7121,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_size (type: int)
                     null sort order: az
@@ -6804,13 +7158,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6836,7 +7190,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE CURRENT~FOLLOWING(10)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -6936,7 +7290,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -6973,13 +7327,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6999,7 +7353,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -7097,7 +7451,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -7134,13 +7488,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7160,7 +7514,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -7264,7 +7618,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -7301,13 +7655,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7333,7 +7687,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -7441,7 +7795,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -7478,13 +7832,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7504,7 +7858,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -7612,7 +7966,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -7649,13 +8003,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7681,7 +8035,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -7793,7 +8147,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -7830,13 +8184,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7862,7 +8216,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_1 (type: bigint), sum_window_1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -7978,7 +8332,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -8015,13 +8369,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -8053,7 +8407,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint), sum_window_1 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -8162,7 +8516,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -8199,13 +8553,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -8225,11 +8579,11 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: bigint)
                       minReductionHashAggr: 0.4
@@ -8366,7 +8720,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -8421,7 +8775,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -8443,6 +8797,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 1:string]
@@ -8455,7 +8810,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -8567,7 +8922,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 2756 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     null sort order: z
@@ -8622,7 +8977,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
-                Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 2756 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -8649,6 +9004,7 @@ STAGE PLANS:
                               window function: GenericUDAFMaxEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMax]
                       functionInputExpressions: [col 1:double, col 1:double]
@@ -8659,8 +9015,9 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [2, 3, 0, 1]
                       outputTypes: [double, double, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 2756 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), max_window_2 (type: double), _col2 (type: string), _col7 (type: double)
                     outputColumnNames: sum_window_0, max_window_2, _col2, _col7
@@ -8668,7 +9025,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3, 0, 1]
-                    Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 2756 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
                       null sort order: a
@@ -8681,7 +9038,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           partitionColumns: 0:string
                           valueColumns: 2:double, 3:double, 1:double
-                      Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 2756 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: sum_window_0 (type: double), max_window_2 (type: double), _col7 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -8706,7 +9063,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 2, 0, 3]
-                Statistics: Num rows: 26 Data size: 10140 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 3172 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -8739,6 +9096,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleAvg, VectorPTFEvaluatorCount]
                       functionInputExpressions: [col 3:double, col 3:double, col 3:double]
@@ -8749,8 +9107,9 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [4, 5, 6, 1, 2, 0, 3]
                       outputTypes: [double, double, bigint, double, double, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 10140 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 3172 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col4 (type: string), round(_col0, 2) (type: double), min_window_1 (type: double), _col1 (type: double), round(avg_window_3, 2) (type: double), count_window_4 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -8867,7 +9226,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: zz
@@ -8922,7 +9281,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -8949,6 +9308,7 @@ STAGE PLANS:
                               window function: GenericUDAFMinEvaluator
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorStreamingDoubleMin]
                       functionInputExpressions: [col 3:double, col 3:double]
@@ -8959,8 +9319,9 @@ STAGE PLANS:
                       orderExpressions: [col 0:string, col 1:string]
                       outputColumns: [4, 5, 1, 0, 2, 3]
                       outputTypes: [double, double, string, string, int, double]
+                      partitionExpressions: [col 0:string, col 1:string]
                       streamingColumns: [4, 5]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), min_window_1 (type: double), _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: sum_window_0, min_window_1, _col1, _col2, _col5, _col7
@@ -8968,7 +9329,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [4, 5, 1, 0, 2, 3]
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: az
@@ -8981,7 +9342,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           partitionColumns: 0:string, 1:string
                           valueColumns: 4:double, 5:double, 2:int, 3:double
-                      Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: sum_window_0 (type: double), min_window_1 (type: double), _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -9006,7 +9367,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 3, 1, 0, 4, 5]
-                Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -9027,6 +9388,7 @@ STAGE PLANS:
                               window function: GenericUDAFMaxEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleMax]
                       functionInputExpressions: [col 5:double]
@@ -9039,7 +9401,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, string, string, int, double]
                       partitionExpressions: [col 0:string, col 1:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 13390 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col4 (type: string), _col3 (type: string), _col7 (type: int), round(_col0, 2) (type: double), _col1 (type: double), max_window_2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -9147,7 +9509,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5252 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), substr(p_type, 2) (type: string)
                     null sort order: az
@@ -9155,8 +9517,8 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumns: 2:string, 10:string
-                        keyExpressions: StringSubstrColStart(col 4:string, start 1) -> 10:string
+                        keyColumns: 2:string, 11:string
+                        keyExpressions: StringSubstrColStart(col 4:string, start 1) -> 11:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 2:string
@@ -9203,7 +9565,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2]
-                Statistics: Num rows: 26 Data size: 12220 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5252 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -9225,6 +9587,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [StringSubstrColStart(col 2:string, start 1) -> 5:string]
@@ -9237,7 +9600,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 26 Data size: 12220 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5252 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col4 (type: string), substr(_col4, 2) (type: string), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -9341,7 +9704,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -9396,7 +9759,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -9417,6 +9780,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 3:double]
@@ -9429,7 +9793,7 @@ STAGE PLANS:
                       outputTypes: [double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -9533,7 +9897,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_size (type: int)
                     null sort order: az
@@ -9588,7 +9952,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 0, 1, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -9609,6 +9973,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum]
                       functionInputExpressions: [col 3:double]
@@ -9621,7 +9986,7 @@ STAGE PLANS:
                       outputTypes: [double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -9725,7 +10090,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -9758,17 +10123,29 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -9788,13 +10165,35 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS CURRENT~FOLLOWING(MAX)
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDoubleSum]
+                      functionInputExpressions: [col 3:double]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 1, 0, 2, 3]
+                      outputTypes: [double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 5]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 2) -> 5:double
                     Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -9884,7 +10283,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_size (type: int)
                     null sort order: az
@@ -9921,13 +10320,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -9947,7 +10346,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: RANGE CURRENT~FOLLOWING(MAX)
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -10046,7 +10445,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: 0 (type: int)
                     null sort order: a
@@ -10054,11 +10453,11 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumns: 10:int
-                        keyExpressions: ConstantVectorExpression(val 0) -> 10:int
+                        keyColumns: 11:int
+                        keyExpressions: ConstantVectorExpression(val 0) -> 11:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumns: 11:int
+                        partitionColumns: 12:int
                         valueColumns: 1:string, 7:double
                     Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
@@ -10093,7 +10492,7 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: KEY.reducesinkkey0:int, VALUE._col1:string, VALUE._col7:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, bigint, double]
+                    scratchColumnTypeNames: [double, bigint, bigint, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), VALUE._col7 (type: double)
@@ -10102,7 +10501,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 2]
-                Statistics: Num rows: 26 Data size: 10322 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -10123,6 +10522,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double]
@@ -10130,19 +10530,20 @@ STAGE PLANS:
                       keyInputColumns: []
                       native: true
                       nonKeyInputColumns: [1, 2]
-                      orderExpressions: [ConstantVectorExpression(val 0) -> 4:int]
+                      orderExpressions: [ConstantVectorExpression(val 0) -> 5:int]
                       outputColumns: [3, 1, 2]
                       outputTypes: [double, string, double]
+                      partitionExpressions: [ConstantVectorExpression(val 0) -> 4:int]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 10322 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col7 (type: double), round(avg_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 2, 5]
-                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 3, decimalPlaces 2) -> 5:double
+                        projectedOutputColumnNums: [1, 2, 6]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 3, decimalPlaces 2) -> 6:double
                     Statistics: Num rows: 26 Data size: 3562 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
@@ -10153,7 +10554,7 @@ STAGE PLANS:
                           keyColumns: 1:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 2:double, 5:double
+                          valueColumns: 2:double, 6:double
                       Statistics: Num rows: 26 Data size: 3562 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: double), _col2 (type: double)
         Reducer 3 
@@ -10279,7 +10680,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 2652 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -10294,11 +10695,11 @@ STAGE PLANS:
                       Map-reduce partition columns: 'Manufacturer#6' (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumns: 10:string, 5:int
-                          keyExpressions: ConstantVectorExpression(val Manufacturer#6) -> 10:string
+                          keyColumns: 11:string, 5:int
+                          keyExpressions: ConstantVectorExpression(val Manufacturer#6) -> 11:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumns: 11:string
+                          partitionColumns: 12:string
                       Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10340,7 +10741,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1]
-                Statistics: Num rows: 5 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -10361,6 +10762,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingLongSum]
                       functionInputExpressions: [col 1:int]
@@ -10373,7 +10775,7 @@ STAGE PLANS:
                       outputTypes: [bigint, int]
                       partitionExpressions: [ConstantVectorExpression(val Manufacturer#6) -> 3:string]
                       streamingColumns: [2]
-                  Statistics: Num rows: 5 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 'Manufacturer#6' (type: string), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1
@@ -10456,7 +10858,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -10471,11 +10873,11 @@ STAGE PLANS:
                       Map-reduce partition columns: 'Manufacturer#1' (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumns: 10:string, 1:string
-                          keyExpressions: ConstantVectorExpression(val Manufacturer#1) -> 10:string
+                          keyColumns: 11:string, 1:string
+                          keyExpressions: ConstantVectorExpression(val Manufacturer#1) -> 11:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumns: 11:string
+                          partitionColumns: 12:string
                           valueColumns: 7:double
                       Statistics: Num rows: 5 Data size: 1135 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: p_retailprice (type: double)
@@ -10501,13 +10903,13 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: avg only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: avg UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), VALUE._col6 (type: double)
                 outputColumnNames: _col1, _col7
-                Statistics: Num rows: 5 Data size: 1985 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -10533,7 +10935,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS CURRENT~FOLLOWING(6)
-                  Statistics: Num rows: 5 Data size: 1985 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col7 (type: double), round(avg_window_0, 2) (type: double), round(sum_window_1, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2
@@ -10610,7 +11012,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 2652 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 10:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -10625,11 +11027,11 @@ STAGE PLANS:
                       Map-reduce partition columns: 'm1' (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumns: 10:string
-                          keyExpressions: ConstantVectorExpression(val m1) -> 10:string
+                          keyColumns: 11:string
+                          keyExpressions: ConstantVectorExpression(val m1) -> 11:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumns: 11:string
+                          partitionColumns: 12:string
                           valueColumns: 5:int
                       Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: p_size (type: int)
@@ -10664,7 +11066,7 @@ STAGE PLANS:
                     dataColumnCount: 2
                     dataColumns: KEY.reducesinkkey0:string, VALUE._col5:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, string]
+                    scratchColumnTypeNames: [bigint, string, string]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col5 (type: int)
@@ -10673,7 +11075,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1]
-                Statistics: Num rows: 5 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -10694,6 +11096,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongSum]
                       functionInputExpressions: [col 1:int]
@@ -10701,11 +11104,12 @@ STAGE PLANS:
                       keyInputColumns: []
                       native: true
                       nonKeyInputColumns: [1]
-                      orderExpressions: [ConstantVectorExpression(val m1) -> 3:string]
+                      orderExpressions: [ConstantVectorExpression(val m1) -> 4:string]
                       outputColumns: [2, 1]
                       outputTypes: [bigint, int]
+                      partitionExpressions: [ConstantVectorExpression(val m1) -> 3:string]
                       streamingColumns: []
-                  Statistics: Num rows: 5 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: bigint)
                     outputColumnNames: _col0

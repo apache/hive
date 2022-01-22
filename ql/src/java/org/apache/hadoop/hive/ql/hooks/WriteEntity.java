@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -62,6 +63,11 @@ public class WriteEntity extends Entity implements Serializable {
 
   public WriteEntity(Database database, WriteType type) {
     super(database, true);
+    setWriteTypeInternal(type);
+  }
+
+  public WriteEntity(DataConnector connector, WriteType type) {
+    super(connector, true);
     setWriteTypeInternal(type);
   }
 
@@ -219,7 +225,9 @@ public class WriteEntity extends Entity implements Serializable {
     case RENAME:
     case TRUNCATE:
     case MERGEFILES:
+    case ADD_CONSTRAINT:
     case DROP_CONSTRAINT:
+    case OWNER:
       return WriteType.DDL_EXCLUSIVE;
 
     case ADDPARTITION:

@@ -206,6 +206,8 @@ POSTHOOK: Output: default@cluster_mv_1@partkey=344.0
 POSTHOOK: Output: default@cluster_mv_1@partkey=347.0
 POSTHOOK: Output: default@cluster_mv_1@partkey=348.0
 POSTHOOK: Output: default@cluster_mv_1@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_1.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
@@ -316,6 +318,10 @@ Original Query:     	SELECT value, key, key + 100 as partkey FROM src_txn where 
 Expanded Query:     	SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 Found 32 items
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
@@ -530,6 +536,8 @@ POSTHOOK: Output: default@cluster_mv_2@partkey=344.0
 POSTHOOK: Output: default@cluster_mv_2@partkey=347.0
 POSTHOOK: Output: default@cluster_mv_2@partkey=348.0
 POSTHOOK: Output: default@cluster_mv_2@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_2.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
@@ -1279,6 +1287,8 @@ POSTHOOK: Output: default@cluster_mv_3@partkey=344.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=347.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=348.0
 POSTHOOK: Output: default@cluster_mv_3@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_3.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
@@ -1655,6 +1665,10 @@ POSTHOOK: Output: default@cluster_mv_4@partkey=344.0
 POSTHOOK: Output: default@cluster_mv_4@partkey=347.0
 POSTHOOK: Output: default@cluster_mv_4@partkey=348.0
 POSTHOOK: Output: default@cluster_mv_4@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_4.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4.te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4.tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
@@ -1831,6 +1845,10 @@ Original Query:     	SELECT src_txn.key + 100 as partkey, value, key, key+1 as t
 Expanded Query:     	SELECT `value`, `key`, `tes"t`, `te*#"s"t`, `partkey` FROM (SELECT `src_txn`.`key` + 100 as `partkey`, `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key`+1 as `tes"t`, `src_txn`.`key`+2 as `te*#"s"t` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_4`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -2628,3 +2646,7 @@ Original Query:     	SELECT src_txn.key + 100 as partkey, value, key, key+1 as t
 Expanded Query:     	SELECT `value`, `key`, `tes"t`, `te*#"s"t`, `partkey` FROM (SELECT `src_txn`.`key` + 100 as `partkey`, `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key`+1 as `tes"t`, `src_txn`.`key`+2 as `te*#"s"t` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_4`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 

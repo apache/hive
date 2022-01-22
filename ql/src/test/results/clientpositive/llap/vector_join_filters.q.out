@@ -128,7 +128,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: VectorUDFAdaptor(((key > 40) and (value > 50) and (key = value)))(children: LongColGreaterLongScalar(col 0:int, val 40) -> 3:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 4:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 5:boolean) -> 6:boolean
+                        selectExpressions: VectorUDFAdaptor(((key > 40) and (value > 50) and (key = value)))(children: LongColGreaterLongScalar(col 0:int, val 40) -> 4:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 5:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 6:boolean) -> 7:boolean
                     Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -378,7 +378,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 3:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 4:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 5:boolean
+                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 4:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 5:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 6:boolean
                     Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -403,7 +403,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 8:int
+                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 9:int
                         Statistics: Num rows: 5 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
@@ -555,7 +555,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 3:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 4:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 5:boolean
+                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 4:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 5:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 6:boolean
                     Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -580,7 +580,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 8:int
+                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 9:int
                         Statistics: Num rows: 5 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
@@ -732,7 +732,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 3:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 4:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 5:boolean
+                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 4:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 5:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 6:boolean
                     Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -757,7 +757,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 8:int
+                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 9:int
                         Statistics: Num rows: 5 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
@@ -908,7 +908,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 3:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 4:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 5:boolean
+                        selectExpressions: LongColGreaterLongScalar(col 0:int, val 40) -> 4:boolean, LongColGreaterLongScalar(col 1:int, val 50) -> 5:boolean, LongColEqualLongColumn(col 0:int, col 1:int) -> 6:boolean
                     Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -933,7 +933,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 8:int
+                            selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3)) -> 9:int
                         Statistics: Num rows: 5 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)

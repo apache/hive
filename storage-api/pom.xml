@@ -118,6 +118,7 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- test inter-project -->
@@ -185,12 +186,24 @@
         <version>3.0.0-M4</version>
         <configuration>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx2048m</argLine>
+          <argLine>-Xmx3g</argLine>
           <failIfNoTests>false</failIfNoTests>
           <systemPropertyVariables>
             <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
           </systemPropertyVariables>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

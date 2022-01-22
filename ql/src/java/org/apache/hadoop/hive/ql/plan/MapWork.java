@@ -39,7 +39,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.IConfigureJobConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -155,6 +154,8 @@ public class MapWork extends BaseWork {
   private Map<String, List<String>> eventSourceColumnTypeMap =
       new LinkedHashMap<String, List<String>>();
   private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
+      new LinkedHashMap<String, List<ExprNodeDesc>>();
+  private Map<String, List<ExprNodeDesc>> eventSourcePredicateExprMap =
       new LinkedHashMap<String, List<ExprNodeDesc>>();
 
   private boolean doSplitsGrouping = true;
@@ -310,7 +311,8 @@ public class MapWork extends BaseWork {
           } else {
             hasLlap = true;
           }
-        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass)) {
+        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass,
+            Utilities.getIsVectorized(conf, this))) {
           hasCacheOnly = true;
         } else {
           hasNonLlap = true;
@@ -707,6 +709,14 @@ public class MapWork extends BaseWork {
 
   public void setEventSourcePartKeyExprMap(Map<String, List<ExprNodeDesc>> map) {
     this.eventSourcePartKeyExprMap = map;
+  }
+
+  public Map<String, List<ExprNodeDesc>> getEventSourcePredicateExprMap() {
+    return eventSourcePredicateExprMap;
+  }
+
+  public void setEventSourcePredicateExprMap(Map<String, List<ExprNodeDesc>> eventSourcePredicateExprMap) {
+    this.eventSourcePredicateExprMap = eventSourcePredicateExprMap;
   }
 
   public void setDoSplitsGrouping(boolean doSplitsGrouping) {

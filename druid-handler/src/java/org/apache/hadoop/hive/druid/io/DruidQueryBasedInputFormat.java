@@ -111,9 +111,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     if (StringUtils.isEmpty(druidQuery)) {
       // Empty, maybe because CBO did not run; we fall back to
       // full Select query
-      if (LOG.isWarnEnabled()) {
-        LOG.warn("Druid query is empty; creating Select query");
-      }
+      LOG.warn("Druid query is empty; creating Select query");
       String dataSource = conf.get(Constants.DRUID_DATA_SOURCE);
       if (dataSource == null || dataSource.isEmpty()) {
         throw new IOException("Druid data source cannot be empty or null");

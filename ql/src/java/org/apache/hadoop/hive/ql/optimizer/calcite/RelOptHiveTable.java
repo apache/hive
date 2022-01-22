@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
+import org.apache.hadoop.hive.ql.parse.ParsedQueryTables;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -82,6 +83,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class RelOptHiveTable implements RelOptTable {
 
@@ -102,11 +104,12 @@ public class RelOptHiveTable implements RelOptTable {
   private final int                               noOfNonVirtualCols;
   private final List<ImmutableBitSet>             keys;
   private final List<ImmutableBitSet>             nonNullablekeys;
-  private final List<RelReferentialConstraint>    referentialConstraints;
+  private List<RelReferentialConstraint>          referentialConstraints;
+  private boolean                                 fetchedReferentialConstraints;
   private final HiveConf                          hiveConf;
 
   private final Hive                              db;
-  private final Map<String, Table>                tablesCache;
+  private final ParsedQueryTables                 tablesCache;
   private final Map<String, PrunedPartitionList>  partitionCache;
   private final Map<String, ColumnStatsList>      colStatsCache;
   private final AtomicInteger                     noColsMissingStats;
@@ -119,7 +122,7 @@ public class RelOptHiveTable implements RelOptTable {
 
   public RelOptHiveTable(RelOptSchema calciteSchema, RelDataTypeFactory typeFactory, List<String> qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols, List<ColumnInfo> hivePartitionCols,
-      List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, Map<String, Table> tabNameToTabObject,
+      List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, ParsedQueryTables tabNameToTabObject,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
       AtomicInteger noColsMissingStats) {
     this.schema = calciteSchema;
@@ -144,7 +147,6 @@ public class RelOptHiveTable implements RelOptTable {
     Pair<List<ImmutableBitSet>, List<ImmutableBitSet>> constraintKeys = generateKeys();
     this.keys = constraintKeys.left;
     this.nonNullablekeys = constraintKeys.right;
-    this.referentialConstraints = generateReferentialConstraints();
   }
 
   //~ Methods ----------------------------------------------------------------
@@ -248,8 +250,24 @@ public class RelOptHiveTable implements RelOptTable {
     return false;
   }
 
+  public boolean hasReferentialConstraints() {
+    ForeignKeyInfo foreignKeyInfo = hiveTblMetadata.getForeignKeyInfo();
+    return foreignKeyInfo != null && !foreignKeyInfo.getForeignKeys().isEmpty();
+  }
+
+  @Override
+  public List<ImmutableBitSet> getKeys() {
+    return keys;
+  }
+
   @Override
   public List<RelReferentialConstraint> getReferentialConstraints() {
+    // Do a lazy load here. We only want to fetch the constraint tables that
+    // are used in the query.
+    if (!fetchedReferentialConstraints) {
+      referentialConstraints = generateReferentialConstraints();
+      fetchedReferentialConstraints = true;
+    }
     return referentialConstraints;
   }
 
@@ -328,12 +346,11 @@ public class RelOptHiveTable implements RelOptTable {
           parentTableQualifiedName.add(parentTableName);
           qualifiedName = parentTableName;
         }
-        Table parentTab = getTable(qualifiedName);
+        Table parentTab = tablesCache.getParsedTable(qualifiedName);
         if (parentTab == null) {
-          LOG.error("Table for primary key not found: "
-              + "databaseName: " + parentDatabaseName + ", "
-              + "tableName: " + parentTableName);
-          return ImmutableList.of();
+          // Table doesn't exist in the cache, so we don't need to track
+          // these referential constraints.
+          continue;
         }
         ImmutableList.Builder<IntPair> keys = ImmutableList.builder();
         for (ForeignKeyCol fkCol : fkCols) {
@@ -354,7 +371,7 @@ public class RelOptHiveTable implements RelOptTable {
           if (fkPos == rowType.getFieldNames().size()
               || pkPos == parentTab.getAllCols().size()) {
             LOG.error("Column for foreign key definition " + fkCol + " not found");
-            return ImmutableList.of();
+            continue;
           }
           keys.add(IntPair.of(fkPos, pkPos));
         }
@@ -363,21 +380,6 @@ public class RelOptHiveTable implements RelOptTable {
       }
     }
     return builder.build();
-  }
-
-  private Table getTable(String tableName) {
-    if (!tablesCache.containsKey(tableName)) {
-      try {
-        Table table = db.getTable(tableName);
-        if (table != null) {
-          tablesCache.put(tableName, table);
-        }
-        return table;
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return tablesCache.get(tableName);
   }
 
   @Override

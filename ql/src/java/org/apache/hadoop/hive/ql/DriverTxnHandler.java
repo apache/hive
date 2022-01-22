@@ -138,7 +138,7 @@ class DriverTxnHandler {
   void cleanupTxnList() {
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
   }
-  
+
   void acquireLocksIfNeeded() throws CommandProcessorException {
     if (requiresLock()) {
       acquireLocks();
@@ -153,6 +153,11 @@ class DriverTxnHandler {
 
     // Lock operations themselves don't require the lock.
     if (isExplicitLockOperation()) {
+      return false;
+    }
+
+    // no execution is going to be attempted, skip acquiring locks
+    if (context.isExplainSkipExecution()) {
       return false;
     }
 
@@ -219,6 +224,8 @@ class DriverTxnHandler {
     }
 
     try {
+      // Ensure we answer any metadata calls with fresh responses
+      driverContext.getQueryState().disableHMSCache();
       setWriteIdForAcidFileSinks();
       allocateWriteIdForAcidAnalyzeTable();
       boolean hasAcidDdl = setWriteIdForAcidDdl();
@@ -240,6 +247,7 @@ class DriverTxnHandler {
       throw DriverUtils.createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()),
           e);
     } finally {
+      driverContext.getQueryState().enableHMSCache();
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
   }
@@ -501,7 +509,7 @@ class DriverTxnHandler {
   void handleTransactionAfterExecution() throws CommandProcessorException {
     try {
       //since set autocommit starts an implicit txn, close it
-      if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
+      if (driverContext.getTxnManager().isImplicitTransactionOpen(context) ||
           driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
         endTransactionAndCleanup(true);
       } else if (driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
@@ -565,7 +573,7 @@ class DriverTxnHandler {
   void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
-    
+
     // If we've opened a transaction we need to commit or rollback rather than explicitly releasing the locks.
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
     driverContext.getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);

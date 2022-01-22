@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Preconditions;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
@@ -55,10 +53,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -99,6 +95,7 @@ public final class ParseUtils {
         // It is a view
         ctx.addViewTokenRewriteStream(viewFullyQualifiedName, parseResult.getTokenRewriteStream());
       }
+      ctx.setParsedTables(parseResult.getTables());
     }
     ASTNode tree = parseResult.getTree();
     tree = findRootNonNullToken(tree);
@@ -311,47 +308,6 @@ public final class ParseUtils {
       return false;
     }
 
-    public static boolean sameTree(ASTNode node, ASTNode otherNode) {
-      if (node == null && otherNode == null) {
-        return true;
-      }
-      if ((node == null && otherNode != null) ||
-              (node != null && otherNode == null)) {
-        return false;
-      }
-
-      Stack<Tree> stack = new Stack<Tree>();
-      stack.push(node);
-      Stack<Tree> otherStack = new Stack<Tree>();
-      otherStack.push(otherNode);
-
-      while (!stack.empty() && !otherStack.empty()) {
-        Tree p = stack.pop();
-        Tree otherP = otherStack.pop();
-
-        if (p.isNil() != otherP.isNil()) {
-          return false;
-        }
-        if (!p.isNil()) {
-          if (!p.toString().equals(otherP.toString())) {
-            return false;
-          }
-        }
-        if (p.getChildCount() != otherP.getChildCount()) {
-          return false;
-        }
-        for (int i = p.getChildCount()-1; i >= 0; i--) {
-          Tree t = p.getChild(i);
-          stack.push(t);
-          Tree otherT = otherP.getChild(i);
-          otherStack.push(otherT);
-        }
-      }
-
-      return stack.empty() && otherStack.empty();
-    }
-
-
     private static void handleSetColRefs(ASTNode tree, Context ctx) {
       CalcitePlanner.ASTSearcher astSearcher = new CalcitePlanner.ASTSearcher();
       while (true) {
@@ -444,7 +400,7 @@ public final class ParseUtils {
         // Repeat the procedure for the new select.
       }
 
-      // Found the proper columns.
+      // Find the proper columns.
       List<ASTNode> newChildren = new ArrayList<>(select.getChildCount());
       HashSet<String> aliases = new HashSet<>();
       for (int i = 0; i < select.getChildCount(); ++i) {
@@ -452,51 +408,57 @@ public final class ParseUtils {
         if (selExpr.getType() == HiveParser.QUERY_HINT) continue;
         assert selExpr.getType() == HiveParser.TOK_SELEXPR;
         assert selExpr.getChildCount() > 0;
-        // Examine the last child. It could be an alias.
-        Tree child = selExpr.getChild(selExpr.getChildCount() - 1);
-        switch (child.getType()) {
-        case HiveParser.TOK_SETCOLREF:
-          // We have a nested setcolref. Process that and start from scratch TODO: use stack?
-          processSetColsNode((ASTNode)child, searcher, ctx);
-          processSetColsNode(setCols, searcher, ctx);
-          return;
-        case HiveParser.TOK_ALLCOLREF:
-          // We should find an alias of this insert and do (alias).*. This however won't fix e.g.
-          // positional order by alias case, cause we'd still have a star on the top level. Bail.
-          LOG.debug("Replacing SETCOLREF with ALLCOLREF because of nested ALLCOLREF");
-          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-          return;
-        case HiveParser.TOK_TABLE_OR_COL:
-          Tree idChild = child.getChild(0);
-          assert idChild.getType() == HiveParser.Identifier : idChild;
-          if (!createChildColumnRef(idChild, alias, newChildren, aliases, ctx)) {
-            setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-            return;
+        // we can have functions which generate multiple aliases (e.g. explode(map(x, y)) as (key, val))
+        boolean isFunctionWithMultipleParameters =
+            selExpr.getChild(0).getType() == HiveParser.TOK_FUNCTION && selExpr.getChildCount() > 2;
+        // if so let's skip the function token buth then examine all its parameters - otherwise check only the last item
+        int start = isFunctionWithMultipleParameters ? 1 : selExpr.getChildCount() - 1;
+        for (int j = start; j < selExpr.getChildCount(); ++j) {
+          Tree child = selExpr.getChild(j);
+          switch (child.getType()) {
+            case HiveParser.TOK_SETCOLREF:
+              // We have a nested setcolref. Process that and start from scratch TODO: use stack?
+              processSetColsNode((ASTNode) child, searcher, ctx);
+              processSetColsNode(setCols, searcher, ctx);
+              return;
+            case HiveParser.TOK_ALLCOLREF:
+              // We should find an alias of this insert and do (alias).*. This however won't fix e.g.
+              // positional order by alias case, cause we'd still have a star on the top level. Bail.
+              LOG.debug("Replacing SETCOLREF with ALLCOLREF because of nested ALLCOLREF");
+              setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+              return;
+            case HiveParser.TOK_TABLE_OR_COL:
+              Tree idChild = child.getChild(0);
+              assert idChild.getType() == HiveParser.Identifier : idChild;
+              if (!createChildColumnRef(idChild, alias, newChildren, aliases, ctx)) {
+                setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+                return;
+              }
+              break;
+            case HiveParser.Identifier:
+              if (!createChildColumnRef(child, alias, newChildren, aliases, ctx)) {
+                setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+                return;
+              }
+              break;
+            case HiveParser.DOT: {
+              Tree colChild = child.getChild(child.getChildCount() - 1);
+              assert colChild.getType() == HiveParser.Identifier : colChild;
+              if (!createChildColumnRef(colChild, alias, newChildren, aliases, ctx)) {
+                setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+                return;
+              }
+              break;
+            }
+            default:
+              // Not really sure how to refer to this (or if we can).
+              // TODO: We could find a different from branch for the union, that might have an alias?
+              //       Or we could add an alias here to refer to, but that might break other branches.
+              LOG.debug("Replacing SETCOLREF with ALLCOLREF because of the nested node "
+                  + child.getType() + " " + child.getText());
+              setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+              return;
           }
-          break;
-        case HiveParser.Identifier:
-          if (!createChildColumnRef(child, alias, newChildren, aliases, ctx)) {
-            setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-            return;
-          }
-          break;
-        case HiveParser.DOT: {
-          Tree colChild = child.getChild(child.getChildCount() - 1);
-          assert colChild.getType() == HiveParser.Identifier : colChild;
-          if (!createChildColumnRef(colChild, alias, newChildren, aliases, ctx)) {
-            setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-            return;
-          }
-          break;
-        }
-        default:
-          // Not really sure how to refer to this (or if we can).
-          // TODO: We could find a different from branch for the union, that might have an alias?
-          //       Or we could add an alias here to refer to, but that might break other branches.
-          LOG.debug("Replacing SETCOLREF with ALLCOLREF because of the nested node "
-              + child.getType() + " " + child.getText());
-          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-          return;
         }
       }
       // Insert search in the beginning would have failed if these parents didn't exist.

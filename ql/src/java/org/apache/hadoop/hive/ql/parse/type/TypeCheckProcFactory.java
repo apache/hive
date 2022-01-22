@@ -923,7 +923,7 @@ public class TypeCheckProcFactory<T> {
           }
 
           // Calculate TypeInfo
-          TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
+          TypeInfo t = node.getTypeInfo() != null ? node.getTypeInfo() : ((ListTypeInfo) myt).getListElementTypeInfo();
           expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
         } else if (myt.getCategory() == Category.MAP) {
           if (!TypeInfoUtils.implicitConvertible(exprFactory.getTypeInfo(children.get(1)),
@@ -932,7 +932,7 @@ public class TypeCheckProcFactory<T> {
                 ErrorMsg.INVALID_MAPINDEX_TYPE.getMsg(), node));
           }
           // Calculate TypeInfo
-          TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
+          TypeInfo t = node.getTypeInfo() != null ? node.getTypeInfo() : ((MapTypeInfo) myt).getMapValueTypeInfo();
           expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
         } else {
           throw new SemanticException(ASTErrorUtils.getMsg(
@@ -980,14 +980,8 @@ public class TypeCheckProcFactory<T> {
 
           final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
               exprFactory.getTypeInfo(columnChild).getTypeName().toLowerCase());
-          T newChild = interpretNodeAsConstant(colTypeInfo, constChild,
-              exprFactory.isEqualFunction(fi));
-          if (newChild == null) {
-            // non-interpretable as target type...
-            if (!exprFactory.isNSCompareFunction(fi)) {
-              return exprFactory.createBooleanConstantExpr(null);
-            }
-          } else {
+          T newChild = interpretNodeAsConstant(colTypeInfo, constChild);
+          if (newChild != null) {
             children.set(constIdx, newChild);
           }
         }
@@ -1007,17 +1001,12 @@ public class TypeCheckProcFactory<T> {
             T columnDesc = children.get(0);
             T valueDesc = interpretNode(columnDesc, children.get(i));
             if (valueDesc == null) {
-              if (hasNullValue) {
-                // Skip if null value has already been added
-                continue;
-              }
-              TypeInfo targetType = exprFactory.getTypeInfo(columnDesc);
+              // Keep original
+              TypeInfo targetType = exprFactory.getTypeInfo(children.get(i));
               if (!expressions.containsKey(targetType)) {
                 expressions.put(targetType, columnDesc);
               }
-              T nullConst = exprFactory.createConstantExpr(targetType, null);
-              expressions.put(targetType, nullConst);
-              hasNullValue = true;
+              expressions.put(targetType, children.get(i));
             } else {
               TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
               if (!expressions.containsKey(targetType)) {
@@ -1037,7 +1026,7 @@ public class TypeCheckProcFactory<T> {
           } else {
             FunctionInfo inFunctionInfo  = exprFactory.getFunctionInfo("in");
             for (Collection<T> c : expressions.asMap().values()) {
-              newExprs.add(exprFactory.createFuncCallExpr(null, inFunctionInfo,
+              newExprs.add(exprFactory.createFuncCallExpr(node.getTypeInfo(), inFunctionInfo,
                   "in", (List<T>) c));
             }
             children.addAll(newExprs);
@@ -1059,7 +1048,7 @@ public class TypeCheckProcFactory<T> {
               childrenList.add(child);
             }
           }
-          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
+          expr = exprFactory.createFuncCallExpr(node.getTypeInfo(), fi, funcText, childrenList);
         } else if (exprFactory.isAndFunction(fi)) {
           // flatten AND
           List<T> childrenList = new ArrayList<>(children.size());
@@ -1073,18 +1062,19 @@ public class TypeCheckProcFactory<T> {
               childrenList.add(child);
             }
           }
-          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
+          expr = exprFactory.createFuncCallExpr(node.getTypeInfo(), fi, funcText, childrenList);
         } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(fi, children)) {
           // Rewrite CASE into COALESCE
           fi = exprFactory.getFunctionInfo("coalesce");
-          expr = exprFactory.createFuncCallExpr(null, fi, "coalesce",
+          expr = exprFactory.createFuncCallExpr(node.getTypeInfo(), fi, "coalesce",
               Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())));
           if (Boolean.FALSE.equals(exprFactory.getConstantValue(children.get(1)))) {
             fi = exprFactory.getFunctionInfo("not");
-            expr = exprFactory.createFuncCallExpr(null, fi, "not", Lists.newArrayList(expr));
+            expr = exprFactory.createFuncCallExpr(node.getTypeInfo(), fi, "not", Lists.newArrayList(expr));
           }
         } else {
-          expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children);
+          TypeInfo t = (node.getTypeInfo() != null) ? node.getTypeInfo() : typeInfo;
+          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
         }
 
         if (exprFactory.isSTRUCTFuncCallExpr(expr)) {
@@ -1151,9 +1141,17 @@ public class TypeCheckProcFactory<T> {
     private T interpretNode(T columnDesc, T valueDesc)
         throws SemanticException {
       if (exprFactory.isColumnRefExpr(columnDesc)) {
-        final PrimitiveTypeInfo typeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
-            exprFactory.getTypeInfo(columnDesc).getTypeName().toLowerCase());
-        return interpretNodeAsConstant(typeInfo, valueDesc);
+        final TypeInfo info = exprFactory.getTypeInfo(columnDesc);
+        switch (info.getCategory()) {
+        case MAP:
+        case LIST:
+        case UNION:
+        case STRUCT:
+          return valueDesc;
+        case PRIMITIVE:
+          PrimitiveTypeInfo primitiveInfo = TypeInfoFactory.getPrimitiveTypeInfo(info.getTypeName().toLowerCase());
+          return interpretNodeAsConstant(primitiveInfo, valueDesc);
+        }
       }
       boolean columnStruct = exprFactory.isSTRUCTFuncCallExpr(columnDesc);
       if (columnStruct) {

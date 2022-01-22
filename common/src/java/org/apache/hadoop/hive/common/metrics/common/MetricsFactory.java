@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.common.metrics.common;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 
@@ -34,10 +34,10 @@ public class MetricsFactory {
   /**
    * Initializes static Metrics instance.
    */
-  public synchronized static void init(HiveConf conf) throws Exception {
+  public synchronized static void init(Configuration conf) throws Exception {
     if (metrics == null) {
       Class metricsClass = conf.getClassByName(
-        conf.getVar(HiveConf.ConfVars.HIVE_METRICS_CLASS));
+        conf.get(HiveConf.ConfVars.HIVE_METRICS_CLASS.varname));
       Constructor constructor = metricsClass.getConstructor(HiveConf.class);
       metrics = (Metrics) constructor.newInstance(conf);
     }

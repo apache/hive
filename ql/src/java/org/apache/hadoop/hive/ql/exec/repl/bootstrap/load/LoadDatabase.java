@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -145,9 +146,7 @@ public class LoadDatabase {
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {
-    List<String> allTables = context.hiveDb.getAllTables(dbName);
-    List<String> allFunctions = context.hiveDb.getFunctions(dbName, "*");
-    return allTables.isEmpty() && allFunctions.isEmpty();
+    return context.hiveDb.getAllTables(dbName).isEmpty() && context.hiveDb.getFunctions(dbName, "*").isEmpty();
   }
 
   private Task<?> createDbTask(Database dbObj) throws MetaException {
@@ -199,7 +198,7 @@ public class LoadDatabase {
     parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
     //This flag will be set to identify its a target of replication. Repl dump won't be allowed on a database
     //which is a target of replication.
-    parameters.put(ReplUtils.TARGET_OF_REPLICATION, "true");
+    parameters.put(ReplConst.TARGET_OF_REPLICATION, "true");
 
     return parameters;
   }

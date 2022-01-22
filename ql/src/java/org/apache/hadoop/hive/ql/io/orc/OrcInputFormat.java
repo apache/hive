@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -31,9 +32,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -46,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -124,7 +128,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.FileFormatException;
-import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcUtils;
@@ -549,9 +552,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return;
     }
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + sarg);
-    }
+    LOG.info("ORC pushdown predicate: " + sarg);
     options.searchArgument(sarg, getSargColumnNames(
         neededColumnNames.split(","), types, options.getInclude(), isOriginal));
   }
@@ -583,7 +584,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   static String getNeededColumnNamesString(Configuration conf) {
-    return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    String orcSchemaOverrideString = conf.get(ColumnProjectionUtils.ORC_SCHEMA_STRING);
+
+    if (orcSchemaOverrideString != null) {
+      final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER,
+          String.valueOf(SerDeUtils.COMMA));
+      return String.join(columnNameDelimiter, TypeDescription.fromString(orcSchemaOverrideString).getFieldNames());
+    } else {
+      return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    }
   }
 
   static String getSargColumnIDsString(Configuration conf) {
@@ -610,9 +619,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           return false;
         }
       }
-      try {
-        OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()));
+      try (Reader notUsed = OrcFile.createReader(file.getPath(),
+            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()))) {
+        // We do not use the reader itself. We just check if we can open the file.
       } catch (IOException e) {
         return false;
       }
@@ -724,10 +733,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           boolean useExternalCache = HiveConf.getBoolVar(
               conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
           if (useExternalCache) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(
-                "Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
-            }
+            LOG.debug("Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
             useExternalCache = false;
           }
           if (localCache == null) {
@@ -1117,9 +1123,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
           if (BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
             final long splitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_ORC_BLOB_STORAGE_SPLIT_SIZE);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
-            }
+            LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
             long start;
             for (start = 0; start < logicalLen; start = start + splitSize) {
               OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, start,
@@ -1639,24 +1643,26 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // object contains the orc tail from the cache then we can skip creating orc reader avoiding
       // filesystem calls.
       if (orcTail == null) {
-        Reader orcReader = OrcFile.createReader(file.getPath(),
+        try (Reader orcReader = OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(context.conf)
                 .filesystem(fs)
-                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()));
-        orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
-            file.getModificationTime());
-        if (context.cacheStripeDetails) {
-          context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
+                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()))) {
+          orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
+              file.getModificationTime());
+          if (context.cacheStripeDetails) {
+            context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
+          }
+          stripes = orcReader.getStripes();
+          stripeStats = orcReader.getStripeStatistics();
         }
-        stripes = orcReader.getStripes();
-        stripeStats = orcReader.getStripeStatistics();
       } else {
         stripes = orcTail.getStripes();
         // Always convert To PROLEPTIC_GREGORIAN
-        org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+        try (org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
             org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(context.conf).getConfiguration())
-                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
-        stripeStats = dummyReader.getVariantStripeStatistics(null);
+                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail))) {
+          stripeStats = dummyReader.getVariantStripeStatistics(null);
+        }
       }
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
@@ -1735,9 +1741,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf, Context context)
       throws IOException {
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + context.sarg);
-    }
+    LOG.info("ORC pushdown predicate: " + context.sarg);
     boolean useFileIdsConfig = HiveConf.getBoolVar(
         conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     // Sharing this state assumes splits will succeed or fail to get it together (same FS).
@@ -1821,9 +1825,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             allowSyntheticFileIds);
 
         for (SplitStrategy<?> splitStrategy : splitStrategies) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Split strategy: {}", splitStrategy);
-          }
+          LOG.debug("Split strategy: {}", splitStrategy);
 
           // Hack note - different split strategies return differently typed lists, yay Java.
           // This works purely by magic, because we know which strategy produces which type.
@@ -1945,6 +1947,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));
+
     long end = System.currentTimeMillis();
     LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));
     return result.toArray(new InputSplit[result.size()]);
@@ -2002,13 +2005,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * with NullWritable for the key instead of RecordIdentifier.
    */
   public static final class NullKeyRecordReader implements AcidRecordReader<NullWritable, OrcStruct> {
-    private final RecordIdentifier id;
+    private final OrcRawRecordMerger.ReaderKey id;
     private final RowReader<OrcStruct> inner;
 
     @Override
-    public RecordIdentifier getRecordIdentifier() {
+    public OrcRawRecordMerger.ReaderKey getRecordIdentifier() {
       return id;
     }
+
     private NullKeyRecordReader(RowReader<OrcStruct> inner, Configuration conf) {
       this.inner = inner;
       id = inner.createKey();
@@ -2091,60 +2095,86 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
       LOG.debug("Creating merger for {} and {}", split.getPath(), Arrays.toString(deltas));
     }
+    boolean fetchDeletedRows = acidOperationalProperties.isFetchDeletedRows();
 
     Map<String, Integer> deltaToAttemptId = AcidUtils.getDeltaToAttemptIdMap(pathToDeltaMetaData, deltas, bucket);
-    final OrcRawRecordMerger records = new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
-        validWriteIdList, readOptions, deltas, mergerOptions, deltaToAttemptId);
-    return new RowReader<OrcStruct>() {
-      OrcStruct innerRecord = records.createValue();
-
-      @Override
-      public ObjectInspector getObjectInspector() {
-        return OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(readOptions.getSchema()));
-      }
-
-      @Override
-      public boolean next(RecordIdentifier recordIdentifier,
-                          OrcStruct orcStruct) throws IOException {
-        boolean result;
-        // filter out the deleted records
-        do {
-          result = records.next(recordIdentifier, innerRecord);
-        } while (result &&
-            OrcRecordUpdater.getOperation(innerRecord) ==
-                OrcRecordUpdater.DELETE_OPERATION);
-        if (result) {
-          // swap the fields with the passed in orcStruct
-          orcStruct.linkFields(OrcRecordUpdater.getRow(innerRecord));
+    final OrcRawRecordMerger records;
+    if (!fetchDeletedRows) {
+      records = new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
+              validWriteIdList, readOptions, deltas, mergerOptions, deltaToAttemptId);
+    } else {
+      records = new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
+              validWriteIdList, readOptions, deltas, mergerOptions, deltaToAttemptId) {
+        @Override
+        protected boolean collapse(RecordIdentifier recordIdentifier) {
+          ((ReaderKey) recordIdentifier).setValues(
+                  prevKey.getCurrentWriteId(),
+                  prevKey.getBucketProperty(),
+                  prevKey.getRowId(),
+                  prevKey.getCurrentWriteId(),
+                  true);
+          return false;
         }
-        return result;
-      }
+      };
+    }
+    return new OrcRowReader(records, readOptions);
+  }
 
-      @Override
-      public RecordIdentifier createKey() {
-        return records.createKey();
-      }
+  private static class OrcRowReader implements RowReader<OrcStruct> {
+    protected final OrcRawRecordMerger records;
+    protected final OrcStruct innerRecord;
+    private final Reader.Options readOptions;
 
-      @Override
-      public OrcStruct createValue() {
-        return new OrcStruct(records.getColumns());
-      }
+    public OrcRowReader(OrcRawRecordMerger records, Reader.Options readOptions) {
+      this.records = records;
+      this.innerRecord = records.createValue();
+      this.readOptions = readOptions;
+    }
 
-      @Override
-      public long getPos() throws IOException {
-        return records.getPos();
-      }
+    @Override
+    public ObjectInspector getObjectInspector() {
+      return OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(readOptions.getSchema()));
+    }
 
-      @Override
-      public void close() throws IOException {
-        records.close();
+    @Override
+    public boolean next(OrcRawRecordMerger.ReaderKey recordIdentifier,
+            OrcStruct orcStruct) throws IOException {
+      boolean result;
+      // filter out the deleted records
+      do {
+        result = records.next(recordIdentifier, innerRecord);
+      } while (result && OrcRecordUpdater.getOperation(innerRecord) == OrcRecordUpdater.DELETE_OPERATION);
+      if (result) {
+        // swap the fields with the passed in orcStruct
+        orcStruct.linkFields(OrcRecordUpdater.getRow(innerRecord));
       }
+      return result;
+    }
 
-      @Override
-      public float getProgress() throws IOException {
-        return records.getProgress();
-      }
-    };
+    @Override
+    public OrcRawRecordMerger.ReaderKey createKey() {
+      return records.createKey();
+    }
+
+    @Override
+    public OrcStruct createValue() {
+      return new OrcStruct(records.getColumns());
+    }
+
+    @Override
+    public long getPos() throws IOException {
+      return records.getPos();
+    }
+
+    @Override
+    public void close() throws IOException {
+      records.close();
+    }
+
+    @Override
+    public float getProgress() throws IOException {
+      return records.getProgress();
+    }
   }
 
   static Reader.Options createOptionsForReader(Configuration conf) {
@@ -2651,6 +2681,77 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     return result;
   }
+
+  /**
+   * Based on the file schema and the low level file includes provided in the SchemaEvolution instance, this method
+   * calculates which top level columns should be included i.e. if any of the nested columns inside complex types is
+   * required, then its relevant top level parent column will be considered as required (and thus the full subtree).
+   * Hive and LLAP currently only supports column pruning on the first level, thus we need to calculate this ourselves.
+   * @param evolution
+   * @return bool array of include values, where 0th element is root struct, and any Nth element is a first level
+   * column within that
+   */
+  public static boolean[] firstLevelFileIncludes(SchemaEvolution evolution) {
+    // This is the leaf level type description include bool array
+    boolean[] lowLevelIncludes = evolution.getFileIncluded();
+    Map<Integer, TypeDescription> idMap = new HashMap<>();
+    Map<Integer, Integer> parentIdMap = new HashMap<>();
+    idToFieldSchemaMap(evolution.getFileSchema(), idMap, parentIdMap);
+
+    // Root + N top level columns...
+    boolean[] result = new boolean[evolution.getFileSchema().getChildren().size() + 1];
+
+    Set<Integer> requiredTopLevelSchemaIds = new HashSet<>();
+    for (int i = 1; i < lowLevelIncludes.length; ++i) {
+      if (lowLevelIncludes[i]) {
+        int topLevelParentId = getTopLevelParentId(i, parentIdMap);
+        if (!requiredTopLevelSchemaIds.contains(topLevelParentId)) {
+          requiredTopLevelSchemaIds.add(topLevelParentId);
+        }
+      }
+    }
+
+    List<TypeDescription> topLevelFields = evolution.getFileSchema().getChildren();
+
+    for (int typeDescriptionId : requiredTopLevelSchemaIds) {
+      result[IntStream.range(0, topLevelFields.size()).filter(
+          i -> typeDescriptionId == topLevelFields.get(i).getId()).findFirst().getAsInt() + 1] = true;
+    }
+
+    return result;
+  }
+
+  /**
+   * Recursively builds 2 maps:
+   *  ID to type description
+   *  child to parent type description ID
+   * @param typeDescription - the considered type description, root on first invocation
+   * @param idMap
+   * @param parentIdMap
+   */
+  private static void idToFieldSchemaMap(TypeDescription typeDescription, Map<Integer, TypeDescription> idMap,
+      Map<Integer, Integer> parentIdMap) {
+    List<TypeDescription> children = typeDescription.getChildren();
+    idMap.put(typeDescription.getId(), typeDescription);
+    if (children != null) {
+      for (TypeDescription child : children) {
+        // Outermost struct column (always id=0) is not of any concern.
+        if (typeDescription.getId() != 0) {
+          parentIdMap.put(child.getId(), typeDescription.getId());
+        }
+        idToFieldSchemaMap(child, idMap, parentIdMap);
+      }
+    }
+  }
+
+  private static Integer getTopLevelParentId(Integer id, Map<Integer, Integer> parentMap) {
+    if (parentMap.get(id) == null) {
+      return id;
+    } else {
+      return getTopLevelParentId(parentMap.get(id), parentMap);
+    }
+  }
+
 
   @VisibleForTesting
   protected ExternalFooterCachesByConf createExternalCaches() {

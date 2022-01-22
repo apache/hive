@@ -27,6 +27,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -34,10 +35,13 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -57,6 +61,44 @@ import com.google.common.collect.ImmutableSet;
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
 
+  public enum HiveTableScanTrait {
+    /**
+     * If this is a fully acid table scan fetch the deleted rows too.
+     * This can be done only with uncompacted delete deltas.
+     */
+    FetchDeletedRows(Constants.ACID_FETCH_DELETED_ROWS),
+    /**
+     * Provide bucket and writeId for records coming from Insert only transactional tables.
+     * Can not be used for fully acid tables since those tables store this metadata
+     * in the RowId struct for each record.
+     */
+    FetchInsertOnlyBucketIds(Constants.INSERT_ONLY_FETCH_BUCKET_ID);
+
+    private final String propertyKey;
+
+    HiveTableScanTrait(String propertyKey) {
+      this.propertyKey = propertyKey;
+    }
+
+    public String getPropertyKey() {
+      return propertyKey;
+    }
+
+    public static HiveTableScanTrait from(Map<String, String> properties) {
+      if (properties == null) {
+        return null;
+      }
+
+      for (HiveTableScanTrait trait : values()) {
+        if (Boolean.parseBoolean(properties.get(trait.propertyKey))) {
+          return trait;
+        }
+      }
+
+      return null;
+    }
+  }
+
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
   private final String tblAlias;
@@ -66,6 +108,9 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final ImmutableSet<Integer> virtualColIndxsInTS;
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
+  // This can be replaced with EnumSet<HiveTableScanTrait>
+  // if combination of multiple traits will be allowed in the future.
+  private final HiveTableScanTrait tableScanTrait;
 
   public String getTableAlias() {
     return tblAlias;
@@ -89,11 +134,19 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView);
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, null);
+  }
+
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView,
+      HiveTableScanTrait tableScanTrait) {
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView,
+        tableScanTrait);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView) {
+      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
+      HiveTableScanTrait tableScanTrait) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
@@ -106,6 +159,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.virtualColIndxsInTS = colIndxPair.getRight();
     this.useQBIdInDigest = useQBIdInDigest;
     this.insideView = insideView;
+    this.tableScanTrait = tableScanTrait;
   }
 
   @Override
@@ -122,8 +176,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView);
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
+        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.tableScanTrait);
+  }
+
+  public HiveTableScan setTableScanTrait(HiveTableScanTrait tableScanTrait) {
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
+        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, tableScanTrait);
   }
 
   /**
@@ -133,17 +192,22 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView);
+        newRowtype, this.useQBIdInDigest, this.insideView, this.tableScanTrait);
   }
 
+  // We need to include isInsideView inside digest to differentiate direct
+  // tables and tables inside view. Otherwise, Calcite will treat them as the same.
+  // Also include partition list key to trigger cost evaluation even if an
+  // expression was already generated.
   @Override public RelWriter explainTerms(RelWriter pw) {
-    if (this.useQBIdInDigest) {
-      // TODO: Only the qualified name should be left here
-      return super.explainTerms(pw)
-          .item("qbid:alias", concatQbIDAlias);
-    } else {
-      return super.explainTerms(pw).item("table:alias", tblAlias);
-    }
+    return super.explainTerms(pw)
+      .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
+      .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
+      .itemIf("tableScanTrait", this.tableScanTrait,
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }
 
   @Override
@@ -263,19 +327,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return insideView;
   }
 
-  // We need to include isInsideView inside digest to differentiate direct
-  // tables and tables inside view. Otherwise, Calcite will treat them as the same.
-  // Also include partition list key to trigger cost evaluation even if an
-  // expression was already generated.
-  public String computeDigest() {
-    String digest = super.computeDigest() +
-        "[" + this.neededColIndxsFrmReloptHT + "]" +
-        "[" + this.isInsideView() + "]";
-    String partitionListKey = ((RelOptHiveTable) table).getPartitionListKey();
-    if (partitionListKey != null) {
-      return digest + "[" + partitionListKey + "]";
-    }
-    return digest;
+  public HiveTableScanTrait getTableScanTrait() {
+    return tableScanTrait;
   }
 
+  @Override
+  public RelNode accept(RelShuttle shuttle) {
+    if(shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
+  }
 }

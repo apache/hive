@@ -391,5 +391,17 @@
   <name>hive.cbo.fallback.strategy</name>
   <value>TEST</value>
 </property>
-  
+
+<property>
+  <name>iceberg.hive.keep.stats</name>
+  <value>true</value>
+  <description>
+    We want we keep the stats in Hive sessions.
+  </description>
+</property>
+
+<property>
+  <name>hive.server2.operation.log.purgePolicy.timeToLive</name>
+  <value>5s</value>
+</property>
 </configuration>

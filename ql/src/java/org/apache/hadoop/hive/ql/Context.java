@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -123,6 +125,8 @@ public class Context {
   // up when we are done.
   private final Set<Context> subContexts;
 
+  private String replPolicy;
+
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;
 
@@ -185,6 +189,8 @@ public class Context {
    */
   private boolean scheduledQuery;
 
+  private List<Pair<String, String>> parsedTables = new ArrayList<>();
+
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -199,6 +205,14 @@ public class Context {
 
   public void setWmContext(final WmContext wmContext) {
     this.wmContext = wmContext;
+  }
+
+  public void setReplPolicy(String replPolicy) {
+    this.replPolicy = replPolicy;
+  }
+
+  public String getReplPolicy() {
+    return this.replPolicy;
   }
 
   /**
@@ -348,7 +362,8 @@ public class Context {
     // identifiers) to the stored Materialized view query definitions. We have to enable unparsing for generating
     // the extended query text when auto rewriting is enabled.
     enableUnparse =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) ||
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL);
     scheduledQuery = false;
   }
 
@@ -420,7 +435,7 @@ public class Context {
 
   /**
    * Find whether we should execute the current query due to explain
-   * @return true if the query needs to be executed, false if not
+   * @return true if the query skips execution, false if does execute
    */
   public boolean isExplainSkipExecution() {
     return (explainConfig != null && explainConfig.getAnalyze() != AnalyzeState.RUNNING);
@@ -1297,5 +1312,13 @@ public class Context {
 
   public void setScheduledQuery(boolean scheduledQuery) {
     this.scheduledQuery = scheduledQuery;
+  }
+
+  public void setParsedTables(List<Pair<String, String>> parsedTables) {
+    this.parsedTables = parsedTables;
+  }
+
+  public List<Pair<String, String>> getParsedTables() {
+    return parsedTables;
   }
 }

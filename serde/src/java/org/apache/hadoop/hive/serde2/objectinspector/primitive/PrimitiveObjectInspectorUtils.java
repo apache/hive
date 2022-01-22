@@ -23,6 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -1254,9 +1256,12 @@ public final class PrimitiveObjectInspectorUtils {
     s = s.trim();
     s = trimNanoTimestamp(s);
 
+    if(StringUtils.isEmpty(s))
+      return null;
+
     try {
       return TimestampUtils.stringToTimestamp(s);
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | DateTimeException e) {
       return null;
     }
   }
@@ -1413,7 +1418,7 @@ public final class PrimitiveObjectInspectorUtils {
    * Based on the PrimitiveCategory of a type, return the PrimitiveGrouping
    * that the PrimitiveCategory belongs to (numeric, string, date, etc).
    * @param primitiveCategory Primitive category of the type
-   * @return PrimitveGrouping corresponding to the PrimitiveCategory,
+   * @return PrimitiveGrouping corresponding to the PrimitiveCategory,
    *         or UNKNOWN_GROUP if the type does not match to a grouping.
    */
   public static PrimitiveGrouping getPrimitiveGrouping(PrimitiveCategory primitiveCategory) {

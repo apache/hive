@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,11 +60,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -73,8 +77,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Need to change some of these to have better test coverage.
  */
 public class TestWorker extends CompactorTest {
-  static final private String CLASS_NAME = TestWorker.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  private static final String CLASS_NAME = TestWorker.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   @Test
   public void nothing() throws Exception {
@@ -624,8 +629,8 @@ public class TestWorker extends CompactorTest {
 
     // Find the new delta file and make sure it has the right contents
     List<String> matchesNotFound = new ArrayList<>(numFilesExpected);
-    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21,23) + "_v\\d+");
-    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(25,33) + "_v\\d+");
+    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21,23) + VISIBILITY_PATTERN);
+    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(25,33) + VISIBILITY_PATTERN);
     matchesNotFound.add(makeDeltaDirName(21,21));
     matchesNotFound.add(makeDeltaDirName(23, 23));
     matchesNotFound.add(makeDeltaDirNameCompacted(25, 29));//streaming ingest
@@ -633,14 +638,14 @@ public class TestWorker extends CompactorTest {
     //todo: this should have some _vXXXX suffix but addDeltaFile() doesn't support it
     matchesNotFound.add(makeDeltaDirNameCompacted(31, 33));
     matchesNotFound.add(makeDeltaDirName(35, 35));
-    matchesNotFound.add(makeDeltaDirNameCompacted(21,23) + "_v\\d+");
-    matchesNotFound.add(makeDeltaDirNameCompacted(25,33) + "_v\\d+");
+    matchesNotFound.add(makeDeltaDirNameCompacted(21,23) + VISIBILITY_PATTERN);
+    matchesNotFound.add(makeDeltaDirNameCompacted(25,33) + VISIBILITY_PATTERN);
     if(type == CompactionType.MINOR) {
-      matchesNotFound.add(makeDeltaDirNameCompacted(21,35) + "_v\\d+");
-      matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21, 35) + "_v\\d+");
+      matchesNotFound.add(makeDeltaDirNameCompacted(21,35) + VISIBILITY_PATTERN);
+      matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21, 35) + VISIBILITY_PATTERN);
     }
     if(type == CompactionType.MAJOR) {
-      matchesNotFound.add(AcidUtils.baseDir(35) + "_v\\d+");
+      matchesNotFound.add(AcidUtils.baseDir(35) + VISIBILITY_PATTERN);
     }
     for(FileStatus f : stat) {
       for(int j = 0; j < matchesNotFound.size(); j++) {
@@ -972,6 +977,39 @@ public class TestWorker extends CompactorTest {
   }
 
   @Test
+  public void testWorkerAndInitiatorVersion() throws Exception {
+    LOG.debug("Starting minorTableWithBase");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mtwb", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
+    String initiatorVersion = "4.0.0";
+    rqst.setInitiatorVersion(initiatorVersion);
+    txnHandler.compact(rqst);
+
+    Worker worker = Mockito.spy(new Worker());
+    worker.setThreadId((int) t.getId());
+    worker.setConf(conf);
+    String workerVersion = "4.0.0-SNAPSHOT";
+    doReturn(workerVersion).when(worker).getRuntimeVersion();
+    worker.init(new AtomicBoolean(true));
+    worker.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+    Assert.assertEquals(initiatorVersion, compacts.get(0).getInitiatorVersion());
+    Assert.assertEquals(workerVersion, compacts.get(0).getWorkerVersion());
+
+  }
+
+  @Test
   public void droppedTable() throws Exception {
     Table t = newTable("default", "dt", false);
 
@@ -1117,34 +1155,23 @@ public class TestWorker extends CompactorTest {
   private void runTimeoutTest(long timeout, boolean runForever, boolean swallowInterrupt) throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     HiveConf timeoutConf = new HiveConf(conf);
-    TimeoutWorker timeoutWorker;
-
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
-    timeoutWorker = getTimeoutWorker(timeoutConf, executor, runForever, swallowInterrupt);
 
-    // Wait until at least 1st loop is finished
-    while (!timeoutWorker.looped.get()) {
-      Thread.sleep(10L);
-    }
-
-    timeoutWorker.looped.set(false);
-
-    // Wait until the 2nd loop is finished
-    while (!timeoutWorker.looped.get()) {
-      Thread.sleep(10L);
-    }
-
+    TimeoutWorker timeoutWorker = getTimeoutWorker(timeoutConf, executor,
+        runForever, swallowInterrupt, new CountDownLatch(2));
+    // Wait until the 2nd cycle is finished
+    timeoutWorker.looped.await();
     timeoutWorker.stop.set(true);
     executor.shutdownNow();
   }
 
   private TimeoutWorker getTimeoutWorker(HiveConf conf, ExecutorService executor, boolean runForever,
-      boolean swallowInterrupt) throws Exception {
-    TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt);
+      boolean swallowInterrupt, CountDownLatch looped) throws Exception {
+    TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt, looped);
     timeoutWorker.setThreadId((int)timeoutWorker.getId());
     timeoutWorker.setConf(conf);
     timeoutWorker.init(new AtomicBoolean(false));
-    executor.submit(() -> timeoutWorker.run());
+    executor.submit(timeoutWorker);
     return timeoutWorker;
   }
 
@@ -1156,29 +1183,33 @@ public class TestWorker extends CompactorTest {
   private static final class TimeoutWorker extends Worker {
     private boolean runForever;
     private boolean swallowInterrupt;
-    private AtomicBoolean looped;
+    private CountDownLatch looped;
 
-    private TimeoutWorker(boolean runForever, boolean swallowInterrupt) {
+    private TimeoutWorker(boolean runForever, boolean swallowInterrupt, CountDownLatch looped) {
       this.runForever = runForever;
       this.swallowInterrupt = swallowInterrupt;
-      this.looped = new AtomicBoolean(false);
+      this.looped = looped;
     }
 
-    protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
-      looped.set(true);
+    @Override
+    protected Boolean findNextCompactionAndExecute(boolean collectGenericStats, boolean collectMrStats) {
       if (runForever) {
         while (!stop.get()) {
           try {
-            looped.set(true);
             Thread.sleep(Long.MAX_VALUE);
           } catch (InterruptedException ie) {
             if (!swallowInterrupt) {
-              throw ie;
+              break;
             }
-            Thread.sleep(Long.MAX_VALUE);
+            try {
+              Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException e) {
+            }
           }
+          looped.countDown();
         }
       }
+      looped.countDown();
       return true;
     }
   }

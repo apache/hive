@@ -260,6 +260,10 @@ sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -296,6 +300,10 @@ sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -476,6 +484,7 @@ PREHOOK: Output: sys@key_constraints
 PREHOOK: Output: sys@locks
 PREHOOK: Output: sys@mv_creation_metadata
 PREHOOK: Output: sys@mv_tables_used
+PREHOOK: Output: sys@notification_log
 PREHOOK: Output: sys@part_col_privs
 PREHOOK: Output: sys@part_col_stats
 PREHOOK: Output: sys@part_privs
@@ -485,6 +494,7 @@ PREHOOK: Output: sys@partition_params
 PREHOOK: Output: sys@partition_stats_view
 PREHOOK: Output: sys@partitions
 PREHOOK: Output: sys@replication_metrics
+PREHOOK: Output: sys@replication_metrics_orig
 PREHOOK: Output: sys@role_map
 PREHOOK: Output: sys@roles
 PREHOOK: Output: sys@scheduled_executions
@@ -536,6 +546,7 @@ POSTHOOK: Output: sys@key_constraints
 POSTHOOK: Output: sys@locks
 POSTHOOK: Output: sys@mv_creation_metadata
 POSTHOOK: Output: sys@mv_tables_used
+POSTHOOK: Output: sys@notification_log
 POSTHOOK: Output: sys@part_col_privs
 POSTHOOK: Output: sys@part_col_stats
 POSTHOOK: Output: sys@part_privs
@@ -545,6 +556,7 @@ POSTHOOK: Output: sys@partition_params
 POSTHOOK: Output: sys@partition_stats_view
 POSTHOOK: Output: sys@partitions
 POSTHOOK: Output: sys@replication_metrics
+POSTHOOK: Output: sys@replication_metrics_orig
 POSTHOOK: Output: sys@role_map
 POSTHOOK: Output: sys@roles
 POSTHOOK: Output: sys@scheduled_executions

@@ -20,13 +20,19 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,9 +70,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterTableEvent.getInputHObjs()");
-    }
+    LOG.debug("==> AlterTableEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreAlterTableEvent        event    = (PreAlterTableEvent) preEventContext;
@@ -76,17 +80,13 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, oldTable);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AlterTableEvent.getInputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== AlterTableEvent.getInputHObjs(): ret={}", ret);
 
     return ret;
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterTableEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> AlterTableEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreAlterTableEvent event    = (PreAlterTableEvent) preEventContext;
@@ -99,6 +99,20 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     if (!StringUtils.equals(oldUri, newUri)) {
       ret.add(getHivePrivilegeObjectDfsUri(newUri));
+    }
+
+    LOG.debug("<== AlterTableEvent.getOutputHObjs(): ret={}", ret);
+    if (newTable.getParameters().containsKey(hive_metastoreConstants.META_TABLE_STORAGE)) {
+      Configuration conf = new Configuration();
+      try {
+        HiveStorageHandler hiveStorageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
+                conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
+        String storageUri = hiveStorageHandler.getURIForAuth(newTable).toString();
+        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+            HivePrivObjectActionType.OTHER, null, newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE), newTable.getOwner(), newTable.getOwnerType()));
+      } catch (Exception ex) {
+        LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);
+      }
     }
 
     if (LOG.isDebugEnabled()) {

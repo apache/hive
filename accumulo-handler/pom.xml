@@ -100,6 +100,10 @@
                 <groupId>org.eclipse.jetty.orbit</groupId>
                 <artifactId>javax.servlet</artifactId>
             </exclusion>
+            <exclusion>
+              <groupId>org.pac4j</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
         </exclusions>
     </dependency>
     <dependency>

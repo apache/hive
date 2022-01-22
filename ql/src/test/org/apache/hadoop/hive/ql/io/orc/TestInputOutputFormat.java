@@ -3819,15 +3819,15 @@ public class TestInputOutputFormat {
       Reader.Options orcReaderOptions = new Reader.Options();
       orcReaderOptions.range(split.getStart(), split.getLength());
       OrcFile.ReaderOptions qlReaderOptions = OrcFile.readerOptions(conf).maxLength(split.getFileLength());
-      Reader reader = OrcFile.createReader(split.getPath(), qlReaderOptions);
-      RecordReader recordReader = reader.rowsOptions(orcReaderOptions);
-      for(int j = 0; recordReader.hasNext(); j++) {
-        long rowNum = (i * 5000) + j;
-        long rowNumActual = recordReader.getRowNumber();
-        assertEquals("rowNum=" + rowNum, rowNum, rowNumActual);
-        Object row = recordReader.next(null);
+      try (Reader reader = OrcFile.createReader(split.getPath(), qlReaderOptions)) {
+        RecordReader recordReader = reader.rowsOptions(orcReaderOptions);
+        for (int j = 0; recordReader.hasNext(); j++) {
+          long rowNum = (i * 5000) + j;
+          long rowNumActual = recordReader.getRowNumber();
+          assertEquals("rowNum=" + rowNum, rowNum, rowNumActual);
+          Object row = recordReader.next(null);
+        }
       }
-      recordReader.close();
     }
 
     // Reset the conf variable values that we changed for this test.
@@ -4056,7 +4056,7 @@ public class TestInputOutputFormat {
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
     int record = 0;
-    RecordIdentifier id = reader.createKey();
+    OrcRawRecordMerger.ReaderKey id = reader.createKey();
     OrcStruct struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
@@ -4171,13 +4171,17 @@ public class TestInputOutputFormat {
     long fileLength = fs.getFileStatus(testFilePath).getLen();
 
     // Find the last stripe.
-    Reader orcReader = OrcFile.createReader(fs, testFilePath);
-    List<StripeInformation> stripes = orcReader.getStripes();
+    List<StripeInformation> stripes;
+    RecordIdentifier[] keyIndex;
+    try (Reader orcReader = OrcFile.createReader(fs, testFilePath)) {
+      stripes = orcReader.getStripes();
+      keyIndex = OrcRecordUpdater.parseKeyIndex(orcReader);
+    }
+
     StripeInformation lastStripe = stripes.get(stripes.size() - 1);
     long lastStripeOffset = lastStripe.getOffset();
     long lastStripeLength = lastStripe.getLength();
 
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcReader);
     Assert.assertEquals("Index length doesn't match number of stripes",
         stripes.size(), keyIndex.length);
     Assert.assertEquals("1st Index entry mismatch",
@@ -4203,7 +4207,7 @@ public class TestInputOutputFormat {
         new AcidInputFormat.Options(conf));
 
     int record = 0;
-    RecordIdentifier id = reader.createKey();
+    OrcRawRecordMerger.ReaderKey id = reader.createKey();
     OrcStruct struct = reader.createValue();
     // Iterate through any records.
     // Because our read offset was past the stripe offset, the rows from the last stripe will

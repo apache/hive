@@ -1228,8 +1228,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private void logProcessOneSlice(int stripeIx, Object diskData, StripeData cacheData) {
-    String sliceStr = cacheData == null ? "null" : cacheData.toCoordinateString();
     if (LlapIoImpl.LOG.isDebugEnabled()) {
+      String sliceStr = cacheData == null ? "null" : cacheData.toCoordinateString();
       LlapIoImpl.LOG.debug("Processing slice #" + stripeIx + " " + sliceStr + "; has"
         + ((cacheData == null) ? " no" : "") + " cache data; has"
         + ((diskData == null) ? " no" : "") + " disk data");
@@ -1442,7 +1442,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     Path path = split.getPath().getFileSystem(daemonConf).makeQualified(split.getPath());
     PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     try {
-      offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc());
+      offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc(), split);
       sourceReader = null;
     } finally {
       if (sourceReader != null) {
@@ -1650,7 +1650,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader, TableDesc tableDesc)
+  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader, TableDesc tableDesc, FileSplit split)
       throws IOException {
     int headerCount = Utilities.getHeaderCount(tableDesc);
     int footerCount = Utilities.getFooterCount(tableDesc, jobConf);
@@ -1661,7 +1661,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     // Handle the special cases here. Perhaps we could have a more general structure, or even
     // a configurable set (like storage handlers), but for now we only have one.
     if (isLrrEnabled && sourceReader instanceof LineRecordReader) {
-      return LineRrOffsetReader.create((LineRecordReader)sourceReader, jobConf, headerCount, footerCount);
+      return LineRrOffsetReader.create((LineRecordReader)sourceReader, jobConf, headerCount, footerCount, split);
     }
     return new PassThruOffsetReader(sourceReader, jobConf, headerCount, footerCount);
   }

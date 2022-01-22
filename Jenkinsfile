@@ -81,7 +81,6 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
-ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
@@ -89,7 +88,7 @@ export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 cp $SETTINGS .git/settings.xml
 OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist"
+OPTS+=" -Pitests,qsplits,dist,errorProne,iceberg"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
@@ -193,7 +192,34 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-        checkout scm
+        if(env.CHANGE_ID) {
+          checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            extensions: scm.extensions,
+            userRemoteConfigs: scm.userRemoteConfigs + [[
+              name: 'origin',
+              refspec: scm.userRemoteConfigs[0].refspec+ " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
+              url: scm.userRemoteConfigs[0].url,
+              credentialsId: scm.userRemoteConfigs[0].credentialsId
+            ]],
+          ])
+	  sh '''#!/bin/bash
+set -e
+echo "@@@ patches in the PR but not on target ($CHANGE_TARGET)"
+git log --oneline origin/target..HEAD
+echo "@@@ patches on target but not in the PR"
+git log --oneline HEAD..origin/target
+echo "@@@ merging target"
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git merge origin/target
+'''
+
+        } else {
+          checkout scm
+        }
       }
       stage('Prechecks') {
         def spotbugsProjects = [
@@ -246,7 +272,7 @@ time docker rm -f dev_$dbType || true
           stage('verify') {
             try {
               sh """#!/bin/bash -e
-mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
+mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B
 """
             } finally {
               junit '**/TEST-*.xml'
