@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -131,9 +130,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -4884,7 +4880,7 @@ public class TestReplicationScenarios {
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(lastDbReplDumpId));
 
     Table tbl = metaStoreClientMirror.getTable(replDbName, tblName);
-    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
     assertTrue(Long.parseLong(tblLastReplId) > Long.parseLong(lastDbReplDumpId));
     assertTrue(Long.parseLong(tblLastReplId) <= Long.parseLong(lastReplDumpId));
     return lastReplDumpId;

@@ -21,11 +21,13 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -41,6 +43,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
@@ -531,8 +534,13 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
 
     // Get the target event id.
-    assertEquals(Long.toString(notificationIdAfterRepl.getEventId()),
-        getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]);
+    NotificationEventResponse nl = new HiveMetaStoreClient(replica.hiveConf)
+        .getNextNotification(Long.parseLong(getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]), -1,
+            new DatabaseAndTableFilter(replicatedDbName, null));
+
+    // There should be 4 events, one for alter db, second to remove first incremental pending and then two custom
+    // alter operations.
+    assertEquals(4, nl.getEvents().size());
   }
 
   @Test
@@ -636,8 +644,11 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
 
     // Get the target event id.
-    assertEquals(Long.toString(notificationIdAfterRepl.getEventId()),
-        getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]);
+    NotificationEventResponse nl = new HiveMetaStoreClient(replica.hiveConf)
+        .getNextNotification(Long.parseLong(getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]), 10,
+            new DatabaseAndTableFilter(replicatedDbName, null));
+
+    assertEquals(1, nl.getEvents().size());
   }
 
   @Test
@@ -683,7 +694,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
           List<NotificationEvent> outEventIds = new ArrayList<>();
           for (NotificationEvent event : eventIds) {
             // Skip the last db event.
-            if (event.getEventId() == notificationIdAfterRepl.getEventId()) {
+            if (event.getDbName().equalsIgnoreCase(replicatedDbName)) {
               injectionPathCalled = true;
               continue;
             }
