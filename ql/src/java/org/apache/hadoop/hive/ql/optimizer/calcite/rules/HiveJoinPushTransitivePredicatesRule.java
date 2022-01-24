@@ -187,6 +187,9 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
    * Finds unsafe operators in an expression (at any level of nesting).
    */
   private static class UnsafeOperatorsFinder extends RexVisitorImpl<Void> {
+    // accounting for DeMorgan's law
+    boolean inNegation = false;
+
     protected UnsafeOperatorsFinder(boolean deep) {
       super(deep);
     }
@@ -195,7 +198,20 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     public Void visitCall(RexCall call) {
       switch (call.getKind()) {
       case OR:
-        throw Util.FoundOne.NULL;
+        if (inNegation) {
+          return super.visitCall(call);
+        } else {
+          throw Util.FoundOne.NULL;
+        }
+      case AND:
+        if (inNegation) {
+          throw Util.FoundOne.NULL;
+        } else {
+          return super.visitCall(call);
+        }
+      case NOT:
+        inNegation = true;
+        return super.visitCall(call);
       default:
         return super.visitCall(call);
       }
