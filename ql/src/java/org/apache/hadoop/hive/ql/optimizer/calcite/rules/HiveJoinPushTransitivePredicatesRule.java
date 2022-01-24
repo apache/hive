@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -95,11 +95,11 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     RelNode rChild = join.getRight();
 
     Set<String> leftPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 0));
-    List<RexNode> leftPreds = getValidPreds(join.getCluster(), lChild,
-            leftPushedPredicates, preds.leftInferredPredicates, lChild.getRowType());
+    List<RexNode> leftPreds =
+        getValidPreds(lChild, leftPushedPredicates, preds.leftInferredPredicates, lChild.getRowType());
     Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
-    List<RexNode> rightPreds = getValidPreds(join.getCluster(), rChild,
-            rightPushedPredicates, preds.rightInferredPredicates, rChild.getRowType());
+    List<RexNode> rightPreds =
+        getValidPreds(rChild, rightPushedPredicates, preds.rightInferredPredicates, rChild.getRowType());
 
     RexNode newLeftPredicate = RexUtil.composeConjunction(rB, leftPreds, false);
     RexNode newRightPredicate = RexUtil.composeConjunction(rB, rightPreds, false);
@@ -130,10 +130,10 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     call.transformTo(newRel);
   }
 
-  private ImmutableList<RexNode> getValidPreds(RelOptCluster cluster, RelNode child,
-      Set<String> predicatesToExclude, List<RexNode> rexs, RelDataType rType) {
+  private ImmutableList<RexNode> getValidPreds(RelNode child, Set<String> predicatesToExclude,
+      List<RexNode> rexs, RelDataType rType) {
     InputRefValidator validator = new InputRefValidator(rType.getFieldList());
-    List<RexNode> valids = new ArrayList<RexNode>(rexs.size());
+    List<RexNode> valids = new ArrayList<>(rexs.size());
     for (RexNode rex : rexs) {
       try {
         rex.accept(validator);
@@ -144,27 +144,58 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     }
 
     // We need to filter i) those that have been pushed already as stored in the join,
-    // and ii) those that were already in the subtree rooted at child
-    ImmutableList<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude,
-            child, valids);
-    return toPush;
+    // ii) those that were already in the subtree rooted at child,
+    // iii) predicates that are not safe for transitive inference
+    List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids).stream()
+        .filter(this::isPredicateSafeForInference)
+        .collect(Collectors.toList());
+
+    return ImmutableList.copyOf(toPush);
   }
 
-  private RexNode getTypeSafePred(RelOptCluster cluster, RexNode rex, RelDataType rType) {
-    RexNode typeSafeRex = rex;
-    if ((typeSafeRex instanceof RexCall) && HiveCalciteUtil.isComparisonOp((RexCall) typeSafeRex)) {
-      RexBuilder rb = cluster.getRexBuilder();
-      List<RexNode> fixedPredElems = new ArrayList<RexNode>();
-      RelDataType commonType = cluster.getTypeFactory().leastRestrictive(
-          RexUtil.types(((RexCall) rex).getOperands()));
-      for (RexNode rn : ((RexCall) rex).getOperands()) {
-        fixedPredElems.add(rb.ensureType(commonType, rn, true));
-      }
+  // There is no formal definition of safety for predicate inference, only an empirical one.
+  // An unsafe predicate in this context is one that when pushed across join operands, can lead
+  // to redundant predicates that cannot be simplified (by means of predicates merging with other existing ones).
+  // This situation can lead to an OOM for cases where lack of simplification allows inferring new predicates
+  // (from LHS to RHS) recursively, predicates which are redundant, but that RexSimplify cannot handle.
+  // This notion can be relaxed as soon as RexSimplify gets more powerful, and it can handle such cases.
+  private boolean isPredicateSafeForInference(RexNode predicate) {
+    UnsafeOperatorsFinder unsafeOperatorsFinder = new UnsafeOperatorsFinder(true);
+    return unsafeOperatorsFinder.isSafe(predicate);
+  }
 
-      typeSafeRex = rb.makeCall(((RexCall) typeSafeRex).getOperator(), fixedPredElems);
+  //~ Inner Classes ----------------------------------------------------------
+
+  /**
+   * Finds unsafe operators (AND, OR, IN, BETWEEN) in an expression.
+   */
+  private static class UnsafeOperatorsFinder extends RexVisitorImpl<Void> {
+    protected UnsafeOperatorsFinder(boolean deep) {
+      super(deep);
     }
 
-    return typeSafeRex;
+    @Override
+    public Void visitCall(RexCall call) {
+      switch (call.getKind()) {
+      case AND:
+      case OR:
+      case IN:
+      case BETWEEN:
+        throw Util.FoundOne.NULL;
+      default:
+        return super.visitCall(call);
+      }
+    }
+
+    boolean isSafe(RexNode node) {
+      try {
+        node.accept(this);
+        return true;
+      } catch (Util.FoundOne e) {
+        Util.swallow(e, null);
+        return false;
+      }
+    }
   }
 
   private static class InputRefValidator extends RexVisitorImpl<Void> {
