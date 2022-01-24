@@ -13273,7 +13273,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean isExternalTableChanged (Map<String, String> tblProp, boolean isTransactional, boolean isExt) {
-    if (tblProp != null && tblProp.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL) || isTransactional) {
+    if (tblProp != null && tblProp.getOrDefault(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") || isTransactional) {
       isExt = false;
     }
     return isExt;
@@ -13633,9 +13633,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Note: each branch must call addDbAndTabToOutputs after finalizing table properties.
     Database database  = getDatabase(qualifiedTabName.getDb());
     boolean isDefaultTableTypeChanged = false;
-    if(database.getParameters() != null && database.getParameters().containsKey(DEFAULT_TABLE_TYPE) && database.getParameters().get(DEFAULT_TABLE_TYPE).equalsIgnoreCase("external")) {
-      isExt = true;
-      isDefaultTableTypeChanged = true;
+    if(database.getParameters() != null) {
+      String defaultTableType = database.getParameters().getOrDefault(DEFAULT_TABLE_TYPE, "none");
+      if (defaultTableType.equalsIgnoreCase("external")) {
+        isExt = true;
+        isDefaultTableTypeChanged = true;
+      } else if (defaultTableType.equalsIgnoreCase("acid")) {
+        if (isExt) { // create external table on db with default type as acid
+          isTransactional = false;
+        } else {
+          isTransactional = true;
+        }
+      }
     }
     switch (command_type) {
 

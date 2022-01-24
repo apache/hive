@@ -19,53 +19,24 @@
 package org.apache.hadoop.hive.ql;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
-import org.apache.hadoop.hive.ql.io.BucketCodec;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.orc.OrcProto;
-import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -83,10 +54,10 @@ public class TestDatabaseTableDefault {
 
     private HiveConf hiveConf;
     private IDriver d;
-    private String database_with_default_table_type = "database_with_default_table_type";
-    private String default_db = "default_db";
-    private String table_type_managed = "MANAGED_TABLE";
-    private String table_type_external = "EXTERNAL_TABLE";
+    private static final String database_with_default_table_type = "database_with_default_table_type";
+    private static final String default_db = "default_db";
+    private static final String table_type_managed = "MANAGED_TABLE";
+    private static final String table_type_external = "EXTERNAL_TABLE";
     File ext_wh = null;
     File wh = null;
     protected static HiveMetaStoreClient client;
@@ -98,11 +69,13 @@ public class TestDatabaseTableDefault {
         TRANSACTIONALTBL4("transactional_table_4"),
         TRANSACTIONALTBL5("transactional_table_5"),
         TRANSACTIONALTBL6("transactional_table_6"),
+        TRANSACTIONALTBL7("transactional_table_7"),
         EXTERNALTABLE1("external_table_1"),
         EXTERNALTABLE2("external_table_2"),
         EXTERNALTABLE3("external_table_3"),
         EXTERNALTABLE4("external_table_4"),
         EXTERNALTABLE5("external_table_5"),
+        EXTERNALTABLE6("external_table_6"),
         NONACIDPART("nonAcidPart"),
         NONACIDNONBUCKET("nonAcidNonBucket");
 
@@ -131,7 +104,6 @@ public class TestDatabaseTableDefault {
         SessionState.start(new SessionState(hiveConf));
         d = DriverFactory.newDriver(hiveConf);
 
-        conf = MetastoreConf.newMetastoreConf();
         wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
                 "hive" + File.separator + "warehouse" + File.separator + "hive" + File.separator);
         wh.mkdirs();
@@ -140,13 +112,13 @@ public class TestDatabaseTableDefault {
                 "hive" + File.separator + "warehouse" + File.separator + "hive-external" + File.separator);
         ext_wh.mkdirs();
 
-        MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
+        MetastoreConf.setVar(hiveConf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
                 "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
-        MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, false);
-        MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, wh.getCanonicalPath());
-        MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getCanonicalPath());
-        MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
-        client = new HiveMetaStoreClient(conf);
+        MetastoreConf.setBoolVar(hiveConf, ConfVars.HIVE_IN_TEST, false);
+        MetastoreConf.setVar(hiveConf, ConfVars.WAREHOUSE, wh.getCanonicalPath());
+        MetastoreConf.setVar(hiveConf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getCanonicalPath());
+        MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+        client = new HiveMetaStoreClient(hiveConf);
 
 
         dropTables();
@@ -185,11 +157,11 @@ public class TestDatabaseTableDefault {
     }
 
     /**
-     * Tests the TestDatabaseTableDefault.testCreateManagedTables method for creating managed tables in a special database.
+     * Tests the TestDatabaseTableDefault.testCreateManagedTablesInDBWithDefaultTableType_External method for creating managed tables in a special database.
      * @throws Exception If there is an error creating managed tables
      */
     @Test
-    public void testCreateManagedTables() throws Exception {
+    public void testCreateManagedTablesInDBWithDefaultTableType_External() throws Exception {
         runStatementOnDriver("use " + database_with_default_table_type);
 
         runStatementOnDriver("create table " + TableNames.TRANSACTIONALTBL1 + " (id int, name string) " + getTblProperties());
@@ -212,16 +184,16 @@ public class TestDatabaseTableDefault {
         Table managed_table_5 = client.getTable(database_with_default_table_type, TableNames.TRANSACTIONALTBL5.toString());
         assertEquals("Created table type is expected to be managed but found to be external", managed_table_5.getTableType(), table_type_managed);
 
-        LOG.info("Test execution complete:testCreateManagedTables");
+        LOG.info("Test execution complete:testCreateManagedTablesInDBWithDefaultTableType_External");
     }
 
 
     /**
-     * Tests the TestDatabaseTableDefault.testCreateExternalTables method for creating external tables in a special database.
+     * Tests the TestDatabaseTableDefault.testCreateExternalTablesInDBWithDefaultTableType_External method for creating external tables in a special database.
      * @throws Exception If there is an error creating external tables
      */
     @Test
-    public void testCreateExternalTables() throws Exception {
+    public void testCreateExternalTablesInDBWithDefaultTableType_External() throws Exception {
         runStatementOnDriver("use " + database_with_default_table_type);
 
         runStatementOnDriver("create table " + TableNames.EXTERNALTABLE1 + " (id int, name string)");
@@ -240,15 +212,15 @@ public class TestDatabaseTableDefault {
         Table external_table_4 = client.getTable(database_with_default_table_type, TableNames.EXTERNALTABLE4.toString());
         assertEquals("Created table type is expected to be managed but found to be external", external_table_4.getTableType(), table_type_external);
 
-        LOG.info("Test execution complete:testCreateExternalTables");
+        LOG.info("Test execution complete:testCreateExternalTablesInDBWithDefaultTableType_External");
     }
 
     /**
-     * Tests the TestDatabaseTableDefault.testAlterExternalTables method for creating external tables in alter database.
+     * Tests the TestDatabaseTableDefault.testCreateTablesInAlterDBSetDefaultTableType method for creating external tables in altered database.
      * @throws Exception If there is an error creating managed tables
      */
     @Test
-    public void testAlterExternalTables() throws Exception {
+    public void testCreateTablesInAlterDBSetDefaultTableType() throws Exception {
         String altered_db = "altered_db";
         runStatementOnDriver("create database "+altered_db);
         runStatementOnDriver("use "+altered_db);
@@ -265,6 +237,28 @@ public class TestDatabaseTableDefault {
 
         runStatementOnDriver("drop database " + altered_db + " cascade");
         LOG.info("Test execution complete:testAlterExternalTables");
+    }
+
+    /**
+     * Tests the TestDatabaseTableDefault.testCreateTablesInDBWithDefaultTableTypeAcid method for creating acid tables in the database by default.
+     * @throws Exception If there is an error creating managed tables
+     */
+    @Test
+    public void testCreateTablesInDBWithDefaultTableTypeAcid() throws Exception {
+        String acid_database = "acid_database";
+        runStatementOnDriver("create database "+acid_database+" with DBPROPERTIES('defaultTableType'='ACID')");
+        runStatementOnDriver("use "+acid_database);
+
+        runStatementOnDriver("create table " + TableNames.TRANSACTIONALTBL7 + " (id int, name string)");
+        Table managed_table_7 = client.getTable(acid_database, TableNames.TRANSACTIONALTBL7.toString());
+        assertEquals("Created table type is expected to be managed but found to be external", managed_table_7.getTableType(), table_type_managed);
+
+        runStatementOnDriver("create external table " + TableNames.EXTERNALTABLE6 + " (id int, name string)");
+        Table external_table_6 = client.getTable(acid_database, TableNames.EXTERNALTABLE6.toString());
+        assertEquals("Created table type is expected to be managed but found to be external", external_table_6.getTableType(), table_type_external);
+
+        runStatementOnDriver("drop database " + acid_database + " cascade");
+        LOG.info("Test execution complete:testCreateTablesInDBWithDefaultTableTypeAcid");
     }
 
 
