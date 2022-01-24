@@ -177,11 +177,11 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     @Override
     public Void visitCall(RexCall call) {
       switch (call.getKind()) {
-      case AND:
       case OR:
+        throw Util.FoundOne.NULL;
+      case AND:
       case IN:
       case BETWEEN:
-        throw Util.FoundOne.NULL;
       default:
         return super.visitCall(call);
       }
