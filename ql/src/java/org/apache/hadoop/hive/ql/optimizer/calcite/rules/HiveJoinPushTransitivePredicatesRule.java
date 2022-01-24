@@ -37,6 +37,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -147,10 +148,26 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     // ii) those that were already in the subtree rooted at child,
     // iii) predicates that are not safe for transitive inference
     List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids).stream()
+        .map(p -> expandUnsafeOperators(child.getCluster().getRexBuilder(), p))
         .filter(this::isPredicateSafeForInference)
         .collect(Collectors.toList());
 
     return ImmutableList.copyOf(toPush);
+  }
+
+  // Remove once HIVE-25852 is addressed: this gives a higher chance to HiveReduceExpressionsRule
+  // to simplify the predicates transitively pushed to the other side of the join in case they are
+  // merged with existing predicates.
+  // HivePointLookupOptimizerRule will close again the IN/BETWEENs, if needed.
+  private RexNode expandUnsafeOperators(RexBuilder rexBuilder, RexNode rexNode) {
+    if (!(rexNode instanceof RexCall)) {
+      return rexNode;
+    }
+
+    HiveInBetweenExpandRule.RexInBetweenExpander expander =
+        new HiveInBetweenExpandRule.RexInBetweenExpander(rexBuilder);
+
+    return expander.visitCall((RexCall) rexNode);
   }
 
   // There is no formal definition of safety for predicate inference, only an empirical one.
@@ -167,7 +184,7 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
   //~ Inner Classes ----------------------------------------------------------
 
   /**
-   * Finds unsafe operators (AND, OR, IN, BETWEEN) in an expression.
+   * Finds unsafe operators in an expression (at any level of nesting).
    */
   private static class UnsafeOperatorsFinder extends RexVisitorImpl<Void> {
     protected UnsafeOperatorsFinder(boolean deep) {
@@ -179,9 +196,6 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
       switch (call.getKind()) {
       case OR:
         throw Util.FoundOne.NULL;
-      case AND:
-      case IN:
-      case BETWEEN:
       default:
         return super.visitCall(call);
       }
