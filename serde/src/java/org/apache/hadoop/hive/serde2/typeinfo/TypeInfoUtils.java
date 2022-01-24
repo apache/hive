@@ -574,6 +574,7 @@ public final class TypeInfoUtils {
 
     public PrimitiveParts parsePrimitiveParts() {
       PrimitiveParts parts = new PrimitiveParts();
+      expect("type");
       parts.typeParams = parseParams();
       return parts;
     }
