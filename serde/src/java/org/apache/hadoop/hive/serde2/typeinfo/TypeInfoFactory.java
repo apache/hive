@@ -151,18 +151,18 @@ public final class TypeInfoFactory {
         if (parts.typeParams.length != 1) {
           return null;
         }
-        return new CharTypeInfo(Integer.valueOf(parts.typeParams[0]));
+        return new CharTypeInfo(Integer.parseInt(parts.typeParams[0]));
       case VARCHAR:
         if (parts.typeParams.length != 1) {
           return null;
         }
-        return new VarcharTypeInfo(Integer.valueOf(parts.typeParams[0]));
+        return new VarcharTypeInfo(Integer.parseInt(parts.typeParams[0]));
       case DECIMAL:
         if (parts.typeParams.length != 2) {
           return null;
         }
-        return new DecimalTypeInfo(Integer.valueOf(parts.typeParams[0]),
-            Integer.valueOf(parts.typeParams[1]));
+        return new DecimalTypeInfo(Integer.parseInt(parts.typeParams[0]),
+            Integer.parseInt(parts.typeParams[1]));
       case TIMESTAMPLOCALTZ:
         if (parts.typeParams.length != 1) {
           return null;

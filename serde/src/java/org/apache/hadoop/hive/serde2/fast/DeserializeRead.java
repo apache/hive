@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /*
  * Directly deserialize with the caller reading field-by-field a serialization format.
@@ -149,10 +150,10 @@ public abstract class DeserializeRead {
    */
   public DeserializeRead(TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
       boolean useExternalBuffer) {
-    this.typeInfos = typeInfos;
+    this.typeInfos = typeInfos.clone();
     final int count = typeInfos.length;
     if (dataTypePhysicalVariations != null) {
-      this.dataTypePhysicalVariations = dataTypePhysicalVariations;
+      this.dataTypePhysicalVariations = dataTypePhysicalVariations.clone();
     } else {
       this.dataTypePhysicalVariations = new DataTypePhysicalVariation[count];
       Arrays.fill(this.dataTypePhysicalVariations, DataTypePhysicalVariation.NONE);
@@ -190,14 +191,14 @@ public abstract class DeserializeRead {
    * The type information for all fields.
    */
   public TypeInfo[] typeInfos() {
-    return typeInfos;
+    return typeInfos.clone();
   }
 
   /*
    * Get optional read variations for fields.
    */
   public DataTypePhysicalVariation[] getDataTypePhysicalVariations() {
-    return dataTypePhysicalVariations;
+    return dataTypePhysicalVariations.clone();
   }
 
   /*
@@ -286,16 +287,19 @@ public abstract class DeserializeRead {
   /*
    * BOOLEAN.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public boolean currentBoolean;
 
   /*
    * BYTE.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public byte currentByte;
 
   /*
    * SHORT.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public short currentShort;
 
   /*
@@ -306,16 +310,19 @@ public abstract class DeserializeRead {
   /*
    * LONG.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public long currentLong;
 
   /*
    * FLOAT.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public float currentFloat;
 
   /*
    * DOUBLE.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public double currentDouble;
 
   /*
@@ -329,6 +336,7 @@ public abstract class DeserializeRead {
    *
    * Otherwise, currentBytes, currentBytesStart, and currentBytesLength are the result.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public boolean currentExternalBufferNeeded;
   public int currentExternalBufferNeededLen;
 
@@ -337,7 +345,9 @@ public abstract class DeserializeRead {
   }
 
   public byte[] currentBytes;
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public int currentBytesStart;
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public int currentBytesLength;
 
   /*
@@ -368,5 +378,6 @@ public abstract class DeserializeRead {
   /*
    * DECIMAL_64.
    */
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public long currentDecimal64;
 }

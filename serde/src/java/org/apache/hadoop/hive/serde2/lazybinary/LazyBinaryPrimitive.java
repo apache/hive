@@ -76,7 +76,7 @@ public abstract class LazyBinaryPrimitive<OI extends ObjectInspector, T extends 
       return true;
     }
 
-    if (data == null || obj == null) {
+    if (data == null) {
       return false;
     }
 

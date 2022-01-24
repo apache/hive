@@ -50,7 +50,7 @@ import org.apache.hadoop.io.WritableUtils;
  */
 public class TimestampWritableV2 implements WritableComparable<TimestampWritableV2> {
 
-  static final public byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
+  private static final byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
 
   private static final int DECIMAL_OR_SECOND_VINT_FLAG = 0x80000000;
   private static final int LOWEST_31_BITS_OF_SEC_MASK = 0x7fffffff;
@@ -103,7 +103,7 @@ public class TimestampWritableV2 implements WritableComparable<TimestampWritable
   }
 
   public void set(byte[] bytes, int offset) {
-    externalBytes = bytes;
+    externalBytes = bytes.clone();
     this.offset = offset;
     bytesEmpty = false;
     currentBytes = externalBytes;
@@ -361,7 +361,10 @@ public class TimestampWritableV2 implements WritableComparable<TimestampWritable
 
   @Override
   public boolean equals(Object o) {
-    return compareTo((TimestampWritableV2) o) == 0;
+    if (o instanceof TimestampWritableV2) {
+      return compareTo((TimestampWritableV2) o) == 0;
+    }
+    return false;
   }
 
   @Override
@@ -621,5 +624,9 @@ public class TimestampWritableV2 implements WritableComparable<TimestampWritable
         | ((0xFFL & bytes[offset+4]) << 24)
         | ((0xFFL & bytes[offset+5]) << 16)
         | ((0xFFL & bytes[offset+6]) << 8)) >> 8;
+  }
+
+  public static byte[] getNullBytes() {
+    return nullBytes.clone();
   }
 }

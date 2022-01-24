@@ -1120,7 +1120,7 @@ public class RCFile {
 
       if (size < columnNumber) {
         for (int i = columns.size(); i < columnNumber; i++) {
-          columnBuffers[i].append(BytesRefWritable.ZeroBytesRefWritable);
+          columnBuffers[i].append(BytesRefWritable.zeroBytesRefWritable);
         }
       }
 

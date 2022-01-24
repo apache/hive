@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.lazybinary.fast;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -287,7 +288,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   @Override
   public void writeHiveChar(HiveChar hiveChar) throws IOException {
     final String string = hiveChar.getStrippedValue();
-    final byte[] bytes = string.getBytes();
+    final byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
     writeString(bytes);
   }
 
@@ -297,7 +298,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   @Override
   public void writeHiveVarchar(HiveVarchar hiveVarchar) throws IOException {
     final String string = hiveVarchar.getValue();
-    final byte[] bytes = string.getBytes();
+    final byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
     writeString(bytes);
   }
 

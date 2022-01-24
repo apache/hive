@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.io;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -29,6 +30,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Writable for TimestampTZ. Copied from TimestampWritableV2.
@@ -40,7 +42,7 @@ import java.util.Arrays;
  */
 public class TimestampLocalTZWritable implements WritableComparable<TimestampLocalTZWritable> {
 
-  public static final byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
+  private static final byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
   private static final int DECIMAL_OR_SECOND_VINT_FLAG = 1 << 31;
   private static final long SEVEN_BYTE_LONG_SIGN_FLIP = 0xff80L << 48; // only need flip the MSB?
 
@@ -87,7 +89,7 @@ public class TimestampLocalTZWritable implements WritableComparable<TimestampLoc
   }
 
   public void set(byte[] bytes, int offset, ZoneId timeZone) {
-    externalBytes = bytes;
+    externalBytes = bytes.clone();
     this.offset = offset;
     this.timeZone = timeZone;
     bytesEmpty = false;
@@ -445,5 +447,9 @@ public class TimestampLocalTZWritable implements WritableComparable<TimestampLoc
         | ((0xFFL & bytes[offset + 4]) << 24)
         | ((0xFFL & bytes[offset + 5]) << 16)
         | ((0xFFL & bytes[offset + 6]) << 8)) >> 8;
+  }
+
+  public static byte[] getNullBytes() {
+    return nullBytes.clone();
   }
 }

@@ -62,7 +62,11 @@ public class HiveDecimalUtils {
   public static int getPrecisionForType(PrimitiveTypeInfo typeInfo) {
     switch (typeInfo.getPrimitiveCategory()) {
     case DECIMAL:
-      return ((DecimalTypeInfo)typeInfo).precision();
+    if (typeInfo instanceof DecimalTypeInfo) {
+      return ((DecimalTypeInfo) typeInfo).precision();
+    } else {
+      throw new IllegalArgumentException("Incorrect type info received for decimal category.");
+    }
     case FLOAT:
       return 7;
     case DOUBLE:
@@ -89,7 +93,11 @@ public class HiveDecimalUtils {
   public static int getScaleForType(PrimitiveTypeInfo typeInfo) {
     switch (typeInfo.getPrimitiveCategory()) {
     case DECIMAL:
-      return ((DecimalTypeInfo)typeInfo).scale();
+      if (typeInfo instanceof DecimalTypeInfo) {
+        return ((DecimalTypeInfo) typeInfo).scale();
+      } else {
+        throw new IllegalArgumentException("Incorrect type info received for decimal category.");
+      }
     case FLOAT:
       return 7;
     case DOUBLE:

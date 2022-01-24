@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.O
 import static org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.ZERO;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -82,9 +83,9 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   public BinarySortableSerializeWrite(boolean[] columnSortOrderIsDesc,
           byte[] columnNullMarker, byte[] columnNotNullMarker) {
     this();
-    this.columnSortOrderIsDesc = columnSortOrderIsDesc;
-    this.columnNullMarker = columnNullMarker;
-    this.columnNotNullMarker = columnNotNullMarker;
+    this.columnSortOrderIsDesc = columnSortOrderIsDesc.clone();
+    this.columnNullMarker = columnNullMarker.clone();
+    this.columnNotNullMarker = columnNotNullMarker.clone();
   }
 
   /*
@@ -242,7 +243,7 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   @Override
   public void writeHiveChar(HiveChar hiveChar) throws IOException {
     String string = hiveChar.getStrippedValue();
-    byte[] bytes = string.getBytes();
+    byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
     writeString(bytes);
   }
 
@@ -252,7 +253,7 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   @Override
   public void writeHiveVarchar(HiveVarchar hiveVarchar) throws IOException {
     String string = hiveVarchar.getValue();
-    byte[] bytes = string.getBytes();
+    byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
     writeString(bytes);
   }
 

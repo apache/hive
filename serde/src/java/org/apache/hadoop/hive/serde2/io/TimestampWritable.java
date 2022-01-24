@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -105,7 +106,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public void set(byte[] bytes, int offset) {
-    externalBytes = bytes;
+    externalBytes = bytes.clone();
     this.offset = offset;
     bytesEmpty = false;
     currentBytes = externalBytes;
@@ -221,7 +222,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     if (timestampEmpty) {
       populateTimestamp();
     }
-    return timestamp;
+    return new Timestamp(timestamp.getTime());
   }
 
   /**
@@ -373,7 +374,10 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   @Override
   public boolean equals(Object o) {
-    return compareTo((TimestampWritable) o) == 0;
+    if (o instanceof TimestampWritable) {
+      return compareTo((TimestampWritable) o) == 0;
+    }
+    return false;
   }
 
   @Override

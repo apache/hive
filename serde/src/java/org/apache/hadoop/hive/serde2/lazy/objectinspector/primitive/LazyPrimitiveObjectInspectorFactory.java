@@ -140,10 +140,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
     case STRING:
       return getLazyStringObjectInspector(lazyParams.isEscaped(), lazyParams.getEscapeChar());
     case CHAR:
-      return getLazyHiveCharObjectInspector((CharTypeInfo)typeInfo,
+      return getLazyHiveCharObjectInspector(typeInfo,
           lazyParams.isEscaped(), lazyParams.getEscapeChar());
     case VARCHAR:
-      return getLazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
+      return getLazyHiveVarcharObjectInspector(typeInfo,
           lazyParams.isEscaped(), lazyParams.getEscapeChar());
     case BOOLEAN:
       return getLazyBooleanObjectInspector(lazyParams.isExtendedBooleanLiteral());
@@ -164,16 +164,16 @@ public final class LazyPrimitiveObjectInspectorFactory {
     // Object inspector hasn't been cached for this type/params yet, create now
     switch (typeInfo.getPrimitiveCategory()) {
     case CHAR:
-      poi = new LazyHiveCharObjectInspector((CharTypeInfo) typeInfo);
+      poi = new LazyHiveCharObjectInspector(typeInfo);
       break;
     case VARCHAR:
-      poi = new LazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      poi = new LazyHiveVarcharObjectInspector(typeInfo);
       break;
     case DECIMAL:
-      poi = new LazyHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
+      poi = new LazyHiveDecimalObjectInspector(typeInfo);
       break;
     case TIMESTAMPLOCALTZ:
-      poi = new LazyTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo);
+      poi = new LazyTimestampLocalTZObjectInspector(typeInfo);
       break;
     default:
       throw new RuntimeException(
@@ -207,7 +207,7 @@ public final class LazyPrimitiveObjectInspectorFactory {
   }
 
   public static LazyHiveCharObjectInspector getLazyHiveCharObjectInspector(
-      CharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+      PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar) {
     ArrayList<Object> signature = new ArrayList<Object>();
     signature.add(typeInfo);
     signature.add(Boolean.valueOf(escaped));
@@ -226,7 +226,7 @@ public final class LazyPrimitiveObjectInspectorFactory {
   }
 
   public static LazyHiveVarcharObjectInspector getLazyHiveVarcharObjectInspector(
-      VarcharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+      PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar) {
     ArrayList<Object> signature = new ArrayList<Object>();
     signature.add(typeInfo);
     signature.add(Boolean.valueOf(escaped));

@@ -43,7 +43,7 @@ public class ByteStream {
     }
 
     public byte[] getData() {
-      return buf;
+      return buf.clone();
     }
 
     public int getCount() {
@@ -51,7 +51,7 @@ public class ByteStream {
     }
 
     public void reset(byte[] buf, int count) {
-      super.buf = buf;
+      super.buf = buf.clone();
       super.count = count;
       super.mark = super.pos = 0;
     }
@@ -80,7 +80,7 @@ public class ByteStream {
 
     @Override
     public byte[] getData() {
-      return buf;
+      return buf.clone();
     }
 
     @Override

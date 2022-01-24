@@ -37,14 +37,12 @@ import org.apache.thrift.transport.TIOStreamTransport;
  */
 public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
 
-  protected TIOStreamTransport outTransport, inTransport;
-  protected TProtocol outProtocol, inProtocol;
+  protected TIOStreamTransport inTransport;
+  protected TProtocol inProtocol;
 
-  private void init(TProtocolFactory inFactory, TProtocolFactory outFactory)
+  private void init(TProtocolFactory inFactory)
       throws Exception {
-    outTransport = new TIOStreamTransport(bos);
     inTransport = new TIOStreamTransport(bis);
-    outProtocol = outFactory.getProtocol(outTransport);
     inProtocol = inFactory.getProtocol(inTransport);
   }
 
@@ -54,12 +52,11 @@ public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
     throw new SerDeException("ThriftByteStreamTypedSerDe is still semi-abstract");
   }
 
-  public ThriftByteStreamTypedSerDe(Type objectType,
-      TProtocolFactory inFactory, TProtocolFactory outFactory)
+  public ThriftByteStreamTypedSerDe(Type objectType, TProtocolFactory inFactory)
       throws SerDeException {
     super(objectType);
     try {
-      init(inFactory, outFactory);
+      init(inFactory);
     } catch (Exception e) {
       throw new SerDeException(e);
     }

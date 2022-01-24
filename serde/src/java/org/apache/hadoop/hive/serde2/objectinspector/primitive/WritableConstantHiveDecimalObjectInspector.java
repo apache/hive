@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * A WritableConstantHiveDecimalObjectInspector is a WritableHiveDecimalObjectInspector
@@ -35,7 +36,7 @@ implements ConstantObjectInspector {
     super();
   }
 
-  WritableConstantHiveDecimalObjectInspector(DecimalTypeInfo typeInfo,
+  WritableConstantHiveDecimalObjectInspector(PrimitiveTypeInfo typeInfo,
       HiveDecimalWritable value) {
     super(typeInfo);
     this.value = value;

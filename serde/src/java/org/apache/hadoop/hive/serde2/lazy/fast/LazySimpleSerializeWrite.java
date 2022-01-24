@@ -154,9 +154,9 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   public void writeBoolean(boolean v) throws IOException {
     beginPrimitive();
     if (v) {
-      output.write(LazyUtils.trueBytes, 0, LazyUtils.trueBytes.length);
+      output.write(LazyUtils.getTrueBytes(), 0, LazyUtils.getTrueBytes().length);
     } else {
-      output.write(LazyUtils.falseBytes, 0, LazyUtils.falseBytes.length);
+      output.write(LazyUtils.getFalseBytes(), 0, LazyUtils.getFalseBytes().length);
     }
     finishPrimitive();
   }

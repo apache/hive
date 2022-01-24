@@ -266,7 +266,6 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
       return valueObjects[index].getObject();
     }
     valueInited[index] = true;
-    Text nullSequence = oi.getNullSequence();
     int valueIBegin = keyEnd[index] + 1;
     int valueILength = valueLength[index];
     if (valueObjects[index] == null) {

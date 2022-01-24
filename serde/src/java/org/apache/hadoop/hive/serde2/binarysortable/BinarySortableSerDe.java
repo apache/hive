@@ -138,7 +138,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
   byte[] columnNullMarker;
   byte[] columnNotNullMarker;
 
-  public static Charset decimalCharSet = Charset.forName("US-ASCII");
+  public static final Charset decimalCharSet = Charset.forName("US-ASCII");
   
   @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
@@ -951,7 +951,6 @@ public class BinarySortableSerDe extends AbstractSerDe {
     factor = sign == 1 ? factor : -factor;
 
     // convert the absolute big decimal to string
-    oldDec.scaleByPowerOfTen(Math.abs(oldDec.scale()));
     String digits = oldDec.unscaledValue().toString();
 
     // finally write out the pieces (sign, scale, digits)
@@ -1087,15 +1086,15 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   public boolean[] getSortOrders() {
-    return columnSortOrderIsDesc;
+    return columnSortOrderIsDesc.clone();
   }
 
   public byte[] getNullMarkers() {
-    return columnNullMarker;
+    return columnNullMarker.clone();
   }
 
   public byte[] getNotNullMarkers() {
-    return columnNotNullMarker;
+    return columnNotNullMarker.clone();
   }
 
 }

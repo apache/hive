@@ -26,7 +26,7 @@ public class JavaConstantBinaryObjectInspector extends
 
   public JavaConstantBinaryObjectInspector(byte[] value) {
     super();
-    this.value = value;
+    this.value = value.clone();
   }
 
   @Override

@@ -81,8 +81,6 @@ public class RegexSerDe extends AbstractSerDe {
 
   StructObjectInspector rowOI;
   List<Object> row;
-  Object[] outputFields;
-  Text outputRowText;
 
   boolean alreadyLoggedNoMatch = false;
   boolean alreadyLoggedPartialMatch = false;
@@ -139,8 +137,6 @@ public class RegexSerDe extends AbstractSerDe {
 
     // Constructing the row object, etc, which will be reused for all rows.
     row = new ArrayList<>(Collections.nCopies(numColumns, null));
-    outputFields = new Object[numColumns];
-    outputRowText = new Text();
   }
 
   @Override

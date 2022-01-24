@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -36,7 +37,7 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
   public WritableHiveCharObjectInspector() {
   }
 
-  public WritableHiveCharObjectInspector(CharTypeInfo typeInfo) {
+  public WritableHiveCharObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

@@ -63,7 +63,7 @@ public class ThriftDeserializer extends AbstractSerDe {
 
       TProtocolFactory tp = TReflectionUtils
           .getProtocolFactoryByName(protoName);
-      tsd = new ThriftByteStreamTypedSerDe(recordClass, tp, tp);
+      tsd = new ThriftByteStreamTypedSerDe(recordClass, tp);
 
     } catch (Exception e) {
       throw new SerDeException(e);

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -57,7 +58,7 @@ public class ShortWritable implements WritableComparable {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || o.getClass() != ShortWritable.class) {
+    if (o == null || o.getClass() != this.getClass()) {
       return false;
     }
     return get() == ((ShortWritable) o).get();
@@ -80,7 +81,9 @@ public class ShortWritable implements WritableComparable {
   }
 
   /** A Comparator optimized for BytesWritable. */
-  public static class Comparator extends WritableComparator {
+  public static class Comparator extends WritableComparator implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public Comparator() {
       super(ShortWritable.class);
     }

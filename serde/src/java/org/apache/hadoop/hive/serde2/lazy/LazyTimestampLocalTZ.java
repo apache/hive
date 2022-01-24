@@ -86,7 +86,7 @@ public class LazyTimestampLocalTZ extends
   }
 
   public static void writeUTF8(OutputStream out, TimestampLocalTZWritable i) throws IOException {
-    byte[] b = TimestampLocalTZWritable.nullBytes;
+    byte[] b = TimestampLocalTZWritable.getNullBytes();
     if (i != null) {
       b = i.toString().getBytes(StandardCharsets.US_ASCII);
     }

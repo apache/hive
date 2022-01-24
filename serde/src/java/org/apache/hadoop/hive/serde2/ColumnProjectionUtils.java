@@ -244,15 +244,15 @@ public final class ColumnProjectionUtils {
   }
 
   private static String toReadColumnIDString(List<Integer> ids) {
-    String id = "";
+    StringBuffer id = new StringBuffer();
     for (int i = 0; i < ids.size(); i++) {
       if (i == 0) {
-        id = id + ids.get(i);
+        id.append(ids.get(i));
       } else {
-        id = id + StringUtils.COMMA_STR + ids.get(i);
+        id.append(StringUtils.COMMA_STR + ids.get(i));
       }
     }
-    return id;
+    return id.toString();
   }
 
   private ColumnProjectionUtils() {

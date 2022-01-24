@@ -122,8 +122,6 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
     public final Field complexField;
 
-    public int complexFieldStart;
-    public int complexFieldLength;
     public int complexFieldEnd;
 
     public int fieldPosition;
@@ -133,8 +131,6 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     }
 
     public void setCurrentFieldInfo(int complexFieldStart, int complexFieldLength) {
-      this.complexFieldStart = complexFieldStart;
-      this.complexFieldLength = complexFieldLength;
       complexFieldEnd = complexFieldStart + complexFieldLength;
       fieldPosition = complexFieldStart;
     }
@@ -368,7 +364,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    */
   @Override
   public void set(byte[] bytes, int offset, int length) {
-    this.bytes = bytes;
+    this.bytes = bytes.clone();
     start = offset;
     end = offset + length;
     topLevelParsed = false;
@@ -1279,7 +1275,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
   //------------------------------------------------------------------------------------------------
 
-  private static final byte[] maxLongBytes = ((Long) Long.MAX_VALUE).toString().getBytes();
+  private static final byte[] maxLongBytes = ((Long) Long.MAX_VALUE).toString().getBytes(StandardCharsets.UTF_8);
 
   public static int byteArrayCompareRanges(byte[] arg1, int start1, byte[] arg2, int start2, int len) {
     for (int i = 0; i < len; i++) {

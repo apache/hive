@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyHiveVarchar;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 
@@ -36,11 +37,11 @@ public class LazyHiveVarcharObjectInspector
   public LazyHiveVarcharObjectInspector() {
   }
 
-  public LazyHiveVarcharObjectInspector(VarcharTypeInfo typeInfo) {
+  public LazyHiveVarcharObjectInspector(PrimitiveTypeInfo typeInfo) {
     this(typeInfo, false, (byte)0);
   }
 
-  public LazyHiveVarcharObjectInspector(VarcharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+  public LazyHiveVarcharObjectInspector(PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar) {
     super(typeInfo);
     this.escaped = escaped;
     this.escapeChar = escapeChar;

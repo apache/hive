@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * A WritableConstantHiveVarcharObjectInspector is a WritableHiveVarcharObjectInspector
@@ -35,7 +35,7 @@ public class WritableConstantHiveVarcharObjectInspector extends
   WritableConstantHiveVarcharObjectInspector() {
   }
 
-  WritableConstantHiveVarcharObjectInspector(VarcharTypeInfo typeInfo,
+  WritableConstantHiveVarcharObjectInspector(PrimitiveTypeInfo typeInfo,
       HiveVarcharWritable value) {
     super(typeInfo);
     this.value = value;

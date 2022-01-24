@@ -149,12 +149,12 @@ public final class ObjectInspectorUtils {
     }
 
     public ObjectInspectorObject(Object[] objects, ObjectInspector[] oi) {
-      this.objects = objects;
-      this.oi = oi;
+      this.objects = objects.clone();
+      this.oi = oi.clone();
     }
 
     public Object[] getValues() {
-      return objects;
+      return objects.clone();
     }
 
     @Override
@@ -442,6 +442,8 @@ public final class ObjectInspectorUtils {
         break;
       case WRITABLE:
         result = loi.getPrimitiveWritableObject(loi.copyObject(o));
+        break;
+      default:
         break;
       }
       break;
@@ -1430,7 +1432,7 @@ public final class ObjectInspectorUtils {
       return (ConstantObjectInspector) oi;
     }
     ObjectInspector writableOI = getStandardObjectInspector(oi, ObjectInspectorCopyOption.WRITABLE);
-    Object writableValue = value == null ? value :
+    Object writableValue = value == null ? null :
       ObjectInspectorConverters.getConverter(oi, writableOI).convert(value);
     switch (writableOI.getCategory()) {
       case PRIMITIVE:

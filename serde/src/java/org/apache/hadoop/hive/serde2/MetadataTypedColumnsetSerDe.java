@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,7 +79,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
       try {
         byte[] b = new byte[1];
         b[0] = Byte.parseByte(altValue);
-        return new String(b);
+        return new String(b, StandardCharsets.UTF_8);
       } catch (NumberFormatException e) {
         return altValue;
       }
@@ -177,7 +178,10 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
       }
     } else if (field instanceof Text) {
       row = field.toString();
+    } else {
+      throw new SerDeException("Can't deserialize field because it is not type of BytesWritable or Text");
     }
+
     try {
       deserialize(deserializeCache, row, separator, nullString, splitLimit);
       if (columnNames != null) {

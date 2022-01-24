@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.serde2.lazybinary;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -37,7 +36,6 @@ import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -70,7 +68,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -189,17 +186,6 @@ public class LazyBinarySerDe extends AbstractSerDe {
     lastOperationSerialize = true;
     lastOperationDeserialize = false;
     return serializeBytesWritable;
-  }
-
-  public static class StringWrapper {
-    public byte[] bytes;
-    public int start, length;
-
-    public void set(byte[] bytes, int start, int length) {
-      this.bytes = bytes;
-      this.start = start;
-      this.length = length;
-    }
   }
 
   private static void serializeStruct(RandomAccessOutput byteStream, Object obj,

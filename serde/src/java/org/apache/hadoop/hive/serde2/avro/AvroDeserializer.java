@@ -464,9 +464,8 @@ class AvroDeserializer {
     Map<CharSequence, Object> mapDatum = (Map)datum;
     Schema valueSchema = mapSchema.getValueType();
     TypeInfo valueTypeInfo = columnType.getMapValueTypeInfo();
-    for (CharSequence key : mapDatum.keySet()) {
-      Object value = mapDatum.get(key);
-      map.put(key.toString(), worker(value, fileSchema == null ? null : fileSchema.getValueType(),
+    for (Map.Entry<CharSequence, Object> entry : mapDatum.entrySet()) {
+      map.put(entry.getKey().toString(), worker(entry.getValue(), fileSchema == null ? null : fileSchema.getValueType(),
           valueSchema, valueTypeInfo));
     }
 

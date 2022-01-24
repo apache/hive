@@ -32,11 +32,11 @@ public class ByteArrayRef {
   byte[] data;
 
   public byte[] getData() {
-    return data;
+    return data.clone();
   }
 
   public void setData(byte[] data) {
-    this.data = data;
+    this.data = data.clone();
   }
 
 }

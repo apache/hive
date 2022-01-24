@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -40,7 +41,7 @@ implements SettableHiveVarcharObjectInspector {
   public WritableHiveVarcharObjectInspector() {
   }
 
-  public WritableHiveVarcharObjectInspector(VarcharTypeInfo typeInfo) {
+  public WritableHiveVarcharObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

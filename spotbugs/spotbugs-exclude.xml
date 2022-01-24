@@ -17,6 +17,15 @@
 
 <FindBugsFilter>
   <Match>
+    <Class name="org.apache.hadoop.hive.serde.serdeConstants" />
+  </Match>
+  <Match>
+    <Package name="~org.apache.hadoop.hive.serde.test.*" />
+  </Match>
+  <Match>
+    <Package name="~org.apache.hadoop.hive.serde2.thrift.test.*" />
+  </Match>
+  <Match>
     <Package name="~org.apache.hive.service.rpc.thrift.*" />
   </Match>
   <Match>

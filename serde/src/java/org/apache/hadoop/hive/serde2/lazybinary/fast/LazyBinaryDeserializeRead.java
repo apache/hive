@@ -76,18 +76,16 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   private Deque<Field> stack = new ArrayDeque<>();
   private Field root;
 
-  private class Field {
+  private static class Field {
     Field[] children;
 
     Category category;
     PrimitiveCategory primitiveCategory;
     TypeInfo typeInfo;
-    DataTypePhysicalVariation dataTypePhysicalVariation;
 
     int index;
     int count;
     int start;
-    int end;
     int nullByteStart;
     byte nullByte;
     byte tag;
@@ -157,7 +155,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
    */
   @Override
   public void set(byte[] bytes, int offset, int length) {
-    this.bytes = bytes;
+    this.bytes = bytes.clone();
     this.offset = offset;
     start = offset;
     end = offset + length;
@@ -497,9 +495,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
 
     // Read length
     if (!skipLengthPrefix) {
-      final int length = LazyBinaryUtils.byteArrayToInt(bytes, offset);
       offset += 4;
-      field.end = offset + length;
     }
 
     switch (field.category) {
@@ -523,6 +519,8 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       break;
     case UNION:
       field.count = 2;
+      break;
+    default:
       break;
     }
   }

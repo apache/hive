@@ -34,7 +34,7 @@ import org.apache.hadoop.io.WritableFactory;
 public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> {
 
   private static final byte[] EMPTY_BYTES = new byte[0];
-  public static BytesRefWritable ZeroBytesRefWritable = new BytesRefWritable();
+  public static BytesRefWritable zeroBytesRefWritable = new BytesRefWritable();
 
   int start = 0;
   int length = 0;
@@ -63,7 +63,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
    * Create a BytesRefWritable referenced to the given bytes.
    */
   public BytesRefWritable(byte[] bytes) {
-    this.bytes = bytes;
+    this.bytes = bytes.clone();
     length = bytes.length;
     start = 0;
   }
@@ -73,7 +73,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
    * section is determined by argument <tt>offset</tt> and <tt>len</tt>.
    */
   public BytesRefWritable(byte[] data, int offset, int len) {
-    bytes = data;
+    bytes = data.clone();
     start = offset;
     length = len;
   }
@@ -118,7 +118,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
    */
   public byte[] getData() throws IOException {
     lazyDecompress();
-    return bytes;
+    return bytes.clone();
   }
 
   /**
@@ -128,7 +128,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
    * @see #readFields(DataInput)
    */
   public void set(byte[] newData, int offset, int len) {
-    bytes = newData;
+    bytes = newData.clone();
     start = offset;
     length = len;
     lazyDecompressObj = null;

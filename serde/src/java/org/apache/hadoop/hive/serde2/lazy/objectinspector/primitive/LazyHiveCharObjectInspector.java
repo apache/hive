@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyHiveChar;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class LazyHiveCharObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<HiveCharWritable>
@@ -36,11 +37,11 @@ public class LazyHiveCharObjectInspector
   public LazyHiveCharObjectInspector() {
   }
 
-  public LazyHiveCharObjectInspector(CharTypeInfo typeInfo) {
+  public LazyHiveCharObjectInspector(PrimitiveTypeInfo typeInfo) {
     this(typeInfo, false, (byte)0);
   }
 
-  public LazyHiveCharObjectInspector(CharTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+  public LazyHiveCharObjectInspector(PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar) {
     super(typeInfo);
     this.escaped = escaped;
     this.escapeChar = escapeChar;

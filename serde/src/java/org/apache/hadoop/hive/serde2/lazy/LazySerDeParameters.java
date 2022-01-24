@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 @Stable
 public class LazySerDeParameters implements LazyObjectInspectorParameters {
   public static final Logger LOG = LoggerFactory.getLogger(LazySerDeParameters.class.getName());
-  public static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
+  private static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
   public static final String SERIALIZATION_EXTEND_NESTING_LEVELS
   	= "hive.serialization.extend.nesting.levels";
   public static final String SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
@@ -192,7 +192,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   }
 
   public byte[] getSeparators() {
-    return separators;
+    return separators.clone();
   }
 
   public Text getNullSequence() {
@@ -216,7 +216,7 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
   }
 
   public boolean[] getNeedsEscape() {
-    return needsEscape;
+    return needsEscape.clone();
   }
 
   public boolean isExtendedBooleanLiteral() {
@@ -296,5 +296,9 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     for (int i = 0; i < numSeparators; i++) {
       separators[i] = separatorCandidates.get(i);
     }
+  }
+
+  public static byte[] getDefaultSeparators() {
+    return DefaultSeparators.clone();
   }
 }

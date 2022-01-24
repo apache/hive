@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 /**
  * Simple wrapper of object with ObjectInspector.
  * 
@@ -29,7 +31,9 @@ package org.apache.hadoop.hive.serde2.objectinspector;
  */
 public class InspectableObject {
 
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public Object o;
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public ObjectInspector oi;
 
   public InspectableObject() {

@@ -151,8 +151,6 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
     if (obj == null)
         return serializeBatch();
     count += 1;
-    StructObjectInspector soi = (StructObjectInspector) objInspector;
-    List<? extends StructField> fields = soi.getAllStructFieldRefs();
     try {
 	    Object[] formattedRow = (Object[]) thriftFormatter.convert(obj, objInspector);
 	    for (int i = 0; i < columnNames.size(); i++) {

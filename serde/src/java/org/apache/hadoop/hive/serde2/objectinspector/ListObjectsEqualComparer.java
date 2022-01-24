@@ -47,11 +47,9 @@ public class ListObjectsEqualComparer {
     COMPARE_BOOL, OTHER
   }
 
-  class FieldComparer {
+  static class FieldComparer {
     protected ObjectInspector oi0, oi1;
-    protected ObjectInspector compareOI;
     protected CompareType compareType;
-    protected Converter converter0, converter1;
     protected StringObjectInspector soi0, soi1;
     protected IntObjectInspector ioi0, ioi1;
     protected LongObjectInspector loi0, loi1;

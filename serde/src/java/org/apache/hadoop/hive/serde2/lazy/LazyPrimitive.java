@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -48,6 +49,7 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
   }
 
   @Override
+  @SuppressFBWarnings(value = "NP_TOSTRING_COULD_RETURN_NULL", justification = "Intended")
   public String toString() {
     return isNull ? null : data.toString();
   }
@@ -67,7 +69,7 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
       return true;
     }
 
-    if (data == null || obj == null) {
+    if (data == null) {
       return false;
     }
 

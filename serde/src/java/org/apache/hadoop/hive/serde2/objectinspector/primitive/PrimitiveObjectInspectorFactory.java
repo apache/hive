@@ -80,9 +80,9 @@ public final class PrimitiveObjectInspectorFactory {
   public static final WritableStringObjectInspector writableStringObjectInspector =
       new WritableStringObjectInspector();
   public static final WritableHiveCharObjectInspector writableHiveCharObjectInspector =
-      new WritableHiveCharObjectInspector((CharTypeInfo) TypeInfoFactory.charTypeInfo);
+      new WritableHiveCharObjectInspector(TypeInfoFactory.charTypeInfo);
   public static final WritableHiveVarcharObjectInspector writableHiveVarcharObjectInspector =
-      new WritableHiveVarcharObjectInspector((VarcharTypeInfo) TypeInfoFactory.varcharTypeInfo);
+      new WritableHiveVarcharObjectInspector(TypeInfoFactory.varcharTypeInfo);
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
   public static final WritableDateObjectInspector writableDateObjectInspector =
@@ -184,9 +184,9 @@ public final class PrimitiveObjectInspectorFactory {
   public static final JavaStringObjectInspector javaStringObjectInspector =
       new JavaStringObjectInspector();
   public static final JavaHiveCharObjectInspector javaHiveCharObjectInspector =
-      new JavaHiveCharObjectInspector((CharTypeInfo) TypeInfoFactory.charTypeInfo);
+      new JavaHiveCharObjectInspector(TypeInfoFactory.charTypeInfo);
   public static final JavaHiveVarcharObjectInspector javaHiveVarcharObjectInspector =
-      new JavaHiveVarcharObjectInspector((VarcharTypeInfo) TypeInfoFactory.varcharTypeInfo);
+      new JavaHiveVarcharObjectInspector(TypeInfoFactory.varcharTypeInfo);
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
       new JavaVoidObjectInspector();
   public static final JavaDateObjectInspector javaDateObjectInspector =
@@ -296,16 +296,16 @@ public final class PrimitiveObjectInspectorFactory {
 
     switch (typeInfo.getPrimitiveCategory()) {
     case CHAR:
-      result = new WritableHiveCharObjectInspector((CharTypeInfo) typeInfo);
+      result = new WritableHiveCharObjectInspector(typeInfo);
       break;
     case VARCHAR:
-      result = new WritableHiveVarcharObjectInspector((VarcharTypeInfo) typeInfo);
+      result = new WritableHiveVarcharObjectInspector(typeInfo);
       break;
     case TIMESTAMPLOCALTZ:
-      result = new WritableTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo) typeInfo);
+      result = new WritableTimestampLocalTZObjectInspector(typeInfo);
       break;
     case DECIMAL:
-      result = new WritableHiveDecimalObjectInspector((DecimalTypeInfo) typeInfo);
+      result = new WritableHiveDecimalObjectInspector(typeInfo);
       break;
     default:
       throw new RuntimeException("Failed to create object inspector for " + typeInfo);
@@ -346,23 +346,23 @@ public final class PrimitiveObjectInspectorFactory {
     case STRING:
       return new WritableConstantStringObjectInspector((Text)value);
     case CHAR:
-      return new WritableConstantHiveCharObjectInspector((CharTypeInfo) typeInfo,
+      return new WritableConstantHiveCharObjectInspector(typeInfo,
           (HiveCharWritable) value);
     case VARCHAR:
-      return new WritableConstantHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
+      return new WritableConstantHiveVarcharObjectInspector(typeInfo,
           (HiveVarcharWritable)value);
     case DATE:
       return new WritableConstantDateObjectInspector((DateWritableV2)value);
     case TIMESTAMP:
       return new WritableConstantTimestampObjectInspector((TimestampWritableV2)value);
     case TIMESTAMPLOCALTZ:
-      return new WritableConstantTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo, (TimestampLocalTZWritable) value);
+      return new WritableConstantTimestampLocalTZObjectInspector(typeInfo, (TimestampLocalTZWritable) value);
     case INTERVAL_YEAR_MONTH:
       return new WritableConstantHiveIntervalYearMonthObjectInspector((HiveIntervalYearMonthWritable) value);
     case INTERVAL_DAY_TIME:
       return new WritableConstantHiveIntervalDayTimeObjectInspector((HiveIntervalDayTimeWritable) value);
     case DECIMAL:
-      return new WritableConstantHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo, (HiveDecimalWritable)value);
+      return new WritableConstantHiveDecimalObjectInspector(typeInfo, (HiveDecimalWritable)value);
     case BINARY:
       return new WritableConstantBinaryObjectInspector((BytesWritable)value);
     case VOID:
@@ -404,16 +404,16 @@ public final class PrimitiveObjectInspectorFactory {
 
     switch (typeInfo.getPrimitiveCategory()) {
     case CHAR:
-      result = new JavaHiveCharObjectInspector((CharTypeInfo) typeInfo);
+      result = new JavaHiveCharObjectInspector(typeInfo);
       break;
     case VARCHAR:
-      result = new JavaHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      result = new JavaHiveVarcharObjectInspector(typeInfo);
       break;
     case TIMESTAMPLOCALTZ:
-      result = new JavaTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo);
+      result = new JavaTimestampLocalTZObjectInspector(typeInfo);
       break;
     case DECIMAL:
-      result = new JavaHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
+      result = new JavaHiveDecimalObjectInspector(typeInfo);
       break;
     default:
       throw new RuntimeException("Failed to create Java ObjectInspector for " + typeInfo);

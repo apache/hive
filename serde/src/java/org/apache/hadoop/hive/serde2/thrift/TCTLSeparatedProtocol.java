@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.thrift;
 import java.io.EOFException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -207,7 +208,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
    * A convenience class for tokenizing a TTransport.
    */
 
-  class SimpleTransportTokenizer {
+  static class SimpleTransportTokenizer {
 
     TTransport trans;
     StringTokenizer tokenizer;
@@ -429,7 +430,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
       try {
         byte[] b = new byte[1];
         b[0] = Byte.parseByte(altValue);
-        return new String(b);
+        return new String(b, StandardCharsets.UTF_8);
       } catch (NumberFormatException e) {
         return altValue;
       }

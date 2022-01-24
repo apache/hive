@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.avro;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +139,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
 
       if (rowField instanceof LazyStruct) {
 
-        if (LOG.isDebugEnabled() && rowField != null) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Deserializing struct [" + rowField.getClass() + "]");
         }
 
@@ -374,7 +375,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
 
     String objAsString = obj.toString().trim();
 
-    ref.setData(objAsString.getBytes());
+    ref.setData(objAsString.getBytes(StandardCharsets.UTF_8));
 
     // initialize the lazy object
     lazyObject.init(ref, 0, ref.getData().length);

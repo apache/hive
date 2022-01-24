@@ -30,11 +30,9 @@ import org.apache.hadoop.io.Writable;
 public abstract class ByteStreamTypedSerDe extends TypedSerDe {
 
   protected ByteStream.Input bis;
-  protected ByteStream.Output bos;
 
   public ByteStreamTypedSerDe(Type objectType) throws SerDeException {
     super(objectType);
-    bos = new ByteStream.Output();
     bis = new ByteStream.Input();
   }
 

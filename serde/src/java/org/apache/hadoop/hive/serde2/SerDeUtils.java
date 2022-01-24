@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -174,7 +175,7 @@ public final class SerDeUtils {
       if (version < 5 && ((PrimitiveObjectInspector)valOI).getPrimitiveCategory() ==
           PrimitiveObjectInspector.PrimitiveCategory.BINARY) {
         // todo HIVE-5269
-        return new String((byte[])obj);
+        return new String((byte[])obj, StandardCharsets.UTF_8);
       }
       return obj;
     }
@@ -532,7 +533,7 @@ public final class SerDeUtils {
   }
 
   public static Text transformTextFromUTF8(Text text, Charset targetCharset) {
-    return new Text(new String(text.getBytes(), 0, text.getLength()).getBytes(targetCharset));
+    return new Text(new String(text.getBytes(), 0, text.getLength(), StandardCharsets.UTF_8).getBytes(targetCharset));
   }
 
   public static void writeLong(byte[] writeBuffer, int offset, long value) {

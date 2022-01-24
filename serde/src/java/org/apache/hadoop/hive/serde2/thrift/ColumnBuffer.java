@@ -68,22 +68,22 @@ public class ColumnBuffer extends AbstractList {
     this.type = type;
     this.nulls = nulls;
     if (type == Type.BOOLEAN_TYPE) {
-      boolVars = (boolean[]) values;
+      boolVars = ((boolean[]) values).clone();
       size = boolVars.length;
     } else if (type == Type.TINYINT_TYPE) {
-      byteVars = (byte[]) values;
+      byteVars = ((byte[]) values).clone();
       size = byteVars.length;
     } else if (type == Type.SMALLINT_TYPE) {
-      shortVars = (short[]) values;
+      shortVars = ((short[]) values).clone();
       size = shortVars.length;
     } else if (type == Type.INT_TYPE) {
-      intVars = (int[]) values;
+      intVars = ((int[]) values).clone();
       size = intVars.length;
     } else if (type == Type.BIGINT_TYPE) {
-      longVars = (long[]) values;
+      longVars = ((long[]) values).clone();
       size = longVars.length;
     } else if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
-      doubleVars = (double[]) values;
+      doubleVars = ((double[]) values).clone();
       size = doubleVars.length;
     } else if (type == Type.BINARY_TYPE) {
       binaryVars = (List<ByteBuffer>) values;
@@ -345,6 +345,8 @@ public class ColumnBuffer extends AbstractList {
       break;
     case BINARY_TYPE:
       value.setBinaryVal(new TBinaryColumn(binaryVars, nullMasks));
+      break;
+    default:
       break;
     }
     return value;

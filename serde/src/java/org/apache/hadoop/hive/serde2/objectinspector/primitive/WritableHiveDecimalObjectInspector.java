@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class WritableHiveDecimalObjectInspector extends AbstractPrimitiveWritableObjectInspector
 implements SettableHiveDecimalObjectInspector {
@@ -29,7 +30,7 @@ implements SettableHiveDecimalObjectInspector {
   public WritableHiveDecimalObjectInspector() {
   }
 
-  public WritableHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
+  public WritableHiveDecimalObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 
@@ -57,12 +58,8 @@ implements SettableHiveDecimalObjectInspector {
   @Override
   public Object set(Object o, byte[] bytes, int scale) {
     HiveDecimalWritable writable = (HiveDecimalWritable)create(bytes, scale);
-    if (writable != null) {
-      ((HiveDecimalWritable)o).set(writable);
-      return o;
-    } else {
-      return null;
-    }
+    ((HiveDecimalWritable)o).set(writable);
+    return o;
   }
 
   @Override

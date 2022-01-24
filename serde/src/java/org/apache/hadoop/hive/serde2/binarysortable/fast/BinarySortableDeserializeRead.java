@@ -117,7 +117,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   private Field root;
   private Deque<Field> stack;
 
-  private class Field {
+  private static class Field {
     Field[] children;
 
     Category category;
@@ -126,7 +126,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
     int index;
     int count;
-    int start;
     int tag;
   }
 
@@ -146,9 +145,9 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     root.children = createFields(typeInfos);
     root.count = count;
     stack = new ArrayDeque<>();
-    this.columnSortOrderIsDesc = columnSortOrderIsDesc;
-    this.columnNullMarker = columnNullMarker;
-    this.columnNotNullMarker = columnNotNullMarker;
+    this.columnSortOrderIsDesc = columnSortOrderIsDesc.clone();
+    this.columnNullMarker = columnNullMarker.clone();
+    this.columnNotNullMarker = columnNotNullMarker.clone();
     inputByteBuffer = new InputByteBuffer();
     internalBufferLen = -1;
   }
@@ -237,7 +236,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
   private boolean readPrimitive(Field field) throws IOException {
     final int fieldIndex = root.index;
-    field.start = inputByteBuffer.tell();
 
     /*
      * We have a field and are positioned to it.  Read it.
@@ -546,6 +544,8 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
         skipNextField();
         finishComplexVariableFieldsType();
         break;
+      default:
+        break;
       }
     }
   }
@@ -713,7 +713,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
     if (isEnded) {
       stack.pop();
-      stack.peek();
     }
     return !isEnded;
   }
@@ -724,6 +723,5 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     if (stack.peek() == null) {
       throw new RuntimeException();
     }
-    stack.peek();
   }
 }

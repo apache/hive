@@ -229,8 +229,6 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
           fieldStart = lastFieldByteEnd + recordInfo.elementOffset;
           fieldLength = recordInfo.elementSize;
           lastFieldByteEnd = fieldStart + fieldLength;
-        } else {
-          fieldStart = fieldLength = -1;
         }
 
         if (7 == (i % 8)) {

@@ -34,7 +34,7 @@ public class InputByteBuffer {
    * Reset the byte buffer to the given byte range.
    */
   public void reset(byte[] data, int start, int end) {
-    this.data = data;
+    this.data = data.clone();
     this.start = start;
     this.end = end;
   }
@@ -86,7 +86,7 @@ public class InputByteBuffer {
    * Returns the underlying byte array.
    */
   public final byte[] getData() {
-    return data;
+    return data.clone();
   }
 
   /**

@@ -49,6 +49,6 @@ public class WritableVoidObjectInspector extends
 
   @Override
   public boolean equals(Object obj) {
-    return null != obj && obj instanceof WritableVoidObjectInspector;
+    return obj instanceof WritableVoidObjectInspector;
   }
 }

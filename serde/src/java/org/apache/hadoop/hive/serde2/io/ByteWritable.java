@@ -17,12 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * ByteWritable.
@@ -30,6 +26,7 @@ import org.apache.hadoop.io.WritableComparator;
  * be kept around for backward compatibility of third-party UDFs/SerDes. We should consider
  * removing this class in favor of directly using the Hadoop one in the next major release.
  */
+@SuppressFBWarnings(value = "NM_SAME_SIMPLE_NAME_AS_SUPERCLASS", justification = "Intended")
 public class ByteWritable extends org.apache.hadoop.io.ByteWritable {
 
   public ByteWritable(byte b) {

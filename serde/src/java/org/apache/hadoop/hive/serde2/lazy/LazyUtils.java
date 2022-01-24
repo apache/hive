@@ -171,8 +171,16 @@ public final class LazyUtils {
     }
   }
 
-  public static byte[] trueBytes = {(byte) 't', 'r', 'u', 'e'};
-  public static byte[] falseBytes = {(byte) 'f', 'a', 'l', 's', 'e'};
+  private static final byte[] trueBytes = {(byte) 't', 'r', 'u', 'e'};
+  private static final byte[] falseBytes = {(byte) 'f', 'a', 'l', 's', 'e'};
+
+  public static byte[] getTrueBytes() {
+    return trueBytes.clone();
+  }
+
+  public static byte[] getFalseBytes() {
+    return falseBytes.clone();
+  }
 
   /**
    * Write the bytes with special characters escaped.

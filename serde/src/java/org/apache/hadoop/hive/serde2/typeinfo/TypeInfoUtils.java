@@ -62,12 +62,12 @@ public final class TypeInfoUtils {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TypeInfoUtils.class);
 
-  public static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
+  private static final List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
   // The ordering of types here is used to determine which numeric types
   // are common/convertible to one another. Probably better to rely on the
   // ordering explicitly defined here than to assume that the enum values
   // that were arbitrarily assigned in PrimitiveCategory work for our purposes.
-  public static EnumMap<PrimitiveCategory, Integer> numericTypes =
+  private static final EnumMap<PrimitiveCategory, Integer> numericTypes =
       new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
   static {
     registerNumericType(PrimitiveCategory.BYTE, 1);
@@ -80,8 +80,8 @@ public final class TypeInfoUtils {
     registerNumericType(PrimitiveCategory.STRING, 8);
   }
 
-  public static List<PrimitiveCategory> dateTypeList = new ArrayList<PrimitiveCategory>();
-  public static EnumMap<PrimitiveCategory, Integer> dateTypes =
+  private static final List<PrimitiveCategory> dateTypeList = new ArrayList<PrimitiveCategory>();
+  public static final EnumMap<PrimitiveCategory, Integer> dateTypes =
       new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
   static {
     registerDateType(PrimitiveCategory.DATE, 1);
@@ -484,7 +484,7 @@ public final class TypeInfoUtils {
             // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.
           } else if (params.length == 1) {
             // only precision is specified
-            precision = Integer.valueOf(params[0]);
+            precision = Integer.parseInt(params[0]);
             HiveDecimalUtils.validateParameter(precision, scale);
           } else if (params.length == 2) {
             // New metadata always have two parameters.
@@ -574,15 +574,12 @@ public final class TypeInfoUtils {
 
     public PrimitiveParts parsePrimitiveParts() {
       PrimitiveParts parts = new PrimitiveParts();
-      Token t = expect("type");
-      parts.typeName = t.text;
       parts.typeParams = parseParams();
       return parts;
     }
   }
 
   public static class PrimitiveParts {
-    public String  typeName;
     public String[] typeParams;
   }
 
@@ -926,8 +923,11 @@ public final class TypeInfoUtils {
         return HiveVarchar.MAX_VARCHAR_LENGTH;
       case CHAR:
       case VARCHAR:
-        BaseCharTypeInfo baseCharTypeInfo = (BaseCharTypeInfo) typeInfo;
-        return baseCharTypeInfo.getLength();
+        if (typeInfo instanceof BaseCharTypeInfo) {
+          return ((BaseCharTypeInfo) typeInfo).getLength();
+        } else {
+          throw new IllegalArgumentException("Incorrect type info received for varchar category.");
+        }
       default:
         return 0;
     }
@@ -1008,5 +1008,13 @@ public final class TypeInfoUtils {
           ((PrimitiveTypeInfo) to).getPrimitiveCategory());
     }
     return false;
+  }
+
+  public static List<PrimitiveCategory> getNumericTypeList() {
+    return new ArrayList<>(numericTypeList);
+  }
+
+  public static EnumMap<PrimitiveCategory, Integer> getNumericTypes() {
+    return new EnumMap<>(numericTypes);
   }
 }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 public class JavaHiveVarcharObjectInspector extends AbstractPrimitiveJavaObjectInspector
@@ -29,7 +30,7 @@ public class JavaHiveVarcharObjectInspector extends AbstractPrimitiveJavaObjectI
   public JavaHiveVarcharObjectInspector() {
   }
 
-  public JavaHiveVarcharObjectInspector(VarcharTypeInfo typeInfo) {
+  public JavaHiveVarcharObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

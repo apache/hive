@@ -23,12 +23,12 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyHiveDecimal;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class LazyHiveDecimalObjectInspector extends AbstractPrimitiveLazyObjectInspector<HiveDecimalWritable>
 implements HiveDecimalObjectInspector {
 
-  protected LazyHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
+  protected LazyHiveDecimalObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

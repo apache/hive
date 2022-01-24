@@ -21,13 +21,14 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestampLocalTZ;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 
 public class LazyTimestampLocalTZObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<TimestampLocalTZWritable>
     implements TimestampLocalTZObjectInspector {
 
-  protected LazyTimestampLocalTZObjectInspector(TimestampLocalTZTypeInfo typeInfo) {
+  protected LazyTimestampLocalTZObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

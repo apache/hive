@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class JavaHiveDecimalObjectInspector
 extends AbstractPrimitiveJavaObjectInspector
@@ -31,7 +32,7 @@ implements SettableHiveDecimalObjectInspector {
   public JavaHiveDecimalObjectInspector() {
   }
 
-  public JavaHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
+  public JavaHiveDecimalObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

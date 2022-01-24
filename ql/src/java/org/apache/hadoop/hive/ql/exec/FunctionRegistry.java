@@ -895,7 +895,7 @@ public final class FunctionRegistry {
       return TypeInfoFactory.doubleTypeInfo;
     }
 
-    for (PrimitiveCategory t : TypeInfoUtils.numericTypeList) {
+    for (PrimitiveCategory t : TypeInfoUtils.getNumericTypeList()) {
       if (TypeInfoUtils.implicitConvertible(pcA, t)
           && TypeInfoUtils.implicitConvertible(pcB, t)) {
         return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
@@ -934,8 +934,8 @@ public final class FunctionRegistry {
       // Equal groups, return what we can handle
       switch (pgA) {
         case NUMERIC_GROUP: {
-          Integer ai = TypeInfoUtils.numericTypes.get(pcA);
-          Integer bi = TypeInfoUtils.numericTypes.get(pcB);
+          Integer ai = TypeInfoUtils.getNumericTypes().get(pcA);
+          Integer bi = TypeInfoUtils.getNumericTypes().get(pcB);
           return (ai > bi) ? pcA : pcB;
         }
         case DATE_GROUP: {

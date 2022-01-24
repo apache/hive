@@ -76,7 +76,7 @@ public class TypeInfoToSchema {
   }
 
   private Schema createAvroSchema(TypeInfo typeInfo) {
-    Schema schema = null;
+    Schema schema;
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         schema = createAvroPrimitive(typeInfo);
@@ -93,6 +93,8 @@ public class TypeInfoToSchema {
       case UNION:
         schema = createAvroUnion(typeInfo);
         break;
+      default:
+        schema = Schema.create(Schema.Type.NULL);
     }
 
     return wrapInUnionWithNull(schema);

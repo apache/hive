@@ -158,6 +158,11 @@ public class BytesRefArrayWritable implements Writable,
     return compareTo((BytesRefArrayWritable) o) == 0;
   }
 
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
   /**
    * Removes all elements.
    */

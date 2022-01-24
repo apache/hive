@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -68,7 +69,7 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
 
   // actual delimiter(fieldDelimited) is replaced by REPLACEMENT_DELIM in row.
   public static final String REPLACEMENT_DELIM_SEQUENCE = "\1";
-  public static final int REPLACEMENT_DELIM_LENGTH = REPLACEMENT_DELIM_SEQUENCE.getBytes().length;
+  public static final int REPLACEMENT_DELIM_LENGTH = REPLACEMENT_DELIM_SEQUENCE.getBytes(StandardCharsets.UTF_8).length;
 
   private int numColumns;
   private String fieldDelimited;
@@ -147,17 +148,18 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     String rowStr;
     if (blob instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) blob;
-      rowStr = new String(b.getBytes());
+      rowStr = new String(b.getBytes(), StandardCharsets.UTF_8);
     } else if (blob instanceof Text) {
       Text rowText = (Text) blob;
       rowStr = rowText.toString();
     } else {
       throw new SerDeException(getClass() + ": expects either BytesWritable or Text object!");
     }
-    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), REPLACEMENT_DELIM_SEQUENCE).getBytes());
+    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), REPLACEMENT_DELIM_SEQUENCE)
+        .getBytes(StandardCharsets.UTF_8));
     cachedLazyStruct.init(byteArrayRef, 0, byteArrayRef.getData().length);
     // use the multi-char delimiter to parse the lazy struct
-    cachedLazyStruct.parseMultiDelimit(rowStr.getBytes(), fieldDelimited.getBytes());
+    cachedLazyStruct.parseMultiDelimit(rowStr.getBytes(StandardCharsets.UTF_8), fieldDelimited.getBytes(StandardCharsets.UTF_8));
     return cachedLazyStruct;
   }
 
@@ -178,7 +180,8 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     for (int c = 0; c < numColumns; c++) {
       //write the delimiter to the stream, which means we don't need output.format.string anymore
       if (c > 0) {
-        serializeStream.write(fieldDelimited.getBytes(), 0, fieldDelimited.getBytes().length);
+        serializeStream.write(fieldDelimited.getBytes(StandardCharsets.UTF_8), 0,
+            fieldDelimited.getBytes(StandardCharsets.UTF_8).length);
       }
 
       Object field = list == null ? null : list.get(c);

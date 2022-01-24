@@ -56,9 +56,9 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
   }
 
   public static class Builder {
-    private char fieldDelimiter = (char) LazySerDeParameters.DefaultSeparators[0];
-    private char collectionDelimiter = (char) LazySerDeParameters.DefaultSeparators[1];
-    private char mapKeyDelimiter = (char) LazySerDeParameters.DefaultSeparators[2];
+    private char fieldDelimiter = (char) LazySerDeParameters.getDefaultSeparators()[0];
+    private char collectionDelimiter = (char) LazySerDeParameters.getDefaultSeparators()[1];
+    private char mapKeyDelimiter = (char) LazySerDeParameters.getDefaultSeparators()[2];
     private String lineDelimiter;
 
     public Builder withFieldDelimiter(final char fieldDelimiter) {

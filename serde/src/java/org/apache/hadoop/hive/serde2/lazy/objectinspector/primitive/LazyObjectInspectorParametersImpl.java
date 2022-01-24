@@ -51,7 +51,7 @@ public class LazyObjectInspectorParametersImpl implements
     this.escapeChar = escapeChar;
     this.extendedBooleanLiteral = extendedBooleanLiteral;
     this.timestampFormats = timestampFormats;
-    this.separators = separators;
+    this.separators = separators != null ? separators.clone() : null;
     this.nullSequence = nullSequence;
     this.lastColumnTakesRest = false;
   }
@@ -64,7 +64,7 @@ public class LazyObjectInspectorParametersImpl implements
     this.escapeChar = escapeChar;
     this.extendedBooleanLiteral = extendedBooleanLiteral;
     this.timestampFormats = timestampFormats;
-    this.separators = separators;
+    this.separators = separators != null ? separators.clone() : null;
     this.nullSequence = nullSequence;
     this.lastColumnTakesRest = lastColumnTakesRest;
   }
@@ -101,7 +101,7 @@ public class LazyObjectInspectorParametersImpl implements
 
   @Override
   public byte[] getSeparators() {
-    return separators;
+    return separators.clone();
   }
 
   @Override

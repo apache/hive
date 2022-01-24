@@ -167,9 +167,9 @@ public class MethodUtils {
             acceptedIsPrimitive = true;
             acceptedPrimCat = ((PrimitiveTypeInfo) accepted).getPrimitiveCategory();
           }
-          if (acceptedIsPrimitive && TypeInfoUtils.numericTypes.containsKey(acceptedPrimCat)) {
+          if (acceptedIsPrimitive && TypeInfoUtils.getNumericTypes().containsKey(acceptedPrimCat)) {
             // We're looking for the udf with the smallest maximum numeric type.
-            int typeValue = TypeInfoUtils.numericTypes.get(acceptedPrimCat);
+            int typeValue = TypeInfoUtils.getNumericTypes().get(acceptedPrimCat);
             maxNumericType = typeValue > maxNumericType ? typeValue : maxNumericType;
           } else if (!accepted.equals(reference)) {
             // There are non-numeric arguments that don't match from one UDF to

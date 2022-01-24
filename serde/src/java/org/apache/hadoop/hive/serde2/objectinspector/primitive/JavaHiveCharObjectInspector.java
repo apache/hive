@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class JavaHiveCharObjectInspector extends AbstractPrimitiveJavaObjectInspector
     implements SettableHiveCharObjectInspector {
@@ -29,7 +30,7 @@ public class JavaHiveCharObjectInspector extends AbstractPrimitiveJavaObjectInsp
   public JavaHiveCharObjectInspector() {
   }
 
-  public JavaHiveCharObjectInspector(CharTypeInfo typeInfo) {
+  public JavaHiveCharObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

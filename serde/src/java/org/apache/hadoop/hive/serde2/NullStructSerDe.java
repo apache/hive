@@ -34,7 +34,7 @@ import org.apache.hadoop.io.Writable;
  */
 public class NullStructSerDe extends AbstractSerDe {
 
-  class NullStructField implements StructField {
+  static class NullStructField implements StructField {
     @Override
     public String getFieldName() {
       return null;

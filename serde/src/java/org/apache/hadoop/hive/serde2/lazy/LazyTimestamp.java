@@ -82,7 +82,7 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
    */
   public static void writeUTF8(OutputStream out, TimestampWritableV2 i)
       throws IOException {
-    byte[] b = TimestampWritableV2.nullBytes;
+    byte[] b = TimestampWritableV2.getNullBytes();
     if (i != null) {
       b = i.toString().getBytes(StandardCharsets.US_ASCII);
     }

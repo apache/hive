@@ -58,7 +58,7 @@ public class TestLazyAccumuloRow {
         TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo);
 
     LazySimpleStructObjectInspector objectInspector = (LazySimpleStructObjectInspector) LazyFactory
-        .createLazyStructInspector(columns, types, LazySerDeParameters.DefaultSeparators, new Text(
+        .createLazyStructInspector(columns, types, LazySerDeParameters.getDefaultSeparators(), new Text(
             "\\N"), false, false, (byte) '\\');
 
     DefaultAccumuloRowIdFactory rowIdFactory = new DefaultAccumuloRowIdFactory();
@@ -119,7 +119,7 @@ public class TestLazyAccumuloRow {
         TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo);
 
     LazySimpleStructObjectInspector objectInspector = (LazySimpleStructObjectInspector) LazyFactory
-        .createLazyStructInspector(columns, types, LazySerDeParameters.DefaultSeparators, new Text(
+        .createLazyStructInspector(columns, types, LazySerDeParameters.getDefaultSeparators(), new Text(
             "\\N"), false, false, (byte) '\\');
 
     DefaultAccumuloRowIdFactory rowIdFactory = new DefaultAccumuloRowIdFactory();
@@ -202,7 +202,7 @@ public class TestLazyAccumuloRow {
         TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME));
 
     LazySimpleStructObjectInspector objectInspector = (LazySimpleStructObjectInspector) LazyFactory
-        .createLazyStructInspector(columns, types, LazySerDeParameters.DefaultSeparators, new Text(
+        .createLazyStructInspector(columns, types, LazySerDeParameters.getDefaultSeparators(), new Text(
             "\\N"), false, false, (byte) '\\');
 
     DefaultAccumuloRowIdFactory rowIdFactory = new DefaultAccumuloRowIdFactory();

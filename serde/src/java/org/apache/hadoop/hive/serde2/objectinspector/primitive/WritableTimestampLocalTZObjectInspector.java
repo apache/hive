@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 
 public class WritableTimestampLocalTZObjectInspector extends
@@ -27,7 +28,7 @@ public class WritableTimestampLocalTZObjectInspector extends
   public WritableTimestampLocalTZObjectInspector() {
   }
 
-  public WritableTimestampLocalTZObjectInspector(TimestampLocalTZTypeInfo typeInfo) {
+  public WritableTimestampLocalTZObjectInspector(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 
