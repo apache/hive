@@ -421,8 +421,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(fs, path, writeIdList.getHighWatermark())) {
-      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + writeIdList.getHighWatermark() + ", ");
+    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(fs, path, ci.highestWriteId)) {
+      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
       return true;
     }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
