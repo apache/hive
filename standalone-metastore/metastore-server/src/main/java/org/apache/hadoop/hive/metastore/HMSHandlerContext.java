@@ -132,9 +132,12 @@ public final class HMSHandlerContext {
 
   public static void clear(CleanupHook cleanupHook) {
     HMSHandlerContext ctx = context.get();
-    context.remove();
-    if (ctx != null && cleanupHook != null) {
-      cleanupHook.cleanup(ctx);
+    try {
+      if (ctx != null && cleanupHook != null) {
+        cleanupHook.cleanup(ctx);
+      }
+    } finally {
+      context.remove();
     }
   }
 
