@@ -148,26 +148,10 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     // ii) those that were already in the subtree rooted at child,
     // iii) predicates that are not safe for transitive inference
     List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids).stream()
-        .map(p -> expandUnsafeOperators(child.getCluster().getRexBuilder(), p))
         .filter(this::isPredicateSafeForInference)
         .collect(Collectors.toList());
 
     return ImmutableList.copyOf(toPush);
-  }
-
-  // Remove once HIVE-25852 is addressed: this gives a higher chance to HiveReduceExpressionsRule
-  // to simplify the predicates transitively pushed to the other side of the join in case they are
-  // merged with existing predicates.
-  // HivePointLookupOptimizerRule will close again the IN/BETWEENs, if needed.
-  private RexNode expandUnsafeOperators(RexBuilder rexBuilder, RexNode rexNode) {
-    if (!(rexNode instanceof RexCall)) {
-      return rexNode;
-    }
-
-    HiveInBetweenExpandRule.RexInBetweenExpander expander =
-        new HiveInBetweenExpandRule.RexInBetweenExpander(rexBuilder);
-
-    return expander.visitCall((RexCall) rexNode);
   }
 
   // There is no formal definition of safety for predicate inference, only an empirical one.
@@ -210,7 +194,7 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
           return super.visitCall(call);
         }
       case NOT:
-        inNegation = true;
+        inNegation = !inNegation;
         return super.visitCall(call);
       default:
         return super.visitCall(call);
