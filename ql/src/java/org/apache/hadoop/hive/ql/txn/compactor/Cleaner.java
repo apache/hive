@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBaseLight;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -70,9 +71,11 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -421,7 +424,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(fs, path, ci.highestWriteId)) {
+    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(dir, fs, path, ci.highestWriteId)) {
       LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
       return true;
     }
@@ -434,8 +437,18 @@ public class Cleaner extends MetaStoreCompactorThread {
     return success;
   }
 
-  private boolean hasDataBelowWatermark(FileSystem fs, Path path, long highWatermark) throws IOException {
-    FileStatus[] children = fs.listStatus(path);
+  private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark)
+      throws IOException {
+    Set<Path> acidPaths = new HashSet<>();
+    for (ParsedDelta delta : acidDir.getCurrentDirectories()) {
+      acidPaths.add(delta.getPath());
+    }
+    if (acidDir.getBaseDirectory() != null) {
+      acidPaths.add(acidDir.getBaseDirectory());
+    }
+    FileStatus[] children = fs.listStatus(path, p -> {
+      return !acidPaths.contains(p);
+    });
     for (FileStatus child : children) {
       if (isFileBelowWatermark(child, highWatermark)) {
         return true;
