@@ -636,7 +636,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw e;
       }
       HMSHandlerContext.setRawStore(ms);
-      LOG.info("Created RawStore: " + ms + " from thread id: " + HMSHandlerContext.getThreadId());
+      LOG.info("Created RawStore: {}", ms);
     }
     return ms;
   }
@@ -649,7 +649,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   static RawStore newRawStoreForConf(Configuration conf) throws MetaException {
     Configuration newConf = new Configuration(conf);
     String rawStoreClassName = MetastoreConf.getVar(newConf, ConfVars.RAW_STORE_IMPL);
-    LOG.info("{}: Opening raw store with implementation class: {}", HMSHandlerContext.getThreadId(), rawStoreClassName);
+    LOG.info("Opening raw store with implementation class: {}", rawStoreClassName);
     return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName, HMSHandlerContext.getThreadId());
   }
 
@@ -836,7 +836,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private static void logAndAudit(final String m) {
-    LOG.debug("{}: {}", HMSHandlerContext.getThreadId(), m);
+    LOG.debug(m);
     logAuditEvent(m);
   }
 
@@ -6424,8 +6424,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           toReturn = defaultValue;
         }
       } catch (RuntimeException e) {
-        LOG.error(HMSHandlerContext.getThreadId() + ": "
-            + "RuntimeException thrown in get_config_value - msg: "
+        LOG.error("RuntimeException thrown in get_config_value - msg: "
             + e.getMessage() + " cause: " + e.getCause());
       }
       success = true;
