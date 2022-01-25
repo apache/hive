@@ -37,7 +37,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -74,6 +73,8 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
   public static final HiveJoinPushTransitivePredicatesRule INSTANCE_ANTIJOIN =
           new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+
+  private static final UnsafeOperatorsFinder UNSAFE_OPERATORS_FINDER = new UnsafeOperatorsFinder(true);
 
   private final FilterFactory filterFactory;
 
@@ -146,23 +147,19 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
     // We need to filter i) those that have been pushed already as stored in the join,
     // ii) those that were already in the subtree rooted at child,
-    // iii) predicates that are not safe for transitive inference
+    // iii) predicates that are not safe for transitive inference.
+    //
+    // There is no formal definition of safety for predicate inference, only an empirical one.
+    // An unsafe predicate in this context is one that when pushed across join operands, can lead
+    // to redundant predicates that cannot be simplified (by means of predicates merging with other existing ones).
+    // This situation can lead to an OOM for cases where lack of simplification allows inferring new predicates
+    // (from LHS to RHS) recursively, predicates which are redundant, but that RexSimplify cannot handle.
+    // This notion can be relaxed as soon as RexSimplify gets more powerful, and it can handle such cases.
     List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids).stream()
-        .filter(this::isPredicateSafeForInference)
+        .filter(UNSAFE_OPERATORS_FINDER::isSafe)
         .collect(Collectors.toList());
 
     return ImmutableList.copyOf(toPush);
-  }
-
-  // There is no formal definition of safety for predicate inference, only an empirical one.
-  // An unsafe predicate in this context is one that when pushed across join operands, can lead
-  // to redundant predicates that cannot be simplified (by means of predicates merging with other existing ones).
-  // This situation can lead to an OOM for cases where lack of simplification allows inferring new predicates
-  // (from LHS to RHS) recursively, predicates which are redundant, but that RexSimplify cannot handle.
-  // This notion can be relaxed as soon as RexSimplify gets more powerful, and it can handle such cases.
-  private boolean isPredicateSafeForInference(RexNode predicate) {
-    UnsafeOperatorsFinder unsafeOperatorsFinder = new UnsafeOperatorsFinder(true);
-    return unsafeOperatorsFinder.isSafe(predicate);
   }
 
   //~ Inner Classes ----------------------------------------------------------
