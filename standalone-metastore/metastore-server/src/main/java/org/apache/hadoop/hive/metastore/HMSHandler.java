@@ -174,18 +174,22 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   static void cleanupRawStore() {
-    try {
-      HMSHandlerContext.getRawStore().ifPresent(rs -> {
-        logAndAudit("Cleaning up thread local RawStore...");
-        rs.shutdown();
-      });
-    } finally {
-      HMSHandlerContext.getHMSHandler().ifPresent(handler -> {
-        handler.notifyMetaListenersOnShutDown();
-      });
-      HMSHandlerContext.clear();
-      logAndAudit("Done cleaning up thread local RawStore");
-    }
+    HMSHandlerContext.clear(new HMSHandlerContext.CleanupHook() {
+      @Override
+      public void cleanup(HMSHandlerContext ctx) {
+        try {
+          ctx.getLocalRawStore().ifPresent(rs -> {
+            logAndAudit("Cleaning up thread local RawStore...");
+            rs.shutdown();
+          });
+        } finally {
+          ctx.getLocalHmsHandler().ifPresent(handler -> {
+            handler.notifyMetaListenersOnShutDown();
+          });
+          logAndAudit("Done cleaning up thread local RawStore");
+        }
+      }
+    });
   }
 
   private static ExecutorService threadPool;
