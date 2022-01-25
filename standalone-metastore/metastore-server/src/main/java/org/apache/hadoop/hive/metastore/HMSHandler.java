@@ -173,23 +173,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return HMSHandlerContext.getRawStore().orElse(null);
   }
 
-  static void cleanupRawStore() {
-    HMSHandlerContext.clear(new HMSHandlerContext.CleanupHook() {
-      @Override
-      public void cleanup(HMSHandlerContext ctx) {
-        try {
-          ctx.getLocalRawStore().ifPresent(rs -> {
-            logAndAudit("Cleaning up thread local RawStore...");
-            rs.shutdown();
-          });
-        } finally {
-          ctx.getLocalHmsHandler().ifPresent(handler -> {
-            handler.notifyMetaListenersOnShutDown();
-          });
-          logAndAudit("Done cleaning up thread local RawStore");
-        }
-      }
-    });
+  static void cleanupHandlerContext() {
+    try {
+      HMSHandlerContext.getRawStore().ifPresent(rs -> {
+        logAndAudit("Cleaning up thread local RawStore...");
+        rs.shutdown();
+      });
+    } finally {
+      HMSHandlerContext.getHMSHandler().ifPresent(handler -> {
+        handler.notifyMetaListenersOnShutDown();
+      });
+      HMSHandlerContext.clear();
+      logAndAudit("Done cleaning up thread local RawStore");
+    }
   }
 
   private static ExecutorService threadPool;
@@ -249,7 +245,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   /**
    * Internal function to notify listeners to revert back to old values of keys
-   * that were modified during setMetaConf. This would get called from HiveMetaStore#cleanupRawStore
+   * that were modified during setMetaConf. This would get called from HiveMetaStore#cleanupHandlerContext
    */
   private void notifyMetaListenersOnShutDown() {
     try {
@@ -596,7 +592,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       modifiedConf.put(key, oldValue);
     }
     // Set invoking HMSHandler on threadLocal, this will be used later to notify
-    // metaListeners in HiveMetaStore#cleanupRawStore
+    // metaListeners in HiveMetaStore#cleanupHandlerContext
     if (!HMSHandlerContext.getHMSHandler().isPresent()) {
       HMSHandlerContext.setHMSHandler(this);
     }
@@ -919,7 +915,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void shutdown() {
-    cleanupRawStore();
+    cleanupHandlerContext();
     PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
   }
 

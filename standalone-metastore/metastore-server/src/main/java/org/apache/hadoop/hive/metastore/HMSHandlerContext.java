@@ -64,30 +64,29 @@ public final class HMSHandlerContext {
 
   public static Optional<RawStore> getRawStore() {
     HMSHandlerContext ctx = context.get();
-    return ctx != null ? ctx.getLocalRawStore() : Optional.empty();
+    return ctx != null ? Optional.ofNullable(ctx.rawStore) : Optional.empty();
   }
 
   public static Optional<HMSHandler> getHMSHandler() {
     HMSHandlerContext ctx = context.get();
-    return ctx != null ? ctx.getLocalHmsHandler() : Optional.empty();
+    return ctx != null ? Optional.ofNullable(ctx.hmsHandler) : Optional.empty();
   }
 
   public static Optional<String> getIpAddress() {
     HMSHandlerContext ctx = context.get();
-    return ctx != null ? ctx.getRemoteIpAddress() : Optional.empty();
+    return ctx != null ? Optional.ofNullable(ctx.ipAddress) : Optional.empty();
   }
 
   public static Optional<Configuration> getConfiguration() {
     HMSHandlerContext ctx = context.get();
-    return ctx != null ? ctx.getLocalConfiguration() : Optional.empty();
+    return ctx != null ? Optional.ofNullable(ctx.configuration) : Optional.empty();
   }
 
   public static TxnStore getTxnStore(Configuration conf) {
-    return getContext().getLocalTxnStore().orElseGet(() -> {
-      TxnStore txnStore = TxnUtils.getTxnStore(conf);
-      setTxnStore(txnStore);
-      return txnStore;
-    });
+    if (getContext().txnStore == null) {
+      setTxnStore(TxnUtils.getTxnStore(conf));
+    }
+    return getContext().txnStore;
   }
 
   public static Map<String, String> getModifiedConfig() {
@@ -130,47 +129,7 @@ public final class HMSHandlerContext {
     getContext().ipAddress = ipAddress;
   }
 
-  public static void clear(CleanupHook cleanupHook) {
-    HMSHandlerContext ctx = context.get();
-    try {
-      if (ctx != null && cleanupHook != null) {
-        cleanupHook.cleanup(ctx);
-      }
-    } finally {
-      context.remove();
-    }
-  }
-
-  public Optional<RawStore> getLocalRawStore() {
-    return Optional.ofNullable(rawStore);
-  }
-
-  public Optional<TxnStore> getLocalTxnStore() {
-    return Optional.ofNullable(txnStore);
-  }
-
-  public Optional<HMSHandler> getLocalHmsHandler() {
-    return Optional.ofNullable(hmsHandler);
-  }
-
-  public Optional<Configuration> getLocalConfiguration() {
-    return Optional.ofNullable(configuration);
-  }
-
-  public Optional<String> getRemoteIpAddress() {
-    return Optional.ofNullable(ipAddress);
-  }
-
-  public Map<String, String> getLocalModifiedConfig() {
-    return modifiedConfig;
-  }
-
-  public int getLocalThreadId() {
-    return threadId;
-  }
-
-  // Hook for cleaning up the local variables when we remove them from context
-  public static interface CleanupHook {
-    public void cleanup(HMSHandlerContext ctx);
+  public static void clear() {
+    context.remove();
   }
 }
