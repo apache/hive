@@ -23,10 +23,11 @@ import com.codahale.metrics.Timer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -65,17 +66,17 @@ public class TestCodahaleMetrics {
               PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr-xr-x")));
     }
 
-    HiveConf conf = new HiveConf();
+    Configuration conf = new Configuration();
 
     jsonReportFile = File.createTempFile("TestCodahaleMetrics", ".json");
     System.out.println("Json metrics saved in " + jsonReportFile.getAbsolutePath());
 
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
-    conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
+    conf.set(MetastoreConf.ConfVars.METRICS_CLASS.getHiveName(), CodahaleMetrics.class.getCanonicalName());
+    conf.set(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.getHiveName(),
         "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, "
             + "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.getAbsolutePath());
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, REPORT_INTERVAL_MS,
+    conf.set(MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION.getHiveName(), jsonReportFile.getAbsolutePath());
+    conf.setTimeDuration(MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL.getHiveName(), REPORT_INTERVAL_MS,
         TimeUnit.MILLISECONDS);
 
     MetricsFactory.init(conf);

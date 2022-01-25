@@ -24,12 +24,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -93,14 +93,14 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   // Directory where path resides
   private final Path metricsDir;
 
-  public JsonFileMetricsReporter(MetricRegistry registry, HiveConf conf) {
+  public JsonFileMetricsReporter(MetricRegistry registry, Configuration conf) {
     this.metricRegistry = registry;
     this.jsonWriter =
         new ObjectMapper().registerModule(new MetricsModule(TimeUnit.MILLISECONDS,
             TimeUnit.MILLISECONDS, false)).writerWithDefaultPrettyPrinter();
 
-    interval = conf.getTimeVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, TimeUnit.MILLISECONDS);
-    String pathString = conf.getVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION);
+    interval = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL, TimeUnit.MILLISECONDS);
+    String pathString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION);
     path = Paths.get(pathString).toAbsolutePath();
     LOGGER.info("Reporting metrics to {}", path);
     // We want to use metricsDir in the same directory as the destination file to support atomic

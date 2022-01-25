@@ -20,15 +20,18 @@ package org.apache.hadoop.hive.common.metrics.metrics2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.InvocationTargetException;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for Codahale reporter config backward compatibility
@@ -50,16 +53,17 @@ public class TestCodahaleReportersConf {
   @Test
   public void testFallbackToDeprecatedConfig() throws Exception {
 
-    HiveConf conf = new HiveConf();
+    Configuration conf = new Configuration();
 
     jsonReportFile = new File(workDir, "json_reporting");
     jsonReportFile.delete();
 
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, "JMX, JSON");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
+    conf.set(MetastoreConf.ConfVars.METRICS_CLASS.getHiveName(), CodahaleMetrics.class.getCanonicalName());
+    conf.set(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.getHiveName(), "JMX, JSON");
+    conf.set(MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION.getHiveName(), jsonReportFile.toString());
+    conf.setTimeDuration(MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL.getHiveName(), 100,
+        TimeUnit.MILLISECONDS);
 
     MetricsFactory.init(conf);
 
@@ -89,18 +93,19 @@ public class TestCodahaleReportersConf {
   @Test
   public void testNoFallback() throws Exception {
 
-    HiveConf conf = new HiveConf();
+    Configuration conf = new Configuration();
 
     jsonReportFile = new File(workDir, "json_reporting");
     jsonReportFile.delete();
 
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, "JMX, JSON");
-    conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
-             "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
+    conf.set(MetastoreConf.ConfVars.METRICS_CLASS.getHiveName(), CodahaleMetrics.class.getCanonicalName());
+    conf.set(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.getHiveName(), "JMX, JSON");
+    conf.set(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.getHiveName(),
+        "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter");
+    conf.set(MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION.getHiveName(), jsonReportFile.toString());
+    conf.setTimeDuration(MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL.getHiveName(), 100,
+        TimeUnit.MILLISECONDS);
 
     MetricsFactory.init(conf);
 
@@ -122,18 +127,19 @@ public class TestCodahaleReportersConf {
   @Test
   public void testNoFallbackOnIncorrectConf() throws Exception {
 
-    HiveConf conf = new HiveConf();
+    Configuration conf = new Configuration();
 
     jsonReportFile = new File(workDir, "json_reporting");
     jsonReportFile.delete();
 
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, "JMX, JSON");
-    conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
+    conf.set(MetastoreConf.ConfVars.METRICS_CLASS.getHiveName(), CodahaleMetrics.class.getCanonicalName());
+    conf.set(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.getHiveName(), "JMX, JSON");
+    conf.set(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.getHiveName(),
         "org.apache.hadoop.hive.common.metrics.NonExistentReporter");
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
+    conf.set(MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION.getHiveName(), jsonReportFile.toString());
+    conf.setTimeDuration(MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL.getHiveName(), 100,
+        TimeUnit.MILLISECONDS);
 
     try {
       MetricsFactory.init(conf);

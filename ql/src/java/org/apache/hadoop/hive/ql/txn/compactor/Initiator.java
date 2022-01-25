@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -45,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -301,12 +300,7 @@ public class Initiator extends MetaStoreCompactorThread {
       this.tableCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
     }
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
-    if (metricsEnabled) {
-      MetricsFactory.init(conf);
-      DeltaFilesMetricReporter.init(conf, txnHandler);
-    }
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -363,14 +357,6 @@ public class Initiator extends MetaStoreCompactorThread {
     }
     return false;
   }
-  
-  private void updateDeltaFilesMetrics(AcidDirectory directory, String dbName, String tableName, String partName,
-      long baseSize, Map<Path, Long> deltaSizes) {
-    if (metricsEnabled) {
-      DeltaFilesMetricReporter.updateMetricsFromInitiator(directory, dbName, tableName, partName, conf, txnHandler,
-          baseSize, deltaSizes);
-    }
-  }
 
   private CompactionType checkForCompaction(final CompactionInfo ci,
                                             final ValidWriteIdList writeIds,
@@ -402,7 +388,8 @@ public class Initiator extends MetaStoreCompactorThread {
       deltaSizes.put(delta.getPath(), getDirSize(fs, delta));
     }
     long deltaSize = deltaSizes.values().stream().reduce(0L, Long::sum);
-    updateDeltaFilesMetrics(acidDirectory, ci.dbname, ci.tableName, ci.partName, baseSize, deltaSizes);
+    AcidMetricService.updateMetricsFromInitiator(ci.dbname, ci.tableName, ci.partName, conf, txnHandler,
+        baseSize, deltaSizes, acidDirectory.getObsolete());
 
     if (runJobAsSelf(runAs)) {
       return determineCompactionType(ci, acidDirectory, tblproperties, baseSize, deltaSize);

@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,7 +169,7 @@ public class LegacyMetrics implements Metrics {
     }
   };
 
-  public LegacyMetrics(HiveConf conf) throws Exception {
+  public LegacyMetrics(Configuration conf) throws Exception {
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
     mbs.registerMBean(metrics, oname);
   }

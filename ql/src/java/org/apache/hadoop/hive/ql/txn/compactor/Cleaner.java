@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
@@ -48,7 +49,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -109,8 +109,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
 
   @Override
@@ -190,12 +189,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (cleanerExecutor != null) {
         this.cleanerExecutor.shutdownNow();
       }
-    }
-  }
-
-  private void updateDeltaFilesMetrics(String dbName, String tableName, String partName, List<Path> obsoleteDirs) {
-    if (metricsEnabled) {
-      DeltaFilesMetricReporter.updateMetricsFromCleaner(dbName, tableName, partName, obsoleteDirs, conf, txnHandler);
     }
   }
 
@@ -429,7 +422,8 @@ public class Cleaner extends MetaStoreCompactorThread {
         .map(Path::getName).collect(Collectors.joining(",")));
     boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
     if (dir.getObsolete().size() > 0) {
-      updateDeltaFilesMetrics(ci.dbname, ci.tableName, ci.partName, dir.getObsolete());
+      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
+          txnHandler);
     }
     return success;
   }

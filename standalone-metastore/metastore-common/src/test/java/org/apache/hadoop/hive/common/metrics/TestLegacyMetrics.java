@@ -30,12 +30,18 @@ import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class TestLegacyMetrics {
 
@@ -46,8 +52,8 @@ public class TestLegacyMetrics {
   @Before
   public void before() throws Exception {
     MetricsFactory.close();
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, LegacyMetrics.class.getCanonicalName());
+    Configuration conf = new Configuration();
+    conf.set(MetastoreConf.ConfVars.METRICS_CLASS.getHiveName(), LegacyMetrics.class.getCanonicalName());
     MetricsFactory.init(conf);
     metrics = (LegacyMetrics) MetricsFactory.getInstance();
   }

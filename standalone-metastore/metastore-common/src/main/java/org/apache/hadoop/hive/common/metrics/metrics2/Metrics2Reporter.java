@@ -19,27 +19,25 @@ package org.apache.hadoop.hive.common.metrics.metrics2;
 
 import com.codahale.metrics.MetricRegistry;
 import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
-import java.io.Closeable;
 import java.util.concurrent.TimeUnit;
-import org.apache.hadoop.hive.conf.HiveConf;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
-import com.codahale.metrics.Reporter;
 
 /**
  * A wrapper around Codahale HadoopMetrics2Reporter to make it a pluggable/configurable Hive Metrics reporter.
  */
 public class Metrics2Reporter implements CodahaleReporter {
 
-  private final MetricRegistry metricRegistry;
-  private final HiveConf conf;
+  private final Configuration conf;
   private final HadoopMetrics2Reporter reporter;
 
-  public Metrics2Reporter(MetricRegistry registry, HiveConf conf) {
-    this.metricRegistry = registry;
+  public Metrics2Reporter(MetricRegistry registry, Configuration conf) {
     this.conf = conf;
-    String applicationName = conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_COMPONENT_NAME.varname);
+    String applicationName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_HADOOP2_COMPONENT_NAME);
 
-    reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
+    reporter = HadoopMetrics2Reporter.forRegistry(registry)
         .convertRatesTo(TimeUnit.SECONDS)
         .convertDurationsTo(TimeUnit.MILLISECONDS)
         .build(DefaultMetricsSystem.initialize(applicationName), // The application-level name
@@ -51,7 +49,7 @@ public class Metrics2Reporter implements CodahaleReporter {
   @Override
   public void start() {
     long reportingInterval =
-        HiveConf.toTime(conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_INTERVAL.varname), TimeUnit.SECONDS, TimeUnit.SECONDS);
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.METRICS_HADOOP2_INTERVAL, TimeUnit.SECONDS);
     reporter.start(reportingInterval, TimeUnit.SECONDS);
   }
 

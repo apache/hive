@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 import java.lang.reflect.Constructor;
 
@@ -37,8 +37,8 @@ public class MetricsFactory {
   public synchronized static void init(Configuration conf) throws Exception {
     if (metrics == null) {
       Class metricsClass = conf.getClassByName(
-        conf.get(HiveConf.ConfVars.HIVE_METRICS_CLASS.varname));
-      Constructor constructor = metricsClass.getConstructor(HiveConf.class);
+          MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_CLASS));
+      Constructor constructor = metricsClass.getConstructor(Configuration.class);
       metrics = (Metrics) constructor.newInstance(conf);
     }
   }
