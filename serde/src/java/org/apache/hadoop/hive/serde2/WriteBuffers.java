@@ -459,7 +459,7 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
     public ByteSegmentRef() {
     }
     public byte[] getBytes() {
-      return bytes.clone();
+      return bytes != null ? bytes.clone() : null;
     }
     public long getOffset() {
       return offset;

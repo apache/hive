@@ -69,6 +69,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hive.common.util.DateParser;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -150,18 +151,15 @@ public final class PrimitiveObjectInspectorUtils {
     }
 
     @Override
+    @SuppressFBWarnings(value = "CN_IDIOM_NO_SUPER_CALL",  justification = "Intended")
     public Object clone() {
-      try {
-        PrimitiveTypeEntry result = (PrimitiveTypeEntry) super.clone();
-        result.primitiveCategory = this.primitiveCategory;
-        result.typeName = this.typeName;
-        result.primitiveJavaType = this.primitiveJavaType;
-        result.primitiveJavaClass = this.primitiveJavaClass;
-        result.primitiveWritableClass = this.primitiveWritableClass;
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new RuntimeException("Error occurred while cloning PrimitiveTypeEntry: " + e.getMessage(), e);
-      }
+      PrimitiveTypeEntry result = new PrimitiveTypeEntry(
+          this.primitiveCategory,
+          this.typeName,
+          this.primitiveJavaType,
+          this.primitiveJavaClass,
+          this.primitiveWritableClass);
+      return result;
     }
 
     @Override

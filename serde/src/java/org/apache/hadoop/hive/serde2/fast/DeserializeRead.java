@@ -287,19 +287,19 @@ public abstract class DeserializeRead {
   /*
    * BOOLEAN.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public boolean currentBoolean;
 
   /*
    * BYTE.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public byte currentByte;
 
   /*
    * SHORT.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public short currentShort;
 
   /*
@@ -310,19 +310,19 @@ public abstract class DeserializeRead {
   /*
    * LONG.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public long currentLong;
 
   /*
    * FLOAT.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public float currentFloat;
 
   /*
    * DOUBLE.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public double currentDouble;
 
   /*
@@ -336,7 +336,7 @@ public abstract class DeserializeRead {
    *
    * Otherwise, currentBytes, currentBytesStart, and currentBytesLength are the result.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public boolean currentExternalBufferNeeded;
   public int currentExternalBufferNeededLen;
 
@@ -345,9 +345,9 @@ public abstract class DeserializeRead {
   }
 
   public byte[] currentBytes;
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public int currentBytesStart;
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public int currentBytesLength;
 
   /*
@@ -378,6 +378,6 @@ public abstract class DeserializeRead {
   /*
    * DECIMAL_64.
    */
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in subclass")
   public long currentDecimal64;
 }

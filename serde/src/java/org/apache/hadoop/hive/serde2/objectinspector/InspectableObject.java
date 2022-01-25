@@ -31,9 +31,9 @@ import org.apache.hive.common.util.SuppressFBWarnings;
  */
 public class InspectableObject {
 
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in other classes")
   public Object o;
-  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",  justification = "Used in other classes")
   public ObjectInspector oi;
 
   public InspectableObject() {
