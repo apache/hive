@@ -199,6 +199,9 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     }
 
     boolean isSafe(RexNode node) {
+      // the visitor is re-used, clear the state
+      inNegation = false;
+
       try {
         node.accept(this);
         return true;
