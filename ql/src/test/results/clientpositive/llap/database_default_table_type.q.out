@@ -1,6 +1,6 @@
-PREHOOK: query: drop database if exists db_with_default_table_type
+PREHOOK: query: drop database if exists db_with_default_table_type cascade
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: drop database if exists db_with_default_table_type
+POSTHOOK: query: drop database if exists db_with_default_table_type cascade
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: create database db_with_default_table_type with DBPROPERTIES("defaultTableType"="EXTERNAL")
 PREHOOK: type: CREATEDATABASE
@@ -413,9 +413,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop database if exists altered_db
+PREHOOK: query: drop database if exists altered_db cascade
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: drop database if exists altered_db
+POSTHOOK: query: drop database if exists altered_db cascade
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: create database altered_db
 PREHOOK: type: CREATEDATABASE
