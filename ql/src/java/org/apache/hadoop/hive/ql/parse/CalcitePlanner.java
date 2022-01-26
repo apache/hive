@@ -151,6 +151,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
@@ -2074,6 +2075,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private boolean isMaterializedViewRewritingByTextEnabled() {
       return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
+              !HiveMaterializedViewsRegistry.get().isEmpty() &&
               mvRebuildMode == MaterializationRebuildMode.NONE &&
               !rootQB.isMaterializedView() && !ctx.isLoadingMaterializedView() && !rootQB.isCTAS() &&
               rootQB.getIsQuery() &&
