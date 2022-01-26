@@ -512,11 +512,8 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       }
 
       // if they are both null, continue
-      // else if one of them is null, return false
       if (cv1.isNull[i] && cv2.isNull[i]) {
         continue;
-      } else if (cv1.isNull[i] || cv2.isNull[i]) {
-        return false;
       }
 
       // check if value lengths are the same
