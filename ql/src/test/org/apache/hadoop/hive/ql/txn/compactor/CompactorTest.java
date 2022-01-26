@@ -137,24 +137,23 @@ public abstract class CompactorTest {
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
   }
 
-
   protected void compactorTestCleanup() throws IOException {
     FileUtils.deleteDirectory(tmpdir);
   }
 
   protected void startInitiator() throws Exception {
-    startThread(CompactorThreadType.INITIATOR, true);
+    runOneLoopOfCompactorThread(CompactorThreadType.INITIATOR);
   }
 
   protected void startWorker() throws Exception {
-    startThread(CompactorThreadType.WORKER, true);
+    runOneLoopOfCompactorThread(CompactorThreadType.WORKER);
   }
 
   protected void startCleaner() throws Exception {
-    startThread(CompactorThreadType.CLEANER, true);
+    runOneLoopOfCompactorThread(CompactorThreadType.CLEANER);
   }
 
-  protected void runAcidMetricService() throws Exception {
+  protected void runAcidMetricService() {
     TestTxnDbUtil.setConfValues(conf);
     AcidMetricService t = new AcidMetricService();
     t.setConf(conf);
@@ -354,7 +353,7 @@ public abstract class CompactorTest {
   }
 
   // I can't do this with @Before because I want to be able to control when the thread starts
-  private void startThread(CompactorThreadType type, boolean stopAfterOne) throws Exception {
+  private void runOneLoopOfCompactorThread(CompactorThreadType type) throws Exception {
     TestTxnDbUtil.setConfValues(conf);
     CompactorThread t;
     switch (type) {
@@ -365,10 +364,9 @@ public abstract class CompactorTest {
     }
     t.setThreadId((int) t.getId());
     t.setConf(conf);
-    stop.set(stopAfterOne);
+    stop.set(true);
     t.init(stop);
-    if (stopAfterOne) t.run();
-    else t.start();
+    t.run();
   }
 
   private String getLocation(String tableName, String partValue) {
@@ -686,5 +684,4 @@ public abstract class CompactorTest {
     }
     return result;
   }
-
 }

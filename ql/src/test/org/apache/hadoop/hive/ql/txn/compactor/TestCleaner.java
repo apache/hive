@@ -370,7 +370,7 @@ public class TestCleaner extends CompactorTest {
     Table t = newTable("default", "camipc", true);
     List<Partition> partitions = new ArrayList<>();
     Partition p;
-    for(int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
       p = newPartition(t, "today" + i);
 
       addBaseFile(t, p, 20L, 20);
@@ -381,9 +381,9 @@ public class TestCleaner extends CompactorTest {
     }
 
     burnThroughTransactions("default", "camipc", 25);
-    for(int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
       CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
-      rqst.setPartitionname("ds=today"+i);
+      rqst.setPartitionname("ds=today" + i);
       compactInTxn(rqst);
     }
 
