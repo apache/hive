@@ -42,9 +42,6 @@ insert into tbl_ice_parquet_parted values
 -- query with projection of partition columns' subset
 select p1, a, min(b) from tbl_ice_parquet_parted group by p1, a;
 
--- required for reordering between different types
-set hive.metastore.disallow.incompatible.col.type.changes=false;
-
 -- move partition columns
 alter table tbl_ice_parquet_parted change column p1 p1 string after a;
 

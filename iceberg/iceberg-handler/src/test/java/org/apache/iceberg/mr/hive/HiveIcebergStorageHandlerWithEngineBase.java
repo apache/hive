@@ -168,6 +168,13 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, executionEngine);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+    // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
+    // we turn it off explicitly to achieve better coverage.
+    if (isVectorized) {
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    } else {
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    }
   }
 
   @After
