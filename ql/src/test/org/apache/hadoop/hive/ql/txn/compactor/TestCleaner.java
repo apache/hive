@@ -93,6 +93,34 @@ public class TestCleaner extends CompactorTest {
   }
 
   @Test
+  public void cleanupAfterIOWAndMajorTableCompaction() throws Exception {
+    Table t = newTable("default", "camtc", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    addBaseFile(t, null, 25L, 25); //IOW
+
+    burnThroughTransactions("default", "camtc", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    // Check that the files are removed
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(1, paths.size());
+    Assert.assertEquals("base_25_v26", paths.get(0).getName());
+  }
+  
+  @Test
   public void cleanupAfterMajorTableCompactionWithLongRunningQuery() throws Exception {
     Table t = newTable("default", "camtc", false);
 
