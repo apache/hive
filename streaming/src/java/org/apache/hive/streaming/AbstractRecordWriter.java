@@ -26,6 +26,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -437,9 +438,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   @Override
   public void write(final long writeId, final InputStream inputStream) throws StreamingException {
-    try (Scanner scanner = new Scanner(inputStream).useDelimiter(lineDelimiter)) {
+    try (Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter(lineDelimiter)) {
       while (scanner.hasNext()) {
-        write(writeId, scanner.next().getBytes());
+        write(writeId, scanner.next().getBytes(StandardCharsets.UTF_8));
       }
     }
   }
