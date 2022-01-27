@@ -125,7 +125,7 @@ public class MaterializedViewsCache {
       // in the map match. Otherwise, keep the one in the map.
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
         Table oldTable = HiveMaterializedViewUtils.extractTable(oldMaterialization);
-        if (oldTable.equals(materializedViewTable)) {
+        if (materializedViewTable.equals(oldTable)) {
           remove(oldMaterialization, oldTable);
           return null;
         }
@@ -142,8 +142,15 @@ public class MaterializedViewsCache {
   }
 
   private void remove(HiveRelOptMaterialization materialization, Table mvTable) {
-    List<HiveRelOptMaterialization> materializationList =
-            sqlToMaterializedView.get(mvTable.getViewExpandedText());
+    if (mvTable == null) {
+      return;
+    }
+
+    List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(mvTable.getViewExpandedText());
+    if (materializationList == null) {
+      return;
+    }
+
     materializationList.remove(materialization);
     if (materializationList.isEmpty()) {
       sqlToMaterializedView.remove(mvTable.getViewExpandedText());
