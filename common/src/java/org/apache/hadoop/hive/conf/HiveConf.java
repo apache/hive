@@ -3839,7 +3839,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH("hive.server2.materializedviews.registry.refresh.period", "1500s",
         new TimeValidator(TimeUnit.SECONDS),
         "Period, specified in seconds, between successive refreshes of the registry to pull new materializations " +
-        "from the metastore that may have been created by other HS2 instances."),
+        "from the metastore that may have been created by other HS2 instances. 0 means refresh is off."),
 
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),

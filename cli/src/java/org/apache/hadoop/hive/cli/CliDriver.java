@@ -792,7 +792,7 @@ public class CliDriver {
     // Initialize metadata provider class and trimmer
     CalcitePlanner.warmup();
     // Create views registry
-    HiveMaterializedViewsRegistry.init();
+    HiveMaterializedViewsRegistry.get();
 
     // init metastore client cache
     if (HiveConf.getBoolVar(conf, ConfVars.MSC_CACHE_ENABLED)) {

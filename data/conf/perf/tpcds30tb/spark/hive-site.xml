@@ -211,4 +211,10 @@
         <name>hive.metastore.transactional.event.listeners</name>
         <value>org.apache.hive.hcatalog.listener.DbNotificationListener</value>
     </property>
+
+    <property>
+        <name>hive.server2.materializedviews.registry.refresh.period</name>
+        <value>0</value>
+    </property>
+
 </configuration>

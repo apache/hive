@@ -399,4 +399,9 @@
         </description>
     </property>
 
+    <property>
+        <name>hive.server2.materializedviews.registry.refresh.period</name>
+        <value>0</value>
+    </property>
+
 </configuration>

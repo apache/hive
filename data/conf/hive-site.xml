@@ -170,7 +170,7 @@
 
 <property>
   <name>hive.exec.pre.hooks</name>
-  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables, org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryPropertiesHook</value>
+  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
   <description>Pre Execute Hook for Tests</description>
 </property>
 
@@ -403,5 +403,10 @@
 <property>
   <name>hive.server2.operation.log.purgePolicy.timeToLive</name>
   <value>5s</value>
+</property>
+
+<property>
+  <name>hive.server2.materializedviews.registry.refresh.period</name>
+  <value>0</value>
 </property>
 </configuration>

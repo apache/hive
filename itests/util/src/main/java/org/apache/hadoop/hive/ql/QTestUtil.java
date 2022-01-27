@@ -569,20 +569,13 @@ public class QTestUtil {
     db = Hive.get(conf);
     pd = new ParseDriver();
 
-    initMaterializedViews(); // Create views registry
+    HiveMaterializedViewsRegistry.get();
     firstStartSessionState();
 
     // setup metastore client cache
     if (conf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
       HiveMetaStoreClientWithLocalCache.init(conf);
     }
-  }
-
-  private void initMaterializedViews() {
-    String registryImpl = db.getConf().get("hive.server2.materializedviews.registry.impl");
-    db.getConf().set("hive.server2.materializedviews.registry.impl", "DUMMY");
-    HiveMaterializedViewsRegistry.get().init(db);
-    db.getConf().set("hive.server2.materializedviews.registry.impl", registryImpl);
   }
 
   //FIXME: check why mr is needed for starting a session state from conf
