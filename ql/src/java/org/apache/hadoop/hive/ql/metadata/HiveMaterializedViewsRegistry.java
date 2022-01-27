@@ -29,6 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -213,7 +214,7 @@ public final class HiveMaterializedViewsRegistry {
       SINGLETON = new DummyMaterializedViewsRegistry();
       LOG.info("Using dummy materialized views registry");
     } else {
-      SINGLETON = new InMemoryMaterializedViewsRegistry();
+      SINGLETON = new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
       // We initialize the cache
       long period = HiveConf.getTimeVar(db.getConf(), ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, TimeUnit.SECONDS);
       if (period <= 0) {
@@ -227,8 +228,6 @@ public final class HiveMaterializedViewsRegistry {
               .build());
 
       MaterializedViewObjects objects = db::getAllMaterializedViewObjectsForRewriting;
-//      pool.schedule(new Loader(db.getConf(), SINGLETON, objects), 0, TimeUnit.SECONDS);
-//      pool.scheduleAtFixedRate(new Updater(db.getConf(), SINGLETON, objects), period, period, TimeUnit.SECONDS);
       pool.scheduleAtFixedRate(new Loader(db.getConf(), SINGLETON, objects), 0, period, TimeUnit.SECONDS);
     }
   }
@@ -244,7 +243,7 @@ public final class HiveMaterializedViewsRegistry {
     /* Whether the cache has been initialized or not. */
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private Loader(HiveConf hiveConf,
+    Loader(HiveConf hiveConf,
             MaterializedViewsRegistry materializedViewsRegistry,
             MaterializedViewObjects materializedViewObjects) {
       this.hiveConf = hiveConf;
@@ -254,10 +253,15 @@ public final class HiveMaterializedViewsRegistry {
 
     @Override
     public void run() {
+      refresh();
+    }
+
+    public void refresh() {
       PerfLogger perfLogger = getPerfLogger();
       perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
-        for (Table mvTable : materializedViewObjects.getAllMaterializedViewObjectsForRewriting()) {
+        List<Table> materializedViewObjects = this.materializedViewObjects.getAllMaterializedViewObjectsForRewriting();
+        for (Table mvTable : materializedViewObjects) {
           RelOptMaterialization existingMV = materializedViewsRegistry.getRewritingMaterializedView(
                   mvTable.getDbName(), mvTable.getTableName(), ALL);
           if (existingMV != null) {
@@ -273,6 +277,20 @@ public final class HiveMaterializedViewsRegistry {
             materializedViewsRegistry.refreshMaterializedView(hiveConf, null, mvTable);
           }
         }
+
+        for (HiveRelOptMaterialization materialization : materializedViewsRegistry.getRewritingMaterializedViews()) {
+          Table mvTableInCache = HiveMaterializedViewUtils.extractTable(materialization);
+          Table mvTableInHMS = materializedViewObjects.stream()
+                  .filter(table -> table.getDbName().equals(mvTableInCache.getDbName())
+                          && table.getTableName().equals(mvTableInCache.getTableName()))
+                  .findAny()
+                  .orElse(null);
+
+          if (mvTableInHMS == null) {
+            materializedViewsRegistry.dropMaterializedView(mvTableInCache);
+          }
+        }
+
         LOG.info("Materialized views registry has been refreshed");
       } catch (HiveException e) {
         LOG.error("Problem connecting to the metastore when refreshing the view registry", e);
@@ -291,6 +309,11 @@ public final class HiveMaterializedViewsRegistry {
   public static class InMemoryMaterializedViewsRegistry implements MaterializedViewsRegistry {
 
     private final MaterializedViewsCache materializedViewsCache = new MaterializedViewsCache();
+    private final BiFunction<HiveConf, Table, HiveRelOptMaterialization> materializationFactory;
+
+    public InMemoryMaterializedViewsRegistry(BiFunction<HiveConf, Table, HiveRelOptMaterialization> materializationFactory) {
+      this.materializationFactory = materializationFactory;
+    }
 
     /**
      * Adds a newly created materialized view to the cache.
@@ -304,7 +327,7 @@ public final class HiveMaterializedViewsRegistry {
         return;
       }
 
-      HiveRelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
+      HiveRelOptMaterialization materialization = materializationFactory.apply(conf, materializedViewTable);
       if (materialization == null) {
         return;
       }
@@ -343,7 +366,7 @@ public final class HiveMaterializedViewsRegistry {
         return;
       }
 
-      final HiveRelOptMaterialization newMaterialization = createMaterialization(conf, materializedViewTable);
+      final HiveRelOptMaterialization newMaterialization = materializationFactory.apply(conf, materializedViewTable);
       if (newMaterialization == null) {
         return;
       }

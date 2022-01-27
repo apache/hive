@@ -119,6 +119,10 @@ public class MaterializedViewsCache {
   }
 
   public void remove(Table materializedViewTable) {
+    if (materializedViewTable == null) {
+      return;
+    }
+
     ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
     if (dbMap != null) {
       // Delete only if the create time for the input materialized view table and the table
