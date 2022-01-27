@@ -53,6 +53,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDODataStoreException;
@@ -64,6 +65,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
+import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -334,6 +336,8 @@ public class ObjectStore implements RawStore, Configurable {
   private Counter directSqlErrors;
   private boolean areTxnStatsSupported = false;
 
+  private static Striped<Lock> tablelocks;
+
   public ObjectStore() {
   }
 
@@ -390,6 +394,15 @@ public class ObjectStore implements RawStore, Configurable {
       throw new RuntimeException("Unable to create persistence manager. Check log for details");
     } else {
       LOG.debug("Initialized ObjectStore");
+    }
+
+    if (tablelocks == null) {
+      synchronized (ObjectStore.class) {
+        if (tablelocks == null) {
+          int numTableLocks = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_NUM_STRIPED_TABLE_LOCKS);
+          tablelocks = Striped.lock(numTableLocks);
+        }
+      }
     }
   }
 
@@ -9649,18 +9662,19 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return statsMap;
   }
-
+  
   @Override
-  public Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats,
-      String validWriteIds, long writeId)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  public Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
 
-    openTransaction();
+    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    
+    Lock tableLock = getTableLockFor(statsDesc.getDbName(), statsDesc.getTableName());
+    tableLock.lock();
     try {
-      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
-      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-
+      openTransaction();
       // DataNucleus objects get detached all over the place for no (real) reason.
       // So let's not use them anywhere unless absolutely necessary.
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
@@ -9673,10 +9687,10 @@ public class ObjectStore implements RawStore, Configurable {
 
       Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
 
-      for (ColumnStatisticsObj statsObj:statsObjs) {
+      for (ColumnStatisticsObj statsObj : statsObjs) {
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
-            mTable, statsDesc,
-            statsObj, colStats.getEngine());
+          mTable, statsDesc,
+          statsObj, colStats.getEngine());
         writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
         // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
@@ -9695,7 +9709,7 @@ public class ObjectStore implements RawStore, Configurable {
           StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
         } else {
           String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
-              oldt.getParameters(), newParams, writeId, validWriteIds, true);
+            oldt.getParameters(), newParams, writeId, validWriteIds, true);
           if (errorMsg != null) {
             throw new MetaException(errorMsg);
           }
@@ -9703,7 +9717,7 @@ public class ObjectStore implements RawStore, Configurable {
             // Make sure we set the flag to invalid regardless of the current value.
             StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
             LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table "
-                + dbname + "." + name);
+              + dbname + "." + name);
           }
           oldt.setWriteId(writeId);
         }
@@ -9714,10 +9728,18 @@ public class ObjectStore implements RawStore, Configurable {
       // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
       return committed ? newParams : null;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
+      try {
+        if (!committed) {
+          rollbackTransaction();
+        }
+      } finally {
+        tableLock.unlock();
       }
     }
+  }
+
+  private Lock getTableLockFor(String dbName, String tblName) {
+    return tablelocks.get(dbName + "." + tblName);
   }
 
   /**
