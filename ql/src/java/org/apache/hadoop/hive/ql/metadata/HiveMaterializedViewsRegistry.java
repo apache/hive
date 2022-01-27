@@ -161,12 +161,6 @@ public final class HiveMaterializedViewsRegistry {
     }
   }
 
-
-  public static class DummyMaterializedViewsRegistry implements MaterializedViewsRegistry {
-    private DummyMaterializedViewsRegistry() {};
-  }
-
-
   private HiveMaterializedViewsRegistry() {}
 
   /* Singleton */
@@ -211,7 +205,7 @@ public final class HiveMaterializedViewsRegistry {
         .equals("DUMMY");
     if (dummy) {
       // Dummy registry does not cache information and forwards all requests to metastore
-      SINGLETON = new DummyMaterializedViewsRegistry();
+      SINGLETON = new MaterializedViewsRegistry() {};
       LOG.info("Using dummy materialized views registry");
     } else {
       SINGLETON = new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
