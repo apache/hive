@@ -34,7 +34,7 @@ public class MaterializedViewRegistryPropertiesHook implements ExecuteWithHookCo
     SessionState ss = SessionState.get();
     if (ss != null && ss.getConf().get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
             .equals("DUMMY")) {
-      HiveMaterializedViewsRegistry.get().init(Hive.get(ss.getConf()));
+//      HiveMaterializedViewsRegistry.get().init(Hive.get(ss.getConf()));
     }
   }
 

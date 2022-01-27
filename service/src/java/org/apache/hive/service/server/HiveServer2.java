@@ -265,7 +265,7 @@ public class HiveServer2 extends CompositeService {
     }
 
     // Create views registry
-    HiveMaterializedViewsRegistry.get().init();
+    HiveMaterializedViewsRegistry.init();
 
     StatsSources.initialize(hiveConf);
 

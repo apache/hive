@@ -2187,7 +2187,7 @@ public class Hive {
               " was not in the cache or it is not supported by specified rewrite algorithm {}", scope);
         }
         HiveRelOptMaterialization hiveRelOptMaterialization =
-                HiveMaterializedViewsRegistry.get().createMaterialization(conf, materializedViewTable);
+                HiveMaterializedViewsRegistry.createMaterialization(conf, materializedViewTable);
         if (hiveRelOptMaterialization != null && hiveRelOptMaterialization.isSupported(scope)) {
           relOptMaterialization = hiveRelOptMaterialization;
           HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
