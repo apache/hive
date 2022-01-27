@@ -227,9 +227,10 @@ git merge origin/target
             ":hive-shims",
             ":hive-storage-api",
             ":hive-standalone-metastore-common",
-            ":hive-service-rpc"
+            ":hive-service-rpc",
+            ":hive-vector-code-gen"
         ]
-        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
+        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")

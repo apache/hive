@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.tools;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -333,13 +334,13 @@ public class GenVectorTestCode {
   public void generateTestSuites() throws IOException {
 
     String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory, "TestClass.txt");
-    for(TestSuiteClassName testClass : testsuites.keySet()) {
+    for (Map.Entry<TestSuiteClassName,StringBuilder> testsuite : testsuites.entrySet()) {
 
       String templateString = GenVectorCode.readFile(templateFile);
-      templateString = templateString.replaceAll("<ClassName>", testClass.toString());
-      templateString = templateString.replaceAll("<TestCases>", testsuites.get(testClass).toString());
+      templateString = templateString.replaceAll("<ClassName>", testsuite.getKey().toString());
+      templateString = templateString.replaceAll("<TestCases>", testsuite.getValue().toString());
 
-      String outputFile = GenVectorCode.joinPath(this.testOutputDir, testClass + ".java");
+      String outputFile = GenVectorCode.joinPath(this.testOutputDir, testsuite.getKey() + ".java");
 
       GenVectorCode.writeFile(new File(outputFile), templateString);
     }

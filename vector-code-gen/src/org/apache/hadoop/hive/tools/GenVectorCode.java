@@ -21,9 +21,13 @@ package org.apache.hadoop.hive.tools;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -1288,11 +1292,12 @@ public class GenVectorCode extends Task {
   private GenVectorTestCode testCodeGen;
 
   static String joinPath(String...parts) {
-    String path = parts[0];
+    StringBuffer path = new StringBuffer(parts[0]);
     for (int i=1; i < parts.length; ++i) {
-      path += File.separatorChar + parts[i];
+      path.append(File.separatorChar);
+      path.append(parts[i]);
     }
-    return path;
+    return path.toString();
   }
 
   public void init(String templateBaseDir, String buildDir) {
@@ -2364,7 +2369,6 @@ public class GenVectorCode extends Task {
     String outputColumnVectorType = getColumnVectorType(returnType);
     String className = "IfExpr" + getCamelCaseType(operandType2) + "Column"
         + getCamelCaseType(operandType3) + "Scalar";
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
@@ -2397,7 +2401,6 @@ public class GenVectorCode extends Task {
     String outputColumnVectorType = getColumnVectorType(returnType);
     String className = "IfExpr" + getCamelCaseType(operandType2) + "Scalar"
         + getCamelCaseType(operandType3) + "Column";
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
@@ -2425,12 +2428,10 @@ public class GenVectorCode extends Task {
   private void generateIfExprScalarScalar(String[] tdesc) throws Exception {
     String operandType2 = tdesc[1];
     String operandType3 = tdesc[2];
-    String arg3ColumnVectorType = this.getColumnVectorType(operandType3);
     String returnType = getArithmeticReturnType(operandType2, operandType3);
     String outputColumnVectorType = getColumnVectorType(returnType);
     String className = "IfExpr" + getCamelCaseType(operandType2) + "Scalar"
         + getCamelCaseType(operandType3) + "Scalar";
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
@@ -2749,7 +2750,6 @@ public class GenVectorCode extends Task {
     String camelOperandType = getCamelCaseType(operandType);
 
     String className = "Filter" + camelOperandType + tdesc[4] + operatorName + camelOperandType + tdesc[5];
-    String baseClassName = "FilterTimestamp" + tdesc[4] + operatorName + "Timestamp" + tdesc[5] + "Base";
     //Read the template into a string;
     String fileName = "FilterTimestamp" + (tdesc[4].equals("Col") ? "Column" : tdesc[4]) + "CompareTimestamp" +
         tdesc[5];
@@ -3961,7 +3961,8 @@ public class GenVectorCode extends Task {
   }
 
   static void writeFile(File outputFile, String str) throws IOException {
-    BufferedWriter w = new BufferedWriter(new FileWriter(outputFile));
+    FileOutputStream outputStream = new FileOutputStream(outputFile);
+    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
     w.write(str);
     w.close();
   }
@@ -3971,7 +3972,8 @@ public class GenVectorCode extends Task {
   }
 
   static String readFile(File templateFile) throws IOException {
-    BufferedReader r = new BufferedReader(new FileReader(templateFile));
+    InputStream inputStream = new FileInputStream(templateFile);
+    BufferedReader r = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     String line = r.readLine();
     StringBuilder b = new StringBuilder();
     while (line != null) {
