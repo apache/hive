@@ -158,13 +158,13 @@ class FireEventRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->partitionVals = array();
-                        $_size841 = 0;
-                        $_etype844 = 0;
-                        $xfer += $input->readListBegin($_etype844, $_size841);
-                        for ($_i845 = 0; $_i845 < $_size841; ++$_i845) {
-                            $elem846 = null;
-                            $xfer += $input->readString($elem846);
-                            $this->partitionVals []= $elem846;
+                        $_size840 = 0;
+                        $_etype843 = 0;
+                        $xfer += $input->readListBegin($_etype843, $_size840);
+                        for ($_i844 = 0; $_i844 < $_size840; ++$_i844) {
+                            $elem845 = null;
+                            $xfer += $input->readString($elem845);
+                            $this->partitionVals []= $elem845;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -221,8 +221,8 @@ class FireEventRequest
             }
             $xfer += $output->writeFieldBegin('partitionVals', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partitionVals));
-            foreach ($this->partitionVals as $iter847) {
-                $xfer += $output->writeString($iter847);
+            foreach ($this->partitionVals as $iter846) {
+                $xfer += $output->writeString($iter846);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
