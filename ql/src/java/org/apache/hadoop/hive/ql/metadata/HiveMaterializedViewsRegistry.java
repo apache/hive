@@ -235,7 +235,6 @@ public final class HiveMaterializedViewsRegistry {
     protected final MaterializedViewsRegistry materializedViewsRegistry;
     protected final MaterializedViewObjects materializedViewObjects;
     /* Whether the cache has been initialized or not. */
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     Loader(HiveConf hiveConf,
             MaterializedViewsRegistry materializedViewsRegistry,
