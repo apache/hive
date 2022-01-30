@@ -743,6 +743,11 @@ public final class FileUtils {
       return;
     }
 
+    if(path.getParent() == null) {
+      // no file/dir to be deleted, because of the path is root dir, hive table forbid set the location to root dir.
+      return;
+    }
+
     final FileSystem fs = path.getFileSystem(conf);
     // check user has write permissions on the parent dir
     FileStatus stat = null;
