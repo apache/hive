@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,6 +100,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
+
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 /**
  * Super class for all of the compactor test modules.
@@ -117,7 +123,11 @@ public abstract class CompactorTest {
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    setup(new HiveConf());
+  }
+
+  protected void setup(HiveConf conf) throws Exception {
+    this.conf = conf;
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
@@ -126,6 +136,7 @@ public abstract class CompactorTest {
     txnHandler = TxnUtils.getTxnStore(conf);
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
   }
+
 
   protected void compactorTestCleanup() throws IOException {
     FileUtils.deleteDirectory(tmpdir);
@@ -662,6 +673,18 @@ public abstract class CompactorTest {
     txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
     Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     return compactorTxnId;
+  }
+
+  protected Map<String, String> gaugeToMap(String metric) throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    ObjectName oname = new ObjectName(AcidMetricService.OBJECT_NAME_PREFIX + metric);
+    MBeanInfo mbeanInfo = mbs.getMBeanInfo(oname);
+
+    Map<String, String> result = new HashMap<>();
+    for (MBeanAttributeInfo attr : mbeanInfo.getAttributes()) {
+      result.put(attr.getName(), String.valueOf(mbs.getAttribute(oname, attr.getName())));
+    }
+    return result;
   }
 
 }

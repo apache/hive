@@ -18,10 +18,11 @@
 package org.apache.hadoop.hive.common.metrics.metrics2;
 
 import com.codahale.metrics.MetricRegistry;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,10 +36,10 @@ public class TestMetricVariableRatioGauge {
 
   @Before
   public void before() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
+    Configuration conf = new Configuration();
+    conf.set(MetastoreConf.ConfVars.METRICS_CLASS.getHiveName(), CodahaleMetrics.class.getCanonicalName());
     // disable json file writing
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "60000m");
+    conf.set(MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL.getHiveName(), "60000m");
 
     MetricsFactory.init(conf);
     metricRegistry = ((CodahaleMetrics) MetricsFactory.getInstance()).getMetricRegistry();

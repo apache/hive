@@ -15,41 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.common.metrics.metrics2;
 
-import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Reporter;
-import java.io.Closeable;
 import java.util.concurrent.TimeUnit;
-import org.apache.hadoop.hive.conf.HiveConf;
 
+import org.apache.hadoop.conf.Configuration;
 
 /**
- * A wrapper around Codahale ConsoleReporter to make it a pluggable/configurable Hive Metrics reporter.
+ * A wrapper around Codahale JmxReporter to make it a pluggable/configurable Hive Metrics reporter.
  */
-public class ConsoleMetricsReporter implements CodahaleReporter {
+public class JmxMetricsReporter implements CodahaleReporter {
 
-  private final ConsoleReporter reporter;
+  private final MetricRegistry registry;
+  private final Configuration conf;
+  private final JmxReporter jmxReporter;
 
-  public ConsoleMetricsReporter(MetricRegistry registry, HiveConf conf) {
+  public JmxMetricsReporter(MetricRegistry registry, Configuration conf) {
+    this.registry = registry;
+    this.conf = conf;
 
-    reporter = ConsoleReporter.forRegistry(registry)
+    jmxReporter = JmxReporter.forRegistry(registry)
         .convertRatesTo(TimeUnit.SECONDS)
         .convertDurationsTo(TimeUnit.MILLISECONDS)
         .build();
-
   }
 
   @Override
   public void start() {
-    reporter.start(1, TimeUnit.SECONDS);
+    jmxReporter.start();
   }
 
   @Override
   public void close() {
-    reporter.close();
+    jmxReporter.close();
   }
-}
 
+}

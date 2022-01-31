@@ -15916,8 +15916,6 @@ class CompactionMetricsDataRequest(object):
             raise TProtocolException(message='Required field dbName is unset!')
         if self.tblName is None:
             raise TProtocolException(message='Required field tblName is unset!')
-        if self.partitionName is None:
-            raise TProtocolException(message='Required field partitionName is unset!')
         if self.type is None:
             raise TProtocolException(message='Required field type is unset!')
         return

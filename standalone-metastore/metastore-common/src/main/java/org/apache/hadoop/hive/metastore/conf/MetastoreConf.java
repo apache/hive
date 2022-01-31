@@ -85,6 +85,8 @@ public class MetastoreConf {
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
   static final String ACID_METRICS_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.metrics.AcidMetricService";
+  static final String ACID_METRICS_LOGGER_CLASS =
+      "org.apache.hadoop.hive.metastore.metrics.AcidMetricLogger";
   @VisibleForTesting
   static final String METASTORE_DELEGATION_MANAGER_CLASS =
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
@@ -573,14 +575,6 @@ public class MetastoreConf {
         "Size of the ACID metrics cache, i.e. max number of partitions and unpartitioned tables with the "
         + "most deltas that will be included in the lists of active, obsolete and small deltas. "
         + "Allowed range is 0 to 500."),
-    METASTORE_DELTAMETRICS_REPORTING_INTERVAL("metastore.deltametrics.reporting.interval",
-        "hive.txn.acid.metrics.reporting.interval", 30,
-        TimeUnit.SECONDS,
-        "Reporting period for ACID metrics in seconds."),
-    METASTORE_DELTAMETRICS_LOGGER_FREQUENCY("metastore.deltametrics.logger.frequency",
-        "hive.compactor.acid.metrics.logger.frequency", 360, TimeUnit.MINUTES,
-        "Logging frequency of delta metrics logger. Set this value to 0 to completely turn off logging. " +
-            "Default time unit: minutes"),
     METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD("metastore.deltametrics.delta.num.threshold",
         "hive.txn.acid.metrics.delta.num.threshold", 100,
         "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
@@ -1051,8 +1045,16 @@ public class MetastoreConf {
             "alongside the dropped table data. This ensures that the metadata will be cleaned up along with the dropped table data."),
     METRICS_ENABLED("metastore.metrics.enabled", "hive.metastore.metrics.enabled", false,
         "Enable metrics on the metastore."),
+    METRICS_CLASS("metastore.metrics.class", "hive.service.metrics.class", "org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics",
+        new StringSetValidator(
+            "org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics",
+            "org.apache.hadoop.hive.common.metrics.LegacyMetrics"),
+        "Hive metrics subsystem implementation class."),
     METRICS_HADOOP2_COMPONENT_NAME("metastore.metrics.hadoop2.component", "hive.service.metrics.hadoop2.component", "hivemetastore",
                     "Component name to provide to Hadoop2 Metrics system."),
+    METRICS_HADOOP2_INTERVAL("metastore.metrics.hadoop2.component", "hive.service.metrics.hadoop2.frequency", 30,
+        TimeUnit.SECONDS, "For metric class org.apache.hadoop.hive.common.metrics.metrics2.Metrics2Reporter " +
+        " the frequency of updating the HADOOP2 metrics system."),
     METRICS_JSON_FILE_INTERVAL("metastore.metrics.file.frequency",
         "hive.service.metrics.file.frequency", 60000, TimeUnit.MILLISECONDS,
         "For json metric reporter, the frequency of updating JSON metrics file."),
@@ -1329,7 +1331,7 @@ public class MetastoreConf {
             + " quoted table names.\nThe default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
-            ACID_METRICS_TASK_CLASS + "," +
+            ACID_METRICS_TASK_CLASS + "," + ACID_METRICS_LOGGER_CLASS + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
             + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
             + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",
@@ -1600,7 +1602,9 @@ public class MetastoreConf {
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
     HIVE_CODAHALE_METRICS_REPORTER_CLASSES("hive.service.metrics.codahale.reporter.classes",
-        "hive.service.metrics.codahale.reporter.classes", "",
+        "hive.service.metrics.codahale.reporter.classes",
+        "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, " +
+        "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter",
         "Use METRICS_REPORTERS instead.  Comma separated list of reporter implementation classes " +
             "for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics. Overrides "
             + "HIVE_METRICS_REPORTER conf if present.  This will be overridden by " +

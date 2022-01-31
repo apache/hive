@@ -1583,7 +1583,7 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        boolean updateRes = false;
+        boolean updateRes;
         CompactionMetricsData prevMetricsData = getCompactionMetricsData(data, dbConn);
         if (prevMetricsData != null) {
           String query = UPDATE_COMPACTION_METRICS_CACHE_QUERY;
@@ -1594,7 +1594,7 @@ class CompactionTxnHandler extends TxnHandler {
           }
           try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
             pstmt.setInt(1, data.getMetricValue());
-            pstmt.setInt(2, data.getVersion());
+            pstmt.setInt(2, prevMetricsData.getVersion() + 1);
             pstmt.setString(3, data.getDbName());
             pstmt.setString(4, data.getTblName());
             pstmt.setString(5, data.getMetricType().toString());

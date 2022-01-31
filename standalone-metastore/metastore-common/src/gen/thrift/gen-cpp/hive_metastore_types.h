@@ -10483,6 +10483,10 @@ void swap(CompactionMetricsDataResponse &a, CompactionMetricsDataResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataResponse& obj);
 
+typedef struct _CompactionMetricsDataRequest__isset {
+  _CompactionMetricsDataRequest__isset() : partitionName(false) {}
+  bool partitionName :1;
+} _CompactionMetricsDataRequest__isset;
 
 class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -10502,6 +10506,8 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
    */
   CompactionMetricsMetricType::type type;
 
+  _CompactionMetricsDataRequest__isset __isset;
+
   void __set_dbName(const std::string& val);
 
   void __set_tblName(const std::string& val);
@@ -10516,7 +10522,9 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
       return false;
     if (!(tblName == rhs.tblName))
       return false;
-    if (!(partitionName == rhs.partitionName))
+    if (__isset.partitionName != rhs.__isset.partitionName)
+      return false;
+    else if (__isset.partitionName && !(partitionName == rhs.partitionName))
       return false;
     if (!(type == rhs.type))
       return false;
