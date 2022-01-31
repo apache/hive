@@ -167,7 +167,7 @@ public final class HiveMaterializedViewsRegistry {
     List<Table> getAllMaterializedViewObjectsForRewriting() throws HiveException;
   }
 
-  public static class Loader implements Runnable {
+  static class Loader implements Runnable {
     protected final HiveConf hiveConf;
     protected final MaterializedViewsRegistry materializedViewsRegistry;
     protected final MaterializedViewObjects materializedViewObjects;
