@@ -98,63 +98,6 @@ public final class HiveMaterializedViewsRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(HiveMaterializedViewsRegistry.class);
   private static final String CLASS_NAME = HiveMaterializedViewsRegistry.class.getName();
 
-  public interface MaterializedViewsRegistry {
-
-    /**
-     * Adds a newly created materialized view to the cache.
-     */
-    default void createMaterializedView(HiveConf conf, Table materializedViewTable) { }
-
-    /**
-     * Update the materialized view in the registry (if existing materialized view matches).
-     */
-    default void refreshMaterializedView(HiveConf conf, Table materializedViewTable) {
-
-    }
-
-    /**
-     * Update the materialized view in the registry (if existing materialized view matches).
-     */
-    default void refreshMaterializedView(HiveConf conf, Table oldMaterializedViewTable, Table materializedViewTable) {
-
-    }
-
-    /**
-     * Removes the materialized view from the cache (based on table object equality), if exists.
-     */
-    default void dropMaterializedView(Table materializedViewTable) { }
-
-    /**
-     * Removes the materialized view from the cache (based on qualified name), if exists.
-     */
-    default void dropMaterializedView(String dbName, String tableName) { }
-
-    /**
-     * Returns all the materialized views enabled for Calcite based rewriting in the cache.
-     *
-     * @return the collection of materialized views, or the empty collection if none
-     */
-    default List<HiveRelOptMaterialization> getRewritingMaterializedViews() { return Collections.emptyList(); }
-
-    /**
-     * Returns the materialized views in the cache for the given database.
-     *
-     * @return the collection of materialized views, or the empty collection if none
-     */
-    default HiveRelOptMaterialization getRewritingMaterializedView(
-            String dbName, String viewName, EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope) {
-      return null;
-    }
-
-    default List<HiveRelOptMaterialization> getRewritingMaterializedViews(String querySql) {
-      return Collections.emptyList();
-    }
-
-    default boolean isEmpty() {
-      return true;
-    }
-  }
-
   private HiveMaterializedViewsRegistry() {}
 
   /* Singleton */
@@ -198,8 +141,8 @@ public final class HiveMaterializedViewsRegistry {
     final boolean dummy = db.getConf().get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
         .equals("DUMMY");
     if (dummy) {
-      // Dummy registry does not cache information and forwards all requests to metastore
-      SINGLETON = new MaterializedViewsRegistry() {};
+      // Dummy registry does not cache information
+      SINGLETON = new DummyMaterializedViewsRegistry();
       LOG.info("Using dummy materialized views registry");
     } else {
       SINGLETON = new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
