@@ -171,7 +171,6 @@ public final class HiveMaterializedViewsRegistry {
     protected final HiveConf hiveConf;
     protected final MaterializedViewsRegistry materializedViewsRegistry;
     protected final MaterializedViewObjects materializedViewObjects;
-    /* Whether the cache has been initialized or not. */
 
     Loader(HiveConf hiveConf,
             MaterializedViewsRegistry materializedViewsRegistry,
