@@ -98,12 +98,6 @@ public final class HiveMaterializedViewsRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(HiveMaterializedViewsRegistry.class);
   private static final String CLASS_NAME = HiveMaterializedViewsRegistry.class.getName();
 
-  /**
-   * Registry for materialized views. The goal of this cache is to avoid parsing and creating
-   * logical plans for the materialized views at query runtime. When a query arrives, we will
-   * just need to consult this cache and extract the logical plans for the views (which had
-   * already been parsed) from it. This cache lives in HS2.
-   */
   public interface MaterializedViewsRegistry {
 
     /**
