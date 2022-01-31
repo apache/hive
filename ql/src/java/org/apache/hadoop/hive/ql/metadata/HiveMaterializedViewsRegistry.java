@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
@@ -158,26 +157,26 @@ public final class HiveMaterializedViewsRegistry {
               .setNameFormat("HiveMaterializedViewsRegistry-%d")
               .build());
 
-      MaterializedViewObjects objects = db::getAllMaterializedViewObjectsForRewriting;
+      MaterializedViewObjectProvider objects = db::getAllMaterializedViewObjectsForRewriting;
       pool.scheduleAtFixedRate(new Loader(db.getConf(), SINGLETON, objects), 0, period, TimeUnit.SECONDS);
     }
   }
 
-  public interface MaterializedViewObjects {
+  public interface MaterializedViewObjectProvider {
     List<Table> getAllMaterializedViewObjectsForRewriting() throws HiveException;
   }
 
   static class Loader implements Runnable {
     protected final HiveConf hiveConf;
     protected final MaterializedViewsRegistry materializedViewsRegistry;
-    protected final MaterializedViewObjects materializedViewObjects;
+    protected final MaterializedViewObjectProvider materializedViewObjectProvider;
 
     Loader(HiveConf hiveConf,
             MaterializedViewsRegistry materializedViewsRegistry,
-            MaterializedViewObjects materializedViewObjects) {
+            MaterializedViewObjectProvider materializedViewObjectProvider) {
       this.hiveConf = hiveConf;
       this.materializedViewsRegistry = materializedViewsRegistry;
-      this.materializedViewObjects = materializedViewObjects;
+      this.materializedViewObjectProvider = materializedViewObjectProvider;
     }
 
     @Override
@@ -189,7 +188,7 @@ public final class HiveMaterializedViewsRegistry {
       PerfLogger perfLogger = getPerfLogger();
       perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
-        List<Table> materializedViewObjects = this.materializedViewObjects.getAllMaterializedViewObjectsForRewriting();
+        List<Table> materializedViewObjects = this.materializedViewObjectProvider.getAllMaterializedViewObjectsForRewriting();
         for (Table mvTable : materializedViewObjects) {
           RelOptMaterialization existingMV = materializedViewsRegistry.getRewritingMaterializedView(
                   mvTable.getDbName(), mvTable.getTableName(), ALL);

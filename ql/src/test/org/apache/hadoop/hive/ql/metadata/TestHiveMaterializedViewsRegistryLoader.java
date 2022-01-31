@@ -38,8 +38,8 @@ import static org.mockito.Mockito.when;
  */
 class TestHiveMaterializedViewsRegistryLoader {
   private final HiveConf conf = new HiveConf();
-  private final HiveMaterializedViewsRegistry.MaterializedViewObjects materializedViewObjects =
-          Mockito.mock(HiveMaterializedViewsRegistry.MaterializedViewObjects.class);
+  private final HiveMaterializedViewsRegistry.MaterializedViewObjectProvider materializedViewObjectProvider =
+          Mockito.mock(HiveMaterializedViewsRegistry.MaterializedViewObjectProvider.class);
 
   private final HiveMaterializedViewsRegistry.InMemoryMaterializedViewsRegistry materializedViewsRegistry =
           new HiveMaterializedViewsRegistry.InMemoryMaterializedViewsRegistry(
@@ -73,10 +73,10 @@ class TestHiveMaterializedViewsRegistryLoader {
 
   @Test
   void testCacheRemainsEmptyWhenNoMVIsPersisted() throws HiveException {
-    when(materializedViewObjects.getAllMaterializedViewObjectsForRewriting()).thenReturn(emptyList());
+    when(materializedViewObjectProvider.getAllMaterializedViewObjectsForRewriting()).thenReturn(emptyList());
 
     HiveMaterializedViewsRegistry.Loader loader =
-            new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjects);
+            new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjectProvider);
     loader.refresh();
 
     assertThat(materializedViewsRegistry.getRewritingMaterializedViews().isEmpty(), is(true));
@@ -85,9 +85,9 @@ class TestHiveMaterializedViewsRegistryLoader {
   @Test
   void testPersistedMVsAreCachedAtRefresh() throws HiveException {
     List<Table> mvs = Arrays.asList(MV1, MV2);
-    when(materializedViewObjects.getAllMaterializedViewObjectsForRewriting()).thenReturn(mvs);
+    when(materializedViewObjectProvider.getAllMaterializedViewObjectsForRewriting()).thenReturn(mvs);
 
-    HiveMaterializedViewsRegistry.Loader loader = new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjects);
+    HiveMaterializedViewsRegistry.Loader loader = new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjectProvider);
     loader.refresh();
 
     assertThat(materializedViewsRegistry.getRewritingMaterializedViews().size(), is(2));
@@ -104,10 +104,10 @@ class TestHiveMaterializedViewsRegistryLoader {
   void testDroppedMVsAreRemovedFromCachedAtRefresh() throws HiveException {
     materializedViewsRegistry.createMaterializedView(conf, MV1);
     materializedViewsRegistry.createMaterializedView(conf, MV2);
-    when(materializedViewObjects.getAllMaterializedViewObjectsForRewriting()).thenReturn(singletonList(MV1));
+    when(materializedViewObjectProvider.getAllMaterializedViewObjectsForRewriting()).thenReturn(singletonList(MV1));
 
     HiveMaterializedViewsRegistry.Loader loader =
-            new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjects);
+            new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjectProvider);
     loader.refresh();
 
     assertThat(materializedViewsRegistry.getRewritingMaterializedViews().size(), is(1));
@@ -147,10 +147,10 @@ class TestHiveMaterializedViewsRegistryLoader {
   private void testMVIsRefreshedOnlyIfANewerExists(Table newerMV1) throws HiveException {
     materializedViewsRegistry.createMaterializedView(conf, newerMV1);
 
-    when(materializedViewObjects.getAllMaterializedViewObjectsForRewriting()).thenReturn(singletonList(MV1));
+    when(materializedViewObjectProvider.getAllMaterializedViewObjectsForRewriting()).thenReturn(singletonList(MV1));
 
     HiveMaterializedViewsRegistry.Loader loader =
-            new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjects);
+            new HiveMaterializedViewsRegistry.Loader(conf, materializedViewsRegistry, materializedViewObjectProvider);
     loader.refresh();
 
     assertThat(materializedViewsRegistry.getRewritingMaterializedViews().size(), is(1));
