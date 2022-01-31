@@ -108,7 +108,7 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the singleton
    */
-  public static MaterializedViewsRegistry get() {
+  public static synchronized MaterializedViewsRegistry get() {
     if (SINGLETON == null) {
       init();
     }
