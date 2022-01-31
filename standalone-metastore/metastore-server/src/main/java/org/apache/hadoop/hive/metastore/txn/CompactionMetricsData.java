@@ -25,6 +25,7 @@ public class CompactionMetricsData {
   private final MetricType metricType;
   private final int metricValue;
   private final int version;
+  private final int threshold;
 
   public enum MetricType {
     NUM_OBSOLETE_DELTAS("HIVE_ACID_NUM_OBSOLETE_DELTAS"),
@@ -50,6 +51,7 @@ public class CompactionMetricsData {
     this.metricType = builder.metricType;
     this.metricValue = builder.metricValue;
     this.version = builder.version;
+    this.threshold = builder.threshold;
   }
 
   public String getDbName() {
@@ -76,6 +78,10 @@ public class CompactionMetricsData {
     return version;
   }
 
+  public int getThreshold() {
+    return threshold;
+  }
+
   public boolean isEmpty() {
     return dbName == null && tblName == null && partitionName == null && metricType == null && metricValue == 0
         && version == 0;
@@ -95,6 +101,7 @@ public class CompactionMetricsData {
     private MetricType metricType;
     private int metricValue;
     private int version;
+    private int threshold;
 
     public CompactionMetricsData build() {
       return new CompactionMetricsData(this);
@@ -127,6 +134,11 @@ public class CompactionMetricsData {
 
     public Builder version(int version) {
       this.version = version;
+      return this;
+    }
+
+    public Builder threshold(int threshold) {
+      this.threshold = threshold;
       return this;
     }
   }

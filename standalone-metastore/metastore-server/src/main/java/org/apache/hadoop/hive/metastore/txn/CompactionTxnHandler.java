@@ -1585,37 +1585,20 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         boolean updateRes;
         CompactionMetricsData prevMetricsData = getCompactionMetricsData(data, dbConn);
-        if (prevMetricsData != null) {
-          String query = UPDATE_COMPACTION_METRICS_CACHE_QUERY;
-          if (data.getPartitionName() != null) {
-            query += " AND \"CMC_PARTITION\" = ?";
+        if (data.getMetricValue() >= data.getThreshold()) {
+          if (prevMetricsData != null) {
+            updateRes = updateCompactionMetricsData(dbConn, data, prevMetricsData);
           } else {
-            query += " AND \"CMC_PARTITION\" IS NULL";
-          }
-          try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
-            pstmt.setInt(1, data.getMetricValue());
-            pstmt.setInt(2, prevMetricsData.getVersion() + 1);
-            pstmt.setString(3, data.getDbName());
-            pstmt.setString(4, data.getTblName());
-            pstmt.setString(5, data.getMetricType().toString());
-            pstmt.setInt(6, prevMetricsData.getVersion());
-            if (data.getPartitionName() != null) {
-              pstmt.setString(7, data.getPartitionName());
-            }
-            updateRes = pstmt.executeUpdate() > 0;
+            updateRes = createCompactionMetricsData(dbConn, data);
           }
         } else {
-          try (PreparedStatement pstmt = dbConn.prepareStatement(INSERT_COMPACTION_METRICS_CACHE_QUERY)) {
-            pstmt.setString(1, data.getDbName());
-            pstmt.setString(2, data.getTblName());
-            pstmt.setString(3, data.getPartitionName());
-            pstmt.setString(4, data.getMetricType().toString());
-            pstmt.setInt(5, data.getMetricValue());
-            pstmt.setInt(6, 1);
-            updateRes = pstmt.executeUpdate() > 0;
+          if (prevMetricsData != null) {
+            updateRes =
+                removeCompactionMetricsData(dbConn, data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType());
+          } else {
+            return true;
           }
         }
-        dbConn.commit();
         return updateRes;
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
@@ -1627,7 +1610,7 @@ class CompactionTxnHandler extends TxnHandler {
     } catch (RetryException e) {
       updateCompactionMetricsData(data);
     }
-    return true;
+    return false;
   }
 
   @Override
@@ -1719,28 +1702,14 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
+  @Override
   public void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
     Connection dbConn = null;
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        String query = DELETE_COMPACTION_METRICS_CACHE_QUERY;
-        if (partitionName != null) {
-          query += " AND \"CMC_PARTITION\" = ?";
-        } else {
-          query += " AND \"CMC_PARTITION\" IS NULL";
-        }
-        try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
-          pstmt.setString(1, dbName);
-          pstmt.setString(2, tblName);
-          pstmt.setString(3, type.toString());
-          if (partitionName != null) {
-            pstmt.setString(4, partitionName);
-          }
-          pstmt.executeUpdate();
-          dbConn.commit();
-        }
+        removeCompactionMetricsData(dbConn, dbName, tblName, partitionName, type);
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
         checkRetryable(e, "removeCompactionMetricsData(" + dbName + ", " +  tblName + ", " + partitionName + ", " +
@@ -1753,6 +1722,69 @@ class CompactionTxnHandler extends TxnHandler {
       removeCompactionMetricsData(dbName, tblName, partitionName, type);
     }
   }
+
+  private boolean removeCompactionMetricsData(Connection dbConn, String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws SQLException {
+    boolean removeRes;
+    String query = DELETE_COMPACTION_METRICS_CACHE_QUERY;
+    if (partitionName != null) {
+      query += " AND \"CMC_PARTITION\" = ?";
+    } else {
+      query += " AND \"CMC_PARTITION\" IS NULL";
+    }
+    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
+      pstmt.setString(1, dbName);
+      pstmt.setString(2, tblName);
+      pstmt.setString(3, type.toString());
+      if (partitionName != null) {
+        pstmt.setString(4, partitionName);
+      }
+      removeRes = pstmt.executeUpdate() > 0;
+      dbConn.commit();
+    }
+    return removeRes;
+  }
+
+  private boolean updateCompactionMetricsData(Connection dbConn, CompactionMetricsData data,
+      CompactionMetricsData prevData) throws SQLException {
+    boolean updateRes;
+    String query = UPDATE_COMPACTION_METRICS_CACHE_QUERY;
+    if (data.getPartitionName() != null) {
+      query += " AND \"CMC_PARTITION\" = ?";
+    } else {
+      query += " AND \"CMC_PARTITION\" IS NULL";
+    }
+    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
+      pstmt.setInt(1, data.getMetricValue());
+      pstmt.setInt(2, prevData.getVersion() + 1);
+      pstmt.setString(3, data.getDbName());
+      pstmt.setString(4, data.getTblName());
+      pstmt.setString(5, data.getMetricType().toString());
+      pstmt.setInt(6, prevData.getVersion());
+      if (data.getPartitionName() != null) {
+        pstmt.setString(7, data.getPartitionName());
+      }
+      updateRes = pstmt.executeUpdate() > 0;
+      dbConn.commit();
+    }
+    return updateRes;
+  }
+
+  private boolean createCompactionMetricsData(Connection dbConn, CompactionMetricsData data) throws SQLException {
+    boolean createRes;
+    try (PreparedStatement pstmt = dbConn.prepareStatement(INSERT_COMPACTION_METRICS_CACHE_QUERY)) {
+      pstmt.setString(1, data.getDbName());
+      pstmt.setString(2, data.getTblName());
+      pstmt.setString(3, data.getPartitionName());
+      pstmt.setString(4, data.getMetricType().toString());
+      pstmt.setInt(5, data.getMetricValue());
+      pstmt.setInt(6, 1);
+      createRes = pstmt.executeUpdate() > 0;
+      dbConn.commit();
+    }
+    return createRes;
+  }
+
 }
 
 
