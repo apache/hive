@@ -235,6 +235,10 @@ public final class HiveMaterializedViewsRegistry {
     }
   }
 
+  /**
+   * Default implementation of {@link MaterializedViewsRegistry}
+   * Used when hive.server2.materializedviews.registry.impl=DEFAULT
+   */
   public static class InMemoryMaterializedViewsRegistry implements MaterializedViewsRegistry {
 
     private final MaterializedViewsCache materializedViewsCache = new MaterializedViewsCache();
@@ -245,7 +249,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     /**
-     * Adds a newly created materialized view to the cache.
+     * Adds a newly created materialized view to the registry.
      */
     @Override
     public void createMaterializedView(HiveConf conf, Table materializedViewTable) {
@@ -269,7 +273,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     /**
-     * Update the materialized view in the registry (if materialized view exists).
+     * Update the materialized view in the registry.
      */
     @Override
     public void refreshMaterializedView(HiveConf conf, Table materializedViewTable) {
@@ -307,7 +311,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     /**
-     * Removes the materialized view from the cache (based on table object equality), if exists.
+     * Removes the materialized view from the registry (based on table object equality), if exists.
      */
     @Override
     public void dropMaterializedView(Table materializedViewTable) {
@@ -323,7 +327,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     /**
-     * Returns all the materialized views enabled for Calcite based rewriting in the cache.
+     * Returns all the materialized views enabled for Calcite based rewriting in the registry.
      *
      * @return the collection of materialized views, or the empty collection if none
      */
@@ -335,9 +339,10 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     /**
-     * Returns the materialized views in the cache for the given database.
+     * Returns the materialized view in the registry for the given database and name
+     * filtered by {@link org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm}.
      *
-     * @return the collection of materialized views, or the empty collection if none
+     * @return {@link HiveRelOptMaterialization} or null if not found
      */
     @Override
     public HiveRelOptMaterialization getRewritingMaterializedView(String dbName, String viewName,
@@ -352,11 +357,20 @@ public final class HiveMaterializedViewsRegistry {
       return materialization;
     }
 
+    /**
+     * Returns the materialized views in the registry for the given mv definition sql query text.
+     *
+     * @return List of {@link HiveRelOptMaterialization} or empty list if no MVs found.
+     */
     @Override
     public List<HiveRelOptMaterialization> getRewritingMaterializedViews(String querySql) {
       return materializedViewsCache.get(querySql);
     }
 
+    /**
+     * The registry is empty or not.
+     * @return true if empty, false otherwise
+     */
     @Override
     public boolean isEmpty() {
       return materializedViewsCache.isEmpty();

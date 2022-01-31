@@ -24,6 +24,10 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+/**
+ * No-op implementation of {@link MaterializedViewsRegistry}.
+ * Used when hive.server2.materializedviews.registry.impl=DUMMY
+ */
 public class DummyMaterializedViewsRegistry implements MaterializedViewsRegistry {
 
   @Override
