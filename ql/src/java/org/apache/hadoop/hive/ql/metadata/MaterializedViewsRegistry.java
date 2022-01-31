@@ -58,15 +58,18 @@ public interface MaterializedViewsRegistry {
   List<HiveRelOptMaterialization> getRewritingMaterializedViews();
 
   /**
-   * Returns the materialized views in the registry for the given database.
+   * Returns the materialized view in the registry for the given database and name
+   * filtered by {@link org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm}.
    *
-   * @return the collection of materialized views, or the empty collection if none
+   * @return {@link HiveRelOptMaterialization} or null if not found
    */
   HiveRelOptMaterialization getRewritingMaterializedView(
           String dbName, String viewName, EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope);
 
   /**
    * Returns the materialized views in the registry for the given mv definition sql query text.
+   *
+   * @return List of {@link HiveRelOptMaterialization} or empty list if no MVs found.
    */
   List<HiveRelOptMaterialization> getRewritingMaterializedViews(String querySql);
 
