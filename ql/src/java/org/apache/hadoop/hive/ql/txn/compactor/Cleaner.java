@@ -172,7 +172,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             handle.releaseLocks();
           }
           if (metricsEnabled) {
-            updateCycleDurationMetric(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION, startedAt);
+            updateCycleDurationMetric(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt);
           }
           stopCycleUpdater();
         }
