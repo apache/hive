@@ -1677,6 +1677,7 @@
 	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
+	    <exclude>dev-support/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
             <exclude>docs/Gemfile</exclude>
