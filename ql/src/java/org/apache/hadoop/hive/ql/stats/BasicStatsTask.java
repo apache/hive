@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -512,6 +513,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (dpPartSpecs != null) {
           // load the list of DP partitions and return the list of partition specs
           list.addAll(dpPartSpecs);
+          // Reload partition metadata because another BasicStatsTask instance may have updated the stats.
+          list = db.getPartitionsByNames(table, list.stream().map(Partition::getName).collect(Collectors.toList()));
         }
       } else { // static partition
         Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
