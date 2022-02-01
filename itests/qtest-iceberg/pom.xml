@@ -4,7 +4,7 @@
     <parent>
         <artifactId>hive-it</artifactId>
         <groupId>org.apache.hive</groupId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>4.0.0-nightly-07968a48093-20220201_162907</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
