@@ -111,7 +111,6 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
-      Counter failuresCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -182,8 +181,18 @@ public class Initiator extends MetaStoreCompactorThread {
               String runAs = resolveUserToRunAs(tblNameOwners, t, p);
               /* checkForCompaction includes many file metadata checks and may be expensive.
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
-              compactionList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                  scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
+              String tableName = ci.getFullTableName();
+              String partition = ci.getFullPartitionName();
+
+              CompletableFuture<Void> asyncJob =
+                  CompletableFuture.runAsync(
+                          CompactorUtil.ThrowingRunnable.unchecked(() ->
+                              scheduleCompactionIfRequired(ci, t, p, runAs, metricsEnabled)), compactionExecutor)
+                      .exceptionally(exc -> {
+                        LOG.error("Error while running scheduling the compaction on the table {} / partition {}.", tableName, partition, exc);
+                        return null;
+                      });
+              compactionList.add(asyncJob);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
                   "Marking failed to avoid repeated failures, {}", ci, t);
@@ -191,20 +200,15 @@ public class Initiator extends MetaStoreCompactorThread {
               txnHandler.markFailed(ci);
             }
           }
-          CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0]))
-            .join();
+
+          CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0])).join();
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
         } catch (Throwable t) {
-          // the lock timeout on AUX lock, should be ignored.
-          if (metricsEnabled && handle != null) {
-            failuresCounter.inc();
-          }
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
-        }
-        finally {
+        } finally {
           if (handle != null) {
             handle.releaseLocks(startedAt);
           }
@@ -232,7 +236,7 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
-  private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String runAs)
+  private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String runAs, boolean metricsEnabled)
       throws MetaException {
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
     try {
@@ -246,6 +250,9 @@ public class Initiator extends MetaStoreCompactorThread {
           + "failed to avoid repeated failures, " + ex;
       LOG.error(errorMessage);
       ci.errorMessage = errorMessage;
+      if (metricsEnabled) {
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER).inc();
+      }
       txnHandler.markFailed(ci);
     }
   }
