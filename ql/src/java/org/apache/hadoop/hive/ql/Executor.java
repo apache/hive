@@ -97,15 +97,14 @@ public class Executor {
       LOG.info("Executing command(queryId=" + driverContext.getQueryId() + "): " + driverContext.getQueryString());
 
       // TODO: should this use getUserFromAuthenticator?
-      hookContext = new PrivateHookContext(driverContext.getPlan(), driverContext.getQueryState(),
-          context.getPathToCS(), SessionState.get().getUserName(), SessionState.get().getUserIpAddress(),
-          InetAddress.getLocalHost().getHostAddress(), driverContext.getOperationId(),
-          SessionState.get().getSessionId(), Thread.currentThread().getName(), SessionState.get().isHiveServerQuery(),
-          SessionState.getPerfLogger(), driverContext.getQueryInfo(), context);
+      hookContext = new PrivateHookContext(driverContext, context);
 
       preExecutionActions();
       preExecutionCacheActions();
+      // Disable HMS cache so any metadata calls during execution get fresh responses.
+      driverContext.getQueryState().disableHMSCache();
       runTasks(noName);
+      driverContext.getQueryState().enableHMSCache();
       postExecutionCacheActions();
       postExecutionActions();
     } catch (CommandProcessorException cpe) {
@@ -118,6 +117,7 @@ public class Executor {
       handleException(hookContext, e);
     } finally {
       cleanUp(noName, hookContext, executionError);
+      driverContext.getQueryState().enableHMSCache();
     }
   }
 

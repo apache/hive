@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -167,6 +168,20 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM target WHERE FALSE");
 
     HiveIcebergTestUtils.validateData(table, expected, 0);
+  }
+
+  @Test
+  public void testInsertOverwriteBucketPartitionedTableThrowsError() {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .bucket("last_name", 16).identity("customer_id").build();
+    testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, ImmutableList.of());
+
+    AssertHelpers.assertThrows("IOW should not work on bucket partitioned table", IllegalArgumentException.class,
+        "Cannot perform insert overwrite query on bucket partitioned Iceberg table",
+        () -> shell.executeStatement(
+            testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, target, true)));
   }
 
   /**

@@ -280,6 +280,10 @@ Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 25
 Expanded Query:     	SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY
@@ -1157,3 +1161,27 @@ val_238	238
 val_238	238
 val_238_n2	238
 val_238_n2	238
+PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@partition_mv_1
+PREHOOK: Output: default@partition_mv_1
+POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@partition_mv_1
+POSTHOOK: Output: default@partition_mv_1
+PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@partition_mv_2
+PREHOOK: Output: default@partition_mv_2
+POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@partition_mv_2
+POSTHOOK: Output: default@partition_mv_2
+PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_3
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@partition_mv_3
+PREHOOK: Output: default@partition_mv_3
+POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_3
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@partition_mv_3
+POSTHOOK: Output: default@partition_mv_3

@@ -106,6 +106,13 @@ Table Parameters:
 	numRows             	5                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	455                 
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
@@ -249,6 +256,13 @@ Table Parameters:
 	numRows             	5                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	116                 
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
@@ -392,6 +406,13 @@ Table Parameters:
 	numRows             	5                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 

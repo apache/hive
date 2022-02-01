@@ -42,6 +42,9 @@
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
+        <exclude>com.oracle.database.jdbc:*</exclude>
+        <exclude>mysql:mysql-connector-java:*</exclude>
+        <exclude>org.mariadb.jdbc:*</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>

@@ -220,7 +220,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_check_constraint\n");
   }
 
-  void translate_table_dryrun(Table& _return, const Table& tbl) {
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
     // Your implementation goes here
     printf("translate_table_dryrun\n");
   }
@@ -650,6 +650,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("update_partition_column_statistics_req\n");
   }
 
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& req) {
+    // Your implementation goes here
+    printf("update_transaction_statistics\n");
+  }
+
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
     // Your implementation goes here
     printf("get_table_column_statistics\n");
@@ -1003,6 +1008,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void mark_failed(const CompactionInfoStruct& cr) {
     // Your implementation goes here
     printf("mark_failed\n");
+  }
+
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
+    // Your implementation goes here
+    printf("update_compaction_metrics_data\n");
+  }
+
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) {
+    // Your implementation goes here
+    printf("remove_compaction_metrics_data\n");
   }
 
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) {

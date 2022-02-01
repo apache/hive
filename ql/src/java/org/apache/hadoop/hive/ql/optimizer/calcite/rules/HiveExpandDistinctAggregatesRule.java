@@ -92,7 +92,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
           HiveRelFactories.HIVE_PROJECT_FACTORY);
 
   private static RelFactories.ProjectFactory projFactory;
-  
+
   protected static final Logger LOG = LoggerFactory.getLogger(HiveExpandDistinctAggregatesRule.class);
 
   //~ Constructors -----------------------------------------------------------
@@ -112,7 +112,9 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
     int numCountDistinct = getNumCountDistinctCall(aggregate);
-    if (numCountDistinct == 0 || numCountDistinct > 63 || aggregate.getGroupType() != Group.SIMPLE) {
+
+    if (numCountDistinct == 0 || numCountDistinct + aggregate.getGroupCount() >= Long.SIZE
+        || aggregate.getGroupType() != Group.SIMPLE) {
       return;
     }
 
@@ -184,16 +186,16 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
    * Converts an aggregate relational expression that contains only
    * count(distinct) to grouping sets with count. For example select
    * count(distinct department_id), count(distinct gender), count(distinct
-   * education_level) from employee; can be transformed to 
-   * select 
-   * count(case when i=1 and department_id is not null then 1 else null end) as c0, 
-   * count(case when i=2 and gender is not null then 1 else null end) as c1, 
-   * count(case when i=4 and education_level is not null then 1 else null end) as c2 
+   * education_level) from employee; can be transformed to
+   * select
+   * count(case when i=1 and department_id is not null then 1 else null end) as c0,
+   * count(case when i=2 and gender is not null then 1 else null end) as c1,
+   * count(case when i=4 and education_level is not null then 1 else null end) as c2
    * from (select
    * grouping__id as i, department_id, gender, education_level from employee
    * group by department_id, gender, education_level grouping sets
    * (department_id, gender, education_level))subq;
-   * @throws CalciteSemanticException 
+   * @throws CalciteSemanticException
    */
   private RelNode convert(Aggregate aggregate, List<List<Integer>> argList, ImmutableBitSet newGroupSet)
       throws CalciteSemanticException {
@@ -234,7 +236,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
         .collect(Collectors.toList());
     final List<RexNode> gbChildProjLst = Lists.newArrayList();
     // for singular arg, count should not include null
-    // e.g., count(case when i=1 and department_id is not null then 1 else null end) as c0, 
+    // e.g., count(case when i=1 and department_id is not null then 1 else null end) as c0,
     // for non-singular args, count can include null, i.e. (,) is counted as 1
     for (List<Integer> list : cleanArgList) {
       RexNode condition = rexBuilder.makeCall(

@@ -195,6 +195,11 @@
         </exclusion>
       </exclusions>
   </dependency>
+  <dependency>
+    <groupId>org.apache.tez</groupId>
+    <artifactId>tez-api</artifactId>
+    <version>${tez.version}</version>
+  </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>com.google.code.tempus-fugit</groupId>

@@ -17,15 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+
+import static java.lang.String.format;
 
 public class CompactorUtil {
   public static final String COMPACTOR = "compactor";
@@ -46,16 +47,14 @@ public class CompactorUtil {
     }
   }
 
-  public static ThreadFactory createThreadFactory(String threadNameFormat) {
-    return new ThreadFactoryBuilder()
-      .setPriority(Thread.currentThread().getPriority())
-      .setDaemon(Thread.currentThread().isDaemon())
-      .setNameFormat(threadNameFormat)
-      .build();
-  }
-
-  public static ExecutorService createExecutorWithThreadFactory(int threadCount, String threadNameFormat) {
-    return Executors.newFixedThreadPool(threadCount, createThreadFactory(threadNameFormat));
+  public static ExecutorService createExecutorWithThreadFactory(int parallelism, String threadNameFormat) {
+    return new ForkJoinPool(parallelism,
+      pool -> {
+        ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+        worker.setName(format(threadNameFormat, worker.getPoolIndex()));
+        return worker;
+      },
+      null, false);
   }
 
   /**

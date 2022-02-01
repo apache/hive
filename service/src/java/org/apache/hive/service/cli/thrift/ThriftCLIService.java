@@ -75,6 +75,8 @@ import org.apache.hive.service.rpc.thrift.TCloseOperationReq;
 import org.apache.hive.service.rpc.thrift.TCloseOperationResp;
 import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
 import org.apache.hive.service.rpc.thrift.TCloseSessionResp;
+import org.apache.hive.service.rpc.thrift.TDownloadDataReq;
+import org.apache.hive.service.rpc.thrift.TDownloadDataResp;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementResp;
 import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
@@ -116,6 +118,8 @@ import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
+import org.apache.hive.service.rpc.thrift.TUploadDataReq;
+import org.apache.hive.service.rpc.thrift.TUploadDataResp;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;
 import org.slf4j.Logger;
@@ -957,6 +961,45 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       // If concurrently the query is closed before we fetch queryID.
       return new TGetQueryIdResp("");
     }
+  }
+
+  @Override
+  public TUploadDataResp UploadData(TUploadDataReq req) throws TException {
+    TUploadDataResp resp = new TUploadDataResp();
+    try {
+      SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
+      OperationHandle operationHandle = cliService.uploadData(
+          sessionHandle,
+          req.bufferForValues(),
+          req.getTableName(),
+          req.getPath());
+      resp.setOperationHandle(operationHandle.toTOperationHandle());
+      resp.setStatus(OK_STATUS);
+    } catch (Exception e) {
+      LOG.warn("Error UploadData: ", e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
+  }
+
+  @Override
+  public TDownloadDataResp DownloadData(TDownloadDataReq req) throws TException {
+    TDownloadDataResp resp = new TDownloadDataResp();
+    try {
+      SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
+      OperationHandle operationHandle = cliService.downloadData(
+          sessionHandle,
+          req.getTableName(),
+          req.getQuery(),
+          req.getFormat(),
+          req.getDownloadOptions());
+      resp.setOperationHandle(operationHandle.toTOperationHandle());
+      resp.setStatus(OK_STATUS);
+    } catch (Exception e) {
+      LOG.warn("Error download data: ", e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
   }
 
   @Override

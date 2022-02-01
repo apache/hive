@@ -41,7 +41,7 @@ select (${hiveconf:zzz} > sum(u*v*w)) from tu
         where w>9 and u>1 and v>3;
 
 
-set hive.query.reexecution.strategies=overlay,reoptimize;
+set hive.query.reexecution.strategies=overlay,reoptimize,recompile_without_cbo;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
 explain reoptimization

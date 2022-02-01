@@ -56,7 +56,7 @@ public class MaterializedViewsCache {
     ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
 
     // You store the materialized view
-    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, aMaterialization) -> {
+    dbMap.computeIfAbsent(materializedViewTable.getTableName(), (mvTableName) -> {
       List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
               materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
       materializationList.add(materialization);
@@ -124,29 +124,50 @@ public class MaterializedViewsCache {
       // Delete only if the create time for the input materialized view table and the table
       // in the map match. Otherwise, keep the one in the map.
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
-        if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
-          List<HiveRelOptMaterialization> materializationList =
-                  sqlToMaterializedView.get(materializedViewTable.getViewExpandedText());
-          materializationList.remove(oldMaterialization);
+        Table oldTable = HiveMaterializedViewUtils.extractTable(oldMaterialization);
+        if (materializedViewTable.equals(oldTable)) {
+          remove(oldMaterialization, oldTable);
           return null;
         }
         return oldMaterialization;
       });
+
+      if (dbMap.isEmpty()) {
+        materializedViews.remove(materializedViewTable.getDbName());
+      }
     }
 
     LOG.debug("Materialized view {}.{} removed from registry",
             materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
+  private void remove(HiveRelOptMaterialization materialization, Table mvTable) {
+    if (mvTable == null) {
+      return;
+    }
+
+    List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(mvTable.getViewExpandedText());
+    if (materializationList == null) {
+      return;
+    }
+
+    materializationList.remove(materialization);
+    if (materializationList.isEmpty()) {
+      sqlToMaterializedView.remove(mvTable.getViewExpandedText());
+    }
+  }
+
   public void remove(String dbName, String tableName) {
     ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(dbName);
     if (dbMap != null) {
       dbMap.computeIfPresent(tableName, (mvTableName, materialization) -> {
-        String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
-        List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
-        materializationList.remove(materialization);
+        remove(materialization, HiveMaterializedViewUtils.extractTable(materialization));
         return null;
       });
+
+      if (dbMap.isEmpty()) {
+        materializedViews.remove(dbName);
+      }
 
       LOG.debug("Materialized view {}.{} removed from registry", dbName, tableName);
     }
@@ -179,5 +200,9 @@ public class MaterializedViewsCache {
     LOG.debug("{} materialized view(s) found with similar query text found in registry",
             relOptMaterializationList.size());
     return unmodifiableList(relOptMaterializationList);
+  }
+
+  public boolean isEmpty() {
+    return materializedViews.isEmpty();
   }
 }

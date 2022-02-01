@@ -240,10 +240,10 @@
       </fetch-group>
     </class>
 
-    <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
-      <datastore-identity>
+    <class name="MCreationMetadata" identity-type="application" table="MV_CREATION_METADATA" detachable="true" objectid-class="MCreationMetadata$PK">
+      <field name="id" primary-key="true" value-strategy="native">
         <column name="MV_CREATION_METADATA_ID"/>
-      </datastore-identity>
+      </field>
       <field name="catalogName">
         <column name="CAT_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
@@ -253,15 +253,30 @@
       <field name="tblName">
         <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
-      <field name="tables" table="MV_TABLES_USED">
-        <collection element-type="MTable"/>
-        <join>
-          <column name="MV_CREATION_METADATA_ID"/>
-        </join>
-        <element column="TBL_ID"/>
+      <field name="tables" mapped-by="creationMetadata" dependent-element="true">
+        <collection element-type="MMVSource" dependent-element="true" />
+        <foreign-key name="MV_TABLES_USED_FK1" delete-action="cascade"/>
       </field>
       <field name="txnList">
         <column name="TXN_LIST" length="32672" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+    </class>
+
+    <class name="MMVSource" identity-type="application" table="MV_TABLES_USED" detachable="true" objectid-class="MMVSource$PK">
+      <field name="table" primary-key="true">
+        <column name="TBL_ID"/>
+      </field>
+      <field name="creationMetadata" primary-key="true">
+        <column name="MV_CREATION_METADATA_ID"/>
+      </field>
+      <field name="insertedCount">
+        <column name="INSERTED_COUNT"/>
+      </field>
+      <field name="updatedCount">
+        <column name="UPDATED_COUNT"/>
+      </field>
+      <field name="deletedCount">
+        <column name="DELETED_COUNT"/>
       </field>
     </class>
 

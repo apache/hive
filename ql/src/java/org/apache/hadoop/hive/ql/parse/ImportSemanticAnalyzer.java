@@ -841,7 +841,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       // verify if table has been the target of replication, and if so, check HiveConf if we're allowed
       // to override. If not, fail.
-      if (table.getParameters().containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString())
+      if (table.getParameters().containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString())
           && conf.getBoolVar(HiveConf.ConfVars.HIVE_EXIM_RESTRICT_IMPORTS_INTO_REPLICATED_TABLES)){
             throw new SemanticException(ErrorMsg.IMPORT_INTO_STRICT_REPL_TABLE.getMsg(
                 "Table "+table.getTableName()+" has repl.last.id parameter set." ));

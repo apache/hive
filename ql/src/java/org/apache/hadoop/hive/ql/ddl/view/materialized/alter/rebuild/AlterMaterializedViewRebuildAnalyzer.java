@@ -199,7 +199,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       final RelOptCluster optCluster = basePlan.getCluster();
       final PerfLogger perfLogger = SessionState.getPerfLogger();
       final RelNode calcitePreMVRewritingPlan = basePlan;
-      final List<String> tablesUsedQuery = getTablesUsed(basePlan);
+      final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
 
       // Add views to planner
       HiveRelOptMaterialization materialization;

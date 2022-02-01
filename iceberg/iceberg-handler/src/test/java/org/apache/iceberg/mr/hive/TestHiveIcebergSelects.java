@@ -26,6 +26,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
@@ -35,6 +36,7 @@ import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Runs miscellaneous select statements on Iceberg tables, and verifies the result. Tests meant to verify simple
@@ -116,7 +118,8 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
-      if ((type == Types.TimestampType.withZone() || type == Types.TimeType.get()) && isVectorized) {
+      if ((type == Types.TimestampType.withZone() || type == Types.TimeType.get()) &&
+          isVectorized && fileFormat == FileFormat.ORC) {
         // ORC/TIMESTAMP_INSTANT and time are not supported vectorized types for Hive
         continue;
       }
@@ -143,7 +146,8 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
-      if ((type == Types.TimestampType.withZone() || type == Types.TimeType.get()) && isVectorized) {
+      if ((type == Types.TimestampType.withZone() || type == Types.TimeType.get()) &&
+          isVectorized && fileFormat == FileFormat.ORC) {
         // ORC/TIMESTAMP_INSTANT and time are not supported vectorized types for Hive
         continue;
       }
@@ -228,5 +232,36 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
     List<Object[]> result = shell.executeStatement(query);
     Assert.assertEquals(1, result.size());
     Assert.assertArrayEquals(new Object[]{"val"}, result.get(0));
+  }
+
+  /**
+   * Tests that vectorized ORC reading code path correctly handles when the same ORC file is split into multiple parts.
+   * Although the split offsets and length will not always include the file tail that contains the metadata, the
+   * vectorized reader needs to make sure to handle the tail reading regardless of the offsets. If this is not done
+   * correctly, the last SELECT query will fail.
+   * @throws Exception - any test error
+   */
+  @Test
+  public void testVectorizedOrcMultipleSplits() throws Exception {
+    assumeTrue(isVectorized && FileFormat.ORC.equals(fileFormat));
+
+    // This data will be held by a ~870kB ORC file
+    List<Record> records = TestHelper.generateRandomRecords(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        20000, 0L);
+
+    // To support splitting the ORC file, we need to specify the stripe size to a small value. It looks like the min
+    // value is about 220kB, no smaller stripes are written by ORC. Anyway, this setting will produce 4 stripes.
+    shell.setHiveSessionValue("orc.stripe.size", "210000");
+
+    testTables.createTable(shell, "targettab", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, records);
+
+    // Will request 4 splits, separated on the exact stripe boundaries within the ORC file.
+    // (Would request 5 if ORC split generation wouldn't be split (aka stripe) offset aware).
+    shell.setHiveSessionValue(InputFormatConfig.SPLIT_SIZE, "210000");
+    List<Object[]> result = shell.executeStatement("SELECT * FROM targettab ORDER BY last_name");
+
+    Assert.assertEquals(20000, result.size());
+
   }
 }

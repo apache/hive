@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint.DefaultConstraintCol
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -75,7 +76,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -115,6 +115,9 @@ public class DDLPlanUtils {
   private static final String COL_TYPE = "COL_TYPE";
   private static final String SQL = "SQL";
   private static final String COMMENT_SQL = "COMMENT_SQL";
+  private static final String ENABLE = "ENABLE";
+  private static final String RELY = "RELY";
+  private static final String VALIDATE = "VALIDATE";
   private static final String HIVE_DEFAULT_PARTITION = "__HIVE_DEFAULT_PARTITION__";
   private static final String BASE_64_VALUE = "BASE_64";
   private static final String numNulls = "'numNulls'='";
@@ -131,89 +134,94 @@ public class DDLPlanUtils {
   private static final String CREATE_DATABASE_STMT = "CREATE DATABASE IF NOT EXISTS <" + DATABASE_NAME + ">;";
 
   private final String CREATE_TABLE_TEMPLATE =
-      "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>"
-          + "`<" + TABLE_NAME + ">`(\n" +
-          "<" + LIST_COLUMNS + ">)\n" +
-          "<" + COMMENT + ">\n" +
-          "<" + PARTITIONS + ">\n" +
-          "<" + PARTITIONS_BY_SPEC + ">\n" +
-          "<" + BUCKETS + ">\n" +
-          "<" + SKEWED + ">\n" +
-          "<" + ROW_FORMAT + ">\n" +
-          "<" + LOCATION_BLOCK + ">" +
-          "TBLPROPERTIES (\n" +
-          "<" + PROPERTIES + ">)";
+    "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>"
+      + "`<" + TABLE_NAME + ">`(\n" +
+      "<" + LIST_COLUMNS + ">)\n" +
+      "<" + COMMENT + ">\n" +
+      "<" + PARTITIONS + ">\n" +
+      "<" + PARTITIONS_BY_SPEC + ">\n" +
+      "<" + BUCKETS + ">\n" +
+      "<" + SKEWED + ">\n" +
+      "<" + ROW_FORMAT + ">\n" +
+      "<" + LOCATION_BLOCK + ">" +
+      "TBLPROPERTIES (\n" +
+      "<" + PROPERTIES + ">)";
 
   private static final String CREATE_VIEW_TEMPLATE =
-      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME +
-          ">`<" + PARTITIONS + "> AS <" + SQL +">";
+    "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME +
+      ">`<" + PARTITIONS + "> AS <" + SQL + ">";
 
   private final String CREATE_TABLE_TEMPLATE_LOCATION = "LOCATION\n" +
-      "<" + LOCATION + ">\n";
+    "<" + LOCATION + ">\n";
 
   private final Set<String> PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES = Sets.union(
-      ImmutableSet.of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE, TABLE_IS_CTAS, CTAS_LEGACY_CONFIG),
-      new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
+    ImmutableSet.of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE, TABLE_IS_CTAS, CTAS_LEGACY_CONFIG),
+    new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
 
   private final String ALTER_TABLE_CREATE_PARTITION = "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME +
-      "> ADD IF NOT EXISTS PARTITION (<" + PARTITION +
-      ">);";
+    + DATABASE_NAME + ">.<" + TABLE_NAME +
+    "> ADD IF NOT EXISTS PARTITION (<" + PARTITION +
+    ">);";
 
   private final String ALTER_TABLE_UPDATE_STATISTICS_TABLE_COLUMN = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" +
-      TABLE_NAME + "> UPDATE STATISTICS FOR COLUMN <"
-      + COLUMN_NAME + "> SET(<" + TBLPROPERTIES + "> );";
+    + DATABASE_NAME + ">.<" +
+    TABLE_NAME + "> UPDATE STATISTICS FOR COLUMN <"
+    + COLUMN_NAME + "> SET(<" + TBLPROPERTIES + "> );";
 
-  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN = "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME +
-      "> PARTITION (<" + PARTITION_NAME +
-      ">) UPDATE STATISTICS FOR COLUMN <"
-      + COLUMN_NAME + "> SET(<" + TBLPROPERTIES + "> );";
+  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN =
+    "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
+    + DATABASE_NAME + ">.<" + TABLE_NAME +
+    "> PARTITION (<" + PARTITION_NAME +
+    ">) UPDATE STATISTICS FOR COLUMN <"
+    + COLUMN_NAME + "> SET(<" + TBLPROPERTIES + "> );";
 
   private final String ALTER_TABLE_UPDATE_STATISTICS_TABLE_BASIC = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME +
-      "> UPDATE STATISTICS SET(<" + TBLPROPERTIES + "> );";
+    + DATABASE_NAME + ">.<" + TABLE_NAME +
+    "> UPDATE STATISTICS SET(<" + TBLPROPERTIES + "> );";
 
-  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC = "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
+  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC =
+    "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
       + DATABASE_NAME + ">.<" + TABLE_NAME + "> PARTITION (<" +
       PARTITION_NAME + ">) UPDATE STATISTICS SET(<" + TBLPROPERTIES + "> );";
   private final String ALTER_TABLE_ADD_PRIMARY_KEY = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME + "> ADD CONSTRAINT <" +
-      CONSTRAINT_NAME + "> PRIMARY KEY (<" + COL_NAMES + ">) DISABLE NOVALIDATE;";
+    + DATABASE_NAME + ">.<" + TABLE_NAME + "> ADD CONSTRAINT <" +
+    CONSTRAINT_NAME + "> PRIMARY KEY (<" + COL_NAMES + ">) <" + ENABLE + "> <" + VALIDATE + "> <" + RELY + ">;";
 
   private final String ALTER_TABLE_ADD_FOREIGN_KEY = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + CHILD_TABLE_NAME + "> ADD CONSTRAINT <"
-      + CONSTRAINT_NAME + "> FOREIGN KEY (<" + CHILD_COL_NAME + ">) REFERENCES <"
-      + DATABASE_NAME_FR + ">.<" + PARENT_TABLE_NAME + ">(<" + PARENT_COL_NAME + ">) DISABLE NOVALIDATE RELY;";
+    + DATABASE_NAME + ">.<" + CHILD_TABLE_NAME + "> ADD CONSTRAINT <"
+    + CONSTRAINT_NAME + "> FOREIGN KEY (<" + CHILD_COL_NAME + ">) REFERENCES <"
+    + DATABASE_NAME_FR + ">.<" + PARENT_TABLE_NAME + ">(<" + PARENT_COL_NAME + ">) <"
+    + ENABLE + "> <" + VALIDATE + "> <" + RELY + ">;";
 
   private final String ALTER_TABLE_ADD_UNIQUE_CONSTRAINT = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME + "> ADD CONSTRAINT <" +
-      CONSTRAINT_NAME + "> UNIQUE (<" + COLUMN_NAME + ">) DISABLE NOVALIDATE;";
+    + DATABASE_NAME + ">.<" + TABLE_NAME + "> ADD CONSTRAINT <" +
+    CONSTRAINT_NAME + "> UNIQUE (<" + COLUMN_NAME + ">) <" + ENABLE + "> <" + VALIDATE + "> <" + RELY + ">;";
 
   private final String ALTER_TABLE_ADD_CHECK_CONSTRAINT = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME +
-      "> ADD CONSTRAINT <" + CONSTRAINT_NAME + "> CHECK (<" +
-      CHECK_EXPRESSION + ">) DISABLE;";
+    + DATABASE_NAME + ">.<" + TABLE_NAME +
+    "> ADD CONSTRAINT <" + CONSTRAINT_NAME + "> CHECK (<" +
+    CHECK_EXPRESSION + ">) <" + ENABLE + "> <" + VALIDATE + "> <" + RELY + ">;";
 
   private final String ALTER_TABLE_ADD_NOT_NULL_CONSTRAINT = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME + "> CHANGE COLUMN < "
-      + COLUMN_NAME + "> <" + COLUMN_NAME +
-      "> <" + COL_TYPE + "> CONSTRAINT <" + CONSTRAINT_NAME + "> NOT NULL DISABLE;";
+    + DATABASE_NAME + ">.<" + TABLE_NAME + "> CHANGE COLUMN < "
+    + COLUMN_NAME + "> <" + COLUMN_NAME +
+    "> <" + COL_TYPE + "> CONSTRAINT <" + CONSTRAINT_NAME + "> NOT NULL <" + ENABLE + "> <" + VALIDATE
+    + "> <" + RELY + ">;";
 
   private final String ALTER_TABLE_ADD_DEFAULT_CONSTRAINT = "ALTER TABLE <"
-      + DATABASE_NAME + ">.<" + TABLE_NAME + "> CHANGE COLUMN < "
-      + COLUMN_NAME + "> <" + COLUMN_NAME +
-      "> <" + COL_TYPE + "> CONSTRAINT <" + CONSTRAINT_NAME + "> DEFAULT <" + DEFAULT_VALUE + "> DISABLE;";
+    + DATABASE_NAME + ">.<" + TABLE_NAME + "> CHANGE COLUMN < "
+    + COLUMN_NAME + "> <" + COLUMN_NAME +
+    "> <" + COL_TYPE + "> CONSTRAINT <" + CONSTRAINT_NAME + "> DEFAULT <" + DEFAULT_VALUE + "> <"
+    + ENABLE + "> <" + VALIDATE + "> <" + RELY + ">;";
 
   private final String EXIST_BIT_VECTORS = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" + TABLE_NAME + "> " +
-      "FOR COLUMN <" + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS <" +
-      BASE_64_VALUE +"> ";
+    "FOR COLUMN <" + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS <" +
+    BASE_64_VALUE + "> ";
 
   private final String EXIST_BIT_VECTORS_PARTITIONED = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" +
-      TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
-      + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS <" +
-      BASE_64_VALUE +"> ";
+    TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
+    + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS <" +
+    BASE_64_VALUE + "> ";
 
   /**
    * Returns the create database query for a give database name.
@@ -250,7 +258,7 @@ public class DDLPlanUtils {
 
   public String getPartitionActualName(Partition pt) {
     Map<String, String> colTypeMap = getTableColumnsToType(pt.getTable());
-    String[] partColsDef = pt.getName().split(",");
+    String[] partColsDef = pt.getName().split("/");
     List<String> ptParam = new ArrayList<>();
     for (String partCol : partColsDef) {
       String[] colValue = partCol.split("=");
@@ -263,11 +271,10 @@ public class DDLPlanUtils {
     return StringUtils.join(ptParam, ",");
   }
 
-  public boolean checkIfDefaultPartition(String pt){
-    if(pt.contains(HIVE_DEFAULT_PARTITION)){
+  public boolean checkIfDefaultPartition(String pt) {
+    if (pt.contains(HIVE_DEFAULT_PARTITION)) {
       return true;
-    }
-    else {
+    } else {
       return false;
     }
   }
@@ -286,7 +293,7 @@ public class DDLPlanUtils {
     command.add(DATABASE_NAME, tb.getDbName());
     command.add(TABLE_NAME, tb.getTableName());
     command.add(PARTITION, getPartitionActualName(pt));
-    if(checkIfDefaultPartition(pt.getName())){
+    if (checkIfDefaultPartition(pt.getName())) {
       command.add(COMMENT_SQL, "--");
     }
     return command.render();
@@ -366,11 +373,11 @@ public class DDLPlanUtils {
       return;
     }
     DecimalColumnStatsData dc = cd.getDecimalStats();
-    if(dc.isSetHighValue()) {
+    if (dc.isSetHighValue()) {
       byte[] highValArr = setByteArrayToLongSize(dc.getHighValue().getUnscaled());
       ls.add(highValue + ByteBuffer.wrap(highValArr).getLong() + "E" + dc.getHighValue().getScale() + "'");
     }
-    if(dc.isSetLowValue()) {
+    if (dc.isSetLowValue()) {
       byte[] lowValArr = setByteArrayToLongSize(dc.getLowValue().getUnscaled());
       ls.add(lowValue + ByteBuffer.wrap(lowValArr).getLong() + "E" + dc.getLowValue().getScale() + "'");
     }
@@ -414,7 +421,7 @@ public class DDLPlanUtils {
     return null;
   }
 
-  public String addAllColStats(ColumnStatisticsData columnStatisticsData){
+  public String addAllColStats(ColumnStatisticsData columnStatisticsData) {
     List<String> temp = new ArrayList<>();
     addBinaryStats(columnStatisticsData, temp);
     addLongStats(columnStatisticsData, temp);
@@ -451,18 +458,18 @@ public class DDLPlanUtils {
    * @param tbl
    */
   public List<String> getAlterTableStmtTableStatsColsAll(Table tbl)
-      throws HiveException {
+    throws HiveException {
     List<String> alterTblStmt = new ArrayList<String>();
     List<String> accessedColumns = getTableColumnNames(tbl);
     List<ColumnStatisticsObj> tableColumnStatistics = Hive.get().getTableColumnStatistics(tbl.getDbName(),
-        tbl.getTableName(),
-        accessedColumns,
-        true);
+      tbl.getTableName(),
+      accessedColumns,
+      true);
     ColumnStatisticsObj[] columnStatisticsObj = tableColumnStatistics.toArray(new ColumnStatisticsObj[0]);
     for (int i = 0; i < columnStatisticsObj.length; i++) {
       alterTblStmt.add(getAlterTableStmtCol(columnStatisticsObj[i].getStatsData(),
-          columnStatisticsObj[i].getColName(),
-          tbl.getTableName(), tbl.getDbName()));
+        columnStatisticsObj[i].getColName(),
+        tbl.getTableName(), tbl.getDbName()));
       String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
       if (base64 != null) {
         ST command = new ST(EXIST_BIT_VECTORS);
@@ -487,14 +494,14 @@ public class DDLPlanUtils {
    * @return
    */
   public String getAlterTableStmtPartitionColStat(ColumnStatisticsData columnStatisticsData, String colName,
-      String tblName, String ptName, String dbName) {
+                                                  String tblName, String ptName, String dbName) {
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN);
     command.add(DATABASE_NAME, dbName);
     command.add(TABLE_NAME, tblName);
     command.add(COLUMN_NAME, colName);
     command.add(PARTITION_NAME, ptName);
     command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
-    if(checkIfDefaultPartition(ptName)){
+    if (checkIfDefaultPartition(ptName)) {
       command.add(COMMENT_SQL, "--");
     }
     return command.render();
@@ -510,17 +517,17 @@ public class DDLPlanUtils {
    * @param dbName
    */
   public List<String> getAlterTableStmtPartitionStatsColsAll(List<ColumnStatisticsObj> columnStatisticsObjList,
-      String tblName,
-      String ptName,
-      String dbName) {
+                                                             String tblName,
+                                                             String ptName,
+                                                             String dbName) {
     List<String> alterTableStmt = new ArrayList<String>();
     ColumnStatisticsObj[] columnStatisticsObj = columnStatisticsObjList.toArray(new ColumnStatisticsObj[0]);
     for (int i = 0; i < columnStatisticsObj.length; i++) {
       alterTableStmt.add(getAlterTableStmtPartitionColStat(columnStatisticsObj[i].getStatsData(),
-          columnStatisticsObj[i].getColName(),
-          tblName,
-          ptName,
-          dbName));
+        columnStatisticsObj[i].getColName(),
+        tblName,
+        ptName,
+        dbName));
       String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
       if (base64 != null) {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
@@ -535,7 +542,7 @@ public class DDLPlanUtils {
     return alterTableStmt;
   }
 
-  public String paramToValues(Map<String, String> parameters){
+  public String paramToValues(Map<String, String> parameters) {
     List<String> paramsToValue = new ArrayList<>();
     for (String s : req) {
       String p = parameters.get(s);
@@ -560,15 +567,15 @@ public class DDLPlanUtils {
     command.add(TABLE_NAME, pt.getTable().getTableName());
     command.add(PARTITION_NAME, getPartitionActualName(pt));
     command.add(TBLPROPERTIES, paramToValues(parameters));
-    if(checkIfDefaultPartition(pt.getName())){
+    if (checkIfDefaultPartition(pt.getName())) {
       command.add(COMMENT_SQL, "--");
     }
     return command.render();
   }
 
   public List<String> getDDLPlanForPartitionWithStats(Table table,
-      Map<String, List<Partition>> tableToPartitionList
-                                                     ) throws MetaException, HiveException {
+                                                      Map<String, List<Partition>> tableToPartitionList
+  ) throws MetaException, HiveException {
     List<String> alterTableStmt = new ArrayList<String>();
     String tableName = table.getTableName();
     for (Partition pt : tableToPartitionList.get(tableName)) {
@@ -581,16 +588,16 @@ public class DDLPlanUtils {
     List<String> columnNames = getTableColumnNames(table);
     tableToPartitionList.get(tableName).stream().forEach(p -> partNames.add(p.getName()));
     Map<String, List<ColumnStatisticsObj>> partitionColStats =
-        Hive.get().getPartitionColumnStatistics(databaseName,
-            tableName, partNames, columnNames,
-            true);
+      Hive.get().getPartitionColumnStatistics(databaseName,
+        tableName, partNames, columnNames,
+        true);
     Map<String, String> partitionToActualName = new HashMap<>();
     tableToPartitionList.get(tableName).stream().forEach(p -> partitionToActualName.put(p.getName(),
-        getPartitionActualName(p)));
+      getPartitionActualName(p)));
     for (String partitionName : partitionColStats.keySet()) {
       alterTableStmt.addAll(getAlterTableStmtPartitionStatsColsAll(partitionColStats.get(partitionName),
-          tableName, partitionToActualName.get(partitionName),
-          databaseName));
+        tableName, partitionToActualName.get(partitionName),
+        databaseName));
     }
     return alterTableStmt;
   }
@@ -612,7 +619,7 @@ public class DDLPlanUtils {
   }
 
   public String getAlterTableStmtPrimaryKeyConstraint(PrimaryKeyInfo pr) {
-    if (!PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(pr)) {
+    if (!PrimaryKeyInfo.isNotEmpty(pr)) {
       return null;
     }
     ST command = new ST(ALTER_TABLE_ADD_PRIMARY_KEY);
@@ -620,19 +627,19 @@ public class DDLPlanUtils {
     command.add(DATABASE_NAME, pr.getDatabaseName());
     command.add(CONSTRAINT_NAME, pr.getConstraintName());
     command.add(COL_NAMES, String.join(",", pr.getColNames().values()));
+    command.add(ENABLE, pr.getEnable());
+    command.add(VALIDATE, pr.getValidate());
+    command.add(RELY, pr.getRely());
     return command.render();
   }
 
   public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints, Set<String> allTableNames) {
-    if (!ForeignKeyInfo.isForeignKeyInfoNotEmpty(fr)) {
+    if (!ForeignKeyInfo.isNotEmpty(fr)) {
       return;
     }
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
     for (String key : all.keySet()) {
       for (ForeignKeyInfo.ForeignKeyCol fkc : all.get(key)) {
-        if (!allTableNames.contains(fkc.parentTableName)) {
-          continue;
-        }
         ST command = new ST(ALTER_TABLE_ADD_FOREIGN_KEY);
         command.add(CHILD_TABLE_NAME, fr.getChildTableName());
         command.add(DATABASE_NAME, fr.getChildDatabaseName());
@@ -641,13 +648,16 @@ public class DDLPlanUtils {
         command.add(DATABASE_NAME_FR, fkc.parentDatabaseName);
         command.add(PARENT_TABLE_NAME, fkc.parentTableName);
         command.add(PARENT_COL_NAME, fkc.parentColName);
+        command.add(ENABLE, fkc.enable);
+        command.add(VALIDATE, fkc.validate);
+        command.add(RELY, fkc.rely);
         constraints.add(command.render());
       }
     }
   }
 
   public void getAlterTableStmtUniqueConstraint(UniqueConstraint uq, List<String> constraints) {
-    if (!UniqueConstraint.isUniqueConstraintNotEmpty(uq)) {
+    if (!UniqueConstraint.isNotEmpty(uq)) {
       return;
     }
     Map<String, List<UniqueConstraint.UniqueConstraintCol>> uniqueConstraints = uq.getUniqueConstraints();
@@ -661,12 +671,15 @@ public class DDLPlanUtils {
         colNames.add(col.colName);
       }
       command.add(COLUMN_NAME, Joiner.on(",").join(colNames));
+      command.add(ENABLE, uniqueConstraints.get(key).get(0).enable);
+      command.add(VALIDATE, uniqueConstraints.get(key).get(0).validate);
+      command.add(RELY, uniqueConstraints.get(key).get(0).rely);
       constraints.add(command.render());
     }
   }
 
   public void getAlterTableStmtDefaultConstraint(DefaultConstraint dc, Table tb, List<String> constraints) {
-    if (!DefaultConstraint.isCheckConstraintNotEmpty(dc)) {
+    if (!DefaultConstraint.isNotEmpty(dc)) {
       return;
     }
     Map<String, String> colType = getTableColumnsToType(tb);
@@ -680,13 +693,16 @@ public class DDLPlanUtils {
         command.add(COLUMN_NAME, col.colName);
         command.add(COL_TYPE, colType.get(col.colName));
         command.add(DEFAULT_VALUE, col.defaultVal);
+        command.add(ENABLE, col.enable);
+        command.add(VALIDATE, col.validate);
+        command.add(RELY, col.rely);
         constraints.add(command.render());
       }
     }
   }
 
   public void getAlterTableStmtCheckConstraint(CheckConstraint ck, List<String> constraints) {
-    if (!CheckConstraint.isCheckConstraintNotEmpty(ck)) {
+    if (!CheckConstraint.isNotEmpty(ck)) {
       return;
     }
     Map<String, List<CheckConstraint.CheckConstraintCol>> checkConstraints = ck.getCheckConstraints();
@@ -698,7 +714,10 @@ public class DDLPlanUtils {
           command.add(DATABASE_NAME, ck.getDatabaseName());
           command.add(TABLE_NAME, ck.getTableName());
           command.add(CONSTRAINT_NAME, constraintName);
-          command.add(CHECK_EXPRESSION, col.checkExpression);
+          command.add(CHECK_EXPRESSION, col.getCheckExpression());
+          command.add(ENABLE, col.getEnable());
+          command.add(VALIDATE, col.getValidate());
+          command.add(RELY, col.getRely());
           constraints.add(command.render());
         }
       }
@@ -707,11 +726,12 @@ public class DDLPlanUtils {
 
 
   public void getAlterTableStmtNotNullConstraint(NotNullConstraint nc, Table tb, List<String> constraints) {
-    if (!NotNullConstraint.isNotNullConstraintNotEmpty(nc)) {
+    if (!NotNullConstraint.isNotEmpty(nc)) {
       return;
     }
     Map<String, String> colType = getTableColumnsToType(tb);
     Map<String, String> notNullConstraints = nc.getNotNullConstraints();
+    Map<String, List<String>> enableValidateRely = nc.getEnableValidateRely();
     for (String constraintName : notNullConstraints.keySet()) {
       ST command = new ST(ALTER_TABLE_ADD_NOT_NULL_CONSTRAINT);
       command.add(DATABASE_NAME, nc.getDatabaseName());
@@ -719,6 +739,9 @@ public class DDLPlanUtils {
       command.add(COLUMN_NAME, notNullConstraints.get(constraintName));
       command.add(COL_TYPE, colType.get(notNullConstraints.get(constraintName)));
       command.add(CONSTRAINT_NAME, constraintName);
+      command.add(ENABLE, enableValidateRely.get(constraintName).get(0));
+      command.add(VALIDATE, enableValidateRely.get(constraintName).get(1));
+      command.add(RELY, enableValidateRely.get(constraintName).get(2));
       constraints.add(command.render());
     }
   }
@@ -738,9 +761,9 @@ public class DDLPlanUtils {
     return constraints;
   }
 
-  public List<String> addExplainPlans(String sql){
+  public List<String> addExplainPlans(String sql) {
     List<String> exp = new ArrayList<String>();
-    for(String ex : explain_plans){
+    for (String ex : explain_plans) {
       exp.add(sql.replaceAll("(?i)explain ddl", ex) + ";");
     }
     return exp;
@@ -770,7 +793,7 @@ public class DDLPlanUtils {
   }
 
 
-  public String getCreateTableCommand(Table table, boolean isRelative) {
+  public String getCreateTableCommand(Table table, boolean isRelative) throws HiveException {
     ST command = new ST(CREATE_TABLE_TEMPLATE);
 
     if (!isRelative) {
@@ -800,7 +823,7 @@ public class DDLPlanUtils {
     return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
   }
 
-  private String getColumns(Table table) {
+  private String getColumns(Table table) throws HiveException {
     List<String> columnDescs = new ArrayList<String>();
     for (FieldSchema column : table.getCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
@@ -813,50 +836,52 @@ public class DDLPlanUtils {
     return StringUtils.join(columnDescs, ", \n");
   }
 
-  /** Struct fields are identifiers, need to be put between ``. */
-  private String formatType(TypeInfo typeInfo) {
+  /**
+   * Struct fields are identifiers, need to be put between ``.
+   */
+  private String formatType(TypeInfo typeInfo) throws HiveException {
     switch (typeInfo.getCategory()) {
-    case PRIMITIVE:
-      return typeInfo.getTypeName();
-    case STRUCT:
-      StringBuilder structFormattedType = new StringBuilder();
+      case PRIMITIVE:
+        return typeInfo.getTypeName();
+      case STRUCT:
+        StringBuilder structFormattedType = new StringBuilder();
 
-      StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
-      for (int i = 0; i < structTypeInfo.getAllStructFieldNames().size(); i++) {
-        if (structFormattedType.length() != 0) {
-          structFormattedType.append(", ");
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        for (int i = 0; i < structTypeInfo.getAllStructFieldNames().size(); i++) {
+          if (structFormattedType.length() != 0) {
+            structFormattedType.append(", ");
+          }
+
+          String structElementName = structTypeInfo.getAllStructFieldNames().get(i);
+          String structElementType = formatType(structTypeInfo.getAllStructFieldTypeInfos().get(i));
+
+          structFormattedType.append("`" + structElementName + "`:" + structElementType);
         }
+        return "struct<" + structFormattedType.toString() + ">";
+      case LIST:
+        ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
+        String elementType = formatType(listTypeInfo.getListElementTypeInfo());
+        return "array<" + elementType + ">";
+      case MAP:
+        MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+        String keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo().getTypeName();
+        String valueTypeInfo = formatType(mapTypeInfo.getMapValueTypeInfo());
+        return "map<" + keyTypeInfo + "," + valueTypeInfo + ">";
+      case UNION:
+        StringBuilder unionFormattedType = new StringBuilder();
 
-        String structElementName = structTypeInfo.getAllStructFieldNames().get(i);
-        String structElementType = formatType(structTypeInfo.getAllStructFieldTypeInfos().get(i));
+        UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+        for (TypeInfo unionElementTypeInfo : unionTypeInfo.getAllUnionObjectTypeInfos()) {
+          if (unionFormattedType.length() != 0) {
+            unionFormattedType.append(", ");
+          }
 
-        structFormattedType.append("`" + structElementName + "`:" + structElementType);
-      }
-      return "struct<" + structFormattedType.toString() + ">";
-    case LIST:
-      ListTypeInfo listTypeInfo = (ListTypeInfo)typeInfo;
-      String elementType = formatType(listTypeInfo.getListElementTypeInfo());
-      return "array<" + elementType + ">";
-    case MAP:
-      MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
-      String keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo().getTypeName();
-      String valueTypeInfo = formatType(mapTypeInfo.getMapValueTypeInfo());
-      return "map<" + keyTypeInfo + "," + valueTypeInfo + ">";
-    case UNION:
-      StringBuilder unionFormattedType = new StringBuilder();
-
-      UnionTypeInfo unionTypeInfo = (UnionTypeInfo)typeInfo;
-      for (TypeInfo unionElementTypeInfo : unionTypeInfo.getAllUnionObjectTypeInfos()) {
-        if (unionFormattedType.length() != 0) {
-          unionFormattedType.append(", ");
+          String unionElementType = formatType(unionElementTypeInfo);
+          unionFormattedType.append(unionElementType);
         }
-
-        String unionElementType = formatType(unionElementTypeInfo);
-        unionFormattedType.append(unionElementType);
-      }
-      return "uniontype<" + unionFormattedType.toString() + ">";
-    default:
-      throw new RuntimeException("Unknown type: " + typeInfo.getCategory());
+        return "uniontype<" + unionFormattedType.toString() + ">";
+      default:
+        throw new RuntimeException("Unknown type: " + typeInfo.getCategory());
     }
   }
 
@@ -871,7 +896,7 @@ public class DDLPlanUtils {
       return "";
     }
     List<String> partitionCols = new ArrayList<String>();
-    for(String col:table.getPartColNames()) {
+    for (String col : table.getPartColNames()) {
       partitionCols.add('`' + col + '`');
     }
     return " PARTITIONED ON (" + StringUtils.join(partitionCols, ", ") + ")";
@@ -896,7 +921,7 @@ public class DDLPlanUtils {
 
   private String getPartitionsBySpec(Table table) {
     if (table.isNonNative() && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsPartitionTransform()) {
+      table.getStorageHandler().supportsPartitionTransform()) {
       List<PartitionTransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
       if (specs.isEmpty()) {
         return "";
@@ -907,8 +932,8 @@ public class DDLPlanUtils {
           partitionTransforms.add(spec.getColumnName());
         } else {
           partitionTransforms.add(spec.getTransformType().name() + "(" +
-              (spec.getTransformParam().isPresent() ? spec.getTransformParam().get() + ", " : "") +
-              spec.getColumnName() + ")");
+            (spec.getTransformParam().isPresent() ? spec.getTransformParam().get() + ", " : "") +
+            spec.getColumnName() + ")");
         }
       }
       return "PARTITIONED BY SPEC ( \n" + StringUtils.join(partitionTransforms, ", \n") + ")";
@@ -950,8 +975,8 @@ public class DDLPlanUtils {
     }
 
     String skewed =
-        "SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n" +
-            "  ON (" + StringUtils.join(columnValuesList, ",") + ")";
+      "SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n" +
+        "  ON (" + StringUtils.join(columnValuesList, ",") + ")";
     if (table.isStoredAsSubDirectories()) {
       skewed += "\n  STORED AS DIRECTORIES";
     }
@@ -965,8 +990,8 @@ public class DDLPlanUtils {
     SerDeInfo serdeInfo = sd.getSerdeInfo();
 
     rowFormat
-        .append("ROW FORMAT SERDE \n")
-        .append("  '" + HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
+      .append("ROW FORMAT SERDE \n")
+      .append("  '" + HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
 
     Map<String, String> serdeParams = serdeInfo.getParameters();
     if (table.getStorageHandler() == null) {
@@ -979,8 +1004,8 @@ public class DDLPlanUtils {
         rowFormat.append(" \n");
       }
       rowFormat
-          .append("STORED AS INPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getInputFormat()) + "' \n")
-          .append("OUTPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getOutputFormat()) + "'");
+        .append("STORED AS INPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getInputFormat()) + "' \n")
+        .append("OUTPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getOutputFormat()) + "'");
     } else {
       String metaTableStorage = table.getParameters().get(META_TABLE_STORAGE);
       rowFormat.append("STORED BY \n  '" + HiveStringUtils.escapeHiveCommand(metaTableStorage) + "' \n");
@@ -997,13 +1022,13 @@ public class DDLPlanUtils {
     List<String> serdeCols = new ArrayList<String>();
     for (Entry<String, String> entry : sortedSerdeParams.entrySet()) {
       serdeCols.add("  '" + entry.getKey() + "'='" +
-          HiveStringUtils.escapeUnicode(HiveStringUtils.escapeHiveCommand(entry.getValue())) + "'");
+        HiveStringUtils.escapeUnicode(HiveStringUtils.escapeHiveCommand(entry.getValue())) + "'");
     }
 
     builder
-        .append("WITH SERDEPROPERTIES ( \n")
-        .append(StringUtils.join(serdeCols, ", \n"))
-        .append(')');
+      .append("WITH SERDEPROPERTIES ( \n")
+      .append(StringUtils.join(serdeCols, ", \n"))
+      .append(')');
   }
 
   private String getLocationBlock(Table table) {

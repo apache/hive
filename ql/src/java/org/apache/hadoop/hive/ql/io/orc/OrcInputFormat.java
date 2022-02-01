@@ -31,23 +31,19 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
-import java.util.Queue;
 import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,13 +58,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Metastore;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -104,8 +98,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -627,9 +619,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           return false;
         }
       }
-      try {
-        OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()));
+      try (Reader notUsed = OrcFile.createReader(file.getPath(),
+            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()))) {
+        // We do not use the reader itself. We just check if we can open the file.
       } catch (IOException e) {
         return false;
       }
@@ -1651,24 +1643,26 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // object contains the orc tail from the cache then we can skip creating orc reader avoiding
       // filesystem calls.
       if (orcTail == null) {
-        Reader orcReader = OrcFile.createReader(file.getPath(),
+        try (Reader orcReader = OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(context.conf)
                 .filesystem(fs)
-                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()));
-        orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
-            file.getModificationTime());
-        if (context.cacheStripeDetails) {
-          context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
+                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()))) {
+          orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
+              file.getModificationTime());
+          if (context.cacheStripeDetails) {
+            context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
+          }
+          stripes = orcReader.getStripes();
+          stripeStats = orcReader.getStripeStatistics();
         }
-        stripes = orcReader.getStripes();
-        stripeStats = orcReader.getStripeStatistics();
       } else {
         stripes = orcTail.getStripes();
         // Always convert To PROLEPTIC_GREGORIAN
-        org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+        try (org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
             org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(context.conf).getConfiguration())
-                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
-        stripeStats = dummyReader.getVariantStripeStatistics(null);
+                .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail))) {
+          stripeStats = dummyReader.getVariantStripeStatistics(null);
+        }
       }
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
@@ -1790,17 +1784,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         " reader schema " + (readerSchema == null ? "NULL" : readerSchema.toString()) +
         " ACID scan property " + isAcidTableScan);
     }
-    boolean metricsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
-    long checkThresholdInSec = HiveConf.getTimeVar(conf,
-        HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
-    float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
-    int deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
-    int obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
-    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
-
-    EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats =
-        new EnumMap<>(DeltaFilesMetricType.class);
 
     // complete path futures and schedule split generation
     try {
@@ -1827,10 +1810,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           continue;
         }
 
-        if (metricsEnabled && directory instanceof AcidDirectory) {
-          DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
-              deltaPctThreshold, deltasThreshold, obsoleteDeltasThreshold, maxCacheSize, deltaFilesStats, conf);
-        }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
         if (directory.getFiles().isEmpty()) {
@@ -1859,9 +1838,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             splits.addAll(readySplits);
           }
         }
-      }
-      if (metricsEnabled) {
-        DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
       }
 
       // Run the last combined strategy, if any.
@@ -1971,7 +1947,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));
-    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, conf);
 
     long end = System.currentTimeMillis();
     LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));

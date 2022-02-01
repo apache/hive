@@ -22,6 +22,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
@@ -283,6 +284,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
           try {
             Metrics.shutdown();
+            MetricsFactory.close();
           } catch (Exception e) {
             LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
                 + e.getMessage(), e);
@@ -304,6 +306,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
         try {
           Metrics.initialize(conf);
+          MetricsFactory.init(conf);
         } catch (Exception e) {
           // log exception, but ignore inability to start
           LOG.error("error in Metrics init: " + e.getClass().getName() + " "

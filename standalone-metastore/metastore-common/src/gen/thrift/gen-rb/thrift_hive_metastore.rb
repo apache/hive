@@ -686,13 +686,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def translate_table_dryrun(tbl)
-      send_translate_table_dryrun(tbl)
+    def translate_table_dryrun(request)
+      send_translate_table_dryrun(request)
       return recv_translate_table_dryrun()
     end
 
-    def send_translate_table_dryrun(tbl)
-      send_message('translate_table_dryrun', Translate_table_dryrun_args, :tbl => tbl)
+    def send_translate_table_dryrun(request)
+      send_message('translate_table_dryrun', Translate_table_dryrun_args, :request => request)
     end
 
     def recv_translate_table_dryrun()
@@ -2155,6 +2155,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_partition_column_statistics_req failed: unknown result')
     end
 
+    def update_transaction_statistics(req)
+      send_update_transaction_statistics(req)
+      recv_update_transaction_statistics()
+    end
+
+    def send_update_transaction_statistics(req)
+      send_message('update_transaction_statistics', Update_transaction_statistics_args, :req => req)
+    end
+
+    def recv_update_transaction_statistics()
+      result = receive_message(Update_transaction_statistics_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def get_table_column_statistics(db_name, tbl_name, col_name)
       send_get_table_column_statistics(db_name, tbl_name, col_name)
       return recv_get_table_column_statistics()
@@ -3287,6 +3302,37 @@ module ThriftHiveMetastore
 
     def recv_mark_failed()
       result = receive_message(Mark_failed_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def update_compaction_metrics_data(data)
+      send_update_compaction_metrics_data(data)
+      return recv_update_compaction_metrics_data()
+    end
+
+    def send_update_compaction_metrics_data(data)
+      send_message('update_compaction_metrics_data', Update_compaction_metrics_data_args, :data => data)
+    end
+
+    def recv_update_compaction_metrics_data()
+      result = receive_message(Update_compaction_metrics_data_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_compaction_metrics_data failed: unknown result')
+    end
+
+    def remove_compaction_metrics_data(request)
+      send_remove_compaction_metrics_data(request)
+      recv_remove_compaction_metrics_data()
+    end
+
+    def send_remove_compaction_metrics_data(request)
+      send_message('remove_compaction_metrics_data', Remove_compaction_metrics_data_args, :request => request)
+    end
+
+    def recv_remove_compaction_metrics_data()
+      result = receive_message(Remove_compaction_metrics_data_result)
       raise result.o1 unless result.o1.nil?
       return
     end
@@ -4960,7 +5006,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Translate_table_dryrun_args)
       result = Translate_table_dryrun_result.new()
       begin
-        result.success = @handler.translate_table_dryrun(args.tbl)
+        result.success = @handler.translate_table_dryrun(args.request)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::InvalidObjectException => o2
@@ -6112,6 +6158,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'update_partition_column_statistics_req', seqid)
     end
 
+    def process_update_transaction_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Update_transaction_statistics_args)
+      result = Update_transaction_statistics_result.new()
+      begin
+        @handler.update_transaction_statistics(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'update_transaction_statistics', seqid)
+    end
+
     def process_get_table_column_statistics(seqid, iprot, oprot)
       args = read_args(iprot, Get_table_column_statistics_args)
       result = Get_table_column_statistics_result.new()
@@ -6895,6 +6952,28 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'mark_failed', seqid)
+    end
+
+    def process_update_compaction_metrics_data(seqid, iprot, oprot)
+      args = read_args(iprot, Update_compaction_metrics_data_args)
+      result = Update_compaction_metrics_data_result.new()
+      begin
+        result.success = @handler.update_compaction_metrics_data(args.data)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'update_compaction_metrics_data', seqid)
+    end
+
+    def process_remove_compaction_metrics_data(seqid, iprot, oprot)
+      args = read_args(iprot, Remove_compaction_metrics_data_args)
+      result = Remove_compaction_metrics_data_result.new()
+      begin
+        @handler.remove_compaction_metrics_data(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'remove_compaction_metrics_data', seqid)
     end
 
     def process_set_hadoop_jobid(seqid, iprot, oprot)
@@ -9162,10 +9241,10 @@ module ThriftHiveMetastore
 
   class Translate_table_dryrun_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    TBL = 1
+    REQUEST = 1
 
     FIELDS = {
-      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CreateTableRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -12517,6 +12596,38 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Update_transaction_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::UpdateTransactionalStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_transaction_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_table_column_statistics_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -15000,6 +15111,72 @@ module ThriftHiveMetastore
   end
 
   class Mark_failed_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_compaction_metrics_data_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DATA = 1
+
+    FIELDS = {
+      DATA => {:type => ::Thrift::Types::STRUCT, :name => 'data', :class => ::CompactionMetricsDataStruct}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_compaction_metrics_data_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_compaction_metrics_data_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CompactionMetricsDataRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_compaction_metrics_data_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 

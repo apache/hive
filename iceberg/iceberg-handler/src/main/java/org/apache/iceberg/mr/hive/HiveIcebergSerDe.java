@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -153,9 +154,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
-    serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
     serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
-
     // build partition spec, if any
     if (!getPartitionColumnNames().isEmpty()) {
       List<FieldSchema> partitionFields = IntStream.range(0, getPartitionColumnNames().size())
@@ -166,22 +165,40 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
     }
 
+    // clean up the properties for table creation (so that internal serde props don't become table props)
+    Properties createProps = getCTASTableCreationProperties(serDeProperties);
+
     // create CTAS table
     LOG.info("Creating table {} for CTAS with schema: {}, and spec: {}",
         serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
-    Catalogs.createTable(configuration, serDeProperties);
+    Catalogs.createTable(configuration, createProps);
 
     // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
     SessionStateUtil.addResource(configuration, InputFormatConfig.CTAS_TABLE_NAME,
         serDeProperties.getProperty(Catalogs.NAME));
   }
 
-  private void assertNotVectorizedTez(Configuration configuration) {
-    if ("tez".equals(configuration.get("hive.execution.engine")) &&
-        "true".equals(configuration.get("hive.vectorized.execution.enabled"))) {
-      throw new UnsupportedOperationException("Vectorized execution on Tez is currently not supported when using " +
-          "Iceberg tables. Please set hive.vectorized.execution.enabled=false and rerun the query.");
-    }
+  private Properties getCTASTableCreationProperties(Properties serDeProperties) {
+    Properties tblProps = (Properties) serDeProperties.clone();
+
+    // remove the serialization-only related props
+    tblProps.remove(serdeConstants.LIST_PARTITION_COLUMNS);
+    tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
+    tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS);
+
+    tblProps.remove(serdeConstants.LIST_COLUMNS);
+    tblProps.remove(serdeConstants.LIST_COLUMN_TYPES);
+    tblProps.remove(serdeConstants.LIST_COLUMN_COMMENTS);
+
+    tblProps.remove(serdeConstants.COLUMN_NAME_DELIMITER);
+    tblProps.remove(serdeConstants.SERIALIZATION_LIB);
+    tblProps.remove(hive_metastoreConstants.TABLE_IS_CTAS);
+
+    // add the commonly-needed table properties
+    HiveIcebergMetaHook.COMMON_HMS_PROPERTIES.forEach(tblProps::putIfAbsent);
+    tblProps.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
+
+    return tblProps;
   }
 
   @Override

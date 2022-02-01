@@ -51,6 +51,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -196,8 +197,9 @@ public class TestCompactionTxnHandler {
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     assertNotNull(ci);
-
-    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
+    
+    ci.highestWriteId = 41;
+    txnHandler.updateCompactorState(ci, 0);
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -225,8 +227,9 @@ public class TestCompactionTxnHandler {
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     assertNotNull(ci);
-
-    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
+    
+    ci.highestWriteId = 41;
+    txnHandler.updateCompactorState(ci, 0);
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -327,6 +330,18 @@ public class TestCompactionTxnHandler {
     CompactionInfoStruct lci2 = response.getCompactions().stream().
         filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
     assertEquals(3, lci2.getId());
+
+    // check the result is correct without setting partition names
+    rqst.unsetPartitionnames();
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record for each partition", 2, response.getCompactionsSize());
+    lci1 = response.getCompactions().stream()
+        .filter(c -> c.getPartitionname().equals(partitionName)).findFirst().get();
+    assertEquals(1, lci1.getId());
+    lci2 = response.getCompactions().stream().
+        filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
+    assertEquals(3, lci2.getId());
   }
 
   @Test
@@ -360,6 +375,33 @@ public class TestCompactionTxnHandler {
     assertEquals("Expecting the last compaction record waiting for cleaning", 3, lci.getId());
     assertEquals(partitionName, lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
+  @Test
+  public void testGetLatestCompactionWithIdFilter() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    rqst.addToPartitionnames(partitionName);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single record", 1, response.getCompactionsSize());
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    assertEquals("Expecting the second succeeded compaction record", 2, lci.getId());
+    assertEquals(partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    // response should only include compaction with id > 2
+    rqst.setLastCompactionId(2);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+    assertNotNull(response);
+    assertEquals("Expecting no record", 0, response.getCompactionsSize());
   }
 
   @Test
@@ -721,8 +763,9 @@ public class TestCompactionTxnHandler {
   public void testMarkCleanedCleansTxnsAndTxnComponents()
       throws Exception {
     long txnid = openTxn();
-    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
-        "mydb");
+    long mytableWriteId = allocateTableWriteIds("mydb", "mytable", txnid);
+    
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
@@ -746,6 +789,8 @@ public class TestCompactionTxnHandler {
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
     txnid = openTxn();
+    long fooWriteId = allocateTableWriteIds("mydb", "foo", txnid);
+    
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
     comp.setPartitionname("bar=compact");
@@ -769,7 +814,7 @@ public class TestCompactionTxnHandler {
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
-    CompactionInfo ci = new CompactionInfo();
+    CompactionInfo ci;
 
     // Now clean them and check that they are removed from the count.
     CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MAJOR);
@@ -777,8 +822,11 @@ public class TestCompactionTxnHandler {
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     assertNotNull(ci);
+    
+    ci.highestWriteId = mytableWriteId;
+    txnHandler.updateCompactorState(ci, 0);
     txnHandler.markCompacted(ci);
-
+    
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
@@ -801,6 +849,9 @@ public class TestCompactionTxnHandler {
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     assertNotNull(ci);
+
+    ci.highestWriteId = fooWriteId;
+    txnHandler.updateCompactorState(ci, 0);
     txnHandler.markCompacted(ci);
 
     toClean = txnHandler.findReadyToClean(0, 0);
@@ -943,6 +994,13 @@ public class TestCompactionTxnHandler {
   private long openTxn() throws MetaException {
     List<Long> txns = txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost")).getTxn_ids();
     return txns.get(0);
+  }
+  
+  private long allocateTableWriteIds (String dbName, String tblName, long txnid) throws Exception {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    rqst.setTxnIds(Collections.singletonList(txnid));
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
+    return writeIds.getTxnToWriteIds().get(0).getWriteId();
   }
 
 }

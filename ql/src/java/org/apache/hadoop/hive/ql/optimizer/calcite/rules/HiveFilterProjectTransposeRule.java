@@ -169,7 +169,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
             RexNode newCondition = RelOptUtil.pushPastProject(ce, origproject);
             if (HiveCalciteUtil.isDeterministicFuncWithSingleInputRef(newCondition,
                 commonPartitionKeys)) {
-              newPartKeyFilConds.add(newCondition);
+              newPartKeyFilConds.add(ce);
             } else {
               unpushedFilConds.add(ce);
             }
@@ -200,7 +200,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   private static RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
       RelDataTypeFactory typeFactory, RelBuilder relBuilder) {
 
-    // convert the filter to one that references the child of the project
+    // convert the filter to one that references the child of the project.
     RexNode newPushedCondition = RelOptUtil.pushPastProject(filterCondToPushBelowProj, oldProj);
 
     // Remove cast of BOOLEAN NOT NULL to BOOLEAN or vice versa. Filter accepts

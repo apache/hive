@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
@@ -65,6 +68,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -930,13 +934,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assert currentEventId == lastEventId + 1;
 
     primary.run("ALTER DATABASE " + primaryDbName +
-            " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
-    lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    primary.dumpFailure(primaryDbName);
-    currentEventId = primary.getCurrentNotificationEventId().getEventId();
-    assert lastEventId == currentEventId;
-
-    primary.run("ALTER DATABASE " + primaryDbName +
             " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
     primary.dump(primaryDbName);
     replica.run("DROP DATABASE " + replicatedDbName);
@@ -985,6 +982,79 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     } finally {
       primary.run("DROP DATABASE " + dbName + " CASCADE");
       replica.run("DROP DATABASE " + replDbName + " CASCADE");
+    }
+  }
+
+  @Test
+  public void testXAttrsPreserved() throws Throwable {
+    String nonTxnTable = "nonTxnTable";
+    String unptnedTable = "unptnedTable";
+    String ptnedTable = "ptnedTable";
+    String clusteredTable = "clusteredTable";
+    String clusteredAndPtnedTable = "clusteredAndPtnedTable";
+    primary.run("use " + primaryDbName)
+            .run("create table " + nonTxnTable + " (id int)")
+            .run("create table " + unptnedTable + " (id int) stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("create table " + ptnedTable + " (id int) partitioned by (name string) stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("create table " + clusteredTable + " (id int) clustered by (id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("create table " + clusteredAndPtnedTable + " (id int) partitioned by (name string) clustered by(id)" +
+                    "into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("insert into " + nonTxnTable + " values (2)").run("INSERT into " + unptnedTable + " values(1)")
+            .run("INSERT into " + ptnedTable + " values(2, 'temp')").run("INSERT into " + clusteredTable + " values(1)")
+            .run("INSERT into " + clusteredAndPtnedTable + " values(1, 'temp')");
+    for (String table : primary.getAllTables(primaryDbName)) {
+      org.apache.hadoop.hive.ql.metadata.Table tb = Hive.get(primary.hiveConf).getTable(primaryDbName, table);
+      if (tb.isPartitioned()) {
+        List<Partition> partitions = primary.getAllPartitions(primaryDbName, table);
+        for (Partition partition: partitions) {
+          Path partitionLoc = new Path(partition.getSd().getLocation());
+          FileSystem fs = partitionLoc.getFileSystem(conf);
+          setXAttrsRecursive(fs, partitionLoc, true);
+        }
+      } else {
+        Path tablePath = tb.getDataLocation();
+        FileSystem fs = tablePath.getFileSystem(conf);
+        setXAttrsRecursive(fs, tablePath, true);
+      }
+    }
+    primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+    Path srcDbPath = new Path(primary.getDatabase(primaryDbName).getLocationUri());
+    Path replicaDbPath = new Path(primary.getDatabase(replicatedDbName).getLocationUri());
+    verifyXAttrsPreserved(srcDbPath.getFileSystem(conf), srcDbPath, replicaDbPath);
+  }
+
+  private void setXAttrsRecursive(FileSystem fs, Path path, boolean isParent) throws Exception {
+    if (fs.getFileStatus(path).isDirectory()) {
+      RemoteIterator<FileStatus> content = fs.listStatusIterator(path);
+      while(content.hasNext()) {
+        setXAttrsRecursive(fs, content.next().getPath(), false);
+      }
+    }
+    if (!isParent) {
+      fs.setXAttr(path, "user.random", "value".getBytes(StandardCharsets.UTF_8));
+    }
+  }
+
+  private void verifyXAttrsPreserved(FileSystem fs, Path src, Path dst) throws Exception {
+    FileStatus srcStatus = fs.getFileStatus(src);
+    FileStatus dstStatus = fs.getFileStatus(dst);
+    if (srcStatus.isDirectory()) {
+      assertTrue(dstStatus.isDirectory());
+      for(FileStatus srcContent: fs.listStatus(src)) {
+        Path dstContent = new Path(dst, srcContent.getPath().getName());
+        assertTrue(fs.exists(dstContent));
+        verifyXAttrsPreserved(fs, srcContent.getPath(), dstContent);
+      }
+    } else {
+      assertFalse(dstStatus.isDirectory());
+    }
+    Map<String, byte[]> values = fs.getXAttrs(dst);
+    for(Map.Entry<String, byte[]> value : fs.getXAttrs(src).entrySet()) {
+      assertEquals(new String(value.getValue()), new String(values.get(value.getKey())));
     }
   }
 
@@ -2952,30 +3022,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertNotEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
     dumpPath = new Path(nextDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-  }
-
-  @Test
-  public void testReplTargetOfReplication() throws Throwable {
-    // Bootstrap
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, primaryDbName).verifyReplTargetProperty(replicatedDbName);
-    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
-
-    //Try to do a dump on replicated db. It should fail
-    replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='1')");
-    try {
-      replica.dump(replicatedDbName);
-    } catch (Exception e) {
-      Assert.assertEquals("Cannot dump database as it is a Target of replication.", e.getMessage());
-      Assert.assertEquals(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getErrorCode(),
-        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
-    }
-    replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='')");
-
-    //Try to dump a different db on replica. That should succeed
-    replica.run("create database " + replicatedDbName + "_extra with dbproperties ('repl.source.for' = '1, 2, 3')")
-      .dump(replicatedDbName + "_extra");
-    replica.run("drop database if exists " + replicatedDbName + "_extra cascade");
   }
 
   private void verifyPathExist(FileSystem fs, Path filePath) throws IOException {

@@ -2623,16 +2623,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function translate_table_dryrun(\metastore\Table $tbl)
+    public function translate_table_dryrun(\metastore\CreateTableRequest $request)
     {
-        $this->send_translate_table_dryrun($tbl);
+        $this->send_translate_table_dryrun($request);
         return $this->recv_translate_table_dryrun();
     }
 
-    public function send_translate_table_dryrun(\metastore\Table $tbl)
+    public function send_translate_table_dryrun(\metastore\CreateTableRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_translate_table_dryrun_args();
-        $args->tbl = $tbl;
+        $args->request = $request;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -8354,6 +8354,65 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("update_partition_column_statistics_req failed: unknown result");
     }
 
+    public function update_transaction_statistics(\metastore\UpdateTransactionalStatsRequest $req)
+    {
+        $this->send_update_transaction_statistics($req);
+        $this->recv_update_transaction_statistics();
+    }
+
+    public function send_update_transaction_statistics(\metastore\UpdateTransactionalStatsRequest $req)
+    {
+        $args = new \metastore\ThriftHiveMetastore_update_transaction_statistics_args();
+        $args->req = $req;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'update_transaction_statistics',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('update_transaction_statistics', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_update_transaction_statistics()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_update_transaction_statistics_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_update_transaction_statistics_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        return;
+    }
+
     public function get_table_column_statistics($db_name, $tbl_name, $col_name)
     {
         $this->send_get_table_column_statistics($db_name, $tbl_name, $col_name);
@@ -12777,6 +12836,127 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
                 throw $x;
             }
             $result = new \metastore\ThriftHiveMetastore_mark_failed_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        return;
+    }
+
+    public function update_compaction_metrics_data(\metastore\CompactionMetricsDataStruct $data)
+    {
+        $this->send_update_compaction_metrics_data($data);
+        return $this->recv_update_compaction_metrics_data();
+    }
+
+    public function send_update_compaction_metrics_data(\metastore\CompactionMetricsDataStruct $data)
+    {
+        $args = new \metastore\ThriftHiveMetastore_update_compaction_metrics_data_args();
+        $args->data = $data;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'update_compaction_metrics_data',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('update_compaction_metrics_data', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_update_compaction_metrics_data()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_update_compaction_metrics_data_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_update_compaction_metrics_data_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        throw new \Exception("update_compaction_metrics_data failed: unknown result");
+    }
+
+    public function remove_compaction_metrics_data(\metastore\CompactionMetricsDataRequest $request)
+    {
+        $this->send_remove_compaction_metrics_data($request);
+        $this->recv_remove_compaction_metrics_data();
+    }
+
+    public function send_remove_compaction_metrics_data(\metastore\CompactionMetricsDataRequest $request)
+    {
+        $args = new \metastore\ThriftHiveMetastore_remove_compaction_metrics_data_args();
+        $args->request = $request;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'remove_compaction_metrics_data',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('remove_compaction_metrics_data', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_remove_compaction_metrics_data()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_remove_compaction_metrics_data_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_remove_compaction_metrics_data_result();
             $result->read($this->input_);
             $this->input_->readMessageEnd();
         }

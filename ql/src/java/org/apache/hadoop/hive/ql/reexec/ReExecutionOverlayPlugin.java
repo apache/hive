@@ -79,16 +79,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public boolean shouldReExecute(int executionNum, PlanMapper pm1, PlanMapper pm2) {
+  public boolean shouldReExecuteAfterCompile(int executionNum, PlanMapper pm1, PlanMapper pm2) {
     return executionNum == 1;
   }
-
-  @Override
-  public void beforeExecute(int executionIndex, boolean explainReOptimization) {
-  }
-
-  @Override
-  public void afterExecute(PlanMapper planMapper, boolean success) {
-  }
-
 }

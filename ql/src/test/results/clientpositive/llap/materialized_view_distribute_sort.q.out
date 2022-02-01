@@ -202,6 +202,10 @@ Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 25
 Expanded Query:     	SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 Found 1 items
 #### A masked pattern was here ####
 val_201201
@@ -486,6 +490,10 @@ Original Query:     	SELECT key, value FROM src_txn where key > 200 and key < 25
 Expanded Query:     	SELECT `src_txn`.`key`, `src_txn`.`value` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
 Found 1 items
 #### A masked pattern was here ####
 201val_201
@@ -1036,6 +1044,11 @@ Expanded Query:     	SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`s
 	                    	  AND `src_txn`.`key` > 200 AND `src_txn`.`key` < 250
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.src_txn	0/0/0               	 
+hive.default.src_txn_2	0/0/0               	 
 Found 1 items
 #### A masked pattern was here ####
 val_201201

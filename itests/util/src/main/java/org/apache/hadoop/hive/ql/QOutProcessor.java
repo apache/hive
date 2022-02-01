@@ -51,7 +51,7 @@ public class QOutProcessor {
   public static final String HDFS_DATE_MASK = "### HDFS DATE ###";
   public static final String HDFS_USER_MASK = "### USER ###";
   public static final String HDFS_GROUP_MASK = "### GROUP ###";
-  
+
   public static final String MASK_PATTERN = "#### A masked pattern was here ####";
   public static final String PARTIAL_MASK_PATTERN = "#### A PARTIAL masked pattern was here ####";
   private static final PatternReplacementPair MASK_STATS = new PatternReplacementPair(
@@ -69,7 +69,7 @@ public class QOutProcessor {
   public static class LineProcessingResult {
     private String line;
     private boolean partialMaskWasMatched = false;
-    
+
     public LineProcessingResult(String line) {
       this.line = line;
     }
@@ -78,7 +78,7 @@ public class QOutProcessor {
       return line;
     }
   }
-  
+
   private final Pattern[] planMask = toPattern(new String[] {
       ".*[.][.][.] [0-9]* more.*",
       "pk_-?[0-9]*_[0-9]*_[0-9]*",
@@ -211,8 +211,10 @@ public class QOutProcessor {
 
   LineProcessingResult processLine(String line) {
     LineProcessingResult result = new LineProcessingResult(line);
-    
+
     Matcher matcher = null;
+
+    result.line = replaceHandler.processLine(result.line);
 
     if (fsType == FsType.ENCRYPTED_HDFS) {
       for (Pattern pattern : partialReservedPlanMask) {
@@ -305,8 +307,6 @@ public class QOutProcessor {
       }
     }
 
-    result.line = replaceHandler.processLine(result.line);
-
     return result;
   }
 
@@ -332,7 +332,7 @@ public class QOutProcessor {
     ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
     ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"writeid\":[1-9][0-9]*,\"bucketid\":"),
         "{\"writeid\":### Masked writeid ###,\"bucketid\":"));
-    
+
     ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));

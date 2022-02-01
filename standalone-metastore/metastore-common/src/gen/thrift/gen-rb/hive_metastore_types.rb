@@ -170,8 +170,9 @@ module TxnType
   READ_ONLY = 2
   COMPACTION = 3
   MATER_VIEW_REBUILD = 4
-  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD"}
-  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD]).freeze
+  SOFT_DELETE = 5
+  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION", 4 => "MATER_VIEW_REBUILD", 5 => "SOFT_DELETE"}
+  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION, MATER_VIEW_REBUILD, SOFT_DELETE]).freeze
 end
 
 module GetTablesExtRequestFields
@@ -180,6 +181,14 @@ module GetTablesExtRequestFields
   ALL = 2147483647
   VALUE_MAP = {1 => "ACCESS_TYPE", 2 => "PROCESSOR_CAPABILITIES", 2147483647 => "ALL"}
   VALID_VALUES = Set.new([ACCESS_TYPE, PROCESSOR_CAPABILITIES, ALL]).freeze
+end
+
+module CompactionMetricsMetricType
+  NUM_OBSOLETE_DELTAS = 0
+  NUM_DELTAS = 1
+  NUM_SMALL_DELTAS = 2
+  VALUE_MAP = {0 => "NUM_OBSOLETE_DELTAS", 1 => "NUM_DELTAS", 2 => "NUM_SMALL_DELTAS"}
+  VALID_VALUES = Set.new([NUM_OBSOLETE_DELTAS, NUM_DELTAS, NUM_SMALL_DELTAS]).freeze
 end
 
 module FileMetadataExprType
@@ -355,6 +364,8 @@ class ObjectDictionary; end
 
 class Table; end
 
+class SourceTable; end
+
 class Partition; end
 
 class PartitionWithoutSD; end
@@ -477,6 +488,8 @@ class WriteEventInfo; end
 
 class ReplLastIdInfo; end
 
+class UpdateTransactionalStatsRequest; end
+
 class CommitTxnRequest; end
 
 class ReplTblWriteIdStateRequest; end
@@ -528,6 +541,12 @@ class CompactionRequest; end
 class CompactionInfoStruct; end
 
 class OptionalCompactionInfoStruct; end
+
+class CompactionMetricsDataStruct; end
+
+class CompactionMetricsDataResponse; end
+
+class CompactionMetricsDataRequest; end
 
 class CompactionResponse; end
 
@@ -1818,6 +1837,7 @@ class CreationMetadata
   TABLESUSED = 4
   VALIDTXNLIST = 5
   MATERIALIZATIONTIME = 6
+  SOURCETABLES = 7
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
@@ -1825,7 +1845,8 @@ class CreationMetadata
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
     VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
-    MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true}
+    MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true},
+    SOURCETABLES => {:type => ::Thrift::Types::LIST, :name => 'sourceTables', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SourceTable}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2309,6 +2330,7 @@ class Table
   ID = 25
   FILEMETADATA = 26
   DICTIONARY = 27
+  TXNID = 28
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -2337,7 +2359,8 @@ class Table
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true},
-    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2346,6 +2369,32 @@ class Table
     unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SourceTable
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLE = 1
+  INSERTEDCOUNT = 2
+  UPDATEDCOUNT = 3
+  DELETEDCOUNT = 4
+
+  FIELDS = {
+    TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
+    INSERTEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertedCount'},
+    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
+    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertedCount is unset!') unless @insertedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -3801,6 +3850,32 @@ class ReplLastIdInfo
   ::Thrift::Struct.generate_accessors self
 end
 
+class UpdateTransactionalStatsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLEID = 1
+  INSERTCOUNT = 2
+  UPDATEDCOUNT = 3
+  DELETEDCOUNT = 4
+
+  FIELDS = {
+    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId'},
+    INSERTCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertCount'},
+    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
+    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableId is unset!') unless @tableId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertCount is unset!') unless @insertCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CommitTxnRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
@@ -4464,6 +4539,84 @@ class OptionalCompactionInfoStruct
   ::Thrift::Struct.generate_accessors self
 end
 
+class CompactionMetricsDataStruct
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  PARTITIONNAME = 3
+  TYPE = 4
+  METRICVALUE = 5
+  VERSION = 6
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblname'},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType},
+    METRICVALUE => {:type => ::Thrift::Types::I32, :name => 'metricvalue'},
+    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblname is unset!') unless @tblname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metricvalue is unset!') unless @metricvalue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field version is unset!') unless @version
+    unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CompactionMetricsDataResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DATA = 1
+
+  FIELDS = {
+    DATA => {:type => ::Thrift::Types::STRUCT, :name => 'data', :class => ::CompactionMetricsDataStruct, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CompactionMetricsDataRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  PARTITIONNAME = 3
+  TYPE = 4
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionName', :optional => true},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CompactionResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   ID = 1
@@ -4522,6 +4675,7 @@ class ShowCompactResponseElement
   WORKERVERSION = 16
   INITIATORID = 17
   INITIATORVERSION = 18
+  CLEANERSTART = 19
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4541,7 +4695,8 @@ class ShowCompactResponseElement
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
     WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
-    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
+    CLEANERSTART => {:type => ::Thrift::Types::I64, :name => 'cleanerStart', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4581,11 +4736,13 @@ class GetLatestCommittedCompactionInfoRequest
   DBNAME = 1
   TABLENAME = 2
   PARTITIONNAMES = 3
+  LASTCOMPACTIONID = 4
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
-    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    LASTCOMPACTIONID => {:type => ::Thrift::Types::I64, :name => 'lastCompactionId', :optional => true}
   }
 
   def struct_fields; FIELDS; end

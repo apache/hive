@@ -19,7 +19,11 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -34,6 +38,14 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
 
 /**
@@ -59,19 +71,76 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
   }
 
   @Override
-  public void onDropTable(DropTableEvent tableEvent)  throws MetaException {
-    if (TxnUtils.isTransactionalTable(tableEvent.getTable())) {
+  public void onDropTable(DropTableEvent tableEvent) throws MetaException {
+    Table table = tableEvent.getTable();
+    
+    if (TxnUtils.isTransactionalTable(table)) {
       txnHandler = getTxnHandler();
-      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, tableEvent.getTable(), null);
+      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, table, null, !tableEvent.getDeleteData());
+      
+      if (!tableEvent.getDeleteData()) {
+        long currentTxn = Optional.ofNullable(tableEvent.getEnvironmentContext())
+          .map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("txnId"))
+          .map(Long::parseLong)
+          .orElse(0L);
+        
+        try {
+          if (currentTxn > 0) {
+            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+            rqst.putToProperties("location", table.getSd().getLocation());
+            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(tableEvent.getEnvironmentContext(), table)));
+            txnHandler.submitForCleanup(rqst, table.getWriteId(), currentTxn);
+          }
+        } catch (InterruptedException | IOException e) {
+          throwMetaException(e);
+        }
+      }
     }
   }
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent)  throws MetaException {
-    if (TxnUtils.isTransactionalTable(partitionEvent.getTable())) {
+    Table table = partitionEvent.getTable();
+    EnvironmentContext context = partitionEvent.getEnvironmentContext();
+
+    if (TxnUtils.isTransactionalTable(table)) {
       txnHandler = getTxnHandler();
-      txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
-          partitionEvent.getPartitionIterator());
+      txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, table, partitionEvent.getPartitionIterator());
+
+      if (!partitionEvent.getDeleteData()) {
+        long currentTxn = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("txnId")).map(Long::parseLong)
+          .orElse(0L);
+
+        long writeId = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("writeId")).map(Long::parseLong)
+          .orElse(0L);
+
+        try {
+          if (currentTxn > 0) {
+            CompactionRequest rqst = new CompactionRequest(
+                table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
+
+            Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
+            while (partitionIterator.hasNext()) {
+              Partition p = partitionIterator.next();
+              
+              List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
+              List<String> partVals = p.getValues();
+              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
+              rqst.putToProperties("location", p.getSd().getLocation());
+              
+              txnHandler.submitForCleanup(rqst, writeId, currentTxn);
+            }
+          }
+        } catch ( InterruptedException | IOException e) {
+          throwMetaException(e);
+        }
+      }
     }
   }
 

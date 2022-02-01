@@ -2139,19 +2139,18 @@ public class TestStreaming {
 
   private ArrayList<SampleRec> dumpBucket(Path orcFile) throws IOException {
     org.apache.hadoop.fs.FileSystem fs = org.apache.hadoop.fs.FileSystem.getLocal(new Configuration());
-    Reader reader = OrcFile.createReader(orcFile,
-      OrcFile.readerOptions(conf).filesystem(fs));
-
-    RecordReader rows = reader.rows();
-    StructObjectInspector inspector = (StructObjectInspector) reader
-      .getObjectInspector();
-
-    System.out.format("Found Bucket File : %s \n", orcFile.getName());
     ArrayList<SampleRec> result = new ArrayList<SampleRec>();
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      SampleRec rec = (SampleRec) deserializeDeltaFileRow(row, inspector)[5];
-      result.add(rec);
+    try (Reader reader = OrcFile.createReader(orcFile, OrcFile.readerOptions(conf).filesystem(fs))) {
+      RecordReader rows = reader.rows();
+      StructObjectInspector inspector = (StructObjectInspector) reader
+          .getObjectInspector();
+
+      System.out.format("Found Bucket File : %s \n", orcFile.getName());
+      while (rows.hasNext()) {
+        Object row = rows.next(null);
+        SampleRec rec = (SampleRec) deserializeDeltaFileRow(row, inspector)[5];
+        result.add(rec);
+      }
     }
 
     return result;

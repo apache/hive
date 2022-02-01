@@ -587,14 +587,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // STATS_OBJ
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
-                struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list272.size);
-                @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem273;
-                for (int _i274 = 0; _i274 < _list272.size; ++_i274)
+                org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
+                struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list280.size);
+                @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem281;
+                for (int _i282 = 0; _i282 < _list280.size; ++_i282)
                 {
-                  _elem273 = new ColumnStatisticsObj();
-                  _elem273.read(iprot);
-                  struct.statsObj.add(_elem273);
+                  _elem281 = new ColumnStatisticsObj();
+                  _elem281.read(iprot);
+                  struct.statsObj.add(_elem281);
                 }
                 iprot.readListEnd();
               }
@@ -641,9 +641,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(STATS_OBJ_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.statsObj.size()));
-          for (ColumnStatisticsObj _iter275 : struct.statsObj)
+          for (ColumnStatisticsObj _iter283 : struct.statsObj)
           {
-            _iter275.write(oprot);
+            _iter283.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -681,9 +681,9 @@ package org.apache.hadoop.hive.metastore.api;
       struct.statsDesc.write(oprot);
       {
         oprot.writeI32(struct.statsObj.size());
-        for (ColumnStatisticsObj _iter276 : struct.statsObj)
+        for (ColumnStatisticsObj _iter284 : struct.statsObj)
         {
-          _iter276.write(oprot);
+          _iter284.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -709,14 +709,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.statsDesc.read(iprot);
       struct.setStatsDescIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list277 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list277.size);
-        @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem278;
-        for (int _i279 = 0; _i279 < _list277.size; ++_i279)
+        org.apache.thrift.protocol.TList _list285 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list285.size);
+        @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem286;
+        for (int _i287 = 0; _i287 < _list285.size; ++_i287)
         {
-          _elem278 = new ColumnStatisticsObj();
-          _elem278.read(iprot);
-          struct.statsObj.add(_elem278);
+          _elem286 = new ColumnStatisticsObj();
+          _elem286.read(iprot);
+          struct.statsObj.add(_elem286);
         }
       }
       struct.setStatsObjIsSet(true);
