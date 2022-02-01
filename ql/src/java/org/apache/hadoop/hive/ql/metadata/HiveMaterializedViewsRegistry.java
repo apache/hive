@@ -107,9 +107,10 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the singleton
    */
-  public static synchronized MaterializedViewsRegistry get() {
+  public static MaterializedViewsRegistry get() {
     if (SINGLETON == null) {
-      init();
+      throw new IllegalStateException("HiveMaterializedViewsRegistry not initialized. " +
+              "Please call HiveMaterializedViewsRegistry.init(HiveConf); ");
     }
     return SINGLETON;
   }
@@ -123,42 +124,40 @@ public final class HiveMaterializedViewsRegistry {
    * runnable task is created, thus the views will still not be loaded in the cache when
    * it returns.
    */
-  private static void init() {
-    try {
-      // Create a new conf object to bypass metastore authorization, as we need to
-      // retrieve all materialized views from all databases
-      HiveConf conf = new HiveConf();
-      conf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(),
-          DefaultMetaStoreFilterHookImpl.class.getName());
-      init(Hive.get(conf));
-    } catch (HiveException e) {
-      LOG.error("Problem connecting to the metastore when initializing the view registry", e);
-    }
-  }
-
-  private static void init(Hive db) {
-    final boolean dummy = db.getConf().get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
-        .equals("DUMMY");
-    if (dummy) {
-      // Dummy registry does not cache information
-      SINGLETON = new DummyMaterializedViewsRegistry();
-      LOG.info("Using dummy materialized views registry");
-    } else {
-      SINGLETON = new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
-      // We initialize the cache
-      long period = HiveConf.getTimeVar(db.getConf(), ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, TimeUnit.SECONDS);
-      if (period <= 0) {
-        return;
+  public static void init(HiveConf hiveConf) {
+    synchronized (HiveMaterializedViewsRegistry.class) {
+      if (SINGLETON != null) {
+        throw new IllegalStateException("HiveMaterializedViewsRegistry already initialized!");
       }
-      
-      ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor(
-          new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("HiveMaterializedViewsRegistry-%d")
-              .build());
 
-      MaterializedViewObjectProvider objects = db::getAllMaterializedViewObjectsForRewriting;
-      pool.scheduleAtFixedRate(new Loader(db.getConf(), SINGLETON, objects), 0, period, TimeUnit.SECONDS);
+      try {
+        final boolean dummy = hiveConf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
+                .equals("DUMMY");
+        if (dummy) {
+          // Dummy registry does not cache information
+          SINGLETON = new DummyMaterializedViewsRegistry();
+          LOG.info("Using dummy materialized views registry");
+        } else {
+          SINGLETON = new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
+          // We initialize the cache
+          long period = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, TimeUnit.SECONDS);
+          if (period <= 0) {
+            return;
+          }
+
+          Hive db = Hive.get(hiveConf);
+          ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor(
+                  new ThreadFactoryBuilder()
+                          .setDaemon(true)
+                          .setNameFormat("HiveMaterializedViewsRegistry-%d")
+                          .build());
+
+          MaterializedViewObjectProvider objects = db::getAllMaterializedViewObjectsForRewriting;
+          pool.scheduleAtFixedRate(new Loader(db.getConf(), SINGLETON, objects), 0, period, TimeUnit.SECONDS);
+        }
+      } catch (HiveException e) {
+        LOG.error("Problem connecting to the metastore when initializing the view registry", e);
+      }
     }
   }
 

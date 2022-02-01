@@ -21,6 +21,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
@@ -72,6 +74,9 @@ public class TestReplicationOfHiveStreaming {
     HiveConf conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, 0, TimeUnit.SECONDS);
+    HiveMaterializedViewsRegistry.init(conf);
+
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     Map<String, String> acidEnableConf = new HashMap<String, String>() {{
