@@ -6,7 +6,7 @@ DATE="`date +%Y%m%d_%H%M%S`"
 HASH="`git rev-parse --short HEAD`"
 SUFFIX="nightly-$HASH-$DATE"
 
-NEWV="${V/SNAPSHOT}$SUFFIX"
+NEWV="${V/-*}-$SUFFIX"
 echo "$NEWV"
 
-mvn versions:set -DnewVersion=$NEWV
+mvn versions:set versions:commit -DnewVersion=$NEWV
