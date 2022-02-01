@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+V="`xmlstarlet sel -t -m /_:project/_:version -v  . pom.xml`"
+DATE="`date +%Y%m%d_%H%M%S`"
+HASH="`git rev-parse --short HEAD`"
+SUFFIX="nightly-$HASH-$DATE"
+
+NEWV="${V/-*}-$SUFFIX"
+echo "$NEWV"
+
+mvn versions:set versions:commit -DnewVersion=$NEWV
