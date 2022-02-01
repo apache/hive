@@ -68,6 +68,7 @@
 
   <properties>
     <hive.version.shortname>4.0.0</hive.version.shortname>
+    <standalone-metastore.version>4.0.0-SNAPSHOT</standalone-metastore.version>
 
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
