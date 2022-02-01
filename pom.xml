@@ -655,10 +655,16 @@
         </exclusions>
       </dependency>
       <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-standalone-metastore-common</artifactId>
+        <version>4.0.0-SNAPSHOT</version>
+<!--        <version>${standalone-metastore.version}</version>-->
+      </dependency>
+      <dependency>
         <groupId>org.apache.pig</groupId>
         <artifactId>pig</artifactId>
         <version>${pig.version}</version>
-     </dependency>
+      </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>
         <artifactId>libfb303</artifactId>
