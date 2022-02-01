@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-nightly-11114e99808-20220201_165626</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -115,7 +115,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
+      <version>4.0.0-nightly-11114e99808-20220201_165626</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>

@@ -18,7 +18,7 @@
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-nightly-11114e99808-20220201_165626</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
+      <version>4.0.0-nightly-11114e99808-20220201_165626</version>
     </dependency>
 
     <dependency>

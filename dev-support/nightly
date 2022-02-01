@@ -10,3 +10,4 @@ NEWV="${V/-*}-$SUFFIX"
 echo "$NEWV"
 
 mvn versions:set versions:commit -DnewVersion=$NEWV
+mvn versions:set versions:commit -DnewVersion=$NEWV -pl standalone-metastore
