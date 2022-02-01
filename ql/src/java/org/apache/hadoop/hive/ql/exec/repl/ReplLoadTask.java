@@ -598,7 +598,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Map<String, String> dbProps;
     if (work.isIncrementalLoad()) {
       dbProps = new HashMap<>();
-      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
           work.incrementalLoadTasksBuilder().eventTo().toString());
     } else {
       Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
@@ -699,7 +699,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
-      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf));
+      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
       if (!isTableDiffPresent) {
         prepareTableDiffFile(eventId, getHive(), work, conf);
         if (this.childTasks == null) {
@@ -761,7 +761,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (StringUtils.isNotBlank(dbName)) {
         String lastEventid = builder.eventTo().toString();
         Map<String, String> mapProp = new HashMap<>();
-        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
+        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), lastEventid);
         AlterDatabaseSetPropertiesDesc alterDbDesc =
             new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
                 new ReplicationSpec(lastEventid, lastEventid));

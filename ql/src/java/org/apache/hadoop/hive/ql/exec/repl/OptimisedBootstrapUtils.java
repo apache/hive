@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getLastReplicatedStateFromParameters;
+import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getTargetLastReplicatedStateFromParameters;
 
 /**
  * Utility class for handling operations regarding optimised bootstrap in case of replication.
@@ -58,7 +59,7 @@ public class OptimisedBootstrapUtils {
 
   /** Separator used to separate entries in the listing. */
   public static final String FILE_ENTRY_SEPARATOR = "#";
-  private static Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OptimisedBootstrapUtils.class);
 
   /** table diff directory when in progress */
   public static final String TABLE_DIFF_INPROGRESS_DIRECTORY = "table_diff";
@@ -87,20 +88,20 @@ public class OptimisedBootstrapUtils {
   }
 
   /**
-   * Gets the event id from the event ack file
+   * Gets the source & target event id  from the event ack file
    * @param dumpPath the dump path
    * @param conf the hive configuration
    * @return the event id from file.
    * @throws IOException
    */
-  public static String getEventIdFromFile(Path dumpPath, HiveConf conf) throws IOException {
+  public static String[] getEventIdFromFile(Path dumpPath, HiveConf conf) throws IOException {
     String lastEventId;
     Path eventAckFilePath = new Path(dumpPath, EVENT_ACK_FILE);
     FileSystem fs = eventAckFilePath.getFileSystem(conf);
     try (FSDataInputStream stream = fs.open(eventAckFilePath);) {
       lastEventId = IOUtils.toString(stream, Charset.defaultCharset());
     }
-    return lastEventId.replaceAll(System.lineSeparator(),"").trim();
+    return lastEventId.replaceAll(System.lineSeparator(), "").trim().split(FILE_ENTRY_SEPARATOR);
   }
 
   /**
@@ -176,19 +177,20 @@ public class OptimisedBootstrapUtils {
    * @param dmd the dump metadata
    * @param cmRoot the cmRoot
    * @param dbEventId the database event id to which we have to write in the file.
-   * @param conf the hive configuraiton
+   * @param targetDbEventId the database event id with respect to target cluster.
+   * @param conf the hive configuration
    * @param work the repldump work
    * @return the lastReplId denoting a fake dump(-1) always
    * @throws SemanticException
    */
   public static Long createAndGetEventAckFile(Path currentDumpPath, DumpMetaData dmd, Path cmRoot, String dbEventId,
-      HiveConf conf, ReplDumpWork work)
-      throws SemanticException {
+      String targetDbEventId, HiveConf conf, ReplDumpWork work) throws Exception {
     // Keep an invalid value for lastReplId, to denote it isn't a actual dump.
     Long lastReplId = -1L;
     Path filePath = new Path(currentDumpPath, EVENT_ACK_FILE);
-    Utils.writeOutput(dbEventId, filePath, conf);
-    LOG.info("Created event_ack file at {} with eventId {}", filePath, dbEventId);
+    Utils.writeOutput(dbEventId + FILE_ENTRY_SEPARATOR + targetDbEventId, filePath, conf);
+    LOG.info("Created event_ack file at {} with source eventId {} and target eventId {}", filePath, dbEventId,
+        targetDbEventId);
     work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, -1L, false);
     dmd.write(true);
@@ -243,6 +245,24 @@ public class OptimisedBootstrapUtils {
     // The operation is complete, we can rename to TABLE_DIFF_COMPLETE
     fs.rename(diffFilePath, new Path(dumpPath, TABLE_DIFF_COMPLETE_DIRECTORY));
     LOG.info("Completed renaming table diff progress file to table diff complete file.");
+  }
+
+  /**
+   * Fetches the notification id from the database with respect to target database.
+   * @param dbName name of database
+   * @param hiveDb the hive object
+   * @return the corresponding notification event id from target database
+   * @throws Exception
+   */
+  public static String getTargetEventId(String dbName, Hive hiveDb) throws Exception {
+    Database database = hiveDb.getDatabase(dbName);
+    String targetLastEventId = getTargetLastReplicatedStateFromParameters(database.getParameters());
+    List<NotificationEvent> events =
+        hiveDb.getMSC().getNextNotification(Long.parseLong(targetLastEventId) - 1, 1, null).getEvents();
+    if (events == null || events.isEmpty() || events.get(0).getEventId() != Long.parseLong(targetLastEventId)) {
+      throw new IllegalStateException("Notification events are missing in the meta store.");
+    }
+    return targetLastEventId;
   }
 
   private static ArrayList<String> getListing(String dbName, String tableName, Hive hiveDb, HiveConf conf)

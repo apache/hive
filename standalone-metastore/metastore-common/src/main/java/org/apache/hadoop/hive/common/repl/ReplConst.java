@@ -53,4 +53,9 @@ public class ReplConst {
   public static final String TARGET_OF_REPLICATION = "repl.target.for";
 
   public static final String REPL_INCOMPATIBLE = "repl.incompatible";
+
+  /**
+   * Tracks the event id with respect to the target cluster.
+   */
+  public static final String REPL_TARGET_DATABASE_PROPERTY = "repl.target.last.id";
 }

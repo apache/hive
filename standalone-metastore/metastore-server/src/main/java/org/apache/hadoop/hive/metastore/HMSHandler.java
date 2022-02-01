@@ -110,6 +110,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFI
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
@@ -1581,6 +1582,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new MetaException("Could not alter database \"" + parsedDbName[DB_NAME] +
             "\". Could not retrieve old definition.");
       }
+
+      // Add replication target event id.
+      if (isReplicationEventIdUpdate(oldDB, newDB)) {
+        Map<String, String> oldParams = new LinkedHashMap<>(newDB.getParameters());
+        String currentNotificationLogID = Long.toString(ms.getCurrentNotificationEventId().getEventId());
+        oldParams.put(REPL_TARGET_DATABASE_PROPERTY, currentNotificationLogID);
+        LOG.debug("Adding the {} property for database {} with event id {}", REPL_TARGET_DATABASE_PROPERTY,
+            newDB.getName(), currentNotificationLogID);
+        newDB.setParameters(oldParams);
+      }
       firePreEvent(new PreAlterDatabaseEvent(oldDB, newDB, this));
 
       ms.openTransaction();
@@ -1611,6 +1622,23 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       endFunction("alter_database", success, ex);
     }
+  }
+
+  /**
+   * Checks whether the repl.last.id is being updated.
+   * @param oldDb the old db object
+   * @param newDb the new db object
+   * @return true if repl.last.id is being changed.
+   */
+  private boolean isReplicationEventIdUpdate(Database oldDb, Database newDb) {
+    Map<String, String> oldDbProp = oldDb.getParameters();
+    Map<String, String> newDbProp = newDb.getParameters();
+    if (newDbProp == null || newDbProp.isEmpty()) {
+      return false;
+    }
+    String newReplId = newDbProp.get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
+    String oldReplId = oldDbProp != null ? oldDbProp.get(ReplConst.REPL_TARGET_TABLE_PROPERTY) : null;
+    return newReplId != null && !newReplId.equalsIgnoreCase(oldReplId);
   }
 
   private void drop_database_core(RawStore ms, String catName,

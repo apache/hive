@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 public class LoadDatabase {
@@ -141,8 +140,8 @@ public class LoadDatabase {
   private boolean isDbAlreadyBootstrapped(Database db) {
     Map<String, String> props = db.getParameters();
     return ((props != null)
-            && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString())
-            && !props.get(ReplicationSpec.KEY.CURR_STATE_ID.toString()).isEmpty());
+            && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString())
+            && !props.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()).isEmpty());
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {
@@ -181,7 +180,9 @@ public class LoadDatabase {
     last repl id is set and we create a AlterDatabaseTask at the end of processing a database.
      */
     Map<String, String> parameters = new HashMap<>(dbObj.getParameters());
-    parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
+
+    parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID_TARGET.toString());
 
     parameters.remove(ReplUtils.REPL_IS_CUSTOM_DB_LOC);
 
