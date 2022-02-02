@@ -157,6 +157,46 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testReplAlterDbEventsNotCapturedInNotificationLog() throws Throwable {
+    //Perform empty bootstrap dump and load
+    String srcDbName = "srcDb";
+    primary.run("CREATE DATABASE " + srcDbName);
+    long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+    //Assert that repl.source.for is not captured in NotificationLog
+    WarehouseInstance.Tuple dumpData = primary.dump(srcDbName);
+    long latestEventId = primary.getCurrentNotificationEventId().getEventId();
+    assertEquals(lastEventId, latestEventId);
+
+    replica.run("REPL LOAD " + srcDbName + " INTO " + replicatedDbName);
+    latestEventId = replica.getCurrentNotificationEventId().getEventId();
+    //Assert that repl.target.id, hive.repl.ckpt.key and hive.repl.first.inc.pending is not captured in notificationLog.
+    assertEquals(latestEventId, lastEventId + 1); //This load will generate only 1 event i.e. CREATE_DATABASE
+
+    WarehouseInstance.Tuple incDump = primary.run("use " + srcDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)")
+            .dump(srcDbName);
+
+    //Assert that repl.last.id is not captured in notification log.
+    long noOfEventsInDumpDir = primary.getNoOfEventsDumped(incDump.dumpLocation, conf);
+    lastEventId = primary.getCurrentNotificationEventId().getEventId();
+    replica.run("REPL LOAD " + srcDbName + " INTO " + replicatedDbName);
+
+    latestEventId = replica.getCurrentNotificationEventId().getEventId();
+
+    //Validate that there is no addition event generated in notificationLog table apart from replayed ones.
+    assertEquals(latestEventId, lastEventId + noOfEventsInDumpDir);
+
+    long targetDbReplId = Long.parseLong(replica.getDatabase(replicatedDbName)
+            .getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+    //Validate that repl.last.id db property has been updated successfully.
+    assertEquals(targetDbReplId, lastEventId);
+
+    primary.run("DROP DATABASE " + srcDbName + " CASCADE");
+  }
+
+  @Test
   public void testTargetDbReplIncompatibleWithNoPropSet() throws Throwable {
     testTargetDbReplIncompatible(false);
   }
@@ -930,8 +970,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     lastEventId = replica.getCurrentNotificationEventId().getEventId();
     replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
     currentEventId = replica.getCurrentNotificationEventId().getEventId();
-    //This iteration of repl load will have only one event i.e ALTER_DATABASE to update repl.last.id for the target db.
-    assert currentEventId == lastEventId + 1;
+    assert currentEventId == lastEventId;
 
     primary.run("ALTER DATABASE " + primaryDbName +
             " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='')");

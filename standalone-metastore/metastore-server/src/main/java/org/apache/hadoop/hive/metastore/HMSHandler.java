@@ -73,6 +73,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.jdo.JDOException;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -103,6 +105,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -1576,6 +1579,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     // database so that oldDB indicates that it's target or replication but not the newDB. So,
     // relying solely on newDB to check whether the database is target of replication works.
     boolean isReplicated = isDbReplicationTarget(newDB);
+
+    //Don't capture the alter database event that alters the replication related properties of the database.
+    boolean isAlterReplicationSpecific = false;
+
     try {
       oldDB = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
       if (oldDB == null) {
@@ -1583,6 +1590,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             "\". Could not retrieve old definition.");
       }
 
+      isAlterReplicationSpecific = isAlterReplSpecific(oldDB, newDB);
       // Add replication target event id.
       if (isReplicationEventIdUpdate(oldDB, newDB)) {
         Map<String, String> oldParams = new LinkedHashMap<>(newDB.getParameters());
@@ -1597,7 +1605,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ms.openTransaction();
       ms.alterDatabase(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], newDB);
 
-      if (!transactionalListeners.isEmpty()) {
+      if (!transactionalListeners.isEmpty() && !isAlterReplicationSpecific) {
         transactionalListenersResponses =
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                 EventType.ALTER_DATABASE,
@@ -1613,7 +1621,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.rollbackTransaction();
       }
 
-      if ((null != oldDB) && (!listeners.isEmpty())) {
+      if ((null != oldDB) && (!listeners.isEmpty()) && !isAlterReplicationSpecific) {
         MetaStoreListenerNotifier.notifyEvent(listeners,
             EventType.ALTER_DATABASE,
             new AlterDatabaseEvent(oldDB, newDB, success, this, isReplicated),
@@ -1622,6 +1630,42 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       endFunction("alter_database", success, ex);
     }
+  }
+
+  private boolean isAlterReplSpecific(Database oldDb, Database newDb) {
+    Map<String, String> oldDbProp = oldDb.getParameters();
+    Map<String, String> newDbProp = newDb.getParameters();
+    List<String> replDbProps = Arrays.stream(ReplConst.class.getDeclaredFields())
+            .filter(field -> Modifier.isStatic(field.getModifiers()))
+            .map(field -> {
+              try {
+                String prop = (String) field.get(String.class);
+                return prop.replace("\"", "");
+              } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+              }
+            }).collect(Collectors.toList());
+    if (newDbProp != null) {
+      for (Map.Entry<String, String> prop : newDbProp.entrySet()) {
+        String propName = prop.getKey().replace("\"", "");
+        String oldValue = (oldDbProp == null) ? null : oldDbProp.get(prop.getKey());
+        if (!prop.getValue().equals(oldValue) && !propName.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
+                && !replDbProps.contains(propName)) {
+          return false;
+        }
+      }
+    }
+    if (oldDbProp != null) {
+      for (Map.Entry<String, String> prop : oldDbProp.entrySet()) {
+        String propName = prop.getKey().replace("\"", "");
+        String newValue = (newDbProp == null) ? null : newDbProp.get(prop.getKey());
+        if (!prop.getValue().equals(newValue) && !propName.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
+                && !replDbProps.contains(propName)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**

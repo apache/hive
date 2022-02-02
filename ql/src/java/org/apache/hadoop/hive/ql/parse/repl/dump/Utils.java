@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -64,7 +65,7 @@ import java.util.concurrent.Callable;
 
 public class Utils {
   private static Logger LOG = LoggerFactory.getLogger(Utils.class);
-  public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
+  public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX;
   private static final int DEF_BUF_SIZE = 8 * 1024;
 
   public enum ReplDumpState {
