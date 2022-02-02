@@ -50,9 +50,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -100,7 +98,9 @@ public final class HiveMaterializedViewsRegistry {
   private HiveMaterializedViewsRegistry() {}
 
   /* Singleton */
-  private static MaterializedViewsRegistry SINGLETON = null;
+  private static MaterializedViewsRegistry SINGLETON =
+          new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
+  private static volatile boolean initialized = false;
 
   /**
    * Get instance of HiveMaterializedViewsRegistry.
@@ -108,10 +108,6 @@ public final class HiveMaterializedViewsRegistry {
    * @return the singleton
    */
   public static MaterializedViewsRegistry get() {
-    if (SINGLETON == null) {
-      throw new IllegalStateException("HiveMaterializedViewsRegistry not initialized. " +
-              "Please call HiveMaterializedViewsRegistry.init(HiveConf); ");
-    }
     return SINGLETON;
   }
 
@@ -126,7 +122,7 @@ public final class HiveMaterializedViewsRegistry {
    */
   public static void init(HiveConf hiveConf) {
     synchronized (HiveMaterializedViewsRegistry.class) {
-      if (SINGLETON != null) {
+      if (initialized) {
         throw new IllegalStateException("HiveMaterializedViewsRegistry already initialized!");
       }
 
@@ -136,9 +132,9 @@ public final class HiveMaterializedViewsRegistry {
         if (dummy) {
           // Dummy registry does not cache information
           SINGLETON = new DummyMaterializedViewsRegistry();
+          initialized = true;
           LOG.info("Using dummy materialized views registry");
         } else {
-          SINGLETON = new InMemoryMaterializedViewsRegistry(HiveMaterializedViewsRegistry::createMaterialization);
           // We initialize the cache
           long period = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, TimeUnit.SECONDS);
           if (period <= 0) {
@@ -154,6 +150,7 @@ public final class HiveMaterializedViewsRegistry {
 
           MaterializedViewObjectProvider objects = db::getAllMaterializedViewObjectsForRewriting;
           pool.scheduleAtFixedRate(new Loader(db.getConf(), SINGLETON, objects), 0, period, TimeUnit.SECONDS);
+          initialized = true;
         }
       } catch (HiveException e) {
         LOG.error("Problem connecting to the metastore when initializing the view registry", e);

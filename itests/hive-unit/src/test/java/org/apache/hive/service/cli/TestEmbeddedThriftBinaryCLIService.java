@@ -20,15 +20,12 @@ package org.apache.hive.service.cli;
 
 import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * TestEmbeddedThriftBinaryCLIService.
@@ -43,8 +40,6 @@ public class TestEmbeddedThriftBinaryCLIService extends CLIServiceTest {
     HiveConf conf = new HiveConf();
     conf.setBoolean("datanucleus.schema.autoCreateTables", true);
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, 0, TimeUnit.SECONDS);
-    HiveMaterializedViewsRegistry.init(conf);
     UtilsForTest.expandHiveConfParams(conf);
     service.init(conf);
     client = new ThriftCLIServiceClient(service);
