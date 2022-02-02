@@ -34,6 +34,7 @@
   </modules>
 
   <properties>
+    <hive.version>${project.version}</hive.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
 
