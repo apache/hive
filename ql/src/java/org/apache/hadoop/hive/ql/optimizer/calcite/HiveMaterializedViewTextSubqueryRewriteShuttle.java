@@ -17,15 +17,16 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
  */
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 
@@ -37,11 +38,13 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
   private final Map<RelNode, ASTNode> map;
   private final ASTNode ast;
   private final ASTNode expandedAST;
+  private final RelBuilder relBuilder;
 
-  public HiveMaterializedViewTextSubqueryRewriteShuttle(Map<RelNode, ASTNode> map, ASTNode ast, ASTNode expandedAST) {
+  public HiveMaterializedViewTextSubqueryRewriteShuttle(Map<RelNode, ASTNode> map, ASTNode ast, ASTNode expandedAST, RelBuilder relBuilder) {
     this.map = map;
     this.ast = ast;
     this.expandedAST = expandedAST;
+    this.relBuilder = relBuilder;
   }
 
   public RelNode validate(RelNode relNode) {
@@ -49,18 +52,13 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
   }
 
   @Override
-  public RelNode visit(RelNode other) {
-    return super.visit(other);
-  }
-
-  @Override
-  protected RelNode visitChild(RelNode parent, int i, RelNode child) {
-    if (!map.containsKey(child)) {
-      return super.visitChild(parent, i, child);
+  public RelNode visit(HiveProject project) {
+    if (!map.containsKey(project)) {
+      return super.visit(project);
     }
 
     HiveRelOptMaterialization match = null;
-    for (HiveRelOptMaterialization materialization : HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews()) {
+    for (HiveRelOptMaterialization materialization : HiveMaterializedViewsRegistry.get().getAllRewritingMaterializedViews()) {
       Table mvTable = HiveMaterializedViewUtils.extractTable(materialization);
       if (mvTable == null) {
         continue;
@@ -80,7 +78,7 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
       }
 
       Stack<Integer> path = new Stack<>();
-      ASTNode curr = (ASTNode) map.get(child);
+      ASTNode curr = map.get(project);
       while (curr != null && curr != ast) {
         path.push(curr.getType());
         curr = (ASTNode) curr.getParent();
@@ -109,7 +107,7 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
       return match.tableRel;
     }
 
-    return super.visitChild(parent, i, child);
+    return super.visit(project);
   }
 
   private boolean astTreeEquals(ASTNode mvAST, ASTNode astNode) {

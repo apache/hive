@@ -170,7 +170,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvid
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveMaterializedViewTextSubqueryRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2111,7 +2110,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       try {
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
-        return  new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewrite, expandedAST).validate(calciteGenPlan);
+        return new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewrite, expandedAST,
+                HiveRelFactories.HIVE_BUILDER.create(optCluster, null)).validate(calciteGenPlan);
       } catch (ParseException e) {
         throw new RuntimeException(e);
       }
