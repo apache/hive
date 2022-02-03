@@ -1662,7 +1662,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       RelNode rewrittenPlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster, ANY);
       if (rewrittenPlan != null) {
-        return rewrittenPlan;
+        calcitePlan = rewrittenPlan;
       }
 
       // Create executor
@@ -3477,23 +3477,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
 
-            if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL) &&
-                    isMaterializedViewRewritingByTextEnabled()) {
-              unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-              String expandedSubQueryText = ctx.getTokenRewriteStream().toString(
-                      EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
-                      subQueryRoot.getTokenStartIndex(),
-                      subQueryRoot.getTokenStopIndex());
-
-              if (expandedSubQueryText.length() >= 2) {
-                expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
-              }
-
-              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster, NON_CALCITE);
-              if (mv != null) {
-                subQueryRelNode = mv;
-              }
-            }
+            subQueryMap.put(subQueryRelNode, subQueryRoot);
+//            if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL) &&
+//                    isMaterializedViewRewritingByTextEnabled()) {
+//              unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+//              String expandedSubQueryText = ctx.getTokenRewriteStream().toString(
+//                      EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
+//                      subQueryRoot.getTokenStartIndex(),
+//                      subQueryRoot.getTokenStopIndex());
+//
+//              if (expandedSubQueryText.length() >= 2) {
+//                expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
+//              }
+//
+//
+////              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster, NON_CALCITE);
+////              if (mv != null) {
+////                subQueryRelNode = mv;
+////              }
+//            }
 
             subQueryToRelNode.put(next, parseInfo.setSubQueryRelNode(subQueryRelNode));
             //keep track of subqueries which are scalar, correlated and contains aggregate

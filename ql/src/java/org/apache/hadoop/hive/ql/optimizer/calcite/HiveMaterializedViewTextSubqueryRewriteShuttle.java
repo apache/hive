@@ -17,12 +17,14 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
  */
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -108,6 +110,16 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
     }
 
     return super.visit(project);
+  }
+
+    @Override
+  public RelNode visit(HiveFilter filter) {
+
+    RexNode newCond = filter.getCondition().accept(new HiveMaterializedViewTextSubqueryRewriteRexShuttle(map, ast, expandedAST, relBuilder));
+    return relBuilder
+            .push(filter.getInput().accept(this))
+            .filter(newCond)
+            .build();
   }
 
   private boolean astTreeEquals(ASTNode mvAST, ASTNode astNode) {

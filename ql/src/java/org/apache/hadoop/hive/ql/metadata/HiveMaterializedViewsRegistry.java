@@ -351,6 +351,10 @@ public final class HiveMaterializedViewsRegistry {
             .collect(toList());
   }
 
+  public List<HiveRelOptMaterialization> getAllRewritingMaterializedViews() {
+    return materializedViewsCache.values();
+  }
+
   /**
    * Returns the materialized views in the cache for the given database.
    *
