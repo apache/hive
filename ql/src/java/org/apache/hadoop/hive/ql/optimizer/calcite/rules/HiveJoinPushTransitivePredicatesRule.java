@@ -74,7 +74,7 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
   public static final HiveJoinPushTransitivePredicatesRule INSTANCE_ANTIJOIN =
           new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
-  private static final UnsafeOperatorsFinder UNSAFE_OPERATORS_FINDER = new UnsafeOperatorsFinder(true);
+  private final UnsafeOperatorsFinder unsafeOperatorsFinder = new UnsafeOperatorsFinder();
 
   private final FilterFactory filterFactory;
 
@@ -156,7 +156,7 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     // (from LHS to RHS) recursively, predicates which are redundant, but that RexSimplify cannot handle.
     // This notion can be relaxed as soon as RexSimplify gets more powerful, and it can handle such cases.
     List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids).stream()
-        .filter(UNSAFE_OPERATORS_FINDER::isSafe)
+        .filter(unsafeOperatorsFinder::isSafe)
         .collect(Collectors.toList());
 
     return ImmutableList.copyOf(toPush);
@@ -166,13 +166,20 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
   /**
    * Finds unsafe operators in an expression (at any level of nesting).
+   * At the moment, the only unsafe operator is OR.
+   *
+   * Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression)
+   * Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
+   *   this is equivalent to OR((<>($0, $1), IS NULL($2))
+   * Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression)
    */
   private static class UnsafeOperatorsFinder extends RexVisitorImpl<Void> {
     // accounting for DeMorgan's law
     boolean inNegation = false;
+    boolean isSafe = true;
 
-    protected UnsafeOperatorsFinder(boolean deep) {
-      super(deep);
+    protected UnsafeOperatorsFinder() {
+      super(true);
     }
 
     @Override
@@ -182,11 +189,13 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
         if (inNegation) {
           return super.visitCall(call);
         } else {
-          throw Util.FoundOne.NULL;
+          this.isSafe = false;
+          return null;
         }
       case AND:
         if (inNegation) {
-          throw Util.FoundOne.NULL;
+          this.isSafe = false;
+          return null;
         } else {
           return super.visitCall(call);
         }
@@ -201,14 +210,10 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     boolean isSafe(RexNode node) {
       // the visitor is re-used, clear the state
       inNegation = false;
+      isSafe = true;
 
-      try {
-        node.accept(this);
-        return true;
-      } catch (Util.FoundOne e) {
-        Util.swallow(e, null);
-        return false;
-      }
+      node.accept(this);
+      return isSafe;
     }
   }
 
