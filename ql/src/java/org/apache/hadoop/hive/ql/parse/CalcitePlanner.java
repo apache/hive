@@ -2098,11 +2098,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode getMaterializedViewByQueryText(
-            String expandedQueryText, RelNode calciteGenPlan, RelOptCluster optCluster,
+            ASTNode expandedAST, RelNode calciteGenPlan, RelOptCluster optCluster,
             Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
       try {
         List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
-                expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
+                expandedAST, getTablesUsed(calciteGenPlan), getTxnMgr());
         for (HiveRelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           if (!filter.test(relOptMaterialization.getScope())) {
             LOG.debug("Filter out materialized view {} scope {}",
@@ -2129,7 +2129,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
       } catch (HiveException e) {
-        LOG.warn(String.format("Exception while looking up materialized views for query '%s'", expandedQueryText), e);
+        LOG.warn(String.format("Exception while looking up materialized views for query '%s'", expandedAST), e);
       }
 
       return null;
