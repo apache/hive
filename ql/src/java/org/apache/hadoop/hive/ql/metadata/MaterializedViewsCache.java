@@ -51,7 +51,7 @@ public class MaterializedViewsCache {
   private final ConcurrentMap<String, ConcurrentMap<String, HiveRelOptMaterialization>> materializedViews =
           new ConcurrentHashMap<>();
   // Map for looking up materialization by view query text
-  private final Map<String, List<HiveRelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
+  private final Map<ASTSubtree, List<HiveRelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
 
 
   public void putIfAbsent(Table materializedViewTable, HiveRelOptMaterialization materialization) {
@@ -60,7 +60,7 @@ public class MaterializedViewsCache {
     // You store the materialized view
     dbMap.computeIfAbsent(materializedViewTable.getTableName(), (mvTableName) -> {
       List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
-              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+              new ASTSubtree(materialization.getAst()), s -> new ArrayList<>());
       materializationList.add(materialization);
       return materialization;
     });
@@ -88,7 +88,7 @@ public class MaterializedViewsCache {
 
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
       List<HiveRelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
-          materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+          new ASTSubtree(newMaterialization.getAst()), s -> new ArrayList<>());
 
       if (existingMaterialization == null) {
         // If it was not existing, we just create it
@@ -190,15 +190,15 @@ public class MaterializedViewsCache {
     return null;
   }
 
-  public List<HiveRelOptMaterialization> get(String querySql) {
-    List<HiveRelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(querySql);
+  public List<HiveRelOptMaterialization> get(ASTNode astNode) {
+    List<HiveRelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(new ASTSubtree(astNode));
     if (relOptMaterializationList == null) {
-      LOG.trace("No materialized view with query text '{}' found in registry.", querySql);
+      LOG.trace("No materialized view with query text '{}' found in registry.", astNode);
       LOG.debug("No materialized view with similar query text found in registry.");
       return emptyList();
     }
     LOG.trace("{} materialized view(s) found with query text '{}' in registry",
-            relOptMaterializationList.size(), querySql);
+            relOptMaterializationList.size(), astNode);
     LOG.debug("{} materialized view(s) found with similar query text found in registry",
             relOptMaterializationList.size());
     return unmodifiableList(relOptMaterializationList);

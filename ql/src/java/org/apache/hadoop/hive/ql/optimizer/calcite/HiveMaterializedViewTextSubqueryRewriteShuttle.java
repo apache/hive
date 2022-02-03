@@ -19,19 +19,14 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -59,57 +54,31 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
       return super.visit(project);
     }
 
-    HiveRelOptMaterialization match = null;
-    for (HiveRelOptMaterialization materialization : HiveMaterializedViewsRegistry.get().getAllRewritingMaterializedViews()) {
-      Table mvTable = HiveMaterializedViewUtils.extractTable(materialization);
-      if (mvTable == null) {
-        continue;
-      }
-
-      String expandedText = mvTable.getViewExpandedText();
-
-      ASTNode mvAST;
-      try {
-        mvAST = ParseUtils.parse(expandedText, new Context(new HiveConf()));
-      } catch (ParseException e) {
-        throw new RuntimeException(e);
-      }
-
-      if (mvAST == null) {
-        continue;
-      }
-
-      Stack<Integer> path = new Stack<>();
-      ASTNode curr = map.get(project);
-      while (curr != null && curr != ast) {
-        path.push(curr.getType());
-        curr = (ASTNode) curr.getParent();
-      }
-
-      int[] pathInt = new int[path.size()];
-      int idx = 0;
-      while (!path.isEmpty()) {
-        pathInt[idx] = path.pop();
-        ++idx;
-      }
-
-      ASTNode expandedSubqAST = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(expandedAST, pathInt);
-      if (expandedSubqAST == null) {
-        continue;
-      }
-
-      if (astTreeEquals(mvAST, expandedSubqAST)) {
-        match = materialization;
-        break;
-      }
-
+    Stack<Integer> path = new Stack<>();
+    ASTNode curr = map.get(project);
+    while (curr != null && curr != ast) {
+      path.push(curr.getType());
+      curr = (ASTNode) curr.getParent();
     }
 
-    if (match != null) {
-      return match.tableRel;
+    int[] pathInt = new int[path.size()];
+    int idx = 0;
+    while (!path.isEmpty()) {
+      pathInt[idx] = path.pop();
+      ++idx;
     }
 
-    return super.visit(project);
+    ASTNode expandedSubqAST = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(expandedAST, pathInt);
+    if (expandedSubqAST == null) {
+      return super.visit(project);
+    }
+
+    List<HiveRelOptMaterialization> matches = HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(expandedSubqAST);
+    if (matches.isEmpty()) {
+      return super.visit(project);
+    }
+
+    return matches.get(0).tableRel;
   }
 
     @Override
@@ -120,22 +89,5 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
             .push(filter.getInput().accept(this))
             .filter(newCond)
             .build();
-  }
-
-  private boolean astTreeEquals(ASTNode mvAST, ASTNode astNode) {
-    if (!(mvAST.getName().equals(astNode.getName()) &&
-            mvAST.getType() == astNode.getType() &&
-            mvAST.getText().equals(astNode.getText()) &&
-            mvAST.getChildCount() == astNode.getChildCount())) {
-      return false;
-    }
-
-    for (int i = 0; i < mvAST.getChildCount(); ++i) {
-      if (!astTreeEquals((ASTNode) mvAST.getChild(i), (ASTNode) astNode.getChild(i))) {
-        return false;
-      }
-    }
-
-    return true;
   }
 }

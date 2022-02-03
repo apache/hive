@@ -207,6 +207,7 @@ import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -2248,10 +2249,10 @@ public class Hive {
    * @throws HiveException - an exception is thrown during validation or unable to pull transaction ids
    */
   public List<HiveRelOptMaterialization> getMaterializedViewsBySql(
-          String querySql, Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+          ASTNode astNode, Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
 
     List<HiveRelOptMaterialization> materializedViews =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(querySql);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(astNode);
     if (materializedViews.isEmpty()) {
       return Collections.emptyList();
     }
