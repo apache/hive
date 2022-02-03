@@ -224,6 +224,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void mark_cleaned(const CompactionInfoStruct& cr) = 0;
   virtual void mark_compacted(const CompactionInfoStruct& cr) = 0;
   virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
+  virtual void mark_refused(const CompactionInfoStruct& cr) = 0;
   virtual bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) = 0;
   virtual void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) = 0;
   virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
@@ -943,6 +944,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void mark_failed(const CompactionInfoStruct& /* cr */) {
+    return;
+  }
+  void mark_refused(const CompactionInfoStruct& /* cr */) {
     return;
   }
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& /* data */) {
@@ -25488,6 +25492,110 @@ class ThriftHiveMetastore_mark_failed_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_mark_refused_args__isset {
+  _ThriftHiveMetastore_mark_refused_args__isset() : cr(false) {}
+  bool cr :1;
+} _ThriftHiveMetastore_mark_refused_args__isset;
+
+class ThriftHiveMetastore_mark_refused_args {
+ public:
+
+  ThriftHiveMetastore_mark_refused_args(const ThriftHiveMetastore_mark_refused_args&);
+  ThriftHiveMetastore_mark_refused_args& operator=(const ThriftHiveMetastore_mark_refused_args&);
+  ThriftHiveMetastore_mark_refused_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_refused_args() noexcept;
+  CompactionInfoStruct cr;
+
+  _ThriftHiveMetastore_mark_refused_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_refused_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_refused_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_refused_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_mark_refused_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_refused_pargs() noexcept;
+  const CompactionInfoStruct* cr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_refused_result__isset {
+  _ThriftHiveMetastore_mark_refused_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_refused_result__isset;
+
+class ThriftHiveMetastore_mark_refused_result {
+ public:
+
+  ThriftHiveMetastore_mark_refused_result(const ThriftHiveMetastore_mark_refused_result&);
+  ThriftHiveMetastore_mark_refused_result& operator=(const ThriftHiveMetastore_mark_refused_result&);
+  ThriftHiveMetastore_mark_refused_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_refused_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_refused_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_refused_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_refused_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_refused_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_refused_presult__isset {
+  _ThriftHiveMetastore_mark_refused_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_refused_presult__isset;
+
+class ThriftHiveMetastore_mark_refused_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_refused_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_refused_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_update_compaction_metrics_data_args__isset {
   _ThriftHiveMetastore_update_compaction_metrics_data_args__isset() : data(false) {}
   bool data :1;
@@ -34080,6 +34188,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void mark_failed(const CompactionInfoStruct& cr);
   void send_mark_failed(const CompactionInfoStruct& cr);
   void recv_mark_failed();
+  void mark_refused(const CompactionInfoStruct& cr);
+  void send_mark_refused(const CompactionInfoStruct& cr);
+  void recv_mark_refused();
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   void send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   bool recv_update_compaction_metrics_data();
@@ -34498,6 +34609,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_mark_cleaned(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_compacted(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_mark_refused(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_remove_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -34770,6 +34882,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["mark_cleaned"] = &ThriftHiveMetastoreProcessor::process_mark_cleaned;
     processMap_["mark_compacted"] = &ThriftHiveMetastoreProcessor::process_mark_compacted;
     processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
+    processMap_["mark_refused"] = &ThriftHiveMetastoreProcessor::process_mark_refused;
     processMap_["update_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_update_compaction_metrics_data;
     processMap_["remove_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_remove_compaction_metrics_data;
     processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
@@ -36771,6 +36884,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->mark_failed(cr);
   }
 
+  void mark_refused(const CompactionInfoStruct& cr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->mark_refused(cr);
+    }
+    ifaces_[i]->mark_refused(cr);
+  }
+
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -38060,6 +38182,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void mark_failed(const CompactionInfoStruct& cr);
   int32_t send_mark_failed(const CompactionInfoStruct& cr);
   void recv_mark_failed(const int32_t seqid);
+  void mark_refused(const CompactionInfoStruct& cr);
+  int32_t send_mark_refused(const CompactionInfoStruct& cr);
+  void recv_mark_refused(const int32_t seqid);
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   int32_t send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   bool recv_update_compaction_metrics_data(const int32_t seqid);

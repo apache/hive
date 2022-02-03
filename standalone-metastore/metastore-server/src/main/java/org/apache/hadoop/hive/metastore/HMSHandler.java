@@ -8869,6 +8869,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public void mark_refused(CompactionInfoStruct cr) throws MetaException {
+    getTxnHandler().markRefused(CompactionInfo.compactionStructToInfo(cr));
+  }
+
+  @Override
   public boolean update_compaction_metrics_data(CompactionMetricsDataStruct struct) throws MetaException, TException {
       return getTxnHandler().updateCompactionMetricsData(CompactionMetricsDataConverter.structToData(struct));
   }

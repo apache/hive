@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.codahale.metrics.Counter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -243,7 +242,8 @@ public class Initiator extends MetaStoreCompactorThread {
       ValidWriteIdList validWriteIds = resolveValidWriteIds(t);
       CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
       if (type != null) {
-        requestCompaction(ci, runAs, type);
+        ci.type = type;
+        requestCompaction(ci, runAs);
       }
     } catch (Throwable ex) {
       String errorMessage = "Caught exception while trying to determine if we should compact " + ci + ". Marking "
@@ -431,7 +431,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir, Map<String,
-      String> tblproperties, long baseSize, long deltaSize) throws IOException {
+      String> tblproperties, long baseSize, long deltaSize) {
     boolean noBase = false;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     if (baseSize == 0 && deltaSize > 0) {
@@ -490,7 +490,9 @@ public class Initiator extends MetaStoreCompactorThread {
     // If there's no base file, do a major compaction
     LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," +
         "requesting " + (noBase ? "major" : "minor") + " compaction");
-    return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
+
+    return noBase || !isMinorCompactionSupported(tblproperties, dir) ?
+            CompactionType.MAJOR : CompactionType.MINOR;
   }
 
   private long getBaseSize(AcidDirectory dir) throws IOException {
@@ -513,8 +515,8 @@ public class Initiator extends MetaStoreCompactorThread {
     return size;
   }
 
-  private void requestCompaction(CompactionInfo ci, String runAs, CompactionType type) throws MetaException {
-    CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, type);
+  private void requestCompaction(CompactionInfo ci, String runAs) throws MetaException {
+    CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, ci.type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
     rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));

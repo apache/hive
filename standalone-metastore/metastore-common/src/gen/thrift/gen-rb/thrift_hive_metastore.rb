@@ -3306,6 +3306,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def mark_refused(cr)
+      send_mark_refused(cr)
+      recv_mark_refused()
+    end
+
+    def send_mark_refused(cr)
+      send_message('mark_refused', Mark_refused_args, :cr => cr)
+    end
+
+    def recv_mark_refused()
+      result = receive_message(Mark_refused_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def update_compaction_metrics_data(data)
       send_update_compaction_metrics_data(data)
       return recv_update_compaction_metrics_data()
@@ -6952,6 +6967,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'mark_failed', seqid)
+    end
+
+    def process_mark_refused(seqid, iprot, oprot)
+      args = read_args(iprot, Mark_refused_args)
+      result = Mark_refused_result.new()
+      begin
+        @handler.mark_refused(args.cr)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'mark_refused', seqid)
     end
 
     def process_update_compaction_metrics_data(seqid, iprot, oprot)
@@ -15111,6 +15137,38 @@ module ThriftHiveMetastore
   end
 
   class Mark_failed_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Mark_refused_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CR = 1
+
+    FIELDS = {
+      CR => {:type => ::Thrift::Types::STRUCT, :name => 'cr', :class => ::CompactionInfoStruct}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Mark_refused_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 

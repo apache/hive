@@ -1010,6 +1010,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("mark_failed\n");
   }
 
+  void mark_refused(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("mark_refused\n");
+  }
+
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
     // Your implementation goes here
     printf("update_compaction_metrics_data\n");
