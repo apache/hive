@@ -1674,11 +1674,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
       optCluster.invalidateMetadataQuery();
 
-//      final HepProgramBuilder builder = new HepProgramBuilder();
-//      builder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
-//      builder.addRuleInstance(new HiveMaterializedViewTextSubqueryRewriteRule(subQueryMap));
-//      calcitePlan = executeProgram(calcitePlan, builder.build(), mdProvider.getMetadataProvider(), null);
-
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer.get()
           .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
