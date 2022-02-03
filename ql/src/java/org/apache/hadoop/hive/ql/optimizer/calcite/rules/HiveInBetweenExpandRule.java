@@ -138,7 +138,7 @@ public class HiveInBetweenExpandRule {
     private final RexBuilder rexBuilder;
     private boolean modified;
 
-    RexInBetweenExpander(RexBuilder rexBuilder) {
+    private RexInBetweenExpander(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
       this.modified = false;
     }
