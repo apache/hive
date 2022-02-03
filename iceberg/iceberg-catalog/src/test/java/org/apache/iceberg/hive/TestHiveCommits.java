@@ -101,13 +101,16 @@ public class TestHiveCommits extends HiveTableBaseTest {
     failCommitAndThrowException(spyOps);
 
     AssertHelpers.assertThrows("We should rethrow generic runtime errors if the " +
-        "commit actually doesn't succeed", RuntimeException.class, "Metastore operation failed",
+        "commit actually doesn't succeed", CommitStateUnknownException.class,
+        "Cannot determine whether the commit was successful or not, the underlying data files may " +
+            "or may not be needed. Manual intervention via the Remove Orphan Files Action can remove these files " +
+            "when a connection to the Catalog can be re-established if the commit was actually unsuccessful.",
         () -> spyOps.commit(metadataV2, metadataV1));
 
     ops.refresh();
     Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());
     Assert.assertTrue("Current metadata should still exist", metadataFileExists(metadataV2));
-    Assert.assertEquals("No new metadata files should exist", 2, metadataFileCount(ops.current()));
+    Assert.assertEquals("New non-current metadata file should be added", 3, metadataFileCount(ops.current()));
   }
 
   /**

@@ -49,6 +49,11 @@
             <artifactId>patched-iceberg-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-bundled-guava</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <optional>true</optional>
@@ -76,11 +81,6 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <excludes>
-                                        **/JdbcClientPool.class
-                                        **/JdbcUtil.class
-                                        **/CatalogUtil.class
-                                        **/ClientPool.class
-                                        **/ClientPoolImpl.class
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
