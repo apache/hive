@@ -10376,7 +10376,7 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
 
   CompactionMetricsDataStruct(const CompactionMetricsDataStruct&);
   CompactionMetricsDataStruct& operator=(const CompactionMetricsDataStruct&);
-  CompactionMetricsDataStruct() : dbname(), tblname(), partitionname(), type((CompactionMetricsMetricType::type)0), metricvalue(0), version(0) {
+  CompactionMetricsDataStruct() : dbname(), tblname(), partitionname(), type((CompactionMetricsMetricType::type)0), metricvalue(0), version(0), threshold(0) {
   }
 
   virtual ~CompactionMetricsDataStruct() noexcept;
@@ -10390,6 +10390,7 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
   CompactionMetricsMetricType::type type;
   int32_t metricvalue;
   int32_t version;
+  int32_t threshold;
 
   _CompactionMetricsDataStruct__isset __isset;
 
@@ -10404,6 +10405,8 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
   void __set_metricvalue(const int32_t val);
 
   void __set_version(const int32_t val);
+
+  void __set_threshold(const int32_t val);
 
   bool operator == (const CompactionMetricsDataStruct & rhs) const
   {
@@ -10420,6 +10423,8 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
     if (!(metricvalue == rhs.metricvalue))
       return false;
     if (!(version == rhs.version))
+      return false;
+    if (!(threshold == rhs.threshold))
       return false;
     return true;
   }

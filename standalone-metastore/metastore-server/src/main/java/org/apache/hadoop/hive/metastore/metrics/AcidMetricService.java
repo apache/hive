@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +101,6 @@ public class AcidMetricService implements MetastoreTaskThread {
 
   private static boolean metricsEnabled;
 
-  private final List<ObjectName> registeredObjects = new ArrayList<>();
   private MetricsMBeanImpl deltaObject, smallDeltaObject, obsoleteDeltaObject;
 
   private Configuration conf;
@@ -169,25 +167,11 @@ public class AcidMetricService implements MetastoreTaskThread {
 
       int numObsoleteDeltas = filterOutBaseAndOriginalFiles(obsoleteDeltaPaths).size();
 
-      if (numDeltas >= deltasThreshold) {
-        updateDeltaMetrics(dbName, tableName, partitionName, NUM_DELTAS, numDeltas, txnHandler);
-      } else {
-        removeDeltaMetrics(dbName, tableName, partitionName, NUM_DELTAS, txnHandler);
-      }
-
-      if (numSmallDeltas >= deltasThreshold) {
-        updateDeltaMetrics(dbName, tableName, partitionName, NUM_SMALL_DELTAS, numSmallDeltas, txnHandler);
-      } else {
-        removeDeltaMetrics(dbName, tableName, partitionName, NUM_SMALL_DELTAS, txnHandler);
-      }
-
-      if (numObsoleteDeltas >= obsoleteDeltasThreshold) {
-        updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
-            numObsoleteDeltas, txnHandler);
-      } else {
-        removeDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
-            txnHandler);
-      }
+      updateDeltaMetrics(dbName, tableName, partitionName, NUM_DELTAS, numDeltas, deltasThreshold, txnHandler);
+      updateDeltaMetrics(dbName, tableName, partitionName, NUM_SMALL_DELTAS, numSmallDeltas, deltasThreshold,
+          txnHandler);
+      updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
+          numObsoleteDeltas, obsoleteDeltasThreshold, txnHandler);
 
       LOG.debug("Finished updating delta file metrics from initiator.\n deltaPctThreshold = {}, deltasThreshold = {}, "
               + "obsoleteDeltasThreshold = {}, numDeltas = {}, numSmallDeltas = {},  numObsoleteDeltas = {}",
@@ -216,13 +200,8 @@ public class AcidMetricService implements MetastoreTaskThread {
       // we have an instance of the AcidDirectory before the compaction worker was started
       // from this we can get how many delta directories existed
       // the previously active delta directories are now moved to obsolete
-      int numObsoleteDeltas = preWorkerActiveDeltaCount;
-      if (numObsoleteDeltas >= obsoleteDeltasThreshold) {
-        updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_OBSOLETE_DELTAS,
-            numObsoleteDeltas, client);
-      } else {
-        removeDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_OBSOLETE_DELTAS, client);
-      }
+      updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_OBSOLETE_DELTAS,
+          preWorkerActiveDeltaCount, obsoleteDeltasThreshold, client);
 
       // We don't know the size of the newly create delta directories, that would require a fresh AcidDirectory
       // Clear the small delta num counter from the cache for this key
@@ -247,17 +226,13 @@ public class AcidMetricService implements MetastoreTaskThread {
         }
 
         // recalculate the delta count
-        if (numNewDeltas >= deltasThreshold) {
-          updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_DELTAS, numNewDeltas,
-              client);
-        } else {
-          removeDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_DELTAS, client);
-        }
+        updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_DELTAS, numNewDeltas,
+            deltasThreshold, client);
       }
 
       LOG.debug("Finished updating delta file metrics from worker.\n deltasThreshold = {}, "
               + "obsoleteDeltasThreshold = {}, numObsoleteDeltas = {}", deltasThreshold, obsoleteDeltasThreshold,
-          numObsoleteDeltas);
+          preWorkerActiveDeltaCount);
 
     } catch (Throwable t) {
       LOG.warn("Unknown throwable caught while updating delta metrics. Metrics will not be updated.", t);
@@ -281,12 +256,8 @@ public class AcidMetricService implements MetastoreTaskThread {
       int numObsoleteDeltas = 0;
       if (prevObsoleteDelta != null) {
         numObsoleteDeltas = prevObsoleteDelta.getMetricValue() - filterOutBaseAndOriginalFiles(deletedFiles).size();
-        if (numObsoleteDeltas >= obsoleteDeltasThreshold) {
-          updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
-              numObsoleteDeltas, txnHandler);
-        } else {
-          removeDeltaMetrics(dbName, tableName, partitionName, NUM_OBSOLETE_DELTAS, txnHandler);
-        }
+        updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
+            numObsoleteDeltas, obsoleteDeltasThreshold, txnHandler);
       }
 
       LOG.debug("Finished updating delta file metrics from cleaner.\n obsoleteDeltasThreshold = {}, "
@@ -519,22 +490,14 @@ public class AcidMetricService implements MetastoreTaskThread {
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
     obsoleteDeltaObject = new MetricsMBeanImpl();
-    registeredObjects.add(
-        mbs.registerMBean(obsoleteDeltaObject,
-                new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_OBSOLETE_DELTAS))
-            .getObjectName());
-
+    mbs.registerMBean(obsoleteDeltaObject,
+            new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_OBSOLETE_DELTAS));
     deltaObject = new MetricsMBeanImpl();
-    registeredObjects.add(
-        mbs.registerMBean(deltaObject,
-                new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_DELTAS))
-            .getObjectName());
-
+    mbs.registerMBean(deltaObject,
+            new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_DELTAS));
     smallDeltaObject = new MetricsMBeanImpl();
-    registeredObjects.add(
-        mbs.registerMBean(smallDeltaObject,
-                new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_SMALL_DELTAS))
-            .getObjectName());
+    mbs.registerMBean(smallDeltaObject,
+            new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_SMALL_DELTAS));
   }
 
   static String getDeltaCountKey(String dbName, String tableName, String partitionName) {
@@ -562,22 +525,17 @@ public class AcidMetricService implements MetastoreTaskThread {
   }
 
   private static void updateDeltaMetrics(String dbName, String tblName, String partitionName,
-      CompactionMetricsData.MetricType type, int numDeltas, TxnStore txnHandler) throws MetaException {
+      CompactionMetricsData.MetricType type, int numDeltas, int deltasThreshold, TxnStore txnHandler) throws MetaException {
     CompactionMetricsData data = new CompactionMetricsData.Builder()
         .dbName(dbName).tblName(tblName).partitionName(partitionName).metricType(type).metricValue(numDeltas).version(0)
-        .build();
+        .threshold(deltasThreshold).build();
     if (!txnHandler.updateCompactionMetricsData(data)) {
       LOG.warn("Compaction metric data cannot be updated because of version mismatch.");
     }
   }
 
-  private static void removeDeltaMetrics(String dbName, String tblName, String partitionName,
-      CompactionMetricsData.MetricType type, TxnStore txnHandler) throws MetaException {
-    txnHandler.removeCompactionMetricsData(dbName, tblName, partitionName, type);
-  }
-
   private static void updateDeltaMetrics(String dbName, String tblName, String partitionName,
-      CompactionMetricsMetricType type, int numDeltas, IMetaStoreClient client) throws TException {
+      CompactionMetricsMetricType type, int numDeltas, int deltasThreshold, IMetaStoreClient client) throws TException {
     CompactionMetricsDataStruct struct = new CompactionMetricsDataStruct();
     struct.setDbname(dbName);
     struct.setTblname(tblName);
@@ -585,6 +543,7 @@ public class AcidMetricService implements MetastoreTaskThread {
     struct.setType(type);
     struct.setMetricvalue(numDeltas);
     struct.setVersion(0);
+    struct.setThreshold(deltasThreshold);
     if (!client.updateCompactionMetricsData(struct)) {
       LOG.warn("Compaction metric data cannot be updated because of version mismatch.");
     }

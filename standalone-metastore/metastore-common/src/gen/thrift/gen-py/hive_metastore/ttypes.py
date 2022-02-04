@@ -15665,17 +15665,19 @@ class CompactionMetricsDataStruct(object):
      - type
      - metricvalue
      - version
+     - threshold
 
     """
 
 
-    def __init__(self, dbname=None, tblname=None, partitionname=None, type=None, metricvalue=None, version=None,):
+    def __init__(self, dbname=None, tblname=None, partitionname=None, type=None, metricvalue=None, version=None, threshold=None,):
         self.dbname = dbname
         self.tblname = tblname
         self.partitionname = partitionname
         self.type = type
         self.metricvalue = metricvalue
         self.version = version
+        self.threshold = threshold
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15716,6 +15718,11 @@ class CompactionMetricsDataStruct(object):
                     self.version = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.threshold = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15750,6 +15757,10 @@ class CompactionMetricsDataStruct(object):
             oprot.writeFieldBegin('version', TType.I32, 6)
             oprot.writeI32(self.version)
             oprot.writeFieldEnd()
+        if self.threshold is not None:
+            oprot.writeFieldBegin('threshold', TType.I32, 7)
+            oprot.writeI32(self.threshold)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -15764,6 +15775,8 @@ class CompactionMetricsDataStruct(object):
             raise TProtocolException(message='Required field metricvalue is unset!')
         if self.version is None:
             raise TProtocolException(message='Required field version is unset!')
+        if self.threshold is None:
+            raise TProtocolException(message='Required field threshold is unset!')
         return
 
     def __repr__(self):
@@ -30754,6 +30767,7 @@ CompactionMetricsDataStruct.thrift_spec = (
     (4, TType.I32, 'type', None, None, ),  # 4
     (5, TType.I32, 'metricvalue', None, None, ),  # 5
     (6, TType.I32, 'version', None, None, ),  # 6
+    (7, TType.I32, 'threshold', None, None, ),  # 7
 )
 all_structs.append(CompactionMetricsDataResponse)
 CompactionMetricsDataResponse.thrift_spec = (

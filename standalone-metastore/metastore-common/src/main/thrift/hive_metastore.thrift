@@ -1316,6 +1316,7 @@ struct CompactionMetricsDataStruct {
     4: required CompactionMetricsMetricType type
     5: required i32 metricvalue
     6: required i32 version
+    7: required i32 threshold
 }
 
 struct CompactionMetricsDataResponse {

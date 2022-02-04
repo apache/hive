@@ -4547,6 +4547,7 @@ class CompactionMetricsDataStruct
   TYPE = 4
   METRICVALUE = 5
   VERSION = 6
+  THRESHOLD = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4554,7 +4555,8 @@ class CompactionMetricsDataStruct
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType},
     METRICVALUE => {:type => ::Thrift::Types::I32, :name => 'metricvalue'},
-    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'}
+    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'},
+    THRESHOLD => {:type => ::Thrift::Types::I32, :name => 'threshold'}
   }
 
   def struct_fields; FIELDS; end
@@ -4565,6 +4567,7 @@ class CompactionMetricsDataStruct
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metricvalue is unset!') unless @metricvalue
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field version is unset!') unless @version
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field threshold is unset!') unless @threshold
     unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end

@@ -26,14 +26,13 @@ public class CompactionMetricsDataConverter {
 
   public static CompactionMetricsDataStruct dataToStruct(CompactionMetricsData data) throws MetaException {
     CompactionMetricsDataStruct struct = new CompactionMetricsDataStruct();
-    if (!data.isEmpty()) {
-      struct.setDbname(data.getDbName());
-      struct.setTblname(data.getTblName());
-      struct.setPartitionname(data.getPartitionName());
-      struct.setType(dbCompactionMetricType2ThriftType(data.getMetricType()));
-      struct.setMetricvalue(data.getMetricValue());
-      struct.setVersion(data.getVersion());
-    }
+    struct.setDbname(data.getDbName());
+    struct.setTblname(data.getTblName());
+    struct.setPartitionname(data.getPartitionName());
+    struct.setType(dbCompactionMetricType2ThriftType(data.getMetricType()));
+    struct.setMetricvalue(data.getMetricValue());
+    struct.setVersion(data.getVersion());
+    struct.setThreshold(data.getThreshold());
     return struct;
   }
 
@@ -45,6 +44,7 @@ public class CompactionMetricsDataConverter {
         .metricType(thriftCompactionMetricType2DbType(struct.getType()))
         .metricValue(struct.getMetricvalue())
         .version(struct.getVersion())
+        .threshold(struct.getThreshold())
         .build();
   }
 
