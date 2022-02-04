@@ -20,6 +20,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -60,6 +61,19 @@ public class HiveMaterializedViewTextSubqueryRewriteRexShuttle extends RexShuttl
     switch (subQuery.op.kind) {
       case IN:
         newSubQueryRex = RexSubQuery.in(newSubquery, subQuery.operands);
+        break;
+
+      case EXISTS:
+        newSubQueryRex = RexSubQuery.exists(newSubquery);
+        break;
+
+      case SCALAR_QUERY:
+        newSubQueryRex = RexSubQuery.scalar(newSubquery);
+        break;
+
+      case SOME:
+      case ALL:
+        newSubQueryRex = RexSubQuery.some(newSubquery, subQuery.operands, (SqlQuantifyOperator) subQuery.op);
         break;
 
       default:
