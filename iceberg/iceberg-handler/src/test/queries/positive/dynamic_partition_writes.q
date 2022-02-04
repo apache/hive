@@ -11,11 +11,11 @@ insert into tbl_src values (10, 'EUR'), (20, 'EUR'), (30, 'USD'), (40, 'EUR'), (
 create external table tbl_target_identity (a int) partitioned by (ccy string) stored by iceberg stored as orc;
 explain insert overwrite table tbl_target_identity select * from tbl_src;
 insert overwrite table tbl_target_identity select * from tbl_src;
-select * from tbl_target_identity;
+select * from tbl_target_identity order by a;
 
 --bucketed case - although SortedDynPartitionOptimizer kicks in for this case too, its work is futile as it sorts values rather than the computed buckets
 --thus we need this case to check that ClusteredWriter allows out-of-order records for bucket partition spec (only)
 create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc;
 explain insert into table tbl_target_bucket select * from tbl_src;
 insert into table tbl_target_bucket select * from tbl_src;
-select * from tbl_target_bucket;
+select * from tbl_target_bucket order by a;
