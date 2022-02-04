@@ -5516,7 +5516,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
       replacementText.append(".");
       replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
-      unparseTranslator.addTranslation(node, replacementText.toString());
+
+      if (node.getType() != HiveParser.DOT) {
+        ASTNode parent = (ASTNode) node.getParent();
+        int childIndex = node.childIndex;
+        ASTNode dotNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.DOT, ".");
+        ASTNode tableNameIdentifier = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, tmp[0]);
+        dotNode.addChild(node);
+        dotNode.addChild(node.getChild(0));
+        node.setChild(0, tableNameIdentifier);
+        parent.setChild(childIndex, dotNode);
+      } else {
+        unparseTranslator.addTranslation(node, replacementText.toString());
+      }
     }
 
     for (ASTNode node : fieldDescList) {
