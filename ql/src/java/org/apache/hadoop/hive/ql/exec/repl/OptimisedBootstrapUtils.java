@@ -71,7 +71,7 @@ public class OptimisedBootstrapUtils {
   /** event ack file which contains the event id till which the cluster was last loaded. */
   public static final String EVENT_ACK_FILE = "event_ack";
 
-  public static final String BOOTSTRAP_TABLES_LIST = "bootstrap_table_list";
+  public static final String BOOTSTRAP_TABLES_LIST = "_failover_bootstrap_table_list";
 
   /**
    * Gets & checks whether the database is target of replication.
