@@ -3027,12 +3027,13 @@ public class ObjectStore implements RawStore, Configurable {
           max_parts, null, queryWrapper);
       for (Object o : parts) {
         Partition part = convertToPart((MPartition) o);
-        // set auth privileges
-        String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
-            .getPartitionKeys()), part.getValues());
-        PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
-            tbl_name, partName, userName, groupNames);
-        part.setPrivileges(partAuth);
+        if (getauth) {
+          // set auth privileges
+          String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl.getPartitionKeys()), part.getValues());
+          PrincipalPrivilegeSet partAuth =
+              getPartitionPrivilegeSet(catName, db_name, tbl_name, partName, userName, groupNames);
+          part.setPrivileges(partAuth);
+        }
         partitions.add(part);
       }
       success = commitTransaction();
