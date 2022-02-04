@@ -63,11 +63,12 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat2
 POSTHOOK: Lineage: mat2.col0 SIMPLE []
-Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select col0 from t2 where exists (
  select col0 from t1 where col0 = 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -75,6 +76,7 @@ POSTHOOK: query: explain cbo
 select col0 from t2 where exists (
  select col0 from t1 where col0 = 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -85,8 +87,7 @@ HiveSemiJoin(condition=[true], joinType=[semi])
   HiveProject($f0=[$0])
     HiveAggregate(group=[{0}])
       HiveProject($f0=[true])
-        HiveFilter(condition=[=($0, 3)])
-          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+        HiveTableScan(table=[[default, mat2]], table:alias=[mat2])
 
 Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
@@ -110,7 +111,7 @@ HiveSemiJoin(condition=[true], joinType=[semi])
   HiveProject($f0=[$0])
     HiveAggregate(group=[{0}])
       HiveProject($f0=[true])
-        HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+        HiveTableScan(table=[[default, mat1]], table:alias=[mat1])
 
 PREHOOK: query: explain cbo
 select col0 from t2 where col0 in (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
@@ -133,7 +134,7 @@ HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
       HiveTableScan(table=[[default, t2]], table:alias=[t2])
   HiveProject(col0=[$0])
     HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+      HiveTableScan(table=[[default, mat1]], table:alias=[mat1])
 
 PREHOOK: query: drop materialized view mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
