@@ -127,8 +127,7 @@ abstract class ClusteredWriter<T, R> implements PartitioningWriter<T, R> {
   }
 
   private static boolean hasBucketTransform(PartitionSpec spec) {
-    return spec.fields().stream().filter(f ->
-        BUCKET_TRANSFORM_CLAZZ.isAssignableFrom(f.transform().getClass())).findAny().isPresent();
+    return spec.fields().stream().anyMatch(f -> BUCKET_TRANSFORM_CLAZZ.isAssignableFrom(f.transform().getClass()));
   }
 
   private void closeCurrentWriter() {
