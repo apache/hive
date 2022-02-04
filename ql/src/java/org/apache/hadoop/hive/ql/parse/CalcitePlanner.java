@@ -4637,10 +4637,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       // For UDTF's, skip the function name to get the expressions
       int startPosn = genericUDTF != null ? posn + 1 : posn;
-      for (int i = startPosn; i < exprList.getChildCount(); ++i) {
+      List<Node> selExprListCopy = new ArrayList<>(exprList.getChildren());
+      for (int i = startPosn; i < selExprListCopy.size(); ++i) {
 
         // 6.1 child can be EXPR AS ALIAS, or EXPR.
-        ASTNode child = (ASTNode) exprList.getChild(i);
+        ASTNode child = (ASTNode) selExprListCopy.get(i);
         boolean hasAsClause = (!isInTransform) && (child.getChildCount() == 2);
 
         // 6.2 EXPR AS (ALIAS,...) parses, but is only allowed for UDTF's
@@ -4865,9 +4866,32 @@ public class CalcitePlanner extends SemanticAnalyzer {
       List<org.apache.commons.lang3.tuple.Pair<ColumnInfo, RowResolver>> colList = new ArrayList<>();
       Integer i = genColListRegex(colRegex, tabAlias, sel,
           colList, excludeCols, input, colSrcRR, pos, output, aliases, ensureUniqueCols);
+
+      List<ASTNode> columnNodes = new ArrayList<>();
+
       for (org.apache.commons.lang3.tuple.Pair<ColumnInfo, RowResolver> p : colList) {
         exprList.add(RexNodeTypeCheck.toExprNode(p.getLeft(), p.getRight(), 0, cluster.getRexBuilder()));
+
+        ASTNode dotNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.DOT, ".");
+        ASTNode tokTableOrColNode =
+                (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+        tokTableOrColNode.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, p.getKey().getTabAlias()));
+        dotNode.addChild(tokTableOrColNode);
+        dotNode.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, p.getKey().getAlias()));
+        ASTNode selExprNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+        selExprNode.addChild(dotNode);
+        columnNodes.add(selExprNode);
       }
+
+      ASTNode selectExprNode = (ASTNode) sel.getParent();
+      ASTNode selectNode = (ASTNode) selectExprNode.getParent();
+      int exprIdx = selectExprNode.childIndex;
+
+      selectNode.setChild(exprIdx, columnNodes.get(0));
+      for (int j = 1; j < columnNodes.size(); ++j) {
+        selectNode.insertChild(exprIdx + j, columnNodes.get(j));
+      }
+
       return i;
     }
 

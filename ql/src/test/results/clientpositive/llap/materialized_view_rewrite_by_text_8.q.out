@@ -94,7 +94,7 @@ select col0 from (
 ) sub2
 where col0 = 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
+PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -105,13 +105,13 @@ select col0 from (
 ) sub2
 where col0 = 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col0=[CAST(10):INTEGER])
   HiveFilter(condition=[=($0, 10)])
-    HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+    HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
 PREHOOK: query: explain cbo
 select col0 from t1 where col0 in (
@@ -120,7 +120,7 @@ select col0 from t1 where col0 in (
 where col0 < 100
 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
+PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -130,17 +130,17 @@ select col0 from t1 where col0 in (
 where col0 < 100
 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
   HiveProject(col0=[$0])
-    HiveFilter(condition=[<($0, 100)])
+    HiveFilter(condition=[IS NOT NULL($0)])
       HiveTableScan(table=[[default, t1]], table:alias=[t1])
   HiveProject(col0=[$0])
-    HiveFilter(condition=[<($0, 100)])
-      HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
 PREHOOK: query: drop materialized view mat2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
