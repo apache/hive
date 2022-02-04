@@ -1208,6 +1208,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // if alias to CTE contains the table name, we do not do the translation because
     // cte is actually a subquery.
     if (!this.aliasToCTEs.containsKey(tabIdName)) {
+      if (tableTree.getChildCount() == 1) {
+        ASTNode tabName = (ASTNode) tableTree.getChild(0);
+        tableTree.setChild(0,
+                (Tree) ParseDriver.adaptor.create(HiveParser.Identifier, SessionState.get().getCurrentDatabase()));
+        tableTree.addChild(tabName);
+      }
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       if (aliasIndex != 0) {
         unparseTranslator.addIdentifierTranslation((ASTNode) tabref.getChild(aliasIndex));
