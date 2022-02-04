@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
@@ -204,5 +206,53 @@ public class MaterializedViewsCache {
 
   public boolean isEmpty() {
     return materializedViews.isEmpty();
+  }
+
+  public static class ASTSubtree {
+    private final ASTNode root;
+
+    public ASTSubtree(ASTNode root) {
+      this.root = root;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      ASTSubtree that = (ASTSubtree) o;
+      return astTreeEquals(root, that.root);
+    }
+
+    private boolean astTreeEquals(ASTNode mvAST, ASTNode astNode) {
+      if (!(mvAST.getName().equals(astNode.getName()) &&
+              mvAST.getType() == astNode.getType() &&
+              mvAST.getText().equals(astNode.getText()) &&
+              mvAST.getChildCount() == astNode.getChildCount())) {
+        return false;
+      }
+
+      for (int i = 0; i < mvAST.getChildCount(); ++i) {
+        if (!astTreeEquals((ASTNode) mvAST.getChild(i), (ASTNode) astNode.getChild(i))) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return astTreeHashcode(root);
+    }
+
+    private int astTreeHashcode(ASTNode node) {
+      int result = Objects.hash(node.getName(), node.getType(), node.getText(), node.getChildCount());
+
+      for (int i = 0; i < node.getChildCount(); ++i) {
+        result = 31 * result + astTreeHashcode((ASTNode) node.getChild(i));
+      }
+
+      return result;
+    }
   }
 }

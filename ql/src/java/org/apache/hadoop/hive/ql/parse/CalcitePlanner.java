@@ -2089,12 +2089,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
 
-      unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-      String expandedQueryText = ctx.getTokenRewriteStream().toString(
-              EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
-              queryToRewrite.getTokenStartIndex(),
-              queryToRewrite.getTokenStopIndex());
-      return getMaterializedViewByQueryText(expandedQueryText, calciteGenPlan, optCluster, filter);
+      return getMaterializedViewByQueryText(queryToRewrite, calciteGenPlan, optCluster, filter);
     }
 
     private RelNode getMaterializedViewByQueryText(
@@ -3459,17 +3454,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL) &&
                     isMaterializedViewRewritingByTextEnabled()) {
-              unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-              String expandedSubQueryText = ctx.getTokenRewriteStream().toString(
-                      EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
-                      subQueryRoot.getTokenStartIndex(),
-                      subQueryRoot.getTokenStopIndex());
-
-              if (expandedSubQueryText.length() >= 2) {
-                expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
-              }
-
-              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster, NON_CALCITE);
+              RelNode mv = getMaterializedViewByQueryText(subQueryRoot, subQueryRelNode, cluster, NON_CALCITE);
               if (mv != null) {
                 subQueryRelNode = mv;
               }
