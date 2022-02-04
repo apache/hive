@@ -39,7 +39,6 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.GenericAppenderFactory;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.io.FileIO;
@@ -124,7 +123,8 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 1, 0, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
-    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 3);
+    // Expecting 3 files with fanout-, 4 with ClusteredWriter where writing to already completed partitions is allowed.
+    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 4);
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
@@ -148,7 +148,8 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 2, 0, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
-    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 6);
+    // Expecting 6 files with fanout-, 8 with ClusteredWriter where writing to already completed partitions is allowed.
+    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 8);
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
@@ -277,8 +278,13 @@ public class TestHiveIcebergOutputCommitter {
           .format(fileFormat)
           .operationId(operationId)
           .build();
+
+      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+          null, fileFormat, null, null, null, null);
+
+
       HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, spec, fileFormat,
-          new GenericAppenderFactory(schema), outputFileFactory, io, TARGET_FILE_SIZE,
+          hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
           TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
 
       Container<Record> container = new Container<>();
