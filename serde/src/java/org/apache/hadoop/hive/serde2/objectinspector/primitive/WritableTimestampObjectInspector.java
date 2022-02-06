@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.LongWritable;
 
 public class WritableTimestampObjectInspector extends
     AbstractPrimitiveWritableObjectInspector implements
@@ -31,19 +32,35 @@ public class WritableTimestampObjectInspector extends
 
   @Override
   public TimestampWritableV2 getPrimitiveWritableObject(Object o) {
-    return o == null ? null : (TimestampWritableV2) o;
+      if (o instanceof LongWritable) {
+         return new TimestampWritableV2(new Timestamp(((LongWritable) o).get()));
+      }
+      return o == null ? null : (TimestampWritableV2) o;
   }
 
   public Timestamp getPrimitiveJavaObject(Object o) {
+    if (o instanceof LongWritable) {
+      return new Timestamp(((LongWritable) o).get());
+    }
     return o == null ? null : ((TimestampWritableV2) o).getTimestamp();
   }
 
   public Object copyObject(Object o) {
+    if (o instanceof LongWritable) {
+      return new Timestamp(((LongWritable) o).get());
+    }
+
     return o == null ? null : new TimestampWritableV2((TimestampWritableV2) o);
   }
 
   public Object set(Object o, byte[] bytes, int offset) {
-    ((TimestampWritableV2) o).set(bytes, offset);
+  
+    if (o instanceof LongWritable) {
+      o = new TimestampWritableV2(new Timestamp(((LongWritable) o).get()));
+    } else {
+      ((TimestampWritableV2) o).set(bytes, offset);
+    }
+
     return o;
   }
 
@@ -52,7 +69,12 @@ public class WritableTimestampObjectInspector extends
     if (t == null) {
       return null;
     }
-    ((TimestampWritableV2) o).set(Timestamp.ofEpochMilli(t.getTime(), t.getNanos()));
+
+    if (o instanceof LongWritable) {
+      o = new TimestampWritableV2(t);
+    } else {
+      ((TimestampWritableV2) o).set(Timestamp.ofEpochMilli(t.getTime(), t.getNanos()));
+    }
     return o;
   }
 
@@ -60,7 +82,11 @@ public class WritableTimestampObjectInspector extends
     if (t == null) {
       return null;
     }
-    ((TimestampWritableV2) o).set(t);
+    if (o instanceof LongWritable) {
+      o = new TimestampWritableV2(t);
+    } else {
+      ((TimestampWritableV2) o).set(t);
+    }
     return o;
   }
 
@@ -68,7 +94,11 @@ public class WritableTimestampObjectInspector extends
     if (t == null) {
       return null;
     }
-    ((TimestampWritableV2) o).set(t);
+    if (o instanceof LongWritable) {
+      o = new TimestampWritableV2(new Timestamp(((LongWritable) o).get()));
+    } else {
+      ((TimestampWritableV2) o).set(t);
+    }
     return o;
   }
 
