@@ -500,6 +500,14 @@ public class MetaStoreUtils {
   }
 
   /*
+   * Check the table storage location must not be root path.
+   */
+  static public boolean validateTblStorage(StorageDescriptor sd) {
+    return !(StringUtils.isNotBlank(sd.getLocation())
+            && new Path(sd.getLocation()).getParent() == null);
+  }
+
+  /*
    * At the Metadata level there are no restrictions on Column Names.
    */
   public static boolean validateColumnName(String name) {

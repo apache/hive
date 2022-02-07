@@ -1797,6 +1797,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
       }
+
+      if (!MetaStoreUtils.validateTblStorage(tbl.getSd())) {
+        throw new InvalidObjectException(tbl.getTableName()
+                + " location must not be root path");
+      }
+
       String validate = MetaStoreUtils.validateTblColumns(tbl.getSd().getCols());
       if (validate != null) {
         throw new InvalidObjectException("Invalid column " + validate);
