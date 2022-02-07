@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.metrics;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.MetricsInfo;
@@ -56,7 +58,7 @@ public class AcidMetricLogger implements MetastoreTaskThread {
   public void run() {
     try {
       logDbMetrics();
-      logDeltaMetrics();
+      logMetrics();
     } catch (MetaException e) {
       LOG.warn("Caught exception while trying to log acid metrics data.", e);
     }
@@ -74,6 +76,17 @@ public class AcidMetricLogger implements MetastoreTaskThread {
     return conf;
   }
 
+  private void logMetrics() throws MetaException {
+    ShowCompactResponse response = txnHandler.showCompact(new ShowCompactRequest());
+    CompactionMetricData metricData = CompactionMetricData.of(response.getCompacts());
+
+    logMultipleWorkerVersions(metricData);
+    logFailedCompactionsPercentage(metricData);
+    logOldestInitiatorAge(metricData);
+
+    logDeltaMetrics();
+  }
+
   private void logDeltaMetrics() throws MetaException {
     List<CompactionMetricsData> deltas = txnHandler.getTopCompactionMetricsDataPerType(maxCacheSize);
     deltas.stream().filter(d -> d.getMetricType() == NUM_DELTAS).forEach(d -> LOG.warn(
@@ -89,6 +102,42 @@ public class AcidMetricLogger implements MetastoreTaskThread {
         AcidMetricService.getDeltaCountKey(d.getDbName(), d.getTblName(), d.getPartitionName()), d.getMetricValue())));
   }
 
+  private void logOldestInitiatorAge(CompactionMetricData metricData) {
+    int oldestInitiatorAge = (int) ((System.currentTimeMillis() - metricData.getOldestEnqueueTime()) / 1000L);
+    String oldestInitiatorMessage = "Found compaction entry in compaction queue with an age of {} seconds. " +
+        "Consider increasing the number of worker threads.";
+    long oldestInitiatedWarningThreshold = MetastoreConf.getTimeVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING,
+        TimeUnit.SECONDS);
+    long oldestInitiatedErrorThreshold = MetastoreConf.getTimeVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR,
+        TimeUnit.SECONDS);
+    if (oldestInitiatorAge >= oldestInitiatedErrorThreshold) {
+      LOG.error(oldestInitiatorMessage, oldestInitiatorAge);
+    } else if (oldestInitiatorAge >= oldestInitiatedWarningThreshold) {
+      LOG.warn(oldestInitiatorMessage, oldestInitiatorAge);
+    }
+  }
+
+  private void logMultipleWorkerVersions(CompactionMetricData metricData) {
+    long workerVersionThresholdInMillis = MetastoreConf.getTimeVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD, TimeUnit.MILLISECONDS);
+    List<String> versions = metricData
+        .allWorkerVersionsSince(System.currentTimeMillis() - workerVersionThresholdInMillis);
+
+    if (versions.size() > 1) {
+      LOG.warn("Multiple Compaction Worker versions detected: {}", versions);
+    }
+  }
+
+  private void logFailedCompactionsPercentage(CompactionMetricData metricData) {
+    Double failedCompactionPercentage = metricData.getFailedCompactionPercentage();
+    if (failedCompactionPercentage != null &&
+        (failedCompactionPercentage >=
+            MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.COMPACTOR_FAILED_COMPACTION_RATIO_THRESHOLD))) {
+      LOG.warn("Many compactions are failing. Check root cause of failed/not initiated compactions.");
+    }
+  }
   private void logDbMetrics() throws MetaException {
     MetricsInfo metrics = txnHandler.getMetricsInfo();
     if (metrics.getTxnToWriteIdCount() >= MetastoreConf.getIntVar(conf,
@@ -170,4 +219,3 @@ public class AcidMetricLogger implements MetastoreTaskThread {
     }
   }
 }
-

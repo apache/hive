@@ -608,8 +608,7 @@ public class MetastoreConf {
       "hive.metastore.compactor.worker.detect.multiple.versions.threshold", 24, TimeUnit.HOURS,
       "Defines a time-window in hours from the current time backwards\n," +
             "in which a warning is being raised if multiple worker version are detected.\n" +
-            "The setting has no effect if the metastore.metrics.enabled is disabled \n" +
-            "or the metastore.acidmetrics.thread.on is turned off."),
+            "The setting has no effect if the metastore.compactor.acid.metrics.logger.frequency is 0."),
     COMPACTOR_MINOR_STATS_COMPRESSION(
         "metastore.compactor.enable.stats.compression",
         "metastore.compactor.enable.stats.compression", true,

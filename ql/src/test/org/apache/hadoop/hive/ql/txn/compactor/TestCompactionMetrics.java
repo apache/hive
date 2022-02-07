@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

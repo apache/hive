@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.AcidConstants;
@@ -33,7 +32,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.MetricsInfo;
@@ -46,15 +44,13 @@ import org.slf4j.LoggerFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_INITIATORS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS;
@@ -121,9 +117,7 @@ public class AcidMetricService implements MetastoreTaskThread {
       }
       long startedAt = System.currentTimeMillis();
         try {
-          ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          detectMultipleWorkerVersions(currentCompactions);
-          updateMetrics(currentCompactions);
+          updateMetrics();
           updateDeltaMetrics();
         } catch (Exception ex) {
          LOG.error("Caught exception in AcidMetricService loop", ex);
@@ -296,36 +290,10 @@ public class AcidMetricService implements MetastoreTaskThread {
     }
   }
 
-  private void detectMultipleWorkerVersions(ShowCompactResponse currentCompactions) {
-    long workerVersionThresholdInMillis = MetastoreConf.getTimeVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD, TimeUnit.MILLISECONDS);
-    long since = System.currentTimeMillis() - workerVersionThresholdInMillis;
-
-    List<String> versions = collectWorkerVersions(currentCompactions.getCompacts(), since);
-    if (versions.size() > 1) {
-      LOG.warn("Multiple Compaction Worker versions detected: {}", versions);
-    }
-  }
-
-  private void updateMetrics(ShowCompactResponse currentCompactions) throws MetaException {
+  private void updateMetrics() throws MetaException {
+    ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
     updateMetricsFromShowCompact(currentCompactions, conf);
     updateDBMetrics();
-  }
-
-  @VisibleForTesting
-  public static List<String> collectWorkerVersions(List<ShowCompactResponseElement> currentCompacts, long since) {
-    return Optional.ofNullable(currentCompacts)
-      .orElseGet(ImmutableList::of)
-      .stream()
-      .filter(comp -> (comp.isSetEnqueueTime() && (comp.getEnqueueTime() >= since))
-        || (comp.isSetStart() && (comp.getStart() >= since))
-        || (comp.isSetEndTime() && (comp.getEndTime() >= since)))
-      .filter(comp -> !TxnStore.DID_NOT_INITIATE_RESPONSE.equals(comp.getState()))
-      .map(ShowCompactResponseElement::getWorkerVersion)
-      .filter(Objects::nonNull)
-      .distinct()
-      .sorted()
-      .collect(Collectors.toList());
   }
 
   private void updateDBMetrics() throws MetaException {
@@ -347,112 +315,49 @@ public class AcidMetricService implements MetastoreTaskThread {
     Metrics.getOrCreateGauge(OLDEST_READY_FOR_CLEANING_AGE).set(metrics.getOldestReadyForCleaningAge());
   }
 
-
-
   @VisibleForTesting
   public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse, Configuration conf) {
-    Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
-    long oldestEnqueueTime = Long.MAX_VALUE;
-    long oldestWorkingTime = Long.MAX_VALUE;
-    long oldestCleaningTime = Long.MAX_VALUE;
-
-    // Get the last compaction for each db/table/partition
-    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
-      String key = element.getDbname() + "/" + element.getTablename() +
-          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
-
-      // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
-      lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
-
-      // find the oldest elements with initiated and working states
-      String state = element.getState();
-      if (TxnStore.INITIATED_RESPONSE.equals(state) && (oldestEnqueueTime > element.getEnqueueTime())) {
-        oldestEnqueueTime = element.getEnqueueTime();
-      }
-
-      if (element.isSetStart()) {
-        if (TxnStore.WORKING_RESPONSE.equals(state) && (oldestWorkingTime > element.getStart())) {
-          oldestWorkingTime = element.getStart();
-        }
-      }
-
-      if (element.isSetCleanerStart()) {
-        if (TxnStore.CLEANING_RESPONSE.equals(state) && (oldestCleaningTime > element.getCleanerStart())) {
-          oldestCleaningTime = element.getCleanerStart();
-        }
-      }
-    }
+    CompactionMetricData metricData = CompactionMetricData.of(showCompactResponse.getCompacts());
 
     // Get the current count for each state
-    Map<String, Long> counts = lastElements.values().stream()
-        .collect(Collectors.groupingBy(ShowCompactResponseElement::getState, Collectors.counting()));
+    Map<String, Long> counts = metricData.getStateCount();
 
     // Update metrics
     for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
       String key = COMPACTION_STATUS_PREFIX + replaceWhitespace(TxnStore.COMPACTION_STATES[i]);
       Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
       if (count != null) {
-        Metrics.getOrCreateGauge(key).set(count.intValue());
+        Metrics.getOrCreateGauge(key)
+            .set(count.intValue());
       } else {
-        Metrics.getOrCreateGauge(key).set(0);
+        Metrics.getOrCreateGauge(key)
+            .set(0);
       }
     }
 
-    Long numFailedComp = counts.get(TxnStore.FAILED_RESPONSE);
-    Long numNotInitiatedComp = counts.get(TxnStore.DID_NOT_INITIATE_RESPONSE);
-    Long numSucceededComp = counts.get(TxnStore.SUCCEEDED_RESPONSE);
-    if (numFailedComp != null && numNotInitiatedComp != null && numSucceededComp != null &&
-        ((numFailedComp + numNotInitiatedComp) / (numFailedComp + numNotInitiatedComp + numSucceededComp) >
-      MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.COMPACTOR_FAILED_COMPACTION_RATIO_THRESHOLD))) {
-      LOG.warn("Many compactions are failing. Check root cause of failed/not initiated compactions.");
-    }
+    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, metricData.getOldestEnqueueTime(), conf);
+    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, metricData.getOldestWorkingTime(), conf);
+    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, metricData.getOldestCleaningTime(), conf);
 
-    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, oldestEnqueueTime, conf,
-        "Found compaction entry in compaction queue with an age of {} seconds. " +
-            "Consider increasing the number of worker threads.",
-        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING,
-        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR);
-    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, oldestWorkingTime, conf);
-    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, oldestCleaningTime, conf);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS)
+        .set((int) metricData.getInitiatorsCount());
+    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKERS)
+        .set((int) metricData.getWorkersCount());
 
-    long initiatorsCount = lastElements.values().stream()
-        //manually initiated compactions don't count
-        .filter(e -> !MANUALLY_INITIATED_COMPACTION.equals(getThreadIdFromId(e.getInitiatorId())))
-        .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
-    long workersCount = lastElements.values().stream()
-        .map(e -> getHostFromId(e.getWorkerid())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKERS).set((int) workersCount);
-
-    long initiatorVersionsCount = lastElements.values().stream()
-        .map(ShowCompactResponseElement::getInitiatorVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATOR_VERSIONS).set((int) initiatorVersionsCount);
-    long workerVersionsCount = lastElements.values().stream()
-        .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATOR_VERSIONS)
+        .set((int) metricData.getInitiatorVersionsCount());
+    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS)
+        .set((int) metricData.getWorkerVersionsCount());
   }
 
-  private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf) {
-    updateOldestCompactionMetric(metricName, oldestTime, conf, null, null, null);
-  }
-
-  private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf,
-      String logMessage, MetastoreConf.ConfVars warningThreshold, MetastoreConf.ConfVars errorThreshold) {
-    if (oldestTime == Long.MAX_VALUE) {
+  private static void updateOldestCompactionMetric(String metricName, Long oldestTime, Configuration conf) {
+    if (oldestTime == null) {
       Metrics.getOrCreateGauge(metricName)
           .set(0);
-      return;
-    }
-
-    int oldestAge = (int) ((System.currentTimeMillis() - oldestTime) / 1000L);
-    Metrics.getOrCreateGauge(metricName)
-        .set(oldestAge);
-    if (logMessage != null) {
-      if (oldestAge >= MetastoreConf.getTimeVar(conf, errorThreshold, TimeUnit.SECONDS)) {
-        LOG.error(logMessage, oldestAge);
-      } else if (oldestAge >= MetastoreConf.getTimeVar(conf, warningThreshold, TimeUnit.SECONDS)) {
-        LOG.warn(logMessage, oldestAge);
-      }
+    } else {
+      int oldestAge = (int) ((System.currentTimeMillis() - oldestTime) / 1000L);
+      Metrics.getOrCreateGauge(metricName)
+          .set(oldestAge);
     }
   }
 
