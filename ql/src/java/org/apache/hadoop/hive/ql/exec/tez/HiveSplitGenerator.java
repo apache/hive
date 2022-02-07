@@ -143,7 +143,7 @@ public class HiveSplitGenerator extends InputInitializer {
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
     this.conf = TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
-    
+
     this.jobConf = new JobConf(conf);
 
     // Read all credentials into the credentials instance stored in JobConf.
@@ -200,6 +200,7 @@ public class HiveSplitGenerator extends InputInitializer {
         if (getContext() != null) {
           totalResource = getContext().getTotalAvailableResource().getMemory();
           taskResource = getContext().getVertexTaskResource().getMemory();
+          totalResource = totalResource <= 0 ? 1 :taskResource;
           availableSlots = totalResource / taskResource;
         }
 
