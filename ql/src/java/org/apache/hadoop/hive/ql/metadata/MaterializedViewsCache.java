@@ -148,14 +148,15 @@ public class MaterializedViewsCache {
       return;
     }
 
-    List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(mvTable.getViewExpandedText());
+    ASTSubtree astSubtree = new ASTSubtree(materialization.getAst());
+    List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(astSubtree);
     if (materializationList == null) {
       return;
     }
 
     materializationList.remove(materialization);
     if (materializationList.isEmpty()) {
-      sqlToMaterializedView.remove(mvTable.getViewExpandedText());
+      sqlToMaterializedView.remove(astSubtree);
     }
   }
 
