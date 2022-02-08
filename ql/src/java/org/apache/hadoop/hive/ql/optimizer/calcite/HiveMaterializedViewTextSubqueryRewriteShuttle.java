@@ -60,7 +60,14 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
   private final Set<TableName> tablesUsedByOriginalPlan;
   private final HiveTxnManager txnManager;
 
-  public HiveMaterializedViewTextSubqueryRewriteShuttle(Map<RelNode, ASTNode> subQueryMap, ASTNode originalAST, ASTNode expandedAST, RelBuilder relBuilder, Hive db, Set<TableName> tablesUsedByOriginalPlan, HiveTxnManager txnManager) {
+  public HiveMaterializedViewTextSubqueryRewriteShuttle(
+          Map<RelNode, ASTNode> subQueryMap,
+          ASTNode originalAST,
+          ASTNode expandedAST,
+          RelBuilder relBuilder,
+          Hive db,
+          Set<TableName> tablesUsedByOriginalPlan,
+          HiveTxnManager txnManager) {
     this.subQueryMap = unmodifiableMap(subQueryMap);
     this.originalAST = originalAST;
     this.expandedAST = expandedAST;
@@ -99,7 +106,8 @@ public class HiveMaterializedViewTextSubqueryRewriteShuttle extends HiveRelShutt
       return super.visit(project);
     }
 
-    RelNode match = getMaterializedViewByAST(expandedAST, relBuilder.getCluster(), NON_CALCITE, db, tablesUsedByOriginalPlan, txnManager);
+    RelNode match = getMaterializedViewByAST(
+            expandedSubqAST, relBuilder.getCluster(), NON_CALCITE, db, tablesUsedByOriginalPlan, txnManager);
     if (match != null) {
       return match;
     }

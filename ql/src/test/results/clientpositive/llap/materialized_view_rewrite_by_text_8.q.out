@@ -61,7 +61,6 @@ POSTHOOK: Input: default@t1
 CBO PLAN:
 HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
-Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select col0 from (
 select col0 from
@@ -70,6 +69,7 @@ where col0 < 100
 ) sub2
 where col0 = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -80,21 +80,14 @@ where col0 < 100
 ) sub2
 where col0 = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col0=[CAST(20):INTEGER])
-  HiveSortLimit(fetch=[0])
-    HiveProject(DUMMY=[0])
-      HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
-        HiveProject(col0=[CAST(20):INTEGER])
-          HiveFilter(condition=[=($0, 20)])
-            HiveTableScan(table=[[default, t1]], table:alias=[l])
-        HiveProject(col0=[CAST(20):INTEGER])
-          HiveFilter(condition=[=(20, $0)])
-            HiveTableScan(table=[[default, t1]], table:alias=[r])
+HiveProject(col0=[CAST(10):INTEGER])
+  HiveFilter(condition=[=($0, 10)])
+    HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
-Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select col0 from (
     select col0 from
@@ -103,6 +96,7 @@ select col0 from (
 ) sub2
 where col0 = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -113,22 +107,14 @@ select col0 from (
 ) sub2
 where col0 = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col0=[CAST(20):INTEGER])
-  HiveSortLimit(fetch=[0])
-    HiveProject(DUMMY=[0])
-      HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
-        HiveProject(col0=[CAST(20):INTEGER])
-          HiveFilter(condition=[=($0, 20)])
-            HiveTableScan(table=[[default, t1]], table:alias=[l])
-        HiveProject(col0=[CAST(20):INTEGER])
-          HiveFilter(condition=[=(20, $0)])
-            HiveTableScan(table=[[default, t1]], table:alias=[r])
+HiveProject(col0=[CAST(10):INTEGER])
+  HiveFilter(condition=[=($0, 10)])
+    HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
-Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select col0 from t1 where col0 in (
   select col0 from
@@ -136,6 +122,7 @@ select col0 from t1 where col0 in (
 where col0 < 100
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -145,24 +132,17 @@ select col0 from t1 where col0 in (
 where col0 < 100
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col0=[CAST(20):INTEGER])
-  HiveSemiJoin(condition=[true], joinType=[semi])
-    HiveProject(col0=[CAST(20):INTEGER])
-      HiveFilter(condition=[=($0, 20)])
-        HiveTableScan(table=[[default, t1]], table:alias=[t1])
-    HiveProject($f0=[$0])
-      HiveAggregate(group=[{0}])
-        HiveProject($f0=[true])
-          HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
-            HiveProject(col0=[CAST(20):INTEGER])
-              HiveFilter(condition=[=($0, 20)])
-                HiveTableScan(table=[[default, t1]], table:alias=[l])
-            HiveProject(col0=[CAST(20):INTEGER])
-              HiveFilter(condition=[=(20, $0)])
-                HiveTableScan(table=[[default, t1]], table:alias=[r])
+HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
 PREHOOK: query: drop materialized view mat2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
