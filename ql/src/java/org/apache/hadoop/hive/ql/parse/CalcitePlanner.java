@@ -1660,10 +1660,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
 
-      RelNode rewrittenPlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster, ANY);
-      if (rewrittenPlan != null) {
-        calcitePlan = rewrittenPlan;
-      }
+      calcitePlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster, ANY);
 
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
@@ -2088,10 +2085,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyMaterializedViewRewritingByText(
-            ASTNode queryToRewrite, RelNode calciteGenPlan, RelOptCluster optCluster,
+            ASTNode queryToRewrite, RelNode originalPlan, RelOptCluster optCluster,
             Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
       if (!isMaterializedViewRewritingByTextEnabled()) {
-        return null;
+        return originalPlan;
       }
 
       unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
@@ -2102,16 +2099,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       try {
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
-        RelNode mvScan = getMaterializedViewByQueryText(expandedAST, calciteGenPlan, optCluster, filter);
+        RelNode mvScan = getMaterializedViewByQueryText(expandedAST, originalPlan, optCluster, filter);
         if (mvScan != null) {
           return mvScan;
         }
 
+        if (!conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL)) {
+          return originalPlan;
+        }
 
         return new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewrite, expandedAST,
-                HiveRelFactories.HIVE_BUILDER.create(optCluster, null)).validate(calciteGenPlan);
+                HiveRelFactories.HIVE_BUILDER.create(optCluster, null)).validate(originalPlan);
       } catch (ParseException e) {
-        throw new RuntimeException(e);
+        LOG.warn("Automatic materialized view query rewrite failed. expanded query: {} text", expandedQueryText, e);
+        return originalPlan;
       }
     }
 
