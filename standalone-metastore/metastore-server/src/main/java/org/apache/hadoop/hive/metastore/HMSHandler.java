@@ -1645,13 +1645,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 throw new RuntimeException(e);
               }
             }).collect(Collectors.toList());
+    boolean replSpecific = false;
     if (newDbProp != null) {
       for (Map.Entry<String, String> prop : newDbProp.entrySet()) {
         String propName = prop.getKey().replace("\"", "");
         String oldValue = (oldDbProp == null) ? null : oldDbProp.get(prop.getKey());
-        if (!prop.getValue().equals(oldValue) && !propName.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
-                && !replDbProps.contains(propName)) {
-          return false;
+        if (!prop.getValue().equals(oldValue)) {
+          if (propName.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX) || replDbProps.contains(propName)) {
+            replSpecific = true;
+          } else {
+            return false;
+          }
         }
       }
     }
@@ -1659,13 +1663,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       for (Map.Entry<String, String> prop : oldDbProp.entrySet()) {
         String propName = prop.getKey().replace("\"", "");
         String newValue = (newDbProp == null) ? null : newDbProp.get(prop.getKey());
-        if (!prop.getValue().equals(newValue) && !propName.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
-                && !replDbProps.contains(propName)) {
-          return false;
+        if (!prop.getValue().equals(newValue)) {
+          if (propName.startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX) || replDbProps.contains(propName)) {
+            replSpecific = true;
+          } else {
+            return false;
+          }
         }
       }
     }
-    return true;
+    return replSpecific;
   }
 
   /**

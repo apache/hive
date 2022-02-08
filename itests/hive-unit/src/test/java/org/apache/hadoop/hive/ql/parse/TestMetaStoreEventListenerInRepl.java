@@ -122,9 +122,6 @@ public class TestMetaStoreEventListenerInRepl {
     // Add expected events with associated tables, if any.
     Map<String, Set<String>> eventsMap = new HashMap<>();
     eventsMap.put(CreateDatabaseEvent.class.getName(), null);
-    // Replication causes many implicit alter database operations, so metastore will see some
-    // alter table events as well.
-    eventsMap.put(AlterDatabaseEvent.class.getName(), null);
     eventsMap.put(CreateTableEvent.class.getName(), new HashSet<>(Arrays.asList("t1", "t2", "t4")));
     eventsMap.put(AlterTableEvent.class.getName(), new HashSet<>(Arrays.asList("t1", "t2", "t4")));
     return eventsMap;
@@ -142,9 +139,6 @@ public class TestMetaStoreEventListenerInRepl {
 
     // Add expected events with associated tables, if any.
     Map<String, Set<String>> eventsMap = new HashMap<>();
-    // Replication causes many implicit alter database operations, so metastore will see some
-    // alter table events as well.
-    eventsMap.put(AlterDatabaseEvent.class.getName(), null);
     eventsMap.put(CreateTableEvent.class.getName(), new HashSet<>(Arrays.asList("t6")));
     eventsMap.put(AlterTableEvent.class.getName(), new HashSet<>(Arrays.asList("t1", "t2", "t6")));
     eventsMap.put(DropTableEvent.class.getName(), new HashSet<>(Arrays.asList("t2")));

@@ -160,6 +160,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testReplAlterDbEventsNotCapturedInNotificationLog() throws Throwable {
     //Perform empty bootstrap dump and load
     String srcDbName = "srcDb";
+    String replicaDb = "tgtDb";
     primary.run("CREATE DATABASE " + srcDbName);
     long lastEventId = primary.getCurrentNotificationEventId().getEventId();
     //Assert that repl.source.for is not captured in NotificationLog
@@ -167,10 +168,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     long latestEventId = primary.getCurrentNotificationEventId().getEventId();
     assertEquals(lastEventId, latestEventId);
 
-    replica.run("REPL LOAD " + srcDbName + " INTO " + replicatedDbName);
+    replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
     latestEventId = replica.getCurrentNotificationEventId().getEventId();
     //Assert that repl.target.id, hive.repl.ckpt.key and hive.repl.first.inc.pending is not captured in notificationLog.
-    assertEquals(latestEventId, lastEventId + 1); //This load will generate only 1 event i.e. CREATE_DATABASE
+    assertEquals(latestEventId, lastEventId + 2); //This load will generate only 2 event i.e. CREATE_DATABASE, AlterDatabaseSetOwnerDesc
 
     WarehouseInstance.Tuple incDump = primary.run("use " + srcDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
@@ -181,19 +182,20 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //Assert that repl.last.id is not captured in notification log.
     long noOfEventsInDumpDir = primary.getNoOfEventsDumped(incDump.dumpLocation, conf);
     lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    replica.run("REPL LOAD " + srcDbName + " INTO " + replicatedDbName);
+    replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
 
     latestEventId = replica.getCurrentNotificationEventId().getEventId();
 
     //Validate that there is no addition event generated in notificationLog table apart from replayed ones.
     assertEquals(latestEventId, lastEventId + noOfEventsInDumpDir);
 
-    long targetDbReplId = Long.parseLong(replica.getDatabase(replicatedDbName)
+    long targetDbReplId = Long.parseLong(replica.getDatabase(replicaDb)
             .getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY));
     //Validate that repl.last.id db property has been updated successfully.
     assertEquals(targetDbReplId, lastEventId);
 
     primary.run("DROP DATABASE " + srcDbName + " CASCADE");
+    replica.run("DROP DATABASE " + replicaDb + " CASCADE");
   }
 
   @Test
@@ -1768,7 +1770,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 12);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 10);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -2317,14 +2319,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     fs.delete(ackLastEventID, false);
     fs.delete(dumpMetaData, false);
     //delete all the event folder except first one.
-    long firstIncEventID = Long.parseLong(bootstrapDump.lastReplicationId) + 1;
+    long firstIncEventID = -1;
     long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
     assertTrue(lastIncEventID > (firstIncEventID + 1));
 
-    for (long eventId=firstIncEventID + 1; eventId<=lastIncEventID; eventId++) {
+    for (long eventId=Long.parseLong(bootstrapDump.lastReplicationId) + 1; eventId<=lastIncEventID; eventId++) {
       Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
       if (fs.exists(eventRoot)) {
-        fs.delete(eventRoot, true);
+        if (firstIncEventID == -1){
+          firstIncEventID = eventId;
+        } else {
+          fs.delete(eventRoot, true);
+        }
       }
     }
 
