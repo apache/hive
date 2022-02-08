@@ -3476,24 +3476,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
 
             subQueryMap.put(subQueryRelNode, subQueryRoot);
-//            if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL) &&
-//                    isMaterializedViewRewritingByTextEnabled()) {
-//              unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-//              String expandedSubQueryText = ctx.getTokenRewriteStream().toString(
-//                      EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
-//                      subQueryRoot.getTokenStartIndex(),
-//                      subQueryRoot.getTokenStopIndex());
-//
-//              if (expandedSubQueryText.length() >= 2) {
-//                expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
-//              }
-//
-//
-////              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster, NON_CALCITE);
-////              if (mv != null) {
-////                subQueryRelNode = mv;
-////              }
-//            }
 
             subQueryToRelNode.put(next, parseInfo.setSubQueryRelNode(subQueryRelNode));
             //keep track of subqueries which are scalar, correlated and contains aggregate
@@ -5090,14 +5072,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (subqueryRoot != null &&
                 conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL)) {
           subQueryMap.put(relNode, subqueryRoot);
-//          RelNode mv = applyMaterializedViewRewritingByText(subqueryRoot, relNode, cluster, NON_CALCITE);
-//          if (mv != null) {
-//            RowResolver rr = relToHiveRR.remove(relNode);
-//            relToHiveRR.put(mv, rr);
-//            ImmutableMap<String, Integer> tmp = relToHiveColNameCalcitePosMap.remove(relNode);
-//            relToHiveColNameCalcitePosMap.put(mv, tmp);
-//            relNode = mv;
-//          }
         }
 
         aliasToRel.put(subqAlias, relNode);

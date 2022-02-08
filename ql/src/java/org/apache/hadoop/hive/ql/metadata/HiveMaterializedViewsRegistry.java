@@ -346,7 +346,7 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  public List<HiveRelOptMaterialization> getRewritingMaterializedViews() {
+  List<HiveRelOptMaterialization> getRewritingMaterializedViews() {
     return materializedViewsCache.values().stream()
             .filter(materialization -> materialization.getScope().contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE))
             .collect(toList());
