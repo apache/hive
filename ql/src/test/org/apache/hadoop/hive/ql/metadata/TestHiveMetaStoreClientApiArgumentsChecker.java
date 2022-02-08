@@ -80,6 +80,8 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
     hive.getConf().set(ValidTxnList.VALID_TXNS_KEY, "1:");
     hive.getConf().set(ValidWriteIdList.VALID_WRITEIDS_KEY, TABLE_NAME + ":1:");
     hive.getConf().setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.TestTxnManager");
+    // Pick a small number for the batch size to easily test code with multiple batches.
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
     SessionState.start(hive.getConf());
     SessionState.get().initTxnMgr(hive.getConf());
     Context ctx = new Context(hive.getConf());
@@ -138,6 +140,16 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
   @Test
   public void testGetPartitionsByNames3() throws HiveException {
     hive.getPartitionsByNames(t, new ArrayList<>(), true);
+  }
+
+  @Test
+  public void testGetPartitionsByNamesWithPartitionNamesInSingleBatch() throws HiveException {
+    hive.getPartitionsByNames(t, Arrays.asList("Greece", "Italy"), true);
+  }
+
+  @Test
+  public void testGetPartitionsByNamesWithPartitionNamesInMultipleBatches() throws HiveException {
+    hive.getPartitionsByNames(t, Arrays.asList("Greece", "Italy", "France"), true);
   }
 
   @Test
