@@ -29,7 +29,6 @@ import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -349,10 +348,8 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
-import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewTextSubqueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.NON_CALCITE;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -1660,7 +1657,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
 
-      calcitePlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster, ANY);
+      calcitePlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster);
 
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
@@ -2085,8 +2082,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyMaterializedViewRewritingByText(
-            ASTNode queryToRewrite, RelNode originalPlan, RelOptCluster optCluster,
-            Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
+            ASTNode queryToRewrite, RelNode originalPlan, RelOptCluster optCluster) {
       if (!isMaterializedViewRewritingByTextEnabled()) {
         return originalPlan;
       }
@@ -2099,7 +2095,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       try {
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
-        RelNode mvScan = getMaterializedViewByQueryText(expandedAST, originalPlan, optCluster, filter);
+        Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(originalPlan);
+        RelNode mvScan = getMaterializedViewByAST(expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
         if (mvScan != null) {
           return mvScan;
         }
@@ -2109,49 +2106,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         return new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewrite, expandedAST,
-                HiveRelFactories.HIVE_BUILDER.create(optCluster, null)).validate(originalPlan);
+                HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+                db, tablesUsedByOriginalPlan, getTxnMgr()).validate(originalPlan);
       } catch (ParseException e) {
         LOG.warn("Automatic materialized view query rewrite failed. expanded query: {} text", expandedQueryText, e);
         return originalPlan;
       }
-    }
-
-    private RelNode getMaterializedViewByQueryText(
-            ASTNode expandedAST, RelNode calciteGenPlan, RelOptCluster optCluster,
-            Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
-      try {
-        List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
-                expandedAST, getTablesUsed(calciteGenPlan), getTxnMgr());
-        for (HiveRelOptMaterialization relOptMaterialization : relOptMaterializationList) {
-          if (!filter.test(relOptMaterialization.getScope())) {
-            LOG.debug("Filter out materialized view {} scope {}",
-                    relOptMaterialization.qualifiedTableName, relOptMaterialization.getScope());
-            continue;
-          }
-
-          try {
-            Table hiveTableMD = extractTable(relOptMaterialization);
-            if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
-              Set<TableName> sourceTables = new HashSet<>(1);
-              sourceTables.add(hiveTableMD.getFullTableName());
-              if (db.validateMaterializedViewsFromRegistry(
-                      singletonList(hiveTableMD), sourceTables, getTxnMgr())) {
-                return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
-              }
-            } else {
-              LOG.debug("User does not have privilege to use materialized view {}",
-                      relOptMaterialization.qualifiedTableName);
-            }
-          } catch (HiveException e) {
-            LOG.warn("Skipping materialized view due to validation failure: " +
-                    relOptMaterialization.qualifiedTableName, e);
-          }
-        }
-      } catch (HiveException e) {
-        LOG.warn(String.format("Exception while looking up materialized views for query '%s'", expandedAST), e);
-      }
-
-      return null;
     }
 
     /**

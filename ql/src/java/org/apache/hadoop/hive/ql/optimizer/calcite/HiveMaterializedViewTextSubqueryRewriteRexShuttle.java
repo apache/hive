@@ -22,40 +22,22 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
-import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 
 import java.util.Map;
-import java.util.Stack;
 
 public class HiveMaterializedViewTextSubqueryRewriteRexShuttle extends RexShuttle {
 
-  private final Map<RelNode, ASTNode> map;
-  private final ASTNode ast;
-  private final ASTNode expandedAST;
-  private final RelBuilder relBuilder;
+  private final HiveMaterializedViewTextSubqueryRewriteShuttle relShuttle;
 
-  public HiveMaterializedViewTextSubqueryRewriteRexShuttle(Map<RelNode, ASTNode> map, ASTNode ast, ASTNode expandedAST, RelBuilder relBuilder) {
-    this.map = map;
-    this.ast = ast;
-    this.expandedAST = expandedAST;
-    this.relBuilder = relBuilder;
+  public HiveMaterializedViewTextSubqueryRewriteRexShuttle(HiveMaterializedViewTextSubqueryRewriteShuttle relShuttle) {
+    this.relShuttle = relShuttle;
   }
 
   @Override
   public RexNode visitSubQuery(RexSubQuery subQuery) {
 
-     RelNode newSubquery = subQuery.rel.accept(new HiveMaterializedViewTextSubqueryRewriteShuttle(map, ast, expandedAST, relBuilder));
+    RelNode newSubquery = subQuery.rel.accept(relShuttle);
 
     RexNode newSubQueryRex;
     switch (subQuery.op.kind) {

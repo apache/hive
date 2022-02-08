@@ -40,7 +40,6 @@ select col0 from
   (select col0 from t1 where col0 > 30) sub
 where col0 = 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -48,20 +47,18 @@ select col0 from
   (select col0 from t1 where col0 > 30) sub
 where col0 = 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col0=[CAST(10):INTEGER])
-  HiveFilter(condition=[=($0, 10)])
-    HiveTableScan(table=[[default, mat2]], table:alias=[mat2])
+HiveSortLimit(fetch=[0])
+  HiveProject(col0=[$0])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 = 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -69,13 +66,14 @@ select col0 from
   (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 = 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col0=[CAST(10):INTEGER])
-  HiveFilter(condition=[=($0, 10)])
-    HiveTableScan(table=[[default, mat1]], table:alias=[mat1])
+  HiveAggregate(group=[{0}])
+    HiveProject($f0=[true])
+      HiveFilter(condition=[AND(=($0, 10), BETWEEN(false, $0, 1, 10))])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: drop materialized view mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
