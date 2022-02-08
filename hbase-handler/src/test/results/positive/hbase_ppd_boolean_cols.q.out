@@ -14,6 +14,26 @@ WITH SERDEPROPERTIES (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
+PREHOOK: query: insert into hbase_table
+values ('Alex', true, true),
+       ('George', true, false),
+       ('Stam', false, false),
+       ('Alice', false, true),
+       ('Chris', null, false),
+       ('Rob', false, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: insert into hbase_table
+values ('Alex', true, true),
+       ('George', true, false),
+       ('Stam', false, false),
+       ('Alice', false, true),
+       ('Chris', null, false),
+       ('Rob', false, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hbase_table
 PREHOOK: query: explain select * from hbase_table where c1 and c2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
@@ -55,6 +75,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select * from hbase_table where c1 and c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table where c1 and c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+Alex	true	true
 PREHOOK: query: explain select * from hbase_table where c1=true and c2=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
@@ -96,3 +125,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select * from hbase_table where c1=true and c2=true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table where c1=true and c2=true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+Alex	true	true
