@@ -11,6 +11,7 @@ values ('Alex', true, true),
        ('Chris', null, false),
        ('Rob', false, null);
 
+-- Although we are hitting the code for predicate pushdown the push does not happen at the moment (see HIVE-25939).
 explain select * from hbase_table where c1 and c2;
 select * from hbase_table where c1 and c2;
 explain select * from hbase_table where c1=true and c2=true;
