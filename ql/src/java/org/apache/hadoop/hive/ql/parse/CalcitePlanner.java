@@ -2108,7 +2108,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewrite, expandedAST,
                 HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
                 db, tablesUsedByOriginalPlan, getTxnMgr()).validate(originalPlan);
-      } catch (ParseException e) {
+      } catch (Exception e) {
         LOG.warn("Automatic materialized view query rewrite failed. expanded query: {} text", expandedQueryText, e);
         return originalPlan;
       }
