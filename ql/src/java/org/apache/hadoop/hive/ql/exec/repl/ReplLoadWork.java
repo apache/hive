@@ -143,7 +143,8 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
               && fs.exists(failoverReadyMarker);
       isFirstFailover = checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, EVENT_ACK_FILE);
-      isSecondFailover = checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, BOOTSTRAP_TABLES_LIST);
+      isSecondFailover =
+          !isFirstFailover && checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, BOOTSTRAP_TABLES_LIST);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
           replStatsTracker, shouldFailover);
