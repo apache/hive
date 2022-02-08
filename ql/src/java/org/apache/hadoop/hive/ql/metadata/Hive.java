@@ -4136,38 +4136,34 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int nParts = partNames.size();
     int nBatches = nParts / batchSize;
 
-    try {
-      for (int i = 0; i < nBatches; ++i) {
-        GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-        req.setDb_name(tbl.getDbName());
-        req.setTbl_name(tbl.getTableName());
-        req.setNames(partNames.subList(i*batchSize, (i+1)*batchSize));
-        req.setGet_col_stats(getColStats);
-        List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
+    for (int i = 0; i < nBatches; ++i) {
+      GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+      req.setDb_name(tbl.getDbName());
+      req.setTbl_name(tbl.getTableName());
+      req.setNames(partNames.subList(i * batchSize, (i + 1) * batchSize));
+      req.setGet_col_stats(getColStats);
+      List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
 
-        if (tParts != null) {
-          for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
-            partitions.add(new Partition(tbl, tpart));
-          }
+      if (tParts != null) {
+        for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+          partitions.add(new Partition(tbl, tpart));
         }
       }
+    }
 
-      if (nParts > nBatches * batchSize) {
-        GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-        req.setDb_name(tbl.getDbName());
-        req.setTbl_name(tbl.getTableName());
-        req.setNames(partNames.subList(nBatches * batchSize, nParts));
-        req.setGet_col_stats(getColStats);
-        req.setEngine(Constants.HIVE_ENGINE);
-        List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
-        if (tParts != null) {
-          for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
-            partitions.add(new Partition(tbl, tpart));
-          }
+    if (nParts > nBatches * batchSize) {
+      GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+      req.setDb_name(tbl.getDbName());
+      req.setTbl_name(tbl.getTableName());
+      req.setNames(partNames.subList(nBatches * batchSize, nParts));
+      req.setGet_col_stats(getColStats);
+      req.setEngine(Constants.HIVE_ENGINE);
+      List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
+      if (tParts != null) {
+        for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+          partitions.add(new Partition(tbl, tpart));
         }
       }
-    } catch (Exception e) {
-      throw new HiveException(e);
     }
     return partitions;
   }
