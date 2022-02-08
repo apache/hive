@@ -3532,6 +3532,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
         req.setId(table.getTTable().getId());
       }
+      req.setEngine(Constants.HIVE_ENGINE);
       return (getMSC().getPartitionsByNames(req)).getPartitions();
     } catch (Exception e) {
       LOG.error("Failed getPartitionsByNames", e);
@@ -4133,31 +4134,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
     // TODO: might want to increase the default batch size. 1024 is viable; MS gets OOM if too high.
-    int nParts = partNames.size();
-    int nBatches = nParts / batchSize;
-
-    for (int i = 0; i < nBatches; ++i) {
+    for (List<String> namesBatch : Lists.partition(partNames, batchSize)) {
       GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
       req.setDb_name(tbl.getDbName());
       req.setTbl_name(tbl.getTableName());
-      req.setNames(partNames.subList(i * batchSize, (i + 1) * batchSize));
+      req.setNames(namesBatch);
       req.setGet_col_stats(getColStats);
-      List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
-
-      if (tParts != null) {
-        for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-          partitions.add(new Partition(tbl, tpart));
-        }
-      }
-    }
-
-    if (nParts > nBatches * batchSize) {
-      GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-      req.setDb_name(tbl.getDbName());
-      req.setTbl_name(tbl.getTableName());
-      req.setNames(partNames.subList(nBatches * batchSize, nParts));
-      req.setGet_col_stats(getColStats);
-      req.setEngine(Constants.HIVE_ENGINE);
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
       if (tParts != null) {
         for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
