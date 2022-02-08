@@ -51,21 +51,6 @@ POSTHOOK: Input: default@t1
 CBO PLAN:
 HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
-PREHOOK: query: explain cbo
-select * from t1 where col0 = 'foo'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
-PREHOOK: Input: default@t1
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select * from t1 where col0 = 'foo'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
-POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
-
 PREHOOK: query: drop materialized view mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mat1
