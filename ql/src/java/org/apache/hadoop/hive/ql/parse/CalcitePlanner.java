@@ -2082,18 +2082,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyMaterializedViewRewritingByText(
-            ASTNode queryToRewrite, RelNode originalPlan, RelOptCluster optCluster) {
+            ASTNode queryToRewriteAST, RelNode originalPlan, RelOptCluster optCluster) {
       if (!isMaterializedViewRewritingByTextEnabled()) {
         return originalPlan;
       }
 
-      unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-      String expandedQueryText = ctx.getTokenRewriteStream().toString(
-              EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
-              queryToRewrite.getTokenStartIndex(),
-              queryToRewrite.getTokenStopIndex());
-
+      String expandedQueryText = null;
       try {
+        unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+        expandedQueryText = ctx.getTokenRewriteStream().toString(
+                EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
+                queryToRewriteAST.getTokenStartIndex(),
+                queryToRewriteAST.getTokenStopIndex());
+
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
         Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(originalPlan);
         RelNode mvScan = getMaterializedViewByAST(expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
@@ -2105,11 +2106,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           return originalPlan;
         }
 
-        return new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewrite, expandedAST,
+        return new HiveMaterializedViewTextSubqueryRewriteShuttle(subQueryMap, queryToRewriteAST, expandedAST,
                 HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
                 db, tablesUsedByOriginalPlan, getTxnMgr()).validate(originalPlan);
       } catch (Exception e) {
-        LOG.warn("Automatic materialized view query rewrite failed. expanded query: {} text", expandedQueryText, e);
+        LOG.warn("Automatic materialized view query rewrite failed. expanded query text: {} AST string {} ",
+                expandedQueryText, queryToRewriteAST, e);
         return originalPlan;
       }
     }
