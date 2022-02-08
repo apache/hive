@@ -132,17 +132,11 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
 
   @Test
   public void testGetPartitionsByNames2() throws HiveException {
-    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-    req.setDb_name(DB_NAME);
-    req.setTbl_name(TABLE_NAME);
     hive.getPartitionsByNames(DB_NAME,TABLE_NAME,null, t);
   }
 
   @Test
   public void testGetPartitionsByNames3() throws HiveException {
-    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-    req.setDb_name(DB_NAME);
-    req.setTbl_name(TABLE_NAME);
     hive.getPartitionsByNames(t, new ArrayList<>(), true);
   }
 
