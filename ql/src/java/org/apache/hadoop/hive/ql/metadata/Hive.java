@@ -4142,7 +4142,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         req.setDb_name(tbl.getDbName());
         req.setTbl_name(tbl.getTableName());
         req.setNames(partNames.subList(i*batchSize, (i+1)*batchSize));
-        req.setGet_col_stats(false);
+        req.setGet_col_stats(getColStats);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
 
         if (tParts != null) {
