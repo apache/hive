@@ -11,8 +11,9 @@ insert into stats_part select key, value, p;
 
 select p, key, value from stats_part;
 desc formatted stats_part;
+
+set hive.compute.query.using.stats=true;
 select count(*) from stats_part;
 
 set hive.compute.query.using.stats=false;
-
 select count(*) from stats_part;
