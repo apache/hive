@@ -736,13 +736,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static int nextThreadId = 1000000;
-
   private static void initializeAndStartThread(MetaStoreThread thread, Configuration conf) throws
       Exception {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
-    thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean());
     thread.start();
   }

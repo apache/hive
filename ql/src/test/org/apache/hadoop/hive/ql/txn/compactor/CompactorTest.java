@@ -362,7 +362,6 @@ public abstract class CompactorTest {
       case CLEANER: t = new Cleaner(); break;
       default: throw new RuntimeException("Huh? Unknown thread type.");
     }
-    t.setThreadId((int) t.getId());
     t.setConf(conf);
     stop.set(true);
     t.init(stop);
