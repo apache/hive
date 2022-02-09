@@ -229,6 +229,11 @@ git merge origin/target
             ":hive-standalone-metastore-common",
             ":hive-service-rpc"
         ]
+        sh '''#!/bin/bash
+set -e
+xmlstarlet edit -L `find . -name pom.xml`
+git status | grep . && echo "!!! incorrectly formatted pom.xmls detected; see above!" >&2 && exit 1
+'''
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
