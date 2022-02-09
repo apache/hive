@@ -353,7 +353,7 @@ public class TestMetaStoreUtils {
   }
 
   @Test
-  public void throwFailExceptionWithStorageIsRootPath() {
+  public void throwFailExceptionWithHDFSStorageIsRootPath() {
     StorageDescriptor sd = new StorageDescriptor();
     sd.setLocation("hdfs://localhost:8020");
     Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
@@ -362,6 +362,19 @@ public class TestMetaStoreUtils {
     Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
 
     sd.setLocation("hdfs://localhost:8020/other_path");
+    Assert.assertTrue(MetaStoreUtils.validateTblStorage(sd));
+  }
+
+  @Test
+  public void throwFailExceptionWithS3StorageIsRootPath() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("s3a://bucket/");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("s3a://bucket");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("s3a://bucket/other_path");
     Assert.assertTrue(MetaStoreUtils.validateTblStorage(sd));
   }
 }
