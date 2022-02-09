@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -432,6 +431,16 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
       String name = fs.getName();
       if (setColsExprs.containsKey(name)) {
+        ASTNode setColExpr = setColsExprs.get(name);
+        if (setColExpr.getType() == HiveParser.TOK_TABLE_OR_COL &&
+                setColExpr.getChildCount() == 1 && setColExpr.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
+          UnparseTranslator defaultValueTranslator = new UnparseTranslator(conf);
+          defaultValueTranslator.enable();
+          defaultValueTranslator.addDefaultValueTranslation(
+                  setColsExprs.get(name), colNameToDefaultConstraint.get(name));
+          defaultValueTranslator.applyTranslations(ctx.getTokenRewriteStream());
+        }
+
         String rhsExp = getMatchedText(setColsExprs.get(name));
         //"set a=5, b=8" - rhsExp picks up the next char (e.g. ',') from the token stream
         switch (rhsExp.charAt(rhsExp.length() - 1)) {
@@ -441,10 +450,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
           break;
         default:
           //do nothing
-        }
-
-        if ("`default`".equalsIgnoreCase(rhsExp.trim())) {
-          rhsExp = MapUtils.getString(colNameToDefaultConstraint, name, "null");
         }
 
         rewrittenQueryStr.append(rhsExp);
@@ -627,9 +632,12 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         conf, onClauseAsString);
     oca.analyze();
 
+    UnparseTranslator defaultValuesTranslator = new UnparseTranslator(conf);
+    defaultValuesTranslator.enable();
+    collectDefaultValues(valuesNode, targetTable, defaultValuesTranslator);
+    defaultValuesTranslator.applyTranslations(ctx.getTokenRewriteStream());
     String valuesClause = getMatchedText(valuesNode);
     valuesClause = valuesClause.substring(1, valuesClause.length() - 1); //strip '(' and ')'
-    valuesClause = replaceDefaultKeywordForMerge(valuesClause, targetTable, columnListNode);
     rewrittenQueryStr.append(valuesClause).append("\n   WHERE ").append(oca.getPredicate());
 
     String extraPredicate = getWhenClausePredicate(whenNotMatchedClause);
@@ -641,29 +649,12 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append('\n');
   }
 
-  private String replaceDefaultKeywordForMerge(String valueClause, Table table, ASTNode columnListNode)
-      throws SemanticException {
-    if (!valueClause.toLowerCase().contains("`default`")) {
-      return valueClause;
+  private void collectDefaultValues(ASTNode valueClause, Table targetTable, UnparseTranslator unparseTranslator)
+          throws SemanticException {
+    List<String> defaultConstraints = getDefaultConstraints(targetTable, null);
+    for (int j = 1; j < valueClause.getChildCount(); j++) {
+      unparseTranslator.addDefaultValueTranslation((ASTNode) valueClause.getChild(j), defaultConstraints.get(j - 1));
     }
-
-    Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(table);
-    String[] values = valueClause.trim().split(",");
-    String[] replacedValues = new String[values.length];
-
-    // the list of the column names may be set in the query
-    String[] columnNames = columnListNode == null ?
-      table.getAllCols().stream().map(f -> f.getName()).toArray(size -> new String[size]) :
-      columnListNode.getChildren().stream().map(n -> ((ASTNode)n).toString()).toArray(size -> new String[size]);
-
-    for (int i = 0; i < values.length; i++) {
-      if (values[i].trim().toLowerCase().equals("`default`")) {
-        replacedValues[i] = MapUtils.getString(colNameToDefaultConstraint, columnNames[i], "null");
-      } else {
-        replacedValues[i] = values[i];
-      }
-    }
-    return StringUtils.join(replacedValues, ',');
   }
 
   /**

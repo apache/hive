@@ -307,6 +307,10 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     // not, recurse on any children
     if (node.getToken().getType() == HiveParser.TOK_TABLE_OR_COL) {
       ASTNode colName = (ASTNode)node.getChildren().get(0);
+      if (colName.getToken().getType() == HiveParser.TOK_DEFAULT_VALUE) {
+        return;
+      }
+
       assert colName.getToken().getType() == HiveParser.Identifier :
           "Expected column name";
       setRCols.add(normalizeColName(colName.getText()));

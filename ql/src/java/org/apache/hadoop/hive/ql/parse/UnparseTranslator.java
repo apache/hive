@@ -189,6 +189,19 @@ public class UnparseTranslator {
     addTranslation(identifier, replacementText);
   }
 
+  public void addDefaultValueTranslation(ASTNode exprNode, String defaultValue) {
+    if (!(exprNode.getType() == HiveParser.TOK_TABLE_OR_COL
+            && exprNode.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE)) {
+      return;
+    }
+
+    if (defaultValue == null) {
+      defaultValue = "NULL";
+    }
+    addTranslation(exprNode, defaultValue);
+  }
+
+
   /**
    * Register a "copy" translation in which a node will be translated into
    * whatever the translation turns out to be for another node (after

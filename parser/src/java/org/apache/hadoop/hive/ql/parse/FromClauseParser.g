@@ -62,6 +62,13 @@ tableOrColumn
     identifier -> ^(TOK_TABLE_OR_COL identifier)
     ;
 
+defaultValue
+@init { gParent.pushMsg("default value", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_DEFAULT -> ^(TOK_TABLE_OR_COL TOK_DEFAULT_VALUE)
+    ;
+
 expressionList
 @init { gParent.pushMsg("expression list", state); }
 @after { gParent.popMsg(state); }
