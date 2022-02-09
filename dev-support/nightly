@@ -20,7 +20,7 @@ xmlstarlet edit -L --update "/_:project/_:properties/_:hive.version" \
   --value $NEW_HIVE standalone-metastore/pom.xml
 
 xmlstarlet edit -L --update "/_:project/_:properties/_:storage-api.version" \
-  --value $NEW_SA pom.xml
+  --value $NEW_SA pom.xml standalone-metastore/pom.xml
 
 xmlstarlet edit -L --update "/_:project/_:properties/_:standalone-metastore.version" \
   --value $NEW_MS pom.xml
