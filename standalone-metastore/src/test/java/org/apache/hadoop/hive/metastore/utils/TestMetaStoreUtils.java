@@ -22,12 +22,14 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -348,6 +350,19 @@ public class TestMetaStoreUtils {
     }
     newPartition.setParameters(newStats);
     Assert.assertFalse(MetaStoreUtils.isFastStatsSame(oldPartition, newPartition));
+  }
+
+  @Test
+  public void throwFailExceptionWithStorageIsRootPath() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("hdfs://localhost:8020");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("hdfs://localhost:8020/");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("hdfs://localhost:8020/other_path");
+    Assert.assertTrue(MetaStoreUtils.validateTblStorage(sd));
   }
 }
 
