@@ -31,6 +31,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Rule for setting the number of rows read by TableScan operators.
+ *
+ * TableScan operators provide the number of rows read by the operator based in the number of
+ * rows in the table. This rule is applied on incremental materialized view plans to overwrite this to the
+ * number of rows inserted since the last rebuild of the view only.
+ */
 public class HiveScanCostSetterRule extends RelOptRule {
 
   public static HiveScanCostSetterRule with(RelOptMaterialization materialization) {
