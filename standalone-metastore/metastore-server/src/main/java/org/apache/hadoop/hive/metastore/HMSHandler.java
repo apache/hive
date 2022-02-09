@@ -2362,6 +2362,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           + " is not a valid object name");
     }
 
+    if (!MetaStoreUtils.validateTblStorage(tbl.getSd())) {
+      throw new InvalidObjectException(tbl.getTableName()
+              + " location must not be root path");
+    }
+
     if (!tbl.isSetCatName()) {
       tbl.setCatName(getDefaultCatalog(conf));
     }
