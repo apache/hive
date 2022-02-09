@@ -405,6 +405,23 @@ public class Cleaner extends MetaStoreCompactorThread {
     FileSystem fs = path.getFileSystem(conf);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
+    //    if(!areWeUsingCompactedData(ci.highestWriteId)) {
+    //      
+    //      return false;
+    //    }
+    //    
+    //    if(MAJOR)
+    //    if(dir.getMinWriteId()<ci.highestWriteId) {
+    //      
+    //      return false;
+    //    }
+    //    else {
+    //      // MINOR
+    //      if(dir.getMinDeltaWriteId() <  ci.highestWriteId) { //$$%
+    //        
+    //      }
+    //    }
+
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
      * trying to read anything in that dir (except getAcidState() that only reads the name of
@@ -424,7 +441,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(dir, fs, path, ci.highestWriteId)) {
+
+    if (obsoleteDirs.isEmpty()
+        && !hasDataBelowWatermark(dir, fs, path, ci.highestWriteId, writeIdList.getHighWatermark())) {
       LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
       return true;
     }
@@ -437,7 +456,8 @@ public class Cleaner extends MetaStoreCompactorThread {
     return success;
   }
 
-  private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark)
+  private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark,
+      long minOpenTxn)
       throws IOException {
     Set<Path> acidPaths = new HashSet<>();
     for (ParsedDelta delta : acidDir.getCurrentDirectories()) {
@@ -450,14 +470,14 @@ public class Cleaner extends MetaStoreCompactorThread {
       return !acidPaths.contains(p);
     });
     for (FileStatus child : children) {
-      if (isFileBelowWatermark(child, highWatermark)) {
+      if (isFileBelowWatermark(child, highWatermark, minOpenTxn)) {
         return true;
       }
     }
     return false;
   }
 
-  private boolean isFileBelowWatermark(FileStatus child, long highWatermark) {
+  private boolean isFileBelowWatermark(FileStatus child, long highWatermark, long minOpenTxn) {
     Path p = child.getPath();
     String fn = p.getName();
     if (!child.isDirectory()) {
@@ -465,11 +485,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     if (fn.startsWith(AcidUtils.BASE_PREFIX)) {
       ParsedBaseLight b = ParsedBaseLight.parseBase(p);
-      return b.getWriteId() <= highWatermark;
+      return b.getWriteId() <= highWatermark;// && b.getVisibilityTxnId() < minOpenTxn;
     }
     if (fn.startsWith(AcidUtils.DELTA_PREFIX) || fn.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
       ParsedDeltaLight d = ParsedDeltaLight.parse(p);
-      return d.getMaxWriteId() <= highWatermark;
+      return d.getMaxWriteId() <= highWatermark;// && d.getVisibilityTxnId() < minOpenTxn;
     }
     return false;
   }
