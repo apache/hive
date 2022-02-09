@@ -18,7 +18,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
-    <version>4.0.0-nightly-11114e99808-20220201_165626</version>
+    <version>4.0.0-SNAPSHOT</version>
     <groupId>org.apache.hive</groupId>
   </parent>
 
@@ -32,6 +32,7 @@
   </modules>
 
   <properties>
+    <hive.version>4.0.0-SNAPSHOT</hive.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <javac.errorprone.version>2.8</javac.errorprone.version>
     <errorprone.core.version>2.3.1</errorprone.core.version>
