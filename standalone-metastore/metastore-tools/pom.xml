@@ -94,7 +94,7 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-common</artifactId>
-        <version>${hive.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
       <dependency>
