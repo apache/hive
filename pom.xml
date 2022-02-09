@@ -1423,12 +1423,12 @@
             </goals>
             <configuration>
               <target>
-                <delete dir="${test.tmp.dir}" />
-                <delete dir="${test.conf.dir}" />
-                <delete dir="${test.warehouse.dir}" />
-                <mkdir dir="${test.tmp.dir}" />
-                <mkdir dir="${test.warehouse.dir}" />
-                <mkdir dir="${test.conf.dir}" />
+                <delete dir="${test.tmp.dir}"/>
+                <delete dir="${test.conf.dir}"/>
+                <delete dir="${test.warehouse.dir}"/>
+                <mkdir dir="${test.tmp.dir}"/>
+                <mkdir dir="${test.warehouse.dir}"/>
+                <mkdir dir="${test.conf.dir}"/>
                 <!-- copies hive-site.xml so it can be modified -->
                 <copy todir="${test.conf.dir}">
                   <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"/>
@@ -1743,12 +1743,12 @@
                     <mkdir dir="${thrift.gen.dir}"/>
                     <for param="thrift.file">
                       <path>
-                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift" />
+                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift"/>
                       </path>
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
-                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
+                        <exec executable="${thrift.home}/bin/thrift" failonerror="true" dir=".">
+                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
                         </exec>
                       </sequential>
                     </for>

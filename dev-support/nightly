@@ -31,12 +31,12 @@ mvn versions:set versions:commit -DnewVersion=$NEW_HIVE
 mvn versions:set versions:commit -DnewVersion=$NEW_SA -pl storage-api
 mvn versions:set versions:commit -DnewVersion=$NEW_MS -pl standalone-metastore
 
-xmlstarlet edit -L --update "/_:project/_:properties/_:hive.version" \
+xmlstarlet edit -L -P --update "/_:project/_:properties/_:hive.version" \
   --value $NEW_HIVE standalone-metastore/pom.xml
 
-xmlstarlet edit -L --update "/_:project/_:properties/_:storage-api.version" \
+xmlstarlet edit -L -P --update "/_:project/_:properties/_:storage-api.version" \
   --value $NEW_SA pom.xml standalone-metastore/pom.xml
 
-xmlstarlet edit -L --update "/_:project/_:properties/_:standalone-metastore.version" \
+xmlstarlet edit -L -P --update "/_:project/_:properties/_:standalone-metastore.version" \
   --value $NEW_MS pom.xml
 
