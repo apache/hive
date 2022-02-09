@@ -25,13 +25,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
@@ -4608,6 +4611,99 @@ public class TestReplicationScenarios {
     result = getOutput(driver);
     assertTrue(result.get(0),
             result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
+  }
+
+  @Test
+  public void testReplicationMetricForSkippedIteration() throws Throwable {
+    String name = testName.getMethodName();
+    String primaryDbName = createDB(name, driver);
+    String replicaDbName = "tgtDb";
+    try {
+      isMetricsEnabledForTests(true);
+      MetricCollector collector = MetricCollector.getInstance();
+      run("create table " + primaryDbName + ".t1 (id int) clustered by(id) into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")", driver);
+      run("insert into " + primaryDbName + ".t1 values(1)", driver);
+      run("repl dump " + primaryDbName, driver);
+
+      ReplicationMetric metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl dump " + primaryDbName, driver);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    } finally {
+      isMetricsEnabledForTests(false);
+    }
+  }
+
+  @Test
+  public void testReplicationMetricForFailedIteration() throws Throwable {
+    String name = testName.getMethodName();
+    String primaryDbName = createDB(name, driver);
+    String replicaDbName = "tgtDb";
+    try {
+      isMetricsEnabledForTests(true);
+      MetricCollector collector = MetricCollector.getInstance();
+      run("create table " + primaryDbName + ".t1 (id int) clustered by(id) into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")", driver);
+      run("insert into " + primaryDbName + ".t1 values(1)", driver);
+      Tuple dumpData = replDumpDb(primaryDbName);
+
+      ReplicationMetric metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      Path nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+      FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(hconf);
+      fs.create(nonRecoverableFile);
+
+      verifyFail("REPL DUMP " + primaryDbName, driver);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      verifyFail("REPL DUMP " + primaryDbName, driver);
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      fs.delete(nonRecoverableFile, true);
+      dumpData = replDumpDb(primaryDbName);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("ALTER DATABASE " + replicaDbName + " SET DBPROPERTIES('" + ReplConst.REPL_INCOMPATIBLE + "'='true')", driverMirror);
+
+      verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
+
+      nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+      assertTrue(fs.exists(nonRecoverableFile));
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+    } finally {
+      isMetricsEnabledForTests(false);
+    }
   }
 
   @Test
