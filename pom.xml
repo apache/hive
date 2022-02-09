@@ -23,8 +23,10 @@
   <artifactId>hive</artifactId>
   <version>4.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+
   <name>Hive</name>
   <url>https://hive.apache.org</url>
+
   <modules>
     <module>storage-api</module>
     <module>accumulo-handler</module>
@@ -63,8 +65,10 @@
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
   </modules>
+
   <properties>
     <hive.version.shortname>4.0.0</hive.version.shortname>
+
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -73,8 +77,9 @@
     <hive.path.to.root>.</hive.path.to.root>
     <hive.jdbc.driver.classifier>standalone</hive.jdbc.driver.classifier>
     <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
+
     <!-- Test Properties -->
-    <test.extra.path/>
+    <test.extra.path></test.extra.path>
     <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
@@ -86,9 +91,11 @@
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.local.warehouse.dir>${project.build.directory}/localfs/warehouse</test.local.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
+
     <!-- To add additional exclude patterns set this property -->
-    <test.excludes.additional/>
+    <test.excludes.additional></test.excludes.additional>
     <skip.spark.files>**/TestSparkStatistics*,**/TestSparkSessionTimeout*,**/TestJdbcWithMiniHS2ErasureCoding*,**/TestLocalHiveSparkClient*</skip.spark.files>
+
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
@@ -165,8 +172,7 @@
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.0.3</kryo.version>
-    <kryo4.version>4.0.2</kryo4.version>
-    <!-- old kryo, for spark-client, might be removed in HIVE-23885 -->
+    <kryo4.version>4.0.2</kryo4.version> <!-- old kryo, for spark-client, might be removed in HIVE-23885 -->
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
@@ -184,8 +190,7 @@
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.65.Final</netty.version>
-    <netty3.version>3.10.5.Final</netty3.version>
-    <!-- used by druid storage handler -->
+    <netty3.version>3.10.5.Final</netty3.version> <!-- used by druid storage handler -->
     <pac4j-saml.version>4.0.3</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.11.1</parquet.version>
@@ -224,6 +229,7 @@
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.11.901</aws-java-sdk.version>
   </properties>
+
   <repositories>
    <!-- This needs to be removed before checking in-->
     <repository>
@@ -260,6 +266,7 @@
       </snapshots>
     </repository>
   </repositories>
+
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -1307,6 +1314,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- global dependencies -->
@@ -1330,6 +1338,7 @@
       </exclusions>
     </dependency>
   </dependencies>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -1395,6 +1404,7 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
@@ -1637,7 +1647,7 @@
             <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
-            <test.src.tables/>
+            <test.src.tables></test.src.tables>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
             <!-- Required by spark to work around SPARK-14958 -->
             <antlr.version>${antlr.version}</antlr.version>
@@ -1721,6 +1731,7 @@
       </plugin>
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>thriftif</id>
@@ -1735,7 +1746,8 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath"/>
+                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
+                      classpathref="maven.plugin.classpath" />
                     <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
                     <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
                     <delete dir="${thrift.gen.dir}"/>
@@ -1782,6 +1794,7 @@
         </plugins>
       </build>
     </profile>
+
     <profile>
       <id>sources</id>
       <build>
@@ -1801,6 +1814,7 @@
         </plugins>
       </build>
     </profile>
+
     <profile>
       <id>javadoc</id>
       <build>
@@ -1824,6 +1838,7 @@
         </plugins>
       </build>
     </profile>
+
     <profile>
     <id>spotbugs</id>
       <build>
