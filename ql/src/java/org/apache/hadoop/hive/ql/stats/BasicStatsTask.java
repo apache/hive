@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -65,6 +64,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
 import static org.apache.hadoop.hive.common.StatsSetupConst.DELETE_COUNT;
 import static org.apache.hadoop.hive.common.StatsSetupConst.INSERT_COUNT;
 import static org.apache.hadoop.hive.common.StatsSetupConst.UPDATE_COUNT;
@@ -482,8 +484,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       return null; //we are in CTAS, so we know there are no partitions
     }
 
-    List<Partition> list = new ArrayList<Partition>();
-
     if (work.getTableSpecs() != null) {
 
       // ANALYZE command
@@ -493,12 +493,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         return null;
       }
       // get all partitions that matches with the partition spec
-      List<Partition> partitions = tblSpec.partitions;
-      if (partitions != null) {
-        for (Partition partn : partitions) {
-          list.add(partn);
-        }
-      }
+      return tblSpec.partitions != null ? unmodifiableList(tblSpec.partitions) : emptyList();
     } else if (work.getLoadTableDesc() != null) {
 
       // INSERT OVERWRITE command
@@ -511,18 +506,15 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
         // If no dynamic partitions are generated, dpPartSpecs may not be initialized
         if (dpPartSpecs != null) {
-          // load the list of DP partitions and return the list of partition specs
-          list.addAll(dpPartSpecs);
           // Reload partition metadata because another BasicStatsTask instance may have updated the stats.
-          List<String> partNames = list.stream().map(Partition::getName).collect(Collectors.toList());
-          list = db.getPartitionsByNames(table, partNames);
+          List<String> partNames = dpPartSpecs.stream().map(Partition::getName).collect(Collectors.toList());
+          return db.getPartitionsByNames(table, partNames);
         }
       } else { // static partition
-        Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
-        list.add(partn);
+        return singletonList(db.getPartition(table, tbd.getPartitionSpec(), false));
       }
     }
-    return list;
+    return emptyList();
   }
 
   public Collection<Partition> getDpPartSpecs() {
