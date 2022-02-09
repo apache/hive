@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
  */
 public final class HMSHandlerContext {
 
-  private static final ThreadLocal<HMSHandlerContext> context = new ThreadLocal<>();
+  private static final ThreadLocal<HMSHandlerContext> context = ThreadLocal.withInitial(() -> new HMSHandlerContext());
 
   private static final AtomicInteger nextSerialNum = new AtomicInteger();
 
@@ -59,76 +59,66 @@ public final class HMSHandlerContext {
   private Map<String, com.codahale.metrics.Timer.Context> timerContexts = new HashMap<>();
 
   private HMSHandlerContext() {
-
   }
 
   public static Optional<RawStore> getRawStore() {
-    HMSHandlerContext ctx = context.get();
-    return ctx != null ? Optional.ofNullable(ctx.rawStore) : Optional.empty();
+    return Optional.ofNullable(context.get().rawStore);
   }
 
   public static Optional<HMSHandler> getHMSHandler() {
-    HMSHandlerContext ctx = context.get();
-    return ctx != null ? Optional.ofNullable(ctx.hmsHandler) : Optional.empty();
+    return Optional.ofNullable(context.get().hmsHandler);
   }
 
   public static Optional<String> getIpAddress() {
-    HMSHandlerContext ctx = context.get();
-    return ctx != null ? Optional.ofNullable(ctx.ipAddress) : Optional.empty();
+    return Optional.ofNullable(context.get().ipAddress);
   }
 
   public static Optional<Configuration> getConfiguration() {
-    HMSHandlerContext ctx = context.get();
-    return ctx != null ? Optional.ofNullable(ctx.configuration) : Optional.empty();
+    return Optional.ofNullable(context.get().configuration);
   }
 
   public static TxnStore getTxnStore(Configuration conf) {
-    if (getContext().txnStore == null) {
+    if (context.get().txnStore == null) {
       setTxnStore(TxnUtils.getTxnStore(conf));
     }
-    return getContext().txnStore;
+    return context.get().txnStore;
   }
 
   public static Map<String, String> getModifiedConfig() {
-    return getContext().modifiedConfig;
+    return context.get().modifiedConfig;
   }
 
   public static Integer getThreadId() {
-    return getContext().threadId;
+    return context.get().threadId;
   }
 
   public static Map<String, com.codahale.metrics.Timer.Context> getTimerContexts() {
-    return getContext().timerContexts;
-  }
-
-  private static HMSHandlerContext getContext() {
-    HMSHandlerContext ctx = context.get();
-    if (ctx == null) {
-      context.set(ctx = new HMSHandlerContext());
-    }
-    return ctx;
+    return context.get().timerContexts;
   }
 
   public static void setRawStore(RawStore rawStore) {
-    getContext().rawStore = rawStore;
+    context.get().rawStore = rawStore;
   }
 
   public static void setTxnStore(TxnStore txnStore) {
-    getContext().txnStore = txnStore;
+    context.get().txnStore = txnStore;
   }
 
   public static void setHMSHandler(HMSHandler hmsHandler) {
-    getContext().hmsHandler = hmsHandler;
+    context.get().hmsHandler = hmsHandler;
   }
 
   public static void setConfiguration(Configuration conf) {
-    getContext().configuration = conf;
+    context.get().configuration = conf;
   }
 
   public static void setIpAddress(String ipAddress) {
-    getContext().ipAddress = ipAddress;
+    context.get().ipAddress = ipAddress;
   }
 
+  /**
+   * Release the context
+   */
   public static void clear() {
     context.remove();
   }
