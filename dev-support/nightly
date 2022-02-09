@@ -1,13 +1,27 @@
 #!/bin/bash
 set -e
 
-V="`xmlstarlet sel -t -m /_:project/_:version -v  . pom.xml`"
 DATE="`date +%Y%m%d_%H%M%S`"
 HASH="`git rev-parse --short HEAD`"
 SUFFIX="nightly-$HASH-$DATE"
 
-NEWV="${V/-*}-$SUFFIX"
-echo "$NEWV"
+V="`xmlstarlet sel -t -m /_:project/_:version -v  . pom.xml`"
+NEW_HIVE="${V/-*}-$SUFFIX"
+V="`xmlstarlet sel -t -m /_:project/_:version -v  . storage-api/pom.xml`"
+NEW_SA="${V/-*}-$SUFFIX"
+V="`xmlstarlet sel -t -m /_:project/_:version -v  . standalone-metastore/pom.xml`"
+NEW_MS="${V/-*}-$SUFFIX"
 
-mvn versions:set versions:commit -DnewVersion=$NEWV
-mvn versions:set versions:commit -DnewVersion=$NEWV -pl standalone-metastore
+mvn versions:set versions:commit -DnewVersion=$NEW_HIVE
+mvn versions:set versions:commit -DnewVersion=$NEW_SA -pl storage-api
+mvn versions:set versions:commit -DnewVersion=$NEW_MS -pl standalone-metastore
+
+xmlstarlet edit -L --update "/_:project/_:properties/_:hive.version" \
+  --value $NEW_HIVE standalone-metastore/pom.xml
+
+xmlstarlet edit -L --update "/_:project/_:properties/_:storage-api.version" \
+  --value $NEW_SA pom.xml
+
+xmlstarlet edit -L --update "/_:project/_:properties/_:standalone-metastore.version" \
+  --value $NEW_MS pom.xml
+
