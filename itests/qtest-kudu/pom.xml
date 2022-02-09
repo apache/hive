@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>4.0.0-nightly-3a58b22fe3c-20220209_091222</version>
+    <version>4.0.0-nightly-11114e99808-20220201_165626</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
