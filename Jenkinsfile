@@ -232,7 +232,12 @@ git merge origin/target
         sh '''#!/bin/bash
 set -e
 xmlstarlet edit -L `find . -name pom.xml`
-git diff | grep . && echo "!!! incorrectly formatted pom.xmls detected; see above!" >&2 && exit 1
+git diff
+n=`git diff | wc -l`
+if [ $n != 0 ]; then
+  echo "!!! incorrectly formatted pom.xmls detected; see above!" >&2
+  exit 1
+fi
 '''
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
