@@ -12,9 +12,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache</groupId>
@@ -26,17 +24,14 @@
   <version>4.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Standalone Metastore</name>
-
   <modules>
     <module>metastore-common</module>
     <module>metastore-server</module>
     <module>metastore-tools</module>
   </modules>
-
   <properties>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
-
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -46,7 +41,6 @@
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
     <checkstyle.conf.dir>${basedir}/${standalone.metastore.path.to.root}/checkstyle</checkstyle.conf.dir>
-
     <!-- Test Properties -->
     <log4j.conf.dir>${project.basedir}/src/test/resources</log4j.conf.dir>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
@@ -56,12 +50,10 @@
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
     <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
-
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
-
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
@@ -110,15 +102,12 @@
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
-
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
     <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
-
   </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -396,7 +385,6 @@
         <version>${apache-directory-server.version}</version>
         <scope>test</scope>
       </dependency>
-
       <dependency>
         <groupId>org.apache.directory.server</groupId>
         <artifactId>apacheds-test-framework</artifactId>
@@ -436,7 +424,6 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
   </dependencies>
-
   <build>
     <pluginManagement>
       <plugins>
@@ -518,7 +505,6 @@
       </plugin>
     </plugins>
   </build>
-
   <profiles>
   <!-- use com.github.os72 on aarch64 platform -->
   <profile>
