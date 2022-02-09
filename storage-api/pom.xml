@@ -24,7 +24,7 @@
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-storage-api</artifactId>
-  <version>2.7.3-SNAPSHOT</version>
+  <version>2.7.3-nightly-3a58b22fe3c-20220209_091222</version>
   <packaging>jar</packaging>
   <name>Hive Storage API</name>
 
