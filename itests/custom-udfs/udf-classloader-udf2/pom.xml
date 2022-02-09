@@ -12,9 +12,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
@@ -22,12 +20,10 @@
     <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-
   <groupId>org.apache.hive.hive-it-custom-udfs</groupId>
   <artifactId>udf-classloader-udf2</artifactId>
   <packaging>jar</packaging>
   <name>Hive Integration - Custom UDFs - udf-classloader-udf2</name>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.hive.hive-it-custom-udfs</groupId>
@@ -43,9 +39,7 @@
       <artifactId>hive-serde</artifactId>
     </dependency>
   </dependencies>
-
   <properties>
     <hive.path.to.root>../../..</hive.path.to.root>
   </properties>
-
 </project>
