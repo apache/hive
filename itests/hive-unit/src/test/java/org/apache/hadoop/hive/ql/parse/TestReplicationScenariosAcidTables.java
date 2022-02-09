@@ -158,44 +158,46 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testReplAlterDbEventsNotCapturedInNotificationLog() throws Throwable {
-    //Perform empty bootstrap dump and load
     String srcDbName = "srcDb";
     String replicaDb = "tgtDb";
-    primary.run("CREATE DATABASE " + srcDbName);
-    long lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    //Assert that repl.source.for is not captured in NotificationLog
-    WarehouseInstance.Tuple dumpData = primary.dump(srcDbName);
-    long latestEventId = primary.getCurrentNotificationEventId().getEventId();
-    assertEquals(lastEventId, latestEventId);
+    try {
+      //Perform empty bootstrap dump and load
+      primary.run("CREATE DATABASE " + srcDbName);
+      long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+      //Assert that repl.source.for is not captured in NotificationLog
+      WarehouseInstance.Tuple dumpData = primary.dump(srcDbName);
+      long latestEventId = primary.getCurrentNotificationEventId().getEventId();
+      assertEquals(lastEventId, latestEventId);
 
-    replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
-    latestEventId = replica.getCurrentNotificationEventId().getEventId();
-    //Assert that repl.target.id, hive.repl.ckpt.key and hive.repl.first.inc.pending is not captured in notificationLog.
-    assertEquals(latestEventId, lastEventId + 2); //This load will generate only 2 event i.e. CREATE_DATABASE, AlterDatabaseSetOwnerDesc
+      replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
+      latestEventId = replica.getCurrentNotificationEventId().getEventId();
+      //Assert that repl.target.id, hive.repl.ckpt.key and hive.repl.first.inc.pending is not captured in notificationLog.
+      assertEquals(latestEventId, lastEventId + 2); //This load will generate only 2 event i.e. CREATE_DATABASE, AlterDatabaseSetOwnerDesc
 
-    WarehouseInstance.Tuple incDump = primary.run("use " + srcDbName)
-            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"true\")")
-            .run("insert into t1 values(1)")
-            .dump(srcDbName);
+      WarehouseInstance.Tuple incDump = primary.run("use " + srcDbName)
+              .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                      "tblproperties (\"transactional\"=\"true\")")
+              .run("insert into t1 values(1)")
+              .dump(srcDbName);
 
-    //Assert that repl.last.id is not captured in notification log.
-    long noOfEventsInDumpDir = primary.getNoOfEventsDumped(incDump.dumpLocation, conf);
-    lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
+      //Assert that repl.last.id is not captured in notification log.
+      long noOfEventsInDumpDir = primary.getNoOfEventsDumped(incDump.dumpLocation, conf);
+      lastEventId = primary.getCurrentNotificationEventId().getEventId();
+      replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
 
-    latestEventId = replica.getCurrentNotificationEventId().getEventId();
+      latestEventId = replica.getCurrentNotificationEventId().getEventId();
 
-    //Validate that there is no addition event generated in notificationLog table apart from replayed ones.
-    assertEquals(latestEventId, lastEventId + noOfEventsInDumpDir);
+      //Validate that there is no addition event generated in notificationLog table apart from replayed ones.
+      assertEquals(latestEventId, lastEventId + noOfEventsInDumpDir);
 
-    long targetDbReplId = Long.parseLong(replica.getDatabase(replicaDb)
-            .getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY));
-    //Validate that repl.last.id db property has been updated successfully.
-    assertEquals(targetDbReplId, lastEventId);
-
-    primary.run("DROP DATABASE " + srcDbName + " CASCADE");
-    replica.run("DROP DATABASE " + replicaDb + " CASCADE");
+      long targetDbReplId = Long.parseLong(replica.getDatabase(replicaDb)
+              .getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+      //Validate that repl.last.id db property has been updated successfully.
+      assertEquals(targetDbReplId, lastEventId);
+    } finally {
+      primary.run("DROP DATABASE IF EXISTS " + srcDbName + " CASCADE");
+      replica.run("DROP DATABASE IF EXISTS " + replicaDb + " CASCADE");
+    }
   }
 
   @Test
