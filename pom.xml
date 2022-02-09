@@ -64,6 +64,7 @@
     <module>kafka-handler</module>
   </modules>
   <properties>
+    <standalone-metastore.version>5.0.0-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>

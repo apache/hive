@@ -36,7 +36,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>metastore-tools-common</artifactId>
-      <version>${hive.version}</version>
+      <version>${project.version}</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
