@@ -1,6 +1,5 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.materializedview.rebuild.incremental.factor=0.002f;
 
 CREATE TABLE t1(a int, b int,c int) STORED AS ORC TBLPROPERTIES ('transactional' = 'true');
 

@@ -414,9 +414,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       optCluster.invalidateMetadataQuery();
       RelMetadataQuery.THREAD_PROVIDERS.set(HiveTezModelRelMetadataProvider.DEFAULT);
       try {
-        // Multiply by 10.0 because this config is also used in applyAggregateInsertIncremental
         final double factorSelectivity = HiveConf.getFloatVar(
-                conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR) * 10.0;
+                conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
         RelOptCost costIncrementalRebuildPlan =
