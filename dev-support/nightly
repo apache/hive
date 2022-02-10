@@ -27,9 +27,12 @@ NEW_SA="${NEW_SA:-${V/-*}-$SUFFIX}"
 V="`xmlstarlet sel -t -m /_:project/_:version -v  . standalone-metastore/pom.xml`"
 NEW_MS="${NEW_MS:-${V/-*}-$SUFFIX}"
 
-mvn versions:set versions:commit -DnewVersion=$NEW_HIVE
-mvn versions:set versions:commit -DnewVersion=$NEW_SA -pl storage-api
-mvn versions:set versions:commit -DnewVersion=$NEW_MS -pl standalone-metastore
+
+mvn_versions_set="mvn versions:set versions:commit -DgenerateBackupPoms=false"
+
+$mvn_versions_set -DnewVersion=$NEW_HIVE
+$mvn_versions_set -DnewVersion=$NEW_SA -pl storage-api
+$mvn_versions_set -DnewVersion=$NEW_MS -pl standalone-metastore
 
 xmlstarlet edit -L -P --update "/_:project/_:properties/_:hive.version" \
   --value $NEW_HIVE standalone-metastore/pom.xml
