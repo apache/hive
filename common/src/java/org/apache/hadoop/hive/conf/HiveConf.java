@@ -3088,6 +3088,11 @@ public class HiveConf extends Configuration {
         "Enables non-blocking DROP PARTITION operation.\n" +
         "If enabled, drop for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles.\")"),
+
+    HIVE_ACID_RENAME_PARTITION_MAKE_COPY("hive.acid.renamepartition.makecopy", false,
+      "Enables non-blocking RENAME PARTITION operation.\n" +
+        "If enabled, rename for transactional tables will not rename the partition directory,\n" +
+        "rather create a copy of it under the new path.\")"),
     
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.

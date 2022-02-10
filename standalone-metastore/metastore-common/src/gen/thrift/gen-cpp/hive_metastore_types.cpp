@@ -44441,6 +44441,11 @@ void RenamePartitionRequest::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
 }
+
+void RenamePartitionRequest::__set_environmentContext(const EnvironmentContext& val) {
+  this->environmentContext = val;
+__isset.environmentContext = true;
+}
 std::ostream& operator<<(std::ostream& out, const RenamePartitionRequest& obj)
 {
   obj.printTo(out);
@@ -44533,6 +44538,14 @@ uint32_t RenamePartitionRequest::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->environmentContext.read(iprot);
+          this->__isset.environmentContext = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -44592,6 +44605,11 @@ uint32_t RenamePartitionRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.environmentContext) {
+    xfer += oprot->writeFieldBegin("environmentContext", ::apache::thrift::protocol::T_STRUCT, 7);
+    xfer += this->environmentContext.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -44605,6 +44623,7 @@ void swap(RenamePartitionRequest &a, RenamePartitionRequest &b) {
   swap(a.partVals, b.partVals);
   swap(a.newPart, b.newPart);
   swap(a.validWriteIdList, b.validWriteIdList);
+  swap(a.environmentContext, b.environmentContext);
   swap(a.__isset, b.__isset);
 }
 
@@ -44615,6 +44634,7 @@ RenamePartitionRequest::RenamePartitionRequest(const RenamePartitionRequest& oth
   partVals = other1560.partVals;
   newPart = other1560.newPart;
   validWriteIdList = other1560.validWriteIdList;
+  environmentContext = other1560.environmentContext;
   __isset = other1560.__isset;
 }
 RenamePartitionRequest& RenamePartitionRequest::operator=(const RenamePartitionRequest& other1561) {
@@ -44624,6 +44644,7 @@ RenamePartitionRequest& RenamePartitionRequest::operator=(const RenamePartitionR
   partVals = other1561.partVals;
   newPart = other1561.newPart;
   validWriteIdList = other1561.validWriteIdList;
+  environmentContext = other1561.environmentContext;
   __isset = other1561.__isset;
   return *this;
 }
@@ -44636,6 +44657,7 @@ void RenamePartitionRequest::printTo(std::ostream& out) const {
   out << ", " << "partVals=" << to_string(partVals);
   out << ", " << "newPart=" << to_string(newPart);
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
+  out << ", " << "environmentContext="; (__isset.environmentContext ? (out << to_string(environmentContext)) : (out << "<null>"));
   out << ")";
 }
 

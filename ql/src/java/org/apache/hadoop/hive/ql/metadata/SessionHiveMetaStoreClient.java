@@ -1534,10 +1534,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName, List<String> partitionVals,
-      Partition newPart, String validWriteIds) throws TException {
+      Partition newPart, String validWriteIds, long txnId, boolean makeCopy) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, tableName);
     if (table == null) {
-      super.renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds);
+      super.renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds, txnId, makeCopy);
       return;
     }
     TempTable tt = getPartitionedTempTable(table);

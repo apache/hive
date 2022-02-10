@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_MAKE_DATA_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
 
@@ -113,33 +114,33 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
         long currentTxn = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
           .map(prop -> prop.get("txnId")).map(Long::parseLong)
           .orElse(0L);
-
-        long writeId = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
-          .map(prop -> prop.get("writeId")).map(Long::parseLong)
-          .orElse(0L);
-
-        try {
+        
           if (currentTxn > 0) {
-            CompactionRequest rqst = new CompactionRequest(
+            long writeId = Optional.of(context).map(EnvironmentContext::getProperties)
+              .map(prop -> prop.get("writeId")).map(Long::parseLong)
+              .orElse(0L);
+            
+            try {
+              CompactionRequest rqst = new CompactionRequest(
                 table.getDbName(), table.getTableName(), CompactionType.MAJOR);
-            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
-            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
+              rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+              rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
 
-            Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
-            while (partitionIterator.hasNext()) {
-              Partition p = partitionIterator.next();
-              
-              List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
-              List<String> partVals = p.getValues();
-              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
-              rqst.putToProperties("location", p.getSd().getLocation());
-              
-              txnHandler.submitForCleanup(rqst, writeId, currentTxn);
+              Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
+              while (partitionIterator.hasNext()) {
+                Partition p = partitionIterator.next();
+
+                List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
+                List<String> partVals = p.getValues();
+                rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
+                rqst.putToProperties("location", p.getSd().getLocation());
+
+                txnHandler.submitForCleanup(rqst, writeId, currentTxn);
+              }
+            } catch (InterruptedException | IOException e) {
+              throwMetaException(e);
             }
           }
-        } catch ( InterruptedException | IOException e) {
-          throwMetaException(e);
-        }
       }
     }
   }
@@ -174,8 +175,37 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
       txnHandler = getTxnHandler();
       txnHandler.onRename(t.getCatName(), t.getDbName(), t.getTableName(), oldPartName,
           t.getCatName(), t.getDbName(), t.getTableName(), newPartName);
+
+      EnvironmentContext context = partitionEvent.getEnvironmentContext();
+      Table table = partitionEvent.getTable();
+
+      boolean makeDataCopy = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
+        .map(prop -> prop.get(RENAME_MAKE_DATA_COPY)).map(Boolean::parseBoolean)
+        .orElse(false);
+      
+      if (makeDataCopy) {
+        long currentTxn = Optional.of(context).map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("txnId")).map(Long::parseLong)
+          .orElse(0L);
+
+        try {
+          if (currentTxn > 0) {
+            CompactionRequest rqst = new CompactionRequest(
+              table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+            rqst.setPartitionname(oldPartName);
+            
+            rqst.putToProperties("location", oldPart.getSd().getLocation());
+            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
+            txnHandler.submitForCleanup(rqst, partitionEvent.getWriteId(), currentTxn);
+          }
+        } catch ( InterruptedException | IOException e) {
+          throwMetaException(e);
+        }
+      }
     }
   }
+  
   @Override
   public void onAlterDatabase(AlterDatabaseEvent dbEvent) throws MetaException {
     Database oldDb = dbEvent.getOldDatabase();

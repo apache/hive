@@ -3364,7 +3364,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           } else {
             // For Acid tables we don't need to delete the old files, only write an empty baseDir.
             // Compaction and cleaner will take care of the rest
-            addTruncateBaseFile(location, writeId, DataFormat.TRUNCATED);
+            addTruncateBaseFile(location, writeId, conf, DataFormat.TRUNCATED);
           }
         }
       }
@@ -3383,16 +3383,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * Add an empty baseDir with a truncate metadatafile
    * @param location partition or table directory
    * @param writeId allocated writeId
-   * @throws Exception
+   * @throws MetaException
    */
-  private void addTruncateBaseFile(Path location, long writeId, DataFormat dataFormat) 
+  static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat) 
       throws MetaException {
     if (location == null) 
       return;
     
     Path basePath = new Path(location, AcidConstants.baseDir(writeId));
     try {
-      FileSystem fs = location.getFileSystem(getConf());
+      FileSystem fs = location.getFileSystem(conf);
       fs.mkdirs(basePath);
       // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
       // No need for a data file, a simple metadata is enough
@@ -5061,7 +5061,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         // ok even if the data is not deleted
       } else if (TxnUtils.isTransactionalTable(tbl) && writeId > 0) {
-        addTruncateBaseFile(partPath, writeId, DataFormat.DROPPED);
+        addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
       }
     
       if (!listeners.isEmpty()) {
@@ -5332,7 +5332,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             Path partPath = new Path(part.getSd().getLocation());
             verifyIsWritablePath(partPath);
             
-            addTruncateBaseFile(partPath, writeId, DataFormat.DROPPED);
+            addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
           }
         }
       }
@@ -5825,7 +5825,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public RenamePartitionResponse rename_partition_req(
       RenamePartitionRequest req) throws InvalidOperationException ,MetaException ,TException {
     rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
-        req.getNewPart(), null, req.getValidWriteIdList());
+        req.getNewPart(), req.getEnvironmentContext(), req.getValidWriteIdList());
     return new RenamePartitionResponse();
   };
 

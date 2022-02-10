@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -66,9 +67,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.LinkedList;
+import java.util.Optional;
 
+import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_MAKE_DATA_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -673,9 +677,26 @@ public class HiveAlterHandler implements AlterHandler {
               if (!wh.mkdirs(destParentPath)) {
                   throw new MetaException("Unable to create path " + destParentPath);
               }
+              
+              boolean makeDataCopy = Optional.ofNullable(environmentContext)
+                  .map(EnvironmentContext::getProperties)
+                  .map(prop -> prop.get(RENAME_MAKE_DATA_COPY))
+                  .map(Boolean::parseBoolean)
+                  .orElse(false);
+              long writeId = new_part.getWriteId();
 
-              //rename the data directory
-              wh.renameDir(srcPath, destPath, ReplChangeManager.shouldEnableCm(db, tbl));
+              if (writeId > 0 && makeDataCopy) {
+                LOG.debug("Making a copy of the partition directory: {} under a new location: {}", srcPath, destPath);
+                
+                if (!wh.copyDir(srcPath, destPath, ReplChangeManager.shouldEnableCm(db, tbl))) {
+                  LOG.error("Copy failed for source: " + srcPath + " to destination: " + destPath);
+                  throw new IOException("File copy failed.");
+                }
+                addTruncateBaseFile(srcPath, writeId, conf, DataFormat.DROPPED);
+              } else {
+                //rename the data directory
+                wh.renameDir(srcPath, destPath, ReplChangeManager.shouldEnableCm(db, tbl));
+              }
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }

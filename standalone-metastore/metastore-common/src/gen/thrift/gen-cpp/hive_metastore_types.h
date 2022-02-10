@@ -16832,9 +16832,10 @@ void swap(AlterPartitionsResponse &a, AlterPartitionsResponse &b);
 std::ostream& operator<<(std::ostream& out, const AlterPartitionsResponse& obj);
 
 typedef struct _RenamePartitionRequest__isset {
-  _RenamePartitionRequest__isset() : catName(false), validWriteIdList(false) {}
+  _RenamePartitionRequest__isset() : catName(false), validWriteIdList(false), environmentContext(false) {}
   bool catName :1;
   bool validWriteIdList :1;
+  bool environmentContext :1;
 } _RenamePartitionRequest__isset;
 
 class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
@@ -16852,6 +16853,7 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  partVals;
   Partition newPart;
   std::string validWriteIdList;
+  EnvironmentContext environmentContext;
 
   _RenamePartitionRequest__isset __isset;
 
@@ -16866,6 +16868,8 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
   void __set_newPart(const Partition& val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_environmentContext(const EnvironmentContext& val);
 
   bool operator == (const RenamePartitionRequest & rhs) const
   {
@@ -16884,6 +16888,10 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.environmentContext != rhs.__isset.environmentContext)
+      return false;
+    else if (__isset.environmentContext && !(environmentContext == rhs.environmentContext))
       return false;
     return true;
   }

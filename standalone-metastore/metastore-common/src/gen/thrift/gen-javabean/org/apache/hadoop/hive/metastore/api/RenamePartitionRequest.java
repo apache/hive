@@ -17,6 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField PART_VALS_FIELD_DESC = new org.apache.thrift.protocol.TField("partVals", org.apache.thrift.protocol.TType.LIST, (short)4);
   private static final org.apache.thrift.protocol.TField NEW_PART_FIELD_DESC = new org.apache.thrift.protocol.TField("newPart", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new RenamePartitionRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new RenamePartitionRequestTupleSchemeFactory();
@@ -27,6 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> partVals; // required
   private @org.apache.thrift.annotation.Nullable Partition newPart; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
+  private @org.apache.thrift.annotation.Nullable EnvironmentContext environmentContext; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +37,8 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)3, "tableName"),
     PART_VALS((short)4, "partVals"),
     NEW_PART((short)5, "newPart"),
-    VALID_WRITE_ID_LIST((short)6, "validWriteIdList");
+    VALID_WRITE_ID_LIST((short)6, "validWriteIdList"),
+    ENVIRONMENT_CONTEXT((short)7, "environmentContext");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -63,6 +66,8 @@ package org.apache.hadoop.hive.metastore.api;
           return NEW_PART;
         case 6: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
+        case 7: // ENVIRONMENT_CONTEXT
+          return ENVIRONMENT_CONTEXT;
         default:
           return null;
       }
@@ -104,7 +109,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.ENVIRONMENT_CONTEXT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -121,6 +126,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ENVIRONMENT_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("environmentContext", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RenamePartitionRequest.class, metaDataMap);
   }
@@ -164,6 +171,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetValidWriteIdList()) {
       this.validWriteIdList = other.validWriteIdList;
     }
+    if (other.isSetEnvironmentContext()) {
+      this.environmentContext = new EnvironmentContext(other.environmentContext);
+    }
   }
 
   public RenamePartitionRequest deepCopy() {
@@ -178,6 +188,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.partVals = null;
     this.newPart = null;
     this.validWriteIdList = null;
+    this.environmentContext = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -340,6 +351,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public EnvironmentContext getEnvironmentContext() {
+    return this.environmentContext;
+  }
+
+  public void setEnvironmentContext(@org.apache.thrift.annotation.Nullable EnvironmentContext environmentContext) {
+    this.environmentContext = environmentContext;
+  }
+
+  public void unsetEnvironmentContext() {
+    this.environmentContext = null;
+  }
+
+  /** Returns true if field environmentContext is set (has been assigned a value) and false otherwise */
+  public boolean isSetEnvironmentContext() {
+    return this.environmentContext != null;
+  }
+
+  public void setEnvironmentContextIsSet(boolean value) {
+    if (!value) {
+      this.environmentContext = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CAT_NAME:
@@ -390,6 +425,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case ENVIRONMENT_CONTEXT:
+      if (value == null) {
+        unsetEnvironmentContext();
+      } else {
+        setEnvironmentContext((EnvironmentContext)value);
+      }
+      break;
+
     }
   }
 
@@ -414,6 +457,9 @@ package org.apache.hadoop.hive.metastore.api;
     case VALID_WRITE_ID_LIST:
       return getValidWriteIdList();
 
+    case ENVIRONMENT_CONTEXT:
+      return getEnvironmentContext();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -437,6 +483,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetNewPart();
     case VALID_WRITE_ID_LIST:
       return isSetValidWriteIdList();
+    case ENVIRONMENT_CONTEXT:
+      return isSetEnvironmentContext();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -508,6 +556,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_environmentContext = true && this.isSetEnvironmentContext();
+    boolean that_present_environmentContext = true && that.isSetEnvironmentContext();
+    if (this_present_environmentContext || that_present_environmentContext) {
+      if (!(this_present_environmentContext && that_present_environmentContext))
+        return false;
+      if (!this.environmentContext.equals(that.environmentContext))
+        return false;
+    }
+
     return true;
   }
 
@@ -538,6 +595,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetValidWriteIdList()) ? 131071 : 524287);
     if (isSetValidWriteIdList())
       hashCode = hashCode * 8191 + validWriteIdList.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetEnvironmentContext()) ? 131071 : 524287);
+    if (isSetEnvironmentContext())
+      hashCode = hashCode * 8191 + environmentContext.hashCode();
 
     return hashCode;
   }
@@ -606,6 +667,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetValidWriteIdList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validWriteIdList, other.validWriteIdList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetEnvironmentContext(), other.isSetEnvironmentContext());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEnvironmentContext()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.environmentContext, other.environmentContext);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -682,6 +753,16 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetEnvironmentContext()) {
+      if (!first) sb.append(", ");
+      sb.append("environmentContext:");
+      if (this.environmentContext == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.environmentContext);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -707,6 +788,9 @@ package org.apache.hadoop.hive.metastore.api;
     // check for sub-struct validity
     if (newPart != null) {
       newPart.validate();
+    }
+    if (environmentContext != null) {
+      environmentContext.validate();
     }
   }
 
@@ -803,6 +887,15 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // ENVIRONMENT_CONTEXT
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.environmentContext = new EnvironmentContext();
+              struct.environmentContext.read(iprot);
+              struct.setEnvironmentContextIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -857,6 +950,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.environmentContext != null) {
+        if (struct.isSetEnvironmentContext()) {
+          oprot.writeFieldBegin(ENVIRONMENT_CONTEXT_FIELD_DESC);
+          struct.environmentContext.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -891,12 +991,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValidWriteIdList()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetEnvironmentContext()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
+      }
+      if (struct.isSetEnvironmentContext()) {
+        struct.environmentContext.write(oprot);
       }
     }
 
@@ -921,7 +1027,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.newPart = new Partition();
       struct.newPart.read(iprot);
       struct.setNewPartIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
@@ -929,6 +1035,11 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.environmentContext = new EnvironmentContext();
+        struct.environmentContext.read(iprot);
+        struct.setEnvironmentContextIsSet(true);
       }
     }
   }

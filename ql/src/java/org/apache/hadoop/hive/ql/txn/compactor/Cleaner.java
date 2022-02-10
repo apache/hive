@@ -352,7 +352,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       try {
         res = txnHandler.lock(lockRequest);
         if (res.getState() == LockState.ACQUIRED) {
-          //check if partition wasn't recreated
+          //check if partition wasn't re-created
           if (resolvePartition(ci) == null) {
             return removeFiles(location, ci);
           }
@@ -360,7 +360,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       } catch (NoSuchTxnException | TxnAbortedException e) {
         LOG.error(e.getMessage());
       } finally {
-        if (res != null && res.getState() != LockState.NOT_ACQUIRED) {
+        if (res != null) {
           try {
             txnHandler.unlock(new UnlockRequest(res.getLockid()));
           } catch (NoSuchLockException | TxnOpenException e) {
