@@ -184,60 +184,7 @@ public class HiveRelMdPredicates extends RelMdPredicates {
 
     return jI.inferPredicates(false);
   }
-
-  /**
-   * Infers predicates for a Union.
-   */
-  @Override
-  public RelOptPredicateList getPredicates(Union union, RelMetadataQuery mq) {
-    RexBuilder rB = union.getCluster().getRexBuilder();
-
-    Map<String, RexNode> finalPreds = new HashMap<>();
-    List<RexNode> finalResidualPreds = new ArrayList<>();
-    for (int i = 0; i < union.getInputs().size(); i++) {
-      RelNode input = union.getInputs().get(i);
-      RelOptPredicateList info = mq.getPulledUpPredicates(input);
-      if (info.pulledUpPredicates.isEmpty()) {
-        return RelOptPredicateList.EMPTY;
-      }
-      Map<String, RexNode> preds = new HashMap<>();
-      List<RexNode> residualPreds = new ArrayList<>();
-      for (RexNode pred : info.pulledUpPredicates) {
-        final String predString = pred.toString();
-        if (i == 0) {
-          preds.put(predString, pred);
-          continue;
-        }
-        if (finalPreds.containsKey(predString)) {
-          preds.put(predString, pred);
-        } else {
-          residualPreds.add(pred);
-        }
-      }
-      // Add new residual preds
-      finalResidualPreds.add(RexUtil.composeConjunction(rB, residualPreds, false));
-      // Add those that are not part of the final set to residual
-      for (Entry<String, RexNode> e : finalPreds.entrySet()) {
-        if (!preds.containsKey(e.getKey())) {
-          // This node was in previous union inputs, but it is not in this one
-          for (int j = 0; j < i; j++) {
-            finalResidualPreds.set(j, RexUtil.composeConjunction(rB, Lists.newArrayList(
-                    finalResidualPreds.get(j), e.getValue()), false));
-          }
-        }
-      }
-      // Final preds
-      finalPreds = preds;
-    }
-
-    List<RexNode> preds = new ArrayList<>(finalPreds.values());
-    RexNode disjPred = RexUtil.composeDisjunction(rB, finalResidualPreds, false);
-    if (!disjPred.isAlwaysTrue()) {
-      preds.add(disjPred);
-    }
-    return RelOptPredicateList.of(rB, preds);
-  }
-
+  
   /**
    * Utility to infer predicates from one side of the join that apply on the
    * other side.
