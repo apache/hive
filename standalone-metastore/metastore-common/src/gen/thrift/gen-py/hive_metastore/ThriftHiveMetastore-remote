@@ -64,7 +64,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_not_null_constraint(AddNotNullConstraintRequest req)')
     print('  void add_default_constraint(AddDefaultConstraintRequest req)')
     print('  void add_check_constraint(AddCheckConstraintRequest req)')
-    print('  Table translate_table_dryrun(Table tbl)')
+    print('  Table translate_table_dryrun(CreateTableRequest request)')
     print('  void drop_table(string dbname, string name, bool deleteData)')
     print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
     print('  void truncate_table(string dbName, string tableName,  partNames)')
@@ -150,6 +150,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
     print('  SetPartitionsStatsResponse update_table_column_statistics_req(SetPartitionsStatsRequest req)')
     print('  SetPartitionsStatsResponse update_partition_column_statistics_req(SetPartitionsStatsRequest req)')
+    print('  void update_transaction_statistics(UpdateTransactionalStatsRequest req)')
     print('  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)')
     print('  ColumnStatistics get_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)')
     print('  TableStatsResult get_table_statistics_req(TableStatsRequest request)')
@@ -221,6 +222,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void mark_cleaned(CompactionInfoStruct cr)')
     print('  void mark_compacted(CompactionInfoStruct cr)')
     print('  void mark_failed(CompactionInfoStruct cr)')
+    print('  bool update_compaction_metrics_data(CompactionMetricsDataStruct data)')
+    print('  void remove_compaction_metrics_data(CompactionMetricsDataRequest request)')
     print('  void set_hadoop_jobid(string jobId, i64 cq_id)')
     print('  GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoRequest rqst)')
     print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
@@ -1137,6 +1140,12 @@ elif cmd == 'update_partition_column_statistics_req':
         sys.exit(1)
     pp.pprint(client.update_partition_column_statistics_req(eval(args[0]),))
 
+elif cmd == 'update_transaction_statistics':
+    if len(args) != 1:
+        print('update_transaction_statistics requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.update_transaction_statistics(eval(args[0]),))
+
 elif cmd == 'get_table_column_statistics':
     if len(args) != 3:
         print('get_table_column_statistics requires 3 args')
@@ -1562,6 +1571,18 @@ elif cmd == 'mark_failed':
         print('mark_failed requires 1 args')
         sys.exit(1)
     pp.pprint(client.mark_failed(eval(args[0]),))
+
+elif cmd == 'update_compaction_metrics_data':
+    if len(args) != 1:
+        print('update_compaction_metrics_data requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.update_compaction_metrics_data(eval(args[0]),))
+
+elif cmd == 'remove_compaction_metrics_data':
+    if len(args) != 1:
+        print('remove_compaction_metrics_data requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.remove_compaction_metrics_data(eval(args[0]),))
 
 elif cmd == 'set_hadoop_jobid':
     if len(args) != 2:

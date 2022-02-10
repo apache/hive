@@ -39,7 +39,7 @@ public class DBSerializer implements JsonWriter.Serializer {
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
     dbObject.putToParameters(
-        ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+        ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
         additionalPropertiesProvider.getCurrentReplicationState()
     );
 

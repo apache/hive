@@ -192,6 +192,16 @@ Table Parameters:
 	numFiles            	7                   
 	numRows             	15                  
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 3, 
+	                           	  \"names\" : [ \"c\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                
@@ -431,6 +441,16 @@ Table Parameters:
 	numFiles            	7                   
 	numRows             	15                  
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 3, 
+	                           	  \"names\" : [ \"c\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                
@@ -668,8 +688,18 @@ Table Parameters:
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
-	numRows             	0                   
+	numRows             	15                  
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 3, 
+	                           	  \"names\" : [ \"c\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                

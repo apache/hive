@@ -224,6 +224,8 @@ class DriverTxnHandler {
     }
 
     try {
+      // Ensure we answer any metadata calls with fresh responses
+      driverContext.getQueryState().disableHMSCache();
       setWriteIdForAcidFileSinks();
       allocateWriteIdForAcidAnalyzeTable();
       boolean hasAcidDdl = setWriteIdForAcidDdl();
@@ -245,6 +247,7 @@ class DriverTxnHandler {
       throw DriverUtils.createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()),
           e);
     } finally {
+      driverContext.getQueryState().enableHMSCache();
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
   }

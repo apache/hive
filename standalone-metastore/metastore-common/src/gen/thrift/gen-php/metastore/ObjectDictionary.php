@@ -76,25 +76,25 @@ class ObjectDictionary
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->values = array();
-                        $_size255 = 0;
-                        $_ktype256 = 0;
-                        $_vtype257 = 0;
-                        $xfer += $input->readMapBegin($_ktype256, $_vtype257, $_size255);
-                        for ($_i259 = 0; $_i259 < $_size255; ++$_i259) {
-                            $key260 = '';
-                            $val261 = array();
-                            $xfer += $input->readString($key260);
-                            $val261 = array();
-                            $_size262 = 0;
-                            $_etype265 = 0;
-                            $xfer += $input->readListBegin($_etype265, $_size262);
-                            for ($_i266 = 0; $_i266 < $_size262; ++$_i266) {
-                                $elem267 = null;
-                                $xfer += $input->readString($elem267);
-                                $val261 []= $elem267;
+                        $_size262 = 0;
+                        $_ktype263 = 0;
+                        $_vtype264 = 0;
+                        $xfer += $input->readMapBegin($_ktype263, $_vtype264, $_size262);
+                        for ($_i266 = 0; $_i266 < $_size262; ++$_i266) {
+                            $key267 = '';
+                            $val268 = array();
+                            $xfer += $input->readString($key267);
+                            $val268 = array();
+                            $_size269 = 0;
+                            $_etype272 = 0;
+                            $xfer += $input->readListBegin($_etype272, $_size269);
+                            for ($_i273 = 0; $_i273 < $_size269; ++$_i273) {
+                                $elem274 = null;
+                                $xfer += $input->readString($elem274);
+                                $val268 []= $elem274;
                             }
                             $xfer += $input->readListEnd();
-                            $this->values[$key260] = $val261;
+                            $this->values[$key267] = $val268;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -121,11 +121,11 @@ class ObjectDictionary
             }
             $xfer += $output->writeFieldBegin('values', TType::MAP, 1);
             $output->writeMapBegin(TType::STRING, TType::LST, count($this->values));
-            foreach ($this->values as $kiter268 => $viter269) {
-                $xfer += $output->writeString($kiter268);
-                $output->writeListBegin(TType::STRING, count($viter269));
-                foreach ($viter269 as $iter270) {
-                    $xfer += $output->writeString($iter270);
+            foreach ($this->values as $kiter275 => $viter276) {
+                $xfer += $output->writeString($kiter275);
+                $output->writeListBegin(TType::STRING, count($viter276));
+                foreach ($viter276 as $iter277) {
+                    $xfer += $output->writeString($iter277);
                 }
                 $output->writeListEnd();
             }

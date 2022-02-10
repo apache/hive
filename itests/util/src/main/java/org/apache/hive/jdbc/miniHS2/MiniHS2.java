@@ -533,7 +533,7 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
-   * @param sessionConfExt - Addional string to be appended to sessionConf part of url
+   * @param sessionConfExt - Additional string to be appended to sessionConf part of url
    * @return
    * @throws Exception
    */
@@ -544,7 +544,7 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
-   * @param sessionConfExt - Addional string to be appended to sessionConf part of url
+   * @param sessionConfExt - Additional string to be appended to sessionConf part of url
    * @param hiveConfExt - Additional string to be appended to HiveConf part of url (excluding the ?)
    * @return
    * @throws Exception

@@ -103,7 +103,7 @@
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
-    <arrow.version>0.15.1</arrow.version>
+    <arrow.version>2.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
@@ -112,7 +112,7 @@
     <datanucleus-core.version>5.2.4</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
-    <commons-cli.version>1.2</commons-cli.version>
+    <commons-cli.version>1.4</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-collections4.version>4.1</commons-collections4.version>
@@ -173,7 +173,7 @@
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.14.1</libthrift.version>
-    <log4j2.version>2.13.2</log4j2.version>
+    <log4j2.version>2.17.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.0.27</mysql.version>
@@ -184,7 +184,7 @@
     <mockito-core.version>3.4.4</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.65.Final</netty.version>
+    <netty.version>4.1.69.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.0.3</pac4j-saml.version>
@@ -205,9 +205,9 @@
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
-    <velocity.version>1.5</velocity.version>
-    <xerces.version>2.12.1</xerces.version>
-    <xmlsec.version>2.2.1</xmlsec.version>
+    <velocity.version>2.3</velocity.version>
+    <xerces.version>2.12.2</xerces.version>
+    <xmlsec.version>2.3.0</xmlsec.version>
     <zookeeper.version>3.5.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
@@ -590,7 +590,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.velocity</groupId>
-        <artifactId>velocity</artifactId>
+        <artifactId>velocity-engine-core</artifactId>
         <version>${velocity.version}</version>
       </dependency>
       <dependency>

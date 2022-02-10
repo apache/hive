@@ -429,7 +429,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000003_v0000007"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories does not match after minor compaction",
-        Collections.singletonList("delta_0000004_0000006_v0000016"),
+        Collections.singletonList("delta_0000005_0000007_v0000017"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, dataProvider, expectedData);
   }

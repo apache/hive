@@ -120,10 +120,7 @@ PREHOOK: Input: default@target@p=2/q=2
 PREHOOK: Output: default@merge_tmp_table
 PREHOOK: Output: default@target
 PREHOOK: Output: default@target@p=1/q=2
-PREHOOK: Output: default@target@p=1/q=2
 PREHOOK: Output: default@target@p=1/q=3
-PREHOOK: Output: default@target@p=1/q=3
-PREHOOK: Output: default@target@p=2/q=2
 PREHOOK: Output: default@target@p=2/q=2
 POSTHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 POSTHOOK: type: QUERY
@@ -135,10 +132,7 @@ POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
-POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
-POSTHOOK: Output: default@target@p=1/q=3
-POSTHOOK: Output: default@target@p=2/q=2
 POSTHOOK: Output: default@target@p=2/q=2
 LOCK INFORMATION:
 default.source -> SHARED_READ
@@ -146,10 +140,7 @@ default.target.p=1/q=2 -> SHARED_READ
 default.target.p=1/q=3 -> SHARED_READ
 default.target.p=2/q=2 -> SHARED_READ
 default.target.p=2/q=2 -> EXCL_WRITE
-default.target.p=2/q=2 -> EXCL_WRITE
 default.target.p=1/q=3 -> EXCL_WRITE
-default.target.p=1/q=3 -> EXCL_WRITE
-default.target.p=1/q=2 -> EXCL_WRITE
 default.target.p=1/q=2 -> EXCL_WRITE
 default.target -> SHARED_READ
 PREHOOK: query: explain locks update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
@@ -218,10 +209,7 @@ PREHOOK: Input: default@target@p=2/q=2
 PREHOOK: Output: default@merge_tmp_table
 PREHOOK: Output: default@target
 PREHOOK: Output: default@target@p=1/q=2
-PREHOOK: Output: default@target@p=1/q=2
 PREHOOK: Output: default@target@p=1/q=3
-PREHOOK: Output: default@target@p=1/q=3
-PREHOOK: Output: default@target@p=2/q=2
 PREHOOK: Output: default@target@p=2/q=2
 POSTHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 POSTHOOK: type: QUERY
@@ -233,10 +221,7 @@ POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
-POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
-POSTHOOK: Output: default@target@p=1/q=3
-POSTHOOK: Output: default@target@p=2/q=2
 POSTHOOK: Output: default@target@p=2/q=2
 LOCK INFORMATION:
 default.source -> SHARED_READ
@@ -244,9 +229,6 @@ default.target.p=1/q=2 -> SHARED_READ
 default.target.p=1/q=3 -> SHARED_READ
 default.target.p=2/q=2 -> SHARED_READ
 default.target.p=2/q=2 -> SHARED_WRITE
-default.target.p=2/q=2 -> SHARED_WRITE
 default.target.p=1/q=3 -> SHARED_WRITE
-default.target.p=1/q=3 -> SHARED_WRITE
-default.target.p=1/q=2 -> SHARED_WRITE
 default.target.p=1/q=2 -> SHARED_WRITE
 default.target -> SHARED_WRITE

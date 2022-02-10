@@ -55,7 +55,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
@@ -183,8 +182,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                     "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
             ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
           } else {
-            LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
-            throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+            LOG.warn("Database " + dbNameOrPattern + " is marked as target of replication (repl.target.for), Will "
+                + "trigger failover.");
           }
         }
       } else {
@@ -445,8 +444,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (database != null) {
         inputs.add(new ReadEntity(database));
         Map<String, String> params = database.getParameters();
-        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-          return params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()))) {
+          return params.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
         }
       }
     } catch (HiveException e) {

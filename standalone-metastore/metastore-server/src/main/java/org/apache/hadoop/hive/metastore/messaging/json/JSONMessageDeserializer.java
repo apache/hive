@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddDefaultConstraintMessage;
@@ -64,6 +66,7 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     mapper.configure(MapperFeature.AUTO_DETECT_GETTERS, false);
     mapper.configure(MapperFeature.AUTO_DETECT_IS_GETTERS, false);
     mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, false);
+    mapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
   }
 
   @Override

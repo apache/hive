@@ -166,6 +166,7 @@ import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -186,6 +187,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -204,6 +206,7 @@ import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MISchema;
+import org.apache.hadoop.hive.metastore.model.MMVSource;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -1529,8 +1532,9 @@ public class ObjectStore implements RawStore, Configurable {
       while (iter.hasNext())
       {
         MCreationMetadata p = iter.next();
-        Set<MTable> tables = p.getTables();
-        for (MTable table : tables) {
+        Set<MMVSource> tables = p.getTables();
+        for (MMVSource sourceTable : tables) {
+          MTable table = sourceTable.getTable();
           if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
             LOG.info("Cannot drop table " + table.getTableName() +
                     " as it is being used by MView " + p.getTblName());
@@ -2508,25 +2512,31 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     assert !m.isSetMaterializationTime();
-    Set<MTable> tablesUsed = new HashSet<>();
-    for (String fullyQualifiedName : m.getTablesUsed()) {
-      String[] names =  fullyQualifiedName.split("\\.");
-      tablesUsed.add(getMTable(m.getCatName(), names[0], names[1], false).mtbl);
+    Set<MMVSource> tablesUsed = new HashSet<>();
+    for (SourceTable sourceTable : m.getSourceTables()) {
+      Table table = sourceTable.getTable();
+      MTable mtbl = getMTable(m.getCatName(), table.getDbName(), table.getTableName(), false).mtbl;
+      MMVSource source = new MMVSource();
+      source.setTable(mtbl);
+      source.setInsertedCount(sourceTable.getInsertedCount());
+      source.setUpdatedCount(sourceTable.getUpdatedCount());
+      source.setDeletedCount(sourceTable.getDeletedCount());
+      tablesUsed.add(source);
     }
     return new MCreationMetadata(normalizeIdentifier(m.getCatName()),
             normalizeIdentifier(m.getDbName()), normalizeIdentifier(m.getTblName()),
         tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
   }
 
-  private CreationMetadata convertToCreationMetadata(MCreationMetadata s) {
+  private CreationMetadata convertToCreationMetadata(MCreationMetadata s) throws MetaException {
     if (s == null) {
       return null;
     }
     Set<String> tablesUsed = new HashSet<>();
-    for (MTable mtbl : s.getTables()) {
-      tablesUsed.add(
-          Warehouse.getQualifiedName(
-              mtbl.getDatabase().getName(), mtbl.getTableName()));
+    List<SourceTable> sourceTables = new ArrayList<>(s.getTables().size());
+    for (MMVSource mtbl : s.getTables()) {
+      tablesUsed.add(Warehouse.getQualifiedName(mtbl.getTable().getDatabase().getName(), mtbl.getTable().getTableName()));
+      sourceTables.add(convertToSourceTable(mtbl, s.getCatalogName()));
     }
     CreationMetadata r = new CreationMetadata(s.getCatalogName(),
         s.getDbName(), s.getTblName(), tablesUsed);
@@ -2534,7 +2544,19 @@ public class ObjectStore implements RawStore, Configurable {
     if (s.getTxnList() != null) {
       r.setValidTxnList(s.getTxnList());
     }
+    r.setSourceTables(sourceTables);
     return r;
+  }
+
+  private SourceTable convertToSourceTable(MMVSource mmvSource, String catalogName) throws MetaException {
+    SourceTable sourceTable = new SourceTable();
+    MTable mTable = mmvSource.getTable();
+    Table table = getTable(catalogName, mTable.getDatabase().getName(), mTable.getTableName());
+    sourceTable.setTable(table);
+    sourceTable.setInsertedCount(mmvSource.getInsertedCount());
+    sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());
+    sourceTable.setDeletedCount(mmvSource.getDeletedCount());
+    return sourceTable;
   }
 
   @Override
@@ -5248,6 +5270,56 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Checks if a column descriptor has any remaining references by storage descriptors
+   * in the db.
+   * @param oldCD the column descriptor to check if it has references or not
+   * @return true if has references
+   */
+  private boolean hasRemainingCDReference(MColumnDescriptor oldCD) {
+    assert oldCD != null;
+    Query query = null;
+
+    /**
+     * In order to workaround oracle not supporting limit statement caused performance issue, HIVE-9447 makes
+     * all the backend DB run select count(1) from SDS where SDS.CD_ID=? to check if the specific CD_ID is
+     * referenced in SDS table before drop a partition. This select count(1) statement does not scale well in
+     * Postgres, and there is no index for CD_ID column in SDS table.
+     * For a SDS table with with 1.5 million rows, select count(1) has average 700ms without index, while in
+     * 10-20ms with index. But the statement before
+     * HIVE-9447( SELECT * FROM "SDS" "A0" WHERE "A0"."CD_ID" = $1 limit 1) uses less than 10ms .
+     */
+    try {
+      // HIVE-21075: Fix Postgres performance regression caused by HIVE-9447
+      LOG.debug("The dbType is {} ", dbType.getHiveSchemaPostfix());
+      if (dbType.isPOSTGRES() || dbType.isMYSQL()) {
+        query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
+        query.declareParameters("MColumnDescriptor inCD");
+        List<MStorageDescriptor> referencedSDs = null;
+        LOG.debug("Executing listStorageDescriptorsWithCD");
+        // User specified a row limit, set it on the Query
+        query.setRange(0L, 1L);
+        referencedSDs = (List<MStorageDescriptor>) query.execute(oldCD);
+        LOG.debug("Done executing query for listStorageDescriptorsWithCD");
+        pm.retrieveAll(referencedSDs);
+        LOG.debug("Done retrieving all objects for listStorageDescriptorsWithCD");
+        //if no other SD references this CD, we can throw it out.
+        return referencedSDs != null && !referencedSDs.isEmpty();
+      } else {
+        query = pm.newQuery(
+                "select count(1) from org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
+        query.declareParameters("MColumnDescriptor inCD");
+        long count = (Long) query.execute(oldCD);
+        //if no other SD references this CD, we can throw it out.
+        return count != 0;
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
+  /**
+   * Checks if a column descriptor has any remaining references by storage descriptors
    * in the db.  If it does not, then delete the CD.  If it does, then do nothing.
    * @param oldCD the column descriptor to delete if it is no longer referenced anywhere
    */
@@ -5255,21 +5327,13 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldCD == null) {
       return;
     }
-
-    boolean success = false;
     Query query = null;
+    boolean success = false;
+    LOG.debug("execute removeUnusedColumnDescriptor");
 
     try {
       openTransaction();
-      LOG.debug("execute removeUnusedColumnDescriptor");
-
-      query = pm.newQuery("select count(1) from " +
-        "org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
-      query.declareParameters("MColumnDescriptor inCD");
-      long count = ((Long)query.execute(oldCD)).longValue();
-
-      //if no other SD references this CD, we can throw it out.
-      if (count == 0) {
+      if (!hasRemainingCDReference(oldCD)) {
         // First remove any constraints that may be associated with this CD
         query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
         query.declareParameters("MColumnDescriptor inCD");
@@ -5280,9 +5344,10 @@ public class ObjectStore implements RawStore, Configurable {
         // Finally remove CD
         pm.retrieve(oldCD);
         pm.deletePersistent(oldCD);
+        LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
+
       }
       success = commitTransaction();
-      LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
     } finally {
       rollbackAndCleanup(success, query);
     }

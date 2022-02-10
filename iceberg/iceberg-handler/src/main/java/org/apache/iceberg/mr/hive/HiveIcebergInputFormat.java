@@ -136,7 +136,9 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
 
   @Override
   public VectorizedSupport.Support[] getSupportedFeatures() {
-    return new VectorizedSupport.Support[]{ VectorizedSupport.Support.DECIMAL_64 };
+    // disabling VectorizedSupport.Support.DECIMAL_64 as Parquet doesn't support it, and we have no way of telling
+    // beforehand what kind of file format we're going to hit later
+    return new VectorizedSupport.Support[]{  };
   }
 
   @Override

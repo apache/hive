@@ -469,7 +469,7 @@ public class HiveJsonReader {
   /**
    * Matches the JSON object's field name with the Hive data type.
    *
-   * @param oi The ObjectInsepctor to lookup the matching in
+   * @param oi The ObjectInspector to lookup the matching in
    * @param fieldName The name of the field parsed from the JSON text
    * @return The meta data of regarding this field
    * @throws SerDeException The SerDe is not configured correctly

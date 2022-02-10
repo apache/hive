@@ -48,11 +48,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -72,9 +74,11 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
@@ -369,6 +373,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new URI(ICEBERG_URI_PREFIX + table.location());
   }
 
+  @Override
+  public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
+    HiveStorageHandler.super.validateSinkDesc(sinkDesc);
+    if (sinkDesc.getInsertOverwrite()) {
+      Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
+      if (IcebergTableUtil.isBucketed(table)) {
+        throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
+      }
+    }
+  }
+
   private void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
@@ -410,12 +425,47 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   /**
    * Returns the Table serialized to the configuration based on the table name.
+   * If configuration is missing from the FileIO of the table, it will be populated with the input config.
+   *
    * @param config The configuration used to get the data from
    * @param name The name of the table we need as returned by TableDesc.getTableName()
    * @return The Table
    */
   public static Table table(Configuration config, String name) {
-    return SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    checkAndSetIoConfig(config, table);
+    return table;
+  }
+
+  /**
+   * If enabled, it populates the FileIO's hadoop configuration with the input config object.
+   * This might be necessary when the table object was serialized without the FileIO config.
+   *
+   * @param config Configuration to set for FileIO, if enabled
+   * @param table The Iceberg table object
+   */
+  public static void checkAndSetIoConfig(Configuration config, Table table) {
+    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+        InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
+      ((HadoopConfigurable) table.io()).setConf(config);
+    }
+  }
+
+  /**
+   * If enabled, it ensures that the FileIO's hadoop configuration will not be serialized.
+   * This might be desirable for decreasing the overall size of serialized table objects.
+   *
+   * Note: Skipping FileIO config serialization in this fashion might in turn necessitate calling
+   * {@link #checkAndSetIoConfig(Configuration, Table)} on the deserializer-side to enable subsequent use of the FileIO.
+   *
+   * @param config Configuration to set for FileIO in a transient manner, if enabled
+   * @param table The Iceberg table object
+   */
+  public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
+    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+        InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
+      ((HadoopConfigurable) table.io()).serializeConfWith(conf -> new NonSerializingConfig(config)::get);
+    }
   }
 
   /**
@@ -477,10 +527,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
 
-    if (table instanceof Serializable) {
-      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
-          SerializationUtil.serializeToBase64(table));
-    }
+    // serialize table object into config
+    Table serializableTable = SerializableTable.copyOf(table);
+    checkAndSkipIoConfigSerialization(configuration, serializableTable);
+    map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+        SerializationUtil.serializeToBase64(serializableTable));
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
@@ -589,6 +640,23 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       // most likely empty write scenario
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
       return Optional.empty();
+    }
+  }
+
+  private static class NonSerializingConfig implements Serializable {
+
+    private final transient Configuration conf;
+
+    NonSerializingConfig(Configuration conf) {
+      this.conf = conf;
+    }
+
+    public Configuration get() {
+      if (conf == null) {
+        throw new IllegalStateException("Configuration was not serialized on purpose but was not set manually either");
+      }
+
+      return conf;
     }
   }
 }

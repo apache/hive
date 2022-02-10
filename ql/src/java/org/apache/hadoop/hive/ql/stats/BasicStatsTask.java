@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -53,7 +55,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
@@ -62,6 +63,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
+import static org.apache.hadoop.hive.common.StatsSetupConst.DELETE_COUNT;
+import static org.apache.hadoop.hive.common.StatsSetupConst.INSERT_COUNT;
+import static org.apache.hadoop.hive.common.StatsSetupConst.UPDATE_COUNT;
 
 /**
  * StatsTask implementation. StatsTask mainly deals with "collectable" stats. These are
@@ -196,25 +204,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
     }
 
-    private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
-      String prefix = getAggregationPrefix0(table, partition);
-      String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
-      return aggKey;
-    }
-
-    private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
-
-      // prefix is of the form dbName.tblName
-      String prefix = FileUtils.escapePathName(table.getDbName()).toLowerCase() + "." +
-          FileUtils.escapePathName(table.getTableName()).toLowerCase();
-      // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
-      // prefix = work.getAggKey();
-      if (partition != null) {
-        return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
-      }
-      return prefix;
-    }
-
     private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
         String aggKey) throws HiveException {
       for (String statType : StatsSetupConst.STATS_REQUIRE_COMPUTE) {
@@ -235,6 +224,45 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
   }
 
+  private static class TransactionalStatsProcessor {
+    private final Hive db;
+    private final Partish partish;
+
+    private TransactionalStatsProcessor(Hive db, Partish partish) {
+      this.db = db;
+      this.partish = partish;
+    }
+
+    private long toLong(String value) {
+      if (value == null || value.isEmpty()) {
+        return 0;
+      }
+
+      return Long.parseLong(value);
+    }
+
+    public void process(StatsAggregator statsAggregator) throws HiveException, MetaException {
+      if (statsAggregator == null) {
+        return;
+      }
+
+      if (partish.isTransactionalTable()) {
+        String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition());
+        long insertCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
+        long updateCount = toLong(statsAggregator.aggregateStats(prefix, UPDATE_COUNT));
+        long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
+
+        if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
+          UpdateTransactionalStatsRequest request = new UpdateTransactionalStatsRequest();
+          request.setTableId(partish.getTable().getTTable().getId());
+          request.setInsertCount(insertCount);
+          request.setUpdatedCount(updateCount);
+          request.setDeletedCount(deleteCount);
+          db.updateTransactionalStatistics(request);
+        }
+      }
+    }
+  }
 
   private int aggregateStats(Hive db) {
 
@@ -278,6 +306,9 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
         db.alterTable(tableFullName, res, environmentContext, true);
 
+        TransactionalStatsProcessor transactionalStatsProcessor = new TransactionalStatsProcessor(db, p);
+        transactionalStatsProcessor.process(statsAggregator);
+
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
@@ -294,12 +325,14 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
         final List<Future<Void>> futures = Lists.newLinkedList();
         List<BasicStatsProcessor> processors = Lists.newLinkedList();
+        List<TransactionalStatsProcessor> transactionalStatsProcessors = Lists.newLinkedList();
 
         try {
           for(final Partition partn : partitions) {
             Partish p;
             BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn), work, conf, followedColStats);
             processors.add(bsp);
+            transactionalStatsProcessors.add(new TransactionalStatsProcessor(db, p));
 
             futures.add(pool.submit(new Callable<Void>() {
               @Override
@@ -346,6 +379,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (!updates.isEmpty()) {
           db.alterPartitions(tableFullName, updates, environmentContext, true);
         }
+
+        for (TransactionalStatsProcessor transactionalStatsProcessor : transactionalStatsProcessors) {
+          transactionalStatsProcessor.process(statsAggregator);
+        }
+
         if (work.isStatsReliable() && updates.size() != processors.size()) {
           LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");
           ret = 1;
@@ -446,8 +484,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       return null; //we are in CTAS, so we know there are no partitions
     }
 
-    List<Partition> list = new ArrayList<Partition>();
-
     if (work.getTableSpecs() != null) {
 
       // ANALYZE command
@@ -457,12 +493,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         return null;
       }
       // get all partitions that matches with the partition spec
-      List<Partition> partitions = tblSpec.partitions;
-      if (partitions != null) {
-        for (Partition partn : partitions) {
-          list.add(partn);
-        }
-      }
+      return tblSpec.partitions != null ? unmodifiableList(tblSpec.partitions) : emptyList();
     } else if (work.getLoadTableDesc() != null) {
 
       // INSERT OVERWRITE command
@@ -475,15 +506,15 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
         // If no dynamic partitions are generated, dpPartSpecs may not be initialized
         if (dpPartSpecs != null) {
-          // load the list of DP partitions and return the list of partition specs
-          list.addAll(dpPartSpecs);
+          // Reload partition metadata because another BasicStatsTask instance may have updated the stats.
+          List<String> partNames = dpPartSpecs.stream().map(Partition::getName).collect(Collectors.toList());
+          return db.getPartitionsByNames(table, partNames);
         }
       } else { // static partition
-        Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
-        list.add(partn);
+        return singletonList(db.getPartition(table, tbd.getPartitionSpec(), false));
       }
     }
-    return list;
+    return emptyList();
   }
 
   public Collection<Partition> getDpPartSpecs() {
@@ -495,4 +526,22 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     this.dpPartSpecs = dpPartSpecs;
   }
 
+  public static String getAggregationPrefix(Table table, Partition partition) throws MetaException {
+    String prefix = getAggregationPrefix0(table, partition);
+    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
+    return aggKey;
+  }
+
+  private static String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
+
+    // prefix is of the form dbName.tblName
+    String prefix = FileUtils.escapePathName(table.getDbName()).toLowerCase() + "." +
+        FileUtils.escapePathName(table.getTableName()).toLowerCase();
+    // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
+    // prefix = work.getAggKey();
+    if (partition != null) {
+      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
+    }
+    return prefix;
+  }
 }

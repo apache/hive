@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
@@ -88,6 +89,10 @@ import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.prepareTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
@@ -593,7 +598,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Map<String, String> dbProps;
     if (work.isIncrementalLoad()) {
       dbProps = new HashMap<>();
-      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
           work.incrementalLoadTasksBuilder().eventTo().toString());
     } else {
       Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
@@ -680,6 +685,30 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
+
+    // Check if it is a optimised bootstrap failover.
+    if (work.isFailover) {
+      // Check it should be marked as target of replication & not source of replication.
+      if (MetaStoreUtils.isTargetOfReplication(targetDb)) {
+        LOG.error("The database {} is already marked as target for replication", targetDb.getName());
+        throw new Exception("Failover target is already marked as target");
+      }
+      if (!ReplChangeManager.isSourceOfReplication(targetDb)) {
+        LOG.error("The database {} is already source of replication.", targetDb.getName());
+        throw new Exception("Failover target was not source of replication");
+      }
+      boolean isTableDiffPresent =
+          checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
+      if (!isTableDiffPresent) {
+        prepareTableDiffFile(eventId, getHive(), work, conf);
+        if (this.childTasks == null) {
+          this.childTasks = new ArrayList<>();
+        }
+        createReplLoadCompleteAckTask();
+        return 0;
+      }
+    }
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
       props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
     }
@@ -732,7 +761,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (StringUtils.isNotBlank(dbName)) {
         String lastEventid = builder.eventTo().toString();
         Map<String, String> mapProp = new HashMap<>();
-        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
+        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), lastEventid);
         AlterDatabaseSetPropertiesDesc alterDbDesc =
             new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
                 new ReplicationSpec(lastEventid, lastEventid));

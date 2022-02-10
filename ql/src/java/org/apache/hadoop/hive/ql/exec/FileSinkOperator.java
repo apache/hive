@@ -1517,6 +1517,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                 if (stats != null) {
                   fsp.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
                   fsp.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
+                  fsp.addToStat(StatsSetupConst.INSERT_COUNT, stats.getInsertCount());
+                  fsp.addToStat(StatsSetupConst.UPDATE_COUNT, stats.getUpdateCount());
+                  fsp.addToStat(StatsSetupConst.DELETE_COUNT, stats.getDeleteCount());
                 }
               }
             }

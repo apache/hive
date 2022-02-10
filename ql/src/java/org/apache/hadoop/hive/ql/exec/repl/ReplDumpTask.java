@@ -125,6 +125,15 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHO
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.createAndGetEventAckFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getReplEventIdFromDatabase;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTargetEventId;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFailover;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFirstIncrementalPending;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
@@ -139,6 +148,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long SLEEP_TIME_FOR_TESTS = 30000;
   private Set<String> tablesForBootstrap = new HashSet<>();
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
+  private boolean createEventMarker = false;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -178,19 +188,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isFailoverMarkerPresent = false;
-        if (previousValidHiveDumpPath == null) {
+        boolean isFailover = isFailover(work.dbNameOrPattern, getHive());
+        LOG.debug("Database is {} going through failover", isFailover ? "" : "not");
+        if (previousValidHiveDumpPath == null && !isFailover) {
           work.setBootstrap(true);
         } else {
-          work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
-          isFailoverMarkerPresent = isDumpFailoverReady(previousValidHiveDumpPath);
+          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+          isFailoverMarkerPresent = !isFailover && isDumpFailoverReady(previousValidHiveDumpPath);
         }
         //Proceed with dump operation in following cases:
         //1. No previous dump is present.
         //2. Previous dump is already loaded and it is not in failover ready status.
-        if (shouldDump(previousValidHiveDumpPath, isFailoverMarkerPresent)) {
+        if (shouldDump(previousValidHiveDumpPath, isFailoverMarkerPresent, isFailover)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, work.isBootstrap());
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-          if (!work.isBootstrap()) {
+          if (!work.isBootstrap() && !isFailover) {
             preProcessFailoverIfRequired(previousValidHiveDumpPath, isFailoverMarkerPresent);
           }
           // Set distCp custom name corresponding to the replication policy.
@@ -211,14 +223,40 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
           Long lastReplId;
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
-          if (work.isBootstrap()) {
+          if (isFailover) {
+            LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
+            // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
+            // consistent state.
+            isFirstIncrementalPending(work.dbNameOrPattern, getHive());
+            // Get the last replicated event id from the database.
+            String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
+            // Get the last replicated event id from the database with respect to target.
+            String targetDbEventId = getTargetEventId(work.dbNameOrPattern, getHive());
+            // Check if the tableDiff directory is present or not.
+            boolean isTableDiffDirectoryPresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+            if (createEventMarker) {
+              LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
+              lastReplId =
+                  createAndGetEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, targetDbEventId, conf, work);
+              finishRemainingTasks();
+            } else {
+              // We should be here only if TableDiff is Present.
+              assert isTableDiffDirectoryPresent;
+              // TODO: Dump using TableDiff file & get lastReplId
+              lastReplId = -1L;
+            }
+          }
+          else if (work.isBootstrap()) {
             lastReplId = bootStrapDump(hiveDumpRoot, dmd, cmRoot, getHive());
           } else {
             work.setEventFrom(getEventFromPreviousDumpMetadata(previousValidHiveDumpPath));
             lastReplId = incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
           }
-          work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-          initiateDataCopyTasks();
+          // The datacopy doesn't need to be initialised in case of optimised bootstrap first dump.
+          if (lastReplId >= 0) {
+            work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
+            initiateDataCopyTasks();
+          }
         } else {
           if (isFailoverMarkerPresent) {
             LOG.info("Previous Dump is failover ready. Skipping this iteration.");
@@ -487,16 +525,46 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return false;
   }
 
-  private boolean shouldDump(Path previousDumpPath, boolean isFailoverMarkerPresent) throws IOException {
+  private boolean shouldDump(Path previousDumpPath, boolean isFailoverMarkerPresent, boolean isFailover)
+      throws IOException, HiveException {
     /** a) If there is no previous dump dir found, the current run is bootstrap case.
      * b) If the previous dump was successful and it contains failover marker file as well as
      * HiveConf.ConfVars.HIVE_REPL_FAILOVER_START == true, last dump was a controlled failover dump,
      * skip doing any further dump.
      */
     if (previousDumpPath == null) {
+      createEventMarker = isFailover;
       return true;
     } else if (isFailoverMarkerPresent && shouldFailover()) {
       return false;
+    } else if (isFailover) {
+      // In case of OptimisedBootstrap Failover, We need to do a dump in case:
+      // 1. No EVENT_ACK file is there.
+      // 2. EVENT_ACK file and TABLE_DIFF_COMPLETE file is also there and the current database id is same as that in
+      // the EVENT_ACK file
+      boolean isEventAckFilePresent = checkFileExists(previousDumpPath.getParent(), conf, EVENT_ACK_FILE);
+      if (!isEventAckFilePresent) {
+        // If in the previous valid dump path, Event_Ack isn't there that means the previous one was a normal dump,
+        // we need to trigger the failover dump
+        LOG.debug("EVENT_ACK file not found in {}. Proceeding with OptimisedBootstrap Failover",
+            previousDumpPath.getParent());
+        createEventMarker = true;
+        return true;
+      }
+      // Event_ACK file is present check if it contains correct value or not.
+      String fileEventId = getEventIdFromFile(previousDumpPath.getParent(), conf)[0];
+      String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive()).trim();
+      if (!dbEventId.equalsIgnoreCase(fileEventId)) {
+        // In case the database event id changed post table_diff_complete generation, that means both forward &
+        // backward policies are operational, We fail in that case with non-recoverable error.
+        LOG.error("The database eventID {} and the event id in the EVENT_ACK file {} both mismatch. FilePath {}",
+            dbEventId, fileEventId, previousDumpPath.getParent());
+        throw new RuntimeException("Database event id changed post table diff generation.");
+      } else {
+        // Check table_diff_complete and Load_ACK
+        return checkFileExists(previousDumpPath.getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY) && checkFileExists(previousDumpPath,
+            conf, LOAD_ACKNOWLEDGEMENT.toString());
+      }
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
       return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));

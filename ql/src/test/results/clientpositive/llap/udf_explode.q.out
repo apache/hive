@@ -653,3 +653,55 @@ POSTHOOK: Input: default@lazy_array_map
 {1:"one",2:"two",3:"three"}	1	one
 {1:"one",2:"two",3:"three"}	2	two
 {1:"one",2:"two",3:"three"}	3	three
+PREHOOK: query: create table source1 (dt string, d1 int, d2 int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source1
+POSTHOOK: query: create table source1 (dt string, d1 int, d2 int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source1
+PREHOOK: query: create table source2 (dt string, d1 int, d2 int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source2
+POSTHOOK: query: create table source2 (dt string, d1 int, d2 int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source2
+PREHOOK: query: insert into source1 values ('20211107', 1, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source1
+POSTHOOK: query: insert into source1 values ('20211107', 1, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source1
+POSTHOOK: Lineage: source1.d1 SCRIPT []
+POSTHOOK: Lineage: source1.d2 SCRIPT []
+POSTHOOK: Lineage: source1.dt SCRIPT []
+PREHOOK: query: insert into source2 values ('20211108', 11, 22)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source2
+POSTHOOK: query: insert into source2 values ('20211108', 11, 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source2
+POSTHOOK: Lineage: source2.d1 SCRIPT []
+POSTHOOK: Lineage: source2.d2 SCRIPT []
+POSTHOOK: Lineage: source2.dt SCRIPT []
+PREHOOK: query: select explode(map('D219', d1,'D220', d2)) as (keyx, valuex) from source1 union all select explode(map('D221', d1,'D222', d2)) as (keyy, valuey) from source2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source1
+PREHOOK: Input: default@source2
+#### A masked pattern was here ####
+POSTHOOK: query: select explode(map('D219', d1,'D220', d2)) as (keyx, valuex) from source1 union all select explode(map('D221', d1,'D222', d2)) as (keyy, valuey) from source2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source1
+POSTHOOK: Input: default@source2
+#### A masked pattern was here ####
+D219	1
+D220	2
+D221	11
+D222	22

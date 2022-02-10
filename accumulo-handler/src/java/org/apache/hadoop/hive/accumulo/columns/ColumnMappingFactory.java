@@ -87,7 +87,7 @@ public class ColumnMappingFactory {
 
         // Replace any \* that appear in the prefix with a regular *
         if (-1 != cq.indexOf(AccumuloHiveConstants.ESCAPED_ASTERISK)) {
-          cq = cq.replaceAll(AccumuloHiveConstants.ESCAPED_ASERTISK_REGEX,
+          cq = cq.replaceAll(AccumuloHiveConstants.ESCAPED_ASTERISK_REGEX,
               Character.toString(AccumuloHiveConstants.ASTERISK));
         }
 

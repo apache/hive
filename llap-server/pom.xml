@@ -233,7 +233,21 @@
       <artifactId>disruptor</artifactId>
       <version>${disruptor.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.arrow</groupId>
+      <artifactId>arrow-memory-netty</artifactId>
+      <version>${arrow.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-buffer</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-common</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>

@@ -363,6 +363,7 @@ public class QTestUtil {
           continue;
         }
         db.dropTable(dbName, tblName, true, true, fsType == FsType.ENCRYPTED_HDFS);
+        HiveMaterializedViewsRegistry.get().dropMaterializedView(tblObj);
       }
     }
 
@@ -680,7 +681,7 @@ public class QTestUtil {
     }
   }
 
-  public int executeAdhocCommand(String q) throws CommandProcessorException {
+  public int executeAdHocCommand(String q) throws CommandProcessorException {
     if (!q.contains(";")) {
       return -1;
     }

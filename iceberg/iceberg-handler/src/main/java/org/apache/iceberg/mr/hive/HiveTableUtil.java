@@ -45,6 +45,7 @@ import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.data.TableMigrationUtil;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
@@ -81,7 +82,6 @@ public class HiveTableUtil {
     MetricsConfig metricsConfig = MetricsConfig.fromProperties(icebergTable.properties());
     String nameMappingString = icebergTable.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
     NameMapping nameMapping = nameMappingString != null ? NameMappingParser.fromJson(nameMappingString) : null;
-
     try {
       if (partitionSpecProxy.size() == 0) {
         List<DataFile> dataFiles = getDataFiles(filesIterator, Collections.emptyMap(), format, spec, metricsConfig,
@@ -128,8 +128,8 @@ public class HiveTableUtil {
       if (fileName.startsWith(".") || fileName.startsWith("_")) {
         continue;
       }
-      dataFiles.addAll(DataUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec, conf,
-          metricsConfig, nameMapping));
+      dataFiles.addAll(TableMigrationUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec,
+          conf, metricsConfig, nameMapping));
     }
     return dataFiles;
   }

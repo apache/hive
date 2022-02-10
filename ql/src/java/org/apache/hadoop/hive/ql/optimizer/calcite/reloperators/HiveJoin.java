@@ -202,11 +202,13 @@ public class HiveJoin extends Join implements HiveRelNode {
 
     final RelMetadataQuery mq = this.left.getCluster().getMetadataQuery();
     for (int i=0; i<this.getInputs().size(); i++) {
-      boolean correctOrderFound = RelCollations.contains(
-          mq.collations(this.getInputs().get(i)),
-          joinKeysInChildren.get(i));
-      if (correctOrderFound) {
-        sortedInputsBuilder.set(i);
+      List<RelCollation> collations = mq.collations(this.getInputs().get(i));
+      if (collations != null) {
+        boolean correctOrderFound = RelCollations.contains(
+            collations, joinKeysInChildren.get(i));
+        if (correctOrderFound) {
+          sortedInputsBuilder.set(i);
+        }
       }
     }
     return sortedInputsBuilder.build();

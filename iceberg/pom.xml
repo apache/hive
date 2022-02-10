@@ -29,7 +29,7 @@
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
         <path.to.iceberg.root>.</path.to.iceberg.root>
-        <iceberg.version>0.12.0</iceberg.version>
+        <iceberg.version>0.13.0</iceberg.version>
         <kryo-shaded.version>4.0.2</kryo-shaded.version>
         <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
         <iceberg.avro.version>1.9.2</iceberg.avro.version>
@@ -40,6 +40,7 @@
         <google.errorprone.version>2.5.1</google.errorprone.version>
         <assertj.version>3.19.0</assertj.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
+        <validate.skip>false</validate.skip>
     </properties>
 
     <modules>
@@ -236,6 +237,7 @@
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>${spotless.maven.plugin.version}</version>
                 <configuration>
+                    <skip>${validate.skip}</skip>
                     <java>
                         <removeUnusedImports />
                         <importOrder>
@@ -266,6 +268,7 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${iceberg.checkstyle.plugin.version}</version>
                 <configuration>
+                    <skip>${validate.skip}</skip>
                     <propertyExpansion>config_loc=${basedir}/${path.to.iceberg.root}/checkstyle/</propertyExpansion>
                     <configLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle.xml</configLocation>
                     <suppressionsLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>

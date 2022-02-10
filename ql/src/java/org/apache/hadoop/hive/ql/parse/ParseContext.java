@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.collect.Multimap;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -97,7 +98,7 @@ public class ParseContext {
   // reducer
   private Map<String, PrunedPartitionList> prunedPartitions;
   private Map<String, ReadEntity> viewAliasToInput;
-  private Map<String, Table> tabNameToTabObject;
+  private QueryTables tabNameToTabObject;
 
   /**
    * The lineage information.
@@ -192,7 +193,7 @@ public class ParseContext {
       Context ctx, Map<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<String, PrunedPartitionList> prunedPartitions,
-      Map<String, Table> tabNameToTabObject,
+      QueryTables tabNameToTabObject,
       Map<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       Map<String, SplitSample> nameToSplitSample,
@@ -316,6 +317,17 @@ public class ParseContext {
    */
   public Map<String, TableScanOperator> getTopOps() {
     return topOps;
+  }
+
+  public Set<TableName> getTablesUsed() {
+    Set<TableName> tablesUsed = new HashSet<>();
+    for (TableScanOperator topOp : topOps.values()) {
+      Table table = topOp.getConf().getTableMetadata();
+      if (!table.isMaterializedTable() && !table.isView()) {
+        tablesUsed.add(table.getFullTableName());
+      }
+    }
+    return tablesUsed;
   }
 
   /**
@@ -636,7 +648,7 @@ public class ParseContext {
     this.needViewColumnAuthorization = needViewColumnAuthorization;
   }
 
-  public Map<String, Table> getTabNameToTabObject() {
+  public QueryTables getTabNameToTabObject() {
     return tabNameToTabObject;
   }
 

@@ -113,7 +113,7 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     for (Path path : hsplit.getPaths()) {
       PartitionDesc otherPart = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartInfo, path, cache);
-      LOG.debug("Found spec for " + path + " " + otherPart + " from " + pathToPartInfo);
+      LOG.debug("Found spec for {} {} from {}", path, otherPart, pathToPartInfo);
       if (part == null) {
         part = otherPart;
       } else if (otherPart != part) { // Assume we should have the exact same object.

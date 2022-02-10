@@ -71,7 +71,7 @@ public class StringToDouble {
     int c;
     int exp = 0;		/* Exponent read from "EX" field. */
     int fracExp = 0;		/* Exponent that derives from the fractional
-				 * part.  Under normal circumstatnces, it is
+				 * part.  Under normal circumstances, it is
 				 * the negative of the number of digits in F.
 				 * However, if I is very long, the last digits
 				 * of I get dropped (otherwise a long I with a

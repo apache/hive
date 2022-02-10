@@ -39,9 +39,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -107,6 +110,7 @@ public class Table implements Serializable {
 
   private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
+  private transient MaterializedViewMetadata materializedViewMetadata;
 
   private TableSpec tableSpec;
 
@@ -310,6 +314,10 @@ public class Table implements Serializable {
 
   final public String getTableName() {
     return tTable.getTableName();
+  }
+
+  public TableName getFullTableName() {
+    return new TableName(getCatName(), getDbName(), getTableName());
   }
 
   final public Path getDataLocation() {
@@ -953,16 +961,24 @@ public class Table implements Serializable {
   /**
    * @return the creation metadata (only for materialized views)
    */
-  public CreationMetadata getCreationMetadata() {
-    return tTable.getCreationMetadata();
+  public MaterializedViewMetadata getMVMetadata() {
+    if (tTable.getCreationMetadata() == null) {
+      return null;
+    }
+    if (materializedViewMetadata == null) {
+      materializedViewMetadata = new MaterializedViewMetadata(tTable.getCreationMetadata());
+    }
+
+    return materializedViewMetadata;
   }
 
   /**
-   * @param creationMetadata
+   * @param materializedViewMetadata
    *          the creation metadata (only for materialized views)
    */
-  public void setCreationMetadata(CreationMetadata creationMetadata) {
-    tTable.setCreationMetadata(creationMetadata);
+  public void setMaterializedViewMetadata(MaterializedViewMetadata materializedViewMetadata) {
+    this.materializedViewMetadata = materializedViewMetadata;
+    tTable.setCreationMetadata(materializedViewMetadata.creationMetadata);
   }
 
   public void clearSerDeInfo() {
@@ -1312,5 +1328,14 @@ public class Table implements Serializable {
 
   public void setMetaTable(String metaTable) {
     this.metaTable = metaTable;
+  }
+
+  public SourceTable createSourceTable() {
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTable(this.tTable);
+    sourceTable.setInsertedCount(0L);
+    sourceTable.setUpdatedCount(0L);
+    sourceTable.setDeletedCount(0L);
+    return sourceTable;
   }
 };

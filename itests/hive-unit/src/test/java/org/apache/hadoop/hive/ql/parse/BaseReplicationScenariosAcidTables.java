@@ -347,7 +347,7 @@ public class BaseReplicationScenariosAcidTables {
     return txns;
   }
 
-  List<Long> allocateWriteIdsForTablesAndAquireLocks(String primaryDbName, Map<String, Long> tables,
+  List<Long> allocateWriteIdsForTablesAndAcquireLocks(String primaryDbName, Map<String, Long> tables,
                                                      TxnStore txnHandler,
                                                      List<Long> txns, HiveConf primaryConf) throws Throwable {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest();

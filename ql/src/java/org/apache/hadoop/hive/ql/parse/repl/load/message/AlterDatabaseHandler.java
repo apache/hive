@@ -64,7 +64,8 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
           String key = entry.getKey();
           // Ignore the keys which are local to source warehouse
           if (key.startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
-                  || key.equals(ReplicationSpec.KEY.CURR_STATE_ID.toString())
+                  || key.equals(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString())
+                  || key.equals(ReplicationSpec.KEY.CURR_STATE_ID_TARGET.toString())
                   || key.equals(ReplUtils.REPL_CHECKPOINT_KEY)
                   || key.equals(ReplChangeManager.SOURCE_OF_REPLICATION)
                   || key.equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG)

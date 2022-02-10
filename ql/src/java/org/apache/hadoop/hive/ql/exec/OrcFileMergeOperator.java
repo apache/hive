@@ -154,6 +154,9 @@ public class OrcFileMergeOperator extends
 
       // next file in the path
       if (!k.getInputPath().equals(prevPath)) {
+        if (reader != null) {
+          reader.close();
+        }
         reader = OrcFile.createReader(fs, k.getInputPath());
       }
 
@@ -187,6 +190,15 @@ public class OrcFileMergeOperator extends
     } finally {
       if (exception) {
         closeOp(true);
+      }
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException e) {
+          throw new HiveException(String.format("Unable to close reader for %s", filePath), e);
+        } finally {
+          reader = null;
+        }
       }
       if (fdis != null) {
         try {

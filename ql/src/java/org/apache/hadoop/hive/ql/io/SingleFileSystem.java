@@ -114,6 +114,8 @@ public abstract class SingleFileSystem extends FileSystem {
     switch (info.type) {
     case LEAF_FILE:
       return info.lowerTargetPath.getFileSystem(conf).open(info.lowerTargetPath, bufferSize);
+    case NONEXISTENT:
+      throw newFileNotFoundException(upperPath.toString());
     default:
       throw unsupported("open:" + upperPath);
     }
@@ -129,6 +131,8 @@ public abstract class SingleFileSystem extends FileSystem {
       return makeDirFileStatus(upperPath, removeSfsScheme(upperPath));
     case SINGLEFILE_DIR:
       return makeDirFileStatus(upperPath, info.lowerTargetPath);
+    case NONEXISTENT:
+      throw newFileNotFoundException(upperPath.toString());
     default:
       throw unsupported("fileStatus:" + upperPath);
     }
@@ -143,6 +147,8 @@ public abstract class SingleFileSystem extends FileSystem {
     case LEAF_FILE:
     case SINGLEFILE_DIR:
       return new FileStatus[] { makeFileStatus(info.upperTargetPath, info.lowerTargetPath) };
+    case NONEXISTENT:
+      throw newFileNotFoundException(upperPath.toString());
     default:
       throw unsupported("listStatus: " + upperPath);
     }
@@ -159,30 +165,30 @@ public abstract class SingleFileSystem extends FileSystem {
   }
 
   @Override
-  public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
+  public FSDataOutputStream create(Path upperPath, FsPermission permission, boolean overwrite, int bufferSize,
       short replication, long blockSize, Progressable progress) throws IOException {
-    throw unsupported("create: " + f);
+    throw unsupportedReadOnly("create", upperPath);
   }
 
   @Override
-  public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws IOException {
-    throw unsupported("append: " + f);
+  public FSDataOutputStream append(Path upperPath, int bufferSize, Progressable progress) throws IOException {
+    throw unsupportedReadOnly("append", upperPath);
 
   }
 
   @Override
   public boolean rename(Path src, Path dst) throws IOException {
-    throw unsupported("rename: " + src + " to " + dst);
+    throw unsupportedReadOnly("rename", src);
   }
 
   @Override
-  public boolean delete(Path f, boolean recursive) throws IOException {
-    throw unsupported("delete: " + f);
+  public boolean delete(Path upperPath, boolean recursive) throws IOException {
+    throw unsupportedReadOnly("delete", upperPath);
   }
 
   @Override
-  public boolean mkdirs(Path f, FsPermission permission) throws IOException {
-    throw unsupported("mkdirs: " + f);
+  public boolean mkdirs(Path upperPath, FsPermission permission) throws IOException {
+    throw unsupportedReadOnly("mkdirs", upperPath);
   }
 
   @Override
@@ -337,10 +343,27 @@ public abstract class SingleFileSystem extends FileSystem {
   }
 
   private static FsPermission addExecute(FsPermission permission) {
-    return new FsPermission(permission.toShort() | 1 | (1 << 3) | (1 << 6));
+    short mode = (short) (permission.toShort() | 1 | (1 << 3) | (1 << 6));
+    return new FsPermission(mode);
+  }
+
+  private IOException unsupportedReadOnly(String opName, Path path) throws IOException {
+    SfsInfo sfsInfo = new SfsInfo(path);
+    if (sfsInfo.type == SfsInodeType.SINGLEFILE_DIR || sfsInfo.type == SfsInodeType.LEAF_FILE) {
+      // Try to access the the underlying file if possible; as the lower fs may provide a more
+      // specific exception (like: FileNotFoundException)
+      FileSystem fs = sfsInfo.lowerTargetPath.getFileSystem(conf);
+      fs.getFileStatus(sfsInfo.lowerTargetPath);
+    }
+    return new IOException("SFS is readonly hence " + opName + " is not supported! (" + path + ")");
   }
 
   private IOException unsupported(String str) {
     return new IOException("Unsupported SFS filesystem operation! (" + str + ")");
   }
+
+  private IOException newFileNotFoundException(String path) {
+    return new FileNotFoundException("File " + path + " does not exists!");
+  }
+
 }

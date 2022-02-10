@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -86,6 +87,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private String scheduledQueryName;
   private String executionId;
   private boolean shouldFailover;
+  public boolean isFailover;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -134,6 +136,8 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       FileSystem fs = failoverReadyMarker.getFileSystem(hiveConf);
       shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
               && fs.exists(failoverReadyMarker);
+      isFailover =
+          checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, OptimisedBootstrapUtils.EVENT_ACK_FILE);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
           replStatsTracker, shouldFailover);

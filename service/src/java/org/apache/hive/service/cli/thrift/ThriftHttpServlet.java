@@ -214,16 +214,25 @@ public class ThriftHttpServlet extends TServlet {
             }
           } else if (HiveSamlUtils.isSamlAuthMode(authType)) {
             // check if this request needs a SAML redirect
-            if (needsRedirect(request, response)) {
+            String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
+            if ((authHeader == null || authHeader.isEmpty()) && needsRedirect(request, response)) {
               doSamlRedirect(request, response);
               return;
+            } else if(authHeader.toLowerCase().startsWith(HttpAuthUtils.BASIC.toLowerCase())) {
+              //LDAP Authentication if the header starts with Basic
+              clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NONE.toString());
             } else {
               // redirect is not needed. Do SAML auth.
               clientUserName = doSamlAuth(request, response);
             }
           } else {
-            // For password based authentication
-            clientUserName = doPasswdAuth(request, authType);
+            String proxyHeader = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER).trim();
+            if (!proxyHeader.equals("") && request.getHeader(proxyHeader) != null) { //Trusted header is present, which means the user is already authorized.
+              clientUserName = getUsername(request, authType);
+            } else {
+              // For password based authentication
+              clientUserName = doPasswdAuth(request, authType);
+            }
           }
         }
       }
@@ -242,7 +251,7 @@ public class ThriftHttpServlet extends TServlet {
 
       // Generate new cookie and add it to the response
       if (requireNewCookie &&
-          !authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
+          !authType.toLowerCase().contains(HiveAuthConstants.AuthTypes.NOSASL.toString().toLowerCase())) {
         String cookieToken = HttpAuthUtils.createCookieToken(clientUserName);
         Cookie hs2Cookie = createCookie(signer.signCookie(cookieToken));
 
@@ -503,7 +512,7 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     String userName = getUsername(request, authType);
     // No-op when authType is NOSASL
-    if (!authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
+    if (!authType.toLowerCase().contains(HiveAuthConstants.AuthTypes.NOSASL.toString().toLowerCase())) {
       try {
         AuthMethods authMethod = AuthMethods.getValidAuthMethod(authType);
         PasswdAuthenticationProvider provider =

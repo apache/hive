@@ -26,7 +26,7 @@ import org.apache.hive.common.util.HiveStringUtils;
 /**
  * HiveCharWritable.
  * String values will be padded to full char length.
- * Character legnth, comparison, hashCode should ignore trailing spaces.
+ * Character length, comparison, hashCode should ignore trailing spaces.
  */
 public class HiveCharWritable extends HiveBaseCharWritable 
     implements WritableComparable<HiveCharWritable> {
