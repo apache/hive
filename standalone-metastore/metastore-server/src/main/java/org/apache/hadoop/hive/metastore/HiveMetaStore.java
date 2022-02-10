@@ -472,7 +472,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Metrics.getOpenConnectionsCounter().dec();
         // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
         // cleaned up thread local RawStore. Otherwise, do it now.
-        HMSHandler.cleanupRawStore();
+        HMSHandler.cleanupHandlerContext();
       }
 
       @Override
