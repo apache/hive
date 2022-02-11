@@ -78,6 +78,7 @@ import java.util.Set;
 import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.junit.Assert.assertThrows;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Table related functions for metadata
@@ -355,6 +356,33 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Assert.assertEquals("Storage descriptor location", metaStore.getWarehouseRoot()
         + "/" + table.getDbName() + ".db/" + table.getTableName(),
         createdTable.getSd().getLocation());
+  }
+
+
+  @Test
+  public void testCreateTableRooPathLocationInSpecificDatabase() throws TException {
+    Table table = new Table();
+    StorageDescriptor sd = new StorageDescriptor();
+    List<FieldSchema> cols = new ArrayList<>();
+    sd.setLocation("hdfs://localhost:8020");
+    table.setDbName(DEFAULT_DATABASE);
+    table.setTableName("test_table_2_with_path");
+    cols.add(new FieldSchema("column_name", "int", null));
+    sd.setCols(cols);
+    sd.setSerdeInfo(new SerDeInfo());
+    table.setSd(sd);
+
+    Exception exception = assertThrows(InvalidObjectException.class, () -> client.createTable(table));
+    Assert.assertEquals("Storage descriptor location",
+            table.getTableName() + " location must not be root path",
+            exception.getMessage());
+
+    sd.setLocation("hdfs://localhost:8020/other_path");
+
+    client.createTable(table);
+
+    Table createdTable = client.getTable(table.getDbName(), table.getTableName());
+    Assert.assertNotNull(createdTable);
   }
 
   @Test
