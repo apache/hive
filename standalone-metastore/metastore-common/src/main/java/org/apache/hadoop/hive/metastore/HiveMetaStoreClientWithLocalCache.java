@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysResponse;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseRequest;
@@ -68,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 /**
  * This class introduces a caching layer in HS2 for metadata for some selected query APIs. It extends
@@ -493,6 +495,28 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return super.getPartitionsByNamesInternal(rqst);
   }
 
+  @Override
+  public void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
+                               EnvironmentContext environmentContext, String writeIdList, long writeId)
+          throws TException {
+    super.alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList, writeId);
+
+    // invalidate cached Partition entries
+    List<String> processorCapabilitiesList = getProcessorCapabilities() == null ?
+            null : new ArrayList<>(Arrays.asList(getProcessorCapabilities()));
+
+    TableWatermark watermark = new TableWatermark(writeIdList, getTable(dbName, tblName).getId());
+    dbName =prependCatalogToDbName(catName, dbName, conf);
+
+    for (Partition partition : newParts) {
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
+              dbName, tblName, partition.getValues(),
+              false, processorCapabilitiesList, getProcessorIdentifier(),
+              null, writeIdList);
+
+      mscLocalCache.invalidate(cacheKey);
+    }
+  }
 
   /**
    * Checks if cache is enabled and initialized
