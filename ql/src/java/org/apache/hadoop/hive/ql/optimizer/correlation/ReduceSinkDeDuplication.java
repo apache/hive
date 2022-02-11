@@ -329,9 +329,6 @@ public class ReduceSinkDeDuplication extends Transform {
               start, ReduceSinkOperator.class, dedupCtx.trustScript());
       if (pRS != null && ReduceSinkDeDuplicationUtils
           .merge(dedupCtx.getPctx().getConf(), cRS, pRS, dedupCtx.minReducer())) {
-        if (dedupCtx.getPctx().getConf().getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
-          return false;
-        }
         CorrelationUtilities.removeReduceSinkForGroupBy(cRS, cGBY, dedupCtx.getPctx(), dedupCtx);
         pRS.getConf().setDeduplicated(true);
         return true;
