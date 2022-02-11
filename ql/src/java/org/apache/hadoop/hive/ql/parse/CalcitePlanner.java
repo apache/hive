@@ -2038,10 +2038,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Optimize plan
       if (!ruleExclusionRegex.isEmpty()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("The CBO rules matching the following regex are excluded from planning: {}",
-              ruleExclusionRegex);
-        }
+        LOG.debug("The CBO rules matching the following regex are excluded from planning: {}",
+            ruleExclusionRegex);
         planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
       }
       planner.setRoot(basePlan);
@@ -2467,10 +2465,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       if (!ruleExclusionRegex.isEmpty()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("The CBO rules matching the following regex are excluded from planning: {}",
-              ruleExclusionRegex);
-        }
+        LOG.debug("The CBO rules matching the following regex are excluded from planning: {}",
+            ruleExclusionRegex);
         planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
       }
       planner.setRoot(basePlan);
