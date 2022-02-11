@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -102,6 +101,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(ExplainTask.class.getName());
 
   public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
+  private static final String EXCLUDED_RULES_PREFIX = "Excluded rules: ";
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
   private static final String CBO_INFO_JSON_LABEL = "cboInfo";
@@ -165,11 +165,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (jsonOutput) {
         outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
         if (!ruleExclusionRegex.isEmpty()) {
-          outJSONObject.put(CBO_INFO_JSON_LABEL, CalcitePlanner.EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+          outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
         }
       } else {
         if (!ruleExclusionRegex.isEmpty()) {
-          out.println(CalcitePlanner.EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
+          out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
         }
         out.println(CBO_PLAN_TEXT_LABEL);
         out.println(cboPlan);
@@ -297,11 +297,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (jsonOutput) {
         outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
         if (!ruleExclusionRegex.isEmpty()) {
-          outJSONObject.put(CBO_INFO_JSON_LABEL, CalcitePlanner.EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+          outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
         }
       } else {
         if (!ruleExclusionRegex.isEmpty()) {
-          out.println(CalcitePlanner.EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+          out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
         }
         out.print(CBO_PLAN_TEXT_LABEL);
         out.println(cboPlan);
@@ -347,7 +347,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (!suppressOthersForVectorization) {
       if (!jsonOutput && !ruleExclusionRegex.isEmpty()) {
-        out.println(CalcitePlanner.EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
+        out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
       }
 
       JSONObject jsonDependencies = outputDependencies(out, jsonOutput, appendTaskType, ordered);

@@ -355,7 +355,7 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMateri
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
-  public static final String EXCLUDED_RULES_PREFIX = "Excluded rules: ";
+  private static final String EXCLUDED_RULES_PREFIX = "Excluded rules: ";
   /**
    * {@link org.antlr.runtime.TokenRewriteStream} offers the opportunity of multiple rewrites of the same
    * input text (in our case the sql query text). These rewrites are called programs and identified by a string.
