@@ -361,12 +361,13 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
   @Test
   public void testCreateTableRooPathLocationInSpecificDatabase() throws TException {
+    String tableName = "test_table_2_with_path";
     Table table = new Table();
     StorageDescriptor sd = new StorageDescriptor();
     List<FieldSchema> cols = new ArrayList<>();
     sd.setLocation("hdfs://localhost:8020");
     table.setDbName(DEFAULT_DATABASE);
-    table.setTableName("test_table_2_with_path");
+    table.setTableName(tableName);
     cols.add(new FieldSchema("column_name", "int", null));
     sd.setCols(cols);
     sd.setSerdeInfo(new SerDeInfo());
@@ -383,6 +384,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
     Assert.assertNotNull(createdTable);
+    client.dropTable(DEFAULT_DATABASE, tableName, true, true);
   }
 
   @Test
