@@ -287,15 +287,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return expressionProxy;
   }
 
-  public HMSHandler(String name) throws MetaException {
-    this(name, MetastoreConf.newMetastoreConf(), true);
-  }
-
-  public HMSHandler(String name, Configuration conf) throws MetaException {
-    this(name, conf, true);
-  }
-
-  public HMSHandler(String name, Configuration conf, boolean init) throws MetaException {
+  public HMSHandler(String name, Configuration conf) {
     super(name);
     this.conf = conf;
     isInTest = MetastoreConf.getBoolVar(this.conf, ConfVars.HIVE_IN_TEST);
@@ -309,9 +301,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           tablelocks = Striped.lock(numTableLocks);
         }
       }
-    }
-    if (init) {
-      init();
     }
   }
 

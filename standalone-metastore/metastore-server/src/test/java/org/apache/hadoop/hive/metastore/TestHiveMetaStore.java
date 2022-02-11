@@ -3473,7 +3473,7 @@ public abstract class TestHiveMetaStore {
     part.getSd().setLocation(tbl.getSd().getLocation() + "/partCol=1");
     Warehouse wh = mock(Warehouse.class);
     //Execute initializeAddedPartition() and it should not trigger updatePartitionStatsFast() as DO_NOT_UPDATE_STATS is true
-    HMSHandler hms = new HMSHandler("", conf, false);
+    HMSHandler hms = new HMSHandler("", conf);
     Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class,
             boolean.class, EnvironmentContext.class);
     m.setAccessible(true);
