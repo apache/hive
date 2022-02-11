@@ -4617,7 +4617,7 @@ public class TestReplicationScenarios {
   public void testReplicationMetricForSkippedIteration() throws Throwable {
     String name = testName.getMethodName();
     String primaryDbName = createDB(name, driver);
-    String replicaDbName = "tgtDb";
+    String replicaDbName = "replicaDb";
     try {
       isMetricsEnabledForTests(true);
       MetricCollector collector = MetricCollector.getInstance();
