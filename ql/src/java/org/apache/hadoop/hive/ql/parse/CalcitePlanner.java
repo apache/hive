@@ -566,8 +566,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 0. Gen Optimized Plan
           RelNode newPlan = logicalPlan();
 
-          String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
-
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
@@ -579,11 +577,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
             LOG.info("CBO Succeeded; optimized logical plan.");
 
-            String cboInfo = "Plan optimized by CBO.";
-            if (!ruleExclusionRegex.isEmpty()) {
-              cboInfo = cboInfo + (" " + EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
-            }
-            this.ctx.setCboInfo(cboInfo);
+            this.ctx.setCboInfo(getOptimizedByCboInfo());
             this.ctx.setCboSucceeded(true);
           } else {
             // 1. Convert Plan to AST
@@ -636,11 +630,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             disableJoinMerge = defaultJoinMerge;
             sinkOp = genPlan(getQB());
             LOG.info("CBO Succeeded; optimized logical plan.");
-            String cboInfo = "Plan optimized by CBO.";
-            if (!ruleExclusionRegex.isEmpty()) {
-              cboInfo = cboInfo + (" " + EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
-            }
-            this.ctx.setCboInfo(cboInfo);
+
+            this.ctx.setCboInfo(getOptimizedByCboInfo());
             this.ctx.setCboSucceeded(true);
             if (this.ctx.isExplainPlan()) {
               // Enrich explain with information derived from CBO
@@ -717,6 +708,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  private String getOptimizedByCboInfo() {
+    String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
+    String cboInfo = "Plan optimized by CBO.";
+    if (!ruleExclusionRegex.isEmpty()) {
+      cboInfo = cboInfo + (" " + EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+    }
+    return cboInfo;
   }
 
   private ASTNode handleCreateViewDDL(ASTNode ast) throws SemanticException {
@@ -1969,8 +1969,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final RelOptCluster optCluster = basePlan.getCluster();
       final PerfLogger perfLogger = SessionState.getPerfLogger();
 
-      final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
-              .equals("DUMMY");
+      final boolean useMaterializedViewsRegistry =
+          !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname).equals("DUMMY");
       final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       final RelNode calcitePreMVRewritingPlan = basePlan;
       final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
