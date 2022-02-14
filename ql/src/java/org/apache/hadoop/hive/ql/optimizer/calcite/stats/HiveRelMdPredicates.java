@@ -55,6 +55,7 @@ import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BitSets;
 import org.apache.calcite.util.BuiltInMethod;
@@ -135,14 +136,14 @@ public class HiveRelMdPredicates extends RelMdPredicates {
       } else if (RexLiteral.isNullLiteral(expr.e)) {
         projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
             rexBuilder.makeInputRef(project, expr.i)));
-      } else if (expr.e instanceof RexLiteral) {
-        final RexLiteral literal = (RexLiteral) expr.e;
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), literal));
-      } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
-        //TODO: Move this to calcite
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), expr.e));
+      } else if (RexUtil.isConstant(expr.e)) {
+        final List<RexNode> args =
+            ImmutableList.of(rexBuilder.makeInputRef(project, expr.i), expr.e);
+        final SqlOperator op = args.get(0).getType().isNullable()
+            || args.get(1).getType().isNullable()
+            ? SqlStdOperatorTable.IS_NOT_DISTINCT_FROM
+            : SqlStdOperatorTable.EQUALS;
+        projectPullUpPredicates.add(rexBuilder.makeCall(op, args));
       }
     }
 
