@@ -21,6 +21,7 @@ package org.apache.iceberg.orc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.stream.Collectors;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -37,6 +38,7 @@ import org.apache.hive.iceberg.org.apache.orc.TypeDescription;
 import org.apache.hive.iceberg.org.apache.orc.impl.OrcTail;
 import org.apache.hive.iceberg.org.apache.orc.impl.ReaderImpl;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Expression;
@@ -134,15 +136,25 @@ public class VectorizedReadUtils {
 
     // We need to map with the current (i.e. current Hive table columns) full schema (without projections),
     // as OrcInputFormat will take care of the projections by the use of an include boolean array
-    Schema currentSchema = task.spec().schema();
+    PartitionSpec spec = task.spec();
+    Schema currentSchema = spec.schema();
 
     TypeDescription readOrcSchema;
     if (ORCSchemaUtil.hasIds(fileSchema)) {
       readOrcSchema = ORCSchemaUtil.buildOrcProjection(currentSchema, fileSchema);
     } else {
+      Schema readSchemaForOriginalFile = currentSchema;
+      // In case of migrated, originally partitioned tables, partition values are not present in the file
+      if (spec.isPartitioned()) {
+        readSchemaForOriginalFile = currentSchema.select(currentSchema.columns().stream()
+            .filter(c -> !spec.identitySourceIds().contains(c.fieldId()))
+            .map(c -> c.name())
+            .collect(Collectors.toList()));
+      }
+
       TypeDescription typeWithIds =
           ORCSchemaUtil.applyNameMapping(fileSchema, MappingUtil.create(currentSchema));
-      readOrcSchema = ORCSchemaUtil.buildOrcProjection(currentSchema, typeWithIds);
+      readOrcSchema = ORCSchemaUtil.buildOrcProjection(readSchemaForOriginalFile, typeWithIds);
     }
 
     job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, readOrcSchema.toString());
