@@ -3678,6 +3678,39 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
+    boolean success = false;
+    Query query = null;
+    Long result;
+    try {
+      openTransaction();
+      LOG.debug("executing getNumPartitionsByPs");
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tblName = normalizeIdentifier(tblName);
+      Table table = getTable(catName, dbName, tblName);
+      if (table == null) {
+        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
+            + " table not found");
+      }
+      // size is known since it contains dbName, catName, tblName and partialRegex pattern
+      Map<String, String> params = new HashMap<>(4);
+      String filter = getJDOFilterStrForPartitionVals(table, partVals, params);
+      query = pm.newQuery(
+          "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"
+      );
+      query.setFilter(filter);
+      query.declareParameters(makeParameterDeclarationString(params));
+      result = (Long) query.executeWithMap(params);
+      success = commitTransaction();
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    return result.intValue();
+  }
+
   /**
    * Retrieves a Collection of partition-related results from the database that match
    *  the partial specification given for a specific table.

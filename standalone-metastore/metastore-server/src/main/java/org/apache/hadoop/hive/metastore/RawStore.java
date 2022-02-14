@@ -797,6 +797,20 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException;
 
   /**
+   * Get the number of partitions that match a given partial specification.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param partVals A partial list of values for partitions in order of the table's partition keys.
+   *                  Entries can be empty if you need to specify latter partitions.
+   * @return number of matching partitions.
+   * @throws MetaException error accessing the RDBMS or working with the specification.
+   * @throws NoSuchObjectException no such table.
+   */
+  int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
+      throws MetaException, NoSuchObjectException;
+
+  /**
    * Get partitions by name.
    * @param catName catalog name.
    * @param dbName database name.

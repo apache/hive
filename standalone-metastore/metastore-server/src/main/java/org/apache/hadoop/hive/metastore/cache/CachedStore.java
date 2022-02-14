@@ -1988,6 +1988,12 @@ public class CachedStore implements RawStore, Configurable {
     return partitionNames;
   }
 
+  @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partSpecs)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getNumPartitionsByPs(catName, dbName, tblName, partSpecs);
+  }
+
   @Override public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
       List<String> partSpecs, short maxParts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
