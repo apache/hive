@@ -116,24 +116,33 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    */
   @Override
   public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
-
-    RelNode child = project.getInput();
+    final RelNode input = project.getInput();
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
-    RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
-
-    List<RexNode> projectPullUpPredicates = new ArrayList<RexNode>();
-    HashMultimap<Integer, Integer> inpIndxToOutIndxMap = HashMultimap.create();
+    final RelOptPredicateList childInfo = mq.getPulledUpPredicates(input);
+    final List<RexNode> projectPullUpPredicates = new ArrayList<>();
 
     ImmutableBitSet.Builder columnsMappedBuilder = ImmutableBitSet.builder();
-    Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION, child.getRowType().getFieldCount(),
+    Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION,
+        input.getRowType().getFieldCount(),
         project.getRowType().getFieldCount());
 
-    for (Ord<RexNode> o : Ord.zip(project.getProjects())) {
-      if (o.e instanceof RexInputRef) {
-        int sIdx = ((RexInputRef) o.e).getIndex();
-        m.set(sIdx, o.i);
-        inpIndxToOutIndxMap.put(sIdx, o.i);
+    for (Ord<RexNode> expr : Ord.zip(project.getProjects())) {
+      if (expr.e instanceof RexInputRef) {
+        int sIdx = ((RexInputRef) expr.e).getIndex();
+        m.set(sIdx, expr.i);
         columnsMappedBuilder.set(sIdx);
+        // Project can also generate constants. We need to include them.
+      } else if (RexLiteral.isNullLiteral(expr.e)) {
+        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
+            rexBuilder.makeInputRef(project, expr.i)));
+      } else if (expr.e instanceof RexLiteral) {
+        final RexLiteral literal = (RexLiteral) expr.e;
+        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
+            rexBuilder.makeInputRef(project, expr.i), literal));
+      } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
+        //TODO: Move this to calcite
+        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
+            rexBuilder.makeInputRef(project, expr.i), expr.e));
       }
     }
 
@@ -143,24 +152,8 @@ public class HiveRelMdPredicates extends RelMdPredicates {
     for (RexNode r : childInfo.pulledUpPredicates) {
       ImmutableBitSet rCols = RelOptUtil.InputFinder.bits(r);
       if (columnsMapped.contains(rCols)) {
-        r = r.accept(new RexPermuteInputsShuttle(m, child));
+        r = r.accept(new RexPermuteInputsShuttle(m, input));
         projectPullUpPredicates.add(r);
-      }
-    }
-
-    // Project can also generate constants. We need to include them.
-    for (Ord<RexNode> expr : Ord.zip(project.getProjects())) {
-      if (RexLiteral.isNullLiteral(expr.e)) {
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
-            rexBuilder.makeInputRef(project, expr.i)));
-      } else if (expr.e instanceof RexLiteral) {
-        final RexLiteral literal = (RexLiteral) expr.e;
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), literal));
-      } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
-      //TODO: Move this to calcite
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), expr.e));
       }
     }
     return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
