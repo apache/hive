@@ -34,6 +34,7 @@ import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.linq4j.function.Predicate1;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.Strong;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
@@ -116,41 +117,23 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    */
   @Override
   public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
-
-    RelNode child = project.getInput();
+    final RelNode input = project.getInput();
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
-    RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
-
-    List<RexNode> projectPullUpPredicates = new ArrayList<RexNode>();
-    HashMultimap<Integer, Integer> inpIndxToOutIndxMap = HashMultimap.create();
+    final RelOptPredicateList childInfo = mq.getPulledUpPredicates(input);
+    final List<RexNode> projectPullUpPredicates = new ArrayList<>();
 
     ImmutableBitSet.Builder columnsMappedBuilder = ImmutableBitSet.builder();
-    Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION, child.getRowType().getFieldCount(),
+    Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION,
+        input.getRowType().getFieldCount(),
         project.getRowType().getFieldCount());
 
-    for (Ord<RexNode> o : Ord.zip(project.getProjects())) {
-      if (o.e instanceof RexInputRef) {
-        int sIdx = ((RexInputRef) o.e).getIndex();
-        m.set(sIdx, o.i);
-        inpIndxToOutIndxMap.put(sIdx, o.i);
-        columnsMappedBuilder.set(sIdx);
-      }
-    }
-
-    // Go over childPullUpPredicates. If a predicate only contains columns in
-    // 'columnsMapped' construct a new predicate based on mapping.
-    final ImmutableBitSet columnsMapped = columnsMappedBuilder.build();
-    for (RexNode r : childInfo.pulledUpPredicates) {
-      ImmutableBitSet rCols = RelOptUtil.InputFinder.bits(r);
-      if (columnsMapped.contains(rCols)) {
-        r = r.accept(new RexPermuteInputsShuttle(m, child));
-        projectPullUpPredicates.add(r);
-      }
-    }
-
-    // Project can also generate constants. We need to include them.
     for (Ord<RexNode> expr : Ord.zip(project.getProjects())) {
-      if (RexLiteral.isNullLiteral(expr.e)) {
+      if (expr.e instanceof RexInputRef) {
+        int sIdx = ((RexInputRef) expr.e).getIndex();
+        m.set(sIdx, expr.i);
+        columnsMappedBuilder.set(sIdx);
+        // Project can also generate constants. We need to include them.
+      } else if (RexLiteral.isNullLiteral(expr.e)) {
         projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
             rexBuilder.makeInputRef(project, expr.i)));
       } else if (expr.e instanceof RexLiteral) {
@@ -158,12 +141,74 @@ public class HiveRelMdPredicates extends RelMdPredicates {
         projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
             rexBuilder.makeInputRef(project, expr.i), literal));
       } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
-      //TODO: Move this to calcite
+        //TODO: Move this to calcite
         projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
             rexBuilder.makeInputRef(project, expr.i), expr.e));
       }
     }
+
+    // Go over childPullUpPredicates. If a predicate only contains columns in
+    // 'columnsMapped' construct a new predicate based on mapping.
+    final ImmutableBitSet columnsMapped = columnsMappedBuilder.build();
+    for (RexNode r : childInfo.pulledUpPredicates) {
+      RexNode r2 = projectPredicate(rexBuilder, input, r, columnsMapped);
+      if (!r2.isAlwaysTrue()) {
+        r2 = r2.accept(new RexPermuteInputsShuttle(m, input));
+        projectPullUpPredicates.add(r2);
+      }
+    }
     return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
+  }
+
+  /** Converts a predicate on a particular set of columns into a predicate on
+   * a subset of those columns, weakening if necessary.
+   *
+   * <p>If not possible to simplify, returns {@code true}, which is the weakest
+   * possible predicate.
+   *
+   * <p>Examples:<ol>
+   * <li>The predicate {@code $7 = $9} on columns [7]
+   *     becomes {@code $7 is not null}
+   * <li>The predicate {@code $7 = $9 + $11} on columns [7, 9]
+   *     becomes {@code $7 is not null or $9 is not null}
+   * <li>The predicate {@code $7 = $9 and $9 = 5} on columns [7] becomes
+   *   {@code $7 = 5}
+   * <li>The predicate
+   *   {@code $7 = $9 and ($9 = $1 or $9 = $2) and $1 > 3 and $2 > 10}
+   *   on columns [7] becomes {@code $7 > 3}
+   * </ol>
+   *
+   * <p>We currently only handle examples 1 and 2.
+   *
+   * @param rexBuilder Rex builder
+   * @param input Input relational expression
+   * @param r Predicate expression
+   * @param columnsMapped Columns which the final predicate can reference
+   * @return Predicate expression narrowed to reference only certain columns
+   */
+  private RexNode projectPredicate(final RexBuilder rexBuilder, RelNode input,
+      RexNode r, ImmutableBitSet columnsMapped) {
+    ImmutableBitSet rCols = RelOptUtil.InputFinder.bits(r);
+    if (columnsMapped.contains(rCols)) {
+      // All required columns are present. No need to weaken.
+      return r;
+    }
+    if (columnsMapped.intersects(rCols)) {
+      final List<RexNode> list = new ArrayList<>();
+      for (int c : columnsMapped.intersect(rCols)) {
+        if (input.getRowType().getFieldList().get(c).getType().isNullable()
+            && Strong.isNull(r, ImmutableBitSet.of(c))) {
+          list.add(
+              rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,
+                  rexBuilder.makeInputRef(input, c)));
+        }
+      }
+      if (!list.isEmpty()) {
+        return RexUtil.composeDisjunction(rexBuilder, list);
+      }
+    }
+    // Cannot weaken to anything non-trivial
+    return rexBuilder.makeLiteral(true);
   }
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */
