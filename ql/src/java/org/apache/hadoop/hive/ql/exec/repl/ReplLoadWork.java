@@ -142,9 +142,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       FileSystem fs = failoverReadyMarker.getFileSystem(hiveConf);
       shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
               && fs.exists(failoverReadyMarker);
-      isFirstFailover = checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, EVENT_ACK_FILE);
+      Path dumpDirParent = new Path(dumpDirectory).getParent();
+      isFirstFailover = checkFileExists(dumpDirParent, hiveConf, EVENT_ACK_FILE);
       isSecondFailover =
-          !isFirstFailover && checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, BOOTSTRAP_TABLES_LIST);
+          !isFirstFailover && checkFileExists(dumpDirParent, hiveConf, BOOTSTRAP_TABLES_LIST);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
           replStatsTracker, shouldFailover);
@@ -156,7 +157,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       if (fs.exists(incBootstrapDir)) {
         if (isSecondFailover) {
-          String[] tableList = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
+          String[] tableList = getBootstrapTableList(dumpDirParent, hiveConf);
           tablesToBootstrap = Arrays.asList(tableList);
           LOG.info("Optimised bootstrap for database {} with load with bootstrap table list as {}", dbNameToLoadIn,
               tablesToBootstrap);
