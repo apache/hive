@@ -501,6 +501,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           throws TException {
     super.alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList, writeId);
 
+    if (!isCacheEnabledAndInitialized() || mscLocalCache == null) {
+      return;
+    }
+
     // invalidate cached Partition entries
     List<String> processorCapabilitiesList = getProcessorCapabilities() == null ?
             null : new ArrayList<>(Arrays.asList(getProcessorCapabilities()));
