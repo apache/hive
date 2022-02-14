@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.getLastReplicatedStateFromParameters;
@@ -69,6 +70,8 @@ public class OptimisedBootstrapUtils {
 
   /** event ack file which contains the event id till which the cluster was last loaded. */
   public static final String EVENT_ACK_FILE = "event_ack";
+
+  public static final String BOOTSTRAP_TABLES_LIST = "_failover_bootstrap_table_list";
 
   /**
    * Gets & checks whether the database is target of replication.
@@ -263,6 +266,41 @@ public class OptimisedBootstrapUtils {
       throw new IllegalStateException("Notification events are missing in the meta store.");
     }
     return targetLastEventId;
+  }
+
+  /**
+   * Creates the bootstrap table list for the second load of optimised bootstrap to consume.
+   * @param newDumpPath the dump path
+   * @param tablesForBootstrap the list of tables.
+   * @param conf the hive configuration
+   * @throws SemanticException in case of any exception
+   */
+  public static void createBootstrapTableList(Path newDumpPath, Set<String> tablesForBootstrap,
+      HiveConf conf) throws SemanticException {
+    String tableList = "";
+    for (String table : tablesForBootstrap) {
+      tableList += table + System.lineSeparator();
+    }
+    LOG.info("Generated table list for optimised bootstrap {}", tableList);
+    Utils.writeOutput(tableList, new Path(newDumpPath, BOOTSTRAP_TABLES_LIST), conf);
+  }
+
+  /**
+   * Gets the list of tables for the second load of optimised bootstrap from the BOOTSTRAP_TABLE_LIST in the dump
+   * directory.
+   * @param dumpPath the dump path
+   * @param conf the hive configuration
+   * @return the array with list of tables to bootstrap
+   * @throws IOException in case of any exception.
+   */
+  public static String[] getBootstrapTableList(Path dumpPath, HiveConf conf) throws IOException {
+    Path tablePath = new Path(dumpPath, BOOTSTRAP_TABLES_LIST);
+    String tableList = "";
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    try (FSDataInputStream stream = fs.open(tablePath);) {
+      tableList = IOUtils.toString(stream, Charset.defaultCharset());
+    }
+    return tableList.split(System.lineSeparator());
   }
 
   private static ArrayList<String> getListing(String dbName, String tableName, Hive hiveDb, HiveConf conf)
