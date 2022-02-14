@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -94,6 +95,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   public boolean isFirstFailover;
   public boolean isSecondFailover;
   public List<String> tablesToBootstrap = new ArrayList<>();
+  public List<String> tablesToDrop = new ArrayList<>();
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -157,10 +159,20 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       if (fs.exists(incBootstrapDir)) {
         if (isSecondFailover) {
-          String[] tableList = getBootstrapTableList(dumpDirParent, hiveConf);
-          tablesToBootstrap = Arrays.asList(tableList);
-          LOG.info("Optimised bootstrap for database {} with load with bootstrap table list as {}", dbNameToLoadIn,
+          String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
+          tablesToBootstrap = new ArrayList<String>(Arrays.asList(bootstrappedTables));
+          LOG.info("Optimised bootstrap for database {} with load with bootstrapped table list as {}", dbNameToLoadIn,
               tablesToBootstrap);
+          ArrayList<String> tableList = new ArrayList<String>(Arrays.asList(bootstrappedTables));
+          // Get list of tables bootstrapped.
+          Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
+          FileStatus[] listing = fs.listStatus(tableMetaPath);
+          for (FileStatus tablePath : listing) {
+            tableList.remove(tablePath.getPath().getName());
+          }
+          tablesToDrop = tableList;
+          LOG.info("Optimised bootstrap for database {} with load with drop table list as {}", dbNameToLoadIn,
+              tablesToDrop);
         }
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
