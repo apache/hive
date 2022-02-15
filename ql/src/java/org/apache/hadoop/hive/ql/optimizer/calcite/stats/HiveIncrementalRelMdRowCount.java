@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
-import org.apache.calcite.rel.metadata.RelMdRowCount;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
