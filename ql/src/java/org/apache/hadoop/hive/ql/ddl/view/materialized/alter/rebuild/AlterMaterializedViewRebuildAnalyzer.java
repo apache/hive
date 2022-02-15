@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializati
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveIncrementalRelMdRowCount;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
@@ -408,8 +409,9 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // Make a cost-based decision factoring the configuration property
       RelOptCost costOriginalPlan = calculateCost(
               optCluster, mdProvider, HiveTezModelRelMetadataProvider.DEFAULT, calcitePreMVRewritingPlan);
-      RelOptCost costIncrementalRebuildPlan = calculateCost(
-              optCluster, mdProvider, HiveTezModelRelMetadataProvider.with(materialization), incrementalRebuildPlan);
+
+      RelOptCost costIncrementalRebuildPlan = calculateCost(optCluster, mdProvider,
+              HiveIncrementalRelMdRowCount.createMetadataProvider(materialization), incrementalRebuildPlan);
 
       final double factorSelectivity = HiveConf.getFloatVar(
               conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);

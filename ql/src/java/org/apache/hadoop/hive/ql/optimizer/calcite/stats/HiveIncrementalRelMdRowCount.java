@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -27,6 +30,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
@@ -34,6 +38,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HiveIncrementalRelMdRowCount extends HiveRelMdRowCount {
+
+  public static JaninoRelMetadataProvider createMetadataProvider(RelOptMaterialization materialization) {
+    return JaninoRelMetadataProvider.of(
+            ChainedRelMetadataProvider.of(
+                    ImmutableList.of(
+                            HiveIncrementalRelMdRowCount.source(materialization),
+                            HiveTezModelRelMetadataProvider.DEFAULT
+                    )));
+  }
 
   public static RelMetadataProvider source(RelOptMaterialization materialization) {
     MaterializedViewMetadata mvMetadata = ((RelOptHiveTable) materialization.tableRel.getTable())
