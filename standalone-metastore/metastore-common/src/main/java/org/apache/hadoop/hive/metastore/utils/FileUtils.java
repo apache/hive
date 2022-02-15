@@ -404,7 +404,7 @@ public class FileUtils {
     RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base, true);
     while (remoteIterator.hasNext()) {
       LocatedFileStatus each = remoteIterator.next();
-      Path relativePath = new Path(each.getPath().toString().replace(base.toString(), ""));
+      Path relativePath = new Path(each.getPath().toString().replaceFirst(base.toString(), ""));
       if (RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
         results.add(each);
       }
