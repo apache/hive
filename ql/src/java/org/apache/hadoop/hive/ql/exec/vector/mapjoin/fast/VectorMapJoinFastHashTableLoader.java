@@ -323,42 +323,43 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     }
 
     public BytesWritable getKey() {
-      return new BytesWritable(keyBytes, keyBytes.length);
+      return new BytesWritable(this.keyBytes, this.keyBytes.length);
     }
 
     public BytesWritable getValue() {
-      return new BytesWritable(valueBytes, valueBytes.length);
+      return new BytesWritable(this.valueBytes, this.valueBytes.length);
     }
 
     public long getHashCode() {
-      return hashCode;
+      return this.hashCode;
     }
   }
 
   private static class HashTableElementBatch {
+    private static final int BATCH_SIZE = 1024;
     private final HashTableElement[] batch;
     private int currentIndex;
 
     public HashTableElementBatch() {
-      batch = new HashTableElement[1024];
-      currentIndex = 0;
+      this.batch = new HashTableElement[BATCH_SIZE];
+      this.currentIndex = 0;
     }
 
     public boolean addElement(HashTableElement h) {
-      batch[currentIndex++] = h;
-      return (currentIndex == 1024);
+      this.batch[this.currentIndex++] = h;
+      return (this.currentIndex == BATCH_SIZE);
     }
 
     public HashTableElement getBatch(int i) {
-      return batch[i];
+      return this.batch[i];
     }
 
     public int getSize() {
-      return currentIndex;
+      return this.currentIndex;
     }
 
     public void reset() {
-      currentIndex = 0;
+      this.currentIndex = 0;
     }
   }
 }
