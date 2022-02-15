@@ -61,6 +61,7 @@ public class AuthType {
     if (typeBits.get(HiveAuthConstants.AuthTypes.SAML.ordinal()) &&
         !typeBits.get(HiveAuthConstants.AuthTypes.NOSASL.ordinal()) &&
         !typeBits.get(HiveAuthConstants.AuthTypes.KERBEROS.ordinal()) &&
+        !typeBits.get(HiveAuthConstants.AuthTypes.NONE.ordinal()) &&
         (!areAnyEnabled(PASSWORD_BASED_TYPES) || isExactlyOneEnabled(PASSWORD_BASED_TYPES))) {
       // SAML can be enabled with another password based authentication types
       return;
