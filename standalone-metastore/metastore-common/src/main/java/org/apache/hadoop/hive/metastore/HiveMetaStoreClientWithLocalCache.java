@@ -506,11 +506,12 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     }
 
     // invalidate cached Partition entries
-    List<String> processorCapabilitiesList = getProcessorCapabilities() == null ?
-            null : new ArrayList<>(Arrays.asList(getProcessorCapabilities()));
+    String[] processorCapabilities = getProcessorCapabilities();
+    List<String> processorCapabilitiesList = processorCapabilities == null ?
+            null : new ArrayList<>(Arrays.asList(processorCapabilities));
 
     TableWatermark watermark = new TableWatermark(writeIdList, getTable(dbName, tblName).getId());
-    dbName =prependCatalogToDbName(catName, dbName, conf);
+    dbName = prependCatalogToDbName(catName, dbName, conf);
 
     for (Partition partition : newParts) {
       CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
