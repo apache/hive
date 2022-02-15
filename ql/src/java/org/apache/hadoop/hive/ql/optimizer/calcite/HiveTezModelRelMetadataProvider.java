@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveIncrementalRelMdRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
@@ -58,4 +60,24 @@ public class HiveTezModelRelMetadataProvider {
                 HiveRelMdPredicates.SOURCE,
                 JaninoRelMetadataProvider.DEFAULT)));
 
+  public static JaninoRelMetadataProvider with(RelOptMaterialization materialization) {
+    return JaninoRelMetadataProvider.of(
+            ChainedRelMetadataProvider.of(
+                    ImmutableList.of(
+                            HiveRelMdDistinctRowCount.SOURCE,
+                            HiveRelMdCumulativeCost.SOURCE,
+                            new HiveRelMdCost(HiveOnTezCostModel.getCostModel(new HiveConf())).getMetadataProvider(),
+                            HiveRelMdSelectivity.SOURCE,
+                            HiveIncrementalRelMdRowCount.source(materialization),
+                            HiveRelMdUniqueKeys.SOURCE,
+                            HiveRelMdColumnUniqueness.SOURCE,
+                            HiveRelMdExpressionLineage.SOURCE,
+                            HiveRelMdSize.SOURCE,
+                            HiveRelMdMemory.SOURCE,
+                            HiveRelMdDistribution.SOURCE,
+                            HiveRelMdCollation.SOURCE,
+                            HiveRelMdPredicates.SOURCE,
+                            JaninoRelMetadataProvider.DEFAULT)));
+
+  }
 }

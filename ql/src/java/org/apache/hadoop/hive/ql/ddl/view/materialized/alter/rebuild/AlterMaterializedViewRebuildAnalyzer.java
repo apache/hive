@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertInc
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveScanCostSetterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -406,29 +405,36 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
               HiveInsertOnlyScanWriteIdRule.INSTANCE,
               HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
 
-      HepProgramBuilder program = new HepProgramBuilder();
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, HiveScanCostSetterRule.with(materialization));
-      incrementalRebuildPlan = executeProgram(incrementalRebuildPlan, program.build(), mdProvider, executorProvider);
-
       // Make a cost-based decision factoring the configuration property
-      optCluster.invalidateMetadataQuery();
-      RelMetadataQuery.THREAD_PROVIDERS.set(HiveTezModelRelMetadataProvider.DEFAULT);
-      try {
-        final double factorSelectivity = HiveConf.getFloatVar(
-                conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
-        RelMetadataQuery mq = RelMetadataQuery.instance();
-        RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
-        RelOptCost costIncrementalRebuildPlan =
-                mq.getCumulativeCost(incrementalRebuildPlan).multiplyBy(factorSelectivity);
-        if (costOriginalPlan.isLe(costIncrementalRebuildPlan)) {
-          mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
-          return calcitePreMVRewritingPlan;
-        }
+      RelOptCost costOriginalPlan = calculateCost(
+              optCluster, mdProvider, HiveTezModelRelMetadataProvider.DEFAULT, calcitePreMVRewritingPlan);
+      RelOptCost costIncrementalRebuildPlan = calculateCost(
+              optCluster, mdProvider, HiveTezModelRelMetadataProvider.with(materialization), incrementalRebuildPlan);
 
-        return incrementalRebuildPlan;
+      final double factorSelectivity = HiveConf.getFloatVar(
+              conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
+      costIncrementalRebuildPlan = costIncrementalRebuildPlan.multiplyBy(factorSelectivity);
+
+      if (costOriginalPlan.isLe(costIncrementalRebuildPlan)) {
+        mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+        return calcitePreMVRewritingPlan;
+      }
+
+      return incrementalRebuildPlan;
+    }
+
+    private RelOptCost calculateCost(
+            RelOptCluster optCluster,
+            RelMetadataProvider originalMetadataProvider,
+            JaninoRelMetadataProvider metadataProvider,
+            RelNode plan) {
+      optCluster.invalidateMetadataQuery();
+      RelMetadataQuery.THREAD_PROVIDERS.set(metadataProvider);
+      try {
+        return RelMetadataQuery.instance().getCumulativeCost(plan);
       } finally {
         optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(originalMetadataProvider));
       }
     }
 
