@@ -23,7 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -224,6 +228,10 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
         }
 
+        ThreadPoolExecutor tpE = new ThreadPoolExecutor(10, 10, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        tpE.allowsCoreThreadTimeOut();
+        ArrayList<Future<FileStats>> futures = new ArrayList<>();
+
         for (FileStatus file : fileList) {
           Utilities.FILE_OP_LOGGER.debug("Computing stats for {}", file);
           if (!file.isDirectory()) {
@@ -232,26 +240,18 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
             if (file.getLen() == 0) {
               numFiles += 1;
             } else {
-              org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
-              try {
-                if (recordReader instanceof StatsProvidingRecordReader) {
-                  StatsProvidingRecordReader statsRR;
-                  statsRR = (StatsProvidingRecordReader) recordReader;
-                  rawDataSize += statsRR.getStats().getRawDataSize();
-                  numRows += statsRR.getStats().getRowCount();
-                  fileSize += file.getLen();
-                  numFiles += 1;
-                  if (file.isErasureCoded()) {
-                    numErasureCodedFiles++;
-                  }
-                } else {
-                  throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
-                }
-              } finally {
-                recordReader.close();
-              }
+              FileStatProcessor fsp = new FileStatProcessor(file, inputFormat, dummySplit, jc);
+              futures.add(tpE.submit(fsp));
             }
           }
+        }
+        for (Future<FileStats> future : futures) {
+          FileStats fileStat = future.get();
+          rawDataSize += fileStat.getRawDataSize();
+          numRows += fileStat.getNumRows();
+          fileSize += fileStat.getFileSize();
+          numFiles += 1;
+          numErasureCodedFiles += fileStat.getNumErasureCodedFiles();
         }
 
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
@@ -445,5 +445,81 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
   @Override
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
+  }
+
+  private static class FileStatProcessor implements Callable <FileStats> {
+
+    private final InputSplit dummySplit;
+    private final InputFormat<?, ?> inputFormat;
+    private final JobConf jc;
+    private final FileStatus file;
+
+    FileStatProcessor(FileStatus file, InputFormat<?, ?> inputFormat, InputSplit dummySplit, JobConf jc) {
+      this.file = file;
+      this.dummySplit = dummySplit;
+      this.inputFormat = inputFormat;
+      this.jc = jc;
+    }
+
+    @Override
+    public FileStats call() throws Exception {
+      try (org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat
+          .getRecordReader(dummySplit, jc, Reporter.NULL)) {
+        if (recordReader instanceof StatsProvidingRecordReader) {
+          StatsProvidingRecordReader statsRR;
+          statsRR = (StatsProvidingRecordReader) recordReader;
+          FileStats fileStats = new FileStats();
+          fileStats.setRawDataSize(statsRR.getStats().getRawDataSize());
+          fileStats.setNumRows(statsRR.getStats().getRowCount());
+          fileStats.setFileSize(file.getLen());
+          if (file.isErasureCoded()) {
+            fileStats.setNumErasureCodedFiles(1);
+          }
+        } else {
+          throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
+        }
+      }
+      return null;
+    }
+  }
+
+  private static class FileStats {
+
+    private long numRows = 0;
+    private long rawDataSize = 0;
+    private long fileSize = 0;
+    private long numErasureCodedFiles = 0;
+
+    public long getNumRows() {
+      return numRows;
+    }
+
+    public void setNumRows(long numRows) {
+      this.numRows = numRows;
+    }
+
+    public long getRawDataSize() {
+      return rawDataSize;
+    }
+
+    public void setRawDataSize(long rawDataSize) {
+      this.rawDataSize = rawDataSize;
+    }
+
+    public long getFileSize() {
+      return fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+      this.fileSize = fileSize;
+    }
+
+    public long getNumErasureCodedFiles() {
+      return numErasureCodedFiles;
+    }
+
+    public void setNumErasureCodedFiles(long numErasureCodedFiles) {
+      this.numErasureCodedFiles = numErasureCodedFiles;
+    }
   }
 }
