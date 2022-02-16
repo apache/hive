@@ -517,19 +517,19 @@
     </plugins>
   </build>
   <profiles>
-  <!-- use com.github.os72 on aarch64 platform -->
-  <profile>
-    <id>aarch64</id>
-    <properties>
-      <protobuf.group>com.github.os72</protobuf.group>
-      <protobuf-exc.version>2.6.1-build3</protobuf-exc.version>
-    </properties>
-    <activation>
-      <os>
-        <family>linux</family>
-        <arch>aarch64</arch>
-      </os>
-    </activation>
+    <!-- use com.github.os72 on aarch64 platform -->
+    <profile>
+      <id>aarch64</id>
+      <properties>
+        <protobuf.group>com.github.os72</protobuf.group>
+        <protobuf-exc.version>2.6.1-build3</protobuf-exc.version>
+      </properties>
+      <activation>
+        <os>
+          <family>linux</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
     </profile>
     <profile>
       <id>spotbugs</id>

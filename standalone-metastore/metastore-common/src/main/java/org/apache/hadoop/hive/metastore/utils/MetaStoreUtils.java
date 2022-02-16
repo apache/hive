@@ -186,6 +186,14 @@ public class MetaStoreUtils {
     return colNames;
   }
 
+  /*
+   * Check the table storage location must not be root path.
+   */
+  public static boolean validateTblStorage(StorageDescriptor sd) {
+    return !(StringUtils.isNotBlank(sd.getLocation())
+            && new Path(sd.getLocation()).getParent() == null);
+  }
+
   /**
    * validateName
    *

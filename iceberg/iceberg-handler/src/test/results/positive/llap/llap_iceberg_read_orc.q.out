@@ -6,6 +6,10 @@ PREHOOK: query: DROP TABLE IF EXISTS llap_items PURGE
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS llap_items PURGE
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE llap_items (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -411,3 +415,51 @@ Model 3	Performance	42
 Model S	Long range	389
 Model S	Plaid	221
 Model Y	Performance	163
+PREHOOK: query: CREATE EXTERNAL TABLE mig_source (id int) partitioned by (region string) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mig_source
+POSTHOOK: query: CREATE EXTERNAL TABLE mig_source (id int) partitioned by (region string) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mig_source
+PREHOOK: query: INSERT INTO mig_source VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mig_source
+POSTHOOK: query: INSERT INTO mig_source VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mig_source
+POSTHOOK: Output: default@mig_source@region=EU
+POSTHOOK: Output: default@mig_source@region=US
+POSTHOOK: Lineage: mig_source PARTITION(region=EU).id SCRIPT []
+POSTHOOK: Lineage: mig_source PARTITION(region=US).id SCRIPT []
+PREHOOK: query: ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@mig_source
+PREHOOK: Output: default@mig_source
+POSTHOOK: query: ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@mig_source
+POSTHOOK: Output: default@mig_source
+PREHOOK: query: SELECT region, SUM(id) from mig_source GROUP BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mig_source
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, SUM(id) from mig_source GROUP BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mig_source
+#### A masked pattern was here ####
+EU	6
+US	3
+PREHOOK: query: SELECT region, SUM(id) from mig_source GROUP BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mig_source
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, SUM(id) from mig_source GROUP BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mig_source
+#### A masked pattern was here ####
+EU	6
+US	3

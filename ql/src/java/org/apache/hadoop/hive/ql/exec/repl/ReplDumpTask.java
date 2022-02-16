@@ -104,6 +104,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -117,6 +118,8 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
+import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
@@ -129,8 +132,10 @@ import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.createAndGetEventAckFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.createBootstrapTableList;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getReplEventIdFromDatabase;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTablesFromTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTargetEventId;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFailover;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.isFirstIncrementalPending;
@@ -139,6 +144,8 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZ
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.getDFS;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.getListFromFileList;
+import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID_SOURCE;
+import static org.apache.hadoop.hive.ql.parse.ReplicationSpec.KEY.CURR_STATE_ID_TARGET;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -149,6 +156,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private Set<String> tablesForBootstrap = new HashSet<>();
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
   private boolean createEventMarker = false;
+  private boolean unsetDbPropertiesForOptimisedBootstrap;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -224,26 +232,46 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Long lastReplId;
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
           if (isFailover) {
-            LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
-            // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
-            // consistent state.
-            isFirstIncrementalPending(work.dbNameOrPattern, getHive());
-            // Get the last replicated event id from the database.
-            String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
-            // Get the last replicated event id from the database with respect to target.
-            String targetDbEventId = getTargetEventId(work.dbNameOrPattern, getHive());
-            // Check if the tableDiff directory is present or not.
-            boolean isTableDiffDirectoryPresent = checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
             if (createEventMarker) {
+              LOG.info("Optimised Bootstrap Dump triggered for {}.", work.dbNameOrPattern);
+              // Before starting optimised bootstrap, check if the first incremental is done to ensure database is in
+              // consistent state.
+              isFirstIncrementalPending(work.dbNameOrPattern, getHive());
+              // Get the last replicated event id from the database.
+              String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
+              // Get the last replicated event id from the database with respect to target.
+              String targetDbEventId = getTargetEventId(work.dbNameOrPattern, getHive());
+              // Check if the tableDiff directory is present or not.
+              boolean isTableDiffDirectoryPresent =
+                  checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+
               LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
               lastReplId =
                   createAndGetEventAckFile(currentDumpPath, dmd, cmRoot, dbEventId, targetDbEventId, conf, work);
               finishRemainingTasks();
             } else {
               // We should be here only if TableDiff is Present.
+              boolean isTableDiffDirectoryPresent =
+                  checkFileExists(previousValidHiveDumpPath.getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+
               assert isTableDiffDirectoryPresent;
-              // TODO: Dump using TableDiff file & get lastReplId
-              lastReplId = -1L;
+
+              // Set boolean to determine the db properties need to sorted once dump is complete
+              unsetDbPropertiesForOptimisedBootstrap = true;
+
+              long fromEventId = Long.parseLong(getEventIdFromFile(previousValidHiveDumpPath.getParent(), conf)[1]);
+              LOG.info("Starting optimised bootstrap from event id {} for database {}", fromEventId,
+                  work.dbNameOrPattern);
+              work.setEventFrom(fromEventId);
+
+              // Get the tables to be bootstrapped from the table diff
+              tablesForBootstrap = getTablesFromTableDiffFile(previousValidHiveDumpPath.getParent(), conf);
+
+              // Generate the bootstrapped table list and put it in the new dump directory for the load to consume.
+              createBootstrapTableList(currentDumpPath, tablesForBootstrap, conf);
+
+              // Call the normal dump with the tablesForBootstrap set.
+              lastReplId =  incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
             }
           }
           else if (work.isBootstrap()) {
@@ -372,7 +400,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void initiateDataCopyTasks() throws SemanticException, IOException {
+  private void initiateDataCopyTasks() throws HiveException, IOException {
     TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
     if (childTasks == null) {
       childTasks = new ArrayList<>();
@@ -411,7 +439,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
 
-  private void finishRemainingTasks() throws SemanticException {
+  private void finishRemainingTasks() throws HiveException {
     boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap();
     if (isFailoverInProgress) {
       Utils.create(new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
@@ -420,6 +448,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     Path dumpAckFile = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
                     + ReplAck.DUMP_ACKNOWLEDGEMENT);
+
+    // Check if we need to unset database properties after successful optimised bootstrap.
+    if (unsetDbPropertiesForOptimisedBootstrap) {
+      Hive hiveDb = getHive();
+      Database database = hiveDb.getDatabase(work.dbNameOrPattern);
+      LinkedHashMap<String, String> dbParams = new LinkedHashMap<>(database.getParameters());
+      LOG.debug("Database {} params before removal {}", work.dbNameOrPattern, dbParams);
+      dbParams.remove(TARGET_OF_REPLICATION);
+      dbParams.remove(CURR_STATE_ID_TARGET.toString());
+      dbParams.remove(CURR_STATE_ID_SOURCE.toString());
+      dbParams.remove(REPL_TARGET_DB_PROPERTY);
+
+      database.setParameters(dbParams);
+      LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
+          new String[] { TARGET_OF_REPLICATION, CURR_STATE_ID_TARGET.toString(), CURR_STATE_ID_SOURCE.toString(),
+              REPL_TARGET_DB_PROPERTY }), work.dbNameOrPattern);
+      hiveDb.alterDatabase(work.dbNameOrPattern, database);
+      LOG.debug("Database {} paramas after removal {}", work.dbNameOrPattern, dbParams);
+    }
     Utils.create(dumpAckFile, conf);
     prepareReturnValues(work.getResultValues());
     work.getMetricCollector().reportEnd(isFailoverInProgress ? Status.FAILOVER_READY : Status.SUCCESS);

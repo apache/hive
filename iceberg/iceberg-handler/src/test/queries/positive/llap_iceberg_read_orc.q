@@ -4,6 +4,7 @@ set hive.vectorized.execution.enabled=true;
 
 DROP TABLE IF EXISTS llap_orders PURGE;
 DROP TABLE IF EXISTS llap_items PURGE;
+DROP TABLE IF EXISTS mig_source PURGE;
 
 
 CREATE EXTERNAL TABLE llap_items (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS ORC;
@@ -104,3 +105,18 @@ SELECT state, max(city), avg(itemid) from llap_orders WHERE region = 'EU' GROUP 
 --some more projections
 SELECT o.city, i.name, min(i.cost), max(to60), sum(o.quantity) FROM llap_items i JOIN llap_orders o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 and ordertime > timestamp('2010-01-01') GROUP BY o.city, i.name;
 SELECT i.name, i.description, SUM(o.quantity) FROM llap_items i JOIN llap_orders o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 GROUP BY i.name, i.description;
+
+---------------------------------------------
+--Test migrated partitioned table gets cached
+
+CREATE EXTERNAL TABLE mig_source (id int) partitioned by (region string) stored as ORC;
+INSERT INTO mig_source VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US');
+ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+
+-- Should miss, but fill cache
+SELECT region, SUM(id) from mig_source GROUP BY region;
+
+-- Should hit cache
+set hive.llap.io.cache.only=true;
+SELECT region, SUM(id) from mig_source GROUP BY region;
+set hive.llap.io.cache.only=false;
