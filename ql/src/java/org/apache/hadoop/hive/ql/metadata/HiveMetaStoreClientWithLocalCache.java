@@ -510,7 +510,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     // Do not use the cache if session level query cache is also disabled
     // Both caches can be used only at compilation time because execution may change
     // DB objects (Tables, Partition metadata objects) and cache entries may already invalid
-    if (SessionState.get().getQueryCache(getQueryId()) == null) {
+    SessionState sessionState = SessionState.get();
+    if (sessionState == null || sessionState.getQueryCache(getQueryId()) == null) {
       return false;
     }
 
