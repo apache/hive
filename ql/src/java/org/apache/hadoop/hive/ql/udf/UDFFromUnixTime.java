@@ -120,7 +120,7 @@ public class UDFFromUnixTime extends UDF {
   private Text eval(long unixtime, Text format) {
     if (!format.equals(lastFormat)) {
       formatter = new SimpleDateFormat(format.toString());
-      formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+      //formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
       lastFormat.set(format);
     }
 
