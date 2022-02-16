@@ -551,7 +551,7 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     // Each http request must have an Authorization header
     // Check before trying to do kerberos authentication twice
-    getAuthHeader(request, "NEGOTIATE");
+    getAuthHeader(request);
 
     // Try authenticating with the HTTP/_HOST principal
     if (httpUGI != null) {
@@ -608,7 +608,7 @@ public class ThriftHttpServlet extends TServlet {
         // Create a GSS context
         gssContext = manager.createContext(serverCreds);
         // Get service ticket from the authorization header
-        String serviceTicketBase64 = getAuthHeader(request, "NEGOTIATE");
+        String serviceTicketBase64 = getAuthHeader(request);
         byte[] inToken = Base64.getDecoder().decode(serviceTicketBase64);
         gssContext.acceptSecContext(inToken, 0, inToken.length);
         // Authenticate or deny based on its context completion
@@ -616,12 +616,10 @@ public class ThriftHttpServlet extends TServlet {
           throw new HttpAuthenticationException("Kerberos authentication failed: " +
               "unable to establish context with the service ticket " +
               "provided by the client.");
-        }
-        else {
+        } else {
           return getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString());
         }
-      }
-      catch (GSSException e) {
+      } catch (GSSException e) {
         if (gssContext != null) {
           try {
             LOG.error("Login attempt is failed for user : " +
@@ -632,8 +630,7 @@ public class ThriftHttpServlet extends TServlet {
           }
         }
         throw new HttpAuthenticationException("Kerberos authentication failed: ", e);
-      }
-      finally {
+      } finally {
         if (gssContext != null) {
           try {
             gssContext.dispose();
@@ -675,7 +672,7 @@ public class ThriftHttpServlet extends TServlet {
 
   private String getUsername(HttpServletRequest request)
       throws HttpAuthenticationException {
-    String creds[] = getAuthHeaderTokens(request, "BASIC");
+    String creds[] = getAuthHeaderTokens(request);
     // Username must be present
     if (creds[0] == null || creds[0].isEmpty()) {
       throw new HttpAuthenticationException("Authorization header received " +
@@ -686,7 +683,7 @@ public class ThriftHttpServlet extends TServlet {
 
   private String getPassword(HttpServletRequest request)
       throws HttpAuthenticationException {
-    String creds[] = getAuthHeaderTokens(request, "BASIC");
+    String[] creds = getAuthHeaderTokens(request);
     // Password must be present
     if (creds[1] == null || creds[1].isEmpty()) {
       throw new HttpAuthenticationException("Authorization header received " +
@@ -695,9 +692,8 @@ public class ThriftHttpServlet extends TServlet {
     return creds[1];
   }
 
-  private String[] getAuthHeaderTokens(HttpServletRequest request,
-      String authType) throws HttpAuthenticationException {
-    String authHeaderBase64Str = getAuthHeader(request, authType);
+  private String[] getAuthHeaderTokens(HttpServletRequest request) throws HttpAuthenticationException {
+    String authHeaderBase64Str = getAuthHeader(request);
     String authHeaderString = new String(Base64.getDecoder().decode(authHeaderBase64Str), StandardCharsets.UTF_8);
     return authHeaderString.split(":");
   }
@@ -705,11 +701,10 @@ public class ThriftHttpServlet extends TServlet {
   /**
    * Returns the base64 encoded auth header payload
    * @param request request to interrogate
-   * @param authType Either BASIC or NEGOTIATE
    * @return base64 encoded auth header payload
    * @throws HttpAuthenticationException exception if header is missing or empty
    */
-  private String getAuthHeader(HttpServletRequest request, String authType)
+  private String getAuthHeader(HttpServletRequest request)
       throws HttpAuthenticationException {
     String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
     // Each http request must have an Authorization header
