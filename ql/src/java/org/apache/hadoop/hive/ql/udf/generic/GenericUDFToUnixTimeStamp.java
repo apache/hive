@@ -82,8 +82,6 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       }
     }
 
-    //formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-
     PrimitiveObjectInspector arg1OI = (PrimitiveObjectInspector) arguments[0];
     switch (arg1OI.getPrimitiveCategory()) {
       case CHAR:
