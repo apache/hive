@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -164,22 +165,15 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     return wh;
   }
 
-  // TODO CAT - a number of these need to be updated.  Don't bother with deprecated methods as
-  // this is just an internal class.  Wait until we're ready to move all the catalog stuff up
-  // into ql.
-
   @Override
-  protected void create_table_with_environment_context(
-      org.apache.hadoop.hive.metastore.api.Table tbl, EnvironmentContext envContext)
-      throws AlreadyExistsException, InvalidObjectException,
-      MetaException, NoSuchObjectException, TException {
-
+  protected void create_table(CreateTableRequest request) throws
+      InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    org.apache.hadoop.hive.metastore.api.Table tbl = request.getTable();
     if (tbl.isTemporary()) {
-      createTempTable(tbl, envContext);
+      createTempTable(tbl);
       return;
     }
-    // non-temp tables should use underlying client.
-    super.create_table_with_environment_context(tbl, envContext);
+    super.create_table(request);
   }
 
   @Override
@@ -596,9 +590,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     return super.deleteTableColumnStatistics(dbName, tableName, colName, engine);
   }
 
-  private void createTempTable(org.apache.hadoop.hive.metastore.api.Table tbl,
-      EnvironmentContext envContext) throws AlreadyExistsException, InvalidObjectException,
-      MetaException, NoSuchObjectException, TException {
+  private void createTempTable(org.apache.hadoop.hive.metastore.api.Table tbl) throws
+      AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException,
+      TException {
 
     boolean isVirtualTable = tbl.getTableName().startsWith(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX);
 

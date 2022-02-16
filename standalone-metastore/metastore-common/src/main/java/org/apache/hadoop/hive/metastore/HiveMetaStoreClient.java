@@ -1247,31 +1247,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public void createTable(Table tbl, EnvironmentContext envContext) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    if (!tbl.isSetCatName()) {
-      tbl.setCatName(getDefaultCatalog(conf));
+    CreateTableRequest request = new CreateTableRequest(tbl);
+    if (envContext != null) {
+      request.setEnvContext(envContext);
     }
-    HiveMetaHook hook = getHook(tbl);
-    if (hook != null) {
-      hook.preCreateTable(tbl);
-    }
-    boolean success = false;
-    try {
-      // Subclasses can override this step (for example, for temporary tables)
-      create_table_with_environment_context(tbl, envContext);
-      if (hook != null) {
-        hook.commitCreateTable(tbl);
-      }
-      success = true;
-    }
-    finally {
-      if (!success && (hook != null)) {
-        try {
-          hook.rollbackCreateTable(tbl);
-        } catch (Exception e){
-          LOG.error("Create rollback failed with", e);
-        }
-      }
-    }
+    createTable(request);
   }
 
   /**
@@ -1300,7 +1280,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     boolean success = false;
     try {
       // Subclasses can override this step (for example, for temporary tables)
-      client.create_table_req(request);
+      create_table(request);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -4437,21 +4417,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_all_functions();
   }
 
-  protected void create_table_with_environment_context(Table tbl, EnvironmentContext envContext)
-      throws AlreadyExistsException, InvalidObjectException,
-      MetaException, NoSuchObjectException, TException {
-    CreateTableRequest request = new CreateTableRequest(tbl);
-    if (envContext != null) {
-      request.setEnvContext(envContext);
-    }
-
-    if (processorCapabilities != null) {
-      request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      request.setProcessorIdentifier(processorIdentifier);
-    }
-
+  protected void create_table(CreateTableRequest request) throws
+      InvalidObjectException, MetaException, NoSuchObjectException, TException {
     client.create_table_req(request);
-}
+  }
 
   protected void drop_table_with_environment_context(String catName, String dbname, String name,
       boolean deleteData, EnvironmentContext envContext) throws TException {
