@@ -286,6 +286,117 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testSetPartitionTransformSameField() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "truncate_field", Types.StringType.get()),
+        optional(3, "bucket_field", Types.StringType.get())
+    );
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (truncate(2, truncate_field), bucket(2, bucket_field))" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .build();
+
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+
+    // Change one, keep one
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (truncate(3, truncate_field), bucket(2, bucket_field) )");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(1)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .bucket("bucket_field", 2)
+        .truncate("truncate_field", 3, "truncate_field_trunc_3")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+
+    // Change one again, keep the other one
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (truncate(4, truncate_field), bucket(2, bucket_field) )");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(2)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .bucket("bucket_field", 2)
+        .alwaysNull("truncate_field", "truncate_field_trunc_3")
+        .truncate("truncate_field", 4, "truncate_field_trunc_4")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+
+    // Keep the already changed, change the other one (change the order of clauses in the spec)
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (bucket(3, bucket_field), truncate(4, truncate_field))");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(3)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .alwaysNull("bucket_field", "bucket_field_bucket")
+        .alwaysNull("truncate_field", "truncate_field_trunc_3")
+        .truncate("truncate_field", 4, "truncate_field_trunc_4")
+        .bucket("bucket_field", 3, "bucket_field_bucket_3")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
+  public void testSetPartitionTransformCaseSensitive() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "truncate_field", Types.StringType.get()),
+        optional(3, "bucket_field", Types.StringType.get())
+    );
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (truncate(2, truncate_field), bucket(2, bucket_field))" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .build();
+
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (truncaTe(3, truncate_Field), buCket(3, bUckeT_field))");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(1)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .alwaysNull("bucket_field", "bucket_field_bucket")
+        .truncate("truncate_field", 3, "truncate_field_trunc_3")
+        .bucket("bucket_field", 3, "bucket_field_bucket_3")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
   public void testCreateDropTable() throws TException, IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
