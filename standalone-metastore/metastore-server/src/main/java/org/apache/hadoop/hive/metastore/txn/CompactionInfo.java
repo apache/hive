@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,6 +74,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
 
   private String fullPartitionName = null;
   private String fullTableName = null;
+  private StringableMap propertiesMap;
 
   public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
     this.dbname = dbname;
@@ -86,6 +88,21 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.state = state;
   }
   CompactionInfo() {}
+
+  public String getProperty(String key) {
+    if (propertiesMap == null) {
+      propertiesMap = new StringableMap(properties);
+    }
+    return propertiesMap.get(key);
+  }
+
+  public void setProperty(String key, String value) {
+    if (propertiesMap == null) {
+      propertiesMap = new StringableMap(properties);
+    }
+    propertiesMap.put(key, value);
+    properties = propertiesMap.toString();
+  }
 
   public String getFullPartitionName() {
     if (fullPartitionName == null) {

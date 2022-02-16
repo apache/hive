@@ -41,6 +41,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.internal.util.reflection.FieldSetter;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,9 +54,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for the compactor Cleaner thread
@@ -64,6 +77,132 @@ public class TestCleaner extends CompactorTest {
     // Test that the whole things works when there's nothing in the queue.  This is just a
     // survival test.
     startCleaner();
+  }
+
+  @Test
+  public void testRetryAfterFailedCleanupDelayEnabled() throws Exception {
+    testRetryAfterFailedCleanup(true);
+  }
+
+  @Test
+  public void testRetryAfterFailedCleanupDelayDisabled() throws Exception {
+    testRetryAfterFailedCleanup(false);
+  }
+
+  public void testRetryAfterFailedCleanup(boolean delayEnabled) throws Exception {
+    conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 2);
+
+    String errorMessage = "Тут немає прибирання, сер!";
+
+    Table t = newTable("default", "retry_test", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    burnThroughTransactions("default", "retry_test", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "retry_test", CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+
+    //Prevent cleaner from marking the compaction as cleaned
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
+    for (int i = 1; i < 3; i++) {
+      Cleaner cleaner = new Cleaner();
+      cleaner.setConf(conf);
+      cleaner.init(new AtomicBoolean(true));
+      FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+      cleaner.run();
+
+      // Sleep 1000ms longer than the actual retention to make sure the compaciton will be picked up again by the cleaner
+      Thread.sleep(conf.getTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS) * (long)Math.pow(2, i) + 1000);
+
+      // Check retry attempts updated
+      List<CompactionInfo> compcationInfos = txnHandler.findReadyToClean(0, 0);
+      Assert.assertEquals(String.format("Expected %d CompactionInfo, but got %d", 1, compcationInfos.size()), 1, compcationInfos.size());
+      CompactionInfo ci = compcationInfos.get(0);
+      int cleanAttemps = Integer.parseInt(ci.getProperty(Cleaner.CURRENT_CLEANER_RETRY_ATTEMPTS));
+      Assert.assertEquals(String.format("Expected %d clean attempts, but got %d", i, cleanAttemps), i, cleanAttemps);
+
+      // Check state is still 'ready for cleaning'
+      ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+      Assert.assertEquals(String.format("Expected %d CompactionInfo, but got %d", 1, scr.getCompactsSize()),
+              1, scr.getCompactsSize());
+      ShowCompactResponseElement scre = scr.getCompacts().get(0);
+
+      Assert.assertEquals(String.format("Expected '%s' state, but got '%s'", "ready for cleaning", scre.getState()),
+              "ready for cleaning", scre.getState());
+      Assert.assertEquals(String.format("Expected error message: '%s', but got '%s'", errorMessage, scre.getErrorMessage()),
+              errorMessage, scre.getErrorMessage() );
+
+    }
+
+    //Do a final run to reach the maximum retry attempts, so the state finally should be set to failed
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    cleaner.run();
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(String.format("Expected %d CompactionInfo, but got %d", 1, scr.getCompactsSize()),
+            1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    //'f' stands for failed
+    Assert.assertEquals(String.format("Expected '%s' state, but got '%s'", "failed", scre.getState()),
+            "failed", scre.getState());
+    Assert.assertEquals(String.format("Expected error message: '%s', but got '%s'", errorMessage, scre.getErrorMessage()),
+            errorMessage, scre.getErrorMessage() );
+  }
+
+  @Test
+  public void testRetentionAfterFailedCleanup() throws Exception {
+    conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, false);
+
+    Table t = newTable("default", "retry_test", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    burnThroughTransactions("default", "retry_test", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "retry_test", CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+
+    //Prevent cleaner from marking the compaction as cleaned
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
+
+    //Do a run to fail the clean and set the retention time
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    cleaner.run();
+
+    AtomicReference<List<CompactionInfo>> reference = new AtomicReference<>();
+    doAnswer(invocation -> {
+      Object o = invocation.callRealMethod();
+      reference.set((List<CompactionInfo>) o);
+      return o;
+    }).when(mockedHandler).findReadyToClean(anyLong(), anyLong());
+
+    //Do a final run and check if the compaction is not picked up again
+    cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    cleaner.run();
+
+    Assert.assertEquals(0, reference.get().size());
   }
 
   @Test

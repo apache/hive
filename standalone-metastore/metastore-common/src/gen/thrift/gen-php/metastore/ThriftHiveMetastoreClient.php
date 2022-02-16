@@ -12904,6 +12904,66 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
+    public function retry_cleaner_attempt_with_backoff(\metastore\CompactionInfoStruct $cr, $retentionTime)
+    {
+        $this->send_retry_cleaner_attempt_with_backoff($cr, $retentionTime);
+        $this->recv_retry_cleaner_attempt_with_backoff();
+    }
+
+    public function send_retry_cleaner_attempt_with_backoff(\metastore\CompactionInfoStruct $cr, $retentionTime)
+    {
+        $args = new \metastore\ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args();
+        $args->cr = $cr;
+        $args->retentionTime = $retentionTime;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'retry_cleaner_attempt_with_backoff',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('retry_cleaner_attempt_with_backoff', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_retry_cleaner_attempt_with_backoff()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        return;
+    }
+
     public function update_compaction_metrics_data(\metastore\CompactionMetricsDataStruct $data)
     {
         $this->send_update_compaction_metrics_data($data);

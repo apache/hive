@@ -48539,6 +48539,209 @@ uint32_t ThriftHiveMetastore_mark_refused_presult::read(::apache::thrift::protoc
 }
 
 
+ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args::~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args() noexcept {
+}
+
+
+uint32_t ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->cr.read(iprot);
+          this->__isset.cr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->retentionTime);
+          this->__isset.retentionTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args");
+
+  xfer += oprot->writeFieldBegin("cr", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->cr.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("retentionTime", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->retentionTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs::~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs() noexcept {
+}
+
+
+uint32_t ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs");
+
+  xfer += oprot->writeFieldBegin("cr", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += (*(this->cr)).write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("retentionTime", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64((*(this->retentionTime)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result::~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result() noexcept {
+}
+
+
+uint32_t ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result");
+
+  if (this->__isset.o1) {
+    xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->o1.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult::~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult() noexcept {
+}
+
+
+uint32_t ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 ThriftHiveMetastore_update_compaction_metrics_data_args::~ThriftHiveMetastore_update_compaction_metrics_data_args() noexcept {
 }
 
@@ -76174,6 +76377,63 @@ void ThriftHiveMetastoreClient::recv_mark_refused()
   return;
 }
 
+void ThriftHiveMetastoreClient::retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime)
+{
+  send_retry_cleaner_attempt_with_backoff(cr, retentionTime);
+  recv_retry_cleaner_attempt_with_backoff();
+}
+
+void ThriftHiveMetastoreClient::send_retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("retry_cleaner_attempt_with_backoff", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs args;
+  args.cr = &cr;
+  args.retentionTime = &retentionTime;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void ThriftHiveMetastoreClient::recv_retry_cleaner_attempt_with_backoff()
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("retry_cleaner_attempt_with_backoff") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult result;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.o1) {
+    throw result.o1;
+  }
+  return;
+}
+
 bool ThriftHiveMetastoreClient::update_compaction_metrics_data(const CompactionMetricsDataStruct& data)
 {
   send_update_compaction_metrics_data(data);
@@ -92306,6 +92566,62 @@ void ThriftHiveMetastoreProcessor::process_mark_refused(int32_t seqid, ::apache:
 
   if (this->eventHandler_.get() != nullptr) {
     this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.mark_refused", bytes);
+  }
+}
+
+void ThriftHiveMetastoreProcessor::process_retry_cleaner_attempt_with_backoff(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = nullptr;
+  if (this->eventHandler_.get() != nullptr) {
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.retry_cleaner_attempt_with_backoff", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.retry_cleaner_attempt_with_backoff");
+
+  if (this->eventHandler_.get() != nullptr) {
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.retry_cleaner_attempt_with_backoff");
+  }
+
+  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != nullptr) {
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.retry_cleaner_attempt_with_backoff", bytes);
+  }
+
+  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result result;
+  try {
+    iface_->retry_cleaner_attempt_with_backoff(args.cr, args.retentionTime);
+  } catch (MetaException &o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != nullptr) {
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.retry_cleaner_attempt_with_backoff");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("retry_cleaner_attempt_with_backoff", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != nullptr) {
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.retry_cleaner_attempt_with_backoff");
+  }
+
+  oprot->writeMessageBegin("retry_cleaner_attempt_with_backoff", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != nullptr) {
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.retry_cleaner_attempt_with_backoff", bytes);
   }
 }
 
@@ -114457,6 +114773,89 @@ void ThriftHiveMetastoreConcurrentClient::recv_mark_refused(const int32_t seqid)
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
       ThriftHiveMetastore_mark_refused_presult result;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.o1) {
+        sentry.commit();
+        throw result.o1;
+      }
+      sentry.commit();
+      return;
+    }
+    // seqid != rseqid
+    this->sync_->updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_->waitForWork(seqid);
+  } // end while(true)
+}
+
+void ThriftHiveMetastoreConcurrentClient::retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime)
+{
+  int32_t seqid = send_retry_cleaner_attempt_with_backoff(cr, retentionTime);
+  recv_retry_cleaner_attempt_with_backoff(seqid);
+}
+
+int32_t ThriftHiveMetastoreConcurrentClient::send_retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime)
+{
+  int32_t cseqid = this->sync_->generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
+  oprot_->writeMessageBegin("retry_cleaner_attempt_with_backoff", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs args;
+  args.cr = &cr;
+  args.retentionTime = &retentionTime;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void ThriftHiveMetastoreConcurrentClient::recv_retry_cleaner_attempt_with_backoff(const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(this->sync_.get(), seqid);
+
+  while(true) {
+    if(!this->sync_->getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("retry_cleaner_attempt_with_backoff") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult result;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();

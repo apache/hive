@@ -3322,6 +3322,10 @@ public class HiveConf extends Configuration {
     HIVE_COMPACTOR_CLEANER_RETENTION_TIME("hive.compactor.cleaner.retention.time.seconds", "300s",
         new TimeValidator(TimeUnit.SECONDS), "Time to wait before cleanup of obsolete files/dirs after compaction. \n"
         + "This is the minimum amount of time the system will wait, since it will not clean before all open transactions are committed, that were opened before the compaction"),
+    HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS("hive.compactor.cleaner.retry.maxattempts", 5,
+        new RangeValidator(0, 10), "Maximum number of attempts to clean a table again after a " +
+            "failed cycle. The delay has a backoff, and calculated the following way: " +
+            "pow(2, number_of_failed_attempts) * HIVE_COMPACTOR_CLEANER_RETENTION_TIME. Must be between 0 and 10"),
     HIVE_COMPACTOR_CLEANER_THREADS_NUM("hive.compactor.cleaner.threads.num", 1,
       "Enables parallelization of the cleaning directories after compaction, that includes many file \n" +
       "related checks and may be expensive"),

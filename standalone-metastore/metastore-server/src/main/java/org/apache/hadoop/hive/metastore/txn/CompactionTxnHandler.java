@@ -334,7 +334,6 @@ class CompactionTxnHandler extends TxnHandler {
    * Find entries in the queue that are ready to
    * be cleaned.
    * @param minOpenTxnWaterMark Minimum open txnId
-   * @param retentionTime time in milliseconds to delay cleanup after compaction
    * @return information on the entry in the queue.
    */
   @Override
@@ -353,9 +352,7 @@ class CompactionTxnHandler extends TxnHandler {
         if (minOpenTxnWaterMark > 0) {
           whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
-        if (retentionTime > 0) {
-          whereClause += " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
-        }
+        whereClause += " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
         String s = "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
             "   \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\"" +
             "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
@@ -385,7 +382,7 @@ class CompactionTxnHandler extends TxnHandler {
             info.highestWriteId = rs.getLong(7);
             info.properties = rs.getString(8);
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Found ready to clean: " + info.toString());
+              LOG.debug("Found ready to clean: " + info);
             }
             rc.add(info);
           }
@@ -1428,6 +1425,44 @@ class CompactionTxnHandler extends TxnHandler {
   public void markRefused(CompactionInfo info) throws MetaException {
     info.state = REFUSED_STATE;
     updateStatus(info);
+  }
+
+
+  @Override
+  public void retryCleanerAttemptWithBackoff(CompactionInfo info, long retentionTime) throws MetaException {
+    try {
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
+        try (PreparedStatement stmt = dbConn.prepareStatement("UPDATE \"COMPACTION_QUEUE\" " +
+                "SET \"CQ_TBLPROPERTIES\" = ?, CQ_COMMIT_TIME = ?, CQ_ERROR_MESSAGE= ? "
+                + " WHERE \"CQ_ID\" = ?")) {
+          stmt.setString(1, info.properties);
+          stmt.setLong(2, retentionTime);
+          stmt.setString(3, info.errorMessage);
+          stmt.setLong(4, info.id);
+          int updCnt = stmt.executeUpdate();
+          if (updCnt != 1) {
+            LOG.error("Unable to update compaction queue record: " + info + ". updCnt=" + updCnt);
+            dbConn.rollback();
+            throw new MetaException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
+          }
+          LOG.debug("Going to commit");
+          dbConn.commit();
+        } catch (SQLException e) {
+          LOG.error("Unable to update compaction queue: " + e.getMessage());
+          rollbackDBConn(dbConn);
+          checkRetryable(e, "retryCleanerAttemptWithBackoff(" + info + ", " + retentionTime +")");
+          throw new MetaException("Unable to update compaction queue: " +
+                  StringUtils.stringifyException(e));
+        }
+      } catch (SQLException e) {
+        LOG.error("Unable to connect to transaction database: " + e.getMessage());
+        checkRetryable(e, "retryCleanerAttemptWithBackoff(" + info + ", " + retentionTime +")");
+        throw new MetaException("Unable to connect to transaction database: " +
+                StringUtils.stringifyException(e));
+      }
+    } catch (RetryException e) {
+      retryCleanerAttemptWithBackoff(info, retentionTime);
+    }
   }
 
   @Override

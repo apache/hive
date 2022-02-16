@@ -3321,6 +3321,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def retry_cleaner_attempt_with_backoff(cr, retentionTime)
+      send_retry_cleaner_attempt_with_backoff(cr, retentionTime)
+      recv_retry_cleaner_attempt_with_backoff()
+    end
+
+    def send_retry_cleaner_attempt_with_backoff(cr, retentionTime)
+      send_message('retry_cleaner_attempt_with_backoff', Retry_cleaner_attempt_with_backoff_args, :cr => cr, :retentionTime => retentionTime)
+    end
+
+    def recv_retry_cleaner_attempt_with_backoff()
+      result = receive_message(Retry_cleaner_attempt_with_backoff_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def update_compaction_metrics_data(data)
       send_update_compaction_metrics_data(data)
       return recv_update_compaction_metrics_data()
@@ -6978,6 +6993,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'mark_refused', seqid)
+    end
+
+    def process_retry_cleaner_attempt_with_backoff(seqid, iprot, oprot)
+      args = read_args(iprot, Retry_cleaner_attempt_with_backoff_args)
+      result = Retry_cleaner_attempt_with_backoff_result.new()
+      begin
+        @handler.retry_cleaner_attempt_with_backoff(args.cr, args.retentionTime)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'retry_cleaner_attempt_with_backoff', seqid)
     end
 
     def process_update_compaction_metrics_data(seqid, iprot, oprot)
@@ -15169,6 +15195,40 @@ module ThriftHiveMetastore
   end
 
   class Mark_refused_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Retry_cleaner_attempt_with_backoff_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CR = 1
+    RETENTIONTIME = 2
+
+    FIELDS = {
+      CR => {:type => ::Thrift::Types::STRUCT, :name => 'cr', :class => ::CompactionInfoStruct},
+      RETENTIONTIME => {:type => ::Thrift::Types::I64, :name => 'retentionTime'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Retry_cleaner_attempt_with_backoff_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 
