@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInBetweenExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagationException;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializati
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveIncrementalRelMdRowCount;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
@@ -274,7 +276,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         }
 
         return applyPartitionIncrementalRebuildPlan(
-                basePlan, mdProvider, executorProvider, materialization, calcitePreMVRewritingPlan);
+                basePlan, mdProvider, executorProvider, materialization, optCluster, calcitePreMVRewritingPlan);
       }
 
       // Now we trigger some needed optimization rules again
@@ -382,7 +384,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     private RelNode applyPartitionIncrementalRebuildPlan(
             RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider,
-            HiveRelOptMaterialization materialization, RelNode calcitePreMVRewritingPlan) {
+            HiveRelOptMaterialization materialization, RelOptCluster optCluster,
+            RelNode calcitePreMVRewritingPlan) {
 
       if (materialization.isSourceTablesUpdateDeleteModified()) {
         // TODO: Create rewrite rule to transform the plan to partition based incremental rebuild
@@ -399,8 +402,42 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
       }
 
-      return applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
-              HiveInsertOnlyScanWriteIdRule.INSTANCE, HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
+      RelNode incrementalRebuildPlan = applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
+              HiveInsertOnlyScanWriteIdRule.INSTANCE,
+              HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
+
+      // Make a cost-based decision factoring the configuration property
+      RelOptCost costOriginalPlan = calculateCost(
+              optCluster, mdProvider, HiveTezModelRelMetadataProvider.DEFAULT, calcitePreMVRewritingPlan);
+
+      RelOptCost costIncrementalRebuildPlan = calculateCost(optCluster, mdProvider,
+              HiveIncrementalRelMdRowCount.createMetadataProvider(materialization), incrementalRebuildPlan);
+
+      final double factorSelectivity = HiveConf.getFloatVar(
+              conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
+      costIncrementalRebuildPlan = costIncrementalRebuildPlan.multiplyBy(factorSelectivity);
+
+      if (costOriginalPlan.isLe(costIncrementalRebuildPlan)) {
+        mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+        return calcitePreMVRewritingPlan;
+      }
+
+      return incrementalRebuildPlan;
+    }
+
+    private RelOptCost calculateCost(
+            RelOptCluster optCluster,
+            RelMetadataProvider originalMetadataProvider,
+            JaninoRelMetadataProvider metadataProvider,
+            RelNode plan) {
+      optCluster.invalidateMetadataQuery();
+      RelMetadataQuery.THREAD_PROVIDERS.set(metadataProvider);
+      try {
+        return RelMetadataQuery.instance().getCumulativeCost(plan);
+      } finally {
+        optCluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(originalMetadataProvider));
+      }
     }
 
     private RelNode applyIncrementalRebuild(RelNode basePlan, RelMetadataProvider mdProvider,
