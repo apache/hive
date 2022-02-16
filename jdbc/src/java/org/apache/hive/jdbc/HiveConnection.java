@@ -88,7 +88,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hive.jdbc.auth.jwt.HttpJwtAuthRequestInterceptor;
+import org.apache.hive.jdbc.jwt.HttpJwtAuthRequestInterceptor;
 import org.apache.hive.jdbc.saml.HiveJdbcBrowserClientFactory;
 import org.apache.hive.jdbc.saml.HiveJdbcSamlRedirectStrategy;
 import org.apache.hive.jdbc.saml.HttpSamlAuthRequestInterceptor;
@@ -812,28 +812,31 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private String getJWT() {
-    JWTFetcher jwtFetcher = new JWTFetcher();
-    String jwtCredential = jwtFetcher.getJWTStringFromSession();
+    String jwtCredential = getJWTStringFromSession();
     if (jwtCredential == null) {
-      jwtCredential = jwtFetcher.getJWTStringFromEnv();
+      jwtCredential = getJWTStringFromEnv();
     }
     return jwtCredential;
   }
 
-  class JWTFetcher {
-    String getJWTStringFromEnv() {
-      String jwtCredential = System.getenv(JdbcConnectionParams.AUTH_JWT_ENV);
-      if (jwtCredential == null) {
-        return null;
-      }
-      LOG.debug("Fetched JWT from env: " + jwtCredential);
-      return jwtCredential;
+  private String getJWTStringFromEnv() {
+    String jwtCredential = System.getenv(JdbcConnectionParams.AUTH_JWT_ENV);
+    if (jwtCredential == null) {
+      LOG.debug("No JWT is specified in env variable {}", JdbcConnectionParams.AUTH_JWT_ENV);
+    } else {
+      LOG.debug("Fetched JWT from the env.");
     }
+    return jwtCredential;
+  }
 
-    String getJWTStringFromSession() {
-      LOG.debug("Fetching JWT from session.");
-      return sessConfMap.get(JdbcConnectionParams.AUTH_TYPE_JWT_KEY);
+  private String getJWTStringFromSession() {
+    String jwtCredential = sessConfMap.get(JdbcConnectionParams.AUTH_TYPE_JWT_KEY);
+    if (jwtCredential == null) {
+      LOG.debug("No JWT is specified in connection string.");
+    } else {
+      LOG.debug("Fetched JWT from the session.");
     }
+    return jwtCredential;
   }
 
   /**
@@ -1278,7 +1281,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private boolean isJwtAuthMode() {
-    return JdbcConnectionParams.AUTH_TYPE_JWT.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
+    return JdbcConnectionParams.AUTH_TYPE_JWT.equalsIgnoreCase(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         || sessConfMap.containsKey(JdbcConnectionParams.AUTH_TYPE_JWT_KEY);
   }
 

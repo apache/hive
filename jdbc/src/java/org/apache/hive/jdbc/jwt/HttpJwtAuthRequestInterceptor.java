@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hive.jdbc.auth.jwt;
+package org.apache.hive.jdbc.jwt;
 
 import org.apache.hive.jdbc.HttpRequestInterceptorBase;
+import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.CookieStore;
@@ -32,7 +33,6 @@ import java.util.Map;
  */
 public class HttpJwtAuthRequestInterceptor extends HttpRequestInterceptorBase {
 
-  private static final String BEARER = "Bearer ";
   private final String signedJwt;
 
   public HttpJwtAuthRequestInterceptor(String signedJwt, CookieStore cookieStore, String cn,
@@ -44,6 +44,6 @@ public class HttpJwtAuthRequestInterceptor extends HttpRequestInterceptorBase {
 
   @Override
   protected void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext) {
-    httpRequest.addHeader(HttpHeaders.AUTHORIZATION, BEARER + signedJwt);
+    httpRequest.addHeader(HttpHeaders.AUTHORIZATION, HttpAuthUtils.BEARER + " " + signedJwt);
   }
 }

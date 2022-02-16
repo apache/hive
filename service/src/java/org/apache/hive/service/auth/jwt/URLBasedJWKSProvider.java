@@ -36,34 +36,36 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link JWKSProvider} which reads JWKS from URL.
+ * Provides a way to get JWKS json. Hive will use this to verify the incoming JWTs.
  */
-public class URLBasedJWKSProvider implements JWKSProvider {
+public class URLBasedJWKSProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(URLBasedJWKSProvider.class.getName());
   private final HiveConf conf;
   private List<JWKSet> jwkSets = new ArrayList<>();
 
-  public URLBasedJWKSProvider(HiveConf conf) {
+  public URLBasedJWKSProvider(HiveConf conf) throws IOException, ParseException {
     this.conf = conf;
     loadJWKSets();
   }
 
-  private void loadJWKSets() {
-    String jwksURL = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_JWT_JWKS_URL);
+  /**
+   * Fetches the JWKS and stores into memory. The JWKS are expected to be in the standard form as defined here -
+   * https://datatracker.ietf.org/doc/html/rfc7517#appendix-A.
+   */
+  private void loadJWKSets() throws IOException, ParseException {
+    String jwksURL = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL);
     List<String> jwksURLs = Arrays.stream(jwksURL.split(",")).collect(Collectors.toList());
     for (String urlString : jwksURLs) {
-      try {
-        URL url = new URL(urlString);
-        jwkSets.add(JWKSet.load(url));
-        LOG.info("Loaded JWKS from " + urlString);
-      } catch (IOException | ParseException e) {
-        LOG.info("Failed to retrieve JWKS from {}: {}", urlString, e.getMessage());
-      }
+      URL url = new URL(urlString);
+      jwkSets.add(JWKSet.load(url));
+      LOG.info("Loaded JWKS from " + urlString);
     }
   }
 
-  @Override
+  /**
+   * Returns filtered JWKS by one or more criteria, such as kid, typ, alg.
+   */
   public List<JWK> getJWKs(JWSHeader header) {
     List<JWK> jwks = new ArrayList<>();
     JWKSelector selector = new JWKSelector(JWKMatcher.forJWSHeader(header));

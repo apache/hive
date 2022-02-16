@@ -4048,12 +4048,6 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED("hive.server2.thrift.http.compression.enabled", true,
         "Enable thrift http compression via Jetty compression support"),
 
-    // JWT Auth configs
-    HIVE_SERVER2_THRIFT_HTTP_JWT_JWKS_URL("hive.server2.thrift.http.jwt.jwks.url", "",
-        "URL of the file from where FileBasedJWKSProvider will try to load JWKS\n" +
-        "when JWT auth is used. Alternatively, FileBasedJWKSProvider will also try to look for file path\n" +
-        "in env var HIVE_SERVER2_AUTH_JWT_JWKS_FILE_PATH if this conf is not set"),
-
     // Cookie based authentication when using HTTP Transport
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
         "When true, HiveServer2 in HTTP transport mode, will use cookie based authentication mechanism."),
@@ -4239,6 +4233,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PAM_SERVICES("hive.server2.authentication.pam.services", null,
       "List of the underlying pam services that should be used when auth type is PAM\n" +
       "A file with the same name must exist in /etc/pam.d"),
+    // JWT Auth configs
+    HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL("hive.server2.authentication.jwt.jwks.url", "",
+        "URL of the file from where FileBasedJWKSProvider will try to load JWKS\n" +
+            "when JWT auth is enabled."),
 
     // HS2 SAML2.0 configuration
     HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",

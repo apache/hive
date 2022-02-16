@@ -34,17 +34,18 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import javax.crypto.SecretKey;
+import java.io.IOException;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
 public class JWTValidator {
 
-  private final JWKSProvider jwksProvider;
+  private final URLBasedJWKSProvider jwksProvider;
 
-  public JWTValidator(HiveConf conf) {
-    // TODO - do we need to make provider configurable so that people can define their own ways of fetching JWKS ?
+  public JWTValidator(HiveConf conf) throws IOException, ParseException {
     this.jwksProvider = new URLBasedJWKSProvider(conf);
   }
 
@@ -63,7 +64,7 @@ public class JWTValidator {
     }
     Preconditions.checkState(signatureVerificationSuccessful, "Unable to verify incoming JWT Signature");
 
-    // verify claims now
+    // verify claims
     JWTClaimsSet claimsSet = parsedJwt.getJWTClaimsSet();
     Date expirationTime = claimsSet.getExpirationTime();
     if (expirationTime != null) {
@@ -71,7 +72,7 @@ public class JWTValidator {
       Preconditions.checkState(now.before(expirationTime), "JWT has been expired");
     }
 
-    // TODO We need to return query user from here - Subject will be query user ?
+    // We assume the subject of claims is the query user
     return claimsSet.getSubject();
   }
 

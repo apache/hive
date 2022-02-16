@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.auth.jwt;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -33,12 +34,14 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -51,6 +54,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -69,6 +74,10 @@ public class TestHttpJwtAuthentication {
   public static final String USER_1 = "USER_1";
 
   private static MiniHS2 miniHS2;
+
+  private static final int MOCK_JWKS_SERVER_PORT = 8089;
+  @ClassRule
+  public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
 
   @BeforeClass
   public static void makeEnvModifiable() throws Exception {
@@ -96,14 +105,18 @@ public class TestHttpJwtAuthentication {
 
   @BeforeClass
   public static void setupHS2() throws Exception {
+    MOCK_JWKS_SERVER.stubFor(get("/jwks")
+        .willReturn(ok()
+            .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
+
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
     conf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, "JWT");
     // the content of the URL below is the same as jwtVerificationJWKSFile
-    conf.setVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_JWT_JWKS_URL,
-        "https://gist.githubusercontent.com/hsnusonic/d06f2f18a73d1dbbba081e0267467da6/raw/38c2930d134c78320219b838bac4ceee680817bd/jwks.json");
+    conf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL, "http://localhost:" + MOCK_JWKS_SERVER_PORT +
+        "/jwks");
     miniHS2 = new MiniHS2.Builder().withConf(conf).withHTTPTransport().build();
 
     miniHS2.start(new HashMap<>());
@@ -118,8 +131,6 @@ public class TestHttpJwtAuthentication {
       MiniHS2.cleanupLocalDir();
     }
   }
-
-
 
   @Test
   public void testAuthorizedUser() throws Exception {
@@ -163,7 +174,6 @@ public class TestHttpJwtAuthentication {
     return (HiveConnection) connection;
   }
 
-
   private String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {
     RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
 
@@ -194,11 +204,9 @@ public class TestHttpJwtAuthentication {
     return signedJWT.serialize();
   }
 
-
   private String getJwtJdbcConnectionUrl() throws Exception {
     return miniHS2.getHttpJdbcURL() + "auth=jwt;";
   }
-
 
   private void assertLoggedInUser(HiveConnection connection, String expectedUser)
       throws SQLException {
