@@ -28,6 +28,9 @@ public class PartitionDropOptions {
   public boolean returnResults = true;
   public boolean purgeData = false;
 
+  public Long writeId;
+  public Long txnId;
+
   public static PartitionDropOptions instance() { return new PartitionDropOptions(); }
 
   public PartitionDropOptions deleteData(boolean deleteData) {
@@ -48,6 +51,15 @@ public class PartitionDropOptions {
   public PartitionDropOptions purgeData(boolean purgeData) {
     this.purgeData = purgeData;
     return this;
+  }
+
+  public PartitionDropOptions setWriteId(Long writeId) {
+    this.writeId = writeId;
+    return this;
+  }
+
+  public void setTxnId(Long txnId) {
+    this.txnId = txnId;
   }
 
 } // class PartitionDropSwitches;

@@ -139,4 +139,25 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
       Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
     }
   }
+
+  @Test
+  public void testCTASFollowedByTruncate() throws IOException {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY ICEBERG STORED AS %s %s AS SELECT * FROM source",
+        fileFormat, testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target"))));
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY customer_id");
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+
+    shell.executeStatement("TRUNCATE TABLE target");
+
+    objects = shell.executeStatement("SELECT * FROM target");
+    Assert.assertTrue(objects.isEmpty());
+  }
 }

@@ -147,7 +147,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     if (type == TableType.MATERIALIZED_VIEW) {
       CreationMetadata cm = new CreationMetadata(
           MetaStoreUtils.getDefaultCatalog(metaStore.getConf()), dbName, tableName, ImmutableSet.of());
-      cm.setSourceTables(Collections.emptySet());
+      cm.setSourceTables(Collections.emptyList());
       table.setCreationMetadata(cm);
     }
 

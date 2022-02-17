@@ -38,11 +38,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,24 +226,6 @@ public class HiveSplitGenerator extends InputInitializer {
 
         }
 
-        HashMap<Path, DeltaFilesMetricReporter.DeltaFilesMetadata> deltaFilesMetadata = new HashMap();
-
-        work.getPathToPartitionInfo().entrySet().forEach(e -> {
-          DeltaFilesMetricReporter.DeltaFilesMetadata metadata = new DeltaFilesMetricReporter.DeltaFilesMetadata();
-          TableDesc tableDesc = e.getValue().getTableDesc();
-          metadata.dbName = tableDesc.getDbName();
-          metadata.tableName = tableDesc.getTableName();
-          LinkedHashMap<String, String> partSpec = e.getValue().getPartSpec();
-          if (partSpec != null && !partSpec.isEmpty()) {
-            metadata.partitionName = Joiner.on(Path.SEPARATOR).join(partSpec.entrySet());
-          }
-          deltaFilesMetadata.put(e.getKey(), metadata);
-        });
-
-        String serializedMetadata = SerializationUtilities.serializeObject(deltaFilesMetadata);
-        jobConf.set(DeltaFilesMetricReporter.JOB_CONF_DELTA_FILES_METRICS_METADATA, serializedMetadata);
-
-
         InputSplit[] splits;
         if (generateSingleSplit &&
           conf.get(HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname).equals(HiveInputFormat.class.getName())) {
@@ -319,7 +298,6 @@ public class HiveSplitGenerator extends InputInitializer {
             }
             counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
             tezCounters.findCounter(groupName, counterName).increment(files.size());
-            DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
           } catch (Exception e) {
             LOG.warn("Caught exception while trying to update Tez counters", e);
           }

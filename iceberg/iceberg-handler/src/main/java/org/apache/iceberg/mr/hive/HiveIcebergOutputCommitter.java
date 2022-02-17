@@ -121,7 +121,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               HiveIcebergRecordWriter writer = writers.get(output);
               DataFile[] closedFiles;
               if (writer != null) {
-                closedFiles = writer.dataFiles();
+                closedFiles = writer.dataFiles().toArray(new DataFile[0]);
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 closedFiles = new DataFile[0];

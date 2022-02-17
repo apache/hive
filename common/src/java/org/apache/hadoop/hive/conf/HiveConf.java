@@ -77,7 +77,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * Hive Configuration.
  */
@@ -1884,6 +1883,10 @@ public class HiveConf extends Configuration {
                                                                  + " expressed as multiple of Local FS write cost"),
     HIVE_CBO_COST_MODEL_HDFS_READ("hive.cbo.costmodel.hdfs.read", "1.5", "Default cost of reading a byte from HDFS;"
                                                                  + " expressed as multiple of Local FS read cost"),
+    HIVE_CBO_RULE_EXCLUSION_REGEX("hive.cbo.rule.exclusion.regex", "",
+        "Regex over rule descriptions to exclude them from planning. "
+            + "The intended usage is to allow to disable rules from problematic queries, it is *not* a performance tuning property. "
+            + "The property is experimental, it can be changed or removed without any notice."),
     HIVE_CBO_SHOW_WARNINGS("hive.cbo.show.warnings", true,
          "Toggle display of CBO warnings like missing column stats"),
     HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS("hive.cbo.stats.correlated.multi.key.joins", true,
@@ -3066,31 +3069,54 @@ public class HiveConf extends Configuration {
 
     HIVE_ACID_LOCKLESS_READS_ENABLED("hive.acid.lockless.reads.enabled", false,
         "Enables lockless reads"),
+     
+    HIVE_ACID_CREATE_TABLE_USE_SUFFIX("hive.acid.createtable.softdelete", false,
+        "Enables non-blocking DROP TABLE operation.\n" +
+        "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
     
     HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     
+    HIVE_ACID_DROP_PARTITION_USE_BASE("hive.acid.droppartition.usebase", false,
+        "Enables non-blocking DROP PARTITION operation.\n" +
+        "If enabled, drop for transactional tables will not delete the data directories,\n" +
+        "rather create a new base directory with no datafiles.\")"),
+    
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_MAX_CACHE_SIZE
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
         new RangeValidator(0, 500),
         "Size of the ACID metrics cache, i.e. max number of partitions and unpartitioned tables with the "
             + "most deltas that will be included in the lists of active, obsolete and small deltas. "
             + "Allowed range is 0 to 500."),
-    HIVE_TXN_ACID_METRICS_CACHE_DURATION("hive.txn.acid.metrics.cache.duration", "7200s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Maximum lifetime in seconds for an entry in the ACID metrics cache."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_REPORTING_INTERVAL
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL("hive.txn.acid.metrics.reporting.interval", "30s",
         new TimeValidator(TimeUnit.SECONDS),
         "Reporting period for ACID metrics in seconds."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.delta.num.threshold", 100,
         "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_OBSOLETE_DELTA_NUM_THRESHOLD
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.obsolete.delta.num.threshold", 100,
         "The minimum number of obsolete delta files a table/partition must have in order to be included in the ACID metrics report."),
-    HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD("hive.txn.acid.metrics.delta.check.threshold", "300s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Deltas not older than this value will not be included in the ACID metrics report."),
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_DELTA_PCT_THRESHOLD
+     */
+    @Deprecated
     HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD("hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
         "count as small deltas. Default 0.01 = 1%.)"),
@@ -3243,6 +3269,10 @@ public class HiveConf extends Configuration {
         "If the number of small delta directories under a table/partition passes this threshold, a " +
             "warning message will be logged."),
 
+    /**
+     * @deprecated use MetastoreConf.METASTORE_DELTAMETRICS_LOGGER_FREQUENCY
+     */
+    @Deprecated
     HIVE_COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY(
         "hive.compactor.acid.metrics.logger.frequency",
         "360m", new TimeValidator(TimeUnit.MINUTES),
@@ -3252,10 +3282,22 @@ public class HiveConf extends Configuration {
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
 
-    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+    /**
+     * @deprecated This config value is honoured by the MR based compaction only.
+     * Use the {@link HiveConf.ConfVars#HIVE_COMPACTOR_GATHER_STATS}
+     * config instead which is honoured by both the MR and Query based compaction.
+     */
+    @Deprecated
+    HIVE_MR_COMPACTOR_GATHER_STATS("hive.mr.compactor.gather.stats", false, "If set to true MAJOR compaction " +
         "will gather stats if there are stats already associated with the table/partition.\n" +
         "Turn this off to save some resources and the stats are not used anyway.\n" +
         "Works only for MR based compaction, CRUD based compaction uses hive.stats.autogather."),
+
+    HIVE_COMPACTOR_GATHER_STATS("hive.compactor.gather.stats", true, "If set to true MAJOR compaction " +
+            "will gather stats if there are stats already associated with the table/partition.\n" +
+            "Turn this off to save some resources and the stats are not used anyway.\n" +
+            "This is a replacement for the HIVE_MR_COMPACTOR_GATHER_STATS config, and works both for MR and Query based " +
+            "compaction."),
 
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_INITIATOR_FAILED_THRESHOLD
@@ -4343,7 +4385,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH("hive.server2.job.credential.provider.path", "",
         "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
         "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
-        "credential providers for jobs run using MR and Spark execution engines. This functionality has not been tested against Tez."),
+        "credential providers for jobs run using Tez, MR, Spark execution engines."),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),

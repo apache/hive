@@ -41,7 +41,7 @@ import java.util.Map;
 
 public class ReplicationUtils {
 
-  public final static String REPL_STATE_ID = ReplicationSpec.KEY.CURR_STATE_ID.toString();
+  public final static String REPL_STATE_ID = ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString();
 
   private ReplicationUtils(){
     // dummy private constructor, since this class is a collection of static utility methods.

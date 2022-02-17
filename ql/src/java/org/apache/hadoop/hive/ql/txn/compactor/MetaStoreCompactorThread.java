@@ -128,7 +128,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
       long elapsed = System.currentTimeMillis() - startedAt;
       LOG.debug("Updating {} metric to {}", metric, elapsed);
       Metrics.getOrCreateGauge(metric)
-          .set((int)elapsed);
+          .set((int) elapsed);
       return elapsed;
     }
     return 0;

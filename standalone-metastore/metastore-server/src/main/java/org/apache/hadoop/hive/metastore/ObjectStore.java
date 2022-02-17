@@ -2532,7 +2532,7 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     Set<String> tablesUsed = new HashSet<>();
-    Set<SourceTable> sourceTables = new HashSet<>();
+    List<SourceTable> sourceTables = new ArrayList<>(s.getTables().size());
     for (MMVSource mtbl : s.getTables()) {
       tablesUsed.add(Warehouse.getQualifiedName(mtbl.getTable().getDatabase().getName(), mtbl.getTable().getTableName()));
       sourceTables.add(convertToSourceTable(mtbl, s.getCatalogName()));

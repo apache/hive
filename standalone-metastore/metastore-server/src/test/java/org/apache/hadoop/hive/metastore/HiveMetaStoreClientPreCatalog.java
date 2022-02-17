@@ -1148,6 +1148,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
     dropTable(dbname, name, deleteData, ignoreUnknownTab, envContext);
   }
+  
+  @Override
+  public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) throws TException {
+    dropTable(table.getDbName(), table.getTableName(), deleteData, ignoreUnknownTab, ifPurge);
+  }
 
   /**
    * @see #dropTable(String, String, boolean, boolean, EnvironmentContext)
@@ -3950,6 +3955,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
     client.mark_failed(cr);
+  }
+
+  @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
+      throws MetaException, TException {
+    return client.update_compaction_metrics_data(struct);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
+    client.remove_compaction_metrics_data(request);
   }
 
   @Override

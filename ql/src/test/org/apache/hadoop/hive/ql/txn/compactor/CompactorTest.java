@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,6 +100,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
+
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 /**
  * Super class for all of the compactor test modules.
@@ -117,7 +123,11 @@ public abstract class CompactorTest {
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    setup(new HiveConf());
+  }
+
+  protected void setup(HiveConf conf) throws Exception {
+    this.conf = conf;
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
@@ -132,18 +142,18 @@ public abstract class CompactorTest {
   }
 
   protected void startInitiator() throws Exception {
-    startThread(CompactorThreadType.INITIATOR, true);
+    runOneLoopOfCompactorThread(CompactorThreadType.INITIATOR);
   }
 
   protected void startWorker() throws Exception {
-    startThread(CompactorThreadType.WORKER, true);
+    runOneLoopOfCompactorThread(CompactorThreadType.WORKER);
   }
 
   protected void startCleaner() throws Exception {
-    startThread(CompactorThreadType.CLEANER, true);
+    runOneLoopOfCompactorThread(CompactorThreadType.CLEANER);
   }
 
-  protected void runAcidMetricService() throws Exception {
+  protected void runAcidMetricService() {
     TestTxnDbUtil.setConfValues(conf);
     AcidMetricService t = new AcidMetricService();
     t.setConf(conf);
@@ -343,7 +353,7 @@ public abstract class CompactorTest {
   }
 
   // I can't do this with @Before because I want to be able to control when the thread starts
-  private void startThread(CompactorThreadType type, boolean stopAfterOne) throws Exception {
+  private void runOneLoopOfCompactorThread(CompactorThreadType type) throws Exception {
     TestTxnDbUtil.setConfValues(conf);
     CompactorThread t;
     switch (type) {
@@ -354,10 +364,9 @@ public abstract class CompactorTest {
     }
     t.setThreadId((int) t.getId());
     t.setConf(conf);
-    stop.set(stopAfterOne);
+    stop.set(true);
     t.init(stop);
-    if (stopAfterOne) t.run();
-    else t.start();
+    t.run();
   }
 
   private String getLocation(String tableName, String partValue) {
@@ -664,4 +673,15 @@ public abstract class CompactorTest {
     return compactorTxnId;
   }
 
+  protected Map<String, String> gaugeToMap(String metric) throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    ObjectName oname = new ObjectName(AcidMetricService.OBJECT_NAME_PREFIX + metric);
+    MBeanInfo mbeanInfo = mbs.getMBeanInfo(oname);
+
+    Map<String, String> result = new HashMap<>();
+    for (MBeanAttributeInfo attr : mbeanInfo.getAttributes()) {
+      result.put(attr.getName(), String.valueOf(mbs.getAttribute(oname, attr.getName())));
+    }
+    return result;
+  }
 }

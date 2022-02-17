@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,20 +196,31 @@ public class HiveConfUtil {
           + " previous location was " + oldKeyStoreLocation);
     }
 
+    updateCredentialProviderPasswordForJobs(jobConf);
+  }
+
+  public static void updateCredentialProviderPasswordForJobs(Configuration jobConf) {
     String credstorePassword = getJobCredentialProviderPassword(jobConf);
     if (credstorePassword != null) {
       String execEngine = jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
 
-      if ("mr".equalsIgnoreCase(execEngine)) {
-        // if the execution engine is MR set the map/reduce env with the credential store password
-
+      if ("mr".equalsIgnoreCase(execEngine) || "tez".equalsIgnoreCase(execEngine)) {
+        // if the execution engine is MR/Tez set the map/reduce env with the credential store password
         Collection<String> redactedProperties =
             jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES);
-
+        /*
+         * There are AM + task related environment props below, used for both MR and Tez.
+         * Hiveserver2 copies some of them while creating the vertex in
+         * DagUtils.createVertex -> setTaskEnvironment(getContainerEnvironment(conf)).
+         * So for clarity's sake, TEZ_TASK_LAUNCH_ENV is not added here to avoid confusion of
+         * taking care of task env twice. Comments below clarifies which execution engine relies on which property.
+         * "MR -> Tez" means that DagUtils copies them to tez tasks' environment.
+         */
         Stream.of(
-            JobConf.MAPRED_MAP_TASK_ENV,
-            JobConf.MAPRED_REDUCE_TASK_ENV,
-            MRJobConfig.MR_AM_ADMIN_USER_ENV)
+            JobConf.MAPRED_MAP_TASK_ENV, // MR -> Tez
+            JobConf.MAPRED_REDUCE_TASK_ENV, // MR -> Tez
+            MRJobConfig.MR_AM_ADMIN_USER_ENV, // MR
+            TezConfiguration.TEZ_AM_LAUNCH_ENV) // Tez
 
             .forEach(property -> {
               addKeyValuePair(jobConf, property,
@@ -244,6 +256,16 @@ public class HiveConfUtil {
     return null;
   }
 
+  /**
+   * Sets a "keyName=newKeyValue" pair to a jobConf to a given property.
+   * If the property is empty, it simply inserts keyName=newKeyValue,
+   * if it's already filled, it takes care of appending or replacing it in the currently present value.
+   * The property in jobConf contains a value like: "key1=value1,key2=value2".
+   * @param jobConf
+   * @param property
+   * @param keyName
+   * @param newKeyValue
+   */
   private static void addKeyValuePair(Configuration jobConf, String property, String keyName, String newKeyValue) {
     String existingValue = jobConf.get(property);
 

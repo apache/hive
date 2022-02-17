@@ -457,13 +457,6 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
-struct SourceTable {
-    1: required Table table,
-    2: required i64 insertedCount,
-    3: required i64 updatedCount,
-    4: required i64 deletedCount
-}
-
 struct CreationMetadata {
     1: required string catName,
     2: required string dbName,
@@ -471,7 +464,7 @@ struct CreationMetadata {
     4: required set<string> tablesUsed,
     5: optional string validTxnList,
     6: optional i64 materializationTime,
-    7: optional set<SourceTable> sourceTables
+    7: optional list<SourceTable> sourceTables
 }
 
 // column statistics
@@ -639,7 +632,15 @@ struct Table {
                                        // read purposes
   26: optional FileMetadata fileMetadata, // optional serialized file-metadata for this table
 					  // for certain execution engines
-  27: optional ObjectDictionary dictionary
+  27: optional ObjectDictionary dictionary,
+  28: optional i64 txnId,              // txnId associated with the table creation
+}
+
+struct SourceTable {
+  1: required Table table,
+  2: required i64 insertedCount,
+  3: required i64 updatedCount,
+  4: required i64 deletedCount
 }
 
 struct Partition {
@@ -800,7 +801,7 @@ struct AllTableConstraintsResponse {
 }
 
 struct DropConstraintRequest {
-  1: required string dbname, 
+  1: required string dbname,
   2: required string tablename,
   3: required string constraintname,
   4: optional string catName
@@ -997,7 +998,8 @@ enum TxnType {
     REPL_CREATED = 1,
     READ_ONLY    = 2,
     COMPACTION   = 3,
-    MATER_VIEW_REBUILD = 4
+    MATER_VIEW_REBUILD = 4,
+    SOFT_DELETE  = 5
 }
 
 // specifies which info to return with GetTablesExtRequest
@@ -1301,6 +1303,33 @@ struct OptionalCompactionInfoStruct {
     1: optional CompactionInfoStruct ci,
 }
 
+enum CompactionMetricsMetricType {
+  NUM_OBSOLETE_DELTAS,
+  NUM_DELTAS,
+  NUM_SMALL_DELTAS,
+}
+
+struct CompactionMetricsDataStruct {
+    1: required string dbname
+    2: required string tblname
+    3: optional string partitionname
+    4: required CompactionMetricsMetricType type
+    5: required i32 metricvalue
+    6: required i32 version
+    7: required i32 threshold
+}
+
+struct CompactionMetricsDataResponse {
+    1: optional CompactionMetricsDataStruct data
+}
+
+struct CompactionMetricsDataRequest {
+    1: required string dbName,
+    2: required string tblName,
+    3: optional string partitionName
+    4: required CompactionMetricsMetricType type
+}
+
 struct CompactionResponse {
     1: required i64 id,
     2: required string state,
@@ -1340,6 +1369,7 @@ struct GetLatestCommittedCompactionInfoRequest {
     1: required string dbname,
     2: required string tablename,
     3: optional list<string> partitionnames,
+    4: optional i64 lastCompactionId,
 }
 
 struct GetLatestCommittedCompactionInfoResponse {
@@ -2435,7 +2465,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_primary_key(1:AddPrimaryKeyRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_foreign_key(1:AddForeignKeyRequest req)
-      throws(1:NoSuchObjectException o1, 2:MetaException o2)  
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_unique_constraint(1:AddUniqueConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_not_null_constraint(1:AddNotNullConstraintRequest req)
@@ -2685,7 +2715,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   // partition keys in new_part should be the same as those in old partition.
   void rename_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:Partition new_part)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
-  
+
   RenamePartitionResponse rename_partition_req(1:RenamePartitionRequest req)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
@@ -2913,8 +2943,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   ShowLocksResponse show_locks(1:ShowLocksRequest rqst)
   void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
-  void compact(1:CompactionRequest rqst) 
-  CompactionResponse compact2(1:CompactionRequest rqst) 
+  void compact(1:CompactionRequest rqst)
+  CompactionResponse compact2(1:CompactionRequest rqst)
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   // Deprecated, use find_next_compact2()
@@ -2925,11 +2955,13 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
+  bool update_compaction_metrics_data(1: CompactionMetricsDataStruct data) throws(1:MetaException o1)
+  void remove_compaction_metrics_data(1: CompactionMetricsDataRequest request) throws(1:MetaException o1)
   void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
   GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(1:GetLatestCommittedCompactionInfoRequest rqst)
 
   // Notification logging calls
-  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
+  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst)
   CurrentNotificationEventId get_current_notificationEventId()
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
@@ -3034,7 +3066,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
-  
+
   void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
   list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
 
