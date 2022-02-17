@@ -4309,6 +4309,14 @@ public interface IMetaStoreClient {
   void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
 
   /**
+   * Mark a compaction as refused (to run).
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markRefused(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
    * Create, update or delete one record in the compaction metrics cache.
    * <p>
    * If the metric is not found in the metrics cache, it will be created.
