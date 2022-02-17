@@ -86,7 +86,7 @@ public class TableSerializer implements JsonWriter.Serializer {
       if (additionalPropertiesProvider.getReplSpecType()
               != ReplicationSpec.Type.INCREMENTAL_DUMP) {
         table.putToParameters(
-                ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
                 additionalPropertiesProvider.getCurrentReplicationState());
       }
     } else {

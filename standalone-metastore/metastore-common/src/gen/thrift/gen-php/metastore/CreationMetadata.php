@@ -58,7 +58,7 @@ class CreationMetadata
         7 => array(
             'var' => 'sourceTables',
             'isRequired' => false,
-            'type' => TType::SET,
+            'type' => TType::LST,
             'etype' => TType::STRUCT,
             'elem' => array(
                 'type' => TType::STRUCT,
@@ -194,18 +194,18 @@ class CreationMetadata
                     }
                     break;
                 case 7:
-                    if ($ftype == TType::SET) {
+                    if ($ftype == TType::LST) {
                         $this->sourceTables = array();
                         $_size239 = 0;
                         $_etype242 = 0;
-                        $xfer += $input->readSetBegin($_etype242, $_size239);
+                        $xfer += $input->readListBegin($_etype242, $_size239);
                         for ($_i243 = 0; $_i243 < $_size239; ++$_i243) {
                             $elem244 = null;
                             $elem244 = new \metastore\SourceTable();
                             $xfer += $elem244->read($input);
-                            $this->sourceTables[] = $elem244;
+                            $this->sourceTables []= $elem244;
                         }
-                        $xfer += $input->readSetEnd();
+                        $xfer += $input->readListEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -265,12 +265,12 @@ class CreationMetadata
             if (!is_array($this->sourceTables)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('sourceTables', TType::SET, 7);
-            $output->writeSetBegin(TType::STRUCT, count($this->sourceTables));
-            foreach ($this->sourceTables as $iter247 => $iter248) {
-                $xfer += $iter248->write($output);
+            $xfer += $output->writeFieldBegin('sourceTables', TType::LST, 7);
+            $output->writeListBegin(TType::STRUCT, count($this->sourceTables));
+            foreach ($this->sourceTables as $iter247) {
+                $xfer += $iter247->write($output);
             }
-            $output->writeSetEnd();
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -31,12 +31,15 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -48,6 +51,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -81,6 +85,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   public void setUp() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     // re-initialize metrics
     Metrics.shutdown();
     Metrics.initialize(conf);
@@ -236,24 +241,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     startCleaner();
     Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
     Assert.assertEquals("Count incorrect", 0, counter.getCount());
-  }
-
-  @Test
-  public void  testInitiatorFailure() throws Exception {
-    ThrowingTxnHandler.doThrow = true;
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
-    startInitiator();
-    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
-    Assert.assertEquals("Count incorrect", 1, counter.getCount());
-  }
-
-  @Test
-  public void  testCleanerFailure() throws Exception {
-    ThrowingTxnHandler.doThrow = true;
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
-    startCleaner();
-    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
-    Assert.assertEquals("Count incorrect", 1, counter.getCount());
   }
 
   @Test
@@ -849,6 +836,191 @@ public class TestCompactionMetrics  extends CompactorTest {
         2, Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).intValue());
   }
 
+  @Test
+  public void testInitiatorDurationMeasuredCorrectly() throws Exception {
+    final String DEFAULT_DB = "default";
+    final String TABLE_NAME = "x_table";
+    final String PARTITION_NAME = "part";
+
+    List<LockComponent> components = new ArrayList<>();
+
+    Table table = newTable(DEFAULT_DB, TABLE_NAME, true);
+
+    for (int i = 0; i < 10; i++) {
+      String partitionName = PARTITION_NAME + i;
+      Partition p = newPartition(table, partitionName);
+
+      addBaseFile(table, p, 20L, 20);
+      addDeltaFile(table, p, 21L, 22L, 2);
+      addDeltaFile(table, p, 23L, 24L, 2);
+      addDeltaFile(table, p, 21L, 24L, 4);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, DEFAULT_DB);
+      comp.setTablename(TABLE_NAME);
+      comp.setPartitionname("ds=" + partitionName);
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions(DEFAULT_DB, TABLE_NAME, 25);
+
+    long txnId = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    allocateWriteId(DEFAULT_DB, TABLE_NAME, txnId);
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
+
+    long initiatorStart = System.currentTimeMillis();
+    startInitiator();
+    long durationUpperLimit = System.currentTimeMillis() - initiatorStart;
+    int initiatorDurationFromMetric = Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION)
+        .intValue();
+    Assert.assertTrue("Initiator duration must be withing the limits",
+        (0 < initiatorDurationFromMetric) && (initiatorDurationFromMetric <= durationUpperLimit));
+  }
+
+  @Test
+  public void testCleanerDurationMeasuredCorrectly() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
+
+    final String DB_NAME = "default";
+    final String TABLE_NAME = "x_table";
+    final String PARTITION_NAME = "part";
+
+    Table table = newTable(DB_NAME, TABLE_NAME, true);
+    Partition partition = newPartition(table, PARTITION_NAME);
+    addBaseFile(table, partition, 20L, 20);
+    addDeltaFile(table, partition, 21L, 22L, 2);
+    addDeltaFile(table, partition, 23L, 24L, 2);
+    burnThroughTransactions(DB_NAME, TABLE_NAME, 25);
+    doCompaction(DB_NAME, TABLE_NAME, PARTITION_NAME, CompactionType.MINOR);
+
+    long cleanerStart = System.currentTimeMillis();
+    startCleaner();
+    long durationUpperLimit = System.currentTimeMillis() - cleanerStart;
+    int cleanerDurationFromMetric = Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION)
+        .intValue();
+    Assert.assertTrue("Cleaner duration must be withing the limits",
+        (0 < cleanerDurationFromMetric) && (cleanerDurationFromMetric <= durationUpperLimit));
+  }
+
+  @Test
+  public void testInitiatorFailuresCountedCorrectly() throws Exception {
+    final String DEFAULT_DB = "default";
+    final String SUCCESS_TABLE_NAME = "success_table";
+    final String FAILING_TABLE_NAME = "failing_table";
+    final String PARTITION_NAME = "part";
+    final long EXPECTED_SUCCESS_COUNT = 10;
+    final long EXPECTED_FAIL_COUNT = 6;
+
+    ControlledFailingTxHandler.failedTableName = FAILING_TABLE_NAME;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL,
+        "org.apache.hadoop.hive.ql.txn.compactor.TestCompactionMetrics$ControlledFailingTxHandler");
+
+    Table failedTable = newTable(DEFAULT_DB, FAILING_TABLE_NAME, true);
+    Table succeededTable = newTable(DEFAULT_DB, SUCCESS_TABLE_NAME, true);
+
+    for (Table table : new Table[] { succeededTable, failedTable }) {
+      List<LockComponent> components = new ArrayList<>();
+
+      String tableName = table.getTableName();
+
+      long partitionCount = FAILING_TABLE_NAME.equals(tableName) ? EXPECTED_FAIL_COUNT : EXPECTED_SUCCESS_COUNT;
+      for (int i = 0; i < partitionCount; i++) {
+        String partitionName = PARTITION_NAME + i;
+        Partition p = newPartition(table, partitionName);
+
+        addBaseFile(table, p, 20L, 20);
+        addDeltaFile(table, p, 21L, 22L, 2);
+        addDeltaFile(table, p, 23L, 24L, 2);
+        addDeltaFile(table, p, 21L, 24L, 4);
+
+        LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, DEFAULT_DB);
+        comp.setTablename(tableName);
+        comp.setPartitionname("ds=" + partitionName);
+        comp.setOperationType(DataOperationType.UPDATE);
+        components.add(comp);
+      }
+
+      burnThroughTransactions(DEFAULT_DB, tableName, 25);
+
+      long txnid = openTxn();
+
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      LockResponse res = txnHandler.lock(req);
+      Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+      long writeid = allocateWriteId(DEFAULT_DB, tableName, txnid);
+      Assert.assertEquals(26, writeid);
+      txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 5);
+    startInitiator();
+
+    // Check if all the compaction have initiated
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(EXPECTED_FAIL_COUNT + EXPECTED_SUCCESS_COUNT, rsp.getCompactsSize());
+
+    Assert.assertEquals(EXPECTED_FAIL_COUNT,
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER)
+            .getCount());
+  }
+
+  @Test
+  public void testCleanerFailuresCountedCorrectly() throws Exception {
+    final String DEFAULT_DB = "default";
+    final String SUCCESS_TABLE_NAME = "success_table";
+    final String FAILING_TABLE_NAME = "failing_table";
+    final String PARTITION_NAME = "part";
+    final long EXPECTED_SUCCESS_COUNT = 10;
+    final long EXPECTED_FAIL_COUNT = 6;
+
+    ControlledFailingTxHandler.failedTableName = FAILING_TABLE_NAME;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL,
+        "org.apache.hadoop.hive.ql.txn.compactor.TestCompactionMetrics$ControlledFailingTxHandler");
+
+    Table failedTable = newTable(DEFAULT_DB, FAILING_TABLE_NAME, true);
+    Table succeededTable = newTable(DEFAULT_DB, SUCCESS_TABLE_NAME, true);
+
+    for (Table table : new Table[] { succeededTable, failedTable }) {
+
+      String tableName = table.getTableName();
+
+      long partitionCount = FAILING_TABLE_NAME.equals(tableName) ? EXPECTED_FAIL_COUNT : EXPECTED_SUCCESS_COUNT;
+      for (int i = 0; i < partitionCount; i++) {
+        Partition p = newPartition(table, PARTITION_NAME + i);
+
+        addBaseFile(table, p, 20L, 20);
+        addDeltaFile(table, p, 21L, 22L, 2);
+        addDeltaFile(table, p, 23L, 24L, 2);
+        addDeltaFile(table, p, 21L, 24L, 4);
+      }
+
+      burnThroughTransactions(DEFAULT_DB, tableName, 25);
+      for (int i = 0; i < partitionCount; i++) {
+        CompactionRequest rqst = new CompactionRequest(DEFAULT_DB, tableName, CompactionType.MINOR);
+        rqst.setPartitionname("ds=" + PARTITION_NAME + i);
+        compactInTxn(rqst);
+      }
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM, 5);
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(EXPECTED_FAIL_COUNT + EXPECTED_SUCCESS_COUNT, rsp.getCompactsSize());
+
+    Assert.assertEquals(EXPECTED_FAIL_COUNT,
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER)
+            .getCount());
+  }
+
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state) {
     return generateElement(id, db, table, partition, type, state, System.currentTimeMillis());
@@ -914,6 +1086,31 @@ public class TestCompactionMetrics  extends CompactorTest {
     rqst.setPartitionname("ds=" + partitionName);
     txnHandler.compact(rqst);
     startWorker();
+  }
+
+  public static class ControlledFailingTxHandler extends ThrowingTxnHandler {
+    public static volatile String failedTableName;
+
+    public ControlledFailingTxHandler() {
+    }
+
+    @Override
+    public GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst) throws MetaException {
+      if (rqst.getFullTableNames()
+          .stream()
+          .anyMatch(t -> t.endsWith("." + failedTableName))) {
+        throw new RuntimeException("TxnHandler fails during getValidWriteIds");
+      }
+      return super.getValidWriteIds(rqst);
+    }
+
+    @Override
+    public void markCleanerStart(CompactionInfo info) throws MetaException {
+      if (failedTableName.equals(info.tableName)) {
+        throw new RuntimeException("TxnHandler fails during MarkCleaned");
+      }
+      super.markCleanerStart(info);
+    }
   }
 
   @Override

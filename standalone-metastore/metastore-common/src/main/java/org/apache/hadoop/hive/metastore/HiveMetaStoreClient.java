@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -354,15 +355,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         if (uriResolverHook != null) {
           metastoreURIArray.addAll(uriResolverHook.resolveURI(tmpUri));
         } else {
-          metastoreURIArray.add(new URI(
-                  tmpUri.getScheme(),
-                  tmpUri.getUserInfo(),
-                  HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
-                  tmpUri.getPort(),
-                  tmpUri.getPath(),
-                  tmpUri.getQuery(),
-                  tmpUri.getFragment()
-          ));
+          metastoreURIArray.add(tmpUri);
         }
       }
       metastoreUris = new URI[metastoreURIArray.size()];
@@ -1759,10 +1752,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
+    
+    EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+      context = getEnvironmentContextWithIfPurgeSet();
     }
+    if (options.writeId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("writeId", options.writeId.toString());
+    }
+    if (options.txnId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", options.txnId.toString());
+    }
+    req.setEnvironmentContext(context);
+    
     return client.drop_partitions_req(req).getPartitions();
   }
 
@@ -1777,6 +1782,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws TException {
     dropTable(getDefaultCatalog(conf), dbname, name, deleteData, ignoreUnknownTab, ifPurge);
+  }
+
+  @Override
+  public void dropTable(Table tbl, boolean deleteData, boolean ignoreUnknownTbl, boolean ifPurge) throws TException {
+    EnvironmentContext context = null;
+    if (ifPurge) {
+      context = getEnvironmentContextWithIfPurgeSet();
+    }
+    if (tbl.isSetTxnId()) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", String.valueOf(tbl.getTxnId()));
+    }
+    String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
+
+    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData, 
+        ignoreUnknownTbl, context);
   }
 
   @Override
@@ -1796,7 +1817,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       envContext = new EnvironmentContext(warehouseOptions);
     }
     dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
-
   }
 
   /**
@@ -4958,6 +4978,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
     client.mark_failed(cr);
+  }
+
+  @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
+      throws MetaException, TException {
+    return client.update_compaction_metrics_data(struct);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
+    client.remove_compaction_metrics_data(request);
   }
 
   @Override

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Preconditions;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
@@ -55,10 +53,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -311,47 +307,6 @@ public final class ParseUtils {
 
       return false;
     }
-
-    public static boolean sameTree(ASTNode node, ASTNode otherNode) {
-      if (node == null && otherNode == null) {
-        return true;
-      }
-      if ((node == null && otherNode != null) ||
-              (node != null && otherNode == null)) {
-        return false;
-      }
-
-      Stack<Tree> stack = new Stack<Tree>();
-      stack.push(node);
-      Stack<Tree> otherStack = new Stack<Tree>();
-      otherStack.push(otherNode);
-
-      while (!stack.empty() && !otherStack.empty()) {
-        Tree p = stack.pop();
-        Tree otherP = otherStack.pop();
-
-        if (p.isNil() != otherP.isNil()) {
-          return false;
-        }
-        if (!p.isNil()) {
-          if (!p.toString().equals(otherP.toString())) {
-            return false;
-          }
-        }
-        if (p.getChildCount() != otherP.getChildCount()) {
-          return false;
-        }
-        for (int i = p.getChildCount()-1; i >= 0; i--) {
-          Tree t = p.getChild(i);
-          stack.push(t);
-          Tree otherT = otherP.getChild(i);
-          otherStack.push(otherT);
-        }
-      }
-
-      return stack.empty() && otherStack.empty();
-    }
-
 
     private static void handleSetColRefs(ASTNode tree, Context ctx) {
       CalcitePlanner.ASTSearcher astSearcher = new CalcitePlanner.ASTSearcher();

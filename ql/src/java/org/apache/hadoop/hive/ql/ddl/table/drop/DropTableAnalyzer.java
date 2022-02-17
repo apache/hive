@@ -26,12 +26,16 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 
 /**
  * Analyzer for table dropping commands.
@@ -51,7 +55,14 @@ public class DropTableAnalyzer extends BaseSemanticAnalyzer {
     Table table = getTable(tableName, throwException);
     if (table != null) {
       inputs.add(new ReadEntity(table));
-      outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
+
+      boolean tableWithSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+        && AcidUtils.isTransactionalTable(table)
+        && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
+
+      outputs.add(new WriteEntity(table, 
+        tableWithSuffix ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE));
     }
 
     boolean purge = (root.getFirstChildWithType(HiveParser.KW_PURGE) != null);

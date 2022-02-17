@@ -17,4 +17,7 @@ select * from t_n3 union select * from t_n3 order by 1, 2;
 select * from (select a, count(a) from t_n3 group by a)subq order by 2, 1;
 
 select * from (select a,b, count(*) from t_n3 group by a, b)subq order by 3, 2 desc, 1;
- 
+
+values(1+1, 2, 5.0, 'a'), (-12, 2, 5.0, 'a'), (100, 2, 5.0, 'a') order by 1 limit 2;
+
+select distinct a, b from t_n3 order by 2, 1;

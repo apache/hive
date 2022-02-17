@@ -443,9 +443,8 @@ public interface IMetaStoreClient {
    *           A thrift communication error occurred
    *
    */
-  void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab) throws MetaException, TException,
-      NoSuchObjectException;
+  void dropTable(String dbname, String tableName, boolean deleteData, boolean ignoreUnknownTab) 
+      throws MetaException, TException, NoSuchObjectException;
 
   /**
    * Drop the table.
@@ -469,8 +468,11 @@ public interface IMetaStoreClient {
    */
   @Deprecated // TODO: deprecate all methods without a catalog here; a single layer (e.g. Hive.java) should handle current-catalog
   void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
-      NoSuchObjectException;
+      boolean ignoreUnknownTab, boolean ifPurge) 
+      throws MetaException, TException, NoSuchObjectException;
+
+  void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) 
+      throws TException;
 
   /**
    * Drop the table.
@@ -4306,6 +4308,33 @@ public interface IMetaStoreClient {
    */
   void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
 
+  /**
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsDataStruct#getThreshold()}, it will be deleted.
+   * </p>
+   * @param struct the object that is used for the update, always non-null
+   * @return true, if update finished successfully
+   * @throws MetaException
+   * @throws TException
+   */
+  boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct) throws MetaException, TException;
+
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param request the request object, that contains the filter parameters, must be non-null
+   * @throws MetaException
+   * @throws TException
+   */
+  void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException;
   /**
    * Set the hadoop id for a compaction.
    * @param jobId mapreduce job id that will do the compaction.

@@ -130,13 +130,13 @@ class TableValidWriteIds
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->invalidWriteIds = array();
-                        $_size690 = 0;
-                        $_etype693 = 0;
-                        $xfer += $input->readListBegin($_etype693, $_size690);
-                        for ($_i694 = 0; $_i694 < $_size690; ++$_i694) {
-                            $elem695 = null;
-                            $xfer += $input->readI64($elem695);
-                            $this->invalidWriteIds []= $elem695;
+                        $_size689 = 0;
+                        $_etype692 = 0;
+                        $xfer += $input->readListBegin($_etype692, $_size689);
+                        for ($_i693 = 0; $_i693 < $_size689; ++$_i693) {
+                            $elem694 = null;
+                            $xfer += $input->readI64($elem694);
+                            $this->invalidWriteIds []= $elem694;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -187,8 +187,8 @@ class TableValidWriteIds
             }
             $xfer += $output->writeFieldBegin('invalidWriteIds', TType::LST, 3);
             $output->writeListBegin(TType::I64, count($this->invalidWriteIds));
-            foreach ($this->invalidWriteIds as $iter696) {
-                $xfer += $output->writeI64($iter696);
+            foreach ($this->invalidWriteIds as $iter695) {
+                $xfer += $output->writeI64($iter695);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -151,6 +151,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
@@ -164,6 +165,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
@@ -519,7 +521,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         corrScalarRexSQWithAgg,
         new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan),
         statsSource);
-    return HiveVolcanoPlanner.createPlanner(confContext);
+    RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
+    planner.addListener(new RuleEventLogger());
+    return planner;
   }
 
   @Override
@@ -1955,6 +1959,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
               .equals("DUMMY");
+      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       final RelNode calcitePreMVRewritingPlan = basePlan;
       final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
 
@@ -2020,6 +2025,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       planner.addRule(new HivePartitionPruneRule(conf));
 
       // Optimize plan
+      if (!ruleExclusionRegex.isEmpty()) {
+        planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
+      }
       planner.setRoot(basePlan);
       basePlan = planner.findBestExp();
       // Remove view-based rewriting rules from planner
@@ -2067,10 +2075,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private boolean isMaterializedViewRewritingByTextEnabled() {
       return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
+              !HiveMaterializedViewsRegistry.get().isEmpty() &&
               mvRebuildMode == MaterializationRebuildMode.NONE &&
               !rootQB.isMaterializedView() && !ctx.isLoadingMaterializedView() && !rootQB.isCTAS() &&
               rootQB.getIsQuery() &&
-              rootQB.hasTableDefined();
+              rootQB.hasTableDefined() &&
+              !forViewCreation;
     }
 
     private RelNode applyMaterializedViewRewritingByText(
@@ -2206,10 +2216,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 1. Run other optimizations that do not need stats
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-          ProjectRemoveRule.Config.DEFAULT.toRule(), HiveUnionMergeRule.INSTANCE,
+          ProjectRemoveRule.Config.DEFAULT.toRule(),
+          HiveUnionMergeRule.INSTANCE,
           new HiveUnionSimpleSelectsToInlineTableRule(dummyTableScan),
-          HiveAggregateProjectMergeRule.INSTANCE, HiveProjectMergeRule.INSTANCE_NO_FORCE,
-          HiveJoinCommuteRule.INSTANCE, HiveAggregateSortLimitRule.getInstance(conf));
+          HiveAggregateProjectMergeRule.INSTANCE,
+          HiveProjectMergeRule.INSTANCE_NO_FORCE,
+          HiveJoinCommuteRule.INSTANCE,
+          new HiveAggregateSortLimitRule(conf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
 
       // 2. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
@@ -2410,10 +2423,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
         List<HiveRelOptMaterialization> materializations) {
 
+      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
+
       // Create planner and copy context
       HepPlanner planner = new HepPlanner(program,
           basePlan.getCluster().getPlanner().getContext());
-
+      planner.addListener(new RuleEventLogger());
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(mdProvider);
       planner.registerMetadataProviders(list);
@@ -2435,6 +2450,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
+      if (!ruleExclusionRegex.isEmpty()) {
+        planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
+      }
       planner.setRoot(basePlan);
 
       return planner.findBestExp();
@@ -4853,7 +4871,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       inputRR.setCheckForAmbiguity(false);
-      return new Pair<RelNode, RowResolver>(outputRel, null);
+      return new Pair<>(outputRel, outputRR);
     }
 
     Integer genRexNodeRegex(String colRegex, String tabAlias, ASTNode sel,

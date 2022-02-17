@@ -3306,6 +3306,37 @@ module ThriftHiveMetastore
       return
     end
 
+    def update_compaction_metrics_data(data)
+      send_update_compaction_metrics_data(data)
+      return recv_update_compaction_metrics_data()
+    end
+
+    def send_update_compaction_metrics_data(data)
+      send_message('update_compaction_metrics_data', Update_compaction_metrics_data_args, :data => data)
+    end
+
+    def recv_update_compaction_metrics_data()
+      result = receive_message(Update_compaction_metrics_data_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_compaction_metrics_data failed: unknown result')
+    end
+
+    def remove_compaction_metrics_data(request)
+      send_remove_compaction_metrics_data(request)
+      recv_remove_compaction_metrics_data()
+    end
+
+    def send_remove_compaction_metrics_data(request)
+      send_message('remove_compaction_metrics_data', Remove_compaction_metrics_data_args, :request => request)
+    end
+
+    def recv_remove_compaction_metrics_data()
+      result = receive_message(Remove_compaction_metrics_data_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def set_hadoop_jobid(jobId, cq_id)
       send_set_hadoop_jobid(jobId, cq_id)
       recv_set_hadoop_jobid()
@@ -6921,6 +6952,28 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'mark_failed', seqid)
+    end
+
+    def process_update_compaction_metrics_data(seqid, iprot, oprot)
+      args = read_args(iprot, Update_compaction_metrics_data_args)
+      result = Update_compaction_metrics_data_result.new()
+      begin
+        result.success = @handler.update_compaction_metrics_data(args.data)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'update_compaction_metrics_data', seqid)
+    end
+
+    def process_remove_compaction_metrics_data(seqid, iprot, oprot)
+      args = read_args(iprot, Remove_compaction_metrics_data_args)
+      result = Remove_compaction_metrics_data_result.new()
+      begin
+        @handler.remove_compaction_metrics_data(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'remove_compaction_metrics_data', seqid)
     end
 
     def process_set_hadoop_jobid(seqid, iprot, oprot)
@@ -15058,6 +15111,72 @@ module ThriftHiveMetastore
   end
 
   class Mark_failed_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_compaction_metrics_data_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DATA = 1
+
+    FIELDS = {
+      DATA => {:type => ::Thrift::Types::STRUCT, :name => 'data', :class => ::CompactionMetricsDataStruct}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_compaction_metrics_data_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_compaction_metrics_data_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CompactionMetricsDataRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Remove_compaction_metrics_data_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 

@@ -346,6 +346,9 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
+  @RetrySemantics.SafeToRetry
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException;
+
   /**
    * Show list of current compactions.
    * @param rqst info on which compactions to show
@@ -390,8 +393,14 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException;
+  default void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, false);
+  }
+
+  @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
@@ -629,6 +638,16 @@ public interface TxnStore extends Configurable {
        * Releases all locks associated with this handle.
        */
       void releaseLocks();
+
+      /**
+       * Returns the value of the last update time persisted during the appropriate lock release call.
+       */
+      Long getLastUpdateTime();
+
+      /**
+       * Releases all locks associated with this handle, and persist the value of the last update time.
+       */
+      void releaseLocks(Long timestamp);
     }
   }
 
@@ -680,4 +699,60 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   MetricsInfo getMetricsInfo() throws MetaException;
+
+  /**
+   * Returns ACID metrics related info for a specific resource and metric type. If no record is found matching the
+   * filter criteria, null will be returned.
+   * @param dbName name of database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, can be null
+   * @param type type of the delta metric, non-null
+   * @return instance of delta metrics info, can be null
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param dbName name of the database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, non-null
+   * @param type type of the delta metric, non-null
+   * @throws MetaException
+   */
+  @RetrySemantics.SafeToRetry
+  void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Returns the top ACID metrics from each type {@link CompactionMetricsData.MetricType}
+   * @oaram limit number of returned records for each type
+   * @return list of metrics, always non-null
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)
+      throws MetaException;
+
+  /**
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsData#getThreshold()}, it will be deleted.
+   * </p>
+   * @param data the object that is used for the operation
+   * @return true, if update finished successfully
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException;
+
 }

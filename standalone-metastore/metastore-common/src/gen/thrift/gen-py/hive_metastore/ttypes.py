@@ -377,6 +377,7 @@ class TxnType(object):
     READ_ONLY = 2
     COMPACTION = 3
     MATER_VIEW_REBUILD = 4
+    SOFT_DELETE = 5
 
     _VALUES_TO_NAMES = {
         0: "DEFAULT",
@@ -384,6 +385,7 @@ class TxnType(object):
         2: "READ_ONLY",
         3: "COMPACTION",
         4: "MATER_VIEW_REBUILD",
+        5: "SOFT_DELETE",
     }
 
     _NAMES_TO_VALUES = {
@@ -392,6 +394,7 @@ class TxnType(object):
         "READ_ONLY": 2,
         "COMPACTION": 3,
         "MATER_VIEW_REBUILD": 4,
+        "SOFT_DELETE": 5,
     }
 
 
@@ -410,6 +413,24 @@ class GetTablesExtRequestFields(object):
         "ACCESS_TYPE": 1,
         "PROCESSOR_CAPABILITIES": 2,
         "ALL": 2147483647,
+    }
+
+
+class CompactionMetricsMetricType(object):
+    NUM_OBSOLETE_DELTAS = 0
+    NUM_DELTAS = 1
+    NUM_SMALL_DELTAS = 2
+
+    _VALUES_TO_NAMES = {
+        0: "NUM_OBSOLETE_DELTAS",
+        1: "NUM_DELTAS",
+        2: "NUM_SMALL_DELTAS",
+    }
+
+    _NAMES_TO_VALUES = {
+        "NUM_OBSOLETE_DELTAS": 0,
+        "NUM_DELTAS": 1,
+        "NUM_SMALL_DELTAS": 2,
     }
 
 
@@ -4609,105 +4630,6 @@ class StorageDescriptor(object):
         return not (self == other)
 
 
-class SourceTable(object):
-    """
-    Attributes:
-     - table
-     - insertedCount
-     - updatedCount
-     - deletedCount
-
-    """
-
-
-    def __init__(self, table=None, insertedCount=None, updatedCount=None, deletedCount=None,):
-        self.table = table
-        self.insertedCount = insertedCount
-        self.updatedCount = updatedCount
-        self.deletedCount = deletedCount
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.table = Table()
-                    self.table.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.I64:
-                    self.insertedCount = iprot.readI64()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.I64:
-                    self.updatedCount = iprot.readI64()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 4:
-                if ftype == TType.I64:
-                    self.deletedCount = iprot.readI64()
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('SourceTable')
-        if self.table is not None:
-            oprot.writeFieldBegin('table', TType.STRUCT, 1)
-            self.table.write(oprot)
-            oprot.writeFieldEnd()
-        if self.insertedCount is not None:
-            oprot.writeFieldBegin('insertedCount', TType.I64, 2)
-            oprot.writeI64(self.insertedCount)
-            oprot.writeFieldEnd()
-        if self.updatedCount is not None:
-            oprot.writeFieldBegin('updatedCount', TType.I64, 3)
-            oprot.writeI64(self.updatedCount)
-            oprot.writeFieldEnd()
-        if self.deletedCount is not None:
-            oprot.writeFieldBegin('deletedCount', TType.I64, 4)
-            oprot.writeI64(self.deletedCount)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        if self.table is None:
-            raise TProtocolException(message='Required field table is unset!')
-        if self.insertedCount is None:
-            raise TProtocolException(message='Required field insertedCount is unset!')
-        if self.updatedCount is None:
-            raise TProtocolException(message='Required field updatedCount is unset!')
-        if self.deletedCount is None:
-            raise TProtocolException(message='Required field deletedCount is unset!')
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
 class CreationMetadata(object):
     """
     Attributes:
@@ -4776,14 +4698,14 @@ class CreationMetadata(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 7:
-                if ftype == TType.SET:
-                    self.sourceTables = set()
-                    (_etype242, _size239) = iprot.readSetBegin()
+                if ftype == TType.LIST:
+                    self.sourceTables = []
+                    (_etype242, _size239) = iprot.readListBegin()
                     for _i243 in range(_size239):
                         _elem244 = SourceTable()
                         _elem244.read(iprot)
-                        self.sourceTables.add(_elem244)
-                    iprot.readSetEnd()
+                        self.sourceTables.append(_elem244)
+                    iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -4824,11 +4746,11 @@ class CreationMetadata(object):
             oprot.writeI64(self.materializationTime)
             oprot.writeFieldEnd()
         if self.sourceTables is not None:
-            oprot.writeFieldBegin('sourceTables', TType.SET, 7)
-            oprot.writeSetBegin(TType.STRUCT, len(self.sourceTables))
+            oprot.writeFieldBegin('sourceTables', TType.LIST, 7)
+            oprot.writeListBegin(TType.STRUCT, len(self.sourceTables))
             for iter246 in self.sourceTables:
                 iter246.write(oprot)
-            oprot.writeSetEnd()
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -6522,11 +6444,12 @@ class Table(object):
      - id
      - fileMetadata
      - dictionary
+     - txnId
 
     """
 
 
-    def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=False, rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=1, writeId=-1, isStatsCompliant=None, colStats=None, accessType=None, requiredReadCapabilities=None, requiredWriteCapabilities=None, id=None, fileMetadata=None, dictionary=None,):
+    def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=False, rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=1, writeId=-1, isStatsCompliant=None, colStats=None, accessType=None, requiredReadCapabilities=None, requiredWriteCapabilities=None, id=None, fileMetadata=None, dictionary=None, txnId=None,):
         self.tableName = tableName
         self.dbName = dbName
         self.owner = owner
@@ -6554,6 +6477,7 @@ class Table(object):
         self.id = id
         self.fileMetadata = fileMetadata
         self.dictionary = dictionary
+        self.txnId = txnId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6727,6 +6651,11 @@ class Table(object):
                     self.dictionary.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 28:
+                if ftype == TType.I64:
+                    self.txnId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6858,10 +6787,113 @@ class Table(object):
             oprot.writeFieldBegin('dictionary', TType.STRUCT, 27)
             self.dictionary.write(oprot)
             oprot.writeFieldEnd()
+        if self.txnId is not None:
+            oprot.writeFieldBegin('txnId', TType.I64, 28)
+            oprot.writeI64(self.txnId)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SourceTable(object):
+    """
+    Attributes:
+     - table
+     - insertedCount
+     - updatedCount
+     - deletedCount
+
+    """
+
+
+    def __init__(self, table=None, insertedCount=None, updatedCount=None, deletedCount=None,):
+        self.table = table
+        self.insertedCount = insertedCount
+        self.updatedCount = updatedCount
+        self.deletedCount = deletedCount
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.table = Table()
+                    self.table.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.insertedCount = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.updatedCount = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.deletedCount = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SourceTable')
+        if self.table is not None:
+            oprot.writeFieldBegin('table', TType.STRUCT, 1)
+            self.table.write(oprot)
+            oprot.writeFieldEnd()
+        if self.insertedCount is not None:
+            oprot.writeFieldBegin('insertedCount', TType.I64, 2)
+            oprot.writeI64(self.insertedCount)
+            oprot.writeFieldEnd()
+        if self.updatedCount is not None:
+            oprot.writeFieldBegin('updatedCount', TType.I64, 3)
+            oprot.writeI64(self.updatedCount)
+            oprot.writeFieldEnd()
+        if self.deletedCount is not None:
+            oprot.writeFieldBegin('deletedCount', TType.I64, 4)
+            oprot.writeI64(self.deletedCount)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.table is None:
+            raise TProtocolException(message='Required field table is unset!')
+        if self.insertedCount is None:
+            raise TProtocolException(message='Required field insertedCount is unset!')
+        if self.updatedCount is None:
+            raise TProtocolException(message='Required field updatedCount is unset!')
+        if self.deletedCount is None:
+            raise TProtocolException(message='Required field deletedCount is unset!')
         return
 
     def __repr__(self):
@@ -15624,6 +15656,295 @@ class OptionalCompactionInfoStruct(object):
         return not (self == other)
 
 
+class CompactionMetricsDataStruct(object):
+    """
+    Attributes:
+     - dbname
+     - tblname
+     - partitionname
+     - type
+     - metricvalue
+     - version
+     - threshold
+
+    """
+
+
+    def __init__(self, dbname=None, tblname=None, partitionname=None, type=None, metricvalue=None, version=None, threshold=None,):
+        self.dbname = dbname
+        self.tblname = tblname
+        self.partitionname = partitionname
+        self.type = type
+        self.metricvalue = metricvalue
+        self.version = version
+        self.threshold = threshold
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.dbname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.tblname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.partitionname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.type = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I32:
+                    self.metricvalue = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.version = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.threshold = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CompactionMetricsDataStruct')
+        if self.dbname is not None:
+            oprot.writeFieldBegin('dbname', TType.STRING, 1)
+            oprot.writeString(self.dbname.encode('utf-8') if sys.version_info[0] == 2 else self.dbname)
+            oprot.writeFieldEnd()
+        if self.tblname is not None:
+            oprot.writeFieldBegin('tblname', TType.STRING, 2)
+            oprot.writeString(self.tblname.encode('utf-8') if sys.version_info[0] == 2 else self.tblname)
+            oprot.writeFieldEnd()
+        if self.partitionname is not None:
+            oprot.writeFieldBegin('partitionname', TType.STRING, 3)
+            oprot.writeString(self.partitionname.encode('utf-8') if sys.version_info[0] == 2 else self.partitionname)
+            oprot.writeFieldEnd()
+        if self.type is not None:
+            oprot.writeFieldBegin('type', TType.I32, 4)
+            oprot.writeI32(self.type)
+            oprot.writeFieldEnd()
+        if self.metricvalue is not None:
+            oprot.writeFieldBegin('metricvalue', TType.I32, 5)
+            oprot.writeI32(self.metricvalue)
+            oprot.writeFieldEnd()
+        if self.version is not None:
+            oprot.writeFieldBegin('version', TType.I32, 6)
+            oprot.writeI32(self.version)
+            oprot.writeFieldEnd()
+        if self.threshold is not None:
+            oprot.writeFieldBegin('threshold', TType.I32, 7)
+            oprot.writeI32(self.threshold)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.dbname is None:
+            raise TProtocolException(message='Required field dbname is unset!')
+        if self.tblname is None:
+            raise TProtocolException(message='Required field tblname is unset!')
+        if self.type is None:
+            raise TProtocolException(message='Required field type is unset!')
+        if self.metricvalue is None:
+            raise TProtocolException(message='Required field metricvalue is unset!')
+        if self.version is None:
+            raise TProtocolException(message='Required field version is unset!')
+        if self.threshold is None:
+            raise TProtocolException(message='Required field threshold is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class CompactionMetricsDataResponse(object):
+    """
+    Attributes:
+     - data
+
+    """
+
+
+    def __init__(self, data=None,):
+        self.data = data
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.data = CompactionMetricsDataStruct()
+                    self.data.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CompactionMetricsDataResponse')
+        if self.data is not None:
+            oprot.writeFieldBegin('data', TType.STRUCT, 1)
+            self.data.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class CompactionMetricsDataRequest(object):
+    """
+    Attributes:
+     - dbName
+     - tblName
+     - partitionName
+     - type
+
+    """
+
+
+    def __init__(self, dbName=None, tblName=None, partitionName=None, type=None,):
+        self.dbName = dbName
+        self.tblName = tblName
+        self.partitionName = partitionName
+        self.type = type
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.tblName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.partitionName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.type = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CompactionMetricsDataRequest')
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 1)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.tblName is not None:
+            oprot.writeFieldBegin('tblName', TType.STRING, 2)
+            oprot.writeString(self.tblName.encode('utf-8') if sys.version_info[0] == 2 else self.tblName)
+            oprot.writeFieldEnd()
+        if self.partitionName is not None:
+            oprot.writeFieldBegin('partitionName', TType.STRING, 3)
+            oprot.writeString(self.partitionName.encode('utf-8') if sys.version_info[0] == 2 else self.partitionName)
+            oprot.writeFieldEnd()
+        if self.type is not None:
+            oprot.writeFieldBegin('type', TType.I32, 4)
+            oprot.writeI32(self.type)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.tblName is None:
+            raise TProtocolException(message='Required field tblName is unset!')
+        if self.type is None:
+            raise TProtocolException(message='Required field type is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class CompactionResponse(object):
     """
     Attributes:
@@ -16086,14 +16407,16 @@ class GetLatestCommittedCompactionInfoRequest(object):
      - dbname
      - tablename
      - partitionnames
+     - lastCompactionId
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionnames=None,):
+    def __init__(self, dbname=None, tablename=None, partitionnames=None, lastCompactionId=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionnames = partitionnames
+        self.lastCompactionId = lastCompactionId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16124,6 +16447,11 @@ class GetLatestCommittedCompactionInfoRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.lastCompactionId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16148,6 +16476,10 @@ class GetLatestCommittedCompactionInfoRequest(object):
             for iter773 in self.partitionnames:
                 oprot.writeString(iter773.encode('utf-8') if sys.version_info[0] == 2 else iter773)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.lastCompactionId is not None:
+            oprot.writeFieldBegin('lastCompactionId', TType.I64, 4)
+            oprot.writeI64(self.lastCompactionId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -29539,14 +29871,6 @@ StorageDescriptor.thrift_spec = (
     (11, TType.STRUCT, 'skewedInfo', [SkewedInfo, None], None, ),  # 11
     (12, TType.BOOL, 'storedAsSubDirectories', None, None, ),  # 12
 )
-all_structs.append(SourceTable)
-SourceTable.thrift_spec = (
-    None,  # 0
-    (1, TType.STRUCT, 'table', [Table, None], None, ),  # 1
-    (2, TType.I64, 'insertedCount', None, None, ),  # 2
-    (3, TType.I64, 'updatedCount', None, None, ),  # 3
-    (4, TType.I64, 'deletedCount', None, None, ),  # 4
-)
 all_structs.append(CreationMetadata)
 CreationMetadata.thrift_spec = (
     None,  # 0
@@ -29556,7 +29880,7 @@ CreationMetadata.thrift_spec = (
     (4, TType.SET, 'tablesUsed', (TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.STRING, 'validTxnList', 'UTF8', None, ),  # 5
     (6, TType.I64, 'materializationTime', None, None, ),  # 6
-    (7, TType.SET, 'sourceTables', (TType.STRUCT, [SourceTable, None], False), None, ),  # 7
+    (7, TType.LIST, 'sourceTables', (TType.STRUCT, [SourceTable, None], False), None, ),  # 7
 )
 all_structs.append(BooleanColumnStatsData)
 BooleanColumnStatsData.thrift_spec = (
@@ -29724,6 +30048,15 @@ Table.thrift_spec = (
     (25, TType.I64, 'id', None, None, ),  # 25
     (26, TType.STRUCT, 'fileMetadata', [FileMetadata, None], None, ),  # 26
     (27, TType.STRUCT, 'dictionary', [ObjectDictionary, None], None, ),  # 27
+    (28, TType.I64, 'txnId', None, None, ),  # 28
+)
+all_structs.append(SourceTable)
+SourceTable.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'table', [Table, None], None, ),  # 1
+    (2, TType.I64, 'insertedCount', None, None, ),  # 2
+    (3, TType.I64, 'updatedCount', None, None, ),  # 3
+    (4, TType.I64, 'deletedCount', None, None, ),  # 4
 )
 all_structs.append(Partition)
 Partition.thrift_spec = (
@@ -30425,6 +30758,30 @@ OptionalCompactionInfoStruct.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'ci', [CompactionInfoStruct, None], None, ),  # 1
 )
+all_structs.append(CompactionMetricsDataStruct)
+CompactionMetricsDataStruct.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'dbname', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'tblname', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'partitionname', 'UTF8', None, ),  # 3
+    (4, TType.I32, 'type', None, None, ),  # 4
+    (5, TType.I32, 'metricvalue', None, None, ),  # 5
+    (6, TType.I32, 'version', None, None, ),  # 6
+    (7, TType.I32, 'threshold', None, None, ),  # 7
+)
+all_structs.append(CompactionMetricsDataResponse)
+CompactionMetricsDataResponse.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'data', [CompactionMetricsDataStruct, None], None, ),  # 1
+)
+all_structs.append(CompactionMetricsDataRequest)
+CompactionMetricsDataRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'dbName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'tblName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'partitionName', 'UTF8', None, ),  # 3
+    (4, TType.I32, 'type', None, None, ),  # 4
+)
 all_structs.append(CompactionResponse)
 CompactionResponse.thrift_spec = (
     None,  # 0
@@ -30469,6 +30826,7 @@ GetLatestCommittedCompactionInfoRequest.thrift_spec = (
     (1, TType.STRING, 'dbname', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
     (3, TType.LIST, 'partitionnames', (TType.STRING, 'UTF8', False), None, ),  # 3
+    (4, TType.I64, 'lastCompactionId', None, None, ),  # 4
 )
 all_structs.append(GetLatestCommittedCompactionInfoResponse)
 GetLatestCommittedCompactionInfoResponse.thrift_spec = (

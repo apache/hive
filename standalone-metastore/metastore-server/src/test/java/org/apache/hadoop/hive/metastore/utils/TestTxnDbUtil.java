@@ -229,6 +229,7 @@ public final class TestTxnDbUtil {
       success &= truncateTable(conn, conf, stmt, "REPL_TXN_MAP");
       success &= truncateTable(conn, conf, stmt, "MATERIALIZATION_REBUILD_LOCKS");
       success &= truncateTable(conn, conf, stmt, "MIN_HISTORY_LEVEL");
+      success &= truncateTable(conn, conf, stmt, "COMPACTION_METRICS_CACHE");
       try {
         String dbProduct = conn.getMetaData().getDatabaseProductName();
         DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);

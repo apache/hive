@@ -169,7 +169,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
             RexNode newCondition = RelOptUtil.pushPastProject(ce, origproject);
             if (HiveCalciteUtil.isDeterministicFuncWithSingleInputRef(newCondition,
                 commonPartitionKeys)) {
-              newPartKeyFilConds.add(newCondition);
+              newPartKeyFilConds.add(ce);
             } else {
               unpushedFilConds.add(ce);
             }
@@ -200,7 +200,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   private static RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
       RelDataTypeFactory typeFactory, RelBuilder relBuilder) {
 
-    // convert the filter to one that references the child of the project
+    // convert the filter to one that references the child of the project.
     RexNode newPushedCondition = RelOptUtil.pushPastProject(filterCondToPushBelowProj, oldProj);
 
     // Remove cast of BOOLEAN NOT NULL to BOOLEAN or vice versa. Filter accepts
@@ -339,6 +339,11 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       final RexNode filterCondition = simplify.simplify(filter.getCondition());
 
       final Set<Integer> inputRefs = HiveCalciteUtil.getInputRefs(newCondition);
+      // if the new IS NOT NULL has no input ref, there is no redundancy here, bail out
+      if (inputRefs.isEmpty()) {
+        return;
+      }
+
       final RexInputRef rexInputRef =
           rexBuilder.makeInputRef(filter.getInput(), inputRefs.iterator().next());
       final RexNode baseCondition = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexInputRef);
