@@ -533,7 +533,7 @@ STAGE PLANS:
                 Statistics: Num rows: 80000000 Data size: 58560000000 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
                 Filter Operator
-                  predicate: CASE WHEN (_col5 is not null) THEN (CASE WHEN (_col10) THEN (((_col7 / _col9) > (_col3 / _col5))) ELSE (false) END) ELSE (false) END (type: boolean)
+                  predicate: if(_col5 is not null, if(_col10, ((_col7 / _col9) > (_col3 / _col5)), false), false) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 29280000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +++
