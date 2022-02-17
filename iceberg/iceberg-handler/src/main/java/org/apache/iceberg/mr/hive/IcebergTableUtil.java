@@ -72,24 +72,6 @@ public class IcebergTableUtil {
   }
 
   /**
-   * Constructs the table properties needed for the Iceberg table loading by retrieving the information from the
-   * hmsTable. It then calls {@link IcebergTableUtil#getTable(Configuration, Properties)} with these properties.
-   * @param configuration a Hadoop configuration
-   * @param hmsTable the HMS table
-   * @return the Iceberg table
-   */
-  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    Properties properties = new Properties();
-    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
-    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
-    if (hmsTable.getParameters().containsKey(InputFormatConfig.CATALOG_NAME)) {
-      properties.setProperty(
-          InputFormatConfig.CATALOG_NAME, hmsTable.getParameters().get(InputFormatConfig.CATALOG_NAME));
-    }
-    return getTable(configuration, properties);
-  }
-
-  /**
    * Create {@link PartitionSpec} based on the partition information stored in
    * {@link PartitionTransformSpec}.
    * @param configuration a Hadoop configuration
