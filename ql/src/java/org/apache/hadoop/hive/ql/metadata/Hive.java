@@ -31,6 +31,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -3070,8 +3071,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<Callable<Partition>> tasks = Lists.newLinkedList();
 
     boolean fetchPartitionInfo = true;
-    final boolean scanPartitionsByName = conf.getBoolean(
-        ConfVars.HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS.varname, false);
+    final boolean scanPartitionsByName =
+        HiveConf.getBoolVar(conf, HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS);
 
     // ACID table can be a bigger change. Filed HIVE-25817 for an appropriate fix for ACID tables
     // For now, for ACID tables, skip getting all partitions for a table from HMS (since that
@@ -3087,7 +3088,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       List<Partition> partitions = Hive.get().getPartitionsByNames(tbl, partitionNames);
       for(Partition partition : partitions) {
-        LOG.info("HMS partition spec: {}", partition.getSpec());
+        LOG.debug("HMS partition spec: {}", partition.getSpec());
         partitionDetailsMap.entrySet().parallelStream()
             .filter(entry -> entry.getValue().fullSpec.equals(partition.getSpec()))
             .findAny().ifPresent(entry -> {
