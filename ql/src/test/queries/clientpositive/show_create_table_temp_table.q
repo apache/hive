@@ -6,4 +6,5 @@ drop table tmp1;
 create temporary table tmpdb.tmp_not_null_tbl (a int NOT NULL);
 show create table tmpdb.tmp_not_null_tbl;
 drop table tmpdb.tmp_not_null_tbl;
+
 drop database tmpdb;
