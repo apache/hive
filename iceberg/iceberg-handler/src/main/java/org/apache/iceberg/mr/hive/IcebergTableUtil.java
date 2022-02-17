@@ -21,14 +21,11 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -146,51 +143,39 @@ public class IcebergTableUtil {
       return;
     }
 
-    List<String> newPartitionNames =
-        newPartitionSpec.fields().stream().map(PartitionField::name).collect(Collectors.toList());
-    List<String> currentPartitionNames = table.spec().fields().stream().map(PartitionField::name)
-        .collect(Collectors.toList());
-    List<String> intersectingPartitionNames =
-        currentPartitionNames.stream().filter(newPartitionNames::contains).collect(Collectors.toList());
+    // delete every field from the old partition spec
+    UpdatePartitionSpec updatePartitionSpec = table.updateSpec().caseSensitive(false);
+    table.spec().fields().forEach(field -> updatePartitionSpec.removeField(field.name()));
 
-    // delete those partitions which are not present among the new partion spec
-    UpdatePartitionSpec updatePartitionSpec = table.updateSpec();
-    currentPartitionNames.stream().filter(p -> !intersectingPartitionNames.contains(p))
-        .forEach(updatePartitionSpec::removeField);
-    updatePartitionSpec.apply();
-
-    // add new partitions which are not yet present
     List<PartitionTransformSpec> partitionTransformSpecList = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
         .map(o -> (List<PartitionTransformSpec>) o).orElseGet(() -> null);
-    IntStream.range(0, partitionTransformSpecList.size())
-        .filter(i -> !intersectingPartitionNames.contains(newPartitionSpec.fields().get(i).name()))
-        .forEach(i -> {
-          PartitionTransformSpec spec = partitionTransformSpecList.get(i);
-          switch (spec.getTransformType()) {
-            case IDENTITY:
-              updatePartitionSpec.addField(spec.getColumnName());
-              break;
-            case YEAR:
-              updatePartitionSpec.addField(Expressions.year(spec.getColumnName()));
-              break;
-            case MONTH:
-              updatePartitionSpec.addField(Expressions.month(spec.getColumnName()));
-              break;
-            case DAY:
-              updatePartitionSpec.addField(Expressions.day(spec.getColumnName()));
-              break;
-            case HOUR:
-              updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
-              break;
-            case TRUNCATE:
-              updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()));
-              break;
-            case BUCKET:
-              updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()));
-              break;
-          }
-        });
+
+    partitionTransformSpecList.forEach(spec -> {
+      switch (spec.getTransformType()) {
+        case IDENTITY:
+          updatePartitionSpec.addField(spec.getColumnName());
+          break;
+        case YEAR:
+          updatePartitionSpec.addField(Expressions.year(spec.getColumnName()));
+          break;
+        case MONTH:
+          updatePartitionSpec.addField(Expressions.month(spec.getColumnName()));
+          break;
+        case DAY:
+          updatePartitionSpec.addField(Expressions.day(spec.getColumnName()));
+          break;
+        case HOUR:
+          updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
+          break;
+        case TRUNCATE:
+          updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()));
+          break;
+        case BUCKET:
+          updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()));
+          break;
+      }
+    });
 
     updatePartitionSpec.commit();
   }
