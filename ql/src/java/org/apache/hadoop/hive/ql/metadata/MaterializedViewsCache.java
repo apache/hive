@@ -230,8 +230,7 @@ public class MaterializedViewsCache {
     }
 
     private boolean equals(ASTNode astNode1, ASTNode astNode2) {
-      if (!(astNode1.getName().equals(astNode2.getName()) &&
-              astNode1.getType() == astNode2.getType() &&
+      if (!(astNode1.getType() == astNode2.getType() &&
               astNode1.getText().equals(astNode2.getText()) &&
               astNode1.getChildCount() == astNode2.getChildCount())) {
         return false;
@@ -252,7 +251,7 @@ public class MaterializedViewsCache {
     }
 
     private int hashcode(ASTNode node) {
-      int result = Objects.hash(node.getName(), node.getType(), node.getText(), node.getChildCount());
+      int result = Objects.hash(node.getType(), node.getText());
 
       for (int i = 0; i < node.getChildCount(); ++i) {
         result = 31 * result + hashcode((ASTNode) node.getChild(i));
