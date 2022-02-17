@@ -94,7 +94,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
       //This is required otherwise correct work object on repl load wont be created.
       writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.REPL_SCOPE.toString(),
           "all");
-      writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+      writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
           additionalPropertiesProvider.getCurrentReplicationState());
       writer.jsonGenerator
           .writeStringField(FIELD_NAME, serializer.toString(copyObj));

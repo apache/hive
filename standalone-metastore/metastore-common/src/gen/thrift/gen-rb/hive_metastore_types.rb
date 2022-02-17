@@ -326,8 +326,6 @@ class SkewedInfo; end
 
 class StorageDescriptor; end
 
-class SourceTable; end
-
 class CreationMetadata; end
 
 class BooleanColumnStatsData; end
@@ -365,6 +363,8 @@ class FileMetadata; end
 class ObjectDictionary; end
 
 class Table; end
+
+class SourceTable; end
 
 class Partition; end
 
@@ -1829,32 +1829,6 @@ class StorageDescriptor
   ::Thrift::Struct.generate_accessors self
 end
 
-class SourceTable
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  TABLE = 1
-  INSERTEDCOUNT = 2
-  UPDATEDCOUNT = 3
-  DELETEDCOUNT = 4
-
-  FIELDS = {
-    TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
-    INSERTEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertedCount'},
-    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
-    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertedCount is unset!') unless @insertedCount
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class CreationMetadata
   include ::Thrift::Struct, ::Thrift::Struct_Union
   CATNAME = 1
@@ -1872,7 +1846,7 @@ class CreationMetadata
     TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
     VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
     MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true},
-    SOURCETABLES => {:type => ::Thrift::Types::SET, :name => 'sourceTables', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SourceTable}, :optional => true}
+    SOURCETABLES => {:type => ::Thrift::Types::LIST, :name => 'sourceTables', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SourceTable}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2395,6 +2369,32 @@ class Table
     unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SourceTable
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLE = 1
+  INSERTEDCOUNT = 2
+  UPDATEDCOUNT = 3
+  DELETEDCOUNT = 4
+
+  FIELDS = {
+    TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
+    INSERTEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertedCount'},
+    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
+    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertedCount is unset!') unless @insertedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -4547,6 +4547,7 @@ class CompactionMetricsDataStruct
   TYPE = 4
   METRICVALUE = 5
   VERSION = 6
+  THRESHOLD = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4554,7 +4555,8 @@ class CompactionMetricsDataStruct
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType},
     METRICVALUE => {:type => ::Thrift::Types::I32, :name => 'metricvalue'},
-    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'}
+    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'},
+    THRESHOLD => {:type => ::Thrift::Types::I32, :name => 'threshold'}
   }
 
   def struct_fields; FIELDS; end
@@ -4565,6 +4567,7 @@ class CompactionMetricsDataStruct
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metricvalue is unset!') unless @metricvalue
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field version is unset!') unless @version
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field threshold is unset!') unless @threshold
     unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
@@ -4599,7 +4602,7 @@ class CompactionMetricsDataRequest
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionName'},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionName', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType}
   }
 
@@ -4608,7 +4611,6 @@ class CompactionMetricsDataRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionName is unset!') unless @partitionName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
     unless @type.nil? || ::CompactionMetricsMetricType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')

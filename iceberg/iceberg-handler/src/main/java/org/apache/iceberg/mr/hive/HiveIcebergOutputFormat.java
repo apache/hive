@@ -37,7 +37,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
-import org.apache.iceberg.data.GenericAppenderFactory;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFileFactory;
@@ -84,7 +83,9 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .operationId(operationId)
         .build();
     String tableName = jc.get(Catalogs.NAME);
+    HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+        null, fileFormat, null, null, null, null);
     return new HiveIcebergRecordWriter(schema, spec, fileFormat,
-        new GenericAppenderFactory(schema, spec), outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
+        hfwf, outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
   }
 }

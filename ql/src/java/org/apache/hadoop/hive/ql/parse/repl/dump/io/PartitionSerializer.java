@@ -57,7 +57,7 @@ public class PartitionSerializer implements JsonWriter.Serializer {
         if (additionalPropertiesProvider.getReplSpecType()
                 != ReplicationSpec.Type.INCREMENTAL_DUMP) {
           partition.putToParameters(
-                  ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                  ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
                   additionalPropertiesProvider.getCurrentReplicationState());
         }
       }

@@ -8124,6 +8124,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest)) {
         isInsertOverwrite = true;
       }
+
+      // Some non-native tables might be partitioned without partition spec information being present in the Table object
+      HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
+      if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
+        List<PartitionTransformSpec> nonNativePartSpecs = storageHandler.getPartitionTransformSpec(dest_tab);
+        if (dpCtx == null && nonNativePartSpecs != null && !nonNativePartSpecs.isEmpty()) {
+          verifyDynamicPartitionEnabled(conf, qb, dest);
+          Map<String, String> partSpec = new LinkedHashMap<>();
+          nonNativePartSpecs.forEach(ps -> partSpec.put(ps.getColumnName(), null));
+          dpCtx = new DynamicPartitionCtx(partSpec, conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+        }
+      }
+
       break;
     case QBMetaData.DEST_LOCAL_FILE:
     case QBMetaData.DEST_DFS_FILE:
@@ -8357,14 +8371,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbm.setDPCtx(dest, dpCtx);
     }
 
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
-          ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
-    }
+    verifyDynamicPartitionEnabled(conf, qb, dest);
+
     if ((dest_tab.getNumBuckets() > 0)) {
       dpCtx.setNumBuckets(dest_tab.getNumBuckets());
     }
     return dpCtx;
+  }
+
+  private static void verifyDynamicPartitionEnabled(HiveConf conf, QB qb, String dest) throws SemanticException {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
+      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
+          ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
+    }
   }
 
   private void createPreInsertDesc(Table table, boolean overwrite) {

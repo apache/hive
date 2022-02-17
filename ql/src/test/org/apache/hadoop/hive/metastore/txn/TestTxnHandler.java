@@ -1915,7 +1915,7 @@ public class TestTxnHandler {
     CreationMetadata creationMetadata = new CreationMetadata();
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");
-    creationMetadata.setSourceTables(new HashSet<SourceTable>() {{ add(sourceTable); }});
+    creationMetadata.setSourceTables(Collections.singletonList(sourceTable));
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
 
     Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);

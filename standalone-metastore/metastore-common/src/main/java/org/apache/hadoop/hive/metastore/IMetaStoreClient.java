@@ -4309,8 +4309,17 @@ public interface IMetaStoreClient {
   void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
 
   /**
-   * Update or create one record in the compaction metrics cache. This operation uses an optimistic locking mechanism.
-   * If update fails, due to version mismatch, the operation won't be retried.
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsDataStruct#getThreshold()}, it will be deleted.
+   * </p>
    * @param struct the object that is used for the update, always non-null
    * @return true, if update finished successfully
    * @throws MetaException

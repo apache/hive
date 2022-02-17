@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -161,7 +162,8 @@ public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testMonthTransform() throws IOException {
-    Assume.assumeTrue("ORC/TIMESTAMP_INSTANT is not a supported vectorized type for Hive", isVectorized);
+    Assume.assumeTrue("ORC/TIMESTAMP_INSTANT is not a supported vectorized type for Hive",
+        isVectorized && fileFormat == FileFormat.ORC);
     Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.TimestampType.withZone()));

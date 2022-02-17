@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
@@ -48,7 +50,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -80,6 +81,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
@@ -112,15 +114,13 @@ public class Cleaner extends MetaStoreCompactorThread {
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
             COMPACTOR_CLEANER_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON) &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON);
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
 
   @Override
   public void run() {
     LOG.info("Starting Cleaner thread");
     try {
-      Counter failuresCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
@@ -129,6 +129,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         if (delayedCleanupEnabled) {
           retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
         }
+
         // Make sure nothing escapes this run method and kills the metastore at large,
         // so wrap it in a big catch Throwable statement.
         try {
@@ -147,7 +148,8 @@ public class Cleaner extends MetaStoreCompactorThread {
           List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
           if (!readyToClean.isEmpty()) {
             long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
-            final long cleanerWaterMark = minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
+            final long cleanerWaterMark =
+                minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
 
             LOG.info("Cleaning based on min open txn id: " + cleanerWaterMark);
             List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
@@ -158,24 +160,29 @@ public class Cleaner extends MetaStoreCompactorThread {
             // when min_history_level is finally dropped, than every HMS will commit compaction the new way
             // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
             for (CompactionInfo compactionInfo : readyToClean) {
-              cleanerList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(
-                  () -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)), cleanerExecutor));
+              String tableName = compactionInfo.getFullTableName();
+              String partition = compactionInfo.getFullPartitionName();
+              CompletableFuture<Void> asyncJob =
+                  CompletableFuture.runAsync(
+                          ThrowingRunnable.unchecked(() -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)),
+                          cleanerExecutor)
+                      .exceptionally(t -> {
+                        LOG.error("Error during the cleaning the table {} / partition {}", tableName, partition, t);
+                        return null;
+                      });
+              cleanerList.add(asyncJob);
             }
             CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
           }
         } catch (Throwable t) {
-          // the lock timeout on AUX lock, should be ignored.
-          if (metricsEnabled && handle != null) {
-            failuresCounter.inc();
-          }
           LOG.error("Caught an exception in the main loop of compactor cleaner, " +
-                  StringUtils.stringifyException(t));
+              StringUtils.stringifyException(t));
         } finally {
           if (handle != null) {
             handle.releaseLocks();
           }
           if (metricsEnabled) {
-            updateCycleDurationMetric(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION, startedAt);
+            updateCycleDurationMetric(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt);
           }
           stopCycleUpdater();
         }
@@ -193,12 +200,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (cleanerExecutor != null) {
         this.cleanerExecutor.shutdownNow();
       }
-    }
-  }
-
-  private void updateDeltaFilesMetrics(String dbName, String tableName, String partName, List<Path> obsoleteDirs) {
-    if (metricsEnabled) {
-      DeltaFilesMetricReporter.updateMetricsFromCleaner(dbName, tableName, partName, obsoleteDirs, conf, txnHandler);
     }
   }
 
@@ -287,6 +288,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
           StringUtils.stringifyException(e));
       ci.errorMessage = e.getMessage();
+      if (metricsEnabled) {
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
+      }
       txnHandler.markFailed(ci);
     } finally {
       if (metricsEnabled) {
@@ -451,7 +455,8 @@ public class Cleaner extends MetaStoreCompactorThread {
         .map(Path::getName).collect(Collectors.joining(",")));
     boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
     if (dir.getObsolete().size() > 0) {
-      updateDeltaFilesMetrics(ci.dbname, ci.tableName, ci.partName, dir.getObsolete());
+      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
+          txnHandler);
     }
     return success;
   }

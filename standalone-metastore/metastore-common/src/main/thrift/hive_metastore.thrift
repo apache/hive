@@ -457,13 +457,6 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
-struct SourceTable {
-    1: required Table table,
-    2: required i64 insertedCount,
-    3: required i64 updatedCount,
-    4: required i64 deletedCount
-}
-
 struct CreationMetadata {
     1: required string catName,
     2: required string dbName,
@@ -471,7 +464,7 @@ struct CreationMetadata {
     4: required set<string> tablesUsed,
     5: optional string validTxnList,
     6: optional i64 materializationTime,
-    7: optional set<SourceTable> sourceTables
+    7: optional list<SourceTable> sourceTables
 }
 
 // column statistics
@@ -641,6 +634,13 @@ struct Table {
 					  // for certain execution engines
   27: optional ObjectDictionary dictionary,
   28: optional i64 txnId,              // txnId associated with the table creation
+}
+
+struct SourceTable {
+  1: required Table table,
+  2: required i64 insertedCount,
+  3: required i64 updatedCount,
+  4: required i64 deletedCount
 }
 
 struct Partition {
@@ -1316,6 +1316,7 @@ struct CompactionMetricsDataStruct {
     4: required CompactionMetricsMetricType type
     5: required i32 metricvalue
     6: required i32 version
+    7: required i32 threshold
 }
 
 struct CompactionMetricsDataResponse {
@@ -1325,7 +1326,7 @@ struct CompactionMetricsDataResponse {
 struct CompactionMetricsDataRequest {
     1: required string dbName,
     2: required string tblName,
-    3: required string partitionName
+    3: optional string partitionName
     4: required CompactionMetricsMetricType type
 }
 

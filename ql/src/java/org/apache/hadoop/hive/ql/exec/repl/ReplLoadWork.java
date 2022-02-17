@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -58,7 +59,10 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.BOOTSTRAP_TABLES_LIST;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getBootstrapTableList;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -87,7 +91,9 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private String scheduledQueryName;
   private String executionId;
   private boolean shouldFailover;
-  public boolean isFailover;
+  public boolean isFirstFailover;
+  public boolean isSecondFailover;
+  public List<String> tablesToBootstrap = new ArrayList<>();
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -136,8 +142,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       FileSystem fs = failoverReadyMarker.getFileSystem(hiveConf);
       shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
               && fs.exists(failoverReadyMarker);
-      isFailover =
-          checkFileExists(new Path(dumpDirectory).getParent(), hiveConf, OptimisedBootstrapUtils.EVENT_ACK_FILE);
+      Path dumpDirParent = new Path(dumpDirectory).getParent();
+      isFirstFailover = checkFileExists(dumpDirParent, hiveConf, EVENT_ACK_FILE);
+      isSecondFailover =
+          !isFirstFailover && checkFileExists(dumpDirParent, hiveConf, BOOTSTRAP_TABLES_LIST);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
           replStatsTracker, shouldFailover);
@@ -148,6 +156,12 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
        */
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       if (fs.exists(incBootstrapDir)) {
+        if (isSecondFailover) {
+          String[] tableList = getBootstrapTableList(dumpDirParent, hiveConf);
+          tablesToBootstrap = Arrays.asList(tableList);
+          LOG.info("Optimised bootstrap for database {} with load with bootstrap table list as {}", dbNameToLoadIn,
+              tablesToBootstrap);
+        }
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
           hiveConf, metricCollector);

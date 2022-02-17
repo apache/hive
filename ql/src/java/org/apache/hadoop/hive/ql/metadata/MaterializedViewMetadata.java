@@ -22,10 +22,13 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 
 public class MaterializedViewMetadata {
@@ -39,7 +42,7 @@ public class MaterializedViewMetadata {
           String catalogName, String dbName, String mvName, Set<SourceTable> sourceTables, String validTxnList) {
     this.creationMetadata = new CreationMetadata(catalogName, dbName, mvName, toFullTableNames(sourceTables));
     this.creationMetadata.setValidTxnList(validTxnList);
-    this.creationMetadata.setSourceTables(unmodifiableSet(sourceTables));
+    this.creationMetadata.setSourceTables(unmodifiableList(new ArrayList<>(sourceTables)));
   }
 
   public Set<String> getSourceTableFullNames() {
@@ -50,7 +53,7 @@ public class MaterializedViewMetadata {
     return toFullTableNames(creationMetadata.getSourceTables());
   }
 
-  private Set<String> toFullTableNames(Set<SourceTable> sourceTables) {
+  private Set<String> toFullTableNames(Collection<SourceTable> sourceTables) {
     return unmodifiableSet(sourceTables.stream()
             .map(sourceTable -> TableName.getDbTable(
                     sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
@@ -70,12 +73,12 @@ public class MaterializedViewMetadata {
             .collect(Collectors.toSet()));
   }
 
-  public Set<SourceTable> getSourceTables() {
+  public Collection<SourceTable> getSourceTables() {
     if (!creationMetadata.isSetSourceTables()) {
       return emptySet();
     }
 
-    return unmodifiableSet(creationMetadata.getSourceTables());
+    return unmodifiableList(creationMetadata.getSourceTables());
   }
 
   public String getValidTxnList() {

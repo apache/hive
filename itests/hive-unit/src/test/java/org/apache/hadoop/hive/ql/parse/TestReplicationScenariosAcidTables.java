@@ -934,13 +934,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assert currentEventId == lastEventId + 1;
 
     primary.run("ALTER DATABASE " + primaryDbName +
-            " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
-    lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    primary.dumpFailure(primaryDbName);
-    currentEventId = primary.getCurrentNotificationEventId().getEventId();
-    assert lastEventId == currentEventId;
-
-    primary.run("ALTER DATABASE " + primaryDbName +
             " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
     primary.dump(primaryDbName);
     replica.run("DROP DATABASE " + replicatedDbName);

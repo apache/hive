@@ -1806,13 +1806,19 @@ public class AcidUtils {
       // keep track for error reporting
       directory.setOldestBase(parsedBase);
     }
+    boolean isCompactedBase = isCompactedBase(parsedBase, directory.getFs(), dirSnapshot);
     // Handle aborted IOW base.
-    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase(parsedBase, directory.getFs(), dirSnapshot)) {
+    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase) {
       directory.getAbortedDirectories().add(baseDir);
       directory.getAbortedWriteIds().add(parsedBase.writeId);
       return;
     }
-    if (directory.getBase() == null || directory.getBase().getWriteId() < writeId) {
+    if (directory.getBase() == null || directory.getBase().getWriteId() < writeId
+      // If there are two competing versions of a particular write-id, one from the compactor and another from IOW, 
+      // always pick the compactor one once it is committed.
+      || directory.getBase().getWriteId() == writeId && 
+          isCompactedBase && validTxnList.isTxnValid(parsedBase.getVisibilityTxnId())) {
+      
       if (isValidBase(parsedBase, writeIdList, directory.getFs(), dirSnapshot)) {
         List<HdfsFileStatusWithId> files = null;
         if (dirSnapshot != null) {

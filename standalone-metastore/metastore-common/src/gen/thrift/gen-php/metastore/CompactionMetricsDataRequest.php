@@ -33,7 +33,7 @@ class CompactionMetricsDataRequest
         ),
         3 => array(
             'var' => 'partitionName',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         4 => array(

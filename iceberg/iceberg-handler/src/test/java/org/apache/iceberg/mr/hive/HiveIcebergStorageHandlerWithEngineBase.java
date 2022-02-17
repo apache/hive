@@ -111,8 +111,9 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
         // include Tez tests only for Java 8
         if (javaVersion.equals("1.8")) {
           testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
-          // test for vectorization=ON in case of ORC format and Tez engine
-          if (fileFormat == FileFormat.ORC && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
+          // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
+          if ((fileFormat == FileFormat.ORC || fileFormat == FileFormat.PARQUET) &&
+               "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
             testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
           }
         }
@@ -167,6 +168,13 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, executionEngine);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+    // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
+    // we turn it off explicitly to achieve better coverage.
+    if (isVectorized) {
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    } else {
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    }
   }
 
   @After

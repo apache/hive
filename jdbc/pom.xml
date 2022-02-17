@@ -12,9 +12,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
@@ -22,16 +20,13 @@
     <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-
   <artifactId>hive-jdbc</artifactId>
   <packaging>jar</packaging>
   <name>Hive JDBC</name>
-
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <packaging.minimizeJar>false</packaging.minimizeJar>
   </properties>
-
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
@@ -52,7 +47,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.apache.hive</groupId>
-            <artifactId>hive-exec</artifactId>
+          <artifactId>hive-exec</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.pac4j</groupId>
@@ -100,13 +95,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
         </exclusion>
       </exclusions>
-     <optional>true</optional>
+      <optional>true</optional>
     </dependency>
     <!-- test inter-project -->
     <dependency>
@@ -125,9 +120,8 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <profiles>
-   <profile>
+    <profile>
       <id>dist</id>
       <properties>
         <packaging.minimizeJar>false</packaging.minimizeJar>
@@ -202,7 +196,7 @@
                     <filter>
                       <artifact>org.apache.hadoop:hadoop-yarn-api</artifact>
                       <includes>
-			<include>org/apache/hadoop/yarn/api/records/ApplicationId.class</include>
+                        <include>org/apache/hadoop/yarn/api/records/ApplicationId.class</include>
                       </includes>
                     </filter>
                     <filter>
@@ -371,7 +365,6 @@
       </build>
     </profile>
   </profiles>
-
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>

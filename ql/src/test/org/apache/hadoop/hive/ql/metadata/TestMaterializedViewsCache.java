@@ -92,6 +92,7 @@ class TestMaterializedViewsCache {
     MaterializedViewsCache emptyCache = new MaterializedViewsCache();
 
     assertThat(emptyCache.get("select 'any definition'").isEmpty(), is(true));
+    assertThat(emptyCache.isEmpty(), is(true));
     assertThat(emptyCache.values().isEmpty(), is(true));
   }
 
@@ -112,6 +113,19 @@ class TestMaterializedViewsCache {
 
   @Test
   void testAdd() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).get(0), is(defaultMaterialization1));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1));
+  }
+
+  @Test
+  void testAddSameMVTwice() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
     materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
 
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
@@ -146,6 +160,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1Same));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
@@ -159,6 +174,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(db1Materialization1));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
@@ -169,6 +185,7 @@ class TestMaterializedViewsCache {
 
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
@@ -179,6 +196,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
     assertThat(materializedViewsCache.values().size(), is(1));
     assertThat(materializedViewsCache.values(), hasItem(defaultMaterialization1));
   }
@@ -193,6 +211,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(newMaterialization));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(newMaterialization));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
     assertThat(materializedViewsCache.values().size(), is(1));
     assertThat(materializedViewsCache.values(), hasItem(newMaterialization));
   }
@@ -205,6 +224,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewsCache.isEmpty(), is(false));
     assertThat(materializedViewsCache.values().size(), is(1));
     assertThat(materializedViewsCache.values(), hasItem(defaultMaterialization1));
   }
@@ -217,6 +237,7 @@ class TestMaterializedViewsCache {
 
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).isEmpty(), is(true));
+    assertThat(materializedViewsCache.isEmpty(), is(true));
     assertThat(materializedViewsCache.values().isEmpty(), is(true));
   }
 
@@ -228,6 +249,7 @@ class TestMaterializedViewsCache {
 
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).isEmpty(), is(true));
+    assertThat(materializedViewsCache.isEmpty(), is(true));
     assertThat(materializedViewsCache.values().isEmpty(), is(true));
   }
 
