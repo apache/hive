@@ -753,6 +753,8 @@ public class HiveConf extends Configuration {
         "Comma-separated list of statistics publishers to be invoked on counters on each job. \n" +
         "A client stats publisher is specified as the name of a Java class which implements the \n" +
         "org.apache.hadoop.hive.ql.stats.ClientStatsPublisher interface."),
+    BASICSTATSTASKSMAXTHREADS("hive.basic.stats.max.threads", 10, "Maximum number of threads to be used for "
+        + "collection of file level statistics. A value of less than 1, makes stats collection sequential."),
     EXECPARALLEL("hive.exec.parallel", false, "Whether to execute jobs in parallel"),
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8,
         "How many jobs at most can be executed in parallel"),

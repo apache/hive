@@ -227,10 +227,17 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         } else {
           fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
         }
+        ThreadPoolExecutor tpE = null;
+        ArrayList<Future<FileStats>> futures = null;
+        int numThreads = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASICSTATSTASKSMAXTHREADS);
+        if (fileList.size() > 1 && numThreads > 1) {
+          numThreads = Math.max(fileList.size(), numThreads);
+          tpE = new ThreadPoolExecutor(numThreads, numThreads, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+          tpE.allowsCoreThreadTimeOut();
+          futures = new ArrayList<>();
+        }
 
-        ThreadPoolExecutor tpE = new ThreadPoolExecutor(10, 10, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-        tpE.allowsCoreThreadTimeOut();
-        ArrayList<Future<FileStats>> futures = new ArrayList<>();
+        LOG.info("Processing Stats for {} file using {} threads", fileList.size(), numThreads);
 
         for (FileStatus file : fileList) {
           Utilities.FILE_OP_LOGGER.debug("Computing stats for {}", file);
@@ -241,19 +248,32 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
               numFiles += 1;
             } else {
               FileStatProcessor fsp = new FileStatProcessor(file, inputFormat, dummySplit, jc);
-              futures.add(tpE.submit(fsp));
+              if (tpE != null) {
+                futures.add(tpE.submit(fsp));
+              } else {
+                // No parallel processing, just call the method normally & update the stats.
+                FileStats fileStat = fsp.call();
+                rawDataSize += fileStat.getRawDataSize();
+                numRows += fileStat.getNumRows();
+                fileSize += fileStat.getFileSize();
+                numFiles += 1;
+                numErasureCodedFiles += fileStat.getNumErasureCodedFiles();
+              }
             }
           }
         }
-        for (Future<FileStats> future : futures) {
-          FileStats fileStat = future.get();
-          rawDataSize += fileStat.getRawDataSize();
-          numRows += fileStat.getNumRows();
-          fileSize += fileStat.getFileSize();
-          numFiles += 1;
-          numErasureCodedFiles += fileStat.getNumErasureCodedFiles();
-        }
 
+        if (tpE != null) {
+          for (Future<FileStats> future : futures) {
+            FileStats fileStat = future.get();
+            rawDataSize += fileStat.getRawDataSize();
+            numRows += fileStat.getNumRows();
+            fileSize += fileStat.getFileSize();
+            numFiles += 1;
+            numErasureCodedFiles += fileStat.getNumErasureCodedFiles();
+            tpE.shutdown();
+          }
+        }
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
 
         parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
@@ -447,6 +467,9 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
   }
 
+  /**
+   * Utility class to process file level stats in parallel.
+   */
   private static class FileStatProcessor implements Callable <FileStats> {
 
     private final InputSplit dummySplit;
@@ -483,6 +506,9 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     }
   }
 
+  /**
+   * Utility class for holding the file level statistics.
+   */
   private static class FileStats {
 
     private long numRows = 0;
