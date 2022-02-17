@@ -235,9 +235,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           tpE = new ThreadPoolExecutor(numThreads, numThreads, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
           tpE.allowsCoreThreadTimeOut();
           futures = new ArrayList<>();
+          LOG.info("Processing Stats for {} file using {} threads", fileList.size(), numThreads);
         }
-
-        LOG.info("Processing Stats for {} file using {} threads", fileList.size(), numThreads);
 
         for (FileStatus file : fileList) {
           Utilities.FILE_OP_LOGGER.debug("Computing stats for {}", file);
@@ -498,11 +497,11 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           if (file.isErasureCoded()) {
             fileStats.setNumErasureCodedFiles(1);
           }
+          return fileStats;
         } else {
           throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
         }
       }
-      return null;
     }
   }
 
