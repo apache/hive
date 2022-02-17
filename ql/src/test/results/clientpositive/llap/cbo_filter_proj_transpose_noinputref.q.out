@@ -20,7 +20,6 @@ unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
 PREHOOK: query: EXPLAIN CBO SELECT c.m
 FROM (
   SELECT substr(from_unixtime(unix_timestamp(), 'yyyy-MM-dd'), 1, 1) as m
@@ -49,6 +48,6 @@ HiveProject(m=[$0])
         HiveProject(DUMMY=[0])
           HiveTableScan(table=[[default, test1]], table:alias=[test1])
     HiveProject($f0=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
-      HiveFilter(condition=[AND(=($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2'))])
+      HiveFilter(condition=[=($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1))])
         HiveTableScan(table=[[default, test2]], table:alias=[d])
 
