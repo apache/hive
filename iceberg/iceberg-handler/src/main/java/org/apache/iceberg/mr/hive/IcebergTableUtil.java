@@ -30,10 +30,8 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.UpdatePartitionSpec;
-import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
