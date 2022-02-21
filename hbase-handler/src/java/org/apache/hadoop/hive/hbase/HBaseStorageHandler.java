@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -288,7 +290,8 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   }
 
   @Override
-  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+  public URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     hbaseConf = getConf();
     String hbase_host = tableProperties.containsKey(HBASE_HOST_NAME)? tableProperties.get(HBASE_HOST_NAME) : hbaseConf.get(HBASE_HOST_NAME);
     String hbase_port = tableProperties.containsKey(HBASE_CLIENT_PORT)? tableProperties.get(HBASE_CLIENT_PORT) : hbaseConf.get(HBASE_CLIENT_PORT);
@@ -354,6 +357,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     LOG.debug("Configuring JobConf for table {}.{}", tableDesc.getDbName(), tableDesc.getTableName());
     try {
+      HBaseConfiguration.addHbaseResources(jobConf);
       HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*
        * HIVE-6356

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,6 +50,7 @@ public abstract class ReplicationMetricCollector {
   private MetricCollector metricCollector;
   private boolean isEnabled;
   private static boolean enableForTests;
+  private HiveConf conf;
 
   public void setMetricsMBean(ObjectName metricsMBean) {
     this.metricsMBean = metricsMBean;
@@ -58,6 +60,7 @@ public abstract class ReplicationMetricCollector {
 
   public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
                              String stagingDir, long dumpExecutionId, HiveConf conf) {
+    this.conf = conf;
     checkEnabledForTests(conf);
     String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
     long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
@@ -65,7 +68,7 @@ public abstract class ReplicationMetricCollector {
       isEnabled = true;
       metricCollector = MetricCollector.getInstance().init(conf);
       MetricSink.getInstance().init(conf);
-      Metadata metadata = new Metadata(dbName, replicationType, stagingDir);
+      Metadata metadata = new Metadata(dbName, replicationType, getStagingDir(stagingDir));
       replicationMetric = new ReplicationMetric(executionId, policy, dumpExecutionId, metadata);
     }
   }
@@ -75,7 +78,7 @@ public abstract class ReplicationMetricCollector {
       LOG.debug("Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap );
       Progress progress = replicationMetric.getProgress();
       progress.setStatus(Status.IN_PROGRESS);
-      Stage stage = new Stage(stageName, Status.IN_PROGRESS, System.currentTimeMillis());
+      Stage stage = new Stage(stageName, Status.IN_PROGRESS, getCurrentTimeInMillis());
       for (Map.Entry<String, Long> metric : metricMap.entrySet()) {
         stage.addMetric(new Metric(metric.getKey(), metric.getValue()));
       }
@@ -91,7 +94,7 @@ public abstract class ReplicationMetricCollector {
       LOG.info("Failover Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap);
       Progress progress = replicationMetric.getProgress();
       progress.setStatus(Status.FAILOVER_IN_PROGRESS);
-      Stage stage = new Stage(stageName, Status.IN_PROGRESS, System.currentTimeMillis());
+      Stage stage = new Stage(stageName, Status.IN_PROGRESS, getCurrentTimeInMillis());
       for (Map.Entry<String, Long> metric : metricMap.entrySet()) {
         stage.addMetric(new Metric(metric.getKey(), metric.getValue()));
       }
@@ -116,7 +119,7 @@ public abstract class ReplicationMetricCollector {
         stage = new Stage(stageName, status, -1L);
       }
       stage.setStatus(status);
-      stage.setEndTime(System.currentTimeMillis());
+      stage.setEndTime(getCurrentTimeInMillis());
       stage.setReplSnapshotsCount(replSnapshotCount);
       if (replStatsTracker != null && !(replStatsTracker instanceof NoOpReplStatsTracker)) {
         String replStatString = replStatsTracker.toString();
@@ -145,7 +148,7 @@ public abstract class ReplicationMetricCollector {
         stage = new Stage(stageName, status, -1L);
       }
       stage.setStatus(status);
-      stage.setEndTime(System.currentTimeMillis());
+      stage.setEndTime(getCurrentTimeInMillis());
       stage.setErrorLogPath(errorLogPath);
       progress.addStage(stage);
       replicationMetric.setProgress(progress);
@@ -166,7 +169,7 @@ public abstract class ReplicationMetricCollector {
         stage = new Stage(stageName, status, -1L);
       }
       stage.setStatus(status);
-      stage.setEndTime(System.currentTimeMillis());
+      stage.setEndTime(getCurrentTimeInMillis());
       progress.addStage(stage);
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
@@ -223,5 +226,17 @@ public abstract class ReplicationMetricCollector {
         LOG.warn("Unable to unregister MBean {}", metricsMBean, e);
       }
     }
+  }
+
+  private boolean testingModeEnabled() {
+    return conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) || conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL);
+  }
+
+  private long getCurrentTimeInMillis() {
+    return testingModeEnabled() ? 0L : System.currentTimeMillis();
+  }
+
+  private String getStagingDir(String stagingDir) {
+    return testingModeEnabled() ? "dummyDir" : stagingDir;
   }
 }

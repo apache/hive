@@ -1,8 +1,5 @@
-set hive.vectorized.execution.enabled = false;
-set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
-set hive.query.results.cache.enabled=false;
-set hive.fetch.task.conversion=none;
-set hive.cbo.enable=true;
+-- Mask the totalSize value as it can have slight variability, causing test flakiness
+--! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 
 drop table if exists ice_meta_desc;
 create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc;

@@ -23,12 +23,12 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONV
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
+import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
-import java.time.ZoneId;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,8 +80,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -100,6 +98,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -433,7 +432,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private WriteEntity acidAnalyzeTable;
 
   // A mapping from a tableName to a table object in metastore.
-  Map<String, Table> tabNameToTabObject;
+  QueryTables tabNameToTabObject;
 
   // The tokens we should ignore when we are trying to do table masking.
   private static final Set<Integer> IGNORED_TOKENS = Sets.newHashSet(HiveParser.TOK_GROUPBY,
@@ -500,7 +499,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     viewAliasToInput = new HashMap<String, ReadEntity>();
     mergeIsDirect = true;
     noscan = false;
-    tabNameToTabObject = new HashMap<>();
+    tabNameToTabObject = new QueryTables();
     defaultJoinMerge = !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
     defaultNullOrder = NullOrdering.defaultNullOrder(conf);
@@ -1890,7 +1889,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (destination.getChildCount() == 2 &&
             tab.getChildCount() == 2 &&
             destination.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS) {
-          String tableName = tab.getChild(0).getChild(0).getText();
+          final String tableName = getUnescapedName((ASTNode) tab.getChild(0), SessionState.get().getCurrentDatabase());
 
           Tree partitions = tab.getChild(1);
           int childCount = partitions.getChildCount();
@@ -2693,7 +2692,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
-            ctx, db, tabNameToTabObject);
+            ctx, db);
         viewTree = parseResult.getTree();
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
@@ -7706,6 +7705,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
+
+      // if available, set location in table desc properties
+      if (tblDesc != null && tblDesc.getLocation() != null && tableDescriptor != null &&
+          !tableDescriptor.getProperties().containsKey(hive_metastoreConstants.META_TABLE_LOCATION)) {
+        tableDescriptor.getProperties().setProperty(hive_metastoreConstants.META_TABLE_LOCATION, tblDesc.getLocation());
+      }
+
       // We need a specific rowObjectInspector in this case
       try {
         specificRowObjectInspector =
@@ -8118,6 +8124,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest)) {
         isInsertOverwrite = true;
       }
+
+      // Some non-native tables might be partitioned without partition spec information being present in the Table object
+      HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
+      if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
+        List<PartitionTransformSpec> nonNativePartSpecs = storageHandler.getPartitionTransformSpec(dest_tab);
+        if (dpCtx == null && nonNativePartSpecs != null && !nonNativePartSpecs.isEmpty()) {
+          verifyDynamicPartitionEnabled(conf, qb, dest);
+          Map<String, String> partSpec = new LinkedHashMap<>();
+          nonNativePartSpecs.forEach(ps -> partSpec.put(ps.getColumnName(), null));
+          dpCtx = new DynamicPartitionCtx(partSpec, conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+        }
+      }
+
       break;
     case QBMetaData.DEST_LOCAL_FILE:
     case QBMetaData.DEST_DFS_FILE:
@@ -8351,14 +8371,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbm.setDPCtx(dest, dpCtx);
     }
 
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
-          ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
-    }
+    verifyDynamicPartitionEnabled(conf, qb, dest);
+
     if ((dest_tab.getNumBuckets() > 0)) {
       dpCtx.setNumBuckets(dest_tab.getNumBuckets());
     }
     return dpCtx;
+  }
+
+  private static void verifyDynamicPartitionEnabled(HiveConf conf, QB qb, String dest) throws SemanticException {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
+      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
+          ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
+    }
   }
 
   private void createPreInsertDesc(Table table, boolean overwrite) {
@@ -12193,13 +12218,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (table.isMaterializedView()) {
           // When we are querying a materialized view directly, we check whether the source tables
           // do not apply any policies.
-          for (String qName : table.getCreationMetadata().getTablesUsed()) {
+          for (SourceTable sourceTable : table.getMVMetadata().getSourceTables()) {
+            String qualifiedTableName = TableName.getDbTable(
+                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
             try {
-              table = getTableObjectByName(qName, true);
+              table = getTableObjectByName(qualifiedTableName, true);
             } catch (HiveException e) {
               // This should not happen.
-              throw new SemanticException("Table " + qName + " not found when trying to obtain it to check masking/filtering " +
-                  "policies");
+              throw new SemanticException("Table " + qualifiedTableName +
+                  " not found when trying to obtain it to check masking/filtering policies");
             }
 
             List<String> colNames = new ArrayList<>();
@@ -12272,7 +12299,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
   private ParseResult rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
-                                                Context ctx, Hive db, Map<String, Table> tabNameToTabObject)
+                                                Context ctx, Hive db)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
@@ -12561,7 +12588,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
       ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
-          ctx, db, tabNameToTabObject);
+          ctx, db);
       ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
@@ -12576,6 +12603,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ((CalcitePlanner) this).resetCalciteConfiguration();
         }
         sinkOp = genOPTree(rewrittenAST, plannerCtx);
+      }
+    }
+
+    // validate if this sink operation is allowed for non-native tables
+    if (sinkOp instanceof FileSinkOperator) {
+      FileSinkOperator fileSinkOperator = (FileSinkOperator) sinkOp;
+      Optional<HiveStorageHandler> handler = Optional.ofNullable(fileSinkOperator)
+          .map(FileSinkOperator::getConf)
+          .map(FileSinkDesc::getTable)
+          .map(Table::getStorageHandler);
+      if (handler.isPresent()) {
+         handler.get().validateSinkDesc(fileSinkOperator.getConf());
       }
     }
 
@@ -12654,7 +12693,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      createVwDesc.setTablesUsed(getTablesUsed(pCtx));
+      createVwDesc.setTablesUsed(pCtx.getTablesUsed());
     }
 
     // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
@@ -12845,18 +12884,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Set schema and expanded text for the view
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
-  }
-
-  private Set<String> getTablesUsed(ParseContext parseCtx) {
-    Set<String> tablesUsed = new HashSet<>();
-    for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
-      Table table = topOp.getConf().getTableMetadata();
-      if (!table.isMaterializedTable() && !table.isView()) {
-        // Add to signature
-        tablesUsed.add(table.getFullyQualifiedName());
-      }
-    }
-    return tablesUsed;
   }
 
   private List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
@@ -13943,25 +13970,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     try {
       // Do not allow view to be defined on temp table or other materialized view
-      Set<String> tableAliases = qb.getTabAliases();
-      for (String alias : tableAliases) {
-        try {
-          if (DUMMY_TABLE.equals(alias)) {
+      validateTablesUsed(this);
+      if (createVwDesc.isRewriteEnabled()) {
+        for (TableScanOperator ts : topOps.values()) {
+          Table table = ts.getConf().getTableMetadata();
+          if (SemanticAnalyzer.DUMMY_TABLE.equals(table.getTableName())) {
             continue;
           }
-          Table table = getTableObjectByName(qb.getTabNameForAlias(alias));
-          if (table.isTemporary()) {
-            throw new SemanticException("View definition references temporary table " + alias);
-          }
-          if (table.isMaterializedView()) {
-            throw new SemanticException("View definition references materialized view " + alias);
-          }
-          if (createVwDesc.isRewriteEnabled() && !AcidUtils.isTransactionalTable(table)) {
+          if (!AcidUtils.isTransactionalTable(table)) {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
-                + "be enabled if the materialized view uses non-transactional tables");
+                    + "be enabled if the materialized view uses non-transactional tables");
           }
-        } catch (HiveException ex) {
-          throw new SemanticException(ex);
         }
       }
 
@@ -15189,7 +15208,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Check the query results cache to see if the query represented by the lookupInfo can be
    * answered using the results cache. If the cache contains a suitable entry, the semantic analyzer
-   * will be configured to use the found cache entry to anwer the query.
+   * will be configured to use the found cache entry to answer the query.
    */
   private boolean checkResultsCache(QueryResultsCache.LookupInfo lookupInfo, boolean needsReset) {
     if (lookupInfo == null) {
@@ -15373,28 +15392,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void startAnalysis() {
-    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
-    SessionState ss = SessionState.get();
-    if (ss == null) {
-      LOG.info("No current SessionState, skipping metadata query-level caching for: {}", queryId);
-      return;
-    }
     if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
-      LOG.info("Starting caching scope for: {}", queryId);
-      ss.startScope(queryId);
-    }
-  }
-
-  @Override
-  public void endAnalysis() {
-    SessionState ss = SessionState.get();
-    if (ss == null) {
-      return;
-    }
-    if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
-      String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
-      LOG.info("Ending caching scope for: {}", queryId);
-      ss.endScope(queryId);
+      queryState.createHMSCache();
     }
   }
 }

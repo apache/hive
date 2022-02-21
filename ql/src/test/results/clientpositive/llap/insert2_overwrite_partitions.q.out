@@ -361,6 +361,55 @@ POSTHOOK: Input: db2@destintable@ds=2011-11-11
 98	val_98
 97	val_97
 97	val_97
+PREHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11') IF NOT EXISTS SELECT 100, 200
+PREHOOK: type: QUERY
+POSTHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11') IF NOT EXISTS SELECT 100, 200
+POSTHOOK: type: QUERY
+PREHOOK: query: INSERT OVERWRITE TABLE DB2.DESTINTABLE PARTITION (ds='2011-11-11') IF NOT EXISTS SELECT 100, 200
+PREHOOK: type: QUERY
+POSTHOOK: query: INSERT OVERWRITE TABLE DB2.DESTINTABLE PARTITION (ds='2011-11-11') IF NOT EXISTS SELECT 100, 200
+POSTHOOK: type: QUERY
+PREHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2012-11-11') IF NOT EXISTS SELECT 900, 800
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: db2@destintable@ds=2012-11-11
+POSTHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2012-11-11') IF NOT EXISTS SELECT 900, 800
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: db2@destintable@ds=2012-11-11
+POSTHOOK: Lineage: destintable PARTITION(ds=2012-11-11).one EXPRESSION []
+POSTHOOK: Lineage: destintable PARTITION(ds=2012-11-11).two EXPRESSION []
+PREHOOK: query: INSERT OVERWRITE TABLE DB2.DESTINTABLE PARTITION (ds='2013-11-11') IF NOT EXISTS SELECT 950, 850
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: db2@destintable@ds=2013-11-11
+POSTHOOK: query: INSERT OVERWRITE TABLE DB2.DESTINTABLE PARTITION (ds='2013-11-11') IF NOT EXISTS SELECT 950, 850
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: db2@destintable@ds=2013-11-11
+POSTHOOK: Lineage: destintable PARTITION(ds=2013-11-11).one EXPRESSION []
+POSTHOOK: Lineage: destintable PARTITION(ds=2013-11-11).two EXPRESSION []
+PREHOOK: query: select one,two from db2.destinTable order by one desc, two desc
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@destintable
+PREHOOK: Input: db2@destintable@ds=2011-11-11
+PREHOOK: Input: db2@destintable@ds=2012-11-11
+PREHOOK: Input: db2@destintable@ds=2013-11-11
+#### A masked pattern was here ####
+POSTHOOK: query: select one,two from db2.destinTable order by one desc, two desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@destintable
+POSTHOOK: Input: db2@destintable@ds=2011-11-11
+POSTHOOK: Input: db2@destintable@ds=2012-11-11
+POSTHOOK: Input: db2@destintable@ds=2013-11-11
+#### A masked pattern was here ####
+98	val_98
+98	val_98
+98	val_98
+97	val_97
+97	val_97
+950	850
+900	800
 PREHOOK: query: drop table db2.destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: db2@destintable

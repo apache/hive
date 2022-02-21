@@ -227,7 +227,7 @@ public class WarehouseInstance implements Closeable {
       driver.getResults(lastResults);
     }
     // Split around the 'tab' character
-    return (lastResults.get(0).split("\\t"))[colNum];
+    return !lastResults.isEmpty() ? (lastResults.get(0).split("\\t"))[colNum] : "";
   }
 
   public WarehouseInstance run(String command) throws Throwable {
@@ -388,7 +388,7 @@ public class WarehouseInstance implements Closeable {
     List<String> lowerCaseData =
         Arrays.stream(data).map(String::toLowerCase).collect(Collectors.toList());
     assertEquals(data.length, filteredResults.size());
-    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected" + StringUtils
+    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected " + StringUtils
             .join(lowerCaseData, ","), filteredResults.containsAll(lowerCaseData));
     return this;
   }

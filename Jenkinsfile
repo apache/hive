@@ -229,6 +229,16 @@ git merge origin/target
             ":hive-standalone-metastore-common",
             ":hive-service-rpc"
         ]
+        sh '''#!/bin/bash
+set -e
+xmlstarlet edit -L `find . -name pom.xml`
+git diff
+n=`git diff | wc -l`
+if [ $n != 0 ]; then
+  echo "!!! incorrectly formatted pom.xmls detected; see above!" >&2
+  exit 1
+fi
+'''
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
@@ -272,7 +282,7 @@ time docker rm -f dev_$dbType || true
           stage('verify') {
             try {
               sh """#!/bin/bash -e
-mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
+mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B
 """
             } finally {
               junit '**/TEST-*.xml'
@@ -281,6 +291,20 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
         }
       }
     }
+  }
+  branches['nightly-check'] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+        }
+        stage('Build') {
+            sh '''#!/bin/bash
+set -e
+dev-support/nightly
+'''
+            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+        }
+      }
   }
   for (int i = 0; i < splits.size(); i++) {
     def num = i

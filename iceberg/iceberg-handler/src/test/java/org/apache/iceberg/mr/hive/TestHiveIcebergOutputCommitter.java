@@ -39,12 +39,9 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.GenericAppenderFactory;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.encryption.EncryptionManager;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -126,7 +123,8 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 1, 0, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
-    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 3);
+    // Expecting 3 files with fanout-, 4 with ClusteredWriter where writing to already completed partitions is allowed.
+    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 4);
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
@@ -150,7 +148,8 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 2, 0, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
-    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 6);
+    // Expecting 6 files with fanout-, 8 with ClusteredWriter where writing to already completed partitions is allowed.
+    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 8);
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
@@ -266,19 +265,26 @@ public class TestHiveIcebergOutputCommitter {
 
     Table table = HiveIcebergStorageHandler.table(conf, name);
     FileIO io = table.io();
-    LocationProvider location = table.locationProvider();
-    EncryptionManager encryption = table.encryption();
     Schema schema = HiveIcebergStorageHandler.schema(conf);
     PartitionSpec spec = table.spec();
 
     for (int i = 0; i < taskNum; ++i) {
       List<Record> records = TestHelper.generateRandomRecords(schema, RECORD_NUM, i + attemptNum);
       TaskAttemptID taskId = new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, i, attemptNum);
-      OutputFileFactory outputFileFactory =
-          new OutputFileFactory(spec, FileFormat.PARQUET, location, io, encryption, taskId.getTaskID().getId(),
-              attemptNum, QUERY_ID + "-" + JOB_ID);
-      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, spec, FileFormat.PARQUET,
-          new GenericAppenderFactory(schema), outputFileFactory, io, TARGET_FILE_SIZE,
+      int partitionId = taskId.getTaskID().getId();
+      String operationId = QUERY_ID + "-" + JOB_ID;
+      FileFormat fileFormat = FileFormat.PARQUET;
+      OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, partitionId, attemptNum)
+          .format(fileFormat)
+          .operationId(operationId)
+          .build();
+
+      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+          null, fileFormat, null, null, null, null);
+
+
+      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, spec, fileFormat,
+          hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
           TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
 
       Container<Record> container = new Container<>();

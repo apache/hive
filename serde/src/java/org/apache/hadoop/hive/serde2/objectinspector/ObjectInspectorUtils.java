@@ -631,7 +631,7 @@ public final class ObjectInspectorUtils {
   /**
    * Computes the bucket number to which the bucketFields belong to
    * @param bucketFields  the bucketed fields of the row
-   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param bucketFieldInspectors  the ObjectInspectors for each of the bucketed fields
    * @param totalBuckets the number of buckets in the table
    * @return the bucket number using Murmur hash
    */
@@ -642,7 +642,7 @@ public final class ObjectInspectorUtils {
   /**
    * Computes the bucket number to which the bucketFields belong to
    * @param bucketFields  the bucketed fields of the row
-   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param bucketFieldInspectors  the ObjectInspectors for each of the bucketed fields
    * @param totalBuckets the number of buckets in the table
    * @return the bucket number
    */

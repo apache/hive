@@ -120,12 +120,12 @@ POSTHOOK: Input: default@av1
 4	d
 5	e
 PREHOOK: query: alter view av1 as select c2, c3 from at1
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: ALTERVIEW_AS
 PREHOOK: Input: default@at1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@av1
 POSTHOOK: query: alter view av1 as select c2, c3 from at1
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: ALTERVIEW_AS
 POSTHOOK: Input: default@at1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@av1

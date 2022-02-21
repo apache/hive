@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -35,11 +36,14 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -52,9 +56,9 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -78,6 +82,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.channels.ClosedByInterruptException;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -141,7 +146,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
    * "map.input.file" in MapTask.
    */
   public static class HiveInputSplit extends FileSplit implements InputSplit,
-      Configurable {
+      Configurable, HashableInputSplit {
 
 
     InputSplit inputSplit;
@@ -237,6 +242,24 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     @Override
     public void setConf(Configuration conf) {
       this.conf = conf;
+    }
+
+    @Override
+    public byte[] getBytesForHash() {
+      if (inputSplit instanceof HashableInputSplit) {
+        return ((HashableInputSplit)inputSplit).getBytesForHash();
+      } else {
+        // Explicitly using only the start offset of a split, and not the length. Splits generated on
+        // block boundaries and stripe boundaries can vary slightly. Try hashing both to the same node.
+        // There is the drawback of potentially hashing the same data on multiple nodes though, when a
+        // large split is sent to 1 node, and a second invocation uses smaller chunks of the previous
+        // large split and send them to different nodes.
+        byte[] pathBytes = getPath().toString().getBytes();
+        byte[] allBytes = new byte[pathBytes.length + 8];
+        System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
+        SerDeUtils.writeLong(allBytes, pathBytes.length, getStart() >> 3);
+        return allBytes;
+      }
     }
   }
 
@@ -337,7 +360,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         (!checkVector || BatchToRowInputFormat.class.isAssignableFrom(clazz));
   }
 
-  public static boolean canInjectCaches(Class<? extends InputFormat> clazz) {
+  public static boolean canInjectCaches(Class<? extends InputFormat> clazz, boolean isVectorized) {
+    if (LlapCacheOnlyInputFormatInterface.VectorizedOnly.class.isAssignableFrom(clazz)) {
+      return isVectorized;
+    }
     return LlapCacheOnlyInputFormatInterface.class.isAssignableFrom(clazz);
   }
 
@@ -407,7 +433,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     Path splitPath = hsplit.getPath();
-    pushProjectionsAndFiltersAndAsOf(job, inputFormatClass, splitPath, nonNative);
+    pushProjectionsAndFiltersAndAsOf(job, splitPath);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
     if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
@@ -422,12 +448,29 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // Handle the special header/footer skipping cases here.
       innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
-      innerReader = HiveIOExceptionHandlerUtil
-          .handleRecordReaderCreationException(e, job);
+      Throwable rootCause = JavaUtils.findRootCause(e);
+      if (checkLimitReached(job)
+          && (rootCause instanceof InterruptedException || rootCause instanceof ClosedByInterruptException)) {
+        LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
+        innerReader = new NullRowsRecordReader(job, split);
+      } else {
+        innerReader = HiveIOExceptionHandlerUtil
+            .handleRecordReaderCreationException(e, job);
+      }
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
+  }
+
+  private boolean checkLimitReached(JobConf job) {
+    /*
+     * Assuming that "tez.mapreduce.vertex.name" is present in case of tez.
+     * If it's not present (e.g. different execution engine), then checkLimitReachedForVertex will return
+     * false due to an invalid cache key (like: "null_limit_reached"), so this will silently acts as
+     * limit hasn't been reached, which is a proper behavior in case we don't support early bailout.
+     */
+    return LimitOperator.checkLimitReachedForVertex(job, job.get("tez.mapreduce.vertex.name"));
   }
 
   protected void init(JobConf job) {
@@ -818,7 +861,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
           currentTable, result);
     }
-    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, newjob);
 
     Utilities.clearWorkMapForConf(job);
     LOG.info("number of splits " + result.size());
@@ -953,13 +995,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Class inputFormatClass,
-      Path splitPath) {
-    pushProjectionsAndFiltersAndAsOf(jobConf, inputFormatClass, splitPath, false);
-  }
-
-  protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Class inputFormatClass,
-      Path splitPath, boolean nonNative) {
+  protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Path splitPath) {
     Path splitPathWithNoSchema = Path.getPathWithoutSchemeAndAuthority(splitPath);
     if (this.mrwork == null) {
       init(job);
@@ -977,32 +1013,23 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     while (iterator.hasNext()) {
       Entry<Path, List<String>> entry = iterator.next();
       Path key = entry.getKey();
+      // Note for HIVE-1903: for non-native tables we might only see a table location provided as path in splitPath.
+      // In this case the code part below should still work, as the "key" will be an exact match for splitPath.
+      // Also: we should not anticipate table paths to be under other tables' locations.
       boolean match;
-      if (nonNative) {
-        // For non-native tables, we need to do an exact match to avoid
-        // HIVE-1903.  (The table location contains no files, and the string
-        // representation of its path does not have a trailing slash.)
-        match =
-          splitPath.equals(key) || splitPathWithNoSchema.equals(key);
-      } else {
-        // But for native tables, we need to do a prefix match for
-        // subdirectories.  (Unlike non-native tables, prefix mixups don't seem
-        // to be a potential problem here since we are always dealing with the
-        // path to something deeper than the table location.)
-        if (pathsSize > 1) {
-          // Comparing paths multiple times creates lots of objects &
-          // creates GC pressure for tables having large number of partitions.
-          // In such cases, use pre-computed paths for comparison
-          if (splitParentPaths == null) {
-            splitParentPaths = new HashSet<>();
-            FileUtils.populateParentPaths(splitParentPaths, splitPath);
-            FileUtils.populateParentPaths(splitParentPaths, splitPathWithNoSchema);
-          }
-          match = splitParentPaths.contains(key);
-        } else {
-          match = FileUtils.isPathWithinSubtree(splitPath, key)
-              || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
+      if (pathsSize > 1) {
+        // Comparing paths multiple times creates lots of objects &
+        // creates GC pressure for tables having large number of partitions.
+        // In such cases, use pre-computed paths for comparison
+        if (splitParentPaths == null) {
+          splitParentPaths = new HashSet<>();
+          FileUtils.populateParentPaths(splitParentPaths, splitPath);
+          FileUtils.populateParentPaths(splitParentPaths, splitPathWithNoSchema);
         }
+        match = splitParentPaths.contains(key);
+      } else {
+        match = FileUtils.isPathWithinSubtree(splitPath, key)
+            || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
       }
       if (match) {
         List<String> list = entry.getValue();

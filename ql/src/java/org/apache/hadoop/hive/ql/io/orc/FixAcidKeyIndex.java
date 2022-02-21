@@ -137,11 +137,11 @@ public class FixAcidKeyIndex {
 
   static void checkFile(Configuration conf, Path inputPath) throws IOException {
     FileSystem fs = inputPath.getFileSystem(conf);
-    Reader reader = OrcFile.createReader(fs, inputPath);
-
-    if (OrcInputFormat.isOriginal(reader)) {
-      System.out.println(inputPath + " is not an acid file");
-      return;
+    try (Reader reader = OrcFile.createReader(fs, inputPath)) {
+      if (OrcInputFormat.isOriginal(reader)) {
+        System.out.println(inputPath + " is not an acid file");
+        return;
+      }
     }
 
     AcidKeyIndexValidationResult validationResult = validate(conf, inputPath);
@@ -153,21 +153,21 @@ public class FixAcidKeyIndex {
   public static AcidKeyIndexValidationResult validate(Configuration conf, Path inputPath) throws IOException {
     AcidKeyIndexValidationResult result = new AcidKeyIndexValidationResult();
     FileSystem fs = inputPath.getFileSystem(conf);
-    Reader reader = OrcFile.createReader(fs, inputPath);
-    List<StripeInformation> stripes = reader.getStripes();
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
-    StructObjectInspector soi = (StructObjectInspector) reader.getObjectInspector();
-    // struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint
-    List<? extends StructField> structFields = soi.getAllStructFieldRefs();
-    StructField transactionField = structFields.get(1);
-    LongObjectInspector transactionOI = (LongObjectInspector) transactionField.getFieldObjectInspector();
-    StructField bucketField = structFields.get(2);
-    IntObjectInspector bucketOI = (IntObjectInspector) bucketField.getFieldObjectInspector();
-    StructField rowIdField = structFields.get(3);
-    LongObjectInspector rowIdOI = (LongObjectInspector) rowIdField.getFieldObjectInspector();
+    try (Reader reader = OrcFile.createReader(fs, inputPath);
+        RecordReader rr = reader.rows()) {
+      List<StripeInformation> stripes = reader.getStripes();
+      RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
+      StructObjectInspector soi = (StructObjectInspector) reader.getObjectInspector();
+      // struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint
+      List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+      StructField transactionField = structFields.get(1);
+      LongObjectInspector transactionOI = (LongObjectInspector) transactionField.getFieldObjectInspector();
+      StructField bucketField = structFields.get(2);
+      IntObjectInspector bucketOI = (IntObjectInspector) bucketField.getFieldObjectInspector();
+      StructField rowIdField = structFields.get(3);
+      LongObjectInspector rowIdOI = (LongObjectInspector) rowIdField.getFieldObjectInspector();
 
-    long rowsProcessed = 0;
-    try (RecordReader rr = reader.rows()) {
+      long rowsProcessed = 0;
       for (int i = 0; i < stripes.size(); i++) {
         rowsProcessed += stripes.get(i).getNumberOfRows();
         rr.seekToRow(rowsProcessed - 1);
@@ -190,71 +190,72 @@ public class FixAcidKeyIndex {
 
   static void recoverFile(Configuration conf, Path inputPath, String backup) throws IOException {
     FileSystem fs = inputPath.getFileSystem(conf);
-    Reader reader = OrcFile.createReader(fs, inputPath);
-
-    if (OrcInputFormat.isOriginal(reader)) {
-      System.out.println(inputPath + " is not an acid file. No need to recover.");
-      return;
-    }
-
-    AcidKeyIndexValidationResult validationResult = validate(conf, inputPath);
-    if (validationResult.isValid) {
-      System.out.println(inputPath + " has a valid acid key index. No need to recover.");
-      return;
-    }
-
-    System.out.println("Recovering " + inputPath);
-
     Path recoveredPath = getRecoveryFile(inputPath);
-    // make sure that file does not exist
-    try {
-      fs.delete(recoveredPath, false);
-    } catch (FileNotFoundException e) {
-      // no problem, we're just making sure the file doesn't exist
-    }
 
-    // Writer should match the orc configuration from the original file
-    OrcFile.WriterOptions writerOptions = OrcFile.writerOptions(conf)
-        .compress(reader.getCompression())
-        .version(reader.getFileVersion())
-        .rowIndexStride(reader.getRowIndexStride())
-        .inspector(reader.getObjectInspector());
-    // compression buffer size should only be set if compression is enabled
-    if (reader.getCompression() != org.apache.hadoop.hive.ql.io.orc.CompressionKind.NONE) {
-      writerOptions.bufferSize(reader.getCompressionSize()).enforceBufferSize();
-    }
-
-    try (Writer writer = OrcFile.createWriter(recoveredPath, writerOptions)) {
-      List<StripeInformation> stripes = reader.getStripes();
-      List<StripeStatistics> stripeStats = reader.getOrcProtoStripeStatistics();
-
-      try (FSDataInputStream inputStream = fs.open(inputPath)) {
-        for (int idx = 0; idx < stripes.size(); ++idx) {
-          // initialize buffer to read the entire stripe.
-          StripeInformation stripe = stripes.get(idx);
-          int stripeLength = (int) stripe.getLength();
-          byte[] buffer = new byte[stripeLength];
-          inputStream.readFully(stripe.getOffset(), buffer, 0, stripeLength);
-
-          // append the stripe buffer to the new ORC file
-          writer.appendStripe(buffer, 0, buffer.length, stripe, stripeStats.get(idx));
-        }
+    try (Reader reader = OrcFile.createReader(fs, inputPath)) {
+      if (OrcInputFormat.isOriginal(reader)) {
+        System.out.println(inputPath + " is not an acid file. No need to recover.");
+        return;
       }
 
-      // Add the rest of the metadata keys.
-      for (String metadataKey : reader.getMetadataKeys()) {
-        if (!metadataKey.equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
-          writer.addUserMetadata(metadataKey, reader.getMetadataValue(metadataKey));
-        }
+      AcidKeyIndexValidationResult validationResult = validate(conf, inputPath);
+      if (validationResult.isValid) {
+        System.out.println(inputPath + " has a valid acid key index. No need to recover.");
+        return;
       }
 
-      StringBuilder sb = new StringBuilder();
-      validationResult.recordIdentifiers.stream().forEach(
-              ri -> sb.append(ri.getWriteId()).append(",")
-                      .append(ri.getBucketProperty()).append(",")
-                      .append(ri.getRowId()).append(";"));
-      // Finally add the fixed acid key index.
-      writer.addUserMetadata(OrcRecordUpdater.ACID_KEY_INDEX_NAME, UTF8.encode(sb.toString()));
+      System.out.println("Recovering " + inputPath);
+
+      // make sure that file does not exist
+      try {
+        fs.delete(recoveredPath, false);
+      } catch (FileNotFoundException e) {
+        // no problem, we're just making sure the file doesn't exist
+      }
+
+      // Writer should match the orc configuration from the original file
+      OrcFile.WriterOptions writerOptions = OrcFile.writerOptions(conf)
+          .compress(reader.getCompression())
+          .version(reader.getFileVersion())
+          .rowIndexStride(reader.getRowIndexStride())
+          .inspector(reader.getObjectInspector());
+      // compression buffer size should only be set if compression is enabled
+      if (reader.getCompression() != org.apache.hadoop.hive.ql.io.orc.CompressionKind.NONE) {
+        writerOptions.bufferSize(reader.getCompressionSize()).enforceBufferSize();
+      }
+
+      try (Writer writer = OrcFile.createWriter(recoveredPath, writerOptions)) {
+        List<StripeInformation> stripes = reader.getStripes();
+        List<StripeStatistics> stripeStats = reader.getOrcProtoStripeStatistics();
+
+        try (FSDataInputStream inputStream = fs.open(inputPath)) {
+          for (int idx = 0; idx < stripes.size(); ++idx) {
+            // initialize buffer to read the entire stripe.
+            StripeInformation stripe = stripes.get(idx);
+            int stripeLength = (int) stripe.getLength();
+            byte[] buffer = new byte[stripeLength];
+            inputStream.readFully(stripe.getOffset(), buffer, 0, stripeLength);
+
+            // append the stripe buffer to the new ORC file
+            writer.appendStripe(buffer, 0, buffer.length, stripe, stripeStats.get(idx));
+          }
+        }
+
+        // Add the rest of the metadata keys.
+        for (String metadataKey : reader.getMetadataKeys()) {
+          if (!metadataKey.equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+            writer.addUserMetadata(metadataKey, reader.getMetadataValue(metadataKey));
+          }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        validationResult.recordIdentifiers.stream().forEach(
+            ri -> sb.append(ri.getWriteId()).append(",")
+                .append(ri.getBucketProperty()).append(",")
+                .append(ri.getRowId()).append(";"));
+        // Finally add the fixed acid key index.
+        writer.addUserMetadata(OrcRecordUpdater.ACID_KEY_INDEX_NAME, UTF8.encode(sb.toString()));
+      }
     }
 
     // Confirm the file is really fixed, and replace the old file.

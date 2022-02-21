@@ -863,7 +863,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
   }
   protected boolean nullsLast() {
     if(hiveConf == null){
-      return false;
+      return HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
     }
     return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST);
   }

@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -132,11 +131,10 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
@@ -252,6 +250,8 @@ public class TestReplicationScenarios {
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     PersistenceManagerProvider.setTwoMetastoreTesting(true);
+    MetastoreConf.setTimeVar(hconf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 0, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconfMirror, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 0, TimeUnit.SECONDS);
   }
 
   @AfterClass
@@ -2437,7 +2437,7 @@ public class TestReplicationScenarios {
 
     // For next run, CM is enabled, set REPL_EVENT_DB_LISTENER_TTL to low value for events to get deleted
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
@@ -2465,7 +2465,7 @@ public class TestReplicationScenarios {
     // First check with high ttl
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds  * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("CREATE TABLE " + dbName
@@ -2491,7 +2491,7 @@ public class TestReplicationScenarios {
     //With CM disabled, set a low ttl for events to get deleted
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
@@ -2514,10 +2514,70 @@ public class TestReplicationScenarios {
     //restore original values
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, true);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, 86400, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, 864000, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, 864000, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, 7200, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
     verifySetupSteps = verifySetupOriginal;
+  }
+
+  @Test
+  public void testCleanerThreadStartupWait() throws Exception {
+    int eventsTtl = 20;
+    HiveConf newConf = new HiveConf(hconf);
+
+    // Set TTL short enough for testing.
+    MetastoreConf.setTimeVar(newConf, REPL_EVENT_DB_LISTENER_TTL, eventsTtl, TimeUnit.SECONDS);
+
+    // Set startup wait interval.
+    MetastoreConf.setTimeVar(newConf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, eventsTtl * 5, TimeUnit.SECONDS);
+
+    // Set cleaner wait interval.
+    MetastoreConf
+        .setTimeVar(newConf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    newConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL, true);
+    // Reset Cleaner to have a initial wait time.
+    DbNotificationListener.resetCleaner(newConf);
+
+    IMetaStoreClient msClient = metaStoreClient;
+    run("create database referenceDb", driver);
+
+    long firstEventId = msClient.getCurrentNotificationEventId().getEventId();;
+
+    run("create database cleanupStartup", driver);
+    run("drop database cleanupStartup", driver);
+
+    LOG.info("Done with creating events.");
+
+    // Check events are pushed into notification logs.
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Reset Cleaner to have a initial wait time.
+    DbNotificationListener.resetCleaner(newConf);
+
+    // Sleep for eventsTtl time and see if events are there.
+    Thread.sleep(eventsTtl * 1000);
+
+    // Check events are there in notification logs.
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Sleep for some more time and see if events are there.
+    Thread.sleep(eventsTtl * 1000);
+
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Sleep more than the initial wait time and see if Events get cleaned up post that
+    Thread.sleep(eventsTtl * 4000);
+
+    // Events should have cleaned up.
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    // Reset with original configuration.
+    DbNotificationListener.resetCleaner(hconf);
+    run("drop database referenceDb", driver);
   }
 
   @Test
@@ -4820,7 +4880,7 @@ public class TestReplicationScenarios {
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(lastDbReplDumpId));
 
     Table tbl = metaStoreClientMirror.getTable(replDbName, tblName);
-    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
     assertTrue(Long.parseLong(tblLastReplId) > Long.parseLong(lastDbReplDumpId));
     assertTrue(Long.parseLong(tblLastReplId) <= Long.parseLong(lastReplDumpId));
     return lastReplDumpId;

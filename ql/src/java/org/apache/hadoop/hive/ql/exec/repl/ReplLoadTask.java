@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
@@ -82,12 +83,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.prepareTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
@@ -577,6 +584,29 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           }
         });
       }
+      if(work.isSecondFailover) {
+        // If it is the second load of optimised bootstrap that means this is the end of the cycle, add tasks to sort
+        // out the database properties.
+        listOfPreAckTasks.add(new PreAckTask() {
+          @Override
+          public void run() throws SemanticException {
+            try {
+              Hive hiveDb = getHive();
+              Database db = hiveDb.getDatabase(work.getTargetDatabase());
+              LinkedHashMap<String, String> params = new LinkedHashMap<>(db.getParameters());
+              LOG.debug("Database {} properties before removal {}", work.getTargetDatabase(), params);
+              params.remove(SOURCE_OF_REPLICATION);
+              db.setParameters(params);
+              LOG.info("Removed {} property from database {} after successful optimised bootstrap load.",
+                  SOURCE_OF_REPLICATION, work.getTargetDatabase());
+              hiveDb.alterDatabase(work.getTargetDatabase(), db);
+              LOG.debug("Database {} poperties after removal {}", work.getTargetDatabase(), params);
+            } catch (HiveException e) {
+              throw new SemanticException(e);
+            }
+          }
+        });
+      }
       AckWork replLoadAckWork = new AckWork(new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()),
               work.getMetricCollector(), listOfPreAckTasks);
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
@@ -593,7 +623,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Map<String, String> dbProps;
     if (work.isIncrementalLoad()) {
       dbProps = new HashMap<>();
-      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
           work.incrementalLoadTasksBuilder().eventTo().toString());
     } else {
       Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
@@ -680,6 +710,37 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
     Map<String, String> props = new HashMap<>();
+
+    // Check if it is a optimised bootstrap failover.
+    if (work.isFirstFailover) {
+      // Check it should be marked as target of replication & not source of replication.
+      if (MetaStoreUtils.isTargetOfReplication(targetDb)) {
+        LOG.error("The database {} is already marked as target for replication", targetDb.getName());
+        throw new Exception("Failover target is already marked as target");
+      }
+      if (!ReplChangeManager.isSourceOfReplication(targetDb)) {
+        LOG.error("The database {} is already source of replication.", targetDb.getName());
+        throw new Exception("Failover target was not source of replication");
+      }
+      boolean isTableDiffPresent =
+          checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
+      if (!isTableDiffPresent) {
+        prepareTableDiffFile(eventId, getHive(), work, conf);
+        if (this.childTasks == null) {
+          this.childTasks = new ArrayList<>();
+        }
+        createReplLoadCompleteAckTask();
+        return 0;
+      }
+    } else if (work.isSecondFailover) {
+      // DROP the tables to be bootstrapped.
+
+      Hive db = getHive();
+      for (String table : work.tablesToBootstrap) {
+        db.dropTable(work.dbNameToLoadIn + "." + table, true);
+      }
+    }
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
       props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
     }
@@ -732,7 +793,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (StringUtils.isNotBlank(dbName)) {
         String lastEventid = builder.eventTo().toString();
         Map<String, String> mapProp = new HashMap<>();
-        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
+        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), lastEventid);
         AlterDatabaseSetPropertiesDesc alterDbDesc =
             new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
                 new ReplicationSpec(lastEventid, lastEventid));

@@ -8,7 +8,7 @@ set zzz=1;
 set reexec.overlay.zzz=2;
 
 set hive.query.reexecution.enabled=true;
-set hive.query.reexecution.strategies=overlay;
+set hive.query.reexecution.strategies=overlay,recompile_without_cbo;
 
 explain vectorization expression
 select assert_true(${hiveconf:zzz} > a) from tx_n0 group by a;

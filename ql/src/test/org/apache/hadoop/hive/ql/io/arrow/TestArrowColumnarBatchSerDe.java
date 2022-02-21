@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.arrow;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -157,6 +158,7 @@ public class TestArrowColumnarBatchSerDe {
   @Before
   public void setUp() {
     conf = new Configuration();
+    conf.setInt(HIVE_ARROW_BATCH_SIZE.varname, 1025);
   }
 
   private static ByteWritable byteW(int value) {
@@ -1024,4 +1026,45 @@ public class TestArrowColumnarBatchSerDe {
     initAndSerializeAndDeserialize(schema, toList(DECIMAL_ROWS));
   }
 
+  @Test
+  public void testListBooleanWithMoreThan1024Values() throws SerDeException {
+    String[][] schema = {
+            {"boolean_list", "array<boolean>"},
+    };
+
+    Object[][] rows = new Object[1025][1];
+    for (int i = 0; i < 1025; i++) {
+      rows[i][0] = new BooleanWritable(true);
+    }
+
+    initAndSerializeAndDeserialize(schema, toList(rows));
+  }
+
+  @Test
+  public void testStructBooleanWithMoreThan1024Values() throws SerDeException {
+    String[][] schema = {
+            {"boolean_struct", "struct<boolean1:boolean>"},
+    };
+
+    Object[][] rows = new Object[1025][1];
+    for (int i = 0; i < 1025; i++) {
+      rows[i][0] = new BooleanWritable(true);
+    }
+
+    initAndSerializeAndDeserialize(schema, toStruct(rows));
+  }
+
+  @Test
+  public void testMapIntergerWithMoreThan1024Values() throws SerDeException {
+    String[][] schema = {
+            {"int_map", "map<string,int>"},
+    };
+
+    Object[][] rows = new Object[1025][1];
+    for (int i = 0; i < 1025; i++) {
+      rows[i][0] = intW(i);
+    }
+
+    initAndSerializeAndDeserialize(schema, toMap(rows));
+  }
 }

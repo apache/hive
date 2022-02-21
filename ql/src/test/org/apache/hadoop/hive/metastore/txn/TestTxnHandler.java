@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -59,6 +58,8 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
@@ -89,6 +90,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -103,6 +105,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.LockTypeUtil.getEncoding;
 
 /**
@@ -1499,7 +1503,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn1, e, "thread t1");
+                    tHndlr.checkRetryable(e, "thread t1");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1529,7 +1533,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn2, e, "thread t2");
+                    tHndlr.checkRetryable(e, "thread t2");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1564,7 +1568,7 @@ public class TestTxnHandler {
   }
 
   /**
-   * This cannnot be run against Derby (thus in UT) but it can run againt MySQL.
+   * This cannnot be run against Derby (thus in UT) but it can run against MySQL.
    * 1. add to metastore/pom.xml
    *     <dependency>
    *      <groupId>mysql</groupId>
@@ -1873,7 +1877,6 @@ public class TestTxnHandler {
   @Test
   public void testGetMaterializationInvalidationInfo() throws MetaException {
     testGetMaterializationInvalidationInfo(
-            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
     );
   }
@@ -1881,7 +1884,6 @@ public class TestTxnHandler {
   @Test
   public void testGetMaterializationInvalidationInfoWhenTableHasNoException() throws MetaException {
     testGetMaterializationInvalidationInfo(
-            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
     );
   }
@@ -1889,12 +1891,62 @@ public class TestTxnHandler {
   @Test
   public void testGetMaterializationInvalidationInfoWhenCurrentTxnListHasNoException() throws MetaException {
     testGetMaterializationInvalidationInfo(
-            new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
     );
   }
 
   private void testGetMaterializationInvalidationInfo(
+          ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
+    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    }
+
+    Table table = new Table();
+    table.setDbName("default");
+    table.setTableName("t1");
+    HashMap<String, String> tableParameters = new HashMap<String, String>() {{
+      put(TABLE_IS_TRANSACTIONAL, "true");
+      put(TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
+    }};
+    table.setParameters(tableParameters);
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTable(table);
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setSourceTables(Collections.singletonList(sourceTable));
+    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdListWhenTableHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
+    );
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWithValidReaderWriteIdListWhenCurrentTxnListHasNoException() throws MetaException {
+    testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
+            new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
+            new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
+    );
+  }
+
+  private void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
           ValidReadTxnList currentValidTxnList, ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
     for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {

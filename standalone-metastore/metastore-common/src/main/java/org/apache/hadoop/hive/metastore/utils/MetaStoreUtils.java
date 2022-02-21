@@ -186,6 +186,14 @@ public class MetaStoreUtils {
     return colNames;
   }
 
+  /*
+   * Check the table storage location must not be root path.
+   */
+  public static boolean validateTblStorage(StorageDescriptor sd) {
+    return !(StringUtils.isNotBlank(sd.getLocation())
+            && new Path(sd.getLocation()).getParent() == null);
+  }
+
   /**
    * validateName
    *
@@ -680,7 +688,7 @@ public class MetaStoreUtils {
       if (!first) {
         colNameBuf.append(columnNameDelimiter);
         colTypeBuf.append(":");
-        colComment.append('\0');
+        colComment.append(ColumnType.COLUMN_COMMENTS_DELIMITER);
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
@@ -1081,7 +1089,7 @@ public class MetaStoreUtils {
   }
 
   public static TableName getTableNameFor(Table table) {
-    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName(), null);
+    return TableName.fromString(table.getTableName().toLowerCase(), table.getCatName().toLowerCase(), table.getDbName().toLowerCase(), null);
   }
 
   /**

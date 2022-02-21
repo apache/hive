@@ -375,7 +375,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   /**
    * @param node
    * @param callback
-   * @return if it was possible to attemp the registration. Sometimes it's
+   * @return if it was possible to attempt the registration. Sometimes it's
    * not possible because is a dag is not running
    */
   public boolean registerDag(NodeInfo node, final OperationCallback<QueryIdentifierProto, Void> callback) {

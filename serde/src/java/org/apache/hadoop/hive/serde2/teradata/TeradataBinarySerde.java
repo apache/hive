@@ -412,8 +412,8 @@ import static java.lang.String.format;
   private Object deserializeField(TeradataBinaryDataInputStream in, TypeInfo type, Object reuse, boolean isNull)
       throws IOException, ParseException, SerDeException {
     // isNull:
-    // In the Teradata Binary file, even the field is null (isNull=true),
-    // thd data still has some default values to pad the record.
+    // In the Teradata Binary file, even if the field is null (isNull=true),
+    // the data still has some default values to pad the record.
     // In this case, you cannot avoid reading the bytes even it is not used.
     switch (type.getCategory()) {
     case PRIMITIVE:

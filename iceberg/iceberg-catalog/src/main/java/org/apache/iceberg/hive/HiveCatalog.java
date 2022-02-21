@@ -27,7 +27,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -38,6 +38,7 @@ import org.apache.iceberg.BaseMetastoreCatalog;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.catalog.Namespace;
@@ -63,7 +64,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   private String name;
   private Configuration conf;
   private FileIO fileIO;
-  private ClientPool<HiveMetaStoreClient, TException> clients;
+  private ClientPool<IMetaStoreClient, TException> clients;
 
   public HiveCatalog() {
   }
@@ -71,9 +72,9 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   /**
    * Hive Catalog constructor.
    *
+   * @param conf Hadoop Configuration
    * @deprecated please use the no-arg constructor, setConf and initialize to construct the catalog. Will be removed in
    * v0.13.0
-   * @param conf Hadoop Configuration
    */
   @Deprecated
   public HiveCatalog(Configuration conf) {
@@ -94,6 +95,11 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   @Override
   public void initialize(String inputName, Map<String, String> properties) {
     this.name = inputName;
+    if (conf == null) {
+      LOG.warn("No Hadoop Configuration was set, using the default environment Configuration");
+      this.conf = new Configuration();
+    }
+
     if (properties.containsKey(CatalogProperties.URI)) {
       this.conf.set(HiveConf.ConfVars.METASTOREURIS.varname, properties.get(CatalogProperties.URI));
     }
@@ -235,7 +241,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
         !namespace.isEmpty(),
         "Cannot create namespace with invalid name: %s", namespace);
     Preconditions.checkArgument(isValidateNamespace(namespace),
-        "Cannot support multi part namespace in Hive MetaStore: %s", namespace);
+        "Cannot support multi part namespace in Hive Metastore: %s", namespace);
 
     try {
       clients.run(client -> {
@@ -250,12 +256,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
             namespace);
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to create namespace " + namespace + " in Hive MataStore", e);
+      throw new RuntimeException("Failed to create namespace " + namespace + " in Hive Matastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to createDatabase(name) " + namespace + " in Hive MataStore", e);
+          "Interrupted in call to createDatabase(name) " + namespace + " in Hive Matastore", e);
     }
   }
 
@@ -268,7 +274,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       return ImmutableList.of();
     }
     try {
-      List<Namespace> namespaces = clients.run(HiveMetaStoreClient::getAllDatabases)
+      List<Namespace> namespaces = clients.run(IMetaStoreClient::getAllDatabases)
           .stream()
           .map(Namespace::of)
           .collect(Collectors.toList());
@@ -277,12 +283,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       return namespaces;
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to list all namespace: " + namespace + " in Hive MataStore",  e);
+      throw new RuntimeException("Failed to list all namespace: " + namespace + " in Hive Matastore",  e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to getAllDatabases() " + namespace + " in Hive MataStore", e);
+          "Interrupted in call to getAllDatabases() " + namespace + " in Hive Matastore", e);
     }
   }
 
@@ -311,12 +317,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       return false;
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to drop namespace " + namespace + " in Hive MataStore", e);
+      throw new RuntimeException("Failed to drop namespace " + namespace + " in Hive Matastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to drop dropDatabase(name) " + namespace + " in Hive MataStore", e);
+          "Interrupted in call to drop dropDatabase(name) " + namespace + " in Hive Matastore", e);
     }
   }
 
@@ -362,11 +368,11 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     } catch (TException e) {
       throw new RuntimeException(
-          "Failed to list namespace under namespace: " + namespace + " in Hive MataStore", e);
+          "Failed to list namespace under namespace: " + namespace + " in Hive Matastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new RuntimeException("Interrupted in call to getDatabase(name) " + namespace + " in Hive MataStore", e);
+      throw new RuntimeException("Interrupted in call to getDatabase(name) " + namespace + " in Hive Matastore", e);
     }
   }
 
@@ -386,12 +392,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       throw new NoSuchNamespaceException(e, "Namespace does not exist: %s", namespace);
 
     } catch (TException e) {
-      throw new RuntimeException("Failed to list namespace under namespace: " + namespace + " in Hive MataStore", e);
+      throw new RuntimeException("Failed to list namespace under namespace: " + namespace + " in Hive Matastore", e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(
-          "Interrupted in call to getDatabase(name) " + namespace + " in Hive MataStore", e);
+          "Interrupted in call to getDatabase(name) " + namespace + " in Hive Matastore", e);
     }
   }
 
@@ -514,7 +520,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("name", name)
-        .add("uri", this.conf.get(HiveConf.ConfVars.METASTOREURIS.varname))
+        .add("uri", this.conf == null ? "" : this.conf.get(HiveConf.ConfVars.METASTOREURIS.varname))
         .toString();
   }
 

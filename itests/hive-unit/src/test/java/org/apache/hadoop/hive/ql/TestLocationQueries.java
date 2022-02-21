@@ -56,7 +56,8 @@ public class TestLocationQueries extends BaseTestQueries {
      * @return non-zero if it failed
      */
     @Override
-    public QTestProcessExecResult checkCliDriverResults(String tname) throws Exception {
+    public QTestProcessExecResult checkCliDriverResults() throws Exception {
+      String tname = getInputFile().getName();
       File logFile = new File(logDir, tname + ".out");
 
       int failedCount = 0;
@@ -124,7 +125,7 @@ public class TestLocationQueries extends BaseTestQueries {
       qt[i] = new CheckResults(resDir, logDir, MiniClusterType.NONE, "parta");
       qt[i].postInit();
       qt[i].newSession();
-      qt[i].addFile(qfiles[i], false);
+      qt[i].setInputFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
 

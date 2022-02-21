@@ -21,7 +21,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -55,29 +54,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
  */
 public class HiveAggregateSortLimitRule extends RelOptRule {
 
-  private static HiveAggregateSortLimitRule instance = null;
-
-  public static final HiveAggregateSortLimitRule getInstance(HiveConf hiveConf) {
-    if (instance == null) {
-      RelFieldCollation.NullDirection defaultAscNullDirection;
-      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST)) {
-        defaultAscNullDirection = RelFieldCollation.NullDirection.LAST;
-      } else {
-        defaultAscNullDirection = RelFieldCollation.NullDirection.FIRST;
-      }
-      instance = new HiveAggregateSortLimitRule(defaultAscNullDirection);
-    }
-
-    return instance;
-  }
-
   private final RelFieldCollation.NullDirection defaultAscNullDirection;
 
-
-  private HiveAggregateSortLimitRule(RelFieldCollation.NullDirection defaultAscNullDirection) {
+  public HiveAggregateSortLimitRule(boolean nullsLast) {
     super(operand(HiveSortLimit.class, operand(HiveAggregate.class, any())),
             HiveRelFactories.HIVE_BUILDER, "HiveAggregateSortRule");
-    this.defaultAscNullDirection = defaultAscNullDirection;
+    this.defaultAscNullDirection =
+        nullsLast ? RelFieldCollation.NullDirection.LAST : RelFieldCollation.NullDirection.FIRST;
   }
 
   @Override

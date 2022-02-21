@@ -60,6 +60,23 @@ class CompactionTxnHandler extends TxnHandler {
           + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
           + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
+  private static final String SELECT_COMPACTION_METRICS_CACHE_QUERY =
+      "SELECT \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM \"COMPACTION_METRICS_CACHE\" " +
+          "WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? AND \"CMC_METRIC_TYPE\" = ?";
+  private static final String NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY =
+      "\"CMC_DATABASE\", \"CMC_TABLE\", \"CMC_PARTITION\", \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM " +
+      "\"COMPACTION_METRICS_CACHE\" WHERE \"CMC_METRIC_TYPE\" = ? ORDER BY \"CMC_METRIC_VALUE\" DESC";
+  private static final String UPDATE_COMPACTION_METRICS_CACHE_QUERY =
+      "UPDATE \"COMPACTION_METRICS_CACHE\" SET \"CMC_METRIC_VALUE\" = ?, \"CMC_VERSION\" = ? " +
+          "WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? AND \"CMC_METRIC_TYPE\" = ? " +
+          "AND \"CMC_VERSION\" = ?";
+  private static final String INSERT_COMPACTION_METRICS_CACHE_QUERY =
+      "INSERT INTO \"COMPACTION_METRICS_CACHE\" ( " +
+          "\"CMC_DATABASE\", \"CMC_TABLE\", \"CMC_PARTITION\", \"CMC_METRIC_TYPE\", \"CMC_METRIC_VALUE\", " +
+          "\"CMC_VERSION\" ) VALUES (?, ?, ?, ?, ?, ?)";
+  private static final String DELETE_COMPACTION_METRICS_CACHE_QUERY =
+      "DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? " +
+          "AND \"CMC_METRIC_TYPE\" = ?";
 
   public CompactionTxnHandler() {
   }
@@ -150,7 +167,7 @@ class CompactionTxnHandler extends TxnHandler {
         }
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database " + e.getMessage());
-        checkRetryable(dbConn, e,
+        checkRetryable(e,
             "findPotentialCompactions(maxAborted:" + abortedThreshold
                 + ", abortedTimeThreshold:" + abortedTimeThreshold + ")");
       } finally {
@@ -175,7 +192,9 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public CompactionInfo findNextToCompact(String workerId) throws MetaException {
-    return findNextToCompact(new FindNextCompactRequest(workerId, null));
+    FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+    findNextCompactRequest.setWorkerId(workerId);
+    return findNextToCompact(findNextCompactRequest);
   }
 
   /**
@@ -190,6 +209,7 @@ class CompactionTxnHandler extends TxnHandler {
       if (rqst == null) {
         throw new MetaException("FindNextCompactRequest is null");
       }
+
       Connection dbConn = null;
       Statement stmt = null;
       //need a separate stmt for executeUpdate() otherwise it will close the ResultSet(HIVE-12725)
@@ -198,10 +218,10 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+        String query = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
           "\"CQ_TYPE\", \"CQ_TBLPROPERTIES\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + INITIATED_STATE + "'";
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
+        LOG.debug("Going to execute query <" + query + ">");
+        rs = stmt.executeQuery(query);
         if (!rs.next()) {
           LOG.debug("No compactions found ready to compact");
           dbConn.rollback();
@@ -216,25 +236,37 @@ class CompactionTxnHandler extends TxnHandler {
           info.partName = rs.getString(4);
           info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
           info.properties = rs.getString(6);
+
+          String workerId = rqst.getWorkerId();
+          String workerVersion = rqst.getWorkerVersion();
+          String workerIdSqlValue = (workerId == null) ? "NULL" : ("'" + workerId + "'");
+
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
-          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + rqst.getWorkerId() + "', " +
-            "\"CQ_WORKER_VERSION\" = '" + rqst.getWorkerVersion() + "', " +
-            "\"CQ_START\" = " + now + ", \"CQ_STATE\" = '" + WORKING_STATE + "' WHERE \"CQ_ID\" = " + info.id +
-            " AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
-          LOG.debug("Going to execute update <" + s + ">");
-          int updCount = updStmt.executeUpdate(s);
+          query = "" +
+              "UPDATE " +
+              "  \"COMPACTION_QUEUE\" " +
+              "SET " +
+              " \"CQ_WORKER_ID\" = " + workerIdSqlValue + ", " +
+              " \"CQ_WORKER_VERSION\" = '" + workerVersion + "', " +
+              " \"CQ_START\" = " + now + ", " +
+              " \"CQ_STATE\" = '" + WORKING_STATE + "' " +
+              "WHERE \"CQ_ID\" = " + info.id +
+              "  AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
+
+          LOG.debug("Going to execute update <" + query + ">");
+          int updCount = updStmt.executeUpdate(query);
           if(updCount == 1) {
             dbConn.commit();
             return info;
           }
           if(updCount == 0) {
-            LOG.debug("Worker {} (version: {}) picked up {}", rqst.getWorkerId(), rqst.getWorkerVersion(), info);
+            LOG.debug("Worker {} (version: {}) picked up {}", workerId, workerVersion, info);
             continue;
           }
           LOG.error("Unable to set to cq_state=" + WORKING_STATE + " for compaction record: " +
-            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerId() +
-            ". workerVersion=" + rqst.getWorkerVersion());
+            info + ". updCnt=" + updCount + ". workerId=" + workerId +
+            ". workerVersion=" + workerVersion);
           dbConn.rollback();
           return null;
         } while( rs.next());
@@ -244,7 +276,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to select next element for compaction, " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findNextToCompact(rqst:" + rqst + ")");
+        checkRetryable(e, "findNextToCompact(rqst:" + rqst + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -286,7 +318,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to update compaction queue " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "markCompacted(" + info + ")");
+        checkRetryable(e, "markCompacted(" + info + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -308,59 +340,162 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException {
-    Connection dbConn = null;
-    List<CompactionInfo> rc = new ArrayList<>();
-
-    Statement stmt = null;
-    ResultSet rs = null;
     try {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
+      List<CompactionInfo> rc = new ArrayList<>();
+
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+          Statement stmt = dbConn.createStatement()) {
         /*
          * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
          * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
          */
-        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
-                + READY_FOR_CLEANING + "'";
+        String whereClause = " WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
         if (minOpenTxnWaterMark > 0) {
-          s = s + " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
+          whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
         if (retentionTime > 0) {
-          s = s + " AND \"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ")";
+          whereClause += " AND \"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ")";
         }
-        s = s + " ORDER BY \"CQ_COMMIT_TIME\"";
+        String s = "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
+            "   \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\"" +
+            "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
+            "INNER JOIN (" +
+            "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"WRITE_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
+            "  FROM \"COMPACTION_QUEUE\""
+            + whereClause +
+            "  GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"cq2\" " +
+            "ON \"cq1\".\"CQ_DATABASE\" = \"cq2\".\"CQ_DATABASE\""+
+            "  AND \"cq1\".\"CQ_TABLE\" = \"cq2\".\"CQ_TABLE\""+
+            "  AND (\"cq1\".\"CQ_PARTITION\" = \"cq2\".\"CQ_PARTITION\"" +
+            "    OR \"cq1\".\"CQ_PARTITION\" IS NULL AND \"cq2\".\"CQ_PARTITION\" IS NULL)"
+            + whereClause +
+            "  AND \"CQ_HIGHEST_WRITE_ID\" = \"WRITE_ID\"" +
+            "  ORDER BY \"CQ_ID\"";
         LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
 
-        while (rs.next()) {
-          CompactionInfo info = new CompactionInfo();
-          info.id = rs.getLong(1);
-          info.dbname = rs.getString(2);
-          info.tableName = rs.getString(3);
-          info.partName = rs.getString(4);
-          info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
-          info.runAs = rs.getString(6);
-          info.highestWriteId = rs.getLong(7);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Found ready to clean: " + info.toString());
+        try (ResultSet rs = stmt.executeQuery(s)) {
+          while (rs.next()) {
+            CompactionInfo info = new CompactionInfo();
+            info.id = rs.getLong(1);
+            info.dbname = rs.getString(2);
+            info.tableName = rs.getString(3);
+            info.partName = rs.getString(4);
+            info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
+            info.runAs = rs.getString(6);
+            info.highestWriteId = rs.getLong(7);
+            info.properties = rs.getString(8);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Found ready to clean: " + info.toString());
+            }
+            rc.add(info);
           }
-          rc.add(info);
         }
         return rc;
       } catch (SQLException e) {
         LOG.error("Unable to select next element for cleaning, " + e.getMessage());
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findReadyToClean");
+        checkRetryable(e, "findReadyToClean");
         throw new MetaException("Unable to connect to transaction database " +
-          StringUtils.stringifyException(e));
-      } finally {
-        close(rs, stmt, dbConn);
+            StringUtils.stringifyException(e));
       }
     } catch (RetryException e) {
       return findReadyToClean(minOpenTxnWaterMark, retentionTime);
+    }
+  }
+
+
+  /**
+   * Mark the cleaning start time for a particular compaction
+   *
+   * @param info info on the compaction entry
+   */
+  @Override
+  @RetrySemantics.ReadOnly
+  public void markCleanerStart(CompactionInfo info) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Running markCleanerStart with CompactionInfo: " + info.toString());
+    }
+
+    try {
+      Connection dbConn = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        long now = getDbTime(dbConn);
+        setCleanerStart(dbConn, info, now);
+      } catch (SQLException e) {
+        LOG.error("Unable to set the cleaner start time for compaction record  " + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "markCleanerStart(" + info + ")");
+        throw new MetaException("Unable to connect to transaction database " + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      markCleanerStart(info);
+    }
+  }
+
+  /**
+   * Removes the cleaning start time for a particular compaction
+   *
+   * @param info info on the compaction entry
+   */
+  @Override
+  @RetrySemantics.ReadOnly
+  public void clearCleanerStart(CompactionInfo info) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Running clearCleanerStart with CompactionInfo: " + info.toString());
+    }
+
+    try {
+      Connection dbConn = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        setCleanerStart(dbConn, info, -1L);
+      } catch (SQLException e) {
+        LOG.error("Unable to clear the cleaner start time for compaction record  " + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "clearCleanerStart(" + info + ")");
+        throw new MetaException("Unable to connect to transaction database " + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      clearCleanerStart(info);
+    }
+  }
+
+  private void setCleanerStart(Connection dbConn, CompactionInfo info, Long timestamp)
+      throws RetryException, SQLException {
+    long id = info.id;
+    PreparedStatement pStmt = null;
+    ResultSet rs = null;
+    try {
+      String query = "" +
+          " UPDATE " +
+          "  \"COMPACTION_QUEUE\" " +
+          " SET " +
+          "  \"CQ_CLEANER_START\" = " + timestamp +
+          " WHERE " +
+          "  \"CQ_ID\" = " + id +
+          " AND " +
+          "  \"CQ_STATE\"='" + READY_FOR_CLEANING + "'";
+
+      pStmt = dbConn.prepareStatement(query);
+      LOG.debug("Going to execute update <" + query + "> for CQ_ID=" + id);
+      int updCount = pStmt.executeUpdate();
+      if (updCount != 1) {
+        LOG.error("Unable to update compaction record: " + info + ".  Update count=" + updCount);
+        LOG.debug("Going to rollback");
+        dbConn.rollback();
+      } else {
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      }
+    } finally {
+      close(rs);
+      closeStmt(pStmt);
     }
   }
 
@@ -496,7 +631,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to delete from compaction queue " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "markCleaned(" + info + ")");
+        checkRetryable(e, "markCleaned(" + info + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -520,6 +655,8 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
 
       try {
+        long minTxnIdSeenOpen = findMinTxnIdSeenOpen();
+
         // We query for minimum values in all the queries and they can only increase by any concurrent
         // operations. So, READ COMMITTED is sufficient.
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -529,19 +666,22 @@ class CompactionTxnHandler extends TxnHandler {
         // If there are no txns which are currently open or aborted in the system, then current value of
         // max(TXNS.txn_id) could be min_uncommitted_txnid.
         String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
-            "SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\" " +
-            "UNION " +
-            "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
-            "UNION " +
-            "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
-            " OR \"TXN_STATE\" = " + TxnStatus.OPEN +
-            ") \"RES\"";
+          " SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\"" +
+          (useMinHistoryLevel ? "" :
+          "   UNION" +
+          " SELECT MIN(\"WS_TXNID\") AS \"ID\" FROM \"WRITE_SET\"") +
+          "   UNION" +
+          " SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
+          (useMinHistoryLevel ? "" :
+          "   OR \"TXN_STATE\" = " + TxnStatus.OPEN) +
+          " ) \"RES\"";
+
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
           throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
-        long minUncommitedTxnid = rs.getLong(1);
+        long minUncommitedTxnid = minTxnIdSeenOpen < 0 ? rs.getLong(1) : Math.min(rs.getLong(1), minTxnIdSeenOpen);
 
         // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
         // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
@@ -556,7 +696,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to delete from TXN_TO_WRITE_ID table " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "cleanTxnToWriteIdTable");
+        checkRetryable(e, "cleanTxnToWriteIdTable");
         throw new MetaException("Unable to connect to transaction database " +
                 StringUtils.stringifyException(e));
       } finally {
@@ -646,7 +786,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to delete from COMPLETED_TXN_COMPONENTS table " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "removeDuplicateCompletedTxnComponents");
+        checkRetryable(e, "removeDuplicateCompletedTxnComponents");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -719,7 +859,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to delete from txns table " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "cleanEmptyAbortedTxns");
+        checkRetryable(e, "cleanEmptyAbortedTxns");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -764,7 +904,7 @@ class CompactionTxnHandler extends TxnHandler {
           e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "revokeFromLocalWorkers(hostname:" + hostname +")");
+        checkRetryable(e, "revokeFromLocalWorkers(hostname:" + hostname +")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -811,7 +951,7 @@ class CompactionTxnHandler extends TxnHandler {
           e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "revokeTimedoutWorkers(timeout:" + timeout + ")");
+        checkRetryable(e, "revokeTimedoutWorkers(timeout:" + timeout + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -878,7 +1018,7 @@ class CompactionTxnHandler extends TxnHandler {
         return columns;
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findColumnsWithStats(" + ci.tableName +
+        checkRetryable(e, "findColumnsWithStats(" + ci.tableName +
           (ci.partName == null ? "" : "/" + ci.partName) + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
@@ -940,7 +1080,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn.commit();
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "updateCompactorState(" + ci + "," + compactionTxnId +")");
+        checkRetryable(e, "updateCompactorState(" + ci + "," + compactionTxnId +")");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -1088,7 +1228,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn.commit();
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "purgeCompactionHistory()");
+        checkRetryable(e, "purgeCompactionHistory()");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -1172,7 +1312,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to check for failed compactions", e);
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "checkFailedCompactions(" + ci + ")");
+        checkRetryable(e, "checkFailedCompactions(" + ci + ")");
         LOG.error("Unable to connect to transaction database", e);
         return false;//weren't able to check
       } finally {
@@ -1183,15 +1323,8 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-  /**
-   * If there is an entry in compaction_queue with ci.id, remove it
-   * Make entry in completed_compactions with status 'f'.
-   * If there is no entry in compaction_queue, it means Initiator failed to even schedule a compaction,
-   * which we record as DID_NOT_INITIATE entry in history.
-   */
-  @Override
-  @RetrySemantics.CannotRetry
-  public void markFailed(CompactionInfo ci) throws MetaException {//todo: this should not throw
+
+  private void updateStatus(CompactionInfo ci) throws MetaException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Marking as failed: CompactionInfo: " + ci.toString());
     }
@@ -1200,26 +1333,29 @@ class CompactionTxnHandler extends TxnHandler {
       Statement stmt = null;
       PreparedStatement pStmt = null;
       ResultSet rs = null;
-      // the error message related to the failure is wrapped inside CompactionInfo
-      // fetch this info, since ci will be reused in subsequent queries
-      String errorMessage = ci.errorMessage;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-            + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
-            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-            + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" "
-            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
+                + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+                + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+                + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" "
+                + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if (rs.next()) {
+          //preserve errorMessage and state
+          String errorMessage = ci.errorMessage;
+          char state = ci.state;
           ci = CompactionInfo.loadFullFromCompactionQueue(rs);
+          ci.errorMessage = errorMessage;
+          ci.state = state;
+
           String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
           pStmt = dbConn.prepareStatement(s);
           pStmt.setLong(1, ci.id);
           LOG.debug("Going to execute update <" + s + ">");
-          int updCnt = pStmt.executeUpdate();
+          pStmt.executeUpdate();
         }
         else {
           if(ci.id > 0) {
@@ -1231,31 +1367,23 @@ class CompactionTxnHandler extends TxnHandler {
           //The failure occurred before we even made an entry in COMPACTION_QUEUE
           //generate ID so that we can make an entry in COMPLETED_COMPACTIONS
           ci.id = generateCompactionQueueId(stmt);
-          //mostly this indicates that the Initiator is paying attention to some table even though
-          //compactions are not happening.
-          ci.state = DID_NOT_INITIATE;
           //this is not strictly accurate, but 'type' cannot be null.
           if(ci.type == null) {
             ci.type = CompactionType.MINOR;
           }
           ci.start = getDbTime(dbConn);
           LOG.debug("The failure occurred before we even made an entry in COMPACTION_QUEUE. Generated ID so that we "
-              + "can make an entry in COMPLETED_COMPACTIONS. New Id: " + ci.id);
-        } else {
-          ci.state = FAILED_STATE;
+                  + "can make an entry in COMPLETED_COMPACTIONS. New Id: " + ci.id);
         }
         close(rs, stmt, null);
         closeStmt(pStmt);
 
         pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\" "
-            + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
-            + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
-            + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
-            + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
-            + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?)");
-        if (errorMessage != null) {
-          ci.errorMessage = errorMessage;
-        }
+                + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
+                + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
+                + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
+                + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
+                + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?)");
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Inserted " + updCount + " entries into COMPLETED_COMPACTIONS");
@@ -1266,16 +1394,42 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.warn("markFailed(" + ci.id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "markFailed(" + ci + ")");
+        checkRetryable(e, "markFailed(" + ci + ")");
         LOG.error("markFailed(" + ci + ") failed: " + e.getMessage(), e);
       } finally {
         close(rs, stmt, null);
         close(null, pStmt, dbConn);
       }
     } catch (RetryException e) {
-      markFailed(ci);
+      updateStatus(ci);
     }
   }
+
+  /**
+   * If there is an entry in compaction_queue with ci.id, remove it
+   * Make entry in completed_compactions with status 'f'.
+   * If there is no entry in compaction_queue, it means Initiator failed to even schedule a compaction,
+   * which we record as DID_NOT_INITIATE entry in history.
+   */
+  @Override
+  @RetrySemantics.CannotRetry
+  public void markFailed(CompactionInfo ci) throws MetaException {
+    ci.state = ci.id == 0 ? DID_NOT_INITIATE : FAILED_STATE;
+    updateStatus(ci);
+  }
+
+  /**
+   * Mark a compaction as refused (to run).
+   * @param info compaction job.
+   * @throws MetaException
+   */
+  @Override
+  @RetrySemantics.CannotRetry
+  public void markRefused(CompactionInfo info) throws MetaException {
+    info.state = REFUSED_STATE;
+    updateStatus(info);
+  }
+
   @Override
   @RetrySemantics.Idempotent
   public void setHadoopJobId(String hadoopJobId, long id) {
@@ -1296,7 +1450,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.warn("setHadoopJobId(" + hadoopJobId + "," + id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
+        checkRetryable(e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
         LOG.error("setHadoopJobId(" + hadoopJobId + "," + id + ") failed: " + e.getMessage(), e);
       } finally {
         close(null, stmt, dbConn);
@@ -1317,7 +1471,7 @@ class CompactionTxnHandler extends TxnHandler {
       } catch (SQLException e) {
         LOG.error("Unable to getMinOpenTxnIdForCleaner", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "getMinOpenTxnForCleaner");
+        checkRetryable(e, "getMinOpenTxnForCleaner");
         throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " +
             StringUtils.stringifyException(e));
       } finally {
@@ -1366,7 +1520,7 @@ class CompactionTxnHandler extends TxnHandler {
         } else {
           LOG.error("Unable to execute findMinTxnIdSeenOpen", e);
           rollbackDBConn(dbConn);
-          checkRetryable(dbConn, e, "findMinTxnIdSeenOpen");
+          checkRetryable(e, "findMinTxnIdSeenOpen");
           throw new MetaException("Unable to execute findMinTxnIdSeenOpen() " + StringUtils.stringifyException(e));
         }
       } finally {
@@ -1378,13 +1532,13 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
-      long tempId) throws SQLException, MetaException {
+  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, 
+      Long commitId, long tempId) throws SQLException, MetaException {
     super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
-    if (txnType == TxnType.COMPACTION) {
-      stmt.executeUpdate(
-          "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
-              getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
+    
+    if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
+      stmt.executeUpdate("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
+          getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
   }
 
@@ -1411,7 +1565,7 @@ class CompactionTxnHandler extends TxnHandler {
       } catch (SQLException e) {
         LOG.error("Unable to getCompactionByTxnId", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "getCompactionByTxnId");
+        checkRetryable(e, "getCompactionByTxnId");
         throw new MetaException("Unable to execute getCompactionByTxnId() " + StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
@@ -1422,7 +1576,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  protected void createCommitNotificationEvent(Connection dbConn, long txnid, Optional<TxnType> txnType)
+  protected void createCommitNotificationEvent(Connection dbConn, long txnid, TxnType txnType)
       throws MetaException, SQLException {
     super.createCommitNotificationEvent(dbConn, txnid, txnType);
     if (transactionalListeners != null) {
@@ -1436,6 +1590,215 @@ class CompactionTxnHandler extends TxnHandler {
       }
     }
   }
+
+  @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException {
+    Connection dbConn = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        boolean updateRes;
+        CompactionMetricsData prevMetricsData = getCompactionMetricsData(data, dbConn);
+        if (data.getMetricValue() >= data.getThreshold()) {
+          if (prevMetricsData != null) {
+            updateRes = updateCompactionMetricsData(dbConn, data, prevMetricsData);
+          } else {
+            updateRes = createCompactionMetricsData(dbConn, data);
+          }
+        } else {
+          if (prevMetricsData != null) {
+            updateRes =
+                removeCompactionMetricsData(dbConn, data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType());
+          } else {
+            return true;
+          }
+        }
+        return updateRes;
+      } catch (SQLException e) {
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "updateCompactionMetricsData(" + data + ")");
+        throw new MetaException("Unable to execute updateCompactionMetricsData()" + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      updateCompactionMetricsData(data);
+    }
+    return false;
+  }
+
+  @Override
+  public List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)
+      throws MetaException {
+    Connection dbConn = null;
+    List<CompactionMetricsData> metricsDataList = new ArrayList<>();
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {
+          String query = sqlGenerator.addLimitClause(limit, NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY);
+          try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
+            pstmt.setString(1, type.toString());
+            ResultSet resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+              CompactionMetricsData.Builder builder = new CompactionMetricsData.Builder();
+              metricsDataList.add(builder
+                  .dbName(resultSet.getString(1))
+                  .tblName(resultSet.getString(2))
+                  .partitionName(resultSet.getString(3))
+                  .metricType(type)
+                  .metricValue(resultSet.getInt(4))
+                  .version(resultSet.getInt(5))
+                  .build());
+            }
+          }
+        }
+      } catch (SQLException e) {
+        LOG.error("Unable to getCompactionMetricsDataForType");
+        checkRetryable(e, "getCompactionMetricsDataForType");
+        throw new MetaException("Unable to execute getCompactionMetricsDataForType()" +
+            StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      return getTopCompactionMetricsDataPerType(limit);
+    }
+    return metricsDataList;
+  }
+
+  @Override
+  public CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException {
+    Connection dbConn = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        return getCompactionMetricsData(new CompactionMetricsData.Builder().dbName(dbName).tblName(tblName)
+            .partitionName(partitionName).metricType(type).build(), dbConn);
+      } catch (SQLException e) {
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "getCompactionMetricsData(" + dbName + ", " + tblName + ", " + partitionName + ", "
+            + type + ")");
+        throw new MetaException("Unable to execute getCompactionMetricsData()" + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      getCompactionMetricsData(dbName, tblName, partitionName, type);
+    }
+    return null;
+  }
+
+  private CompactionMetricsData getCompactionMetricsData(CompactionMetricsData data, Connection dbConn) throws SQLException {
+    String query = SELECT_COMPACTION_METRICS_CACHE_QUERY;
+    if (data.getPartitionName() != null) {
+      query += " AND \"CMC_PARTITION\" = ?";
+    } else {
+      query += " AND \"CMC_PARTITION\" IS NULL";
+    }
+    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
+      pstmt.setString(1, data.getDbName());
+      pstmt.setString(2, data.getTblName());
+      pstmt.setString(3, data.getMetricType().toString());
+      if (data.getPartitionName() != null) {
+        pstmt.setString(4, data.getPartitionName());
+      }
+      ResultSet resultSet = pstmt.executeQuery();
+      CompactionMetricsData.Builder builder = new CompactionMetricsData.Builder();
+      if (resultSet.next()) {
+        return builder.dbName(data.getDbName()).tblName(data.getTblName()).partitionName(data.getPartitionName())
+            .metricType(data.getMetricType()).metricValue(resultSet.getInt(1))
+            .version(resultSet.getInt(2)).build();
+      } else {
+        return null;
+      }
+    }
+  }
+
+  @Override
+  public void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws MetaException {
+    Connection dbConn = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        removeCompactionMetricsData(dbConn, dbName, tblName, partitionName, type);
+      } catch (SQLException e) {
+        rollbackDBConn(dbConn);
+        checkRetryable(e, "removeCompactionMetricsData(" + dbName + ", " +  tblName + ", " + partitionName + ", " +
+            type + ")");
+        throw new MetaException("Unable to execute removeCompactionMetricsData()" + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      removeCompactionMetricsData(dbName, tblName, partitionName, type);
+    }
+  }
+
+  private boolean removeCompactionMetricsData(Connection dbConn, String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type) throws SQLException {
+    boolean removeRes;
+    String query = DELETE_COMPACTION_METRICS_CACHE_QUERY;
+    if (partitionName != null) {
+      query += " AND \"CMC_PARTITION\" = ?";
+    } else {
+      query += " AND \"CMC_PARTITION\" IS NULL";
+    }
+    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
+      pstmt.setString(1, dbName);
+      pstmt.setString(2, tblName);
+      pstmt.setString(3, type.toString());
+      if (partitionName != null) {
+        pstmt.setString(4, partitionName);
+      }
+      removeRes = pstmt.executeUpdate() > 0;
+      dbConn.commit();
+    }
+    return removeRes;
+  }
+
+  private boolean updateCompactionMetricsData(Connection dbConn, CompactionMetricsData data,
+      CompactionMetricsData prevData) throws SQLException {
+    boolean updateRes;
+    String query = UPDATE_COMPACTION_METRICS_CACHE_QUERY;
+    if (data.getPartitionName() != null) {
+      query += " AND \"CMC_PARTITION\" = ?";
+    } else {
+      query += " AND \"CMC_PARTITION\" IS NULL";
+    }
+    try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
+      pstmt.setInt(1, data.getMetricValue());
+      pstmt.setInt(2, prevData.getVersion() + 1);
+      pstmt.setString(3, data.getDbName());
+      pstmt.setString(4, data.getTblName());
+      pstmt.setString(5, data.getMetricType().toString());
+      pstmt.setInt(6, prevData.getVersion());
+      if (data.getPartitionName() != null) {
+        pstmt.setString(7, data.getPartitionName());
+      }
+      updateRes = pstmt.executeUpdate() > 0;
+      dbConn.commit();
+    }
+    return updateRes;
+  }
+
+  private boolean createCompactionMetricsData(Connection dbConn, CompactionMetricsData data) throws SQLException {
+    boolean createRes;
+    try (PreparedStatement pstmt = dbConn.prepareStatement(INSERT_COMPACTION_METRICS_CACHE_QUERY)) {
+      pstmt.setString(1, data.getDbName());
+      pstmt.setString(2, data.getTblName());
+      pstmt.setString(3, data.getPartitionName());
+      pstmt.setString(4, data.getMetricType().toString());
+      pstmt.setInt(5, data.getMetricValue());
+      pstmt.setInt(6, 1);
+      createRes = pstmt.executeUpdate() > 0;
+      dbConn.commit();
+    }
+    return createRes;
+  }
+
 }
 
 

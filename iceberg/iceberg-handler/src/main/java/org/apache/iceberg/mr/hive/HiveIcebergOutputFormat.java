@@ -37,11 +37,8 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
-import org.apache.iceberg.data.GenericAppenderFactory;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.encryption.EncryptionManager;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.mapred.Container;
@@ -78,15 +75,17 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
             TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
     FileIO io = table.io();
-    LocationProvider location = table.locationProvider();
-    EncryptionManager encryption = table.encryption();
-    OutputFileFactory outputFileFactory =
-        new OutputFileFactory(spec, fileFormat, location, io, encryption, taskAttemptID.getTaskID().getId(),
-            taskAttemptID.getId(), jc.get(HiveConf.ConfVars.HIVEQUERYID.varname) + "-" + taskAttemptID.getJobID());
+    int partitionId = taskAttemptID.getTaskID().getId();
+    int taskId = taskAttemptID.getId();
+    String operationId = jc.get(HiveConf.ConfVars.HIVEQUERYID.varname) + "-" + taskAttemptID.getJobID();
+    OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, partitionId, taskId)
+        .format(fileFormat)
+        .operationId(operationId)
+        .build();
     String tableName = jc.get(Catalogs.NAME);
-    HiveIcebergRecordWriter writer = new HiveIcebergRecordWriter(schema, spec, fileFormat,
-        new GenericAppenderFactory(schema, spec), outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
-
-    return writer;
+    HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+        null, fileFormat, null, null, null, null);
+    return new HiveIcebergRecordWriter(schema, spec, fileFormat,
+        hfwf, outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
   }
 }

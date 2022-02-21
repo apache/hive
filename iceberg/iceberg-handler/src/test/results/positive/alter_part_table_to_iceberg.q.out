@@ -37,7 +37,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -141,6 +141,7 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
@@ -149,9 +150,16 @@ Table Parameters:
 	numFiles            	4                   
 	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	759                 
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
 	write.format.default	orc                 
 	 	 
@@ -227,7 +235,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -331,6 +339,7 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
@@ -339,9 +348,16 @@ Table Parameters:
 	numFiles            	4                   
 	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1659                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
 	write.format.default	parquet             
 	 	 
@@ -417,7 +433,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -521,17 +537,25 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
-	numRows             	0                   
+	numRows             	9                   
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1054                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
 	write.format.default	avro                
 	 	 

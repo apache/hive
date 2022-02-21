@@ -135,7 +135,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedFiles().spliterator(), false)
         .findFirst()
         .orElseThrow(() -> new RuntimeException("Did not find any data files for test table"));
-    List<PositionDelete<Record>> deletes = ImmutableList.of(new PositionDelete<Record>().set(
+    List<PositionDelete<Record>> deletes = ImmutableList.of(positionDelete(
         dataFile.path(), 2L, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2))
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
@@ -172,8 +172,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .findAny()
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
     List<PositionDelete<Record>> deletes = ImmutableList.of(
-        new PositionDelete<Record>().set(dataFile.path(), 0L, null),
-        new PositionDelete<Record>().set(dataFile.path(), 2L, null)
+        positionDelete(dataFile.path(), 0L, null),
+        positionDelete(dataFile.path(), 2L, null)
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
         fileFormat, ImmutableMap.of("customer_id", 0L), deletes);
@@ -212,8 +212,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Laura", "Yellow").add(0L, "Blake", "Blue").build();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
-        new PositionDelete<Record>().set(dataFile.path(), 0L, rowsToDel.get(0)),
-        new PositionDelete<Record>().set(dataFile.path(), 2L, rowsToDel.get(1))
+        positionDelete(dataFile.path(), 0L, rowsToDel.get(0)),
+        positionDelete(dataFile.path(), 2L, rowsToDel.get(1))
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
         fileFormat, ImmutableMap.of("customer_id", 0L), deletes);
@@ -226,5 +226,10 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
     Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
     Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
+  }
+
+  private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
+    PositionDelete<T> positionDelete = PositionDelete.create();
+    return positionDelete.set(path, pos, row);
   }
 }

@@ -1,0 +1,9 @@
+PREHOOK: query: create external table test_ext_concat (i int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ext_concat
+POSTHOOK: query: create external table test_ext_concat (i int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ext_concat
+FAILED: SemanticException [Error 30034]: Concatenate/Merge can only be performed on managed tables

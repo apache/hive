@@ -313,14 +313,14 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_check_constraint(\metastore\AddCheckConstraintRequest $req);
     /**
-     * @param \metastore\Table $tbl
+     * @param \metastore\CreateTableRequest $request
      * @return \metastore\Table
      * @throws \metastore\AlreadyExistsException
      * @throws \metastore\InvalidObjectException
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
      */
-    public function translate_table_dryrun(\metastore\Table $tbl);
+    public function translate_table_dryrun(\metastore\CreateTableRequest $request);
     /**
      * @param string $dbname
      * @param string $name
@@ -1042,6 +1042,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function update_partition_column_statistics_req(\metastore\SetPartitionsStatsRequest $req);
     /**
+     * @param \metastore\UpdateTransactionalStatsRequest $req
+     * @throws \metastore\MetaException
+     */
+    public function update_transaction_statistics(\metastore\UpdateTransactionalStatsRequest $req);
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param string $col_name
@@ -1497,6 +1502,22 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function mark_failed(\metastore\CompactionInfoStruct $cr);
+    /**
+     * @param \metastore\CompactionInfoStruct $cr
+     * @throws \metastore\MetaException
+     */
+    public function mark_refused(\metastore\CompactionInfoStruct $cr);
+    /**
+     * @param \metastore\CompactionMetricsDataStruct $data
+     * @return bool
+     * @throws \metastore\MetaException
+     */
+    public function update_compaction_metrics_data(\metastore\CompactionMetricsDataStruct $data);
+    /**
+     * @param \metastore\CompactionMetricsDataRequest $request
+     * @throws \metastore\MetaException
+     */
+    public function remove_compaction_metrics_data(\metastore\CompactionMetricsDataRequest $request);
     /**
      * @param string $jobId
      * @param int $cq_id

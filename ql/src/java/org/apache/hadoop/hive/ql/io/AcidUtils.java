@@ -577,7 +577,7 @@ public class AcidUtils {
   }
 
   /**
-   * If the direct insert is on for ACID tables, the files will contain an "_attempID" postfix.
+   * If the direct insert is on for ACID tables, the files will contain an "_attemptID" postfix.
    * In order to be able to read the files from the delete deltas, we need to know which
    * attemptId belongs to which delta. To make this lookup easy, this method created a map
    * to link the deltas to the attemptId.
@@ -1806,13 +1806,19 @@ public class AcidUtils {
       // keep track for error reporting
       directory.setOldestBase(parsedBase);
     }
+    boolean isCompactedBase = isCompactedBase(parsedBase, directory.getFs(), dirSnapshot);
     // Handle aborted IOW base.
-    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase(parsedBase, directory.getFs(), dirSnapshot)) {
+    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase) {
       directory.getAbortedDirectories().add(baseDir);
       directory.getAbortedWriteIds().add(parsedBase.writeId);
       return;
     }
-    if (directory.getBase() == null || directory.getBase().getWriteId() < writeId) {
+    if (directory.getBase() == null || directory.getBase().getWriteId() < writeId
+      // If there are two competing versions of a particular write-id, one from the compactor and another from IOW, 
+      // always pick the compactor one once it is committed.
+      || directory.getBase().getWriteId() == writeId && 
+          isCompactedBase && validTxnList.isTxnValid(parsedBase.getVisibilityTxnId())) {
+      
       if (isValidBase(parsedBase, writeIdList, directory.getFs(), dirSnapshot)) {
         List<HdfsFileStatusWithId> files = null;
         if (dirSnapshot != null) {
@@ -2496,8 +2502,7 @@ public class AcidUtils {
     }
 
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
-      try {
-        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+      try (Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()))) {
         /*
           acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed
@@ -3110,10 +3115,21 @@ public class AcidUtils {
     if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
       return TxnType.COMPACTION;
     }
+    // check if soft delete
+    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE 
+      && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))){
+      return TxnType.SOFT_DELETE;
+    }
+    if (tree.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS
+        && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))) {
+      return TxnType.SOFT_DELETE;
+    }
     return TxnType.DEFAULT;
   }
 
-  public static boolean isReadOnlyTxn(ASTNode tree) {
+  private static boolean isReadOnlyTxn(ASTNode tree) {
     final ASTSearcher astSearcher = new ASTSearcher();
     return READ_TXN_TOKENS.contains(tree.getToken().getType())
       || (tree.getToken().getType() == HiveParser.TOK_QUERY && Stream.of(

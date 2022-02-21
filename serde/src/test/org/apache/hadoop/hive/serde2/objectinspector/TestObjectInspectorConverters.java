@@ -85,7 +85,7 @@ public class TestObjectInspectorConverters {
       convertText();
 
       // Binary
-      converBinary();
+      convertBinary();
 
       // Union
       convertUnion();
@@ -185,7 +185,7 @@ private void convertUnion() {
       assertEquals(expectedObjectExtra, convertedObjectExtra); // we should get back null
 }
 
-private void converBinary() {
+private void convertBinary() {
 	Converter baConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.javaStringObjectInspector,
           PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);

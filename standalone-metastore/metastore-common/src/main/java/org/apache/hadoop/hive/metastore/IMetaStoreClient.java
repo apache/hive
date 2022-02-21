@@ -443,9 +443,8 @@ public interface IMetaStoreClient {
    *           A thrift communication error occurred
    *
    */
-  void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab) throws MetaException, TException,
-      NoSuchObjectException;
+  void dropTable(String dbname, String tableName, boolean deleteData, boolean ignoreUnknownTab) 
+      throws MetaException, TException, NoSuchObjectException;
 
   /**
    * Drop the table.
@@ -469,8 +468,11 @@ public interface IMetaStoreClient {
    */
   @Deprecated // TODO: deprecate all methods without a catalog here; a single layer (e.g. Hive.java) should handle current-catalog
   void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
-      NoSuchObjectException;
+      boolean ignoreUnknownTab, boolean ifPurge) 
+      throws MetaException, TException, NoSuchObjectException;
+
+  void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) 
+      throws TException;
 
   /**
    * Drop the table.
@@ -560,6 +562,8 @@ public interface IMetaStoreClient {
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException;
 
+  void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException;
   /**
    * Truncate the table/partitions in the DEFAULT database.
    * @param catName catalog name
@@ -805,6 +809,13 @@ public interface IMetaStoreClient {
 
   /**
    * Returns the invalidation information for the materialized views given as input.
+   */
+  Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
+  @Deprecated
+  /**
+   * Use {@link IMetaStoreClient#getMaterializationInvalidationInfo(CreationMetadata)} instead.
    */
   Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
@@ -2830,6 +2841,8 @@ public interface IMetaStoreClient {
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
+  void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
+
   /**
    * @param role
    *          role object
@@ -3451,7 +3464,7 @@ public interface IMetaStoreClient {
 
   /**
    * Unlock a set of locks.  This can only be called when the locks are not
-   * assocaited with a transaction.
+   * associated with a transaction.
    * @param lockid lock id returned by
    * {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)}
    * @throws NoSuchLockException if the requested lockid does not exist.
@@ -3635,6 +3648,27 @@ public interface IMetaStoreClient {
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
                                                 NotificationFilter filter) throws TException;
+
+  /**
+   * Get the next set of notifications from the database.
+   * @param request The {@link NotificationEventRequest} request to be sent to the server
+   *                to fetch the next set of events.
+   * @param allowGapsInEventIds If this flag is true, the returned event ids may contain
+   *                            gaps in the event ids. This could happen if on the server
+   *                            side some of the events since the requested eventId have
+   *                            been garbage collected. If the flag is false, the method
+   *                            will throw {@link MetaException} if the returned events
+   *                            from the server are not in sequence from the requested
+   *                            event id.
+   * @param filter User provided filter to remove unwanted events.  If null, all events will be
+   *               returned.
+   * @return list of notifications, sorted by eventId.  It is guaranteed that the events are in
+   * the order that the operations were done on the database.
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException;
 
   /**
    * Get the last used notification event id.
@@ -4274,6 +4308,41 @@ public interface IMetaStoreClient {
    */
   void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
 
+  /**
+   * Mark a compaction as refused (to run).
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markRefused(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsDataStruct#getThreshold()}, it will be deleted.
+   * </p>
+   * @param struct the object that is used for the update, always non-null
+   * @return true, if update finished successfully
+   * @throws MetaException
+   * @throws TException
+   */
+  boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct) throws MetaException, TException;
+
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param request the request object, that contains the filter parameters, must be non-null
+   * @throws MetaException
+   * @throws TException
+   */
+  void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException;
   /**
    * Set the hadoop id for a compaction.
    * @param jobId mapreduce job id that will do the compaction.

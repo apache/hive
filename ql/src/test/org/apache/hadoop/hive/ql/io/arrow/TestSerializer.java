@@ -53,7 +53,7 @@ public class TestSerializer {
     List<String> fieldNames = Arrays.asList(new String[] { "a" });
     Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
-    Assert.assertEquals("Schema<a: List<$data$: Struct<keys: Utf8, values: Utf8>>>",
+    Assert.assertEquals("Schema<a: Map(false)<entries: Struct<key: Utf8 not null, value: Utf8 not null> not null>>",
         writable.getVectorSchemaRoot().getSchema().toString());
   }
 
@@ -65,8 +65,9 @@ public class TestSerializer {
     Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals(
-        "Schema<a: Struct<b: List<$data$: Int(8, true)>, c: List<$data$: Struct<keys: Utf8, values: Utf8>>, " +
-            "d: Struct<e: List<$data$: Int(8, true)>, f: List<$data$: Struct<keys: Utf8, values: Utf8>>>>>",
+        "Schema<a: Struct<b: List<$data$: Int(8, true)>, c: Map(false)<entries: Struct<key: Utf8 not null, " +
+                "value: Utf8 not null> not null>, d: Struct<e: List<$data$: Int(8, true)>, f: Map(false)<entries: " +
+                "Struct<key: Utf8 not null, value: Utf8 not null> not null>>>>",
         writable.getVectorSchemaRoot().getSchema().toString());
   }
 
@@ -78,8 +79,9 @@ public class TestSerializer {
     Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals(
-        "Schema<a: List<$data$: Struct<keys: List<$data$: Int(8, true)>, values: " +
-            "Struct<b: List<$data$: Int(8, true)>, c: List<$data$: Struct<keys: Utf8, values: Utf8>>>>>>",
+        "Schema<a: Map(false)<entries: Struct<key: List<$data$: Int(8, true)> not null, value: Struct<b: " +
+                "List<$data$: Int(8, true)>, c: Map(false)<entries: Struct<key: Utf8 not null, value: Utf8 not null> " +
+                "not null>> not null> not null>>",
         writable.getVectorSchemaRoot().getSchema().toString());
   }
 
@@ -91,9 +93,9 @@ public class TestSerializer {
     Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
     ArrowWrapperWritable writable = converter.emptyBatch();
     Assert.assertEquals(
-        "Schema<a: Struct<b: List<$data$: List<$data$: Int(8, true)>>, c: List<$data$: List<$data$: " +
-            "Struct<keys: Utf8, values: Utf8>>>, d: List<$data$: Struct<e: List<$data$: Int(8, true)>, " +
-            "f: List<$data$: Struct<keys: Utf8, values: Utf8>>>>>>",
+        "Schema<a: Struct<b: List<$data$: List<$data$: Int(8, true)>>, c: List<$data$: Map(false)<entries: " +
+                "Struct<key: Utf8 not null, value: Utf8 not null> not null>>, d: List<$data$: Struct<e: List<$data$: " +
+                "Int(8, true)>, f: Map(false)<entries: Struct<key: Utf8 not null, value: Utf8 not null> not null>>>>>",
         writable.getVectorSchemaRoot().getSchema().toString());
   }
 }

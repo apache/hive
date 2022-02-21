@@ -10,7 +10,7 @@ insert into px values (2,2),(3,3),(5,5),(7,7),(11,11);
 
 set hive.explain.user=true;
 set hive.query.reexecution.enabled=true;
-set hive.query.reexecution.strategies=overlay,reoptimize;
+set hive.query.reexecution.strategies=overlay,reoptimize,recompile_without_cbo;
 
 explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2;

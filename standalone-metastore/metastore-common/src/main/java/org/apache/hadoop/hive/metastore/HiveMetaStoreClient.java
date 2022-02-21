@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,6 +87,7 @@ import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +106,9 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
+  
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -351,15 +355,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         if (uriResolverHook != null) {
           metastoreURIArray.addAll(uriResolverHook.resolveURI(tmpUri));
         } else {
-          metastoreURIArray.add(new URI(
-                  tmpUri.getScheme(),
-                  tmpUri.getUserInfo(),
-                  HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
-                  tmpUri.getPort(),
-                  tmpUri.getPath(),
-                  tmpUri.getQuery(),
-                  tmpUri.getFragment()
-          ));
+          metastoreURIArray.add(tmpUri);
         }
       }
       metastoreUris = new URI[metastoreURIArray.size()];
@@ -1227,7 +1223,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    return client.translate_table_dryrun(tbl);
+    CreateTableRequest request = new CreateTableRequest(tbl);
+
+    if (processorCapabilities != null) {
+      request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      request.setProcessorIdentifier(processorIdentifier);
+    }
+    return client.translate_table_dryrun(request);
   }
 
   /**
@@ -1750,10 +1752,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
+    
+    EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+      context = getEnvironmentContextWithIfPurgeSet();
     }
+    if (options.writeId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("writeId", options.writeId.toString());
+    }
+    if (options.txnId != null) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", options.txnId.toString());
+    }
+    req.setEnvironmentContext(context);
+    
     return client.drop_partitions_req(req).getPartitions();
   }
 
@@ -1768,6 +1782,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws TException {
     dropTable(getDefaultCatalog(conf), dbname, name, deleteData, ignoreUnknownTab, ifPurge);
+  }
+
+  @Override
+  public void dropTable(Table tbl, boolean deleteData, boolean ignoreUnknownTbl, boolean ifPurge) throws TException {
+    EnvironmentContext context = null;
+    if (ifPurge) {
+      context = getEnvironmentContextWithIfPurgeSet();
+    }
+    if (tbl.isSetTxnId()) {
+      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
+      context.putToProperties("txnId", String.valueOf(tbl.getTxnId()));
+    }
+    String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
+
+    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData, 
+        ignoreUnknownTbl, context);
   }
 
   @Override
@@ -1787,7 +1817,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       envContext = new EnvironmentContext(warehouseOptions);
     }
     dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
-
   }
 
   /**
@@ -1843,37 +1872,45 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException {
+    truncateTableInternal(getDefaultCatalog(conf),
+        dbName, tableName, partNames, validWriteIds, writeId, deleteData);
+  }
+  
+  @Override
+  public void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException {
     truncateTableInternal(getDefaultCatalog(conf),
-        dbName, tableName, partNames, validWriteIds, writeId);
+        dbName, tableName, partNames, validWriteIds, writeId, true);
   }
 
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames) throws TException {
-    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, null, -1);
+    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, null, -1, true);
   }
 
   @Override
   public void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws TException {
-    truncateTableInternal(catName, dbName, tableName, partNames, null, -1);
+    truncateTableInternal(catName, dbName, tableName, partNames, null, -1, true);
   }
 
   private void truncateTableInternal(String catName, String dbName, String tableName,
-      List<String> partNames, String validWriteIds, long writeId)
-          throws MetaException, TException {
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
+          throws TException {
     Table table = getTable(catName, dbName, tableName);
     HiveMetaHook hook = getHook(table);
-    EnvironmentContext envContext = new EnvironmentContext();
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     if (hook != null) {
-      hook.preTruncateTable(table, envContext);
+      hook.preTruncateTable(table, context);
     }
     TruncateTableRequest req = new TruncateTableRequest(
         prependCatalogToDbName(catName, dbName, conf), tableName);
     req.setPartNames(partNames);
     req.setValidWriteIdList(validWriteIds);
     req.setWriteId(writeId);
-    req.setEnvironmentContext(envContext);
+    req.setEnvironmentContext(context);
     client.truncate_table_req(req);
   }
 
@@ -2632,7 +2669,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
 
-  @Override
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(cm, null);
+  }
+
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
@@ -3345,6 +3386,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       String colName, String engine) throws TException {
     return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
         tableName, colName, engine);
+  }
+
+  @Override
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
+    client.update_transaction_statistics(req);
   }
 
   @Override
@@ -4186,6 +4232,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
+    return getNextNotificationsInternal(rqst, false, filter);
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return getNextNotificationsInternal(request, allowGapsInEventIds, filter);
+  }
+
+  @Nullable
+  private NotificationEventResponse getNextNotificationsInternal(
+      NotificationEventRequest rqst, boolean allowGapsInEventIds,
+      NotificationFilter filter) throws TException {
+    long lastEventId = rqst.getLastEvent();
     NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back {} events", rsp!= null ? rsp.getEventsSize() : 0);
     NotificationEventResponse filtered = new NotificationEventResponse();
@@ -4194,7 +4254,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       long prevEventId = lastEventId;
       for (NotificationEvent e : rsp.getEvents()) {
         LOG.debug("Got event with id : {}", e.getEventId());
-        if (e.getEventId() != nextEventId) {
+        if (!allowGapsInEventIds && e.getEventId() != nextEventId) {
           if (e.getEventId() == prevEventId) {
             LOG.error("NOTIFICATION_LOG table has multiple events with the same event Id {}. " +
                     "Something went wrong when inserting notification events.  Bootstrap the system " +
@@ -4918,6 +4978,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
     client.mark_failed(cr);
+  }
+
+  @Override
+  public void markRefused(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_refused(cr);
+  }
+
+  @Override
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
+      throws MetaException, TException {
+    return client.update_compaction_metrics_data(struct);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
+    client.remove_compaction_metrics_data(request);
   }
 
   @Override

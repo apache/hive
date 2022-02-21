@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -35,16 +36,19 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook;
@@ -53,6 +57,7 @@ import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
@@ -67,14 +72,209 @@ import org.apache.orc.impl.RecordReaderImpl;
 import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.FieldSetter;
 
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
+
+  @Test
+  public void testMinorCompactionShouldBeRefusedOnTablesWithOriginalFiles() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
+    // Set delta percentage to a high value to suppress selecting major compression based on that
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1000f);
+
+    final String dbName = "default";
+    final String tableName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(id string, value string) CLUSTERED BY(id) " +
+            "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='false')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('1','one'),('2','two'),('3','three')," +
+            "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten')," +
+            "('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen')," +
+            "('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+
+    executeStatementOnDriver("alter table " + tableName + " set TBLPROPERTIES('transactional'='true')", driver);
+
+    executeStatementOnDriver("insert into " + tableName + " values ('21', 'value21'),('84', 'value84')," +
+            "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('22', 'value22'),('34', 'value34')," +
+            "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    execSelectAndDumpData("select * from " + tableName, driver, "Dumping data for " +
+            tableName + " after load:");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    //Prevent initiator from submitting the compaction requests
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException("")).when(mockedHandler).compact(nullable(CompactionRequest.class));
+    Initiator initiator = new Initiator();
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    FieldSetter.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    //Run initiator and capture compaction requests
+    initiator.run();
+
+    //Check captured compaction request and if the type for the table was MAJOR
+    ArgumentCaptor<CompactionRequest> requests = ArgumentCaptor.forClass(CompactionRequest.class);
+    verify(mockedHandler).compact(requests.capture());
+    Assert.assertTrue(requests.getAllValues().stream().anyMatch(r -> r.getTablename().equals(tableName) && r.getType().equals(CompactionType.MAJOR)));
+
+    //Try to do a minor compaction directly
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    runWorker(conf);
+
+    //Check if both compactions were failed with the expected error message
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (2 != compacts.size()) {
+      Assert.fail("Expecting 2 rows and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("did not initiate", compacts.get(0).getState());
+    Assert.assertTrue(compacts.get(0).getErrorMessage()
+            .startsWith("Caught exception while trying to determine if we should compact"));
+    Assert.assertEquals("refused", compacts.get(1).getState());
+    Assert.assertTrue(compacts.get(1).getErrorMessage()
+            .startsWith("Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them."));
+  }
+
+  @Test
+  public void testMinorCompactionShouldBeRefusedOnTablesWithRawData() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
+    // Set delta percentage to a high value to suppress selecting major compression based on that
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1000f);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    final String dbName = "default";
+    final String origTableName = "compaction_test";
+    final String testTableName = "imported";
+    executeStatementOnDriver("drop table if exists " + origTableName, driver);
+    executeStatementOnDriver("drop table if exists " + testTableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + origTableName + "(id string, value string) CLUSTERED BY(id) " +
+            "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + origTableName + " values ('1','one'),('2','two'),('3','three')," +
+            "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten')," +
+            "('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen')," +
+            "('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+
+    execSelectAndDumpData("select * from " + origTableName, driver, "Dumping data for " +
+            origTableName + " after load:");
+
+    executeStatementOnDriver("export table " + origTableName + " to '/tmp/temp_acid'", driver);
+    executeStatementOnDriver("import table " + testTableName + " from '/tmp/temp_acid'", driver);
+    executeStatementOnDriver("insert into " + testTableName + " values ('21', 'value21'),('84', 'value84')," +
+            "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + testTableName + " values ('22', 'value22'),('34', 'value34')," +
+            "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + testTableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    //Prevent initiator from submitting the compaction requests
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException("")).when(mockedHandler).compact(nullable(CompactionRequest.class));
+    Initiator initiator = new Initiator();
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    FieldSetter.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    //Run initiator and capture compaction requests
+    initiator.run();
+
+    //Check captured compaction request and if the type for the table was MAJOR
+    ArgumentCaptor<CompactionRequest> requests = ArgumentCaptor.forClass(CompactionRequest.class);
+    verify(mockedHandler).compact(requests.capture());
+    Assert.assertTrue(requests.getAllValues().stream().anyMatch(r -> r.getTablename().equals(testTableName) && r.getType().equals(CompactionType.MAJOR)));
+
+    //Try to do a minor compaction directly
+    CompactionRequest rqst = new CompactionRequest(dbName, testTableName, CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    runWorker(conf);
+
+    //Check if both compactions were failed with the expected error message
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (2 != compacts.size()) {
+      Assert.fail("Expecting 2 rows and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("did not initiate", compacts.get(0).getState());
+    Assert.assertTrue(compacts.get(0).getErrorMessage().startsWith("Caught exception while trying to determine if we should compact"));
+    Assert.assertEquals("refused", compacts.get(1).getState());
+    Assert.assertTrue(compacts.get(1).getErrorMessage().startsWith("Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them."));
+  }
+
+  /**
+   * After each major compaction, stats need to be updated on the table
+   * 1. create an ORC backed table (Orc is currently required by ACID)
+   * 2. populate with data
+   * 3. compute stats
+   * 4. Trigger major compaction (which should update stats)
+   * 5. check that stats have been updated
+   */
+  @Test
+  public void testStatsAfterQueryCompactionOnTez() throws Exception {
+    //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
+    String dbName = "default";
+    String tblName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+            " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
+            " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " values(55, 'London')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " values(56, 'Paris')", driver);
+    execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
+            tblName + " after load:");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    //compute stats before compaction
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
+    Worker.StatsUpdater.gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+
+    //Check basic stats are collected
+    Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
+
+    //Do a major compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (1 != compacts.size()) {
+      Assert.fail("Expecting 1 file and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    //Check basic stats are updated
+    parameters = Hive.get().getTable(tblName).getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    Assert.assertEquals("The total table size is differing from the expected", "727", parameters.get("totalSize"));
+  }
 
   @Test
   public void testMajorCompactionNotPartitionedWithoutBuckets() throws Exception {
@@ -344,10 +544,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionToday));
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000005_v0000013"),
+        Collections.singletonList("base_0000006_v0000014"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionTomorrow));
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000005_v0000017"),
+        Collections.singletonList("base_0000007_v0000019"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionYesterday));
     // Check base dir contents
     List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
@@ -356,17 +556,17 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             .getBucketFileNames(fs, table, partitionToday, "base_0000005_v0000009"));
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionTomorrow, "base_0000005_v0000013"));
+            .getBucketFileNames(fs, table, partitionTomorrow, "base_0000006_v0000014"));
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionYesterday, "base_0000005_v0000017"));
+            .getBucketFileNames(fs, table, partitionYesterday, "base_0000007_v0000019"));
     // Check buckets contents
     Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
     // Check bucket file contents
     checkBucketIdAndRowIdInAcidFile(fs, new Path(todayPath, "base_0000005_v0000009"), 0);
-    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000005_v0000013"), 0);
-    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000005_v0000017"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000006_v0000014"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000007_v0000019"), 0);
 
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
         conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE), new String[] { AcidUtils.BASE_PREFIX});
@@ -430,14 +630,15 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     verifySuccessfulCompaction( 3);
     // Verify base directories after compaction in each partition
     String expectedBaseToday = "base_0000005_v0000011";
-    String expectedBaseTomorrow = "base_0000005_v0000015";
-    String expectedBaseYesterday = "base_0000005_v0000019";
+    String expectedBaseTomorrow = "base_0000006_v0000016";
+    String expectedBaseYesterday = "base_0000007_v0000021";
     List<String> baseDeltasInToday =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionToday);
     Assert.assertEquals("Delta directories does not match after compaction",
         Collections.singletonList(expectedBaseToday), baseDeltasInToday);
     List<String> baseDeltasInTomorrow =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionTomorrow);
+
     Assert.assertEquals("Delta directories does not match after compaction",
         Collections.singletonList(expectedBaseTomorrow), baseDeltasInTomorrow);
     List<String> baseDeltasInYesterday =
@@ -1349,10 +1550,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories do not match after major compaction",
-        Collections.singletonList("delta_0000006_0000010_v0000020"),
+        Collections.singletonList("delta_0000007_0000011_v0000021"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     Assert.assertEquals("Delete delta directories does not match after minor compaction",
-        Collections.singletonList("delete_delta_0000006_0000010_v0000020"),
+        Collections.singletonList("delete_delta_0000007_0000011_v0000021"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);
@@ -1711,13 +1912,13 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     // Verify contents of bucket files.
     List<String> expectedRsBucket0 = Arrays.asList("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t4\tvalue_4",
-        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t6\tvalue_6",
-        "{\"writeid\":2,\"bucketid\":536870913,\"rowid\":2}\t3\tnewvalue_3",
-        "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t8\tvalue_8",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t5\tnewestvalue_5",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":1}\t7\tnewestvalue_7",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t1\tnewestvalue_1",
-        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t2\tnewestvalue_2");
+    "{\"writeid\":2,\"bucketid\":536870913,\"rowid\":2}\t3\tnewvalue_3",
+    "{\"writeid\":2,\"bucketid\":536870914,\"rowid\":0}\t6\tvalue_6",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t1\tnewestvalue_1",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":1}\t2\tnewestvalue_2",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t5\tnewestvalue_5",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t7\tnewestvalue_7",
+    "{\"writeid\":3,\"bucketid\":536870914,\"rowid\":0}\t8\tvalue_8");
     List<String> rsBucket0 = executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tableName, driver);
     Assert.assertEquals(expectedRsBucket0, rsBucket0);
     // Verify all contents
@@ -1789,21 +1990,21 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     // Verify contents of bucket files.
     List<String> expectedRsBucket0 =
-        Arrays.asList("{\"writeid\":4,\"bucketid\":536870913,\"rowid\":2}\t1\tlatestvalue_1",
-            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t2\tnewestvalue_2",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t3\tvalue_3",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":5}\t4\tlatestvalue_4",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":0}\t5\tlatestvalue_5",
-            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":4}\t6\tnewestvalue_6",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t7\tvalue_7",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":7}\t8\tvalue_8",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":1}\t9\tlatestvalue_9",
-            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t10\tnewestvalue_10",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":4}\t11\tlatestvalue_11",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":3}\t12\tvalue_12",
-            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":3}\t13\tlatestvalue_13",
-            "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t14\tvalue_14",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t15\tvalue_15");
+            Arrays.asList("{\"writeid\":4,\"bucketid\":536870913,\"rowid\":0}\t1\tlatestvalue_1",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tnewestvalue_2",
+    "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t3\tvalue_3",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":1}\t4\tlatestvalue_4",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":2}\t5\tlatestvalue_5",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t6\tnewestvalue_6",
+    "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t7\tvalue_7",
+    "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":7}\t8\tvalue_8",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":3}\t9\tlatestvalue_9",
+    "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t10\tnewestvalue_10",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":4}\t11\tlatestvalue_11",
+    "{\"writeid\":2,\"bucketid\":536870914,\"rowid\":3}\t12\tvalue_12",
+    "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":5}\t13\tlatestvalue_13",
+    "{\"writeid\":3,\"bucketid\":536870914,\"rowid\":1}\t14\tvalue_14",
+    "{\"writeid\":4,\"bucketid\":536870914,\"rowid\":0}\t15\tvalue_15");
     List<String> rsBucket0 =
         executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tableName + " order by id", driver);
     Assert.assertEquals(expectedRsBucket0, rsBucket0);

@@ -21,20 +21,19 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.UpdatePartitionSpec;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +69,24 @@ public class IcebergTableUtil {
           SessionStateUtil.addResource(configuration, tableIdentifier, tab);
           return tab;
         });
+  }
+
+  /**
+   * Constructs the table properties needed for the Iceberg table loading by retrieving the information from the
+   * hmsTable. It then calls {@link IcebergTableUtil#getTable(Configuration, Properties)} with these properties.
+   * @param configuration a Hadoop configuration
+   * @param hmsTable the HMS table
+   * @return the Iceberg table
+   */
+  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    Properties properties = new Properties();
+    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
+    if (hmsTable.getParameters().containsKey(InputFormatConfig.CATALOG_NAME)) {
+      properties.setProperty(
+          InputFormatConfig.CATALOG_NAME, hmsTable.getParameters().get(InputFormatConfig.CATALOG_NAME));
+    }
+    return getTable(configuration, properties);
   }
 
   /**
@@ -126,52 +143,44 @@ public class IcebergTableUtil {
       return;
     }
 
-    List<String> newPartitionNames =
-        newPartitionSpec.fields().stream().map(PartitionField::name).collect(Collectors.toList());
-    List<String> currentPartitionNames = table.spec().fields().stream().map(PartitionField::name)
-        .collect(Collectors.toList());
-    List<String> intersectingPartitionNames =
-        currentPartitionNames.stream().filter(newPartitionNames::contains).collect(Collectors.toList());
+    // delete every field from the old partition spec
+    UpdatePartitionSpec updatePartitionSpec = table.updateSpec().caseSensitive(false);
+    table.spec().fields().forEach(field -> updatePartitionSpec.removeField(field.name()));
 
-    // delete those partitions which are not present among the new partion spec
-    UpdatePartitionSpec updatePartitionSpec = table.updateSpec();
-    currentPartitionNames.stream().filter(p -> !intersectingPartitionNames.contains(p))
-        .forEach(updatePartitionSpec::removeField);
-    updatePartitionSpec.apply();
-
-    // add new partitions which are not yet present
     List<PartitionTransformSpec> partitionTransformSpecList = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
         .map(o -> (List<PartitionTransformSpec>) o).orElseGet(() -> null);
-    IntStream.range(0, partitionTransformSpecList.size())
-        .filter(i -> !intersectingPartitionNames.contains(newPartitionSpec.fields().get(i).name()))
-        .forEach(i -> {
-          PartitionTransformSpec spec = partitionTransformSpecList.get(i);
-          switch (spec.getTransformType()) {
-            case IDENTITY:
-              updatePartitionSpec.addField(spec.getColumnName());
-              break;
-            case YEAR:
-              updatePartitionSpec.addField(Expressions.year(spec.getColumnName()));
-              break;
-            case MONTH:
-              updatePartitionSpec.addField(Expressions.month(spec.getColumnName()));
-              break;
-            case DAY:
-              updatePartitionSpec.addField(Expressions.day(spec.getColumnName()));
-              break;
-            case HOUR:
-              updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
-              break;
-            case TRUNCATE:
-              updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()));
-              break;
-            case BUCKET:
-              updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()));
-              break;
-          }
-        });
+
+    partitionTransformSpecList.forEach(spec -> {
+      switch (spec.getTransformType()) {
+        case IDENTITY:
+          updatePartitionSpec.addField(spec.getColumnName());
+          break;
+        case YEAR:
+          updatePartitionSpec.addField(Expressions.year(spec.getColumnName()));
+          break;
+        case MONTH:
+          updatePartitionSpec.addField(Expressions.month(spec.getColumnName()));
+          break;
+        case DAY:
+          updatePartitionSpec.addField(Expressions.day(spec.getColumnName()));
+          break;
+        case HOUR:
+          updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
+          break;
+        case TRUNCATE:
+          updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()));
+          break;
+        case BUCKET:
+          updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()));
+          break;
+      }
+    });
 
     updatePartitionSpec.commit();
+  }
+
+  public static boolean isBucketed(Table table) {
+    return table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
   }
 }

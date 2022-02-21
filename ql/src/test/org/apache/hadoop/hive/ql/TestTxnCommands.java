@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import groovy.transform.builder.InitializerStrategy.SET;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -82,6 +82,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
+
 /**
  * The LockManager is not ready, but for no-concurrency straight-line path we can
  * test AC=true, and AC=false with commit/rollback/exception and test resulting data.
@@ -92,11 +94,11 @@ import com.google.common.collect.Lists;
  * Mostly uses bucketed tables
  */
 public class TestTxnCommands extends TxnCommandsBaseForTests {
-
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestTxnCommands.class.getCanonicalName() + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
+  
   @Override
   protected String getTestDataDir() {
     return TEST_DATA_DIR;
@@ -107,8 +109,10 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     super.initHiveConf();
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
   }
 
 
@@ -976,7 +980,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }
     Assert.assertNotNull(txnInfo);
-    Assert.assertEquals(14, txnInfo.getId());
+    Assert.assertEquals(16, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
     String s = TestTxnDbUtil
         .queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
@@ -1352,7 +1356,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }, 5000);
     long start = System.currentTimeMillis();
-    runStatementOnDriver("alter table "+ TestTxnCommands2.Table.ACIDTBL +" compact 'major' AND WAIT");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'major' AND WAIT");
     //no Worker so it stays in initiated state
     //w/o AND WAIT the above alter table retunrs almost immediately, so the test here to check that
     //> 2 seconds pass, i.e. that the command in Driver actually blocks before cancel is fired
@@ -1397,16 +1401,16 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
 
     //run Compaction
-    runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " compact 'major'");
     runWorker(hiveConf);
 
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
         + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
-        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000019/bucket_00001"}
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000021/bucket_00001"}
     };
     checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
@@ -1487,7 +1491,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX });
 
     runStatementOnDriver("alter table T compact 'minor'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     // Check status of compaction job
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -1506,7 +1510,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into T" + makeValuesClause(data));
 
     runStatementOnDriver("alter table T compact 'major'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     // Check status of compaction job
     txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -1526,12 +1530,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testTruncateWithBase() throws Exception{
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, true);
+    
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2),(3,4)");
     runStatementOnDriver("truncate table " + Table.ACIDTBL);
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString().toLowerCase()), AcidUtils.baseFileFilter);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString().toLowerCase()),
+        AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
@@ -1544,13 +1550,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testTruncateWithBaseAllPartition() throws Exception{
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, true);
+    
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='a') values(1,2),(3,4)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='b') values(1,2),(3,4)");
     runStatementOnDriver("truncate table " + Table.ACIDTBLPART);
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"), AcidUtils.baseFileFilter);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+        AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
@@ -1563,25 +1571,201 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testTruncateWithBaseOnePartition() throws Exception{
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, true);
+    
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='a') values(1,2),(3,4)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='b') values(5,5),(4,4)");
     runStatementOnDriver("truncate table " + Table.ACIDTBLPART + " partition(p='b')");
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"), AcidUtils.baseFileFilter);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+        AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
-    stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"), AcidUtils.deltaFileFilter);
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+        AcidUtils.deltaFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 delta and found " + stat.length + " files " + Arrays.toString(stat));
     }
 
     List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
     Assert.assertEquals(2, r.size());
+  }
+
+  @Test
+  public void testDropWithBaseOnePartition() throws Exception {
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='a') values (1,2),(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (5,5),(4,4)");
+
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
+    runStatementOnDriver("alter table " + Table.ACIDTBLPART + " drop partition (p='b')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+        AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+        AcidUtils.baseFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(2, r.size());
+    
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertTrue(resp.getCompacts().stream().anyMatch(
+        ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && "p=b".equals(ci.getPartitionname())));
+    
+    runCleaner(hiveConf);
+
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()),
+        path -> path.getName().equals("p=b"));
+    if (0 != stat.length) {
+      Assert.fail("Expecting partition data to be removed from FS");
+    }
+  }
+
+  @Test
+  public void testDropWithBaseMultiplePartitions() throws Exception {
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='a', p3='a') values (1,1),(2,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='a', p3='b') values (3,3),(4,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='b', p3='c') values (7,7),(8,8)");
+    
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
+    runStatementOnDriver("alter table " + Table.ACIDTBLNESTEDPART + " drop partition (p2='a')");
+    
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat;
+
+    for (char p : Arrays.asList('a', 'b')) {
+      String partName = "p1=a/p2=a/p3=" + p;
+      Assert.assertTrue(resp.getCompacts().stream().anyMatch(
+          ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && partName.equals(ci.getPartitionname())));
+      
+      stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/" + partName),
+          AcidUtils.baseFileFilter);
+      if (1 != stat.length) {
+        Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+      }
+      String name = stat[0].getPath().getName();
+      Assert.assertEquals("base_0000004", name);
+    }
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=b/p3=c"),
+        AcidUtils.baseFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLNESTEDPART);
+    Assert.assertEquals(2, r.size());
+    
+    runCleaner(hiveConf);
+
+    for (char p : Arrays.asList('a', 'b')) {
+      stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a"),
+          path -> path.getName().equals("p3=" + p));
+      if (0 != stat.length) {
+        Assert.fail("Expecting partition data to be removed from FS");
+      }
+    }
+  }
+
+  @Test
+  public void testDropTableWithSuffix() throws Exception {
+    String tableName = "tab_acid";
+    runStatementOnDriver("drop table if exists " + tableName);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, true);
+    
+    runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
+    runStatementOnDriver("drop table " + tableName);
+
+    int count = TestTxnDbUtil.countQueryAgent(hiveConf, 
+      "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
+    Assert.assertEquals(1, count);
+    
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches(tableName + SOFT_DELETE_TABLE_PATTERN));
+    if (1 != stat.length) {
+      Assert.fail("Table data was removed from FS");
+    }
+    MetastoreTaskThread houseKeeperService = new AcidHouseKeeperService();
+    houseKeeperService.setConf(hiveConf);
+    
+    houseKeeperService.run();
+    count = TestTxnDbUtil.countQueryAgent(hiveConf,
+      "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
+    Assert.assertEquals(0, count);
+
+    try {
+      runStatementOnDriver("select * from " + tableName);
+    } catch (Exception ex) {
+      Assert.assertTrue(ex.getMessage().contains(
+        ErrorMsg.INVALID_TABLE.getMsg(StringUtils.wrap(tableName, "'"))));
+    }
+    // Check status of compaction job
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state",
+      TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+
+    runCleaner(hiveConf);
+    
+    FileStatus[] status = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches(tableName + SOFT_DELETE_TABLE_PATTERN));
+    Assert.assertEquals(0, status.length);
+  }
+
+  @Test
+  public void testDropTableWithoutSuffix() throws Exception {
+    String tableName = "tab_acid";
+    runStatementOnDriver("drop table if exists " + tableName);
+    
+    for (boolean enabled : Arrays.asList(false, true)) {
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, enabled);
+      runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+      runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
+      
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, !enabled);
+      runStatementOnDriver("drop table " + tableName);
+
+      int count = TestTxnDbUtil.countQueryAgent(hiveConf,
+        "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
+      Assert.assertEquals(0, count);
+
+      FileSystem fs = FileSystem.get(hiveConf);
+      FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+        t -> t.getName().equals(tableName));
+      Assert.assertEquals(0, stat.length);
+
+      try {
+        runStatementOnDriver("select * from " + tableName);
+      } catch (Exception ex) {
+        Assert.assertTrue(ex.getMessage().contains(
+          ErrorMsg.INVALID_TABLE.getMsg(StringUtils.wrap(tableName, "'"))));
+      }
+      // Check status of compaction job
+      TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+      ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+      Assert.assertEquals("Unexpected number of compactions in history", 0, resp.getCompactsSize());
+    }
   }
 }

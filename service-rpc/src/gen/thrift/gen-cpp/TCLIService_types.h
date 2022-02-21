@@ -328,6 +328,14 @@ class TGetTypeInfoReq;
 
 class TGetTypeInfoResp;
 
+class TUploadDataReq;
+
+class TUploadDataResp;
+
+class TDownloadDataReq;
+
+class TDownloadDataResp;
+
 class TGetCatalogsReq;
 
 class TGetCatalogsResp;
@@ -2759,6 +2767,223 @@ class TGetTypeInfoResp : public virtual ::apache::thrift::TBase {
 void swap(TGetTypeInfoResp &a, TGetTypeInfoResp &b);
 
 std::ostream& operator<<(std::ostream& out, const TGetTypeInfoResp& obj);
+
+typedef struct _TUploadDataReq__isset {
+  _TUploadDataReq__isset() : tableName(false), path(false) {}
+  bool tableName :1;
+  bool path :1;
+} _TUploadDataReq__isset;
+
+class TUploadDataReq : public virtual ::apache::thrift::TBase {
+ public:
+
+  TUploadDataReq(const TUploadDataReq&);
+  TUploadDataReq& operator=(const TUploadDataReq&);
+  TUploadDataReq() : tableName(), path(), values() {
+  }
+
+  virtual ~TUploadDataReq() noexcept;
+  TSessionHandle sessionHandle;
+  std::string tableName;
+  std::string path;
+  std::string values;
+
+  _TUploadDataReq__isset __isset;
+
+  void __set_sessionHandle(const TSessionHandle& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_path(const std::string& val);
+
+  void __set_values(const std::string& val);
+
+  bool operator == (const TUploadDataReq & rhs) const
+  {
+    if (!(sessionHandle == rhs.sessionHandle))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.path != rhs.__isset.path)
+      return false;
+    else if (__isset.path && !(path == rhs.path))
+      return false;
+    if (!(values == rhs.values))
+      return false;
+    return true;
+  }
+  bool operator != (const TUploadDataReq &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TUploadDataReq & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TUploadDataReq &a, TUploadDataReq &b);
+
+std::ostream& operator<<(std::ostream& out, const TUploadDataReq& obj);
+
+
+class TUploadDataResp : public virtual ::apache::thrift::TBase {
+ public:
+
+  TUploadDataResp(const TUploadDataResp&);
+  TUploadDataResp& operator=(const TUploadDataResp&);
+  TUploadDataResp() {
+  }
+
+  virtual ~TUploadDataResp() noexcept;
+  TStatus status;
+  TOperationHandle operationHandle;
+
+  void __set_status(const TStatus& val);
+
+  void __set_operationHandle(const TOperationHandle& val);
+
+  bool operator == (const TUploadDataResp & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(operationHandle == rhs.operationHandle))
+      return false;
+    return true;
+  }
+  bool operator != (const TUploadDataResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TUploadDataResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TUploadDataResp &a, TUploadDataResp &b);
+
+std::ostream& operator<<(std::ostream& out, const TUploadDataResp& obj);
+
+typedef struct _TDownloadDataReq__isset {
+  _TDownloadDataReq__isset() : tableName(false), query(false), format(false), downloadOptions(false) {}
+  bool tableName :1;
+  bool query :1;
+  bool format :1;
+  bool downloadOptions :1;
+} _TDownloadDataReq__isset;
+
+class TDownloadDataReq : public virtual ::apache::thrift::TBase {
+ public:
+
+  TDownloadDataReq(const TDownloadDataReq&);
+  TDownloadDataReq& operator=(const TDownloadDataReq&);
+  TDownloadDataReq() : tableName(), query(), format() {
+  }
+
+  virtual ~TDownloadDataReq() noexcept;
+  TSessionHandle sessionHandle;
+  TPatternOrIdentifier tableName;
+  std::string query;
+  std::string format;
+  std::map<std::string, std::string>  downloadOptions;
+
+  _TDownloadDataReq__isset __isset;
+
+  void __set_sessionHandle(const TSessionHandle& val);
+
+  void __set_tableName(const TPatternOrIdentifier& val);
+
+  void __set_query(const std::string& val);
+
+  void __set_format(const std::string& val);
+
+  void __set_downloadOptions(const std::map<std::string, std::string> & val);
+
+  bool operator == (const TDownloadDataReq & rhs) const
+  {
+    if (!(sessionHandle == rhs.sessionHandle))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.query != rhs.__isset.query)
+      return false;
+    else if (__isset.query && !(query == rhs.query))
+      return false;
+    if (__isset.format != rhs.__isset.format)
+      return false;
+    else if (__isset.format && !(format == rhs.format))
+      return false;
+    if (__isset.downloadOptions != rhs.__isset.downloadOptions)
+      return false;
+    else if (__isset.downloadOptions && !(downloadOptions == rhs.downloadOptions))
+      return false;
+    return true;
+  }
+  bool operator != (const TDownloadDataReq &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TDownloadDataReq & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TDownloadDataReq &a, TDownloadDataReq &b);
+
+std::ostream& operator<<(std::ostream& out, const TDownloadDataReq& obj);
+
+
+class TDownloadDataResp : public virtual ::apache::thrift::TBase {
+ public:
+
+  TDownloadDataResp(const TDownloadDataResp&);
+  TDownloadDataResp& operator=(const TDownloadDataResp&);
+  TDownloadDataResp() {
+  }
+
+  virtual ~TDownloadDataResp() noexcept;
+  TStatus status;
+  TOperationHandle operationHandle;
+
+  void __set_status(const TStatus& val);
+
+  void __set_operationHandle(const TOperationHandle& val);
+
+  bool operator == (const TDownloadDataResp & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    if (!(operationHandle == rhs.operationHandle))
+      return false;
+    return true;
+  }
+  bool operator != (const TDownloadDataResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TDownloadDataResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TDownloadDataResp &a, TDownloadDataResp &b);
+
+std::ostream& operator<<(std::ostream& out, const TDownloadDataResp& obj);
 
 
 class TGetCatalogsReq : public virtual ::apache::thrift::TBase {

@@ -58,6 +58,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 #### A masked pattern was here ####
 file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
 file_size_in_bytes  	bigint              	Total file size in bytes
 column_sizes        	map<int,bigint>     	Map of column id to total size on disk
@@ -79,7 +80,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	from deserializer   
 snapshot_id         	bigint              	from deserializer   
 sequence_number     	bigint              	from deserializer   
-data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
 PREHOOK: query: describe default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -146,6 +147,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 #### A masked pattern was here ####
 file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
 file_size_in_bytes  	bigint              	Total file size in bytes
 column_sizes        	map<int,bigint>     	Map of column id to total size on disk
@@ -167,7 +169,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	from deserializer   
 snapshot_id         	bigint              	from deserializer   
 sequence_number     	bigint              	from deserializer   
-data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
 PREHOOK: query: describe formatted default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -177,6 +179,7 @@ POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
 #### A masked pattern was here ####
 file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
 file_size_in_bytes  	bigint              	Total file size in bytes
 column_sizes        	map<int,bigint>     	Map of column id to total size on disk
@@ -199,7 +202,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	from deserializer   
 snapshot_id         	bigint              	from deserializer   
 sequence_number     	bigint              	from deserializer   
-data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
 PREHOOK: query: describe formatted default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -272,6 +275,7 @@ POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
 #### A masked pattern was here ####
 file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
 file_size_in_bytes  	bigint              	Total file size in bytes
 column_sizes        	map<int,bigint>     	Map of column id to total size on disk
@@ -294,7 +298,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	from deserializer   
 snapshot_id         	bigint              	from deserializer   
 sequence_number     	bigint              	from deserializer   
-data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
 PREHOOK: query: describe extended default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -303,6 +307,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 #### A masked pattern was here ####
 file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
 file_size_in_bytes  	bigint              	Total file size in bytes
 column_sizes        	map<int,bigint>     	Map of column id to total size on disk
@@ -324,7 +329,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	from deserializer   
 snapshot_id         	bigint              	from deserializer   
 sequence_number     	bigint              	from deserializer   
-data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
 PREHOOK: query: describe extended default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -391,6 +396,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 #### A masked pattern was here ####
 file_format         	string              	File format name: avro, orc, or parquet
+spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
 file_size_in_bytes  	bigint              	Total file size in bytes
 column_sizes        	map<int,bigint>     	Map of column id to total size on disk
@@ -412,7 +418,7 @@ POSTHOOK: Input: default@ice_meta_desc
 status              	int                 	from deserializer   
 snapshot_id         	bigint              	from deserializer   
 sequence_number     	bigint              	from deserializer   
-data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
 PREHOOK: query: drop table ice_meta_desc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_desc

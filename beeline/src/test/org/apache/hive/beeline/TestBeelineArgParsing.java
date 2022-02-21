@@ -193,11 +193,13 @@ public class TestBeelineArgParsing {
   public void testQueryScripts() throws Exception {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"-u", "url", "-n", "name",
-      "-p", "password", "-d", "driver", "-e", "select1", "-e", "select2"};
+      "-p", "password", "-d", "driver", "-e", "select1", "-e", "select2",
+      "-e", "select \"hive\""};
     Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.queries.contains("select1"));
     Assert.assertTrue(bl.queries.contains("select2"));
+    Assert.assertTrue(bl.queries.contains("select \"hive\""));
   }
 
   /**

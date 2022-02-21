@@ -18,17 +18,13 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.command;
 
-import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -40,20 +36,16 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
-import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,7 +148,7 @@ final class CommandAuthorizerV2 {
    * A deferred authorization view is view created by non-super user like spark-user. This view contains a parameter "Authorized"
    * set to false, so ranger will not authorize it during view creation. When a select statement is issued, then the ranger authorizes
    * the under lying tables.
-   * @param Table t
+   * @param t the HMS table object
    * @return boolean value
    */
   private static boolean isDeferredAuthView(Table t){
@@ -168,7 +160,8 @@ final class CommandAuthorizerV2 {
     }
     if(isView){
       Map<String, String> params = t.getParameters();
-      if (params != null && params.containsKey(authorizedKeyword)) {
+      if (HiveConf.getBoolVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS)
+              && params != null && params.containsKey(authorizedKeyword)) {
         String authorizedValue = params.get(authorizedKeyword);
         if ("false".equalsIgnoreCase(authorizedValue)) {
           return true;
@@ -200,27 +193,14 @@ final class CommandAuthorizerV2 {
         if (hiveOpType == HiveOperationType.CREATETABLE ||
                 hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES ||
                 hiveOpType == HiveOperationType.CREATETABLE_AS_SELECT) {
-          String storageuri = null;
-          Map<String, String> tableProperties = new HashMap<>();
-          Configuration conf = new Configuration();
-          tableProperties.putAll(table.getSd().getSerdeInfo().getParameters());
-          tableProperties.putAll(table.getParameters());
           try {
-            if (table.getStorageHandler() instanceof HiveStorageAuthorizationHandler) {
-              HiveStorageAuthorizationHandler authorizationHandler = (HiveStorageAuthorizationHandler) ReflectionUtils.newInstance(
-                      conf.getClassByName(table.getStorageHandler().getClass().getName()), SessionState.get().getConf());
-              storageuri = authorizationHandler.getURIForAuth(tableProperties).toString();
-            } else {
-              //Custom storage handler that has not implemented the HiveStorageAuthorizationHandler
-              storageuri = table.getStorageHandler().getClass().getSimpleName().toLowerCase() + "://" +
-                      HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
-            }
-          } catch(Exception ex) {
-            LOG.error("Exception occured while getting the URI from storage handler: "+ex.getMessage(), ex);
-            throw new HiveException("Exception occured while getting the URI from storage handler: "+ex.getMessage());
+            String storageUri = table.getStorageHandler().getURIForAuth(table.getTTable()).toString();
+            hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+                actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
+          } catch (Exception ex) {
+            LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);
+            throw new HiveException("Exception occurred while getting the URI from storage handler: " + ex.getMessage());
           }
-          hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
-                  actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
         }
       }
       break;

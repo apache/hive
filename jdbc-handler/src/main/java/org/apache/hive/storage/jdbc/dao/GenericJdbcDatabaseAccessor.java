@@ -50,6 +50,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 /**
  * A data accessor that should in theory work with all JDBC compliant database drivers.
  */
@@ -74,7 +76,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String query = JdbcStorageConfigManager.getOrigQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Order is important since we need to obtain the original (as specified by the user) column names. JDBC_QUERY
+      // may be a generated/optimized query set by CBO with potentially different aliases than the original columns. 
+      String query = firstNonNull(selectAllFromTable(tableName), conf.get(Constants.JDBC_QUERY));
       String metadataQuery = getMetaDataQuery(query);
       LOGGER.debug("Query to execute is [{}]", metadataQuery);
 
@@ -114,7 +119,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Always use JDBC_QUERY if available both for correctness and performance. JDBC_QUERY can be set by the user
+      // or the CBO including pushdown optimizations. SELECT all query should be used only when JDBC_QUERY is null.
+      String sql = firstNonNull(conf.get(Constants.JDBC_QUERY), selectAllFromTable(tableName));
       String countQuery = "SELECT COUNT(*) FROM (" + sql + ") tmptable";
       LOGGER.info("Query to execute is [{}]", countQuery);
 
@@ -154,8 +162,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String tableName = conf.get(Constants.JDBC_TABLE);
-      String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Always use JDBC_QUERY if available both for correctness and performance. JDBC_QUERY can be set by the user
+      // or the CBO including pushdown optimizations. SELECT all query should be used only when JDBC_QUERY is null.
+      String sql = firstNonNull(conf.get(Constants.JDBC_QUERY), selectAllFromTable(tableName));
       String partitionQuery;
       if (partitionColumn != null) {
         partitionQuery = addBoundaryToQuery(tableName, sql, partitionColumn, lowerBound, upperBound);
@@ -181,7 +191,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   public RecordWriter getRecordWriter(TaskAttemptContext context)
           throws IOException {
     Configuration conf = context.getConfiguration();
-    String tableName =  conf.get(JdbcStorageConfig.TABLE.getPropertyName());
+    String tableName = getQualifiedTableName(conf);
 
     if (tableName == null || tableName.isEmpty()) {
       throw new IllegalArgumentException("Table name should be defined");
@@ -404,7 +414,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     try {
       Preconditions.checkArgument(retrieveMin || retrieveMax);
       initializeDatabaseConnection(conf);
-      String sql = JdbcStorageConfigManager.getOrigQueryToExecute(conf);
+      String tableName = getQualifiedTableName(conf);
+      // Order is important since we need to retain the original (as specified by the user) column names. The partition
+      // column, used below, is user specified so the column names should match.
+      String sql = firstNonNull(selectAllFromTable(tableName), conf.get(Constants.JDBC_QUERY));
       String minClause = "MIN(" + quote() + partitionColumn  + quote() + ")";
       String maxClause = "MAX(" + quote() + partitionColumn  + quote() + ")";
       String countQuery = "SELECT ";
@@ -463,5 +476,18 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   @Override
   public boolean needColumnQuote() {
     return true;
+  }
+
+  private static String getQualifiedTableName(Configuration conf) {
+    String tableName = conf.get(Constants.JDBC_TABLE);
+    if (tableName == null) {
+      return null;
+    }
+    String schemaName = conf.get(Constants.JDBC_SCHEMA);
+    return schemaName == null ? tableName : schemaName + "." + tableName;
+  }
+
+  private static String selectAllFromTable(String tableName) {
+    return tableName == null ? null : "select * from " + tableName;
   }
 }

@@ -200,7 +200,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     Map<String, Long> tables = new HashMap<>();
     tables.put("t1", numTxns+2L);
     tables.put("t2", numTxns+6L);
-    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
     List<String> withConfigs = new LinkedList<>(dumpWithAcidBootstrapClause);

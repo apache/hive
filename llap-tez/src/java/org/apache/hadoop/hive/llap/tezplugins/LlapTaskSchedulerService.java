@@ -1402,12 +1402,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    * @return
    */
   private SelectHostResult selectHost(TaskInfo request, Map<String, List<NodeInfo>> availableHostMap) {
-    // short-circuit when all nodes are busy
-    if (availableHostMap.values().isEmpty()) {
-      // reset locality delay
-      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
-        request.resetLocalityDelayInfo();
-      }
+    // short-circuit when no-active instances exist
+    if (availableHostMap.isEmpty()) {
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     }
     String[] requestedHosts = request.requestedHosts;
@@ -1537,7 +1533,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
         return new SelectHostResult(nextSlot);
       }
-
+      // When all nodes are busy, reset locality delay
+      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
+        request.resetLocalityDelayInfo();
+      }
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     } finally {
       readLock.unlock();
@@ -1858,7 +1857,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    */
   private boolean shouldCycle(Map<String, List<NodeInfo>> availableHostMap) {
     // short-circuit on resource availability
-    if (!availableHostMap.values().isEmpty()) return true;
+    int nodeCnt = 0;
+    for (List<NodeInfo> nodes : availableHostMap.values()) {
+      nodeCnt += nodes.size();
+    }
+    if (nodeCnt > 0) return true;
     // check if pending Pri is lower than existing tasks pri
     int specMax = speculativeTasks.isEmpty() ? Integer.MIN_VALUE : speculativeTasks.lastKey();
     int guarMax = guaranteedTasks.isEmpty() ? Integer.MIN_VALUE : guaranteedTasks.lastKey();
@@ -2761,7 +2764,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       return hadCommFailure;
     }
 
-    boolean _canAccepInternal() {
+    boolean _canAcceptInternal() {
       return !hadCommFailure && !disabled
           &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
     }
@@ -2770,7 +2773,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     may be running in the system. Also depends upon the capacity usage configuration
      */
     boolean canAcceptTask() {
-      boolean result = _canAccepInternal();
+      boolean result = _canAcceptInternal();
       if (LOG.isTraceEnabled()) {
         LOG.trace(constructCanAcceptLogResult(result));
       }
@@ -2825,7 +2828,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     private String toShortString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(", canAcceptTask=").append(_canAccepInternal());
+      sb.append(", canAcceptTask=").append(_canAcceptInternal());
       sb.append(", st=").append(numScheduledTasks);
       sb.append(", ac=").append((numSchedulableTasks - numScheduledTasks));
       sb.append(", commF=").append(hadCommFailure);

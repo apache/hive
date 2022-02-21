@@ -493,9 +493,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             isLastFileForThisBucket = true;
             continue;
           }
-          Reader copyReader = OrcFile.createReader(f.getFileStatus().getPath(),
-            OrcFile.readerOptions(conf));
-          rowIdOffsetTmp += copyReader.getNumberOfRows();
+          try (Reader copyReader = OrcFile.createReader(f.getFileStatus().getPath(), OrcFile.readerOptions(conf))) {
+            rowIdOffsetTmp += copyReader.getNumberOfRows();
+          }
         }
         this.rowIdOffset = rowIdOffsetTmp;
         if (rowIdOffset > 0) {

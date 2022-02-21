@@ -2,8 +2,6 @@
 --! qt:scheduledqueryservice
 --! qt:sysdb
 
-set hive.repl.rootdir=${system:test.tmp.dir}/repl;
-
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/repl/sentinel;
 dfs -rmr  ${system:test.tmp.dir}/repl;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/repl;
@@ -41,6 +39,7 @@ alter scheduled query repl2 disabled;
 
 show databases;
 
-select policy_name, dump_execution_id from sys.replication_metrics;
+select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
+from sys.replication_metrics_orig order by dump_execution_id;
 
-select count(*) from sys.replication_metrics where scheduled_execution_id > 0;
+select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id;

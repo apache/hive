@@ -102,7 +102,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n95
                   filterExpr: dec is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:dec, smallTablePos:1, keyRatio:0.09532888465204957
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:dec, smallTablePos:1, keyRatio:0.09628217349857007
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: dec is not null (type: boolean)
