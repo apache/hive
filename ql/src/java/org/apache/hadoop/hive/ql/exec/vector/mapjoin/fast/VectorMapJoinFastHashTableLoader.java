@@ -78,6 +78,19 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
   private BlockingQueue<HashTableElementBatch>[] loadBatchQueues;
   private static final HashTableElementBatch DONE_SENTINEL = new HashTableElementBatch();
 
+  public VectorMapJoinFastHashTableLoader() {
+
+  }
+
+  public VectorMapJoinFastHashTableLoader(TezContext context, Configuration hconf, MapJoinOperator joinOp) {
+    this.tezContext = context;
+    this.hconf = hconf;
+    this.desc = joinOp.getConf();
+    this.cacheKey = joinOp.getCacheKey();
+    this.htLoadCounter = this.tezContext.getTezProcessorContext().getCounters().findCounter(
+        HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP), hconf.get(Operator.CONTEXT_NAME_KEY, ""));
+  }
+
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext,
       Configuration hconf, MapJoinOperator joinOp) {
