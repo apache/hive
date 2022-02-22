@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -61,9 +60,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBase;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBaseLight;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
@@ -72,11 +69,9 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -449,9 +444,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       obsoleteDirs = dir.getAbortedDirectories();
     }
 
-    if (obsoleteDirs.isEmpty()
-        && !hasDataBelowWatermark(dir, fs, path, ci.highestWriteId, writeIdList.getHighWatermark())) {
-      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
+    if (obsoleteDirs.isEmpty()) {
+      LOG.info(
+          idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + "; discarding clean request.");
       return true;
     }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
@@ -477,44 +472,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
     }
     return true;
-  }
-
-  private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark,
-      long minOpenTxn)
-      throws IOException {
-    Set<Path> acidPaths = new HashSet<>();
-    for (ParsedDelta delta : acidDir.getCurrentDirectories()) {
-      acidPaths.add(delta.getPath());
-    }
-    if (acidDir.getBaseDirectory() != null) {
-      acidPaths.add(acidDir.getBaseDirectory());
-    }
-    FileStatus[] children = fs.listStatus(path, p -> {
-      return !acidPaths.contains(p);
-    });
-    for (FileStatus child : children) {
-      if (isFileBelowWatermark(child, highWatermark, minOpenTxn)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isFileBelowWatermark(FileStatus child, long highWatermark, long minOpenTxn) {
-    Path p = child.getPath();
-    String fn = p.getName();
-    if (!child.isDirectory()) {
-      return true;
-    }
-    if (fn.startsWith(AcidUtils.BASE_PREFIX)) {
-      ParsedBaseLight b = ParsedBaseLight.parseBase(p);
-      return b.getWriteId() <= highWatermark;// && b.getVisibilityTxnId() < minOpenTxn;
-    }
-    if (fn.startsWith(AcidUtils.DELTA_PREFIX) || fn.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
-      ParsedDeltaLight d = ParsedDeltaLight.parse(p);
-      return d.getMaxWriteId() <= highWatermark;// && d.getVisibilityTxnId() < minOpenTxn;
-    }
-    return false;
   }
 
   private boolean removeFiles(String location, CompactionInfo ci)
