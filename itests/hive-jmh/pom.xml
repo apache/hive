@@ -87,16 +87,15 @@
       <artifactId>powermock-module-junit4</artifactId>
       <version>${powermock.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito2</artifactId>
       <version>${powermock.version}</version>
     </dependency>
-      <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-exec</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
