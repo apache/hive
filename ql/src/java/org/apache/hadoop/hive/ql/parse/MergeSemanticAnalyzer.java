@@ -634,7 +634,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     UnparseTranslator defaultValuesTranslator = new UnparseTranslator(conf);
     defaultValuesTranslator.enable();
-    collectDefaultValues(valuesNode, targetTable, defaultValuesTranslator);
+    List<String> targetSchema = processTableColumnNames(columnListNode, targetTable.getFullyQualifiedName());
+    collectDefaultValues(valuesNode, targetTable, targetSchema, defaultValuesTranslator);
     defaultValuesTranslator.applyTranslations(ctx.getTokenRewriteStream());
     String valuesClause = getMatchedText(valuesNode);
     valuesClause = valuesClause.substring(1, valuesClause.length() - 1); //strip '(' and ')'
@@ -649,11 +650,12 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append('\n');
   }
 
-  private void collectDefaultValues(ASTNode valueClause, Table targetTable, UnparseTranslator unparseTranslator)
+  private void collectDefaultValues(
+          ASTNode valueClause, Table targetTable, List<String> targetSchema, UnparseTranslator unparseTranslator)
           throws SemanticException {
-    List<String> defaultConstraints = getDefaultConstraints(targetTable, null);
-    for (int j = 1; j < valueClause.getChildCount(); j++) {
-      unparseTranslator.addDefaultValueTranslation((ASTNode) valueClause.getChild(j), defaultConstraints.get(j - 1));
+    List<String> defaultConstraints = getDefaultConstraints(targetTable, targetSchema);
+    for (int j = 0; j < defaultConstraints.size(); j++) {
+      unparseTranslator.addDefaultValueTranslation((ASTNode) valueClause.getChild(j + 1), defaultConstraints.get(j));
     }
   }
 
