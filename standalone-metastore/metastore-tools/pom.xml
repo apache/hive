@@ -27,7 +27,6 @@
     <module>tools-common</module>
   </modules>
   <properties>
-    <hive.version>4.0.0-SNAPSHOT</hive.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <javac.errorprone.version>2.8</javac.errorprone.version>
     <errorprone.core.version>2.3.1</errorprone.core.version>
@@ -88,7 +87,7 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-common</artifactId>
-        <version>${hive.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
       <dependency>

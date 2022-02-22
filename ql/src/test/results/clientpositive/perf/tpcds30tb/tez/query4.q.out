@@ -829,7 +829,7 @@ STAGE PLANS:
                 Statistics: Num rows: 26666666 Data size: 14719999632 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
                 Filter Operator
-                  predicate: CASE WHEN (_col4 is not null) THEN (CASE WHEN (_col9) THEN (((_col6 / _col8) > (_col2 / _col4))) ELSE (false) END) ELSE (false) END (type: boolean)
+                  predicate: if(_col4 is not null, if(_col9, ((_col6 / _col8) > (_col2 / _col4)), false), false) (type: boolean)
                   Statistics: Num rows: 13333333 Data size: 7359999816 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: char(16))
@@ -874,7 +874,7 @@ STAGE PLANS:
                 Statistics: Num rows: 13333333 Data size: 7413333148 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
                 Filter Operator
-                  predicate: CASE WHEN (_col14) THEN (CASE WHEN (_col9) THEN (((_col6 / _col8) > (_col11 / _col13))) ELSE (false) END) ELSE (false) END (type: boolean)
+                  predicate: if(_col14, if(_col9, ((_col6 / _col8) > (_col11 / _col13)), false), false) (type: boolean)
                   Statistics: Num rows: 6666666 Data size: 3706666296 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: char(16))

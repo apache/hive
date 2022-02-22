@@ -140,7 +140,7 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-common</artifactId>
-        <version>${project.version}</version>
+        <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -174,7 +174,7 @@
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-server</artifactId>
         <classifier>tests</classifier>
-        <version>${project.version}</version>
+        <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>

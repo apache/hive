@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook;
@@ -69,15 +72,154 @@ import org.apache.orc.impl.RecordReaderImpl;
 import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.FieldSetter;
 
+import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
+
+  @Test
+  public void testMinorCompactionShouldBeRefusedOnTablesWithOriginalFiles() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
+    // Set delta percentage to a high value to suppress selecting major compression based on that
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1000f);
+
+    final String dbName = "default";
+    final String tableName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(id string, value string) CLUSTERED BY(id) " +
+            "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='false')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('1','one'),('2','two'),('3','three')," +
+            "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten')," +
+            "('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen')," +
+            "('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+
+    executeStatementOnDriver("alter table " + tableName + " set TBLPROPERTIES('transactional'='true')", driver);
+
+    executeStatementOnDriver("insert into " + tableName + " values ('21', 'value21'),('84', 'value84')," +
+            "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('22', 'value22'),('34', 'value34')," +
+            "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    execSelectAndDumpData("select * from " + tableName, driver, "Dumping data for " +
+            tableName + " after load:");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    //Prevent initiator from submitting the compaction requests
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException("")).when(mockedHandler).compact(nullable(CompactionRequest.class));
+    Initiator initiator = new Initiator();
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    FieldSetter.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    //Run initiator and capture compaction requests
+    initiator.run();
+
+    //Check captured compaction request and if the type for the table was MAJOR
+    ArgumentCaptor<CompactionRequest> requests = ArgumentCaptor.forClass(CompactionRequest.class);
+    verify(mockedHandler).compact(requests.capture());
+    Assert.assertTrue(requests.getAllValues().stream().anyMatch(r -> r.getTablename().equals(tableName) && r.getType().equals(CompactionType.MAJOR)));
+
+    //Try to do a minor compaction directly
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    runWorker(conf);
+
+    //Check if both compactions were failed with the expected error message
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (2 != compacts.size()) {
+      Assert.fail("Expecting 2 rows and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("did not initiate", compacts.get(0).getState());
+    Assert.assertTrue(compacts.get(0).getErrorMessage()
+            .startsWith("Caught exception while trying to determine if we should compact"));
+    Assert.assertEquals("refused", compacts.get(1).getState());
+    Assert.assertTrue(compacts.get(1).getErrorMessage()
+            .startsWith("Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them."));
+  }
+
+  @Test
+  public void testMinorCompactionShouldBeRefusedOnTablesWithRawData() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
+    // Set delta percentage to a high value to suppress selecting major compression based on that
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1000f);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    final String dbName = "default";
+    final String origTableName = "compaction_test";
+    final String testTableName = "imported";
+    executeStatementOnDriver("drop table if exists " + origTableName, driver);
+    executeStatementOnDriver("drop table if exists " + testTableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + origTableName + "(id string, value string) CLUSTERED BY(id) " +
+            "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + origTableName + " values ('1','one'),('2','two'),('3','three')," +
+            "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten')," +
+            "('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen')," +
+            "('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+
+    execSelectAndDumpData("select * from " + origTableName, driver, "Dumping data for " +
+            origTableName + " after load:");
+
+    executeStatementOnDriver("export table " + origTableName + " to '/tmp/temp_acid'", driver);
+    executeStatementOnDriver("import table " + testTableName + " from '/tmp/temp_acid'", driver);
+    executeStatementOnDriver("insert into " + testTableName + " values ('21', 'value21'),('84', 'value84')," +
+            "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + testTableName + " values ('22', 'value22'),('34', 'value34')," +
+            "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + testTableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+    //Prevent initiator from submitting the compaction requests
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException("")).when(mockedHandler).compact(nullable(CompactionRequest.class));
+    Initiator initiator = new Initiator();
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    FieldSetter.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+
+    //Run initiator and capture compaction requests
+    initiator.run();
+
+    //Check captured compaction request and if the type for the table was MAJOR
+    ArgumentCaptor<CompactionRequest> requests = ArgumentCaptor.forClass(CompactionRequest.class);
+    verify(mockedHandler).compact(requests.capture());
+    Assert.assertTrue(requests.getAllValues().stream().anyMatch(r -> r.getTablename().equals(testTableName) && r.getType().equals(CompactionType.MAJOR)));
+
+    //Try to do a minor compaction directly
+    CompactionRequest rqst = new CompactionRequest(dbName, testTableName, CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    runWorker(conf);
+
+    //Check if both compactions were failed with the expected error message
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (2 != compacts.size()) {
+      Assert.fail("Expecting 2 rows and found " + compacts.size() + " files " + compacts);
+    }
+    Assert.assertEquals("did not initiate", compacts.get(0).getState());
+    Assert.assertTrue(compacts.get(0).getErrorMessage().startsWith("Caught exception while trying to determine if we should compact"));
+    Assert.assertEquals("refused", compacts.get(1).getState());
+    Assert.assertTrue(compacts.get(1).getErrorMessage().startsWith("Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them."));
+  }
 
   /**
    * After each major compaction, stats need to be updated on the table

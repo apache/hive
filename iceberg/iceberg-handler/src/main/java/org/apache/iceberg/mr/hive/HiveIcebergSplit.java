@@ -28,6 +28,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.common.DynClasses;
+import org.apache.iceberg.common.DynFields;
+import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
 import org.apache.iceberg.relocated.com.google.common.primitives.Longs;
@@ -93,8 +97,46 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
     return 0;
   }
 
+  /**
+   * This hack removes residual expressions from the file scan task just before split serialization.
+   * Residuals can sometime take up too much space in the payload causing Tez AM to OOM.
+   * Unfortunately Tez AM doesn't distribute splits in a streamed way, that is, it serializes all splits for a job
+   * before sending them out to executors. Some residuals may take ~ 1 MB in memory, multiplied with thousands of splits
+   * could kill the Tez AM JVM.
+   * Until the streamed split distribution is implemented we will kick residuals out of the split, essentially the
+   * executor side won't use it anyway (yet).
+   */
+  private static final Class<?> SPLIT_SCAN_TASK_CLAZZ;
+  private static final DynFields.UnboundField<Object> FILE_SCAN_TASK_FIELD;
+  private static final DynFields.UnboundField<Object> RESIDUALS_FIELD;
+  private static final DynFields.UnboundField<Object> EXPR_FIELD;
+  private static final DynFields.UnboundField<Object> UNPARTITIONED_EXPR_FIELD;
+
+  static {
+    SPLIT_SCAN_TASK_CLAZZ = DynClasses.builder().impl("org.apache.iceberg.BaseFileScanTask$SplitScanTask").build();
+    FILE_SCAN_TASK_FIELD = DynFields.builder().hiddenImpl(SPLIT_SCAN_TASK_CLAZZ, "fileScanTask").build();
+    RESIDUALS_FIELD = DynFields.builder().hiddenImpl("org.apache.iceberg.BaseFileScanTask", "residuals").build();
+    EXPR_FIELD = DynFields.builder().hiddenImpl(ResidualEvaluator.class, "expr").build();
+    UNPARTITIONED_EXPR_FIELD = DynFields.builder().hiddenImpl("org.apache.iceberg.expressions." +
+        "ResidualEvaluator$UnpartitionedResidualEvaluator", "expr").build();
+  }
+
   @Override
   public void write(DataOutput out) throws IOException {
+    for (FileScanTask fileScanTask : icebergSplit().task().files()) {
+      if (fileScanTask.residual() != Expressions.alwaysTrue() &&
+          fileScanTask.getClass().isAssignableFrom(SPLIT_SCAN_TASK_CLAZZ)) {
+
+        Object residuals = RESIDUALS_FIELD.get(FILE_SCAN_TASK_FIELD.get(fileScanTask));
+
+        if (fileScanTask.spec().isPartitioned()) {
+          EXPR_FIELD.set(residuals, Expressions.alwaysTrue());
+        } else {
+          UNPARTITIONED_EXPR_FIELD.set(residuals, Expressions.alwaysTrue());
+        }
+
+      }
+    }
     byte[] bytes = SerializationUtil.serializeToBytes(tableLocation);
     out.writeInt(bytes.length);
     out.write(bytes);
