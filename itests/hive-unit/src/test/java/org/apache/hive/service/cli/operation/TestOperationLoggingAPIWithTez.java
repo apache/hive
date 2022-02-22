@@ -57,6 +57,8 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
     };
     hiveConf = UtilsForTest.getHiveOnTezConfFromDir("../../data/conf/tez/");
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    // Decrease time to live to increase the likehood of hitting HIVE-25970
+    hiveConf.set(ConfVars.HIVE_SERVER2_OPERATION_LOG_PURGEPOLICY_TIMETOLIVE.varname, "1s");
     // Set tez execution summary to false.
     hiveConf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, false);
     miniHS2 = new MiniHS2(hiveConf, MiniClusterType.TEZ);
