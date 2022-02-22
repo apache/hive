@@ -503,10 +503,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           StatsProvidingRecordReader statsRR;
           statsRR = (StatsProvidingRecordReader) recordReader;
           final FileStats fileStats =
-              new FileStats(statsRR.getStats().getRawDataSize(), statsRR.getStats().getRowCount(), file.getLen());
-          if (file.isErasureCoded()) {
-            fileStats.setNumErasureCodedFiles(1);
-          }
+              new FileStats(statsRR.getStats().getRawDataSize(), statsRR.getStats().getRowCount(), file.getLen(),
+                  file.isErasureCoded());
           return fileStats;
         } else {
           throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
@@ -525,10 +523,11 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     private long fileSize = 0;
     private long numErasureCodedFiles = 0;
 
-    public FileStats(long rawDataSize, long numRows, long fileSize) {
+    public FileStats(long rawDataSize, long numRows, long fileSize, boolean isErasureCoded) {
       this.rawDataSize = rawDataSize;
       this.numRows = numRows;
       this.fileSize = fileSize;
+      this.numErasureCodedFiles = isErasureCoded ? 1 : 0;
     }
 
     public long getNumRows() {
@@ -547,8 +546,5 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       return numErasureCodedFiles;
     }
 
-    public void setNumErasureCodedFiles(long numErasureCodedFiles) {
-      this.numErasureCodedFiles = numErasureCodedFiles;
-    }
   }
 }
