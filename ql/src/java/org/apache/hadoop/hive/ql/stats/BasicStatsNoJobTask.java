@@ -228,10 +228,10 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
         }
         ThreadPoolExecutor tpE = null;
-        ArrayList<Future<FileStats>> futures = null;
-        int numThreads = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASICSTATSTASKSMAXTHREADS);
-        if (fileList.size() > 1 && numThreads > 1) {
-          numThreads = Math.max(fileList.size(), numThreads);
+        List<Future<FileStats>> futures = null;
+        int numThreadsFactor = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASICSTATSTASKSMAXTHREADSFACTOR);
+        if (fileList.size() > 1 && numThreadsFactor > 0) {
+          int numThreads = Math.min(fileList.size(), numThreadsFactor * Runtime.getRuntime().availableProcessors());
           tpE = new ThreadPoolExecutor(numThreads, numThreads, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
           tpE.allowsCoreThreadTimeOut();
           futures = new ArrayList<>();
@@ -263,13 +263,21 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         }
 
         if (tpE != null) {
-          for (Future<FileStats> future : futures) {
-            FileStats fileStat = future.get();
-            rawDataSize += fileStat.getRawDataSize();
-            numRows += fileStat.getNumRows();
-            fileSize += fileStat.getFileSize();
-            numFiles += 1;
-            numErasureCodedFiles += fileStat.getNumErasureCodedFiles();
+          try {
+            for (Future<FileStats> future : futures) {
+              FileStats fileStat = future.get();
+              rawDataSize += fileStat.getRawDataSize();
+              numRows += fileStat.getNumRows();
+              fileSize += fileStat.getFileSize();
+              numFiles += 1;
+              numErasureCodedFiles += fileStat.getNumErasureCodedFiles();
+            }
+          } catch (Exception e) {
+            LOG.error("Encountered exception while collecting stats for file lists as {}", fileList, e);
+            // Cancel all the futures in the list & throw the caught exception post that.
+            futures.forEach(x -> x.cancel(true));
+            throw e;
+          } finally {
             tpE.shutdown();
           }
         }
