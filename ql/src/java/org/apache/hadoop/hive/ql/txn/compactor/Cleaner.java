@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -61,6 +60,7 @@ import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBase;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBaseLight;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
@@ -81,7 +81,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
@@ -89,8 +88,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEAN
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-
-import com.codahale.metrics.Counter;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -409,20 +406,26 @@ public class Cleaner extends MetaStoreCompactorThread {
     FileSystem fs = path.getFileSystem(conf);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
+
+    if (!areWeUsingCompactedData(dir, ci)) {
+      LOG.info(idWatermark(ci) + " - compaction result is not yet in use; retaining clean request.");
+      return false;
+    }
+
     //    if(!areWeUsingCompactedData(ci.highestWriteId)) {
-    //      
+    //
     //      return false;
     //    }
-    //    
+    //
     //    if(MAJOR)
     //    if(dir.getMinWriteId()<ci.highestWriteId) {
-    //      
+    //
     //      return false;
     //    }
     //    else {
     //      // MINOR
     //      if(dir.getMinDeltaWriteId() <  ci.highestWriteId) { //$$%
-    //        
+    //
     //      }
     //    }
 
@@ -459,6 +462,21 @@ public class Cleaner extends MetaStoreCompactorThread {
           txnHandler);
     }
     return success;
+  }
+
+  private boolean areWeUsingCompactedData(AcidDirectory dir, CompactionInfo ci) {
+    if (ci.isMajorCompaction()) {
+      ParsedBase base = dir.getBase();
+      return (base != null && base.getWriteId() >= ci.highestWriteId);
+    } else {
+      List<ParsedDelta> dirs = dir.getCurrentDirectories();
+      for (ParsedDelta parsedDelta : dirs) {
+        if (parsedDelta.getMinWriteId() < ci.highestWriteId) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark,
