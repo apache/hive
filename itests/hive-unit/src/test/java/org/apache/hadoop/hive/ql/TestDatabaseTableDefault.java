@@ -198,19 +198,19 @@ public class TestDatabaseTableDefault {
 
         runStatementOnDriver("create table " + TableNames.EXTERNALTABLE1 + " (id int, name string)");
         Table external_table_1 = client.getTable(database_with_default_table_type, TableNames.EXTERNALTABLE1.toString());
-        assertEquals("Created table type is expected to be managed but found to be external", external_table_1.getTableType(), table_type_external);
+        assertEquals("Created table type is expected to be external but found to be managed", external_table_1.getTableType(), table_type_external);
 
         runStatementOnDriver("create external table " + TableNames.EXTERNALTABLE2 + " (id int, name string) ");
         Table external_table_2 = client.getTable(database_with_default_table_type, TableNames.EXTERNALTABLE2.toString());
-        assertEquals("Created table type is expected to be managed but found to be external", external_table_2.getTableType(), table_type_external);
+        assertEquals("Created table type is expected to be external but found to be managed", external_table_2.getTableType(), table_type_external);
 
         runStatementOnDriver("create table " + TableNames.EXTERNALTABLE3 + " like " + TableNames.EXTERNALTABLE2);
         Table external_table_3 = client.getTable(database_with_default_table_type, TableNames.EXTERNALTABLE3.toString());
-        assertEquals("Created table type is expected to be managed but found to be external", external_table_3.getTableType(), table_type_external);
+        assertEquals("Created table type is expected to be external but found to be managed", external_table_3.getTableType(), table_type_external);
 
         runStatementOnDriver("create table " + TableNames.EXTERNALTABLE4 + " as select * from " + TableNames.EXTERNALTABLE2);
         Table external_table_4 = client.getTable(database_with_default_table_type, TableNames.EXTERNALTABLE4.toString());
-        assertEquals("Created table type is expected to be managed but found to be external", external_table_4.getTableType(), table_type_external);
+        assertEquals("Created table type is expected to be external but found to be managed", external_table_4.getTableType(), table_type_external);
 
         LOG.info("Test execution complete:testCreateExternalTablesInDBWithDefaultTableType_External");
     }
@@ -255,7 +255,7 @@ public class TestDatabaseTableDefault {
 
         runStatementOnDriver("create external table " + TableNames.EXTERNALTABLE6 + " (id int, name string)");
         Table external_table_6 = client.getTable(acid_database, TableNames.EXTERNALTABLE6.toString());
-        assertEquals("Created table type is expected to be managed but found to be external", external_table_6.getTableType(), table_type_external);
+        assertEquals("Created table type is expected to be external but found to be managed", external_table_6.getTableType(), table_type_external);
 
         runStatementOnDriver("drop database " + acid_database + " cascade");
         LOG.info("Test execution complete:testCreateTablesInDBWithDefaultTableTypeAcid");
