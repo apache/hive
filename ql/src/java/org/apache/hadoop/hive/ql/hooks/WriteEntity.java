@@ -233,9 +233,8 @@ public class WriteEntity extends Entity implements Serializable {
       return WriteType.DDL_EXCLUSIVE;
 
     case RENAME:
-      return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
-          && AcidUtils.isTransactionalTable(table) ? 
-        WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
+      return AcidUtils.isLocklessReadsSupported(table, conf) ? 
+          WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
 
     case ADDPARTITION:
     case SET_SERDE_PROPS:

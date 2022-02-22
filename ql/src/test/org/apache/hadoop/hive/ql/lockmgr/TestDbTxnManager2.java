@@ -3603,14 +3603,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   private void testRenameTable(boolean blocking) throws Exception {
-    dropTable(new String[] {"tab_acid"});
+    dropTable(new String[] {"tab_acid", "tab_acid_v2"});
     FileSystem fs = FileSystem.get(conf);
 
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
     driver = Mockito.spy(driver);
 
-    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, !blocking);
+    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
     driver2 = Mockito.spy(driver2);
 
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
@@ -3629,7 +3629,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr2);
-    driver2.compileAndRespond("alter table tab_acid rename to tab_acid_new");
+    driver2.compileAndRespond("alter table tab_acid rename to tab_acid_v2");
 
     if (blocking) {
       txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
@@ -3679,7 +3679,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertEquals(ErrorMsg.INVALID_TABLE.getErrorCode(), ex.getResponseCode());
     }
 
-    driver.run("select * from tab_acid_new");
+    driver.run("select * from tab_acid_v2");
     res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
