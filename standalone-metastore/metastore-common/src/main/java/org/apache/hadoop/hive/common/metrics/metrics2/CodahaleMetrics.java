@@ -84,13 +84,13 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   private ConcurrentHashMap<String, Gauge> gauges;
 
   private Configuration conf;
-  private final Set<Closeable> reporters = new HashSet<Closeable>();
+  private final Set<Closeable> reporters = new HashSet<>();
 
   private final ThreadLocal<HashMap<String, CodahaleMetricsScope>> threadLocalScopes
     = new ThreadLocal<HashMap<String, CodahaleMetricsScope>>() {
     @Override
     protected HashMap<String, CodahaleMetricsScope> initialValue() {
-      return new HashMap<String, CodahaleMetricsScope>();
+      return new HashMap<>();
     }
   };
 
@@ -173,7 +173,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
           }
         }
     );
-    gauges = new ConcurrentHashMap<String, Gauge>();
+    gauges = new ConcurrentHashMap<>();
 
     //register JVM metrics
     registerAll("gc", new GarbageCollectorMetricSet());
@@ -284,7 +284,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     addGaugeInternal(name, gauge);
   }
 
-
   @Override
   public void removeGauge(String name) {
     try {
@@ -327,7 +326,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void markMeter(String name) {
-    String key = name;
     try {
       metersLock.lock();
       Meter meter = meters.get(name);
@@ -382,7 +380,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
    * Note: if both confs are defined, only  HIVE_CODAHALE_METRICS_REPORTER_CLASSES will be used.
    */
   private void initReporting() {
-
     if (!(initCodahaleMetricsReporterClasses() || initMetricsReporter())) {
       LOGGER.warn("Unable to initialize metrics reporting");
     }
@@ -398,7 +395,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
    */
   private boolean initCodahaleMetricsReporterClasses() {
 
-
     List<String> reporterClasses = Lists.newArrayList(Splitter.on(",").trimResults().
         omitEmptyStrings().split(MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES)));
@@ -407,7 +403,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
 
     for (String reporterClass : reporterClasses) {
-      Class name = null;
+      Class<?> name;
       try {
         name = conf.getClassByName(reporterClass);
       } catch (ClassNotFoundException e) {
@@ -417,7 +413,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       }
       try {
         // Note: Hadoop metric reporter does not support tags. We create a single reporter for all metrics.
-        Constructor constructor = name.getConstructor(MetricRegistry.class, Configuration.class);
+        Constructor<?> constructor = name.getConstructor(MetricRegistry.class, Configuration.class);
         CodahaleReporter reporter = (CodahaleReporter) constructor.newInstance(metricRegistry, conf);
         reporter.start();
         reporters.add(reporter);
@@ -444,7 +440,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       return false;
     }
 
-    MetricsReporting reporter = null;
+    MetricsReporting reporter;
     for (String metricsReportingName : metricsReporterNames) {
       try {
         reporter = MetricsReporting.valueOf(metricsReportingName.trim().toUpperCase());
