@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -69,6 +70,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * StatsNoJobTask is used in cases where stats collection is the only task for the given query (no
@@ -232,7 +234,9 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         int numThreadsFactor = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASICSTATSTASKSMAXTHREADSFACTOR);
         if (fileList.size() > 1 && numThreadsFactor > 0) {
           int numThreads = Math.min(fileList.size(), numThreadsFactor * Runtime.getRuntime().availableProcessors());
-          tpE = new ThreadPoolExecutor(numThreads, numThreads, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+          ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Basic-Stats-Thread-%d").build();
+          tpE = new ThreadPoolExecutor(numThreads, numThreads, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+              threadFactory);
           tpE.allowsCoreThreadTimeOut();
           futures = new ArrayList<>();
           LOG.info("Processing Stats for {} file using {} threads", fileList.size(), numThreads);
@@ -498,10 +502,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         if (recordReader instanceof StatsProvidingRecordReader) {
           StatsProvidingRecordReader statsRR;
           statsRR = (StatsProvidingRecordReader) recordReader;
-          FileStats fileStats = new FileStats();
-          fileStats.setRawDataSize(statsRR.getStats().getRawDataSize());
-          fileStats.setNumRows(statsRR.getStats().getRowCount());
-          fileStats.setFileSize(file.getLen());
+          final FileStats fileStats =
+              new FileStats(statsRR.getStats().getRawDataSize(), statsRR.getStats().getRowCount(), file.getLen());
           if (file.isErasureCoded()) {
             fileStats.setNumErasureCodedFiles(1);
           }
@@ -523,28 +525,22 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     private long fileSize = 0;
     private long numErasureCodedFiles = 0;
 
-    public long getNumRows() {
-      return numRows;
+    public FileStats(long rawDataSize, long numRows, long fileSize) {
+      this.rawDataSize = rawDataSize;
+      this.numRows = numRows;
+      this.fileSize = fileSize;
     }
 
-    public void setNumRows(long numRows) {
-      this.numRows = numRows;
+    public long getNumRows() {
+      return numRows;
     }
 
     public long getRawDataSize() {
       return rawDataSize;
     }
 
-    public void setRawDataSize(long rawDataSize) {
-      this.rawDataSize = rawDataSize;
-    }
-
     public long getFileSize() {
       return fileSize;
-    }
-
-    public void setFileSize(long fileSize) {
-      this.fileSize = fileSize;
     }
 
     public long getNumErasureCodedFiles() {
