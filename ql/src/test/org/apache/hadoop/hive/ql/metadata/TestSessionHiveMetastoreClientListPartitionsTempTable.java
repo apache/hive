@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestMetastoreExpr;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -38,8 +37,10 @@ import org.apache.hadoop.hive.metastore.client.TestListPartitions;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
 import org.junit.Before;
@@ -80,6 +81,9 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   public void setUp() throws Exception {
     initHiveConf();
     SessionState.start(conf);
+    QueryState queryState = QueryState.getNewQueryState(conf, new LineageState());
+    queryState.createHMSCache();
+    SessionState.get().addQueryState(queryState.getQueryId(), queryState);
     // setup metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
       HiveMetaStoreClientWithLocalCache.init(conf);

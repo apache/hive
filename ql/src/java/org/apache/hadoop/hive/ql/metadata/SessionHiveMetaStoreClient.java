@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -2510,15 +2509,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       }
     }
     return null;
-  }
-
-  private String getQueryId() {
-    try {
-      return Hive.get().getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
-    } catch (HiveException e) {
-      LOG.error("Error getting query id. Query level HMS caching will be disabled", e);
-      return null;
-    }
   }
 
   @Override

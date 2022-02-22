@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.ql.metadata;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -25,6 +25,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -57,6 +62,8 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.thrift.TException;
@@ -500,9 +507,25 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
    * @return boolean
    */
   private boolean isCacheEnabledAndInitialized() {
+    // Do not use the cache if session level query cache is also disabled
+    // Both caches can be used only at compilation time because execution may change
+    // DB objects (Tables, Partition metadata objects) and cache entries may already invalid
+    SessionState sessionState = SessionState.get();
+    if (sessionState == null || sessionState.getQueryCache(getQueryId()) == null) {
+      return false;
+    }
+
     return INITIALIZED.get();
   }
 
+  protected String getQueryId() {
+    try {
+      return Hive.get().getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    } catch (HiveException e) {
+      LOG.error("Error getting query id. Query level and Global HMS caching will be disabled", e);
+      return null;
+    }
+  }
 
   protected final Pair<List<ColumnStatisticsObj>, List<String>> getTableColumnStatisticsCache(CacheI cache,
       TableStatsRequest rqst, TableWatermark watermark) {
