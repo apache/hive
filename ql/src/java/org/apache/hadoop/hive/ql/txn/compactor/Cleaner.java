@@ -402,7 +402,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
 
-    if (!areWeUsingCompactedData(dir, ci)) {
+    if (!areWeUsingCompactedData(dir, writeIdList, ci)) {
       LOG.info(idWatermark(ci) + " - compaction result is not yet in use; retaining clean request.");
       return false;
     }
@@ -442,16 +442,22 @@ public class Cleaner extends MetaStoreCompactorThread {
     return success;
   }
 
-  private boolean areWeUsingCompactedData(AcidDirectory dir, CompactionInfo ci) {
+  private boolean areWeUsingCompactedData(AcidDirectory dir, ValidWriteIdList writeIdList, CompactionInfo ci) {
+
+    long highestValidWriteId = ci.highestWriteId;
+    while (!writeIdList.isWriteIdValid(highestValidWriteId)) {
+      highestValidWriteId--;
+    }
     if (ci.isMajorCompaction()) {
       ParsedBase base = dir.getBase();
-      return (base != null && base.getWriteId() >= ci.highestWriteId);
-    } else {
-      List<ParsedDelta> dirs = dir.getCurrentDirectories();
-      for (ParsedDelta parsedDelta : dirs) {
-        if (parsedDelta.getMinWriteId() < ci.highestWriteId) {
-          return false;
-        }
+      if (base != null && base.getWriteId() < highestValidWriteId) {
+        return false;
+      }
+    }
+    List<ParsedDelta> dirs = dir.getCurrentDirectories();
+    for (ParsedDelta parsedDelta : dirs) {
+      if (parsedDelta.getMaxWriteId() < highestValidWriteId) {
+        return false;
       }
     }
     return true;
