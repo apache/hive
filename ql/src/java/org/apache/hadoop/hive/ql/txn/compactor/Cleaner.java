@@ -407,23 +407,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       return false;
     }
 
-    //    if(!areWeUsingCompactedData(ci.highestWriteId)) {
-    //
-    //      return false;
-    //    }
-    //
-    //    if(MAJOR)
-    //    if(dir.getMinWriteId()<ci.highestWriteId) {
-    //
-    //      return false;
-    //    }
-    //    else {
-    //      // MINOR
-    //      if(dir.getMinDeltaWriteId() <  ci.highestWriteId) { //$$%
-    //
-    //      }
-    //    }
-
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
      * trying to read anything in that dir (except getAcidState() that only reads the name of
