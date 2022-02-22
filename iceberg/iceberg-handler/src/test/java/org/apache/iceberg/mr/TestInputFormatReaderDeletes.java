@@ -34,6 +34,7 @@ import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.data.DeleteReadTests;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.mr.hive.TestIcebergInputFormats;
 import org.apache.iceberg.util.StructLikeSet;
 import org.junit.Assert;
 import org.junit.Before;
