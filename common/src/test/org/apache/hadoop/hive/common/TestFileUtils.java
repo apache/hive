@@ -264,4 +264,21 @@ public class TestFileUtils {
               equalsIgnoreCase("Distcp is called with doAsUser and delete source set as true"));
     }
   }
+
+  @Test
+  public void testMakeRelative() {
+    Path parentPath = new Path("/user/hive/database");
+    Path childPath = new Path(parentPath, "table/dir/subdir");
+    Path relativePath = FileUtils.makeRelative(parentPath, childPath);
+    assertEquals("table/dir/subdir", relativePath.toString());
+
+    // try with parent as Root.
+    relativePath = FileUtils.makeRelative(new Path(Path.SEPARATOR), childPath);
+    assertEquals("user/hive/database/table/dir/subdir", relativePath.toString());
+
+    // try with non child path, it should return the child path as is.
+    childPath = new Path("/user/hive/database1/table/dir/subdir");
+    relativePath = FileUtils.makeRelative(parentPath, childPath);
+    assertEquals(childPath.toString(), relativePath.toString());
+  }
 }
