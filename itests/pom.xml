@@ -68,23 +68,23 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-common</artifactId>
-        <version>${project.version}</version>
+        <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-common</artifactId>
-        <version>${project.version}</version>
+        <version>${standalone-metastore.version}</version>
         <classifier>tests</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-server</artifactId>
-        <version>${project.version}</version>
+        <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-server</artifactId>
-        <version>${project.version}</version>
+        <version>${standalone-metastore.version}</version>
         <classifier>tests</classifier>
       </dependency>
       <dependency>

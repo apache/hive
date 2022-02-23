@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.junit.After;
 import org.junit.Assert;
@@ -42,10 +43,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestDeltaFilesMetrics extends CompactorTest  {
 
@@ -73,16 +76,20 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     MetricsFactory.close();
   }
 
-  static void verifyMetricsMatch(Map<String, String> expected, Map<String, String> actual) {
-    Assert.assertTrue("Actual metrics " + actual + " don't match expected: " + expected,
-        equivalent(expected, actual));
+  private static void verifyDeltaMetricsMatch(Map<String, Integer> expected, String metricName) throws Exception {
+    verifyDeltaMetricsMatch(
+        expected,
+        gaugeToMap(metricName),
+        Metrics.getOrCreateMapMetrics(metricName).get());
   }
 
-  private static boolean equivalent(Map<String, String> lhs, Map<String, String> rhs) {
-    return lhs.size() == rhs.size() && Maps.difference(lhs, rhs).areEqual();
+  private static void verifyDeltaMetricsMatch(Map<String, Integer> expected,
+      Map<String, Integer> actualMBeanMetric, Map<String, Integer> actualMapMetric) {
+    assertThat("Actual mBean metrics " + actualMBeanMetric + " don't match expected: " + expected,
+        actualMapMetric, is(expected));
+    assertThat("Actual map metrics " + actualMapMetric + " don't match expected: " + expected,
+        actualMapMetric, is(expected));
   }
-
-
 
   @Override
   boolean useHive130DeltaDirName() {
@@ -106,16 +113,16 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     components.add(createLockComponent(dbName, tblName, partName));
 
     burnThroughTransactions(dbName, tblName, 23);
-    long txnid = openTxn();
+    long txnId = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
-    req.setTxnid(txnid);
+    req.setTxnid(txnId);
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    long writeid = allocateWriteId(dbName, tblName, txnid);
-    Assert.assertEquals(24, writeid);
-    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    long writeId = allocateWriteId(dbName, tblName, txnId);
+    Assert.assertEquals(24, writeId);
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
     startInitiator();
 
@@ -123,11 +130,15 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 2 active deltas
     // 1 small delta
     // 0 obsolete deltas
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "2");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "1");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 2),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 1),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startWorker();
 
@@ -135,27 +146,31 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 0 active deltas
     // 0 small delta
     // 2 obsolete deltas
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "2");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
-
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 2),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     addDeltaFile(t, p, 25L, 26L, 2);
     addDeltaFile(t, p, 27L, 28L, 20);
     addDeltaFile(t, p, 29L, 30L, 2);
 
     burnThroughTransactions(dbName, tblName, 30);
-    txnid = openTxn();
+    txnId = openTxn();
 
     req = new LockRequest(components, "me", "localhost");
-    req.setTxnid(txnid);
+    req.setTxnid(txnId);
     res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    writeid = allocateWriteId(dbName, tblName, txnid);
-    Assert.assertEquals(55, writeid);
-    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    writeId = allocateWriteId(dbName, tblName, txnId);
+    Assert.assertEquals(55, writeId);
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
     // Change these params to initiate MINOR compaction
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1.8f);
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
@@ -165,12 +180,15 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 3 active deltas
     // 2 small deltas
     // 2 obsolete deltas
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "3");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "2");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "2");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 3),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 2),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 2),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startCleaner();
 
@@ -178,11 +196,15 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 3 active deltas
     // 2 small deltas
     // 0 obsolete delta
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "3");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "2");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 3),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 2),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startWorker();
 
@@ -190,19 +212,28 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 1 active delta
     // 0 small delta
     // 3 obsolete deltas
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "1");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "3");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 1),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 3),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startCleaner();
 
     TimeUnit.SECONDS.sleep(2);
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + partName, "1");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 1),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
   }
 
   @Test
@@ -252,15 +283,19 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     startInitiator();
 
     TimeUnit.SECONDS.sleep(2);
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + part1Name, "2");
-      put(dbName + "." + tblName + Path.SEPARATOR + part2Name, "3");
-      put(dbName + "." + tblName + Path.SEPARATOR + part3Name, "4");
-    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + part2Name, "2");
-    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(
+            dbName + "." + tblName + Path.SEPARATOR + part1Name, 2,
+            dbName + "." + tblName + Path.SEPARATOR + part2Name, 3,
+            dbName + "." + tblName + Path.SEPARATOR + part3Name, 4),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(
+            dbName + "." + tblName + Path.SEPARATOR + part2Name, 2),
+      MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = showCompactResponse.getCompacts();
@@ -271,26 +306,35 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     startWorker();
 
     TimeUnit.SECONDS.sleep(2);
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + part1Name, "2");
-      put(dbName + "." + tblName + Path.SEPARATOR + part2Name, "1");
-    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + part2Name, "3");
-      put(dbName + "." + tblName + Path.SEPARATOR + part3Name, "4");
-    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(
+            dbName + "." + tblName + Path.SEPARATOR + part1Name, 2,
+            dbName + "." + tblName + Path.SEPARATOR + part2Name, 1),
+      MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(
+            dbName + "." + tblName + Path.SEPARATOR + part2Name, 3,
+            dbName + "." + tblName + Path.SEPARATOR + part3Name, 4),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startCleaner();
     startCleaner();
 
     TimeUnit.SECONDS.sleep(2);
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName + Path.SEPARATOR + part1Name, "2");
-      put(dbName + "." + tblName + Path.SEPARATOR + part2Name, "1");
-    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(
+          dbName + "." + tblName + Path.SEPARATOR + part1Name, 2,
+          dbName + "." + tblName + Path.SEPARATOR + part2Name, 1),
+      MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
   }
 
   @Test
@@ -323,11 +367,15 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 2 active deltas
     // 1 small delta
     // 0 obsolete deltas
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName, "2");}},  gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName, "1");}},  gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName, 2),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName, 1),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startWorker();
 
@@ -335,10 +383,15 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 0 active delta
     // 0 small delta
     // 2 obsolete delta
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    verifyMetricsMatch(new HashMap<String, String>() {{
-      put(dbName + "." + tblName, "2");}}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(dbName + "." + tblName, 2),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
 
     startCleaner();
 
@@ -346,9 +399,15 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     // 0 active delta
     // 0 small delta
     // 0 obsolete delta
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
-    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_SMALL_DELTAS);
+    verifyDeltaMetricsMatch(
+        ImmutableMap.of(),
+        MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
   }
 
   private LockComponent createLockComponent(String dbName, String tblName, String partName) {

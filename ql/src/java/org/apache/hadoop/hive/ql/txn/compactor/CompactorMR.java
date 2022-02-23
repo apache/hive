@@ -147,8 +147,8 @@ public class CompactorMR {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
 
-    String queueName = HiveConf.getVar(job, ConfVars.COMPACTOR_JOB_QUEUE);
-    if (queueName != null && queueName.length() > 0) {
+    String queueName = CompactorUtil.getCompactorJobQueueName(conf, ci, t);
+    if (!queueName.isEmpty()) {
       job.setQueueName(queueName);
     }
 

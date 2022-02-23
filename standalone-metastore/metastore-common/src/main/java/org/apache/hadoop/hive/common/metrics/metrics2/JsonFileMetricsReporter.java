@@ -68,7 +68,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   //    dumps metrics to a temporary file in the same directory as the actual metrics
   //    file and then renames it to the destination. Since both are located on the same
   //    filesystem, this rename is likely to be atomic (as long as the underlying OS
-  //    support atomic renames.
+  //    support atomic renames).
   //
   // NOTE: This reporter is very similar to
   //       org.apache.hadoop.hive.metastore.metrics.JsonReporter.
@@ -139,7 +139,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
     Path tmpFile = null;
     try {
       // Dump metrics to string as JSON
-      String json = null;
+      String json;
       try {
         json = jsonWriter.writeValueAsString(metricRegistry);
       } catch (JsonProcessingException e) {
@@ -159,7 +159,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
         return;
       } catch (UnsupportedOperationException e) {
         // This shouldn't ever happen
-        LOGGER.error("failed to create temp file for JSON metrics: operartion not supported", e);
+        LOGGER.error("failed to create temp file for JSON metrics: operation not supported", e);
         return;
       }
 
@@ -179,7 +179,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
         LOGGER.error("Exception during rename", e);
       }
     } catch (Throwable t) {
-      // catch all errors (throwable and execptions to prevent subsequent tasks from being suppressed)
+      // catch all errors (throwable and exceptions to prevent subsequent tasks from being suppressed)
       LOGGER.error("Error executing scheduled task ", t);
     } finally {
       // If something happened and we were not able to rename the temp file, attempt to remove it

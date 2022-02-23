@@ -1,0 +1,112 @@
+PREHOOK: query: EXPLAIN CBO SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[1])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: EXPLAIN FORMATTED CBO SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FORMATTED CBO SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"_dummy_database\",\n        \"_dummy_table\"\n      ],\n      \"table:alias\": \"_dummy_table\",\n      \"inputs\": [],\n      \"rowCount\": 1.0,\n      \"avgRowSize\": 129.0,\n      \"rowType\": [\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"literal\": 1,\n          \"type\": {\n            \"type\": \"INTEGER\",\n            \"nullable\": false\n          }\n        }\n      ],\n      \"rowCount\": 1.0\n    }\n  ]\n}"}
+PREHOOK: query: EXPLAIN SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: EXPLAIN FORMATTED SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FORMATTED SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"_dummy_database\",\n        \"_dummy_table\"\n      ],\n      \"table:alias\": \"_dummy_table\",\n      \"inputs\": [],\n      \"rowCount\": 1.0,\n      \"avgRowSize\": 0.0,\n      \"rowType\": [\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"literal\": 1,\n          \"type\": {\n            \"type\": \"INTEGER\",\n            \"nullable\": false\n          }\n        }\n      ],\n      \"rowCount\": 1.0\n    }\n  ]\n}","optimizedSQL":"SELECT 1 AS `_o__c0`\nFROM `_dummy_database`.`_dummy_table`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"_dummy_table","database:":"_dummy_database","Row Limit Per Split:":"1","table:":"_dummy_table","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"1 (type: int)","columnExprMap:":{"_col0":"1"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+PREHOOK: query: EXPLAIN CBO SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Excluded rules: HiveJoinPushTransitivePredicatesRule|HivePreFilteringRule
+
+CBO PLAN:
+HiveProject(_o__c0=[1])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: EXPLAIN FORMATTED CBO SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FORMATTED CBO SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"_dummy_database\",\n        \"_dummy_table\"\n      ],\n      \"table:alias\": \"_dummy_table\",\n      \"inputs\": [],\n      \"rowCount\": 1.0,\n      \"avgRowSize\": 129.0,\n      \"rowType\": [\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"literal\": 1,\n          \"type\": {\n            \"type\": \"INTEGER\",\n            \"nullable\": false\n          }\n        }\n      ],\n      \"rowCount\": 1.0\n    }\n  ]\n}","cboInfo":"Excluded rules: HiveJoinPushTransitivePredicatesRule|HivePreFilteringRule"}
+PREHOOK: query: EXPLAIN SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Excluded rules: HiveJoinPushTransitivePredicatesRule|HivePreFilteringRule
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: EXPLAIN FORMATTED SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FORMATTED SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"_dummy_database\",\n        \"_dummy_table\"\n      ],\n      \"table:alias\": \"_dummy_table\",\n      \"inputs\": [],\n      \"rowCount\": 1.0,\n      \"avgRowSize\": 0.0,\n      \"rowType\": [\n        {\n          \"type\": \"BIGINT\",\n          \"nullable\": true,\n          \"name\": \"BLOCK__OFFSET__INSIDE__FILE\"\n        },\n        {\n          \"type\": \"VARCHAR\",\n          \"nullable\": true,\n          \"precision\": 2147483647,\n          \"name\": \"INPUT__FILE__NAME\"\n        },\n        {\n          \"fields\": [\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"writeid\"\n            },\n            {\n              \"type\": \"INTEGER\",\n              \"nullable\": true,\n              \"name\": \"bucketid\"\n            },\n            {\n              \"type\": \"BIGINT\",\n              \"nullable\": true,\n              \"name\": \"rowid\"\n            }\n          ],\n          \"name\": \"ROW__ID\"\n        },\n        {\n          \"type\": \"BOOLEAN\",\n          \"nullable\": true,\n          \"name\": \"ROW__IS__DELETED\"\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"_o__c0\"\n      ],\n      \"exprs\": [\n        {\n          \"literal\": 1,\n          \"type\": {\n            \"type\": \"INTEGER\",\n            \"nullable\": false\n          }\n        }\n      ],\n      \"rowCount\": 1.0\n    }\n  ]\n}","cboInfo":"Plan optimized by CBO. Excluded rules: HiveJoinPushTransitivePredicatesRule|HivePreFilteringRule","optimizedSQL":"SELECT 1 AS `_o__c0`\nFROM `_dummy_database`.`_dummy_table`","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"_dummy_table","database:":"_dummy_database","Row Limit Per Split:":"1","table:":"_dummy_table","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"1 (type: int)","columnExprMap:":{"_col0":"1"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}

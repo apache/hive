@@ -43,7 +43,7 @@ public class ThriftHttpServletTest {
   private ThriftHttpServlet thriftHttpServlet;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     String authType = HiveAuthConstants.AuthTypes.KERBEROS.toString();
     thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null,
         new HiveConf());
