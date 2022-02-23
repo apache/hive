@@ -17,13 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.txn.compactor.TestCleaner;
 import org.junit.Before;
 
@@ -51,7 +45,7 @@ public class TestCleanerLegacy extends TestCleaner {
   @Before
   public void setup() throws Exception {
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, LegacyTxnHandler.class.getName());
+    //    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, LegacyTxnHandler.class.getName());
     setup(conf);
   }
 
