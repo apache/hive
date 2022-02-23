@@ -102,17 +102,17 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
       if (setCol != null) {
         if (setCol.getChildCount() > 0 && "default".equalsIgnoreCase(setCol.getChild(0).getText())) {
           selectExpressions.append(colNameToDefaultConstraint.get(name));
-          selectExpressions.append(" AS ");
-          selectExpressions.append(identifier);
         } else {
           selectExpressions.append(identifier);
           // This is one of the columns we're setting, record it's position so we can come back
-          // later and patch it up.
-          setColExprs.put(i, setCol);
+          // later and patch it up. 0th is ROW_ID
+          setColExprs.put(i + 1, setCol);
         }
       } else {
         selectExpressions.append(identifier);
       }
+      selectExpressions.append(" AS ");
+      selectExpressions.append(identifier);
 
       aliasedSelectExpressions.append("s.");
       aliasedSelectExpressions.append(identifier);
@@ -157,8 +157,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenInsert.addChild(where);
     }
 
-    ASTNode insertBranch = (ASTNode) rewrittenTree.getChildren().get(1);
-    patchProjectionForUpdate(insertBranch, setColExprs);
+    patchProjectionForUpdate(rewrittenInsert, setColExprs);
 
     try {
       useSuper = true;
