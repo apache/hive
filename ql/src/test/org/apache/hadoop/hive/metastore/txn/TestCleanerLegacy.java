@@ -31,6 +31,7 @@ import org.junit.Before;
  * Same as TestCleaner but in legacy mode - when it works by not setting CQ_NEXT_TXN_ID.
  */
 public class TestCleanerLegacy extends TestCleaner {
+
   public static class LegacyTxnHandler extends org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler {
     @Override
     protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
@@ -42,6 +43,7 @@ public class TestCleanerLegacy extends TestCleaner {
   @Before
   public void setup() throws Exception {
     HiveConf conf = new HiveConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, LegacyTxnHandler.class.getName());
     setup(conf);
   }
