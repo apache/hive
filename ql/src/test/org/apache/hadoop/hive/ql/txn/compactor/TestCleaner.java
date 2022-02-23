@@ -121,7 +121,7 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(1, paths.size());
     Assert.assertEquals("base_25_v26", paths.get(0).getName());
   }
-  
+
   @Test
   public void cleanupAfterMajorTableCompactionWithLongRunningQuery() throws Exception {
     Table t = newTable("default", "camtc", false);
@@ -222,7 +222,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "camitc", 25);
+    burnThroughTransactions("default", "camitc", 24);
 
     CompactionRequest rqst = new CompactionRequest("default", "camitc", CompactionType.MINOR);
     compactInTxn(rqst);
@@ -261,7 +261,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "camipc", 25);
+    burnThroughTransactions("default", "camipc", 24);
 
     CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -382,7 +382,7 @@ public class TestCleaner extends CompactorTest {
       partitions.add(p);
     }
 
-    burnThroughTransactions("default", "camipc", 25);
+    burnThroughTransactions("default", "camipc", 24);
     for (int i = 0; i < 10; i++) {
       CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
       rqst.setPartitionname("ds=today" + i);
@@ -465,7 +465,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "dcamicop", 25);
+    burnThroughTransactions("default", "dcamicop", 24);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -709,7 +709,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "dcamicop", 25);
+    burnThroughTransactions("default", "dcamicop", 24);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");

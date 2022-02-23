@@ -402,11 +402,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
 
-    if (!areWeUsingCompactedData(dir, writeIdList, ci)) {
-      LOG.info(idWatermark(ci) + " - compaction result is not yet in use; retaining clean request.");
-      return false;
-    }
-
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
      * trying to read anything in that dir (except getAcidState() that only reads the name of
@@ -427,19 +422,19 @@ public class Cleaner extends MetaStoreCompactorThread {
       obsoleteDirs = dir.getAbortedDirectories();
     }
 
-    if (obsoleteDirs.isEmpty()) {
-      LOG.info(
-          idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + "; discarding clean request.");
-      return true;
-    }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
         .map(Path::getName).collect(Collectors.joining(",")));
-    boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
+    remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
     if (dir.getObsolete().size() > 0) {
       AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
           txnHandler);
     }
-    return success;
+
+    if (!areWeUsingCompactedData(dir, writeIdList, ci)) {
+      LOG.info(idWatermark(ci) + " - compaction result is not yet in use; retaining clean request.");
+      return false;
+    }
+    return true;
   }
 
   private boolean areWeUsingCompactedData(AcidDirectory dir, ValidWriteIdList writeIdList, CompactionInfo ci) {
@@ -483,8 +478,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
     if (filesToDelete.size() < 1) {
-      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
-          ", that hardly seems right.");
       return false;
     }
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
