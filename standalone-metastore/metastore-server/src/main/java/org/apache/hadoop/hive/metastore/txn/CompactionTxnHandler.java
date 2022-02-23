@@ -31,8 +31,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -833,9 +831,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
-        while (rs.next()) {
-          txnids.add(rs.getLong(1));
-        }
+        while (rs.next()) txnids.add(rs.getLong(1));
         close(rs);
         if(txnids.size() <= 0) {
           return;
@@ -1536,21 +1532,14 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
+  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, 
       Long commitId, long tempId) throws SQLException, MetaException {
-    updateWSCommitIdAndCleanUpMetadataInternal(stmt, txnid, txnType, commitId, tempId);
-
+    super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
+    
     if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
       stmt.executeUpdate("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
           getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
-  }
-
-  @VisibleForTesting
-  protected void updateWSCommitIdAndCleanUpMetadataInternal(Statement stmt, long txnid, TxnType txnType, Long commitId,
-      long tempId)
-      throws SQLException, MetaException {
-    super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
   }
 
   private Optional<CompactionInfo> getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
