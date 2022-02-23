@@ -292,6 +292,20 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
       }
     }
   }
+  branches['nightly-check'] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+        }
+        stage('Build') {
+            sh '''#!/bin/bash
+set -e
+dev-support/nightly
+'''
+            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+        }
+      }
+  }
   for (int i = 0; i < splits.size(); i++) {
     def num = i
     def split = splits[num]

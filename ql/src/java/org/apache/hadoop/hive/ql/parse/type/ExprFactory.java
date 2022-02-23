@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.DateUtils;
@@ -346,6 +345,12 @@ public abstract class ExprFactory<T> {
    * Returns true if a CASE expression can be converted into a COALESCE function call.
    */
   protected abstract boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<T> inputs);
+  /**
+   * Returns true if a CASE expression can be converted into an IF function call.
+   */
+  protected boolean convertCASEIntoIFFuncCallExpr(FunctionInfo fi, List<T> inputs) {
+    return false;
+  }
 
   /* SUBQUERIES */
   /**

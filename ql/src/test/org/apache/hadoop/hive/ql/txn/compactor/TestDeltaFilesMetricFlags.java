@@ -17,14 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.junit.Assert;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_SMALL_DELTAS;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestDeltaFilesMetricFlags extends CompactorTest {
 
@@ -43,7 +46,9 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
     setup(conf);
     startInitiator();
-    Assert.assertEquals(0, gaugeToMap(COMPACTION_NUM_DELTAS).size());
+    assertThat(Metrics.getOrCreateMapMetrics(COMPACTION_NUM_DELTAS).get(),
+        CoreMatchers.is(ImmutableMap.of()));
+    gaugeToMap(COMPACTION_NUM_DELTAS);
   }
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
@@ -52,7 +57,9 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
     setup(conf);
     startWorker();
-    Assert.assertEquals(0, gaugeToMap(COMPACTION_NUM_SMALL_DELTAS).size());
+    assertThat(gaugeToMap(COMPACTION_NUM_SMALL_DELTAS),
+        CoreMatchers.is(ImmutableMap.of()));
+    gaugeToMap(COMPACTION_NUM_SMALL_DELTAS);
   }
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
@@ -61,7 +68,9 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), false);
     setup(conf);
     startCleaner();
-    Assert.assertEquals(0, gaugeToMap(COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    assertThat(gaugeToMap(COMPACTION_NUM_OBSOLETE_DELTAS),
+        CoreMatchers.is(ImmutableMap.of()));
+    gaugeToMap(COMPACTION_NUM_OBSOLETE_DELTAS);
   }
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
@@ -70,7 +79,9 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
     conf.setBoolean(MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON.getVarname(), false);
     setup(conf);
     startInitiator();
-    Assert.assertEquals(0, gaugeToMap(COMPACTION_NUM_DELTAS).size());
+    assertThat(gaugeToMap(COMPACTION_NUM_DELTAS),
+        CoreMatchers.is(ImmutableMap.of()));
+    gaugeToMap(COMPACTION_NUM_DELTAS);
   }
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
@@ -79,7 +90,9 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
     conf.setBoolean(MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON.getVarname(), false);
     setup(conf);
     startWorker();
-    Assert.assertEquals(0, gaugeToMap(COMPACTION_NUM_SMALL_DELTAS).size());
+    assertThat(gaugeToMap(COMPACTION_NUM_SMALL_DELTAS),
+        CoreMatchers.is(ImmutableMap.of()));
+    gaugeToMap(COMPACTION_NUM_SMALL_DELTAS);
   }
 
   @Test(expected = javax.management.InstanceNotFoundException.class)
@@ -88,7 +101,8 @@ public class TestDeltaFilesMetricFlags extends CompactorTest {
     conf.setBoolean(MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON.getVarname(), false);
     setup(conf);
     startCleaner();
-    Assert.assertEquals(0, gaugeToMap(COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    assertThat(gaugeToMap(COMPACTION_NUM_OBSOLETE_DELTAS),
+        CoreMatchers.is(ImmutableMap.of()));
+    gaugeToMap(COMPACTION_NUM_OBSOLETE_DELTAS);
   }
-
 }

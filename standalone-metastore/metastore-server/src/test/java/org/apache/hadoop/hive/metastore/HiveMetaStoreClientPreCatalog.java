@@ -3958,6 +3958,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void markRefused(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_refused(cr);
+  }
+
+  @Override
   public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct)
       throws MetaException, TException {
     return client.update_compaction_metrics_data(struct);

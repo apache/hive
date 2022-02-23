@@ -598,7 +598,7 @@ STAGE PLANS:
         TableScan
           alias: src
           Select Operator
-            expressions: CASE WHEN ((key = value)) THEN ('1') ELSE ('0') END (type: string)
+            expressions: if((key = value), '1', '0') (type: string)
             outputColumnNames: _col0
             ListSink
 

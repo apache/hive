@@ -30,7 +30,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>metastore-tools-common</artifactId>
-      <version>${hive.version}</version>
+      <version>${project.version}</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -46,6 +46,7 @@
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-server-extensions</artifactId>
+      <version>${hive.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.zookeeper</groupId>

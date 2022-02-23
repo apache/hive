@@ -549,7 +549,7 @@ STAGE PLANS:
                         0 Reducer 2
                       Statistics: Num rows: 1930 Data size: 1501540 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
-                        predicate: (CASE WHEN ((_col9 > 0)) THEN (CASE WHEN (_col7) THEN (((_col4 / _col6) > (_col13 / _col9))) ELSE (false) END) ELSE (false) END and CASE WHEN ((_col11 > 0)) THEN (CASE WHEN (_col2) THEN (((_col6 / _col1) > (_col9 / _col11))) ELSE (false) END) ELSE (false) END) (type: boolean)
+                        predicate: (if((_col9 > 0), if(_col7, ((_col4 / _col6) > (_col13 / _col9)), false), false) and if((_col11 > 0), if(_col2, ((_col6 / _col1) > (_col9 / _col11)), false), false)) (type: boolean)
                         Statistics: Num rows: 482 Data size: 374996 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col8 (type: varchar(30)), 2000 (type: int), (_col6 / _col1) (type: decimal(37,20)), (_col9 / _col11) (type: decimal(37,20)), (_col4 / _col6) (type: decimal(37,20)), (_col13 / _col9) (type: decimal(37,20))

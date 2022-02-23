@@ -239,6 +239,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static final char FAILED_STATE = 'f';
   static final char SUCCEEDED_STATE = 's';
   static final char DID_NOT_INITIATE = 'a';
+  static final char REFUSED_STATE = 'c';
 
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
@@ -3888,6 +3889,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       case FAILED_STATE: return FAILED_RESPONSE;
       case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
       case DID_NOT_INITIATE: return DID_NOT_INITIATE_RESPONSE;
+      case REFUSED_STATE: return REFUSED_RESPONSE;
       default:
         return Character.toString(s);
     }

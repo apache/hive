@@ -51,9 +51,9 @@ STAGE PLANS:
             UDTF Operator
               function name: stack
               Filter Operator
-                predicate: CASE WHEN ((col0 = 1)) THEN (true) ELSE (true) END (type: boolean)
+                predicate: if((col0 = 1), true, true) (type: boolean)
                 Select Operator
-                  expressions: CASE WHEN ((col0 = 1)) THEN (20210308L) ELSE (20210309L) END (type: bigint)
+                  expressions: if((col0 = 1), 20210308L, 20210309L) (type: bigint)
                   outputColumnNames: _col0
                   ListSink
 

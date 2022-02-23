@@ -81,7 +81,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /** Rule adapter to apply the transformation to Filter conditions. */
   public static class FilterCondition extends HivePointLookupOptimizerRule {
     public FilterCondition (int minNumORClauses) {
-      super(operand(Filter.class, any()), minNumORClauses);
+      super(operand(Filter.class, any()), minNumORClauses,
+          "HivePointLookupOptimizerRule(FilterCondition)");
     }
 
     @Override
@@ -105,7 +106,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /** Rule adapter to apply the transformation to Join conditions. */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
     public JoinCondition (int minNumORClauses) {
-      super(operand(Join.class, any()), minNumORClauses);
+      super(operand(Join.class, any()), minNumORClauses,
+          "HivePointLookupOptimizerRule(JoinCondition)");
     }
 
     @Override
@@ -135,7 +137,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /** Rule adapter to apply the transformation to Projections. */
   public static class ProjectionExpressions extends HivePointLookupOptimizerRule {
     public ProjectionExpressions(int minNumORClauses) {
-      super(operand(Project.class, any()), minNumORClauses);
+      super(operand(Project.class, any()), minNumORClauses,
+          "HivePointLookupOptimizerRule(ProjectionExpressions)");
     }
 
     @Override
@@ -169,8 +172,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   protected final int minNumORClauses;
 
   protected HivePointLookupOptimizerRule(
-    RelOptRuleOperand operand, int minNumORClauses) {
-    super(operand);
+      RelOptRuleOperand operand, int minNumORClauses, String description) {
+    super(operand, description);
     this.minNumORClauses = minNumORClauses;
   }
 

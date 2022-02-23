@@ -38,13 +38,13 @@ STAGE PLANS:
                         predicateExpression: SelectColumnIsNull(col 5:double)
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: col 6:string, col 2:int, col 4:float, col 1:smallint, IfExprColumnCondExpr(col 14:boolean, col 6:stringcol 21:string)(children: IsNotNull(col 6:string) -> 14:boolean, col 6:string, IfExprCondExprCondExpr(col 15:boolean, col 16:stringcol 20:string)(children: IsNotNull(col 2:int) -> 15:boolean, CastLongToString(col 2:int) -> 16:string, IfExprCondExprCondExpr(col 17:boolean, col 18:stringcol 19:string)(children: IsNotNull(col 4:float) -> 17:boolean, CastFloatToString(col 4:float) -> 18:string, CastLongToString(col 1:smallint) -> 19:string) -> 20:string) -> 21:string) -> 22:string
+                          keyExpressions: col 6:string, col 2:int, col 4:float, col 1:smallint, IfExprColumnCondExpr(col 14:boolean, col 6:stringcol 21:string)(children: IsNotNull(col 6:string) -> 14:boolean, col 6:string, IfExprCondExprCondExpr(col 15:boolean, col 16:string, col 20:string)(children: IsNotNull(col 2:int) -> 15:boolean, CastLongToString(col 2:int) -> 16:string, IfExprCondExprCondExpr(col 17:boolean, col 18:string, col 19:string)(children: IsNotNull(col 4:float) -> 17:boolean, CastFloatToString(col 4:float) -> 18:string, CastLongToString(col 1:smallint) -> 19:string) -> 20:string) -> 21:string) -> 22:string
                           native: true
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [6, 2, 4, 1, 31]
-                            selectExpressions: IfExprColumnCondExpr(col 23:boolean, col 6:stringcol 30:string)(children: IsNotNull(col 6:string) -> 23:boolean, col 6:string, IfExprCondExprCondExpr(col 24:boolean, col 25:stringcol 29:string)(children: IsNotNull(col 2:int) -> 24:boolean, CastLongToString(col 2:int) -> 25:string, IfExprCondExprCondExpr(col 26:boolean, col 27:stringcol 28:string)(children: IsNotNull(col 4:float) -> 26:boolean, CastFloatToString(col 4:float) -> 27:string, CastLongToString(col 1:smallint) -> 28:string) -> 29:string) -> 30:string) -> 31:string
+                            selectExpressions: IfExprColumnCondExpr(col 23:boolean, col 6:stringcol 30:string)(children: IsNotNull(col 6:string) -> 23:boolean, col 6:string, IfExprCondExprCondExpr(col 24:boolean, col 25:string, col 29:string)(children: IsNotNull(col 2:int) -> 24:boolean, CastLongToString(col 2:int) -> 25:string, IfExprCondExprCondExpr(col 26:boolean, col 27:string, col 28:string)(children: IsNotNull(col 4:float) -> 26:boolean, CastFloatToString(col 4:float) -> 27:string, CastLongToString(col 1:smallint) -> 28:string) -> 29:string) -> 30:string) -> 31:string
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
