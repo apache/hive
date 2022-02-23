@@ -111,6 +111,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acid
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: query: explain update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
@@ -118,20 +119,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acid
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -144,36 +149,91 @@ STAGE PLANS:
                     predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
                     Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
-                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), concat(value, 'updated') (type: string), ds (type: string)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), value (type: string), ds (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 500 Data size: 265500 Basic stats: COMPLETE Column stats: PARTIAL
-                      Reduce Output Operator
-                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 500 Data size: 265500 Basic stats: COMPLETE Column stats: PARTIAL
-                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      Statistics: Num rows: 500 Data size: 219000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Select Operator
+                        expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col3 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 500 Data size: 130000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Reduce Output Operator
+                          key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                          Statistics: Num rows: 500 Data size: 130000 Basic stats: COMPLETE Column stats: PARTIAL
+                          value expressions: _col1 (type: string)
+                      Select Operator
+                        expressions: _col1 (type: string), concat(_col2, 'updated') (type: string), _col3 (type: string), '11' (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                          table:
+                              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                              name: default.srcpart_acid
+                          Write Type: INSERT
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                          outputColumnNames: key, value, ds, hr
+                          Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                          Group By Operator
+                            aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                            keys: ds (type: string), hr (type: string)
+                            minReductionHashAggr: 0.99
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                            Statistics: Num rows: 2 Data size: 1484 Basic stats: COMPLETE Column stats: PARTIAL
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string), _col1 (type: string)
+                              null sort order: zz
+                              sort order: ++
+                              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                              Statistics: Num rows: 2 Data size: 1484 Basic stats: COMPLETE Column stats: PARTIAL
+                              value expressions: _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), '11' (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), '11' (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.srcpart_acid
-                  Write Type: UPDATE
+                  Write Type: DELETE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 2 Data size: 1212 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col2,0)) (type: bigint), COALESCE(_col3,0) (type: double), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col7,0)) (type: bigint), COALESCE(_col8,0) (type: double), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                  Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
   Stage: Stage-0
@@ -188,17 +248,40 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acid
-          Write Type: UPDATE
+          Write Type: DELETE
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.srcpart_acid
+          Write Type: INSERT
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: string, string
+          Table: default.srcpart_acid
 
 PREHOOK: query: update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acid
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: query: update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
@@ -206,8 +289,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acid
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_acid)srcpart_acid.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart_acid)srcpart_acid.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart_acid)srcpart_acid.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-09,hr=11).value EXPRESSION [(srcpart_acid)srcpart_acid.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select ds, hr, key, value from srcpart_acid where value like '%updated' order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
@@ -287,7 +377,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	18027               
+	totalSize           	18043               
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -397,7 +487,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	18027               
+	totalSize           	18043               
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -767,6 +857,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidb
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: query: explain update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
@@ -774,20 +865,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidb
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -800,36 +896,105 @@ STAGE PLANS:
                     predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
                     Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
-                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), concat(value, 'updated') (type: string), ds (type: string)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), value (type: string), ds (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 500 Data size: 265500 Basic stats: COMPLETE Column stats: PARTIAL
-                      Reduce Output Operator
-                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
-                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), '11' (type: string)
+                      Statistics: Num rows: 500 Data size: 219000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Select Operator
+                        expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col3 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 500 Data size: 130000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Reduce Output Operator
+                          key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                          Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
+                          value expressions: _col1 (type: string), '11' (type: string)
+                      Select Operator
+                        expressions: _col1 (type: string), concat(_col2, 'updated') (type: string), _col3 (type: string), '11' (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: a
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                          value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.srcpart_acidb
-                  Write Type: UPDATE
+                  Write Type: DELETE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.srcpart_acidb
+                  Write Type: INSERT
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                  outputColumnNames: key, value, ds, hr
+                  Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
+                  Group By Operator
+                    aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                    keys: ds (type: string), hr (type: string)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Statistics: Num rows: 2 Data size: 1484 Basic stats: COMPLETE Column stats: PARTIAL
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 2 Data size: 1484 Basic stats: COMPLETE Column stats: PARTIAL
+                      value expressions: _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 2 Data size: 1212 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col2,0)) (type: bigint), COALESCE(_col3,0) (type: double), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col7,0)) (type: bigint), COALESCE(_col8,0) (type: double), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                  Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
   Stage: Stage-0
@@ -844,17 +1009,40 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidb
-          Write Type: UPDATE
+          Write Type: DELETE
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.srcpart_acidb
+          Write Type: INSERT
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: string, string
+          Table: default.srcpart_acidb
 
 PREHOOK: query: update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidb
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: query: update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
@@ -862,8 +1050,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidb
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_acidb)srcpart_acidb.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart_acidb)srcpart_acidb.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart_acidb)srcpart_acidb.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-09,hr=11).value EXPRESSION [(srcpart_acidb)srcpart_acidb.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select ds, hr, key, value from srcpart_acidb where value like '%updated' order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
@@ -1304,6 +1499,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: query: explain vectorization only detail
@@ -1312,6 +1508,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidv
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 PLAN VECTORIZATION:
@@ -1319,16 +1516,19 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -1342,15 +1542,50 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 7, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
-                            keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                          projectedOutputColumnNums: [4, 0, 1, 2]
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+<<<<<<< HEAD
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumns: 6:int
                             valueColumns: 0:string, 7:string, 2:string
+=======
+                            projectedOutputColumnNums: [4, 2]
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 6:int
+                              valueColumns: 2:string
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0, 7, 2, 8]
+                            selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string, ConstantVectorExpression(val 11) -> 8:string
+                          File Sink Vectorization:
+                              className: VectorFileSinkOperator
+                              native: false
+                          Select Vectorization:
+                              className: VectorSelectOperator
+                              native: true
+                              projectedOutputColumnNums: [0, 7, 2, 8]
+                            Group By Vectorization:
+                                aggregators: VectorUDAFMaxLong(StringLength(col 0:string) -> 9:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [10, 11])(children: StringLength(col 0:string) -> 10:int, ConstantVectorExpression(val 0) -> 11:int) -> 12:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 0:string) -> bigint, VectorUDAFComputeBitVectorString(col 0:string) -> binary, VectorUDAFMaxLong(StringLength(col 7:string) -> 14:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [15, 16])(children: StringLength(col 7:string) -> 15:int, ConstantVectorExpression(val 0) -> 16:int) -> 17:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(col 7:string) -> bigint, VectorUDAFComputeBitVectorString(col 7:string) -> binary
+                                className: VectorGroupByOperator
+                                groupByMode: HASH
+                                keyExpressions: col 2:string, col 8:string
+                                native: false
+                                vectorProcessingMode: HASH
+                                projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                              Reduce Sink Vectorization:
+                                  className: VectorReduceSinkMultiKeyOperator
+                                  keyColumns: 0:string, 1:string
+                                  native: true
+                                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                  valueColumns: 2:int, 3:struct<count:bigint,sum:double,input:int>, 4:bigint, 5:bigint, 6:binary, 7:int, 8:struct<count:bigint,sum:double,input:int>, 9:bigint, 10:binary
+>>>>>>> update q.out
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1359,7 +1594,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
+                allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
@@ -1369,7 +1604,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, string]
+                    scratchColumnTypeNames: [bigint, string, string, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1381,31 +1616,68 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string, VALUE._col1:string, VALUE._col2:string
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [string]
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
-                    selectExpressions: ConstantVectorExpression(val 11) -> 4:string
+                    projectedOutputColumnNums: [0, 1, 2]
+                    selectExpressions: ConstantVectorExpression(val 11) -> 2:string
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: zz
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 11
+                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 6:binary) -> binary, VectorUDAFMaxLong(col 7:int) -> int, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 9:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 10:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [11, 13, 15, 16, 19, 6, 20, 22, 24, 25, 28, 10, 0, 1]
+                      selectExpressions: ConstantVectorExpression(val STRING) -> 11:string, VectorCoalesce(columns [2, 12])(children: col 2:int, ConstantVectorExpression(val 0) -> 12:int) -> 13:int, VectorCoalesce(columns [3, 14])(children: col 3:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 15:double, LongColSubtractLongColumn(col 4:bigint, col 5:bigint) -> 16:bigint, VectorCoalesce(columns [17, 18])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col6)) -> 17:bigint, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:bigint, ConstantVectorExpression(val STRING) -> 20:string, VectorCoalesce(columns [7, 21])(children: col 7:int, ConstantVectorExpression(val 0) -> 21:int) -> 22:int, VectorCoalesce(columns [8, 23])(children: col 8:double, ConstantVectorExpression(val 0.0) -> 23:double) -> 24:double, LongColSubtractLongColumn(col 4:bigint, col 9:bigint) -> 25:bigint, VectorCoalesce(columns [26, 27])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col10)) -> 26:bigint, ConstantVectorExpression(val 0) -> 27:bigint) -> 28:bigint
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
-  Stage: Stage-2
+  Stage: Stage-3
 
   Stage: Stage-0
 
-  Stage: Stage-3
+  Stage: Stage-4
+
+  Stage: Stage-1
+
+  Stage: Stage-5
 
 PREHOOK: query: update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: query: update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
@@ -1413,8 +1685,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidv
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_acidv)srcpart_acidv.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart_acidv)srcpart_acidv.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart_acidv)srcpart_acidv.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-09,hr=11).value EXPRESSION [(srcpart_acidv)srcpart_acidv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select ds, hr, key, value from srcpart_acidv where value like '%updated' order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
@@ -2216,6 +2495,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: query: explain vectorization only detail
@@ -2224,6 +2504,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidvb
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 PLAN VECTORIZATION:
@@ -2231,16 +2512,20 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -2254,16 +2539,38 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 7, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
-                            keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                          projectedOutputColumnNums: [4, 0, 1, 2]
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+<<<<<<< HEAD
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumns: 6:int
                             valueColumns: 0:string, 7:string, 2:string, 8:string
                             valueExpressions: ConstantVectorExpression(val 11) -> 8:string
+=======
+                            projectedOutputColumnNums: [4, 2]
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 6:int
+                              valueColumns: 2:string, 9:string
+                              valueExpressions: ConstantVectorExpression(val 11) -> 9:string
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0, 7, 2, 8]
+                            selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string, ConstantVectorExpression(val 11) -> 8:string
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 0:string
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 0:string
+                              valueColumns: 7:string, 2:string, 8:string
+>>>>>>> update q.out
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2282,7 +2589,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, string, string]
+                    scratchColumnTypeNames: [bigint, string, string, string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -2294,30 +2601,108 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 5
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string, VALUE._col1:string, VALUE._col2:string, VALUE._col3:string
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string, VALUE._col1:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                    projectedOutputColumnNums: [0, 1, 2]
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string, VALUE._col1:string, VALUE._col2:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2, 3]
+                    Group By Vectorization:
+                        aggregators: VectorUDAFMaxLong(StringLength(col 0:string) -> 4:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [5, 6])(children: StringLength(col 0:string) -> 5:int, ConstantVectorExpression(val 0) -> 6:int) -> 7:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 8:int) -> bigint, VectorUDAFCount(col 0:string) -> bigint, VectorUDAFComputeBitVectorString(col 0:string) -> binary, VectorUDAFMaxLong(StringLength(col 1:string) -> 9:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [10, 11])(children: StringLength(col 1:string) -> 10:int, ConstantVectorExpression(val 0) -> 11:int) -> 12:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(col 1:string) -> bigint, VectorUDAFComputeBitVectorString(col 1:string) -> binary
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: col 2:string, col 3:string
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkMultiKeyOperator
+                          keyColumns: 0:string, 1:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 2:int, 3:struct<count:bigint,sum:double,input:int>, 4:bigint, 5:bigint, 6:binary, 7:int, 8:struct<count:bigint,sum:double,input:int>, 9:bigint, 10:binary
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: zz
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 11
+                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 6:binary) -> binary, VectorUDAFMaxLong(col 7:int) -> int, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 9:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 10:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [11, 13, 15, 16, 19, 6, 20, 22, 24, 25, 28, 10, 0, 1]
+                      selectExpressions: ConstantVectorExpression(val STRING) -> 11:string, VectorCoalesce(columns [2, 12])(children: col 2:int, ConstantVectorExpression(val 0) -> 12:int) -> 13:int, VectorCoalesce(columns [3, 14])(children: col 3:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 15:double, LongColSubtractLongColumn(col 4:bigint, col 5:bigint) -> 16:bigint, VectorCoalesce(columns [17, 18])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col6)) -> 17:bigint, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:bigint, ConstantVectorExpression(val STRING) -> 20:string, VectorCoalesce(columns [7, 21])(children: col 7:int, ConstantVectorExpression(val 0) -> 21:int) -> 22:int, VectorCoalesce(columns [8, 23])(children: col 8:double, ConstantVectorExpression(val 0.0) -> 23:double) -> 24:double, LongColSubtractLongColumn(col 4:bigint, col 9:bigint) -> 25:bigint, VectorCoalesce(columns [26, 27])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col10)) -> 26:bigint, ConstantVectorExpression(val 0) -> 27:bigint) -> 28:bigint
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
-  Stage: Stage-2
+  Stage: Stage-3
 
   Stage: Stage-0
 
-  Stage: Stage-3
+  Stage: Stage-4
+
+  Stage: Stage-1
+
+  Stage: Stage-5
 
 PREHOOK: query: update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: query: update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
@@ -2325,8 +2710,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidvb
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_acidvb)srcpart_acidvb.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart_acidvb)srcpart_acidvb.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart_acidvb)srcpart_acidvb.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-09,hr=11).value EXPRESSION [(srcpart_acidvb)srcpart_acidvb.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select ds, hr, key, value from srcpart_acidvb where value like '%updated' order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb
