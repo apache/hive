@@ -89,6 +89,7 @@ PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=1/q=2
 PREHOOK: Input: default@target@p=1/q=3
 PREHOOK: Input: default@target@p=2/q=2
+PREHOOK: Output: default@target
 PREHOOK: Output: default@target@p=1/q=2
 PREHOOK: Output: default@target@p=1/q=3
 PREHOOK: Output: default@target@p=2/q=2
@@ -99,9 +100,13 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=1/q=2
 POSTHOOK: Input: default@target@p=1/q=3
 POSTHOOK: Input: default@target@p=2/q=2
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
+POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
+POSTHOOK: Lineage: target PARTITION(p=1,q=3).a SIMPLE [(target)target.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: target PARTITION(p=1,q=3).b SIMPLE []
 PREHOOK: query: select * from target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target
@@ -126,12 +131,18 @@ PREHOOK: Input: default@source
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=2/q=2
 PREHOOK: Output: default@source
+PREHOOK: Output: default@source
 POSTHOOK: query: update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.a1 SIMPLE [(source)source.FieldSchema(name:a1, type:int, comment:null), ]
+POSTHOOK: Lineage: source.b1 SIMPLE []
+POSTHOOK: Lineage: source.p1 SIMPLE [(source)source.FieldSchema(name:p1, type:int, comment:null), ]
+POSTHOOK: Lineage: source.q1 SIMPLE [(source)source.FieldSchema(name:q1, type:int, comment:null), ]
 PREHOOK: query: select * from source
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
