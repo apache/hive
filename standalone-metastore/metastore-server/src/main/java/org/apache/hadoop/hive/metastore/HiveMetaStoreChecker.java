@@ -110,16 +110,22 @@ public class HiveMetaStoreChecker {
      * Check the metastore for inconsistencies, data missing in either the
      * metastore or on the dfs.
      *
-     * @param catName   name of the catalog, if not specified default catalog will be used.
-     * @param dbName    name of the database, if not specified the default will be used.
-     * @param tableName Table we want to run the check for. If null we'll check all the
-     *                  tables in the database.
-     * @param filterExp Filter expression which is used to prune th partition from the
-     *                  metastore and FileSystem.
+     * @param catName
+     *          name of the catalog, if not specified default catalog will be used.
+     * @param dbName
+     *          name of the database, if not specified the default will be used.
+     * @param tableName
+     *          Table we want to run the check for. If null we'll check all the
+     *          tables in the database.
+     * @param filterExp
+     *          Filter expression which is used to prune th partition from the
+     *          metastore and FileSystem.
      * @param table
      * @return Results of the check
-     * @throws MetastoreException Failed to get required information from the metastore.
-     * @throws IOException        Most likely filesystem related
+     * @throws MetastoreException
+     *           Failed to get required information from the metastore.
+     * @throws IOException
+     *           Most likely filesystem related
      */
     public CheckResult checkMetastore(String catName, String dbName, String tableName,
                                       byte[] filterExp, Table table)
@@ -134,9 +140,9 @@ public class HiveMetaStoreChecker {
                 // TODO: I do not think this is used by anything other than tests
                 // no table specified, check all tables and all partitions.
                 List<String> tables = new ArrayList<>();
-                try {
+                try{
                     tables = getMsc().getTables(catName, dbName, ".*");
-                } catch (UnknownDBException ex) {
+                }catch(UnknownDBException ex){
                     //ignore database exception.
                 }
                 for (String currentTableName : tables) {
@@ -166,14 +172,22 @@ public class HiveMetaStoreChecker {
     /**
      * Check for table directories that aren't in the metastore.
      *
-     * @param catName name of the catalog, if not specified default catalog will be used.
-     * @param dbName  Name of the database
-     * @param tables  List of table names
-     * @param result  Add any found tables to this
-     * @throws IOException           Most likely filesystem related
-     * @throws MetaException         Failed to get required information from the metastore.
-     * @throws NoSuchObjectException Failed to get required information from the metastore.
-     * @throws TException            Thrift communication error.
+     * @param catName
+     *          name of the catalog, if not specified default catalog will be used.
+     * @param dbName
+     *          Name of the database
+     * @param tables
+     *          List of table names
+     * @param result
+     *          Add any found tables to this
+     * @throws IOException
+     *           Most likely filesystem related
+     * @throws MetaException
+     *           Failed to get required information from the metastore.
+     * @throws NoSuchObjectException
+     *           Failed to get required information from the metastore.
+     * @throws TException
+     *           Thrift communication error.
      */
     void findUnknownTables(String catName, String dbName, List<String> tables, CheckResult result)
             throws IOException, MetaException, TException {
@@ -210,16 +224,24 @@ public class HiveMetaStoreChecker {
      * Check the metastore for inconsistencies, data missing in either the
      * metastore or on the dfs.
      *
-     * @param catName   name of the catalog, if not specified default catalog will be used.
-     * @param dbName    Name of the database
-     * @param tableName Name of the table
-     * @param filterExp Filter expression which is used to prune th partition from the
-     *                  metastore and FileSystem.
-     * @param table     Table we want to run the check for.
-     * @param result    Result object
-     * @throws MetastoreException Failed to get required information from the metastore.
-     * @throws IOException        Most likely filesystem related
-     * @throws MetaException      Failed to get required information from the metastore.
+     * @param catName
+     *          name of the catalog, if not specified default catalog will be used.
+     * @param dbName
+     *          Name of the database
+     * @param tableName
+     *          Name of the table
+     * @param filterExp
+     *          Filter expression which is used to prune th partition from the
+     *          metastore and FileSystem.
+     * @param table Table we want to run the check for.
+     * @param result
+     *          Result object
+     * @throws MetastoreException
+     *           Failed to get required information from the metastore.
+     * @throws IOException
+     *           Most likely filesystem related
+     * @throws MetaException
+     *           Failed to get required information from the metastore.
      */
     void checkTable(String catName, String dbName, String tableName, byte[] filterExp, Table table, CheckResult result)
             throws MetaException, IOException, MetastoreException {
@@ -261,13 +283,19 @@ public class HiveMetaStoreChecker {
      * Check the metastore for inconsistencies, data missing in either the
      * metastore or on the dfs.
      *
-     * @param table     Table to check
-     * @param parts     Partitions to check
-     * @param result    Result object
-     * @param filterExp Filter expression which is used to prune th partition from the
-     *                  metastore and FileSystem.
-     * @throws IOException        Could not get information from filesystem
-     * @throws MetastoreException Could not create Partition object
+     * @param table
+     *          Table to check
+     * @param parts
+     *          Partitions to check
+     * @param result
+     *          Result object
+     * @param filterExp
+     *          Filter expression which is used to prune th partition from the
+     *          metastore and FileSystem.
+     * @throws IOException
+     *           Could not get information from filesystem
+     * @throws MetastoreException
+     *           Could not create Partition object
      */
     void checkTable(Table table, PartitionIterable parts, byte[] filterExp, CheckResult result) throws IOException,
             MetastoreException, MetaException {
@@ -301,7 +329,7 @@ public class HiveMetaStoreChecker {
                         // most likely the user specified an invalid partition
                         continue;
                     }
-                    final Path[] partPath = {getDataLocation(table, partition)};
+                    Path[] partPath = {getDataLocation(table, partition)};
                     if (partPath[0] == null) {
                         continue;
                     }
@@ -419,12 +447,17 @@ public class HiveMetaStoreChecker {
     /**
      * Find partitions on the fs that are unknown to the metastore.
      *
-     * @param table     Table where the partitions would be located
-     * @param partPaths Paths of the partitions the ms knows about
-     * @param filterExp Filter expression which is used to prune th partition from the
-     *                  metastore and FileSystem.
-     * @param result    Result object
-     * @throws IOException        Thrown if we fail at fetching listings from the fs.
+     * @param table
+     *          Table where the partitions would be located
+     * @param partPaths
+     *          Paths of the partitions the ms knows about
+     * @param filterExp
+     *          Filter expression which is used to prune th partition from the
+     *          metastore and FileSystem.
+     * @param result
+     *          Result object
+     * @throws IOException
+     *           Thrown if we fail at fetching listings from the fs.
      * @throws MetastoreException ex
      */
     void findUnknownPartitions(Table table, Set<Path> partPaths, byte[] filterExp,
@@ -473,7 +506,7 @@ public class HiveMetaStoreChecker {
         allPartDirs.removeAll(partPaths);
 
         Set<String> partColNames = Sets.newHashSet();
-        for (FieldSchema fSchema : getPartCols(table)) {
+        for(FieldSchema fSchema : getPartCols(table)) {
             partColNames.add(fSchema.getName());
         }
 
@@ -517,9 +550,8 @@ public class HiveMetaStoreChecker {
 
     /**
      * Calculate the maximum seen writeId from the acid directory structure
-     *
      * @param partPath Path of the partition directory
-     * @param res      Partition result to write the max ids
+     * @param res Partition result to write the max ids
      * @throws IOException ex
      */
     private void setMaxTxnAndWriteIdFromPartition(Path partPath, CheckResult.PartitionResult res) throws IOException {
@@ -572,10 +604,14 @@ public class HiveMetaStoreChecker {
      * tblPath/a=1/b=2/c=3 => return a=1/b=2
      * tblPath/a=1/b=2/c=3/file => return a=1/b=2
      *
-     * @param basePath     Start directory
-     * @param allDirs      This set will contain the leaf paths at the end.
-     * @param partColNames Partition column names
-     * @throws IOException        Thrown if we can't get lists from the fs.
+     * @param basePath
+     *          Start directory
+     * @param allDirs
+     *          This set will contain the leaf paths at the end.
+     * @param partColNames
+     *          Partition column names
+     * @throws IOException
+     *           Thrown if we can't get lists from the fs.
      * @throws MetastoreException ex
      */
 
@@ -669,7 +705,7 @@ public class HiveMetaStoreChecker {
         }
 
         private void logOrThrowExceptionWithMsg(String msg) throws MetastoreException {
-            if (throwException) {
+            if(throwException) {
                 throw new MetastoreException(msg);
             } else {
                 LOG.warn(msg);
@@ -680,7 +716,6 @@ public class HiveMetaStoreChecker {
     private static class PathDepthInfo {
         private final Path p;
         private final int depth;
-
         PathDepthInfo(Path p, int depth) {
             this.p = p;
             this.depth = depth;
@@ -702,14 +737,14 @@ public class HiveMetaStoreChecker {
             //have to add the complex mechanisms to let the free worker threads know when new levels are
             //discovered using notify()/wait() mechanisms which can potentially lead to bugs if
             //not done right
-            while (!nextLevel.isEmpty()) {
+            while(!nextLevel.isEmpty()) {
                 ConcurrentLinkedQueue<PathDepthInfo> tempQueue = new ConcurrentLinkedQueue<>();
                 //process each level in parallel
-                while (!nextLevel.isEmpty()) {
+                while(!nextLevel.isEmpty()) {
                     futures.add(
                             executor.submit(new PathDepthInfoCallable(nextLevel.poll(), partColNames, fs, tempQueue)));
                 }
-                while (!futures.isEmpty()) {
+                while(!futures.isEmpty()) {
                     Path p = futures.poll().get();
                     if (p != null) {
                         result.add(p);
