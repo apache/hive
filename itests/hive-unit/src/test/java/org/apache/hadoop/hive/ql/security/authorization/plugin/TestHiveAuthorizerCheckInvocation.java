@@ -533,9 +533,8 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());
     tableObj = inputs.get(0);
-    assertEquals(3, tableObj.getColumns().size());
-    assertEquals("i", tableObj.getColumns().get(0));
-    assertEquals("j", tableObj.getColumns().get(1));
+    assertEquals(2, tableObj.getColumns().size());
+    assertEquals("j", tableObj.getColumns().get(0 ));
   }
 
   @Test
@@ -554,8 +553,8 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());
     tableObj = inputs.get(0);
-    assertEquals(3, tableObj.getColumns().size());
-    assertEquals("Columns used", Arrays.asList("i", "j", "k"),
+    assertEquals(2, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("j", "k"),
         getSortedList(tableObj.getColumns()));
   }
 
