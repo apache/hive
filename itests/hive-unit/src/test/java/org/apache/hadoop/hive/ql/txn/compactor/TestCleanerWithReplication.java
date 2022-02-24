@@ -143,7 +143,7 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions(dbName, "camitc", 25);
+    burnThroughTransactions(dbName, "camitc", 24);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camitc", CompactionType.MINOR);
     compactInTxn(rqst);
@@ -161,7 +161,7 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions(dbName, "camipc", 25);
+    burnThroughTransactions(dbName, "camipc", 24);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camipc", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
