@@ -115,7 +115,7 @@ POSTHOOK: Lineage: table5.b SIMPLE [(table5)table5.FieldSchema(name:b, type:stri
 POSTHOOK: Lineage: table5.c SIMPLE []
 POSTHOOK: Lineage: table5.d SIMPLE [(table5)table5.FieldSchema(name:d, type:string, comment:null), ]
 POSTHOOK: Lineage: table5.insert_num SIMPLE [(table5)table5.FieldSchema(name:insert_num, type:int, comment:null), ]
-s.insert_num	s.a	s.b	_c3	s.d
+s.insert_num	s.a	s.b	s.c	s.d
 PREHOOK: query: select a,b,c,d from table5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table5

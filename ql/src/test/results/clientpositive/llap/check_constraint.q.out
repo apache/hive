@@ -2068,7 +2068,7 @@ POSTHOOK: Input: default@acid_uami_n0
 POSTHOOK: Output: default@acid_uami_n0
 POSTHOOK: Output: default@acid_uami_n0
 CBO PLAN:
-HiveProject(row__id=[$5], i=[$0], de=[$1], vc=[$2])
+HiveProject(row__id=[$5], i=[$0], de=[893.14:DECIMAL(5, 2)], vc=[$2])
   HiveFilter(condition=[IN($1, 103:DECIMAL(3, 0), 119:DECIMAL(3, 0))])
     HiveTableScan(table=[[default, acid_uami_n0]], table:alias=[acid_uami_n0])
 

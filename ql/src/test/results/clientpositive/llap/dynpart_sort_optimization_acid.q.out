@@ -309,7 +309,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_part
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 1602 Data size: 139374 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1601 Data size: 139287 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: PARTIAL
@@ -807,7 +807,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_part_sdpo
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 1602 Data size: 139374 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1601 Data size: 139287 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1320,7 +1320,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
-                  Statistics: Num rows: 3202 Data size: 291382 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 3201 Data size: 291291 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 10 Data size: 910 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1562,7 +1562,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part
                   filterExpr: (value = 'bar') (type: boolean)
-                  Statistics: Num rows: 4202 Data size: 1172358 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 4200 Data size: 1171800 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 14 Data size: 3906 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1982,7 +1982,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
-                  Statistics: Num rows: 3202 Data size: 291382 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 3201 Data size: 291291 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 10 Data size: 910 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2223,7 +2223,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo
                   filterExpr: (value = 'bar') (type: boolean)
-                  Statistics: Num rows: 4202 Data size: 1172358 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 4200 Data size: 1171800 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 14 Data size: 3906 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2642,7 +2642,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
-                  Statistics: Num rows: 3202 Data size: 291382 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 3201 Data size: 291291 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 10 Data size: 910 Basic stats: COMPLETE Column stats: PARTIAL
