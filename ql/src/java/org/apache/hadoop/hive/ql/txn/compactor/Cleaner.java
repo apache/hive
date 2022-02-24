@@ -445,7 +445,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     if (ci.isMajorCompaction()) {
       ParsedBase base = dir.getBase();
-      if (base != null && base.getWriteId() < highestValidWriteId) {
+      if (base != null && !isAcidConversionBase(base) && base.getWriteId() < highestValidWriteId) {
         return false;
       }
     }
@@ -457,6 +457,22 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     return true;
   }
+
+  /**
+   * Decides whether the given base is a base directory created during the conversion.
+   *
+   * In case of non-acid to acid conversion:
+   *   during the initial compaction new writes will be made to a base_-922... dir
+   *   the writeid is artificially set to some high value (10000000) for these compactions
+   *   since non-negative writeIds are non-standard it could be used to detect that this is a conversionBase
+   * @param base
+   * @return
+   */
+  private boolean isAcidConversionBase(ParsedBase base) {
+    return base.getWriteId() < 0;
+
+  }
+
 
   private boolean removeFiles(String location, CompactionInfo ci)
     throws NoSuchObjectException, IOException, MetaException {
