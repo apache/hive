@@ -164,7 +164,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewTextSubQueryRewriteShuttle;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
@@ -348,7 +348,7 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewTextSubQueryRewriteShuttle.getMaterializedViewByAST;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
 
 
@@ -2120,7 +2120,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           return originalPlan;
         }
 
-        return new HiveMaterializedViewTextSubQueryRewriteShuttle(subQueryMap, queryToRewriteAST, expandedAST,
+        return new HiveMaterializedViewASTSubQueryRewriteShuttle(subQueryMap, queryToRewriteAST, expandedAST,
                 HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
                 db, tablesUsedByOriginalPlan, getTxnMgr()).rewrite(originalPlan);
       } catch (Exception e) {

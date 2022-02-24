@@ -26,11 +26,11 @@ import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 /**
  * Traverse expressions and tries to rewrite subQuery expressions to Materialized view scans.
  */
-public class HiveMaterializedViewTextSubQueryRewriteRexShuttle extends RexShuttle {
+public class HiveMaterializedViewASTSubQueryRewriteRexShuttle extends RexShuttle {
 
-  private final HiveMaterializedViewTextSubQueryRewriteShuttle relShuttle;
+  private final HiveMaterializedViewASTSubQueryRewriteShuttle relShuttle;
 
-  public HiveMaterializedViewTextSubQueryRewriteRexShuttle(HiveMaterializedViewTextSubQueryRewriteShuttle relShuttle) {
+  public HiveMaterializedViewASTSubQueryRewriteRexShuttle(HiveMaterializedViewASTSubQueryRewriteShuttle relShuttle) {
     this.relShuttle = relShuttle;
   }
 

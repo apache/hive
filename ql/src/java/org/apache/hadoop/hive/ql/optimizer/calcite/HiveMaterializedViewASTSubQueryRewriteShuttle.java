@@ -55,9 +55,9 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMateri
  * The rewrite depends on whether the subtree's corresponding AST match with any materialized view
  * definitions AST.
  */
-public class HiveMaterializedViewTextSubQueryRewriteShuttle extends HiveRelShuttleImpl {
+public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttleImpl {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveMaterializedViewTextSubQueryRewriteShuttle.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveMaterializedViewASTSubQueryRewriteShuttle.class);
 
   private final Map<RelNode, ASTNode> subQueryMap;
   private final ASTNode originalAST;
@@ -67,7 +67,7 @@ public class HiveMaterializedViewTextSubQueryRewriteShuttle extends HiveRelShutt
   private final Set<TableName> tablesUsedByOriginalPlan;
   private final HiveTxnManager txnManager;
 
-  public HiveMaterializedViewTextSubQueryRewriteShuttle(
+  public HiveMaterializedViewASTSubQueryRewriteShuttle(
           Map<RelNode, ASTNode> subQueryMap,
           ASTNode originalAST,
           ASTNode expandedAST,
@@ -133,7 +133,7 @@ public class HiveMaterializedViewTextSubQueryRewriteShuttle extends HiveRelShutt
     @Override
   public RelNode visit(HiveFilter filter) {
 
-    RexNode newCond = filter.getCondition().accept(new HiveMaterializedViewTextSubQueryRewriteRexShuttle(this));
+    RexNode newCond = filter.getCondition().accept(new HiveMaterializedViewASTSubQueryRewriteRexShuttle(this));
     return relBuilder
             .push(filter.getInput().accept(this))
             .filter(newCond)
