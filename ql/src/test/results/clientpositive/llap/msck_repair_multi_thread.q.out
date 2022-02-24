@@ -1,0 +1,110 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_hive_25980
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_hive_25980
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_hive_25980
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_hive_25980
+PREHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+PREHOOK: query: show partitions repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: show partitions repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+PREHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+Partitions not in metastore:	repairtable_hive_25980:p1=a/p2=aa	repairtable_hive_25980:p1=b/p2=ab	repairtable_hive_25980:p1=b/p2=ac	repairtable_hive_25980:p1=b/p2=ad	repairtable_hive_25980:p1=b/p2=ae	repairtable_hive_25980:p1=b/p2=af	repairtable_hive_25980:p1=b/p2=ag	repairtable_hive_25980:p1=b/p2=ah	repairtable_hive_25980:p1=b/p2=ai	repairtable_hive_25980:p1=b/p2=aj	repairtable_hive_25980:p1=b/p2=ak	repairtable_hive_25980:p1=b/p2=al
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: show partitions repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+p1=a/p2=aa
+p1=b/p2=ab
+p1=b/p2=ac
+p1=b/p2=ad
+p1=b/p2=ae
+p1=b/p2=af
+p1=b/p2=ag
+p1=b/p2=ah
+p1=b/p2=ai
+p1=b/p2=aj
+p1=b/p2=ak
+p1=b/p2=al
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_hive_25980 DROP PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_hive_25980 DROP PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+Partitions missing from filesystem:	repairtable_hive_25980:p1=b/p2=ai	repairtable_hive_25980:p1=b/p2=aj	repairtable_hive_25980:p1=b/p2=ak	repairtable_hive_25980:p1=b/p2=al
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:p1=b/p2=ai
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:p1=b/p2=aj
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:p1=b/p2=ak
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:p1=b/p2=al
+PREHOOK: query: show partitions default.repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: show partitions default.repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+p1=a/p2=aa
+p1=b/p2=ab
+p1=b/p2=ac
+p1=b/p2=ad
+p1=b/p2=ae
+p1=b/p2=af
+p1=b/p2=ag
+p1=b/p2=ah
+PREHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980 SYNC PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980 SYNC PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+Partitions not in metastore:	repairtable_hive_25980:p1=b/p2=ai	repairtable_hive_25980:p1=b/p2=aj
+Partitions missing from filesystem:	repairtable_hive_25980:p1=b/p2=ag	repairtable_hive_25980:p1=b/p2=ah
+#### A masked pattern was here ####
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:p1=b/p2=ag
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:p1=b/p2=ah
+PREHOOK: query: show partitions repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: show partitions repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+p1=a/p2=aa
+p1=b/p2=ab
+p1=b/p2=ac
+p1=b/p2=ad
+p1=b/p2=ae
+p1=b/p2=af
+p1=b/p2=ai
+p1=b/p2=aj
+PREHOOK: query: DROP TABLE default.repairtable_hive_25980
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_hive_25980
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: DROP TABLE default.repairtable_hive_25980
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: Output: default@repairtable_hive_25980

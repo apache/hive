@@ -876,6 +876,8 @@ public class MetastoreConf {
         "will call its Authenticate(user, passed) method to authenticate requests.\n" +
         "The implementation may optionally implement Hadoop's\n" +
         "org.apache.hadoop.conf.Configurable class to grab MetaStore's Configuration object."),
+    METASTORE_MSCK_FS_HANDLER_THREADS_COUNT("metastore.msck.fshandler.threads", "hive.metastore.msck.fshandler.threads", 1,
+            "Number of threads to be allocated for metastore handler for msck fs operations."),
     METASTORE_PLAIN_LDAP_URL("metastore.authentication.ldap.url",
             "hive.metastore.authentication.ldap.url", "",
 "LDAP connection URL(s),\n" +

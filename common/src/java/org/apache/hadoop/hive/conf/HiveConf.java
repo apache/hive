@@ -949,6 +949,8 @@ public class HiveConf extends Configuration {
         "Used to avoid all of the proxies and object copies in the metastore.  Note, if this is " +
             "set, you MUST use a local metastore (hive.metastore.uris must be empty) otherwise " +
             "undefined and most likely undesired behavior will result"),
+    METASTORE_MSCK_FS_HANDLER_THREADS_COUNT("hive.metastore.msck.fshandler.threads", 1,
+            "Number of threads to be allocated for metastore handler for msck fs operations."),
     /**
      * @deprecated Use MetastoreConf.FS_HANDLER_THREADS_COUNT
      */
