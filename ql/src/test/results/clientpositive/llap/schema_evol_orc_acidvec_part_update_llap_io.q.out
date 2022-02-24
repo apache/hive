@@ -146,7 +146,7 @@ POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).b SIMPLE [(partitio
 POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).c SIMPLE []
 POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).d SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:d, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1_n0 PARTITION(part=2).insert_num SIMPLE [(partitioned_update_1_n0)partitioned_update_1_n0.FieldSchema(name:insert_num, type:int, comment:null), ]
-s.insert_num	s.a	s.b	_c3	s.d	s.part
+s.insert_num	s.a	s.b	s.c	s.d	s.part
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1_n0

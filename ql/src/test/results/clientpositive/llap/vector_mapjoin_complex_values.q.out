@@ -120,7 +120,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 185 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: city (type: string), email (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                      outputColumnNames: _col2, _col3, _col4
+                      outputColumnNames: _col1, _col2, _col3
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
@@ -138,12 +138,12 @@ STAGE PLANS:
                             native: false
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nativeConditionsNotMet: Supports Value Types [STRUCT] IS false
-                        outputColumnNames: _col2, _col3, _col4
+                        outputColumnNames: _col1, _col2, _col3
                         input vertices:
                           1 Reducer 6
                         Statistics: Num rows: 1 Data size: 257 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
-                          expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col3 (type: string)
+                          expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: string), _col2 (type: string)
                           outputColumnNames: _col0, _col3, _col4
                           Select Vectorization:
                               className: VectorSelectOperator
@@ -534,4 +534,4 @@ POSTHOOK: Lineage: census_clus.city SIMPLE [(census_clus)census_clus.FieldSchema
 POSTHOOK: Lineage: census_clus.email SIMPLE [(census_clus)census_clus.FieldSchema(name:email, type:string, comment:null), ]
 POSTHOOK: Lineage: census_clus.name SIMPLE []
 POSTHOOK: Lineage: census_clus.ssn SIMPLE []
-s.ssn	_c1	s.city	s.email
+s.ssn	s.name	s.city	s.email
