@@ -13131,7 +13131,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           LOG.debug("validated " + usedp.getName());
           LOG.debug(usedp.getTable().getTableName());
           WriteEntity.WriteType writeType = writeEntity.getWriteType();
-          if (writeType != WriteType.UPDATE && writeType != WriteType.DELETE) {
+          if (writeType != WriteType.UPDATE && writeType != WriteType.DELETE && writeType != WriteType.DDL_NO_LOCK
+              && writeType != WriteType.DDL_EXCLUSIVE) {
             // Do not check for ACID; it does not create new parts and this is expensive as hell.
             // TODO: add an API to get table name list for archived parts with a single call;
             //       nobody uses this so we could skip the whole thing.
