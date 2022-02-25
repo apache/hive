@@ -39,8 +39,8 @@ POSTHOOK: Input: default@source
 POSTHOOK: Output: default@stats_part
 POSTHOOK: Output: default@stats_part@p=101
 POSTHOOK: Lineage: stats_part PARTITION(p=101).key SIMPLE [(source)source.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(source)source.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: stats_part PARTITION(p=101).key SIMPLE [(source)source.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(source)source.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(source)source.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select p, key, value from stats_part
 PREHOOK: type: QUERY
