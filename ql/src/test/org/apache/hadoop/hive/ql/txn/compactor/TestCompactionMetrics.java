@@ -299,7 +299,7 @@ public class TestCompactionMetrics  extends CompactorTest {
       partitions.add(p);
     }
 
-    burnThroughTransactions("default", "camipc", 25);
+    burnThroughTransactions("default", "camipc", 24);
     for (int i = 0; i < 10; i++) {
       CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
       rqst.setPartitionname("ds=today" + i);
