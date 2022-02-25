@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -277,6 +280,21 @@ public interface HiveStorageHandler extends Configurable {
    * @return partition transform specification, can be null.
    */
   default List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
+   * Creates a DynnamicPartitionCtx instance that will be set up by the storage handler itself. Useful for non-native
+   * tables where partitions are not handled by Hive, and sorting is required in a custom way before writing the table.
+   * @param conf job conf
+   * @param table the HMS table
+   * @return the created DP context object
+   * @throws SemanticException
+   */
+  default DynamicPartitionCtx createDPContext(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table)
+      throws SemanticException {
+    Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
+        "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
     return null;
   }
 

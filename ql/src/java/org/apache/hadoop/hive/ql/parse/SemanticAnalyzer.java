@@ -8128,13 +8128,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Some non-native tables might be partitioned without partition spec information being present in the Table object
       HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
       if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
-        List<PartitionTransformSpec> nonNativePartSpecs = storageHandler.getPartitionTransformSpec(dest_tab);
-        if (dpCtx == null && nonNativePartSpecs != null && !nonNativePartSpecs.isEmpty()) {
-          verifyDynamicPartitionEnabled(conf, qb, dest);
-          Map<String, String> partSpec = new LinkedHashMap<>();
-          nonNativePartSpecs.forEach(ps -> partSpec.put(ps.getColumnName(), null));
-          dpCtx = new DynamicPartitionCtx(partSpec, conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
-              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+        DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab);
+        if (dpCtx == null && nonNativeDpCtx != null) {
+          dpCtx = nonNativeDpCtx;
         }
       }
 
