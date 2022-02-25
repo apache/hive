@@ -2894,6 +2894,7 @@ public class TestJdbcDriver2 {
       stmt.execute("set hive.metastore.dml.events = true");
       stmt.execute("set hive.repl.cm.enabled = true");
       stmt.execute("set hive.repl.cmrootdir = cmroot");
+      stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname + "=" + ConfVars.HIVE_TXN_MANAGER.defaultStrVal);
       stmt.execute("create database " + primaryDb + " with dbproperties('repl.source.for'='1,2,3')");
       stmt.execute("create table " + primaryTblName + " (id int)");
       stmt.execute("insert into " + primaryTblName + " values (1), (2)");
