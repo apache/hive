@@ -226,7 +226,7 @@ public class QueryPlan implements Serializable {
     if (result != null) {
       return result.getStatementId();
     } else {
-      return -1;
+      return 0;
     }
   }
 
