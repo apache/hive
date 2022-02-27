@@ -2153,4 +2153,4 @@ Release Notes - Hive - Version 2.3.0
     * [HIVE-16454] - Add blobstore tests for inserting empty into dynamic partition/list bucket tables & inserting cross blobstore tables
 
 
-
+DUMMY commit
