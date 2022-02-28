@@ -58,7 +58,7 @@ public class GenericUDFConcatWS extends GenericUDF {
     if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
           "The function CONCAT_WS(separator,[string | array(string)]+) "
-                + "needs at least two arguments.");
+            + "needs at least two arguments.");
     }
 
     // check if argument is a string or an array of strings
@@ -67,21 +67,21 @@ public class GenericUDFConcatWS extends GenericUDF {
       switch(arguments[i].getCategory()) {
         case LIST:
           if (isStringOrVoidType(
-                  ((ListObjectInspector) arguments[i]).getListElementObjectInspector())) {
+               ((ListObjectInspector) arguments[i]).getListElementObjectInspector())) {
             break;
           }else flag=true;
         case PRIMITIVE:
           if (isStringOrVoidType(arguments[i])) {
-            break;
+          break;
           }
         default:
           String outError = arguments[i].getTypeName();
           //(PrimitiveObjectInspector) oi).getPrimitiveCategory()
           if (flag) outError="the element in this array is " + ((PrimitiveObjectInspector)((ListObjectInspector) arguments[i]).getListElementObjectInspector()).getPrimitiveCategory().name();
           throw new UDFArgumentTypeException(i, "Argument " + (i + 1)
-                  + " of function CONCAT_WS must be \"" + serdeConstants.STRING_TYPE_NAME
-                  + " or " + serdeConstants.LIST_TYPE_NAME + "<" + serdeConstants.STRING_TYPE_NAME
-                  + ">\", but " + outError + " was found.");
+            + " of function CONCAT_WS must be \"" + serdeConstants.STRING_TYPE_NAME
+            + " or " + serdeConstants.LIST_TYPE_NAME + "<" + serdeConstants.STRING_TYPE_NAME
+            + ">\", but " + outError + " was found.");
       }
     }
 
