@@ -81,6 +81,11 @@ public class HiveStatsUtils {
     return Lists.newArrayList(fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER));
   }
 
+  public static int getKParamForKllSketch(Configuration conf) throws Exception {
+    // is in [8, 65535], default value is 200
+    return 200;
+  }
+
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {
     int numBitVectors;
     float percentageError = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ERROR);
