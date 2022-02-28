@@ -351,6 +351,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     case BITVECTOR:
       appendBitVector(rewrittenQueryBuilder, conf, columnName, pos);
       break;
+    case KLL_SKETCH:
+      appendKllSketch(rewrittenQueryBuilder, conf, columnName, pos);
+      break;
     case MAX_LENGTH:
       appendMaxLength(rewrittenQueryBuilder, conf, columnName, pos);
       break;
@@ -455,6 +458,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         .append(unparseIdentifier(ColumnStatsField.BITVECTOR.getFieldName() + pos, conf));
   }
 
+  private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
+      String columnName, int pos) throws SemanticException {
+    appendKllSketch(rewrittenQueryBuilder, conf, columnName);
+    rewrittenQueryBuilder.append(" AS ")
+        .append(unparseIdentifier(ColumnStatsField.KLL_SKETCH.getFieldName() + pos, conf));
+  }
+
   private static void appendBitVector(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName) throws SemanticException {
     String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO).toLowerCase();
@@ -478,6 +488,22 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     } else {
       throw new UDFArgumentException("available ndv computation options are hll and fm. Got: " + func);
     }
+  }
+
+  private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
+      String columnName) throws SemanticException {
+    int k;
+    try {
+      k = HiveStatsUtils.getKParamForKllSketch(conf);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
+    }
+    // add cast($columnName as float) to make sure it works for other numeric types
+    rewrittenQueryBuilder.append("ds_kll_sketch(cast(")
+        .append(columnName)
+        .append(" as float), ")
+        .append(k)
+        .append(")");
   }
 
   private static void appendCountTrues(StringBuilder rewrittenQueryBuilder, HiveConf conf,
