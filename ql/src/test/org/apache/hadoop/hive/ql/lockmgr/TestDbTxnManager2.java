@@ -488,13 +488,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (6, 6)");
     driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (13, 13)");
     driver.run("insert into temp.T13p partition (ds='today', hour='1') values (7, 7)");
+    driver.run("insert into temp.T13p partition (ds='today', hour='1') values (7, 7)");
     driver.run("insert into temp.T13p partition (ds='tomorrow', hour='2') values (8, 8)");
     int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
         "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11')");
     Assert.assertEquals(4, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
         "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t12p', 't13p')");
-    Assert.assertEquals(5, count);
+    Assert.assertEquals(6, count);
 
     // Fail some inserts, so that we have records in TXN_COMPONENTS
     conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
@@ -3381,7 +3382,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   private void testDropPartition(boolean blocking) throws Exception {
     dropTable(new String[] {"tab_acid"});
     FileSystem fs = FileSystem.get(conf);
-    
+
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
     driver = Mockito.spy(driver);
 
@@ -3439,7 +3440,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.run();
     }
     Mockito.reset(driver, driver2);
-    
+
     FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), "tab_acid" + (blocking ? "" : "/p=foo")),
       (blocking ? path -> path.getName().equals("p=foo") : AcidUtils.baseFileFilter));
     if ((blocking ? 0 : 1) != stat.length) {
@@ -3447,7 +3448,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     }
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
-    
+
     driver.run("select * from tab_acid where p='foo'");
     res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
@@ -3455,13 +3456,13 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     //re-create partition with the same name
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo')");
-    
+
     driver.run("select * from tab_acid where p='foo'");
     res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 1 rows and found " + res.size(), 1, res.size());
   }
-  
+
   @Test
   public void testDropTableNonBlocking() throws Exception {
     testDropTable(false);
@@ -3488,7 +3489,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     driver.compileAndRespond("select * from tab_acid");
     List<String> res = new ArrayList<>();
-    
+
     driver.lockAndRespond();
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
@@ -3510,20 +3511,20 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       swapTxnManager(txnMgr);
       Mockito.doNothing().when(driver).lockAndRespond();
       driver.run();
-      
+
       driver.getFetchTask().fetch(res);
       swapTxnManager(txnMgr2);
-      
+
       FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
       txnMgr2.getMS().unlock(checkLock.getLockid());
     }
     driver2.lockAndRespond();
     locks = getLocks();
     Assert.assertEquals("Unexpected lock count", blocking ? 1 : 2, locks.size());
-    
-    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE, 
+
+    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
       LockState.ACQUIRED, "default", "tab_acid", null, locks);
-    
+
     Mockito.doNothing().when(driver2).lockAndRespond();
     driver2.run();
 
@@ -3533,7 +3534,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       driver.run();
     }
     Mockito.reset(driver, driver2);
-    
+
     FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
       t -> t.getName().matches("tab_acid" + (blocking ? "" : SOFT_DELETE_TABLE_PATTERN)));
     if ((blocking ? 0 : 1) != stat.length) {
@@ -3547,18 +3548,18 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     } catch (CommandProcessorException ex) {
       Assert.assertEquals(ErrorMsg.INVALID_TABLE.getErrorCode(), ex.getResponseCode());
     }
-    
+
     //re-create table with the same name
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
-    
+
     driver.run("select * from tab_acid ");
     res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
   }
-  
+
   @Test
   public void testDropTableNonBlocking2() throws Exception {
     dropTable(new String[] {"tab_acid"});
@@ -3574,8 +3575,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr2);
-    // when running this, valid writeid list is not yet fetched by the `select` operation, 
-    // so we should keep TXN_TO_WRITE_ID entries until the Cleaner runs. 
+    // when running this, valid writeid list is not yet fetched by the `select` operation,
+    // so we should keep TXN_TO_WRITE_ID entries until the Cleaner runs.
     driver2.run("drop table if exists tab_acid");
 
     swapTxnManager(txnMgr);

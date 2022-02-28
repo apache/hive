@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -442,7 +441,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       // Don't start compaction or cleaning if not necessary
       if (isDynPartAbort(t, ci)) {
-        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        msc.markCleaned(CompactionInfo.compactionInfoToStruct(ci));
         compactionTxn.wasSuccessful();
         return false;
       }
