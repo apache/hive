@@ -57,8 +57,8 @@ public class GenericUDFConcatWS extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
-           "The function CONCAT_WS(separator,[string | array(string)]+) "
-                      + "needs at least two arguments.");
+          "The function CONCAT_WS(separator,[string | array(string)]+) "
+                + "needs at least two arguments.");
     }
 
     // check if argument is a string or an array of strings
