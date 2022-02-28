@@ -67,7 +67,7 @@ public class GenericUDFConcatWS extends GenericUDF {
       switch(arguments[i].getCategory()) {
         case LIST:
           if (isStringOrVoidType(
-               ((ListObjectInspector) arguments[i]).getListElementObjectInspector())) {
+              ((ListObjectInspector) arguments[i]).getListElementObjectInspector())) {
             break;
           }else flag=true;
         case PRIMITIVE:
