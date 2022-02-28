@@ -22,9 +22,9 @@
  */
 package org.apache.hive.beeline;
 
-import jline.console.completer.Completer;
-
 import org.apache.hadoop.fs.shell.Command;
+import org.jline.reader.Completer;
+
 
 /**
  * A {@link Command} implementation that uses reflection to

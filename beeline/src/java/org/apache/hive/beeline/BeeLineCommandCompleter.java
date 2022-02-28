@@ -21,10 +21,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import jline.console.completer.AggregateCompleter;
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
-import jline.console.completer.StringsCompleter;
+import org.apache.hive.common.util.MatchingStringsCompleter;
+import org.jline.reader.Completer;
+import org.jline.reader.impl.completer.AggregateCompleter;
+import org.jline.reader.impl.completer.NullCompleter;
 
 class BeeLineCommandCompleter extends AggregateCompleter {
   public BeeLineCommandCompleter(Iterable<CommandHandler> handlers) {
@@ -32,17 +32,17 @@ class BeeLineCommandCompleter extends AggregateCompleter {
   }
 
   public static List<Completer> getCompleters(Iterable<CommandHandler> handlers){
-    List<Completer> completers = new LinkedList<Completer>();
+    List<Completer> completers = new LinkedList<>();
 
     for (CommandHandler handler : handlers) {
       String[] commandNames = handler.getNames();
       if (commandNames != null) {
         for (String commandName : commandNames) {
-          List<Completer> compl = new LinkedList<Completer>();
-          compl.add(new StringsCompleter(BeeLine.COMMAND_PREFIX + commandName));
+          List<Completer> compl = new LinkedList<>();
+          compl.add(new MatchingStringsCompleter(BeeLine.COMMAND_PREFIX + commandName));
           compl.addAll(Arrays.asList(handler.getParameterCompleters()));
           compl.add(new NullCompleter()); // last param no complete
-          completers.add(new AggregateCompleter(compl.toArray(new Completer[compl.size()])));
+          completers.add(new AggregateCompleter(compl.toArray(new Completer[0])));
         }
       }
     }

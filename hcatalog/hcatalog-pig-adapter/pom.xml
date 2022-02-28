@@ -30,6 +30,7 @@
   <name>Hive HCatalog Pig Adapter</name>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <jline.version>3.21.0</jline.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -107,9 +108,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>jline</groupId>
+      <groupId>org.jline</groupId>
       <artifactId>jline</artifactId>
-      <version>0.9.94</version>
+      <version>${jline.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

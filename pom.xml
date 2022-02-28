@@ -152,7 +152,7 @@
     <jettison.version>1.1</jettison.version>
     <jetty.version>9.3.27.v20190418</jetty.version>
     <jersey.version>1.19</jersey.version>
-    <jline.version>2.14.6</jline.version>
+    <jline.version>3.21.0</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
     <jodd.version>6.0.0</jodd.version>
@@ -430,7 +430,7 @@
         <version>${javolution.version}</version>
       </dependency>
       <dependency>
-        <groupId>jline</groupId>
+        <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
         <version>${jline.version}</version>
       </dependency>
