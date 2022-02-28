@@ -240,6 +240,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     MAX("max"),
     NDV("numdistinctvalues"),
     BITVECTOR("ndvbitvector"),
+    KLL_SKETCH("kllsketch"),
     MAX_LENGTH("maxlength"),
     AVG_LENGTH("avglength");
 
@@ -282,7 +283,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     STRING(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
