@@ -13131,7 +13131,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           LOG.debug("validated " + usedp.getName());
           LOG.debug(usedp.getTable().getTableName());
-          if (!transactionalInQuery && conf.getBoolVar(HIVEARCHIVEENABLED)) {
+          if (!AcidUtils.isTransactionalTable(tbl) && conf.getBoolVar(HIVEARCHIVEENABLED)) {
             // Do not check for ACID; it does not create new parts and this is expensive as hell.
             // TODO: add an API to get table name list for archived parts with a single call;
             //       nobody uses this so we could skip the whole thing.
