@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -145,6 +146,12 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         projectedSchema = tableSchema;
       }
     }
+
+    // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
+    // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
+    // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
+    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
+    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
 
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);

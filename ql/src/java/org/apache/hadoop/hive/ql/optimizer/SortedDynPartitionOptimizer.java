@@ -344,10 +344,11 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       for (Function<List<ExprNodeDesc>, ExprNodeDesc> customSortExpr : customSortExprs) {
         ExprNodeDesc colExpr = customSortExpr.apply(allRSCols);
-        String customSortColName = ReduceField.KEY + "." + colExpr.getExprString();
+        String customSortColName = colExpr.getExprString();
         TypeInfo customSortColTypeInfo = colExpr.getTypeInfo();
 
-        descs.add(new ExprNodeColumnDesc(customSortColTypeInfo, customSortColName, null, false));
+        descs.add(new ExprNodeColumnDesc(customSortColTypeInfo, ReduceField.KEY + "." + customSortColName,
+            null, false));
         colNames.add(customSortColName);
         ColumnInfo ci = new ColumnInfo(
             customSortColName, customSortColTypeInfo, selRS.getSignature().get(0).getTabAlias(), true, true);
