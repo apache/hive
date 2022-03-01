@@ -954,7 +954,9 @@ public class MetastoreConf {
                 "get_partitions_with_auth, \n" +
                 "get_partitions_by_filter, \n" +
                 "get_partitions_spec_by_filter, \n" +
-                "get_partitions_by_expr.\n" +
+                "get_partitions_by_expr,\n" +
+                "get_partitions_ps,\n" +
+                "get_partitions_ps_with_auth.\n" +
             "The default value \"-1\" means no limit."),
     MSC_CACHE_ENABLED("metastore.client.cache.v2.enabled",
             "hive.metastore.client.cache.v2.enabled", true,

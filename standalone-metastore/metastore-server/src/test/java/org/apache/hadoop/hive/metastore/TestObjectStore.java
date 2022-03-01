@@ -408,8 +408,20 @@ public class TestObjectStore {
     }
     Assert.assertEquals(partitions.size(), numPartitions);
 
+    List<String> partVal = Collections.singletonList("");
+    try (AutoCloseable c = deadline()) {
+      numPartitions = objectStore.getNumPartitionsByPs(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVal);
+    }
+    Assert.assertEquals(partitions.size(), numPartitions);
+
     try (AutoCloseable c = deadline()) {
       numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country = \"US\"");
+    }
+    Assert.assertEquals(2, numPartitions);
+
+    partVal = Collections.singletonList("US");
+    try (AutoCloseable c = deadline()) {
+      numPartitions = objectStore.getNumPartitionsByPs(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVal);
     }
     Assert.assertEquals(2, numPartitions);
 

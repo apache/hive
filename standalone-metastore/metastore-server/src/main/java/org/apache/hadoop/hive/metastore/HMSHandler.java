@@ -5656,6 +5656,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
+  private void checkLimitNumberOfPartitionsByPs(String catName, String dbName, String tblName,
+                                                List<String> partVals, int maxParts)
+          throws TException {
+    if (isPartitionLimitEnabled()) {
+      checkLimitNumberOfPartitions(tblName, getNumPartitionsByPs(catName, dbName, tblName,
+              partVals), maxParts);
+    }
+  }
+
   private boolean isPartitionLimitEnabled() {
     int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
     return partitionLimit > -1;
@@ -6666,6 +6675,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<Partition> ret = null;
     Exception ex = null;
     try {
+      checkLimitNumberOfPartitionsByPs(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+              tbl_name, part_vals, max_parts);
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().listPartitionsPsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name, part_vals, max_parts, userName, groupNames);
@@ -7420,6 +7431,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       rethrowException(e);
     } finally {
       endFunction("get_num_partitions_by_expr", ret != -1, ex, tblName);
+    }
+    return ret;
+  }
+
+  private int getNumPartitionsByPs(final String catName, final String dbName,
+                                   final String tblName, List<String> partVals)
+          throws TException {
+    String[] parsedDbName = parseDbName(dbName, conf);
+    startTableFunction("getNumPartitionsByPs", parsedDbName[CAT_NAME],
+            parsedDbName[DB_NAME], tblName);
+
+    int ret = -1;
+    Exception ex = null;
+    try {
+      ret = getMS().getNumPartitionsByPs(catName, dbName, tblName, partVals);
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+      endFunction("getNumPartitionsByPs", ret != -1, ex, tblName);
     }
     return ret;
   }

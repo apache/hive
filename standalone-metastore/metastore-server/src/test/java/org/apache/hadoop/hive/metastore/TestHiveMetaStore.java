@@ -560,33 +560,49 @@ public abstract class TestHiveMetaStore {
     String dbName = "compdb";
     String tblName = "comptbl";
     String typeName = "Person";
+    String ds = "2008-07-01 14:13:12";
 
     cleanUp(dbName, tblName, typeName);
 
     // Create too many partitions, just enough to validate over limit requests
     List<List<String>> values = new ArrayList<>();
     for (int i=0; i<DEFAULT_LIMIT_PARTITION_REQUEST + 1; i++) {
-      values.add(makeVals("2008-07-01 14:13:12", Integer.toString(i)));
+      values.add(makeVals(ds, Integer.toString(i)));
     }
 
     createMultiPartitionTableSchema(dbName, tblName, typeName, values);
 
     List<Partition> partitions;
+    List<String> partVal = Collections.singletonList(ds);
     short maxParts;
 
     // Requesting more partitions than allowed should throw an exception
+    maxParts = -1;
     try {
-      maxParts = -1;
       partitions = client.listPartitions(dbName, tblName, maxParts);
       fail("should have thrown MetaException about partition limit");
     } catch (MetaException e) {
       assertTrue(true);
     }
 
-    // Requesting more partitions than allowed should throw an exception
     try {
-      maxParts = DEFAULT_LIMIT_PARTITION_REQUEST + 1;
+      client.listPartitions(dbName, tblName, partVal, maxParts);
+      fail("should have thrown MetaException about partition limit");
+    } catch (MetaException e) {
+      assertTrue(true);
+    }
+
+    // Requesting more partitions than allowed should throw an exception
+    maxParts = DEFAULT_LIMIT_PARTITION_REQUEST + 1;
+    try {
       partitions = client.listPartitions(dbName, tblName, maxParts);
+      fail("should have thrown MetaException about partition limit");
+    } catch (MetaException e) {
+      assertTrue(true);
+    }
+
+    try {
+      client.listPartitions(dbName, tblName, partVal, maxParts);
       fail("should have thrown MetaException about partition limit");
     } catch (MetaException e) {
       assertTrue(true);
@@ -595,6 +611,10 @@ public abstract class TestHiveMetaStore {
     // Requesting less partitions than allowed should work
     maxParts = DEFAULT_LIMIT_PARTITION_REQUEST / 2;
     partitions = client.listPartitions(dbName, tblName, maxParts);
+    assertNotNull("should have returned partitions", partitions);
+    assertEquals(" should have returned 50 partitions", maxParts, partitions.size());
+
+    partitions = client.listPartitions(dbName, tblName, partVal, maxParts);
     assertNotNull("should have returned partitions", partitions);
     assertEquals(" should have returned 50 partitions", maxParts, partitions.size());
   }
