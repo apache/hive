@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -814,8 +815,9 @@ public class SerializationUtilities {
    * @param expr Expression.
    * @return Bytes.
    */
-  public static byte[] serializeExpressionToKryo(ExprNodeGenericFuncDesc expr) {
-    return serializeObjectToKryo(expr);
+  public static byte[] serializeExpressionToKryo(ExprNodeDesc expr) {
+    //Wrap the node to support dynamic deserialization of any ExprNodeDesc implementation.
+    return serializeObjectToKryo(new NodeWrapper(expr.getClass().getName(), serializeObjectToKryo(expr)));
   }
 
   /**
@@ -823,8 +825,15 @@ public class SerializationUtilities {
    * @param bytes Bytes containing the expression.
    * @return Expression; null if deserialization succeeded, but the result type is incorrect.
    */
-  public static ExprNodeGenericFuncDesc deserializeExpressionFromKryo(byte[] bytes) {
-    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
+  public static ExprNodeDesc deserializeExpressionFromKryo(byte[] bytes) {
+    try {
+      //Try to unwrap the embedded instance
+      NodeWrapper wrapper = deserializeObjectFromKryo(bytes, NodeWrapper.class);
+      return deserializeObjectFromKryo(wrapper.instance, (Class<ExprNodeDesc>)Class.forName(wrapper.fullClassName));
+    } catch (Exception e) {
+      //Falback case, deserialize it directly as ExprNodeGenericFuncDesc
+      return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
+    }
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
@@ -834,7 +843,7 @@ public class SerializationUtilities {
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
     byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
-    return deserializeExpressionFromKryo(bytes);
+    return (ExprNodeGenericFuncDesc)deserializeExpressionFromKryo(bytes);
   }
 
   public static byte[] serializeObjectToKryo(Serializable object) {
@@ -872,6 +881,16 @@ public class SerializationUtilities {
       Class<T> clazz) {
     return deserializeObjectFromKryo(
         Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
+  }
+
+  private static class NodeWrapper implements Serializable {
+    String fullClassName;
+    byte[] instance;
+
+    NodeWrapper(String fullClassName, byte[] instance) {
+      this.fullClassName = fullClassName;
+      this.instance = instance;
+    }
   }
 
 }
