@@ -601,7 +601,6 @@ public class SortedDynPartitionOptimizer extends Transform {
       }
       keyColsPosInVal.addAll(sortPositions);
 
-
       // by default partition and bucket columns are sorted in ascending order
       Integer order = 1;
       if (sortOrder != null && !sortOrder.isEmpty()) {

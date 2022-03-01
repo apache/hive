@@ -284,11 +284,11 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Creates a DynnamicPartitionCtx instance that will be set up by the storage handler itself. Useful for non-native
+   * Creates a DynamicPartitionCtx instance that will be set up by the storage handler itself. Useful for non-native
    * tables where partitions are not handled by Hive, and sorting is required in a custom way before writing the table.
    * @param conf job conf
    * @param table the HMS table
-   * @return the created DP context object
+   * @return the created DP context object, null if DP context / sorting is not required
    * @throws SemanticException
    */
   default DynamicPartitionCtx createDPContext(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table)

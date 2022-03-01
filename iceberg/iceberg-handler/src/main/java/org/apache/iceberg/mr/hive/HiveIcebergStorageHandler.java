@@ -336,6 +336,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (table.spec().isUnpartitioned()) {
       return null;
     }
+
     // Iceberg currently doesn't have publicly accessible partition transform information, hence use above string parse
     List<PartitionTransformSpec> partitionTransformSpecs = getPartitionTransformSpec(hmsTable);
 

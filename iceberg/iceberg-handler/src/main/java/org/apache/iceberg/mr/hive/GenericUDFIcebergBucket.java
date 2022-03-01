@@ -50,7 +50,6 @@ import org.apache.iceberg.types.Types;
     value = "_FUNC_(value, bucketCount) - " +
         "Returns the bucket value calculated by Iceberg bucket transform function ",
     extended = "Example:\n  > SELECT _FUNC_('A bucket full of ice!', 5);\n  4")
-//@VectorizedExpressions({StringLength.class})
 public class GenericUDFIcebergBucket extends GenericUDF {
   private final IntWritable result = new IntWritable();
   private transient PrimitiveObjectInspector argumentOI;
