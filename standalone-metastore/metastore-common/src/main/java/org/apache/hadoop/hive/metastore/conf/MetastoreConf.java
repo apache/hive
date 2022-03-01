@@ -1650,7 +1650,10 @@ public class MetastoreConf {
         TimeUnit.SECONDS,
         new TimeValidator(TimeUnit.MILLISECONDS, 500L, false, 1500L, false), "comment"),
     BOOLEAN_TEST_ENTRY("test.bool", "hive.test.bool", true, "comment"),
-    CLASS_TEST_ENTRY("test.class", "hive.test.class", "", "comment");
+    CLASS_TEST_ENTRY("test.class", "hive.test.class", "", "comment"),
+    PROXY_USER_ENABLED("metastore.proxy.user.enabled",
+            "hive.metastore.proxy.user.enabled", false,
+            "If the proxy is enabled, then need to create metastore client that proxies as that current user.");
 
     private final String varname;
     private final String hiveName;

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.callEmbeddedMetastore;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.PROXY_USER_ENABLED;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 import java.io.IOException;
@@ -189,6 +190,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       throw new MetaException("MetaStoreURIs not found in conf file");
     }
 
+    setDelegationToken();
+    // finally open the store
+    open();
+  }
+
+  private void setDelegationToken() throws MetaException {
     //If HADOOP_PROXY_USER is set in env or property,
     //then need to create metastore client that proxies as that user.
     String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
@@ -196,36 +203,51 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     if (proxyUser == null) {
       proxyUser = System.getProperty(HADOOP_PROXY_USER);
     }
-    //if HADOOP_PROXY_USER is set, create DelegationToken using real user
-    if(proxyUser != null) {
-      LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
-          + "token for HiveMetaStore connection.");
-      try {
-        UserGroupInformation.getLoginUser().getRealUser().doAs(
-            new PrivilegedExceptionAction<Void>() {
-              @Override
-              public Void run() throws Exception {
-                open();
-                return null;
-              }
-            });
-        String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
-        String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
-        SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
-            delegationTokenPropString);
-        MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
-        close();
-      } catch (Exception e) {
-        LOG.error("Error while setting delegation token for " + proxyUser, e);
-        if(e instanceof MetaException) {
-          throw (MetaException)e;
-        } else {
-          throw new MetaException(e.getMessage());
-        }
+
+    boolean proxyUserEnabled = MetastoreConf.getBoolVar(this.conf, PROXY_USER_ENABLED);
+
+    if (proxyUser == null && !proxyUserEnabled) {
+      return;
+    }
+
+    try {
+      UserGroupInformation realUser = null;
+      if (proxyUser != null) {
+        LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
+                + "token for HiveMetaStore connection.");
+        realUser = UserGroupInformation.getLoginUser().getRealUser();
+      } else {
+        LOG.info("Using delegation token for HiveMetaStore connection.");
+        realUser = UserGroupInformation.getCurrentUser().getRealUser();
+        proxyUser = UserGroupInformation.getCurrentUser().getShortUserName();
+      }
+
+      if (realUser == null || proxyUser.equals(realUser.getShortUserName())) {
+        return;
+      }
+
+      realUser.doAs(
+              new PrivilegedExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                  open();
+                  return null;
+                }
+              });
+      String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
+      String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
+      SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
+              delegationTokenPropString);
+      MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
+      close();
+    } catch (Exception e) {
+      LOG.error("Error while setting delegation token for " + proxyUser, e);
+      if (e instanceof MetaException) {
+        throw (MetaException) e;
+      } else {
+        throw new MetaException(e.getMessage());
       }
     }
-    // finally open the store
-    open();
   }
 
   private void resolveUris() throws MetaException {
