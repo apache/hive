@@ -32,6 +32,7 @@ public class ColStatistics {
   private boolean isEstimated;
   private boolean isFilteredColumn;
   private byte[] bitVectors;
+  private byte[] kllSketch;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -118,6 +119,14 @@ public class ColStatistics {
 
   public void setBitVectors(byte[] bitVectors) {
     this.bitVectors = bitVectors;
+  }
+
+  public byte[] getKllSketch() {
+    return kllSketch;
+  }
+
+  public void setKllSketch(byte[] kllSketch) {
+    this.kllSketch = kllSketch;
   }
 
   @Override
