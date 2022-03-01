@@ -317,6 +317,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(cleanerCyclesMinor + 10, Objects.requireNonNull(
         Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR.toString().toLowerCase())).getCount());
 
+    burnThroughTransactions("default", "camipc", 1);
     for (int i = 0; i < 10; i++) {
       p = partitions.get(i);
       addBaseFile(t, p, 25L, 25, 26 + i);
