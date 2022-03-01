@@ -246,7 +246,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     request.setTblName(TABLE_NAME);
     byte[] exprs = {(byte)-1};
     if (expr != null) {
-      exprs = SerializationUtilities.serializeExpressionToKryo(expr);
+      exprs = SerializationUtilities.serializeObjectWithTypeInformation(expr);
     }
     request.setExpr(exprs);
     request.setMaxParts(numParts);
@@ -335,7 +335,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   public void testListPartitionsByExprNullResult() throws Exception {
     createTable4PartColsParts(getClient());
     TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
-    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeObjectWithTypeInformation(
         e.strCol("yyyy").val("2017").pred("=", 2).build()), null,
         (short)-1, null);
   }
@@ -345,7 +345,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     createTable4PartColsParts(getClient());
     TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
     List<Partition> result = new ArrayList<>();
-    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeObjectWithTypeInformation(
         e.strCol("yyyy").val("2017").pred(">=", 2).build()), null, (short)3, result);
     assertEquals(3, result.size());
   }
@@ -355,7 +355,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     createTable4PartColsParts(getClient());
     TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
     List<Partition> result = new ArrayList<>();
-    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeObjectWithTypeInformation(
         e.strCol("yyyy").val("2017").pred(">=", 2).build()), null, (short)100, result);
     assertEquals(4, result.size());
   }
@@ -400,7 +400,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
 
   private void checkExpr(int numParts, ExprNodeGenericFuncDesc expr) throws Exception {
     List<Partition> parts = new ArrayList<>();
-    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(expr),
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeObjectWithTypeInformation(expr),
         null, (short) -1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
   }
@@ -427,7 +427,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
 
     PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
-            ByteBuffer.wrap(SerializationUtilities.serializeExpressionToKryo(
+            ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(
                     e.strCol("yyyy").val("2017").pred("=", 2).build())));
     req.setMaxParts((short)-1);
     req.setId(t.getId());
@@ -444,7 +444,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     List<PartitionSpec> result = new ArrayList<>();
 
     PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
-            ByteBuffer.wrap(SerializationUtilities.serializeExpressionToKryo(
+            ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(
                     e.strCol("yyyy").val("2017").pred(">=", 2).build())));
     req.setMaxParts((short)3);
     req.setId(t.getId());
@@ -460,7 +460,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     List<PartitionSpec> result = new ArrayList<>();
 
     PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
-            ByteBuffer.wrap(SerializationUtilities.serializeExpressionToKryo(
+            ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(
                     e.strCol("yyyy").val("2017").pred(">=", 2).build())));
     req.setMaxParts((short)100);
     req.setId(t.getId());
@@ -530,12 +530,12 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
 
   private void checkExprPartitionSpec(int numParts, ExprNodeGenericFuncDesc expr, Table t) throws Exception {
     List<Partition> parts = new ArrayList<>();
-    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(expr),
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeObjectWithTypeInformation(expr),
         null, (short) -1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
     // check with partition spec as well
     PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
-            ByteBuffer.wrap(SerializationUtilities.serializeExpressionToKryo(expr)));
+            ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(expr)));
     req.setMaxParts((short)-1);
     req.setId(t.getId());
 

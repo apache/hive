@@ -86,6 +86,42 @@ import static org.mockito.Mockito.*;
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
+  public void testCompactionShouldNotFailOnPartitionsWithBooleanField() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+
+    final String dbName = "default";
+    final String tableName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(id string, value string) PARTITIONED BY (bval boolean) CLUSTERED BY(id) " +
+            "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('1','one',true),('2','two', true)," +
+            "('4','four', false),('5','five', true),('6','six', false),('7','seven', false),('8','eight', false)," +
+            "('11','eleven', true),('12','twelve', false),('13','thirteen', false),('14','fourteen', false)," +
+            "('17','seventeen', true),('18','eighteen', false),('19','nineteen', false),('20','twenty', true)", driver);
+
+    executeStatementOnDriver("insert into " + tableName + " values ('21', 'value21', false),('84', 'value84', false)", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('22', 'value22', false),('34', 'value34', true)", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75', true),('99', 'value99', true)", driver);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    //Try to do a major compaction directly
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    rqst.setPartitionname("bval=true");
+    txnHandler.compact(rqst);
+
+    runWorker(conf);
+
+    //Check if the compaction succeed
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
+    Assert.assertEquals("Expecting compaction state 'ready for cleaning' and found:" + compacts.get(0).getState(),
+            "ready for cleaning", compacts.get(0).getState());
+  }
+
+  @Test
   public void testMinorCompactionShouldBeRefusedOnTablesWithOriginalFiles() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas

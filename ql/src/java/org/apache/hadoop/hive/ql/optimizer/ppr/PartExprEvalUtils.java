@@ -103,7 +103,7 @@ public class PartExprEvalUtils {
   }
 
   public static Pair<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
-      ExprNodeGenericFuncDesc expr, List<String> partColumnNames,
+      ExprNodeDesc expr, List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos) throws HiveException {
     // Create the row object
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
