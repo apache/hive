@@ -41,6 +41,7 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>**/thirdparty/**</exclude>
+        <exclude>**/checkstyle/**</exclude>
       </excludes>
 
       <includes>
