@@ -161,7 +161,7 @@ import org.junit.Test;
   static String testCommandLineScript(List<String> argList, InputStream inputStream,
       OutStream streamType)
       throws Throwable {
-    BeeLine beeLine = new BeeLine();
+    BeeLine beeLine = new BeeLineForTest();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream beelineOutputStream = new PrintStream(os);
     switch (streamType) {
@@ -266,8 +266,8 @@ import org.junit.Test;
         boolean matches = m.matches();
         if (patternToMatch.shouldMatch != matches) {
           //failed
-          fail("Output" + output + " should" + (patternToMatch.shouldMatch ? "" : " not") +
-              " contain " + patternToMatch.pattern.pattern());
+          fail(String.format("Output '%s' should %s contain '%s' (mode: %s)", output, (patternToMatch.shouldMatch ? "" :
+                  " not"), patternToMatch.pattern.pattern(), mode));
         }
       }
     }
