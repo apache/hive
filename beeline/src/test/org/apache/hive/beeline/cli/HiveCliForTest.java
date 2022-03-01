@@ -17,30 +17,12 @@
  */
 package org.apache.hive.beeline.cli;
 
-import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.beeline.BeeLine;
+import org.apache.hive.beeline.BeeLineDummyTerminal;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-public class HiveCli {
-  private BeeLine beeLine;
-
-  public static void main(String[] args) throws IOException {
-    int status = new HiveCli().runWithArgs(args, null);
-    ExitUtil.terminate(status);
-  }
-
-  public int runWithArgs(String[] cmd, InputStream inputStream) throws IOException {
-    beeLine = createBeeline();
-    try {
-      return beeLine.begin(cmd, inputStream);
-    } finally {
-      beeLine.close();
-    }
-  }
+public class HiveCliForTest extends HiveCli {
 
   protected BeeLine createBeeline() {
-    return new BeeLine(false);
+    return new BeeLineDummyTerminal(false);
   }
 }

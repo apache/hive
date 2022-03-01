@@ -158,10 +158,9 @@ import org.junit.Test;
    * @return The stderr and stdout from running the script
    * @throws Throwable
    */
-  static String testCommandLineScript(List<String> argList, InputStream inputStream,
-      OutStream streamType)
+  static String testCommandLineScript(List<String> argList, OutStream streamType)
       throws Throwable {
-    BeeLine beeLine = new BeeLine();
+    BeeLine beeLine = getBeeLineDummyTerminal();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream beelineOutputStream = new PrintStream(os);
     switch (streamType) {
@@ -175,11 +174,36 @@ import org.junit.Test;
       throw new RuntimeException("Unexpected outstream type " + streamType);
     }
     String[] args = argList.toArray(new String[argList.size()]);
-    beeLine.begin(args, inputStream);
+    beeLine.begin(args, null);
     beeLine.close();
     beelineOutputStream.close();
     String output = os.toString("UTF8");
     return output;
+  }
+
+  /*
+   * Creates a BeeLineDummyTerminal that simply quits after the init/script runs.
+   * Waits 500ms for the prompt to be printed.
+   */
+  private static BeeLineDummyTerminal getBeeLineDummyTerminal() {
+    return new BeeLineDummyTerminal() {
+      @Override
+      protected int startListening() {
+        Thread taskThread = new Thread(() -> {
+          super.startListening();
+        });
+
+        taskThread.start();
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+
+        taskThread.interrupt();
+        return 0;
+      }
+    };
   }
 
   /**
@@ -266,8 +290,8 @@ import org.junit.Test;
         boolean matches = m.matches();
         if (patternToMatch.shouldMatch != matches) {
           //failed
-          fail("Output" + output + " should" + (patternToMatch.shouldMatch ? "" : " not") +
-              " contain " + patternToMatch.pattern.pattern());
+          fail(String.format("Output (mode: %s) '%s' should %s contain '%s'", mode, output,
+              (patternToMatch.shouldMatch ? "" : " not"), patternToMatch.pattern.pattern()));
         }
       }
     }
@@ -281,18 +305,16 @@ import org.junit.Test;
     INIT {
       @Override
       String output(File scriptFile, List<String> argList, OutStream streamType) throws Throwable {
-        List<String> copy = new ArrayList<>(argList);
-        copy.add("-i");
-        copy.add(scriptFile.getAbsolutePath());
-        return testCommandLineScript(copy, new StringBufferInputStream("!quit\n"), streamType);
+        List<String> finalArgs = new ArrayList<>(argList);
+        finalArgs.addAll(Arrays.asList("-i", scriptFile.getAbsolutePath()));
+        return testCommandLineScript(finalArgs, streamType);
       }
     }, SCRIPT {
       @Override
       String output(File scriptFile, List<String> argList, OutStream streamType) throws Throwable {
-        List<String> copy = new ArrayList<>(argList);
-        copy.add("-f");
-        copy.add(scriptFile.getAbsolutePath());
-        return testCommandLineScript(copy, null, streamType);
+        List<String> finalArgs = new ArrayList<>(argList);
+        finalArgs.addAll(Arrays.asList("-f", scriptFile.getAbsolutePath()));
+        return testCommandLineScript(finalArgs, streamType);
       }
     };
 
@@ -314,11 +336,10 @@ import org.junit.Test;
   private void testCommandEnclosedQuery(String enclosedQuery, String expectedPattern,
       boolean shouldMatch, List<String> argList, OutStream out) throws Throwable {
 
-    List<String> copy = new ArrayList<String>(argList);
-    copy.add("-e");
-    copy.add(enclosedQuery);
+    List<String> finalArgs = new ArrayList<String>(argList);
+    finalArgs.addAll(Arrays.asList("-e", enclosedQuery));
 
-    String output = testCommandLineScript(copy, null, out);
+    String output = testCommandLineScript(finalArgs, out);
     boolean matches = output.contains(expectedPattern);
     if (shouldMatch != matches) {
       //failed
@@ -484,7 +505,7 @@ import org.junit.Test;
   public void testGetVariableValue() throws Throwable {
     final String SCRIPT_TEXT = "set env:TERM;";
     final String EXPECTED_PATTERN = "env:TERM";
-    testScriptFile(SCRIPT_TEXT, getBaseArgs(miniHS2.getBaseJdbcURL()), OutStream.ERR, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, getBaseArgs(miniHS2.getBaseJdbcURL()), OutStream.OUT, EXPECTED_PATTERN, true);
   }
 
   /**
@@ -707,7 +728,7 @@ import org.junit.Test;
     argList.add(scriptFile.getAbsolutePath());
 
     try {
-      String output = testCommandLineScript(argList, null, OutStream.OUT);
+      String output = testCommandLineScript(argList, OutStream.OUT);
       if (output.contains(EXPECTED_PATTERN)) {
         fail("Output: " + output +  " Negative pattern: " + EXPECTED_PATTERN);
       }
@@ -1027,10 +1048,7 @@ import org.junit.Test;
   }
 
   /**
-   * Attempt to execute a simple script file with the usage of user & password variables in URL.
-   * Test for presence of an expected pattern
-   * in the output (stdout or stderr), fail if not found
-   * Print PASSED or FAILED
+   * Attempts to execute a simple script file and verifies that the database name appears in the prompt as expected.
    */
   @Test
   public void testShowDbInPrompt() throws Throwable {

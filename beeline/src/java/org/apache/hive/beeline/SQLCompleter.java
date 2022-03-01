@@ -30,11 +30,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import jline.console.completer.StringsCompleter;
+import org.apache.hive.common.util.MatchingStringsCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SQLCompleter extends StringsCompleter {
+class SQLCompleter extends MatchingStringsCompleter {
   private static final Logger LOG = LoggerFactory.getLogger(SQLCompleter.class.getName());
 
 
