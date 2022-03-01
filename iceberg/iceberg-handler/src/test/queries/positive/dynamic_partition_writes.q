@@ -17,19 +17,19 @@ insert into tbl_src values (10, 'EUR', 12), (20, 'EUR', 11), (30, 'USD', 100), (
 create external table tbl_target_identity (a int) partitioned by (ccy string) stored by iceberg stored as orc;
 explain insert overwrite table tbl_target_identity select a, b from tbl_src;
 insert overwrite table tbl_target_identity select a, b from tbl_src;
-select * from tbl_target_identity order by a;
+select * from tbl_target_identity order by a, ccy;
 
 --bucketed case - should invoke GenericUDFIcebergBucket to calculate buckets before sorting
 create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc;
 explain insert into table tbl_target_bucket select a, b from tbl_src;
 insert into table tbl_target_bucket select a, b from tbl_src;
-select * from tbl_target_bucket order by a;
+select * from tbl_target_bucket order by a, ccy;
 
 --mixed case - 1 identity + 1 bucket cols
 create external table tbl_target_mixed (a int, ccy string, c bigint) partitioned by spec (ccy, bucket (3, c)) stored by iceberg stored as orc;
 explain insert into table tbl_target_mixed select * from tbl_src;
 insert into table tbl_target_mixed select * from tbl_src;
-select * from tbl_target_mixed order by a;
+select * from tbl_target_mixed order by a, ccy;
 select * from default.tbl_target_mixed.partitions;
 select * from default.tbl_target_mixed.files;
 
@@ -41,5 +41,5 @@ insert into table tbl_target_mixed select * from tbl_src where b = 'EUR';
 explain insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100;
 insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100;
 
-select * from tbl_target_mixed order by a;
+select * from tbl_target_mixed order by a, ccy;
 select * from default.tbl_target_mixed.files;

@@ -101,11 +101,11 @@ POSTHOOK: query: insert overwrite table tbl_target_identity select a, b from tbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_identity
-PREHOOK: query: select * from tbl_target_identity order by a
+PREHOOK: query: select * from tbl_target_identity order by a, ccy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_identity
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_target_identity order by a
+POSTHOOK: query: select * from tbl_target_identity order by a, ccy
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_identity
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -118,8 +118,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	USD
 8	PLN
 9	PLN
-10	EUR
 10	CZK
+10	EUR
 20	EUR
 30	USD
 40	EUR
@@ -192,11 +192,11 @@ POSTHOOK: query: insert into table tbl_target_bucket select a, b from tbl_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_bucket
-PREHOOK: query: select * from tbl_target_bucket order by a
+PREHOOK: query: select * from tbl_target_bucket order by a, ccy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_bucket
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_target_bucket order by a
+POSTHOOK: query: select * from tbl_target_bucket order by a, ccy
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_bucket
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -283,11 +283,11 @@ POSTHOOK: query: insert into table tbl_target_mixed select * from tbl_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_mixed
-PREHOOK: query: select * from tbl_target_mixed order by a
+PREHOOK: query: select * from tbl_target_mixed order by a, ccy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_target_mixed order by a
+POSTHOOK: query: select * from tbl_target_mixed order by a, ccy
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -300,8 +300,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	USD	100
 8	PLN	20
 9	PLN	11
-10	EUR	12
 10	CZK	5
+10	EUR	12
 20	EUR	11
 30	USD	100
 40	EUR	10
@@ -466,11 +466,11 @@ POSTHOOK: query: insert into table tbl_target_mixed select * from tbl_src where 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_mixed
-PREHOOK: query: select * from tbl_target_mixed order by a
+PREHOOK: query: select * from tbl_target_mixed order by a, ccy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_target_mixed order by a
+POSTHOOK: query: select * from tbl_target_mixed order by a, ccy
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
