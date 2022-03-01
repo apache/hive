@@ -15,32 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.cli;
 
-import org.apache.hadoop.util.ExitUtil;
-import org.apache.hive.beeline.BeeLine;
+package org.apache.hive.beeline;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-public class HiveCli {
-  private BeeLine beeLine;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.impl.DumbTerminal;
 
-  public static void main(String[] args) throws IOException {
-    int status = new HiveCli().runWithArgs(args, null);
-    ExitUtil.terminate(status);
+/**
+ * A Beeline implementation that always creates a DumbTerminal.
+ */
+public class BeeLineDummyTerminal extends BeeLine {
+
+  public BeeLineDummyTerminal() {
+    this(true);
   }
 
-  public int runWithArgs(String[] cmd, InputStream inputStream) throws IOException {
-    beeLine = createBeeline();
-    try {
-      return beeLine.begin(cmd, inputStream);
-    } finally {
-      beeLine.close();
-    }
+  public BeeLineDummyTerminal(boolean isBeeLine) {
+    super(isBeeLine);
   }
 
-  protected BeeLine createBeeline() {
-    return new BeeLine(false);
+  protected Terminal buildTerminal(InputStream inputStream) throws IOException {
+    return new DumbTerminal(inputStream, getErrorStream());
   }
 }

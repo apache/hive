@@ -1418,10 +1418,10 @@ public class TestHplSqlViaBeeLine {
     try (PrintStream os = new PrintStream(new FileOutputStream(scriptFile))) {
       os.print(scriptText);
     }
-    List<String> copy = new ArrayList<>(argList);
-    copy.add("-f");
-    copy.add(scriptFile.getAbsolutePath());
-    String output = testCommandLineScript(copy, null, outStream);
+    List<String> finalArgs = new ArrayList<>(argList);
+    finalArgs.addAll(Arrays.asList("-f", scriptFile.getAbsolutePath()));
+
+    String output = testCommandLineScript(finalArgs, outStream);
     if (scriptText.equals("SELECT UNIX_TIMESTAMP()")) {
       Pattern pattern = Pattern.compile("\\|\\s*(\\d+)\\s*\\|");
       Matcher matcher = pattern.matcher(output);

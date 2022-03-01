@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaSt
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.beeline.BeeLine;
+import org.apache.hive.beeline.BeeLineDummyTerminal;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +106,7 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
         userName, passWord, sqlScriptFile);
 
     // run the script using Beeline
-    try (BeeLine beeLine = new BeeLine()) {
+    try (BeeLine beeLine = new BeeLineDummyTerminal()) {
       if (!verbose) {
         beeLine.setOutputStream(new PrintStream(new NullOutputStream()));
         beeLine.getOpts().setSilent(true);
