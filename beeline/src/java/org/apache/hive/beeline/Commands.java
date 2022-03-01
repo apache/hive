@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -67,6 +68,9 @@ import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.History;
+import org.jline.reader.impl.LineReaderImpl;
 
 public class Commands {
 
@@ -186,13 +190,9 @@ public class Commands {
   }
 
   public boolean history(String line) {
-    Iterator hist = beeLine.getConsoleReader().getHistory().entries();
-    String[] tmp;
-    while(hist.hasNext()){
-      tmp = hist.next().toString().split(":", 2);
-      tmp[0] = Integer.toString(Integer.parseInt(tmp[0]) + 1);
-      beeLine.output(beeLine.getColorBuffer().pad(tmp[0], 6)
-          .append(":" + tmp[1]));
+    for (History.Entry entry : beeLine.getLineReader().getHistory()) {
+      beeLine.output(beeLine.getColorBuffer().pad(Integer.toString(entry.index() + 1), 6)
+          .append(": " + entry.line()));
     }
     return true;
   }
@@ -291,7 +291,7 @@ public class Commands {
       return beeLine.error(beeLine.loc("no-current-connection"));
     }
     try {
-      if (!(beeLine.getConsoleReader().readLine(beeLine.loc("really-drop-all")).equals("y"))) {
+      if (!(beeLine.getLineReader().readLine(beeLine.loc("really-drop-all")).equals("y"))) {
         return beeLine.error("abort-drop-all");
       }
 
@@ -1090,7 +1090,7 @@ public class Commands {
   public String handleMultiLineCmd(String line) throws IOException {
     line = HiveStringUtils.removeComments(line);
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
-                       : jline.console.ConsoleReader.NULL_MASK;
+                       : LineReaderImpl.NULL_MASK;
 
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
@@ -1103,15 +1103,29 @@ public class Commands {
       }
       String extra;
       //avoid NPE below if for some reason -e argument has multi-line command
-      if (beeLine.getConsoleReader() == null) {
+      if (beeLine.getCurrentReader() == null) {
         throw new RuntimeException("Console reader not initialized. This could happen when there "
             + "is a multi-line command using -e option and which requires further reading from console");
       }
-      if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
-        extra = beeLine.getConsoleReader().readLine(null, mask);
-      } else {
-        extra = beeLine.getConsoleReader().readLine(prompt.toString());
+
+      try {
+        if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
+          extra = beeLine.getCurrentReader().readLine(null, mask);
+        } else {
+          extra = beeLine.getCurrentReader().readLine(prompt.toString());
+        }
+      } catch (EndOfFileException t) {
+        beeLine.info("EndOfFileException caught in multiline Cmd");
+        /*
+         * If you're reading from a normal file (not from standard input or a terminal), JLine might raise an
+         * EndOfFileException when it reaches the end of the file. JLine uses readLine() for reading input, and it
+         * expects the input source to provide data interactively. When reading from a file, it might misinterpret
+         * the EOF condition.
+         * While handling a multiline command, it's fine to break the loop at this point.
+         */
+        break;
       }
+
 
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
@@ -1663,12 +1677,11 @@ public class Commands {
         && !JdbcConnectionParams.AUTH_SSO_BROWSER_MODE.equals(auth)) {
       String urlForPrompt = url.substring(0, url.contains(";") ? url.indexOf(';') : url.length());
       if (username == null) {
-        username = beeLine.getConsoleReader().readLine("Enter username for " + urlForPrompt + ": ");
+        username = readLineWithPrompt("Enter username for " + urlForPrompt + ": ", null);
       }
       props.setProperty(JdbcConnectionParams.AUTH_USER, username);
       if (password == null) {
-        password = beeLine.getConsoleReader().readLine("Enter password for " + urlForPrompt + ": ",
-          new Character('*'));
+        password = readLineWithPrompt("Enter password for " + urlForPrompt + ": ", '*');
       }
       props.setProperty(JdbcConnectionParams.AUTH_PASSWD, password);
     }
@@ -1698,6 +1711,24 @@ public class Commands {
       return beeLine.error(sqle);
     } catch (IOException ioe) {
       return beeLine.error(ioe);
+    }
+  }
+
+  /**
+   * Reads a line with the given prompt and optional mask character.
+   * Starting with JLine3, an EndOfFileException is intentionally thrown upon reaching the end of the input stream.
+   * In interactive usage, this method returns the partial line entered before the exception to preserve existing
+   * behavior. This is typically used for input prompts such as username/password.
+   *
+   * @param prompt the prompt message displayed to the user
+   * @param mask the character used to mask the input, if any
+   * @return the full line read, or the partial input captured before the EndOfFileException was thrown
+   */
+  private String readLineWithPrompt(String prompt, Character mask) {
+    try {
+      return beeLine.getCurrentReader().readLine(prompt, mask);
+    } catch (EndOfFileException e) {
+      return e.getPartialLine();
     }
   }
 
@@ -1963,7 +1994,7 @@ public class Commands {
 
       // silly little pager
       if (index % (beeLine.getOpts().getMaxHeight() - 1) == 0) {
-        String ret = beeLine.getConsoleReader().readLine(beeLine.loc("enter-for-more"));
+        String ret = beeLine.getLineReader().readLine(beeLine.loc("enter-for-more"));
         if (ret != null && ret.startsWith("q")) {
           break;
         }
