@@ -24,8 +24,11 @@ package org.apache.hive.beeline;
 
 import java.util.List;
 
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
+import org.apache.hive.common.util.MatchingStringsCompleter;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
 
 class TableNameCompletor implements Completer {
   private final BeeLine beeLine;
@@ -38,11 +41,11 @@ class TableNameCompletor implements Completer {
   }
 
   @Override
-  public int complete(String buf, int pos, List cand) {
-    if (beeLine.getDatabaseConnection() == null) {
-      return -1;
+  public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+    final DatabaseConnection connection = beeLine.getDatabaseConnection();
+    if (connection != null) {
+      new MatchingStringsCompleter(beeLine.getDatabaseConnection().getTableNames(true))
+              .complete(reader, line, candidates);
     }
-    return new StringsCompleter(beeLine.getDatabaseConnection().getTableNames(true))
-        .complete(buf, pos, cand);
   }
 }

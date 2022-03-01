@@ -26,8 +26,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
+import org.jline.reader.Completer;
+import org.jline.reader.impl.completer.NullCompleter;
 
 /**
  * An abstract implementation of CommandHandler.

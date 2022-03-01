@@ -62,7 +62,7 @@ public class TestBeeLineHistory {
     Method method = beeline.getClass().getDeclaredMethod("setupHistory");
     method.setAccessible(true);
     method.invoke(beeline);
-    beeline.initializeConsoleReader(null);
+    beeline.initializeLineReader(null);
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");
     int numHistories = output.split("\n").length;
@@ -80,7 +80,7 @@ public class TestBeeLineHistory {
     Method method = beeline.getClass().getDeclaredMethod("setupHistory");
     method.setAccessible(true);
     method.invoke(beeline);
-    beeline.initializeConsoleReader(null);
+    beeline.initializeLineReader(null);
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");
     String[] tmp = output.split("\n");

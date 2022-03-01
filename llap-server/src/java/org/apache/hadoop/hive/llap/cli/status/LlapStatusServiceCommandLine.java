@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.llap.cli.status;
 import java.util.Arrays;
 import java.util.Properties;
 
-import jline.TerminalFactory;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -30,6 +28,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,7 +237,7 @@ public class LlapStatusServiceCommandLine {
     HelpFormatter hf = new HelpFormatter();
     try {
       int width = hf.getWidth();
-      int jlineWidth = TerminalFactory.get().getWidth();
+      int jlineWidth = TerminalBuilder.terminal().getWidth();
       width = Math.min(160, Math.max(jlineWidth, width));
       hf.setWidth(width);
     } catch (Throwable t) { // Ignore

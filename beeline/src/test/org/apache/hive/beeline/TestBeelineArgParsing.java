@@ -70,7 +70,7 @@ public class TestBeelineArgParsing {
     this.defaultSupported = defaultSupported;
   }
 
-  public class TestBeeline extends BeeLine {
+  public static class TestBeeline extends BeeLine {
 
     String connectArgs = null;
     List<String> properties = new ArrayList<String>();
