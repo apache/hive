@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -59,8 +61,8 @@ import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBase;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBaseLight;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
@@ -76,6 +78,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
@@ -83,6 +86,8 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEAN
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
+import com.codahale.metrics.Counter;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -401,7 +406,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     FileSystem fs = path.getFileSystem(conf);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
-
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
      * trying to read anything in that dir (except getAcidState() that only reads the name of
@@ -421,58 +425,46 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-
+    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(fs, path, writeIdList.getHighWatermark())) {
+      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + writeIdList.getHighWatermark() + ", ");
+      return true;
+    }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
         .map(Path::getName).collect(Collectors.joining(",")));
-    remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
+    boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
     if (dir.getObsolete().size() > 0) {
       AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
           txnHandler);
     }
+    return success;
+  }
 
-    if (!areWeUsingCompactedData(dir, writeIdList, ci)) {
-      LOG.info(idWatermark(ci) + " - compaction result is not yet in use; retaining clean request.");
+  private boolean hasDataBelowWatermark(FileSystem fs, Path path, long highWatermark) throws IOException {
+    FileStatus[] children = fs.listStatus(path);
+    for (FileStatus child : children) {
+      if (isFileBelowWatermark(child, highWatermark)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isFileBelowWatermark(FileStatus child, long highWatermark) {
+    Path p = child.getPath();
+    String fn = p.getName();
+    if (!child.isDirectory()) {
       return false;
     }
-    return true;
-  }
-
-  private boolean areWeUsingCompactedData(AcidDirectory dir, ValidWriteIdList writeIdList, CompactionInfo ci) {
-
-    long highestValidWriteId = ci.highestWriteId;
-    while (!writeIdList.isWriteIdValid(highestValidWriteId)) {
-      highestValidWriteId--;
+    if (fn.startsWith(AcidUtils.BASE_PREFIX)) {
+      ParsedBaseLight b = ParsedBaseLight.parseBase(p);
+      return b.getWriteId() < highWatermark;
     }
-    if (ci.isMajorCompaction()) {
-      ParsedBase base = dir.getBase();
-      if (base != null && !isAcidConversionBase(base) && base.getWriteId() < highestValidWriteId) {
-        return false;
-      }
+    if (fn.startsWith(AcidUtils.DELTA_PREFIX) || fn.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+      ParsedDeltaLight d = ParsedDeltaLight.parse(p);
+      return d.getMaxWriteId() < highWatermark;
     }
-    List<ParsedDelta> dirs = dir.getCurrentDirectories();
-    for (ParsedDelta parsedDelta : dirs) {
-      if (parsedDelta.getMaxWriteId() < highestValidWriteId) {
-        return false;
-      }
-    }
-    return true;
+    return false;
   }
-
-  /**
-   * Decides whether the given base is a base directory created during the conversion.
-   *
-   * In case of non-acid to acid conversion:
-   *   during the initial compaction new writes will be made to a base_-922... dir
-   *   the writeid is artificially set to some high value (10000000) for these compactions
-   *   since non-negative writeIds are non-standard it could be used to detect that this is a conversionBase
-   * @param base
-   * @return
-   */
-  private boolean isAcidConversionBase(ParsedBase base) {
-    return base.getWriteId() < 0;
-
-  }
-
 
   private boolean removeFiles(String location, CompactionInfo ci)
     throws NoSuchObjectException, IOException, MetaException {
@@ -494,6 +486,8 @@ public class Cleaner extends MetaStoreCompactorThread {
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
     if (filesToDelete.size() < 1) {
+      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
+          ", that hardly seems right.");
       return false;
     }
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
