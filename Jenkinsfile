@@ -265,9 +265,9 @@ fi
         stage('Prepare') {
             loadWS();
         }
-        stage('init-metastore') {
-           withEnv(["dbType=$dbType"]) {
-             sh '''#!/bin/bash -e
+        withEnv(["dbType=$dbType"]) {
+          stage('init-metastore') {
+            sh '''#!/bin/bash -e
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
@@ -276,7 +276,6 @@ ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 export DBNAME=metastore
 reinit_metastore $dbType
-time docker rm -f dev_$dbType || true
 '''
           }
           stage('verify') {
@@ -286,6 +285,15 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
 """
             } finally {
               junit '**/TEST-*.xml'
+            }
+          }
+          stage('smoke-test') {
+            try {
+              sh """#!/bin/bash -e
+SCREEN_OPTS=-dm hive_launch
+safe_bl -f itests/smoke-test/test.sql
+time docker rm -f dev_$dbType || true
+"""
             }
           }
         }
