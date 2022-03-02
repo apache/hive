@@ -589,7 +589,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
     Assert.assertEquals("a0", fetched.getValues().get(0));
 
     List<Partition> fetchedParts = client.getPartitionsByNames(catName, dbName, tableName,
-        Arrays.asList("partcol=a0", "partcol=a1"));
+        Arrays.asList("partcol=a0", "partcol=a1"), false, null, null, null);
     Assert.assertEquals(2, fetchedParts.size());
     Set<String> vals = new HashSet<>(fetchedParts.size());
     for (Partition part : fetchedParts) {
@@ -627,7 +627,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
   public void getPartitionsByNamesBogusCatalog() throws TException {
     createTable3PartCols1Part(client);
     client.getPartitionsByNames("bogus", DB_NAME, TABLE_NAME,
-        Collections.singletonList("yyyy=1997/mm=05/dd=16"));
+        Collections.singletonList("yyyy=1997/mm=05/dd=16"), false, null, null, null);
   }
 
 }

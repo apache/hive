@@ -2334,13 +2334,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names);
-  }
-
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, false, null, null, null);
   }
 
   @Override
@@ -2362,62 +2356,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    */
   @Deprecated
   @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-          throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
-          throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
-      validWriteIdList, tableId);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
-      validWriteIdList, tableId);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-            throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats, engine,
-      null, null);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
             throws TException {
@@ -2427,12 +2365,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
-    if( validWriteIdList != null) {
+    if (validWriteIdList != null) {
       gpbnr.setValidWriteIdList(validWriteIdList);
-    }else {
+    } else {
       gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
     }
-    if( tableId != null) {
+    if (tableId != null) {
       gpbnr.setId(tableId);
     }
     if (getColStats) {

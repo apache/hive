@@ -4151,16 +4151,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (nParts > nBatches * batchSize) {
-       String validWriteIdList = null;
-       Long tableId = null;
-       if (AcidUtils.isTransactionalTable(tbl)) {
-        ValidWriteIdList vWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-        validWriteIdList = vWriteIdList != null ? vWriteIdList.toString() : null;
-        tableId = tbl.getTTable().getId();
-      }
+        String validWriteIdList = null;
+        Long tableId = null;
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          ValidWriteIdList vWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+          validWriteIdList = vWriteIdList != null ? vWriteIdList.toString() : null;
+          tableId = tbl.getTTable().getId();
+        }
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);
+          getMSC().getPartitionsByNames(getDefaultCatalog(conf), tbl.getDbName(), tbl.getTableName(),
+            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE, validWriteIdList, tableId);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));

@@ -100,7 +100,7 @@ public class PartitionIterable implements Iterable<Partition> {
         }
         try {
           batchIter =
-            msc.getPartitionsByNames(table.getCatName(), table.getDbName(), table.getTableName(), nameBatch).iterator();
+            msc.getPartitionsByNames(table.getCatName(), table.getDbName(), table.getTableName(), nameBatch, false, null, null, null).iterator();
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

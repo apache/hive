@@ -64,6 +64,7 @@ import java.util.Random;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 @Category(MetastoreCheckinTest.class)
 public class TestStats {
@@ -255,19 +256,19 @@ public class TestStats {
     for (int i = 0; i < partNames.size(); i++) {
       String partName = partNames.get(i);
       List<Partition> partitions = catName.equals(NO_CAT) ?
-              client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
-                      true, ENGINE) :
+              client.getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName, Collections.singletonList(partName),
+                      true, ENGINE, null, null) :
               client.getPartitionsByNames(catName, dbName, tableName,
-                      Collections.singletonList(partName), true, ENGINE);
+                      Collections.singletonList(partName), true, ENGINE, null, null);
       Partition partition = partitions.get(0);
       compareStatsForOneTableOrPartition(partition.getColStats().getStatsObj(), i, colMap);
 
       // Also test that we do not get statistics when not requested
       partitions = catName.equals(NO_CAT) ?
-              client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
-                      true, ENGINE) :
+              client.getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName, Collections.singletonList(partName),
+                      true, ENGINE, null, null) :
               client.getPartitionsByNames(catName, dbName, tableName,
-                      Collections.singletonList(partName), true, ENGINE);
+                      Collections.singletonList(partName), true, ENGINE, null, null);
       partition = partitions.get(0);
       Assert.assertFalse(partition.isSetColStats());
     }

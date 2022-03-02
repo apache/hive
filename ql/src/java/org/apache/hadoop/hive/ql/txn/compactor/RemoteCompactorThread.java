@@ -70,7 +70,7 @@ public class RemoteCompactorThread extends CompactorThread {
   @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
     try {
       return msc.getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
-          Collections.singletonList(ci.partName));
+          Collections.singletonList(ci.partName), false, null, null, null);
     } catch (TException e) {
       LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
       throw new MetaException(e.toString());

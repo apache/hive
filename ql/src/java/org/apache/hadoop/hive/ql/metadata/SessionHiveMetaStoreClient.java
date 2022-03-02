@@ -1360,12 +1360,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-      List<String> partNames, boolean getColStats, String engine) throws TException {
+  public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName, List<String> partNames,
+      boolean getColStats, String engine, String validWriteIdList, Long tableId) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
       //(assume) not a temp table - Try underlying client
-      return super.getPartitionsByNames(catName, dbName, tblName, partNames, getColStats, engine);
+      return super.getPartitionsByNames(catName, dbName, tblName, partNames, getColStats, engine, validWriteIdList,
+          tableId);
     }
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> partitions = tt.getPartitionsByNames(partNames);
