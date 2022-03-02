@@ -96,6 +96,7 @@ public class StatObjectConverter {
            doubleStats.isSetNumNulls() ? doubleStats.getNumNulls() : null,
            doubleStats.isSetNumDVs() ? doubleStats.getNumDVs() : null,
            doubleStats.isSetBitVectors() ? doubleStats.getBitVectors() : null,
+           doubleStats.isSetHistogram() ? doubleStats.getHistogram() : null,
            doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null,
            doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null);
      } else if (statsObj.getStatsData().isSetDecimalStats()) {
@@ -174,6 +175,9 @@ public class StatObjectConverter {
     if (mStatsObj.getBitVector() != null) {
       oldStatsObj.setBitVector(mStatsObj.getBitVector());
     }
+    if (mStatsObj.getHistogram() != null) {
+      oldStatsObj.setHistogram(mStatsObj.getHistogram());
+    }
     if (mStatsObj.getNumFalses() != null) {
       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
     }
@@ -220,6 +224,9 @@ public class StatObjectConverter {
     if (mStatsObj.getBitVector() != null) {
       oldStatsObj.setBitVector(mStatsObj.getBitVector());
     }
+    if (mStatsObj.getHistogram() != null) {
+      oldStatsObj.setHistogram(mStatsObj.getHistogram());
+    }
     if (mStatsObj.getNumFalses() != null) {
       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
     }
@@ -264,6 +271,9 @@ public class StatObjectConverter {
     }
     if (mStatsObj.getBitVector() != null) {
       setStmt.append("\"BIT_VECTOR\" = ? ,");
+    }
+    if (mStatsObj.getHistogram() != null) {
+      setStmt.append("\"HISTOGRAM\" = ? ,");
     }
     if (mStatsObj.getNumFalses() != null) {
       setStmt.append("\"NUM_FALSES\" = ? ,");
@@ -311,6 +321,9 @@ public class StatObjectConverter {
     }
     if (mStatsObj.getBitVector() != null) {
       pst.setObject(colIdx++, mStatsObj.getBitVector());
+    }
+    if (mStatsObj.getHistogram() != null) {
+      pst.setObject(colIdx++, mStatsObj.getHistogram());
     }
     if (mStatsObj.getNumFalses() != null) {
       pst.setObject(colIdx++, mStatsObj.getNumFalses());
@@ -381,6 +394,7 @@ public class StatObjectConverter {
       }
       doubleStats.setNumDVs(mStatsObj.getNumDVs());
       doubleStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
+      doubleStats.setHistogram((mStatsObj.getHistogram()==null)? null : mStatsObj.getHistogram());
       colStatsData.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
@@ -482,6 +496,7 @@ public class StatObjectConverter {
           doubleStats.isSetNumNulls() ? doubleStats.getNumNulls() : null,
           doubleStats.isSetNumDVs() ? doubleStats.getNumDVs() : null,
           doubleStats.isSetBitVectors() ? doubleStats.getBitVectors() : null,
+          doubleStats.isSetHistogram() ? doubleStats.getHistogram() : null,
           doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null,
           doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null);
     } else if (statsObj.getStatsData().isSetDecimalStats()) {
@@ -581,6 +596,7 @@ public class StatObjectConverter {
       }
       doubleStats.setNumDVs(mStatsObj.getNumDVs());
       doubleStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
+      doubleStats.setHistogram((mStatsObj.getHistogram()==null)? null : mStatsObj.getHistogram());
       colStatsData.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
@@ -649,10 +665,21 @@ public class StatObjectConverter {
     return bytes;
   }
 
+  public static byte[] getHistogram(byte[] bytes) {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (bytes != null && bytes.length == 0) {
+      return null;
+    }
+    return bytes;
+  }
+
   // JAVA
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
-      Object nulls, Object dist, Object bitVector, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+      Object nulls, Object dist, Object bitVector, Object histogram,
+      Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
@@ -699,6 +726,7 @@ public class StatObjectConverter {
       }
       doubleStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
       doubleStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
+      doubleStats.setHistogram(getHistogram(MetastoreDirectSqlUtils.extractSqlBlob(histogram)));
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
@@ -1007,6 +1035,9 @@ public class StatObjectConverter {
       }
       if (newDoubleStatsData.isSetBitVectors()) {
         oldDoubleStatsData.setBitVectors(newDoubleStatsData.getBitVectors());
+      }
+      if (newDoubleStatsData.isSetHistogram()) {
+        oldDoubleStatsData.setHistogram(newDoubleStatsData.getHistogram());
       }
       break;
     }
