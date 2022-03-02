@@ -25,8 +25,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -104,6 +102,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+  /**
+   * Function template for producing a custom sort expression function:
+   * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
+   * the sort expression, e.g. iceberg_bucket(_col2, 5)
+   */
   private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       BUCKET_SORT_EXPR =
           (idx, bucket) -> cols -> {
@@ -340,13 +343,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // Iceberg currently doesn't have publicly accessible partition transform information, hence use above string parse
     List<PartitionTransformSpec> partitionTransformSpecs = getPartitionTransformSpec(hmsTable);
 
-    DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(new LinkedHashMap<>(),
+    DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
         hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
         hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
-    List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = new LinkedList<>();
+    List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
     dpCtx.setCustomSortExpressions(customSortExprs);
 
-    Map<String, Integer> fieldOrderMap = new HashMap<>();
+    Map<String, Integer> fieldOrderMap = Maps.newHashMap();
     List<Types.NestedField> fields = table.schema().columns();
     for (int i = 0; i < fields.size(); ++i) {
       fieldOrderMap.put(fields.get(i).name(), i);
