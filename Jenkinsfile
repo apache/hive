@@ -304,6 +304,17 @@ dev-support/nightly
 '''
             buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
         }
+        stage('Verify') {
+            sh '''#!/bin/bash
+set -e
+cd packaging/target
+tar -xvzf apache-hive-*-src.tar.gz
+cd apache-hive-*-src
+chmod a+x dev-support/nightly
+dev-support/nightly
+'''
+            buildHive("install -Dtest=noMatches -Pdist,iceberg")
+        }
       }
   }
   for (int i = 0; i < splits.size(); i++) {
