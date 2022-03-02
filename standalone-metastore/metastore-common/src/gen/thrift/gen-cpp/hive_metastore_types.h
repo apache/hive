@@ -3792,10 +3792,11 @@ void swap(BooleanColumnStatsData &a, BooleanColumnStatsData &b);
 std::ostream& operator<<(std::ostream& out, const BooleanColumnStatsData& obj);
 
 typedef struct _DoubleColumnStatsData__isset {
-  _DoubleColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
+  _DoubleColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false), stats(false) {}
   bool lowValue :1;
   bool highValue :1;
   bool bitVectors :1;
+  bool stats :1;
 } _DoubleColumnStatsData__isset;
 
 class DoubleColumnStatsData : public virtual ::apache::thrift::TBase {
@@ -3803,7 +3804,7 @@ class DoubleColumnStatsData : public virtual ::apache::thrift::TBase {
 
   DoubleColumnStatsData(const DoubleColumnStatsData&);
   DoubleColumnStatsData& operator=(const DoubleColumnStatsData&);
-  DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0), bitVectors() {
+  DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0), bitVectors(), stats() {
   }
 
   virtual ~DoubleColumnStatsData() noexcept;
@@ -3812,6 +3813,7 @@ class DoubleColumnStatsData : public virtual ::apache::thrift::TBase {
   int64_t numNulls;
   int64_t numDVs;
   std::string bitVectors;
+  std::string stats;
 
   _DoubleColumnStatsData__isset __isset;
 
@@ -3824,6 +3826,8 @@ class DoubleColumnStatsData : public virtual ::apache::thrift::TBase {
   void __set_numDVs(const int64_t val);
 
   void __set_bitVectors(const std::string& val);
+
+  void __set_stats(const std::string& val);
 
   bool operator == (const DoubleColumnStatsData & rhs) const
   {
@@ -3842,6 +3846,10 @@ class DoubleColumnStatsData : public virtual ::apache::thrift::TBase {
     if (__isset.bitVectors != rhs.__isset.bitVectors)
       return false;
     else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
+      return false;
+    if (__isset.stats != rhs.__isset.stats)
+      return false;
+    else if (__isset.stats && !(stats == rhs.stats))
       return false;
     return true;
   }

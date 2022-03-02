@@ -8546,6 +8546,11 @@ void DoubleColumnStatsData::__set_bitVectors(const std::string& val) {
   this->bitVectors = val;
 __isset.bitVectors = true;
 }
+
+void DoubleColumnStatsData::__set_stats(const std::string& val) {
+  this->stats = val;
+__isset.stats = true;
+}
 std::ostream& operator<<(std::ostream& out, const DoubleColumnStatsData& obj)
 {
   obj.printTo(out);
@@ -8616,6 +8621,14 @@ uint32_t DoubleColumnStatsData::read(::apache::thrift::protocol::TProtocol* ipro
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->stats);
+          this->__isset.stats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8660,6 +8673,11 @@ uint32_t DoubleColumnStatsData::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeBinary(this->bitVectors);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.stats) {
+    xfer += oprot->writeFieldBegin("stats", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeBinary(this->stats);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8672,6 +8690,7 @@ void swap(DoubleColumnStatsData &a, DoubleColumnStatsData &b) {
   swap(a.numNulls, b.numNulls);
   swap(a.numDVs, b.numDVs);
   swap(a.bitVectors, b.bitVectors);
+  swap(a.stats, b.stats);
   swap(a.__isset, b.__isset);
 }
 
@@ -8681,6 +8700,7 @@ DoubleColumnStatsData::DoubleColumnStatsData(const DoubleColumnStatsData& other3
   numNulls = other312.numNulls;
   numDVs = other312.numDVs;
   bitVectors = other312.bitVectors;
+  stats = other312.stats;
   __isset = other312.__isset;
 }
 DoubleColumnStatsData& DoubleColumnStatsData::operator=(const DoubleColumnStatsData& other313) {
@@ -8689,6 +8709,7 @@ DoubleColumnStatsData& DoubleColumnStatsData::operator=(const DoubleColumnStatsD
   numNulls = other313.numNulls;
   numDVs = other313.numDVs;
   bitVectors = other313.bitVectors;
+  stats = other313.stats;
   __isset = other313.__isset;
   return *this;
 }
@@ -8700,6 +8721,7 @@ void DoubleColumnStatsData::printTo(std::ostream& out) const {
   out << ", " << "numNulls=" << to_string(numNulls);
   out << ", " << "numDVs=" << to_string(numDVs);
   out << ", " << "bitVectors="; (__isset.bitVectors ? (out << to_string(bitVectors)) : (out << "<null>"));
+  out << ", " << "stats="; (__isset.stats ? (out << to_string(stats)) : (out << "<null>"));
   out << ")";
 }
 

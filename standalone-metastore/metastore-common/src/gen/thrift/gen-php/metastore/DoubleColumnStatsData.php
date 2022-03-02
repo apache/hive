@@ -46,6 +46,11 @@ class DoubleColumnStatsData
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'stats',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -68,6 +73,10 @@ class DoubleColumnStatsData
      * @var string
      */
     public $bitVectors = null;
+    /**
+     * @var string
+     */
+    public $stats = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +95,9 @@ class DoubleColumnStatsData
             }
             if (isset($vals['bitVectors'])) {
                 $this->bitVectors = $vals['bitVectors'];
+            }
+            if (isset($vals['stats'])) {
+                $this->stats = $vals['stats'];
             }
         }
     }
@@ -144,6 +156,13 @@ class DoubleColumnStatsData
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->stats);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +200,11 @@ class DoubleColumnStatsData
         if ($this->bitVectors !== null) {
             $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
             $xfer += $output->writeString($this->bitVectors);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->stats !== null) {
+            $xfer += $output->writeFieldBegin('stats', TType::STRING, 6);
+            $xfer += $output->writeString($this->stats);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
