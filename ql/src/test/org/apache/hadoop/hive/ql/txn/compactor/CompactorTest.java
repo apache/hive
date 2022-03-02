@@ -408,8 +408,7 @@ public abstract class CompactorTest {
 
     FileSystem fs = FileSystem.get(conf);
     for (int bucket = 0; bucket < numBuckets; bucket++) {
-      if (bucket == 0 && !allBucketsPresent)
-       {
+      if (bucket == 0 && !allBucketsPresent) {
         continue; // skip one
       }
       Path partFile = null;
