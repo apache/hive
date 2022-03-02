@@ -288,13 +288,11 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
             }
           }
           stage('smoke-test') {
-            try {
               sh """#!/bin/bash -e
 SCREEN_OPTS=-dm hive_launch
 safe_bl -f itests/smoke-test/test.sql
 time docker rm -f dev_$dbType || true
 """
-            }
           }
         }
       }
