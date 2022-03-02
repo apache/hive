@@ -62,6 +62,7 @@
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
+    <module>iceberg</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-SNAPSHOT</standalone-metastore.version>
@@ -1924,12 +1925,6 @@
       <id>itests</id>
       <modules>
         <module>itests</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>iceberg</id>
-      <modules>
-        <module>iceberg</module>
       </modules>
     </profile>
     <profile>
