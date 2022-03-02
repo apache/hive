@@ -153,9 +153,9 @@ public class TestLocationQueries extends BaseTestQueries {
     File[] qfiles = setupQFiles(testNames);
 
     QTestUtil qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
-            .withOutDir(resDir)
+            .withOutDir(resDir + "/llap")
             .withLogDir(logDir)
-            .withClusterType(MiniClusterType.NONE)
+            .withClusterType(MiniClusterType.LLAP_LOCAL)
             .withConfDir(null)
             .withInitScript("")
             .withCleanupScript("")
@@ -177,8 +177,7 @@ public class TestLocationQueries extends BaseTestQueries {
       Table table = hmsClient.getTable("default", "kv_mm");
       FileSystem fs = FileSystem.get(hiveConf);
       String location = table.getSd().getLocation();
-      // Cannot resolve pfile:/ scheme only file:/
-      Path delta = fs.listStatus(new Path(location.substring(1)))[0].getPath();
+      Path delta = fs.listStatus(new Path(location))[0].getPath();
       Assert.assertEquals("Delta directory name mismatch!", "delta_0000001_0000001_0000", delta.getName());
     } else {
       fail("One or more queries failed");
