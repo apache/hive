@@ -307,13 +307,9 @@ dev-support/nightly
         stage('Verify') {
             sh '''#!/bin/bash
 set -e
-cd packaging/target
-tar -xvzf apache-hive-*-src.tar.gz
-cd apache-hive-*-src
-chmod a+x dev-support/nightly
-dev-support/nightly
+tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
-            buildHive("install -Dtest=noMatches -Pdist,iceberg")
+            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
         }
       }
   }
