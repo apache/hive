@@ -100,26 +100,12 @@
         <include>storage-api/**/*</include>
         <include>standalone-metastore/metastore-common/**/*</include>
         <include>standalone-metastore/metastore-server/**/*</include>
-        <include>standalone-metastore/metastore-tools/**/*</include>
-        <include>standalone-metastore/src/assembly/src.xml</include>
-        <include>standalone-metastore/pom.xml</include>
         <include>streaming/**/*</include>
         <include>testutils/**/*</include>
         <include>upgrade-acid/**/*</include>
         <include>vector-code-gen/**/*</include>
         <include>kryo-registrator/**/*</include>
         <include>kudu-handler/**/*</include>
-        <include>parser/**/*</include>
-        <include>udf/**/*</include>
-        <include>iceberg/iceberg-catalog/**/*</include>
-        <include>iceberg/iceberg-handler/**/*</include>
-        <include>iceberg/iceberg-shading/**/*</include>
-        <include>iceberg/patched-iceberg-api/**/*</include>
-        <include>iceberg/patched-iceberg-core/**/*</include>
-        <include>iceberg/patched-iceberg-data/**/*</include>
-        <include>iceberg/patched-iceberg-orc/**/*</include>
-        <include>iceberg/checkstyle/**/*</include>
-        <include>iceberg/pom.xml</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
