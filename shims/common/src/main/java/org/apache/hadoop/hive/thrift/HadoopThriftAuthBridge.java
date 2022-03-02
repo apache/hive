@@ -188,12 +188,16 @@ public abstract class HadoopThriftAuthBridge {
       case DIGEST:
         Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
         t.decodeFromUrlString(tokenStrForm);
-        saslTransport = new TSaslClientTransport(
-            method.getMechanismName(),
-            null,
-            null, SaslRpcServer.SASL_DEFAULT_REALM,
-            saslProps, new SaslClientCallbackHandler(t),
-            underlyingTransport);
+        try {
+          saslTransport = new TSaslClientTransport(
+              method.getMechanismName(),
+              null,
+              null, SaslRpcServer.SASL_DEFAULT_REALM,
+              saslProps, new SaslClientCallbackHandler(t),
+              underlyingTransport);
+        } catch (TTransportException e) {
+          e.printStackTrace();
+        }
         return new TUGIAssumingTransport(saslTransport, UserGroupInformation.getCurrentUser());
 
       case KERBEROS:
@@ -208,7 +212,7 @@ public abstract class HadoopThriftAuthBridge {
           return UserGroupInformation.getCurrentUser().doAs(
               new PrivilegedExceptionAction<TUGIAssumingTransport>() {
                 @Override
-                public TUGIAssumingTransport run() throws IOException {
+                public TUGIAssumingTransport run() throws IOException, TTransportException {
                   TTransport saslTransport = new TSaslClientTransport(
                     method.getMechanismName(),
                     null,
@@ -546,7 +550,7 @@ public abstract class HadoopThriftAuthBridge {
 
 
       @Override
-      public boolean process(final TProtocol inProt, final TProtocol outProt) throws TException {
+      public void process(final TProtocol inProt, final TProtocol outProt) throws TException {
         TTransport trans = inProt.getTransport();
         if (!(trans instanceof TSaslServerTransport)) {
           throw new TException("Unexpected non-SASL transport " + trans.getClass());
@@ -564,7 +568,8 @@ public abstract class HadoopThriftAuthBridge {
         userAuthMechanism.set(mechanismName);
         if (AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(mechanismName)) {
           remoteUser.set(endUser);
-          return wrapped.process(inProt, outProt);
+          wrapped.process(inProt, outProt);
+          return;
         }
 
         authenticationMethod.set(AuthenticationMethod.KERBEROS);
@@ -586,23 +591,26 @@ public abstract class HadoopThriftAuthBridge {
                 endUser, UserGroupInformation.getLoginUser());
             remoteUser.set(clientUgi.getShortUserName());
             LOG.debug("Set remoteUser :" + remoteUser.get());
-            return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
+            clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
 
               @Override
               public Boolean run() {
                 try {
-                  return wrapped.process(inProt, outProt);
+                  wrapped.process(inProt, outProt);
+                  return true;
                 } catch (TException te) {
                   throw new RuntimeException(te);
                 }
               }
             });
+            return;
           } else {
             // use the short user name for the request
             UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
             remoteUser.set(endUserUgi.getShortUserName());
             LOG.debug("Set remoteUser :" + remoteUser.get() + ", from endUser :" + endUser);
-            return wrapped.process(inProt, outProt);
+            wrapped.process(inProt, outProt);
+            return;
           }
         } catch (RuntimeException rte) {
           if (rte.getCause() instanceof TException) {
@@ -649,7 +657,12 @@ public abstract class HadoopThriftAuthBridge {
         return ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
-            return wrapped.getTransport(trans);
+            try {
+              return wrapped.getTransport(trans);
+            } catch (TTransportException e) {
+              e.printStackTrace();
+            }
+            return null;
           }
         });
       }
