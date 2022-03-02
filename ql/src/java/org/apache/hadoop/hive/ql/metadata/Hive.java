@@ -3910,7 +3910,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // the exprBytes should not be null by thrift definition
     byte[] exprBytes = {(byte)-1};
     if (expr != null) {
-      exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
+      exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
     }
     try {
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
@@ -4280,7 +4280,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
     try {
       Preconditions.checkNotNull(partitions);
-      byte[] exprBytes = SerializationUtilities.serializeExpressionToKryo(expr);
+      byte[] exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
       List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
               new ArrayList<>();

@@ -811,13 +811,20 @@ public class SerializationUtilities {
   }
 
   /**
-   * Serializes expression via Kryo.
-   * @param expr Expression.
+   * Serializes any object via Kryo. Type information will be serialized as well, allowing dynamic deserialization
+   * without the need to pass the class.
+   * @param object The object to serialize.
    * @return Bytes.
    */
-  public static byte[] serializeExpressionToKryo(ExprNodeDesc expr) {
-    //Wrap the node to support dynamic deserialization of any ExprNodeDesc implementation.
-    return serializeObjectToKryo(new NodeWrapper(expr.getClass().getName(), serializeObjectToKryo(expr)));
+  public static byte[] serializeObjectWithTypeInformation(Serializable object) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Kryo kryo = borrowKryo();
+    try (Output output = new Output(baos)) {
+      kryo.writeClassAndObject(output, object);
+    } finally {
+      releaseKryo(kryo);
+    }
+    return baos.toByteArray();
   }
 
   /**
@@ -825,25 +832,23 @@ public class SerializationUtilities {
    * @param bytes Bytes containing the expression.
    * @return Expression; null if deserialization succeeded, but the result type is incorrect.
    */
-  public static ExprNodeDesc deserializeExpressionFromKryo(byte[] bytes) {
-    try {
-      //Try to unwrap the embedded instance
-      NodeWrapper wrapper = deserializeObjectFromKryo(bytes, NodeWrapper.class);
-      return deserializeObjectFromKryo(wrapper.instance, (Class<ExprNodeDesc>)Class.forName(wrapper.fullClassName));
-    } catch (Exception e) {
-      //Falback case, deserialize it directly as ExprNodeGenericFuncDesc
-      return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
+  public static <T> T deserializeObjectWithTypeInformation(byte[] bytes) {
+    Kryo kryo = borrowKryo();
+    try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
+      return (T) kryo.readClassAndObject(inp);
+    } finally {
+      releaseKryo(kryo);
     }
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
-    return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)),
-        StandardCharsets.UTF_8);
+    return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
+            StandardCharsets.UTF_8);
   }
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
     byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
-    return (ExprNodeGenericFuncDesc)deserializeExpressionFromKryo(bytes);
+    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
   }
 
   public static byte[] serializeObjectToKryo(Serializable object) {
@@ -874,23 +879,13 @@ public class SerializationUtilities {
 
   public static String serializeObject(Serializable expr) {
     return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
-        StandardCharsets.UTF_8);
+            StandardCharsets.UTF_8);
   }
 
   public static <T extends Serializable> T deserializeObject(String s,
-      Class<T> clazz) {
+                                                             Class<T> clazz) {
     return deserializeObjectFromKryo(
-        Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
-  }
-
-  private static class NodeWrapper implements Serializable {
-    String fullClassName;
-    byte[] instance;
-
-    NodeWrapper(String fullClassName, byte[] instance) {
-      this.fullClassName = fullClassName;
-      this.instance = instance;
-    }
+            Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
   }
 
 }
