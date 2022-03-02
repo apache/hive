@@ -53,8 +53,6 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-
 /**
  * This class contains conversion logic that creates Thrift stat objects from
  * JDO stat objects and plain arrays from DirectSQL.
@@ -72,7 +70,7 @@ public class StatObjectConverter {
      MTableColumnStatistics mColStats = new MTableColumnStatistics();
      mColStats.setTable(table);
      mColStats.setDbName(statsDesc.getDbName());
-     mColStats.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : DEFAULT_CATALOG_NAME);
+     mColStats.setCatName(table.getDatabase().getCatalogName());
      mColStats.setTableName(statsDesc.getTableName());
      mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
      mColStats.setColName(statsObj.getColName());
@@ -450,8 +448,13 @@ public class StatObjectConverter {
     }
 
     MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
-    mColStats.setPartition(partition);
-    mColStats.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : DEFAULT_CATALOG_NAME);
+    if (partition != null) {
+      mColStats.setCatName(partition.getTable().getDatabase().getCatalogName());
+      mColStats.setPartition(partition);
+    } else {
+      // Assume that the statsDesc has already set catalogName when partition is null
+      mColStats.setCatName(statsDesc.getCatName());
+    }
     mColStats.setDbName(statsDesc.getDbName());
     mColStats.setTableName(statsDesc.getTableName());
     mColStats.setPartitionName(statsDesc.getPartName());

@@ -126,7 +126,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTabl
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeValsFromName;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -273,7 +272,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     GetTableRequest getTableRequest = new GetTableRequest(dbName, tableName);
     getTableRequest.setGetColumnStats(getColStats);
     getTableRequest.setEngine(engine);
-    if (!DEFAULT_CATALOG_NAME.equals(catName)) {
+    if (!getDefaultCatalog(conf).equals(catName)) {
       getTableRequest.setCatName(catName);
       return super.getTable(getTableRequest);
     } else {
