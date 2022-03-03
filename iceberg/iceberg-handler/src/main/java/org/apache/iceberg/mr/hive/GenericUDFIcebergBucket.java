@@ -18,6 +18,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -70,6 +71,8 @@ public class GenericUDFIcebergBucket extends GenericUDF {
           "ICEBERG_BUCKET requires 2 arguments (value, bucketCount), but got " + arguments.length);
     }
 
+    numBuckets = getNumBuckets(arguments[1]);
+
     if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentException(
           "ICEBERG_BUCKET first argument takes primitive types, got " + argumentOI.getTypeName());
@@ -83,37 +86,41 @@ public class GenericUDFIcebergBucket extends GenericUDF {
       case VARCHAR:
       case STRING:
         converter = new PrimitiveObjectInspectorConverter.StringConverter(argumentOI);
+        Transform<String, Integer> stringTransform = Transforms.bucket(Types.StringType.get(), numBuckets);
         evaluator = arg -> {
           String val = (String) converter.convert(arg.get());
-          applyBucketTransform(val, Types.StringType.get());
+          result.set(stringTransform.apply(val));
         };
         break;
 
       case BINARY:
         converter = new PrimitiveObjectInspectorConverter.BinaryConverter(argumentOI,
             PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
+        Transform<ByteBuffer, Integer> byteBufferTransform = Transforms.bucket(Types.BinaryType.get(), numBuckets);
         evaluator = arg -> {
           BytesWritable val = (BytesWritable) converter.convert(arg.get());
           ByteBuffer byteBuffer = ByteBuffer.wrap(val.getBytes(), 0, val.getLength());
-          applyBucketTransform(byteBuffer, Types.BinaryType.get());
+          result.set(byteBufferTransform.apply(byteBuffer));
         };
         break;
 
       case INT:
         converter = new PrimitiveObjectInspectorConverter.IntConverter(argumentOI,
             PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+        Transform<Integer, Integer> intTransform = Transforms.bucket(Types.IntegerType.get(), numBuckets);
         evaluator = arg -> {
           IntWritable val = (IntWritable) converter.convert(arg.get());
-          applyBucketTransform(val.get(), Types.IntegerType.get());
+          result.set(intTransform.apply(val.get()));
         };
         break;
 
       case LONG:
         converter = new PrimitiveObjectInspectorConverter.LongConverter(argumentOI,
             PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        Transform<Long, Integer> longTransform = Transforms.bucket(Types.LongType.get(), numBuckets);
         evaluator = arg -> {
           LongWritable val = (LongWritable) converter.convert(arg.get());
-          applyBucketTransform(val.get(), Types.LongType.get());
+          result.set(longTransform.apply(val.get()));
         };
         break;
 
@@ -124,27 +131,30 @@ public class GenericUDFIcebergBucket extends GenericUDF {
 
         converter = new PrimitiveObjectInspectorConverter.HiveDecimalConverter(argumentOI,
             PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
+        Transform<BigDecimal, Integer> bigDecimalTransform = Transforms.bucket(decimalIcebergType, numBuckets);
         evaluator = arg -> {
           HiveDecimalWritable val = (HiveDecimalWritable) converter.convert(arg.get());
-          applyBucketTransform(val.getHiveDecimal().bigDecimalValue(), decimalIcebergType);
+          result.set(bigDecimalTransform.apply(val.getHiveDecimal().bigDecimalValue()));
         };
         break;
 
       case FLOAT:
         converter = new PrimitiveObjectInspectorConverter.FloatConverter(argumentOI,
             PrimitiveObjectInspectorFactory.writableFloatObjectInspector);
+        Transform<Float, Integer> floatTransform = Transforms.bucket(Types.FloatType.get(), numBuckets);
         evaluator = arg -> {
           FloatWritable val = (FloatWritable) converter.convert(arg.get());
-          applyBucketTransform(val.get(), Types.FloatType.get());
+          result.set(floatTransform.apply(val.get()));
         };
         break;
 
       case DOUBLE:
         converter = new PrimitiveObjectInspectorConverter.DoubleConverter(argumentOI,
             PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+        Transform<Double, Integer> doubleTransform = Transforms.bucket(Types.DoubleType.get(), numBuckets);
         evaluator = arg -> {
           DoubleWritable val = (DoubleWritable) converter.convert(arg.get());
-          applyBucketTransform(val.get(), Types.DoubleType.get());
+          result.set(doubleTransform.apply(val.get()));
         };
         break;
 
@@ -153,8 +163,6 @@ public class GenericUDFIcebergBucket extends GenericUDF {
             " ICEBERG_BUCKET() only takes STRING/CHAR/VARCHAR/BINARY/INT/LONG/DECIMAL/FLOAT/DOUBLE" +
                 " types as first argument, got " + inputType);
     }
-
-    numBuckets = getNumBuckets(arguments[1]);
 
     outputOI = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
     return outputOI;
@@ -184,11 +192,6 @@ public class GenericUDFIcebergBucket extends GenericUDF {
     }
 
     return result;
-  }
-
-  private <T> void applyBucketTransform(T value, Type.PrimitiveType icebergType) {
-    Transform<T, Integer> transform = Transforms.bucket(icebergType, numBuckets);
-    result.set(transform.apply(value));
   }
 
   @Override
