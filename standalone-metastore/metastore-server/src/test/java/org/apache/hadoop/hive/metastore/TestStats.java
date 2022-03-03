@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -47,11 +48,8 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,12 +62,11 @@ import java.util.Random;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 @Category(MetastoreCheckinTest.class)
 public class TestStats {
-  private static final Logger LOG = LoggerFactory.getLogger(TestStats.class);
-
   private static final String ENGINE = "hive";
   private static final String NO_CAT = "DO_NOT_USE_A_CATALOG!";
 
@@ -255,21 +252,16 @@ public class TestStats {
     // Test column stats obtained through getPartitions call
     for (int i = 0; i < partNames.size(); i++) {
       String partName = partNames.get(i);
-      List<Partition> partitions = catName.equals(NO_CAT) ?
-              client.getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName, Collections.singletonList(partName),
-                      true, ENGINE, null, null) :
-              client.getPartitionsByNames(catName, dbName, tableName,
-                      Collections.singletonList(partName), true, ENGINE, null, null);
-      Partition partition = partitions.get(0);
+      String database = catName.equals(NO_CAT) ? prependCatalogToDbName(dbName, conf) :
+          prependCatalogToDbName(catName, dbName, conf);
+      GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(database, tableName,
+          Collections.singletonList(partName), true, ENGINE, null, null);
+      Partition partition = client.getPartitionsByNames(req).getPartitions().get(0);
       compareStatsForOneTableOrPartition(partition.getColStats().getStatsObj(), i, colMap);
 
       // Also test that we do not get statistics when not requested
-      partitions = catName.equals(NO_CAT) ?
-              client.getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName, Collections.singletonList(partName),
-                      true, ENGINE, null, null) :
-              client.getPartitionsByNames(catName, dbName, tableName,
-                      Collections.singletonList(partName), true, ENGINE, null, null);
-      partition = partitions.get(0);
+      req.setGet_col_stats(false);
+      partition = client.getPartitionsByNames(req).getPartitions().get(0);
       Assert.assertFalse(partition.isSetColStats());
     }
   }
@@ -292,7 +284,6 @@ public class TestStats {
     dropStats(DEFAULT_CATALOG_NAME, dbName, tableName, null, colMap.keySet());
   }
 
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableInHiveCatalog() throws TException {
     String dbName = "db_part_stats";
@@ -317,7 +308,6 @@ public class TestStats {
     dropStats(catName, dbName, tableName, null, colMap.keySet());
   }
 
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableOtherCatalog() throws TException {
     String catName = "cat_table_stats";
@@ -342,7 +332,6 @@ public class TestStats {
     dropStats(NO_CAT, dbName, tableName, null, colMap.keySet());
   }
 
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableDeprecatedCalls() throws TException {
     String dbName = "old_db_part_stats";

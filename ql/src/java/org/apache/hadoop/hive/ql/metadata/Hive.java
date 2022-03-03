@@ -34,6 +34,7 @@ import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.CALCITE;
@@ -4158,9 +4159,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
           validWriteIdList = vWriteIdList != null ? vWriteIdList.toString() : null;
           tableId = tbl.getTTable().getId();
         }
+        GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(tbl.getDbName(), tbl.getTableName(),
+            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE, validWriteIdList,
+            tableId);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(getDefaultCatalog(conf), tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE, validWriteIdList, tableId);
+            getMSC().getPartitionsByNames(req).getPartitions();
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
