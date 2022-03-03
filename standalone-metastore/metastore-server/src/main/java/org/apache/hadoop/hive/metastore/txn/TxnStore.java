@@ -523,14 +523,13 @@ public interface TxnStore extends Configurable {
   void markRefused(CompactionInfo info) throws MetaException;
 
   /**
-   * Updates the cleaner retry time related information (compaction properties and commit time) of the CompactionInfo
-   * in the HMS database.
-   * @param info The {@link CompactionInfo} object to be updated.
-   * @param retentionTime The time until the clean won't be attempted again.
+   * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
+   * of the CompactionInfo in the HMS database.
+   * @param info The {@link CompactionInfo} object holding the values.
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  void retryCleanerAttemptWithBackoff(CompactionInfo info, long retentionTime) throws MetaException;
+  void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by

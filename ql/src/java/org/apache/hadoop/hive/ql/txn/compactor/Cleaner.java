@@ -68,7 +68,6 @@ import org.apache.hive.common.util.Ref;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -83,18 +82,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getIntVar;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
  */
 public class Cleaner extends MetaStoreCompactorThread {
-
-  static final String CURRENT_CLEANER_RETRY_ATTEMPTS = "hive.compactor.cleaner.retry.currentattempts";
 
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
@@ -124,9 +124,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
-        long retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
-        long effectiveRetentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
-                ? retentionTime
+        long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
+                ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
                 : 0;
 
         // Make sure nothing escapes this run method and kills the metastore at large,
@@ -144,7 +143,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
 
-          List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, effectiveRetentionTime);
+          List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
           if (!readyToClean.isEmpty()) {
             long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
             final long cleanerWaterMark =
@@ -163,7 +162,7 @@ public class Cleaner extends MetaStoreCompactorThread {
               String partition = compactionInfo.getFullPartitionName();
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
-                          ThrowingRunnable.unchecked(() -> clean(compactionInfo, cleanerWaterMark, metricsEnabled, retentionTime)),
+                          ThrowingRunnable.unchecked(() -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)),
                           cleanerExecutor)
                       .exceptionally(t -> {
                         LOG.error("Error during the cleaning the table {} / partition {}", tableName, partition, t);
@@ -202,7 +201,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled, long retentionTime) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
@@ -292,7 +291,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
       }
-      handleCleanerAttemptFailure(ci, retentionTime);
+      handleCleanerAttemptFailure(ci);
     }  finally {
       if (metricsEnabled) {
         perfLogger.perfLogEnd(CLASS_NAME, cleanerMetric);
@@ -300,27 +299,19 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
   }
 
-  private void handleCleanerAttemptFailure(CompactionInfo ci, long retention) throws MetaException {
-    int attempts = 0;
-    String strAttempts = ci.getProperty(CURRENT_CLEANER_RETRY_ATTEMPTS);
-    if (strAttempts != null && !strAttempts.isEmpty()) {
-      try {
-        attempts = Integer.parseInt(strAttempts);
-      } catch (NumberFormatException e) {
-        LOG.warn(String.format("Could not parse the number of cleaner attempts. Value: %s, CompactionInfo id: %d",
-                strAttempts, ci.id));
-        //Do nothing, in this case we go with the default value which is 0
-      }
+  private void handleCleanerAttemptFailure(CompactionInfo ci) throws MetaException {
+    long defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
+    int cleanAttempts = 0;
+    if (ci.retryRetention > 0) {
+      cleanAttempts = (int)(Math.log(ci.retryRetention / defaultRetention) / Math.log(2)) + 1;
     }
-    if (attempts >= conf.getIntVar(HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS)) {
+    if (cleanAttempts >= getIntVar(conf, HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS)) {
       //Mark it as failed if the max attempt threshold is reached.
       txnHandler.markFailed(ci);
     } else {
-      //Increase the number of attempts, calculate the backoff based retention and update the record in the HMS database.
-      //it is required to subtract the general retention time from the calculated backoff to have the correct retry retention time.
-      ci.setProperty(CURRENT_CLEANER_RETRY_ATTEMPTS, Integer.toString(++attempts));
-      txnHandler.retryCleanerAttemptWithBackoff(ci,
-              Instant.now().plusMillis((long) (retention * Math.pow(2, attempts)) - retention).toEpochMilli());
+      //Calculate retry retention time and update record.
+      ci.retryRetention = (long)Math.pow(2, cleanAttempts) * defaultRetention;
+      txnHandler.setCleanerRetryRetentionTimeOnError(ci);
     }
   }
 

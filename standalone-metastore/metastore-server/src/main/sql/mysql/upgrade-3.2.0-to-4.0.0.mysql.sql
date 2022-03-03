@@ -223,6 +223,9 @@ CREATE TABLE COMPACTION_METRICS_CACHE (
     CMC_VERSION int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- HIVE-25993
+ALTER TABLE `COMPACTION_QUEUE` ADD COLUMN "CQ_RETRY_RETENTION" integer NOT NULL DEFAULT 0;
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0' AS MESSAGE;

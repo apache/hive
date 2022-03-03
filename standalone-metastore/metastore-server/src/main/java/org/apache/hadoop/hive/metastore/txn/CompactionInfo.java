@@ -58,6 +58,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String properties;
   public boolean tooManyAborts = false;
   public boolean hasOldAbort = false;
+  public long retryRetention = 0;
+
   /**
    * The highest write id that the compaction job will pay attention to.
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL)
@@ -151,7 +153,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "highestWriteId:" + highestWriteId + "," +
       "errorMessage:" + errorMessage + "," +
       "workerId: " + workerId + "," +
-      "initiatorId: " + initiatorId;
+      "initiatorId: " + initiatorId + "," +
+      "retryRetention" + retryRetention;
   }
 
   @Override
@@ -198,6 +201,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.workerVersion = rs.getString(16);
     fullCi.initiatorId = rs.getString(17);
     fullCi.initiatorVersion = rs.getString(18);
+    fullCi.retryRetention = rs.getLong(19);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -254,6 +258,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetEnqueueTime()) {
       ci.enqueueTime = cr.getEnqueueTime();
     }
+    if (cr.isSetRetryRetention()) {
+      ci.retryRetention = cr.getRetryRetention();
+    }
     return ci;
   }
 
@@ -273,7 +280,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);
     cr.setEnqueueTime(ci.enqueueTime);
-
+    cr.setRetryRetention(ci.retryRetention);
     return cr;
   }
 

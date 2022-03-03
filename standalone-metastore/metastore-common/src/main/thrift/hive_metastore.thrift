@@ -1297,6 +1297,7 @@ struct CompactionInfoStruct {
     13: optional string errorMessage
     14: optional bool hasoldabort
     15: optional i64 enqueueTime
+    16: optional i64 retryRetention
 }
 
 struct OptionalCompactionInfoStruct {
@@ -2956,7 +2957,6 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_refused(1: CompactionInfoStruct cr) throws(1:MetaException o1)
-  void retry_cleaner_attempt_with_backoff(1: CompactionInfoStruct cr, 2:i64 retentionTime) throws(1:MetaException o1)
   bool update_compaction_metrics_data(1: CompactionMetricsDataStruct data) throws(1:MetaException o1)
   void remove_compaction_metrics_data(1: CompactionMetricsDataRequest request) throws(1:MetaException o1)
   void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)

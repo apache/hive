@@ -1743,15 +1743,6 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def retry_cleaner_attempt_with_backoff(self, cr, retentionTime):
-        """
-        Parameters:
-         - cr
-         - retentionTime
-
-        """
-        pass
-
     def update_compaction_metrics_data(self, data):
         """
         Parameters:
@@ -9621,40 +9612,6 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         return
 
-    def retry_cleaner_attempt_with_backoff(self, cr, retentionTime):
-        """
-        Parameters:
-         - cr
-         - retentionTime
-
-        """
-        self.send_retry_cleaner_attempt_with_backoff(cr, retentionTime)
-        self.recv_retry_cleaner_attempt_with_backoff()
-
-    def send_retry_cleaner_attempt_with_backoff(self, cr, retentionTime):
-        self._oprot.writeMessageBegin('retry_cleaner_attempt_with_backoff', TMessageType.CALL, self._seqid)
-        args = retry_cleaner_attempt_with_backoff_args()
-        args.cr = cr
-        args.retentionTime = retentionTime
-        args.write(self._oprot)
-        self._oprot.writeMessageEnd()
-        self._oprot.trans.flush()
-
-    def recv_retry_cleaner_attempt_with_backoff(self):
-        iprot = self._iprot
-        (fname, mtype, rseqid) = iprot.readMessageBegin()
-        if mtype == TMessageType.EXCEPTION:
-            x = TApplicationException()
-            x.read(iprot)
-            iprot.readMessageEnd()
-            raise x
-        result = retry_cleaner_attempt_with_backoff_result()
-        result.read(iprot)
-        iprot.readMessageEnd()
-        if result.o1 is not None:
-            raise result.o1
-        return
-
     def update_compaction_metrics_data(self, data):
         """
         Parameters:
@@ -12272,7 +12229,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["mark_compacted"] = Processor.process_mark_compacted
         self._processMap["mark_failed"] = Processor.process_mark_failed
         self._processMap["mark_refused"] = Processor.process_mark_refused
-        self._processMap["retry_cleaner_attempt_with_backoff"] = Processor.process_retry_cleaner_attempt_with_backoff
         self._processMap["update_compaction_metrics_data"] = Processor.process_update_compaction_metrics_data
         self._processMap["remove_compaction_metrics_data"] = Processor.process_remove_compaction_metrics_data
         self._processMap["set_hadoop_jobid"] = Processor.process_set_hadoop_jobid
@@ -18075,32 +18031,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("mark_refused", msg_type, seqid)
-        result.write(oprot)
-        oprot.writeMessageEnd()
-        oprot.trans.flush()
-
-    def process_retry_cleaner_attempt_with_backoff(self, seqid, iprot, oprot):
-        args = retry_cleaner_attempt_with_backoff_args()
-        args.read(iprot)
-        iprot.readMessageEnd()
-        result = retry_cleaner_attempt_with_backoff_result()
-        try:
-            self._handler.retry_cleaner_attempt_with_backoff(args.cr, args.retentionTime)
-            msg_type = TMessageType.REPLY
-        except TTransport.TTransportException:
-            raise
-        except MetaException as o1:
-            msg_type = TMessageType.REPLY
-            result.o1 = o1
-        except TApplicationException as ex:
-            logging.exception('TApplication exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = ex
-        except Exception:
-            logging.exception('Unexpected exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("retry_cleaner_attempt_with_backoff", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -51191,143 +51121,6 @@ class mark_refused_result(object):
         return not (self == other)
 all_structs.append(mark_refused_result)
 mark_refused_result.thrift_spec = (
-    None,  # 0
-    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
-)
-
-
-class retry_cleaner_attempt_with_backoff_args(object):
-    """
-    Attributes:
-     - cr
-     - retentionTime
-
-    """
-
-
-    def __init__(self, cr=None, retentionTime=None,):
-        self.cr = cr
-        self.retentionTime = retentionTime
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.cr = CompactionInfoStruct()
-                    self.cr.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.I64:
-                    self.retentionTime = iprot.readI64()
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('retry_cleaner_attempt_with_backoff_args')
-        if self.cr is not None:
-            oprot.writeFieldBegin('cr', TType.STRUCT, 1)
-            self.cr.write(oprot)
-            oprot.writeFieldEnd()
-        if self.retentionTime is not None:
-            oprot.writeFieldBegin('retentionTime', TType.I64, 2)
-            oprot.writeI64(self.retentionTime)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(retry_cleaner_attempt_with_backoff_args)
-retry_cleaner_attempt_with_backoff_args.thrift_spec = (
-    None,  # 0
-    (1, TType.STRUCT, 'cr', [CompactionInfoStruct, None], None, ),  # 1
-    (2, TType.I64, 'retentionTime', None, None, ),  # 2
-)
-
-
-class retry_cleaner_attempt_with_backoff_result(object):
-    """
-    Attributes:
-     - o1
-
-    """
-
-
-    def __init__(self, o1=None,):
-        self.o1 = o1
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.o1 = MetaException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('retry_cleaner_attempt_with_backoff_result')
-        if self.o1 is not None:
-            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-            self.o1.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(retry_cleaner_attempt_with_backoff_result)
-retry_cleaner_attempt_with_backoff_result.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )

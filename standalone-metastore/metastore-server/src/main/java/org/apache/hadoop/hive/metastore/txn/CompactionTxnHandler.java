@@ -59,7 +59,8 @@ class CompactionTxnHandler extends TxnHandler {
       "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
           + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-          + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
+          + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
+          + "\"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
   private static final String SELECT_COMPACTION_METRICS_CACHE_QUERY =
       "SELECT \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM \"COMPACTION_METRICS_CACHE\" " +
           "WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? AND \"CMC_METRIC_TYPE\" = ?";
@@ -352,9 +353,9 @@ class CompactionTxnHandler extends TxnHandler {
         if (minOpenTxnWaterMark > 0) {
           whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
-        whereClause += " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
+        whereClause += " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - CQ_RETRY_RETENTION - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
         String s = "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
-            "   \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\"" +
+            "   \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\" " +
             "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
             "INNER JOIN (" +
             "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"WRITE_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
@@ -381,6 +382,7 @@ class CompactionTxnHandler extends TxnHandler {
             info.runAs = rs.getString(6);
             info.highestWriteId = rs.getLong(7);
             info.properties = rs.getString(8);
+            info.retryRetention = rs.getInt(9);
             if (LOG.isDebugEnabled()) {
               LOG.debug("Found ready to clean: " + info);
             }
@@ -1336,8 +1338,8 @@ class CompactionTxnHandler extends TxnHandler {
         pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
                 + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
                 + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-                + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" "
-                + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
+                + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
+                + "\"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if (rs.next()) {
@@ -1429,16 +1431,15 @@ class CompactionTxnHandler extends TxnHandler {
 
 
   @Override
-  public void retryCleanerAttemptWithBackoff(CompactionInfo info, long retentionTime) throws MetaException {
+  @RetrySemantics.CannotRetry
+  public void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException {
     try {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
         try (PreparedStatement stmt = dbConn.prepareStatement("UPDATE \"COMPACTION_QUEUE\" " +
-                "SET \"CQ_TBLPROPERTIES\" = ?, CQ_COMMIT_TIME = ?, CQ_ERROR_MESSAGE= ? "
-                + " WHERE \"CQ_ID\" = ?")) {
-          stmt.setString(1, info.properties);
-          stmt.setLong(2, retentionTime);
-          stmt.setString(3, info.errorMessage);
-          stmt.setLong(4, info.id);
+                "SET \"CQ_RETRY_RETENTION\" = ?, \"CQ_ERROR_MESSAGE\"= ? WHERE \"CQ_ID\" = ?")) {
+          stmt.setLong(1, info.retryRetention);
+          stmt.setString(2, info.errorMessage);
+          stmt.setLong(3, info.id);
           int updCnt = stmt.executeUpdate();
           if (updCnt != 1) {
             LOG.error("Unable to update compaction queue record: " + info + ". updCnt=" + updCnt);
@@ -1450,18 +1451,18 @@ class CompactionTxnHandler extends TxnHandler {
         } catch (SQLException e) {
           LOG.error("Unable to update compaction queue: " + e.getMessage());
           rollbackDBConn(dbConn);
-          checkRetryable(e, "retryCleanerAttemptWithBackoff(" + info + ", " + retentionTime +")");
+          checkRetryable(e, "setCleanerRetryRetentionTimeOnError(" + info + ")");
           throw new MetaException("Unable to update compaction queue: " +
                   StringUtils.stringifyException(e));
         }
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database: " + e.getMessage());
-        checkRetryable(e, "retryCleanerAttemptWithBackoff(" + info + ", " + retentionTime +")");
+        checkRetryable(e, "setCleanerRetryRetentionTimeOnError(" + info  + ")");
         throw new MetaException("Unable to connect to transaction database: " +
                 StringUtils.stringifyException(e));
       }
     } catch (RetryException e) {
-      retryCleanerAttemptWithBackoff(info, retentionTime);
+      setCleanerRetryRetentionTimeOnError(info);
     }
   }
 

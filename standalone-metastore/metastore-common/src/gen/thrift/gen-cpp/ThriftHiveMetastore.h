@@ -225,7 +225,6 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void mark_compacted(const CompactionInfoStruct& cr) = 0;
   virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
   virtual void mark_refused(const CompactionInfoStruct& cr) = 0;
-  virtual void retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime) = 0;
   virtual bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) = 0;
   virtual void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) = 0;
   virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
@@ -948,9 +947,6 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void mark_refused(const CompactionInfoStruct& /* cr */) {
-    return;
-  }
-  void retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& /* cr */, const int64_t /* retentionTime */) {
     return;
   }
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& /* data */) {
@@ -25600,117 +25596,6 @@ class ThriftHiveMetastore_mark_refused_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args__isset {
-  _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args__isset() : cr(false), retentionTime(false) {}
-  bool cr :1;
-  bool retentionTime :1;
-} _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args__isset;
-
-class ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args {
- public:
-
-  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args(const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args&);
-  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args& operator=(const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args&);
-  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args() : retentionTime(0) {
-  }
-
-  virtual ~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args() noexcept;
-  CompactionInfoStruct cr;
-  int64_t retentionTime;
-
-  _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args__isset __isset;
-
-  void __set_cr(const CompactionInfoStruct& val);
-
-  void __set_retentionTime(const int64_t val);
-
-  bool operator == (const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args & rhs) const
-  {
-    if (!(cr == rhs.cr))
-      return false;
-    if (!(retentionTime == rhs.retentionTime))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_pargs() noexcept;
-  const CompactionInfoStruct* cr;
-  const int64_t* retentionTime;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result__isset {
-  _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result__isset() : o1(false) {}
-  bool o1 :1;
-} _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result__isset;
-
-class ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result {
- public:
-
-  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result(const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result&);
-  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result& operator=(const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result&);
-  ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result() {
-  }
-
-  virtual ~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result() noexcept;
-  MetaException o1;
-
-  _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result__isset __isset;
-
-  void __set_o1(const MetaException& val);
-
-  bool operator == (const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result & rhs) const
-  {
-    if (!(o1 == rhs.o1))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult__isset {
-  _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult__isset() : o1(false) {}
-  bool o1 :1;
-} _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult__isset;
-
-class ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult() noexcept;
-  MetaException o1;
-
-  _ThriftHiveMetastore_retry_cleaner_attempt_with_backoff_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _ThriftHiveMetastore_update_compaction_metrics_data_args__isset {
   _ThriftHiveMetastore_update_compaction_metrics_data_args__isset() : data(false) {}
   bool data :1;
@@ -34306,9 +34191,6 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void mark_refused(const CompactionInfoStruct& cr);
   void send_mark_refused(const CompactionInfoStruct& cr);
   void recv_mark_refused();
-  void retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime);
-  void send_retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime);
-  void recv_retry_cleaner_attempt_with_backoff();
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   void send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   bool recv_update_compaction_metrics_data();
@@ -34728,7 +34610,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_mark_compacted(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_refused(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_retry_cleaner_attempt_with_backoff(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_remove_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -35002,7 +34883,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["mark_compacted"] = &ThriftHiveMetastoreProcessor::process_mark_compacted;
     processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
     processMap_["mark_refused"] = &ThriftHiveMetastoreProcessor::process_mark_refused;
-    processMap_["retry_cleaner_attempt_with_backoff"] = &ThriftHiveMetastoreProcessor::process_retry_cleaner_attempt_with_backoff;
     processMap_["update_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_update_compaction_metrics_data;
     processMap_["remove_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_remove_compaction_metrics_data;
     processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
@@ -37013,15 +36893,6 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->mark_refused(cr);
   }
 
-  void retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->retry_cleaner_attempt_with_backoff(cr, retentionTime);
-    }
-    ifaces_[i]->retry_cleaner_attempt_with_backoff(cr, retentionTime);
-  }
-
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -38314,9 +38185,6 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void mark_refused(const CompactionInfoStruct& cr);
   int32_t send_mark_refused(const CompactionInfoStruct& cr);
   void recv_mark_refused(const int32_t seqid);
-  void retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime);
-  int32_t send_retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime);
-  void recv_retry_cleaner_attempt_with_backoff(const int32_t seqid);
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   int32_t send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   bool recv_update_compaction_metrics_data(const int32_t seqid);

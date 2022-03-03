@@ -1015,11 +1015,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("mark_refused\n");
   }
 
-  void retry_cleaner_attempt_with_backoff(const CompactionInfoStruct& cr, const int64_t retentionTime) {
-    // Your implementation goes here
-    printf("retry_cleaner_attempt_with_backoff\n");
-  }
-
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
     // Your implementation goes here
     printf("update_compaction_metrics_data\n");

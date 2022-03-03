@@ -8804,11 +8804,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public void retry_cleaner_attempt_with_backoff(CompactionInfoStruct cr, long retentionTime) throws MetaException {
-    getTxnHandler().retryCleanerAttemptWithBackoff(CompactionInfo.compactionStructToInfo(cr), retentionTime);
-  }
-
-  @Override
   public boolean update_compaction_metrics_data(CompactionMetricsDataStruct struct) throws MetaException, TException {
       return getTxnHandler().updateCompactionMetricsData(CompactionMetricsDataConverter.structToData(struct));
   }

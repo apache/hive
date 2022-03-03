@@ -15397,11 +15397,12 @@ class CompactionInfoStruct(object):
      - errorMessage
      - hasoldabort
      - enqueueTime
+     - retryRetention
 
     """
 
 
-    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None,):
+    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None,):
         self.id = id
         self.dbname = dbname
         self.tablename = tablename
@@ -15417,6 +15418,7 @@ class CompactionInfoStruct(object):
         self.errorMessage = errorMessage
         self.hasoldabort = hasoldabort
         self.enqueueTime = enqueueTime
+        self.retryRetention = retryRetention
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15502,6 +15504,11 @@ class CompactionInfoStruct(object):
                     self.enqueueTime = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.I64:
+                    self.retryRetention = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15571,6 +15578,10 @@ class CompactionInfoStruct(object):
         if self.enqueueTime is not None:
             oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
             oprot.writeI64(self.enqueueTime)
+            oprot.writeFieldEnd()
+        if self.retryRetention is not None:
+            oprot.writeFieldBegin('retryRetention', TType.I64, 16)
+            oprot.writeI64(self.retryRetention)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30752,6 +30763,7 @@ CompactionInfoStruct.thrift_spec = (
     (13, TType.STRING, 'errorMessage', 'UTF8', None, ),  # 13
     (14, TType.BOOL, 'hasoldabort', None, None, ),  # 14
     (15, TType.I64, 'enqueueTime', None, None, ),  # 15
+    (16, TType.I64, 'retryRetention', None, None, ),  # 16
 )
 all_structs.append(OptionalCompactionInfoStruct)
 OptionalCompactionInfoStruct.thrift_spec = (
