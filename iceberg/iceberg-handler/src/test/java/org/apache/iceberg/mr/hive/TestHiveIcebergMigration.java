@@ -187,6 +187,13 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     Table hmsTable = shell.metastore().getTable("default", tableName);
     validateSd(hmsTable, "iceberg");
     validateTblProps(hmsTable, true);
+    validatePartitions(tableName);
+  }
+
+  private void validatePartitions(String tableName) throws TException, InterruptedException {
+    List<String> partitions = shell.metastore().run(client ->
+        client.listPartitionNames("default", tableName, (short) -1));
+    Assert.assertTrue(partitions.isEmpty());
   }
 
   private void validateMigrationRollback(String tableName) throws TException, InterruptedException {
