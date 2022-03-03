@@ -114,7 +114,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
     if (!metricsDir.toFile().exists()) {
       LOGGER.warn("Metrics directory {} does not exist, creating one", metricsDir);
       try {
-        // createDirectories creates all non-existent parent directories
+        // createDirectories creates all nonexistent parent directories
         Files.createDirectories(metricsDir, DIR_ATTRS);
       } catch (IOException e) {
         LOGGER.error("Failed to create directory {}: {}", metricsDir, e.getMessage());
