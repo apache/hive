@@ -155,14 +155,18 @@ public class Deadline {
   private static final long NO_DEADLINE = Long.MIN_VALUE;
 
   private void check() throws MetaException{
-    if (startTime == NO_DEADLINE) {
-      throw MetaStoreUtils.newMetaException(new DeadlineException("Should execute startTimer() method before " +
-              "checkTimeout. Error happens in method: " + method));
-    }
-    long elapsedTime = System.nanoTime() - startTime;
-    if (elapsedTime > timeoutNanos) {
-      throw MetaStoreUtils.newMetaException(new DeadlineException("Timeout when executing method: " + method + "; "
-              + (elapsedTime / 1000000L) + "ms exceeds " + (timeoutNanos / 1000000L)  + "ms"));
+    try {
+      if (startTime == NO_DEADLINE) {
+        throw new DeadlineException("Should execute startTimer() method before " +
+            "checkTimeout. Error happens in method: " + method);
+      }
+      long elapsedTime = System.nanoTime() - startTime;
+      if (elapsedTime > timeoutNanos) {
+        throw new DeadlineException("Timeout when executing method: " + method + "; "
+            + (elapsedTime / 1000000L) + "ms exceeds " + (timeoutNanos / 1000000L)  + "ms");
+      }
+    } catch (DeadlineException e) {
+      throw MetaStoreUtils.newMetaException(e);
     }
   }
 }
