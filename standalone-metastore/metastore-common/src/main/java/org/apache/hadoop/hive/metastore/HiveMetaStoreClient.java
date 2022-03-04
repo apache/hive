@@ -2361,7 +2361,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<String> part_names) throws TException {
     GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(
         MetaStoreUtils.prependCatalogToDbName(catName, db_name, conf), tbl_name, part_names);
-    return deepCopyPartitions(filterHook.filterPartitions(getPartitionsByNames(req).getPartitions()));
+    return getPartitionsByNames(req).getPartitions();
   }
 
   @Override
