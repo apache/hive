@@ -66,7 +66,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
 
   @Override
   public <T> T get(int pos, Class<T> javaClass) {
-    if (transforms[pos] != null) {
+    if (transforms[pos] != null && values[pos] != null) {
       return javaClass.cast(transforms[pos].apply(values[pos]));
     }
     return javaClass.cast(values[pos]);
@@ -143,6 +143,8 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
     switch (type.typeId()) {
       case TIMESTAMP:
         return timestamp -> DateTimeUtil.timestamptzFromMicros((Long) timestamp);
+      case DATE:
+        return date -> DateTimeUtil.dateFromDays((Integer) date);
       case STRUCT:
         IcebergInternalRecordWrapper wrapper =
             new IcebergInternalRecordWrapper(type.asStructType(), type.asStructType());

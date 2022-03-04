@@ -73,3 +73,16 @@ select partition_summaries from default.ice_meta_3.manifests where partition_sum
 
 drop table ice_meta_2;
 drop table ice_meta_3;
+
+
+CREATE EXTERNAL TABLE `partevv`( `id` int, `ts` timestamp, `ts2` timestamp)  STORED BY ICEBERG STORED AS ORC TBLPROPERTIES  ('format-version'='1');
+
+ALTER TABLE partevv SET PARTITION SPEC (id);
+INSERT INTO partevv VALUES (1, current_timestamp(), current_timestamp());
+INSERT INTO partevv VALUES (2, current_timestamp(), current_timestamp());
+
+
+ALTER TABLE partevv SET PARTITION SPEC (day(ts));
+INSERT INTO partevv VALUES (100, current_timestamp(), current_timestamp());
+
+select * from default.partevv.partitions;
