@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.histogram.HistogramEstimator;
+import org.apache.hadoop.hive.common.histogram.HistogramEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -54,6 +56,9 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
     // bitvectors
     boolean doAllPartitionContainStats = partNames.size() == colStatsWithSourceInfo.size();
     NumDistinctValueEstimator ndvEstimator = null;
+    HistogramEstimator histogramEstimator = null;
+    boolean isNDVEstimatorMergeable = true;
+    boolean isHistogramEstimatorMergeable = true;
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
       if (statsObj == null) {
@@ -66,18 +71,29 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       }
       DoubleColumnStatsDataInspector doubleColumnStatsData =
           doubleInspectorFromStats(cso);
+      // check if we can merge NDV estimators
       if (doubleColumnStatsData.getNdvEstimator() == null) {
-        ndvEstimator = null;
-        break;
-      } else {
-        // check if all of the bit vectors can merge
+        isNDVEstimatorMergeable = false;
+      } else if (isNDVEstimatorMergeable) {
         NumDistinctValueEstimator estimator = doubleColumnStatsData.getNdvEstimator();
         if (ndvEstimator == null) {
           ndvEstimator = estimator;
         } else {
           if (!ndvEstimator.canMerge(estimator)) {
-            ndvEstimator = null;
-            break;
+            isNDVEstimatorMergeable = false;
+          }
+        }
+      }
+      // check if we can merge histogram estimators
+      if (doubleColumnStatsData.getHistogramEstimator() == null) {
+        isHistogramEstimatorMergeable = false;
+      } else if (isHistogramEstimatorMergeable) {
+        HistogramEstimator estimator = doubleColumnStatsData.getHistogramEstimator();
+        if (histogramEstimator == null) {
+          histogramEstimator = estimator;
+        } else {
+          if (!histogramEstimator.canMerge(estimator)) {
+            isHistogramEstimatorMergeable = false;
           }
         }
       }
@@ -87,6 +103,11 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           .getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
     LOG.debug("all of the bit vectors can merge for {} is {}", colName, ndvEstimator != null);
+    if (histogramEstimator != null) {
+      histogramEstimator = HistogramEstimatorFactory
+          .getEmptyHistogramEstimator(histogramEstimator);
+    }
+    LOG.debug("all histograms can merge for {} is {}", colName, histogramEstimator != null);
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
     if (doAllPartitionContainStats || colStatsWithSourceInfo.size() < 2) {
       DoubleColumnStatsDataInspector aggregateData = null;
@@ -101,6 +122,9 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
+        }
+        if (histogramEstimator != null) {
+          histogramEstimator.mergeEstimators(newData.getHistogramEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
@@ -134,6 +158,8 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           estimation = (long) (lowerBound + (higherBound - lowerBound) * ndvTuner);
         }
         aggregateData.setNumDVs(estimation);
+
+        // TODO: estimation for histogram?
       }
       columnStatisticsData.setDoubleStats(aggregateData);
     } else {
