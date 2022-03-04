@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.columnstats.cache;
 
 import java.nio.ByteBuffer;
 
+import org.apache.hadoop.hive.common.histogram.HistogramEstimator;
+import org.apache.hadoop.hive.common.histogram.HistogramEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -27,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
 
   private NumDistinctValueEstimator ndvEstimator;
+  private HistogramEstimator histogramEstimator;
 
   public DoubleColumnStatsDataInspector() {
     super();
@@ -41,6 +44,9 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
     if (other.ndvEstimator != null) {
       super.setBitVectors(ndvEstimator.serialize());
     }
+    if (other.histogramEstimator != null) {
+      super.setStats(histogramEstimator.serialize());
+    }
   }
 
   public DoubleColumnStatsDataInspector(DoubleColumnStatsData other) {
@@ -50,6 +56,14 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   @Override
   public DoubleColumnStatsDataInspector deepCopy() {
     return new DoubleColumnStatsDataInspector(this);
+  }
+
+  @Override
+  public byte[] getStats() {
+    if (histogramEstimator != null) {
+      updateStats();
+    }
+    return super.getStats();
   }
 
   @Override
@@ -69,6 +83,14 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
+  public ByteBuffer bufferForStats() {
+    if (histogramEstimator != null) {
+      updateStats();
+    }
+    return super.bufferForStats();
+  }
+
+  @Override
   public void setBitVectors(byte[] bitVectors) {
     super.setBitVectors(bitVectors);
     this.ndvEstimator = null;
@@ -81,9 +103,27 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
+  public void setStats(byte[] stats) {
+    super.setStats(stats);
+    this.histogramEstimator = null;
+  }
+
+  @Override
+  public void setStats(ByteBuffer stats) {
+    super.setStats(stats);
+    this.histogramEstimator = null;
+  }
+
+  @Override
   public void unsetBitVectors() {
     super.unsetBitVectors();
     this.ndvEstimator = null;
+  }
+
+  @Override
+  public void unsetStats() {
+    super.unsetStats();
+    this.histogramEstimator = null;
   }
 
   @Override
@@ -95,11 +135,27 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
+  public boolean isSetStats() {
+    if (histogramEstimator != null) {
+      updateStats();
+    }
+    return super.isSetStats();
+  }
+
+  @Override
   public void setBitVectorsIsSet(boolean value) {
     if (ndvEstimator != null) {
       updateBitVectors();
     }
     super.setBitVectorsIsSet(value);
+  }
+
+  @Override
+  public void setStatsIsSet(boolean value) {
+    if (histogramEstimator != null) {
+      updateStats();
+    }
+    super.setStatsIsSet(value);
   }
 
   public NumDistinctValueEstimator getNdvEstimator() {
@@ -109,14 +165,31 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
     return ndvEstimator;
   }
 
+  public HistogramEstimator getHistogramEstimator() {
+    if (histogramEstimator == null && isSetStats() && getStats().length != 0) {
+      updateStatsEstimator();
+    }
+    return histogramEstimator;
+  }
+
   public void setNdvEstimator(NumDistinctValueEstimator ndvEstimator) {
     super.unsetBitVectors();
     this.ndvEstimator = ndvEstimator;
   }
 
+  public void setHistogramEstimator(HistogramEstimator histogramEstimator) {
+    super.unsetStats();
+    this.histogramEstimator = histogramEstimator;
+  }
+
   private void updateBitVectors() {
     super.setBitVectors(ndvEstimator.serialize());
     this.ndvEstimator = null;
+  }
+
+  private void updateStats() {
+    super.setStats(histogramEstimator.serialize());
+    this.histogramEstimator = null;
   }
 
   private void updateNdvEstimator() {
@@ -125,4 +198,9 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
     super.unsetBitVectors();
   }
 
+  private void updateStatsEstimator() {
+    this.histogramEstimator = HistogramEstimatorFactory
+        .getHistogramEstimator(super.getStats());
+    super.unsetStats();
+  }
 }
