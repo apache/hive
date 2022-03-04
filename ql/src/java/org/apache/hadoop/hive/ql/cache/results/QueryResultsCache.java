@@ -676,7 +676,7 @@ public final class QueryResultsCache {
       if (readEntity.getType() == Type.TABLE) {
         Table tableUsed = readEntity.getTable();
         Map<String, Table> tempTables =
-            SessionHiveMetaStoreClient.getTempTablesForDatabase(tableUsed.getDbName(), tableUsed.getTableName());
+            SessionHiveMetaStoreClient.getTempTablesForDatabase(tableUsed.getDbName(), tableUsed.getTableName(), conf);
         if (tempTables != null && tempTables.containsKey(tableUsed.getTableName())) {
           LOG.info("{} resolves to a temporary table in the current session. This query cannot use the cache.",
               tableUsed.getTableName());

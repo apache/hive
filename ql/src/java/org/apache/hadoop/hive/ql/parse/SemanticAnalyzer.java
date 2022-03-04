@@ -13712,7 +13712,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 + qualifiedTabName.getNotEmptyDbTable());
           }
           Map<String, Table> tables = SessionHiveMetaStoreClient.
-              getTempTablesForDatabase(qualifiedTabName.getDb(), qualifiedTabName.getTable());
+              getTempTablesForDatabase(qualifiedTabName.getDb(), qualifiedTabName.getTable(), conf);
           if (tables != null && tables.containsKey(qualifiedTabName.getTable())) {
             throw new SemanticException("Temporary table " + qualifiedTabName.getNotEmptyDbTable()
                 + " already exists");

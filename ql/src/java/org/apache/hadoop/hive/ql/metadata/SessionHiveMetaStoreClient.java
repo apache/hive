@@ -295,7 +295,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     List<String> tableNames = super.getAllTables(dbName);
 
     // May need to merge with list of temp tables
-    Map<String, Table> tables = getTempTablesForDatabase(dbName, "?");
+    Map<String, Table> tables = getTempTablesForDatabase(dbName, "?", conf);
     if (tables == null || tables.size() == 0) {
       return tableNames;
     }
@@ -319,7 +319,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     // May need to merge with list of temp tables
     dbName = dbName.toLowerCase();
     tablePattern = tablePattern.toLowerCase();
-    Map<String, Table> tables = getTempTablesForDatabase(dbName, tablePattern);
+    Map<String, Table> tables = getTempTablesForDatabase(dbName, tablePattern, conf);
     if (tables == null || tables.size() == 0) {
       return tableNames;
     }
@@ -349,7 +349,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       // May need to merge with list of temp tables
       dbname = dbname.toLowerCase();
       tablePattern = tablePattern.toLowerCase();
-      Map<String, Table> tables = getTempTablesForDatabase(dbname, tablePattern);
+      Map<String, Table> tables = getTempTablesForDatabase(dbname, tablePattern, conf);
       if (tables == null || tables.size() == 0) {
         return tableNames;
       }
@@ -611,7 +611,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
     String dbName = tbl.getDbName();
     String tblName = tbl.getTableName();
-    Map<String, Table> tables = getTempTablesForDatabase(dbName, tblName);
+    Map<String, Table> tables = getTempTablesForDatabase(dbName, tblName, conf);
     if (tables != null && tables.containsKey(tblName)) {
       throw new MetaException(
           "Temporary table " + StatsUtils.getFullyQualifiedTableName(dbName, tblName) + " already exists");
@@ -661,7 +661,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       throw new MetaException("Table name cannot be null");
     }
     Map<String, Table> tables = getTempTablesForDatabase(dbName.toLowerCase(),
-        tableName.toLowerCase());
+        tableName.toLowerCase(), conf);
     if (tables != null) {
       Table table = tables.get(tableName.toLowerCase());
       if (table != null) {
@@ -699,13 +699,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
       // Remove old temp table entry, and add new entry to list of temp tables.
       // Note that for temp tables there is no need to rename directories
-      Map<String, Table> tables = getTempTablesForDatabase(dbname, tbl_name);
+      Map<String, Table> tables = getTempTablesForDatabase(dbname, tbl_name, conf);
       if (tables == null || tables.remove(tbl_name) == null) {
         throw new MetaException("Could not find temp table entry for " + dbname + "." + tbl_name);
       }
       shouldDeleteColStats = true;
 
-      tables = getTempTablesForDatabase(newDbName, tbl_name);
+      tables = getTempTablesForDatabase(newDbName, tbl_name, conf);
       if (tables == null) {
         tables = new HashMap<String, Table>();
         SessionState.get().getTempTables().put(newDbName, tables);
@@ -715,7 +715,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       if (haveTableColumnsChanged(oldt, newt)) {
         shouldDeleteColStats = true;
       }
-      getTempTablesForDatabase(dbname, tbl_name).put(tbl_name, newTable);
+      getTempTablesForDatabase(dbname, tbl_name, conf).put(tbl_name, newTable);
     }
 
     if (shouldDeleteColStats) {
@@ -841,7 +841,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     }
 
     // Remove table entry from SessionState
-    Map<String, Table> tables = getTempTablesForDatabase(dbName, tableName);
+    Map<String, Table> tables = getTempTablesForDatabase(dbName, tableName, conf);
     if (tables == null || tables.remove(tableName) == null) {
       throw new MetaException(
           "Could not find temp table entry for " + StatsUtils.getFullyQualifiedTableName(dbName, tableName));
@@ -876,9 +876,15 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
    * @param tblName actual table name or search pattern (for error message)
    */
   public static Map<String, Table> getTempTablesForDatabase(String dbName,
-      String tblName) {
-    return getTempTables(Warehouse.getQualifiedName(dbName, tblName)).
-        get(dbName);
+      String tblName, Configuration conf) {
+    try {
+      String parsedDbName = MetaStoreUtils.parseDbName(dbName, conf)[1];
+      return getTempTables(Warehouse.getQualifiedName(parsedDbName, tblName)).
+          get(parsedDbName);
+    } catch (MetaException me) {
+      // Can not find the db, so return an empty map
+      return Collections.emptyMap();
+    }
   }
 
   private static Map<String, Map<String, Table>> getTempTables(String msg) {
@@ -1357,6 +1363,20 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
             getPartitionsForMaxParts(req.getTblName(), getPartitionedTempTable(table).listPartitionsByFilter(
                 generateJDOFilter(table, req.getExpr(), req.getDefaultPartitionName())), req.getMaxParts())));
     return result.isEmpty();
+  }
+
+  @Override
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDb_name(), req.getTbl_name());
+    if (table == null) {
+      //(assume) not a temp table - Try underlying client
+      return super.getPartitionsByNames(req);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    GetPartitionsByNamesResult result = new GetPartitionsByNamesResult();
+    result.setPartitions(deepCopyPartitions(tt.getPartitionsByNames(req.getNames())));
+
+    return result;
   }
 
   @Override
