@@ -4127,8 +4127,9 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport\n" +
-        "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode\n" +
-        "  JWT: JWT based authentication, JWT needs to contain the user as subject"),
+        "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode.\n" +
+        "  JWT: JWT based authentication, JWT needs to contain the user name as subject. This is only supported in\n" +
+        "       http transport mode."),
     HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
         "Specifies the host or a domain to trust connections from. Authentication is skipped " +
         "for any connection coming from a host whose hostname ends with the value of this" +
@@ -4235,8 +4236,8 @@ public class HiveConf extends Configuration {
       "A file with the same name must exist in /etc/pam.d"),
     // JWT Auth configs
     HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL("hive.server2.authentication.jwt.jwks.url", "",
-        "URL of the file from where FileBasedJWKSProvider will try to load JWKS\n" +
-            "when JWT auth is enabled."),
+        "URL of the file from where URLBasedJWKSProvider will try to load JWKS if JWT is enabled for the\n" +
+        "authentication mode."),
 
     // HS2 SAML2.0 configuration
     HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",

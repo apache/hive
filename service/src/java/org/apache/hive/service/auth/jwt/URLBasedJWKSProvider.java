@@ -55,7 +55,7 @@ public class URLBasedJWKSProvider {
    */
   private void loadJWKSets() throws IOException, ParseException {
     String jwksURL = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL);
-    List<String> jwksURLs = Arrays.stream(jwksURL.split(",")).collect(Collectors.toList());
+    String[] jwksURLs = jwksURL.split(",");
     for (String urlString : jwksURLs) {
       URL url = new URL(urlString);
       jwkSets.add(JWKSet.load(url));
@@ -70,7 +70,10 @@ public class URLBasedJWKSProvider {
     List<JWK> jwks = new ArrayList<>();
     JWKSelector selector = new JWKSelector(JWKMatcher.forJWSHeader(header));
     for (JWKSet jwkSet : jwkSets) {
-      jwks.addAll(selector.select(jwkSet));
+      List<JWK> selectedJwks = selector.select(jwkSet);
+      if (selectedJwks != null) {
+        jwks.addAll(selector.select(jwkSet));
+      }
     }
     return jwks;
   }

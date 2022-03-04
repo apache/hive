@@ -18,93 +18,77 @@
 
 package org.apache.hive.service.auth.jwt;
 
-import com.google.common.base.Preconditions;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.KeyTypeException;
-import com.nimbusds.jose.crypto.ECDSAVerifier;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.jwk.AsymmetricJWK;
 import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.crypto.SecretKey;
+import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.Key;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
 public class JWTValidator {
 
+  private static final Logger LOG = LoggerFactory.getLogger(JWTValidator.class.getName());
   private final URLBasedJWKSProvider jwksProvider;
+  private static final DefaultJWSVerifierFactory verifierFactory = new DefaultJWSVerifierFactory();
 
   public JWTValidator(HiveConf conf) throws IOException, ParseException {
     this.jwksProvider = new URLBasedJWKSProvider(conf);
   }
 
-  public String validateJWTAndExtractUser(String signedJwt) throws Exception {
+  public String validateJWTAndExtractUser(String signedJwt) throws ParseException, AuthenticationException {
     final SignedJWT parsedJwt = SignedJWT.parse(signedJwt);
     List<JWK> matchedJWKS = jwksProvider.getJWKs(parsedJwt.getHeader());
 
     // verify signature
-    boolean signatureVerificationSuccessful = false;
     for (JWK matchedJWK : matchedJWKS) {
-      JWSVerifier verifier = getVerifier(parsedJwt, matchedJWK);
-      if (parsedJwt.verify(verifier)) {
-        signatureVerificationSuccessful = true;
-        break;
+      try {
+        JWSVerifier verifier = getVerifier(parsedJwt.getHeader(), matchedJWK);
+        if (parsedJwt.verify(verifier)) {
+          break;
+        }
+      } catch (JOSEException e) {
+        LOG.info("Failed to verify JWT {} by JWK {} because {}", parsedJwt.getHeader(), matchedJWK.getKeyID(),
+            e.getMessage());
       }
     }
-    Preconditions.checkState(signatureVerificationSuccessful, "Unable to verify incoming JWT Signature");
+    if (parsedJwt.getState() != JWSObject.State.VERIFIED) {
+      throw new AuthenticationException("Failed to verify JWT signature");
+    }
 
     // verify claims
     JWTClaimsSet claimsSet = parsedJwt.getJWTClaimsSet();
     Date expirationTime = claimsSet.getExpirationTime();
     if (expirationTime != null) {
       Date now = new Date();
-      Preconditions.checkState(now.before(expirationTime), "JWT has been expired");
+      if (now.after(expirationTime)) {
+        throw new AuthenticationException("JWT has been expired");
+      }
     }
 
     // We assume the subject of claims is the query user
     return claimsSet.getSubject();
   }
 
-
-
-  // TODO Same logic as DefaultJWSVerifierFactory#createJWSVerifier -- This can be written more elegantly, check AGAIN
-  private static JWSVerifier getVerifier(JWSObject parsedJWT, JWK key) throws JOSEException {
-    JWSVerifier verifier;
-    JWSHeader header = parsedJWT.getHeader();
-    if (MACVerifier.SUPPORTED_ALGORITHMS.contains(header.getAlgorithm())) {
-      if (!(key instanceof SecretKey)) {
-        throw new KeyTypeException(SecretKey.class);
-      }
-      SecretKey macKey = (SecretKey) key;
-      verifier = new MACVerifier(macKey);
-    } else if (RSASSAVerifier.SUPPORTED_ALGORITHMS.contains(header.getAlgorithm())) {
-      // TODO currently only RSA branch is doing correct casting, need to correct others
-      if (!(key instanceof RSAKey)) {
-        throw new KeyTypeException(RSAPublicKey.class);
-      }
-      RSAPublicKey rsaPublicKey = ((RSAKey) key).toRSAPublicKey();
-      verifier = new RSASSAVerifier(rsaPublicKey);
-    } else if (ECDSAVerifier.SUPPORTED_ALGORITHMS.contains(header.getAlgorithm())) {
-      if (!(key instanceof ECPublicKey)) {
-        throw new KeyTypeException(ECPublicKey.class);
-      }
-      ECPublicKey ecPublicKey = (ECPublicKey) key;
-      verifier = new ECDSAVerifier(ecPublicKey);
+  private static JWSVerifier getVerifier(JWSHeader header, JWK jwk) throws JOSEException {
+    Key key = null;
+    if (jwk instanceof AsymmetricJWK) {
+      key = ((AsymmetricJWK) jwk).toPublicKey();
     } else {
-      throw new JOSEException("Unsupported JWS algorithm: " + header.getAlgorithm());
+      LOG.debug("Symmetric JWK cannot be used: kid={}, alg={}", jwk.getKeyID(), jwk.getAlgorithm());
     }
-    return verifier;
+    return key != null ? verifierFactory.createJWSVerifier(header, key) : null;
   }
-
 }

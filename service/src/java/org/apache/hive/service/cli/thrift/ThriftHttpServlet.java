@@ -321,6 +321,8 @@ public class ThriftHttpServlet extends TServlet {
     String user = null;
     try {
       user = jwtValidator.validateJWTAndExtractUser(signedJwt);
+      Preconditions.checkNotNull(user, "JWT needs to contain the user name as subject");
+      Preconditions.checkState(!user.isEmpty(), "User name should not be empty");
       LOG.info("JWT verification successful for user {}", user);
     } catch (Exception e) {
       LOG.info("JWT verification failed: {}", e.getMessage());

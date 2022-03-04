@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
@@ -597,7 +598,7 @@ public class HiveConnection implements java.sql.Connection {
           customCookies);
     } else if (isJwtAuthMode()) {
       final String signedJwt = getJWT();
-      Preconditions.checkArgument(signedJwt != null, "For jwt auth mode," +
+      Preconditions.checkArgument(signedJwt != null && !signedJwt.isEmpty(), "For jwt auth mode," +
           " a signed jwt must be provided");
       requestInterceptor = new HttpJwtAuthRequestInterceptor(signedJwt, cookieStore,
           cookieName, useSsl, additionalHttpHeaders, customCookies);
@@ -813,7 +814,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private String getJWT() {
     String jwtCredential = getJWTStringFromSession();
-    if (jwtCredential == null) {
+    if (jwtCredential == null || jwtCredential.isEmpty()) {
       jwtCredential = getJWTStringFromEnv();
     }
     return jwtCredential;
@@ -821,20 +822,22 @@ public class HiveConnection implements java.sql.Connection {
 
   private String getJWTStringFromEnv() {
     String jwtCredential = System.getenv(JdbcConnectionParams.AUTH_JWT_ENV);
-    if (jwtCredential == null) {
+    if (jwtCredential == null || jwtCredential.isEmpty()) {
       LOG.debug("No JWT is specified in env variable {}", JdbcConnectionParams.AUTH_JWT_ENV);
     } else {
-      LOG.debug("Fetched JWT from the env.");
+      Optional<String> jwtHeader = Arrays.stream(jwtCredential.split("\\.")).findFirst();
+      LOG.debug("Fetched JWT(header={}) from the env.", jwtHeader.orElse(""));
     }
     return jwtCredential;
   }
 
   private String getJWTStringFromSession() {
     String jwtCredential = sessConfMap.get(JdbcConnectionParams.AUTH_TYPE_JWT_KEY);
-    if (jwtCredential == null) {
+    if (jwtCredential == null || jwtCredential.isEmpty()) {
       LOG.debug("No JWT is specified in connection string.");
     } else {
-      LOG.debug("Fetched JWT from the session.");
+      Optional<String> jwtHeader = Arrays.stream(jwtCredential.split("\\.")).findFirst();
+      LOG.debug("Fetched JWT(header={}) from the session.", jwtHeader.orElse(""));
     }
     return jwtCredential;
   }
