@@ -75,8 +75,7 @@
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <excludes>
-                                        **/ClusteredWriter.class
-                                    </excludes>
+                  </excludes>
                 </artifactItem>
               </artifactItems>
             </configuration>
