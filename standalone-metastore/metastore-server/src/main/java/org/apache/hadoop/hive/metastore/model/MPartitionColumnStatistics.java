@@ -51,6 +51,7 @@ public class MPartitionColumnStatistics {
   private Long numNulls;
   private Long numDVs;
   private byte[] bitVector = new byte[] { 'H', 'L' };
+  private byte[] histogram = new byte[] { 'K', 'L', 'L' };
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
@@ -185,10 +186,12 @@ public class MPartitionColumnStatistics {
     this.longHighValue = highValue;
   }
 
-  public void setDoubleStats(Long numNulls, Long numNDVs, byte[] bitVector, Double lowValue, Double highValue) {
+  public void setDoubleStats(Long numNulls, Long numNDVs, byte[] bitVector, byte[] histogram,
+      Double lowValue, Double highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.doubleLowValue = lowValue;
     this.doubleHighValue = highValue;
   }
@@ -295,6 +298,24 @@ public class MPartitionColumnStatistics {
     // instead set empty bit vector with header.
     // https://issues.apache.org/jira/browse/HIVE-17836
     this.bitVector = (bitVector == null ? new byte[] { 'H', 'L' } : bitVector);
+  }
+
+  public byte[] getHistogram() {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (histogram != null
+        && histogram.length == 3 && histogram[0] == 'K' && histogram[1] == 'L' && histogram[2] == 'L') {
+      return null;
+    }
+    return histogram;
+  }
+
+  public void setHistogram(byte[] histogram) {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    this.histogram = (histogram == null ? new byte[] { 'K', 'L', 'L' } : histogram);
   }
 
   public String getEngine() {
