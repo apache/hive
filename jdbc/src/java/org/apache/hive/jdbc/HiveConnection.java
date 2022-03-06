@@ -825,8 +825,9 @@ public class HiveConnection implements java.sql.Connection {
     if (jwtCredential == null || jwtCredential.isEmpty()) {
       LOG.debug("No JWT is specified in env variable {}", JdbcConnectionParams.AUTH_JWT_ENV);
     } else {
-      Optional<String> jwtHeader = Arrays.stream(jwtCredential.split("\\.")).findFirst();
-      LOG.debug("Fetched JWT(header={}) from the env.", jwtHeader.orElse(""));
+      int startIndex = Math.max(0, jwtCredential.length() - 7);
+      String lastSevenChars = jwtCredential.substring(startIndex);
+      LOG.debug("Fetched JWT (ends with {}) from the env", lastSevenChars);
     }
     return jwtCredential;
   }
