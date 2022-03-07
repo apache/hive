@@ -371,6 +371,44 @@ public class TestSchemaToolForMetastore {
   }
 
   /**
+   * Test schema upgrade checking that the alpha version is called
+   */
+  @Test
+  public void testSchemaUpgradeFromAlphaVersion() throws Exception {
+    boolean foundException = false;
+    // Initialize 1.2.0 schema
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 3.1.0");
+    // verify that driver fails due to older version schema
+    try {
+      schemaTool.verifySchemaVersion();
+    } catch (HiveMetaException e) {
+      // Expected to fail due to old schema
+      foundException = true;
+    }
+    if (!foundException) {
+      throw new Exception(
+          "Hive operations shouldn't pass with older version schema");
+    }
+
+    // Capture system out and err
+    schemaTool.setVerbose(true);
+    OutputStream stderr = new ByteArrayOutputStream();
+    PrintStream errPrintStream = new PrintStream(stderr);
+    System.setErr(errPrintStream);
+    OutputStream stdout = new ByteArrayOutputStream();
+    PrintStream outPrintStream = new PrintStream(stdout);
+    System.setOut(outPrintStream);
+
+    // Upgrade schema from 0.7.0 to latest
+    execute(new SchemaToolTaskUpgrade(), "-upgradeSchemaFrom 3.1.0");
+
+    Assert.assertTrue(stdout.toString().contains("upgrade-3.2.0-to-4.0.0-alpha-1.derby.sql"));
+
+    // Verify that driver works fine with latest schema
+    schemaTool.verifySchemaVersion();
+  }
+
+  /**
    * Test validate uri of locations
    */
   @Test
