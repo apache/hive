@@ -469,11 +469,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     if (fn.startsWith(AcidUtils.BASE_PREFIX)) {
       ParsedBaseLight b = ParsedBaseLight.parseBase(p);
-      return b.getWriteId() <= highWatermark && b.getVisibilityTxnId() <= minOpenTxn;
+      return b.getWriteId() <= highWatermark;
     }
     if (fn.startsWith(AcidUtils.DELTA_PREFIX) || fn.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
       ParsedDeltaLight d = ParsedDeltaLight.parse(p);
-      return d.getMaxWriteId() <= highWatermark && d.getVisibilityTxnId() <= minOpenTxn;
+      return d.getMaxWriteId() <= highWatermark;
     }
     return false;
   }
