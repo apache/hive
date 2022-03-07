@@ -252,7 +252,8 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
   public TopNKeyDesc combine(CommonKeyPrefix commonKeyPrefix) {
     return new TopNKeyDesc(topN, commonKeyPrefix.getMappedOrder(),
             commonKeyPrefix.getMappedNullOrder(), commonKeyPrefix.getMappedColumns(),
-            commonKeyPrefix.getMappedColumns().subList(0, partitionKeyColumns.size()),
+            commonKeyPrefix.getMappedColumns()
+                    .subList(0, Math.min(partitionKeyColumns.size(), commonKeyPrefix.getMappedColumns().size())),
             efficiencyThreshold, checkEfficiencyNumBatches, maxNumberOfPartitions);
   }
 
