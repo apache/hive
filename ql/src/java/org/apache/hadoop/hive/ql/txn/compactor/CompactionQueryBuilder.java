@@ -348,8 +348,8 @@ class CompactionQueryBuilder {
       query.append(" where ");
       for (int i = 0; i < keys.size(); ++i) {
         FieldSchema keySchema = keys.get(i);
-        boolean isBooleanKey = keySchema.getType().equalsIgnoreCase(ColumnType.BOOLEAN_TYPE_NAME);
-        if (isBooleanKey) {
+        query.append(i == 0 ? "`" : " and `").append(keySchema.getName()).append("`=");
+        if (!keySchema.getType().equalsIgnoreCase(ColumnType.BOOLEAN_TYPE_NAME)) {
           query.append("'").append(vals.get(i)).append("'");
         } else {
           query.append(vals.get(i));
