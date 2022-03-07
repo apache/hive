@@ -1525,14 +1525,13 @@ public final class Utilities {
 
   private static void createFileList(Set<FileStatus> filesKept, Path srcPath, Path targetPath, FileSystem fs)
       throws IOException {
-    String files = srcPath.toString() + System.lineSeparator();
-    for (FileStatus file : filesKept) {
-      files += file.getPath().toString() + System.lineSeparator();
-    }
     try (FSDataOutputStream outStream = fs.create(new Path(targetPath, BLOB_FILES_KEPT))) {
-      outStream.writeBytes(files);
+      outStream.writeBytes(srcPath.toString() + System.lineSeparator());
+      for (FileStatus file : filesKept) {
+        outStream.writeBytes(file.getPath().toString() + System.lineSeparator());
+      }
     }
-    LOG.debug("Created path list at source path: {} and path list as {}", new Path(targetPath, BLOB_FILES_KEPT), files);
+    LOG.debug("Created path list at path: {}", new Path(targetPath, BLOB_FILES_KEPT));
   }
 
   /**
