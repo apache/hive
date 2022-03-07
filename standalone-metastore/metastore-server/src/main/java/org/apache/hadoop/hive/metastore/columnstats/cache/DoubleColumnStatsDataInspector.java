@@ -45,7 +45,7 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
       super.setBitVectors(ndvEstimator.serialize());
     }
     if (other.histogramEstimator != null) {
-      super.setStats(histogramEstimator.serialize());
+      super.setHistogram(histogramEstimator.serialize());
     }
   }
 
@@ -59,11 +59,11 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public byte[] getStats() {
+  public byte[] getHistogram() {
     if (histogramEstimator != null) {
-      updateStats();
+      updateHistogram();
     }
-    return super.getStats();
+    return super.getHistogram();
   }
 
   @Override
@@ -83,11 +83,11 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public ByteBuffer bufferForStats() {
+  public ByteBuffer bufferForHistogram() {
     if (histogramEstimator != null) {
-      updateStats();
+      updateHistogram();
     }
-    return super.bufferForStats();
+    return super.bufferForHistogram();
   }
 
   @Override
@@ -103,14 +103,14 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public void setStats(byte[] stats) {
-    super.setStats(stats);
+  public void setHistogram(byte[] stats) {
+    super.setHistogram(stats);
     this.histogramEstimator = null;
   }
 
   @Override
-  public void setStats(ByteBuffer stats) {
-    super.setStats(stats);
+  public void setHistogram(ByteBuffer stats) {
+    super.setHistogram(stats);
     this.histogramEstimator = null;
   }
 
@@ -121,8 +121,8 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public void unsetStats() {
-    super.unsetStats();
+  public void unsetHistogram() {
+    super.unsetHistogram();
     this.histogramEstimator = null;
   }
 
@@ -135,11 +135,11 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public boolean isSetStats() {
+  public boolean isSetHistogram() {
     if (histogramEstimator != null) {
-      updateStats();
+      updateHistogram();
     }
-    return super.isSetStats();
+    return super.isSetHistogram();
   }
 
   @Override
@@ -151,11 +151,11 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public void setStatsIsSet(boolean value) {
+  public void setHistogramIsSet(boolean value) {
     if (histogramEstimator != null) {
-      updateStats();
+      updateHistogram();
     }
-    super.setStatsIsSet(value);
+    super.setHistogramIsSet(value);
   }
 
   public NumDistinctValueEstimator getNdvEstimator() {
@@ -166,8 +166,8 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   public HistogramEstimator getHistogramEstimator() {
-    if (histogramEstimator == null && isSetStats() && getStats().length != 0) {
-      updateStatsEstimator();
+    if (histogramEstimator == null && isSetHistogram() && getHistogram().length != 0) {
+      updateHistogramEstimator();
     }
     return histogramEstimator;
   }
@@ -178,7 +178,7 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   public void setHistogramEstimator(HistogramEstimator histogramEstimator) {
-    super.unsetStats();
+    super.unsetHistogram();
     this.histogramEstimator = histogramEstimator;
   }
 
@@ -187,8 +187,8 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
     this.ndvEstimator = null;
   }
 
-  private void updateStats() {
-    super.setStats(histogramEstimator.serialize());
+  private void updateHistogram() {
+    super.setHistogram(histogramEstimator.serialize());
     this.histogramEstimator = null;
   }
 
@@ -198,9 +198,9 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
     super.unsetBitVectors();
   }
 
-  private void updateStatsEstimator() {
+  private void updateHistogramEstimator() {
     this.histogramEstimator = HistogramEstimatorFactory
-        .getHistogramEstimator(super.getStats());
-    super.unsetStats();
+        .getHistogramEstimator(super.getHistogram());
+    super.unsetHistogram();
   }
 }

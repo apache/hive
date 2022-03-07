@@ -16,7 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField NUM_NULLS_FIELD_DESC = new org.apache.thrift.protocol.TField("numNulls", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField NUM_DVS_FIELD_DESC = new org.apache.thrift.protocol.TField("numDVs", org.apache.thrift.protocol.TType.I64, (short)4);
   private static final org.apache.thrift.protocol.TField BIT_VECTORS_FIELD_DESC = new org.apache.thrift.protocol.TField("bitVectors", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("stats", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField HISTOGRAM_FIELD_DESC = new org.apache.thrift.protocol.TField("histogram", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DoubleColumnStatsDataStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DoubleColumnStatsDataTupleSchemeFactory();
@@ -26,7 +26,7 @@ package org.apache.hadoop.hive.metastore.api;
   private long numNulls; // required
   private long numDVs; // required
   private @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer bitVectors; // optional
-  private @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer stats; // optional
+  private @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer histogram; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +35,7 @@ package org.apache.hadoop.hive.metastore.api;
     NUM_NULLS((short)3, "numNulls"),
     NUM_DVS((short)4, "numDVs"),
     BIT_VECTORS((short)5, "bitVectors"),
-    STATS((short)6, "stats");
+    HISTOGRAM((short)6, "histogram");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -61,8 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
           return NUM_DVS;
         case 5: // BIT_VECTORS
           return BIT_VECTORS;
-        case 6: // STATS
-          return STATS;
+        case 6: // HISTOGRAM
+          return HISTOGRAM;
         default:
           return null;
       }
@@ -109,7 +109,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __NUMNULLS_ISSET_ID = 2;
   private static final int __NUMDVS_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.LOW_VALUE,_Fields.HIGH_VALUE,_Fields.BIT_VECTORS,_Fields.STATS};
+  private static final _Fields optionals[] = {_Fields.LOW_VALUE,_Fields.HIGH_VALUE,_Fields.BIT_VECTORS,_Fields.HISTOGRAM};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -123,7 +123,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.BIT_VECTORS, new org.apache.thrift.meta_data.FieldMetaData("bitVectors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
-    tmpMap.put(_Fields.STATS, new org.apache.thrift.meta_data.FieldMetaData("stats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.HISTOGRAM, new org.apache.thrift.meta_data.FieldMetaData("histogram", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DoubleColumnStatsData.class, metaDataMap);
@@ -155,8 +155,8 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetBitVectors()) {
       this.bitVectors = org.apache.thrift.TBaseHelper.copyBinary(other.bitVectors);
     }
-    if (other.isSetStats()) {
-      this.stats = org.apache.thrift.TBaseHelper.copyBinary(other.stats);
+    if (other.isSetHistogram()) {
+      this.histogram = org.apache.thrift.TBaseHelper.copyBinary(other.histogram);
     }
   }
 
@@ -175,7 +175,7 @@ package org.apache.hadoop.hive.metastore.api;
     setNumDVsIsSet(false);
     this.numDVs = 0;
     this.bitVectors = null;
-    this.stats = null;
+    this.histogram = null;
   }
 
   public double getLowValue() {
@@ -298,35 +298,35 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
-  public byte[] getStats() {
-    setStats(org.apache.thrift.TBaseHelper.rightSize(stats));
-    return stats == null ? null : stats.array();
+  public byte[] getHistogram() {
+    setHistogram(org.apache.thrift.TBaseHelper.rightSize(histogram));
+    return histogram == null ? null : histogram.array();
   }
 
-  public java.nio.ByteBuffer bufferForStats() {
-    return org.apache.thrift.TBaseHelper.copyBinary(stats);
+  public java.nio.ByteBuffer bufferForHistogram() {
+    return org.apache.thrift.TBaseHelper.copyBinary(histogram);
   }
 
-  public void setStats(byte[] stats) {
-    this.stats = stats == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(stats.clone());
+  public void setHistogram(byte[] histogram) {
+    this.histogram = histogram == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(histogram.clone());
   }
 
-  public void setStats(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer stats) {
-    this.stats = org.apache.thrift.TBaseHelper.copyBinary(stats);
+  public void setHistogram(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer histogram) {
+    this.histogram = org.apache.thrift.TBaseHelper.copyBinary(histogram);
   }
 
-  public void unsetStats() {
-    this.stats = null;
+  public void unsetHistogram() {
+    this.histogram = null;
   }
 
-  /** Returns true if field stats is set (has been assigned a value) and false otherwise */
-  public boolean isSetStats() {
-    return this.stats != null;
+  /** Returns true if field histogram is set (has been assigned a value) and false otherwise */
+  public boolean isSetHistogram() {
+    return this.histogram != null;
   }
 
-  public void setStatsIsSet(boolean value) {
+  public void setHistogramIsSet(boolean value) {
     if (!value) {
-      this.stats = null;
+      this.histogram = null;
     }
   }
 
@@ -376,14 +376,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case STATS:
+    case HISTOGRAM:
       if (value == null) {
-        unsetStats();
+        unsetHistogram();
       } else {
         if (value instanceof byte[]) {
-          setStats((byte[])value);
+          setHistogram((byte[])value);
         } else {
-          setStats((java.nio.ByteBuffer)value);
+          setHistogram((java.nio.ByteBuffer)value);
         }
       }
       break;
@@ -409,8 +409,8 @@ package org.apache.hadoop.hive.metastore.api;
     case BIT_VECTORS:
       return getBitVectors();
 
-    case STATS:
-      return getStats();
+    case HISTOGRAM:
+      return getHistogram();
 
     }
     throw new java.lang.IllegalStateException();
@@ -433,8 +433,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetNumDVs();
     case BIT_VECTORS:
       return isSetBitVectors();
-    case STATS:
-      return isSetStats();
+    case HISTOGRAM:
+      return isSetHistogram();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -497,12 +497,12 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_stats = true && this.isSetStats();
-    boolean that_present_stats = true && that.isSetStats();
-    if (this_present_stats || that_present_stats) {
-      if (!(this_present_stats && that_present_stats))
+    boolean this_present_histogram = true && this.isSetHistogram();
+    boolean that_present_histogram = true && that.isSetHistogram();
+    if (this_present_histogram || that_present_histogram) {
+      if (!(this_present_histogram && that_present_histogram))
         return false;
-      if (!this.stats.equals(that.stats))
+      if (!this.histogram.equals(that.histogram))
         return false;
     }
 
@@ -529,9 +529,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (isSetBitVectors())
       hashCode = hashCode * 8191 + bitVectors.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetStats()) ? 131071 : 524287);
-    if (isSetStats())
-      hashCode = hashCode * 8191 + stats.hashCode();
+    hashCode = hashCode * 8191 + ((isSetHistogram()) ? 131071 : 524287);
+    if (isSetHistogram())
+      hashCode = hashCode * 8191 + histogram.hashCode();
 
     return hashCode;
   }
@@ -594,12 +594,12 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetStats(), other.isSetStats());
+    lastComparison = java.lang.Boolean.compare(isSetHistogram(), other.isSetHistogram());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetStats()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.stats, other.stats);
+    if (isSetHistogram()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.histogram, other.histogram);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -654,13 +654,13 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (isSetStats()) {
+    if (isSetHistogram()) {
       if (!first) sb.append(", ");
-      sb.append("stats:");
-      if (this.stats == null) {
+      sb.append("histogram:");
+      if (this.histogram == null) {
         sb.append("null");
       } else {
-        org.apache.thrift.TBaseHelper.toString(this.stats, sb);
+        org.apache.thrift.TBaseHelper.toString(this.histogram, sb);
       }
       first = false;
     }
@@ -757,10 +757,10 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // STATS
+          case 6: // HISTOGRAM
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.stats = iprot.readBinary();
-              struct.setStatsIsSet(true);
+              struct.histogram = iprot.readBinary();
+              struct.setHistogramIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -801,10 +801,10 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.stats != null) {
-        if (struct.isSetStats()) {
-          oprot.writeFieldBegin(STATS_FIELD_DESC);
-          oprot.writeBinary(struct.stats);
+      if (struct.histogram != null) {
+        if (struct.isSetHistogram()) {
+          oprot.writeFieldBegin(HISTOGRAM_FIELD_DESC);
+          oprot.writeBinary(struct.histogram);
           oprot.writeFieldEnd();
         }
       }
@@ -837,7 +837,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetBitVectors()) {
         optionals.set(2);
       }
-      if (struct.isSetStats()) {
+      if (struct.isSetHistogram()) {
         optionals.set(3);
       }
       oprot.writeBitSet(optionals, 4);
@@ -850,8 +850,8 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetBitVectors()) {
         oprot.writeBinary(struct.bitVectors);
       }
-      if (struct.isSetStats()) {
-        oprot.writeBinary(struct.stats);
+      if (struct.isSetHistogram()) {
+        oprot.writeBinary(struct.histogram);
       }
     }
 
@@ -876,8 +876,8 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setBitVectorsIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.stats = iprot.readBinary();
-        struct.setStatsIsSet(true);
+        struct.histogram = iprot.readBinary();
+        struct.setHistogramIsSet(true);
       }
     }
   }

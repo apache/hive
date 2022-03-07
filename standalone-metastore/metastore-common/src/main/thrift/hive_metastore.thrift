@@ -481,7 +481,7 @@ struct DoubleColumnStatsData {
 3: required i64 numNulls,
 4: required i64 numDVs,
 5: optional binary bitVectors,
-6: optional binary stats // json string encoding different kind of stats
+6: optional binary histogram
 }
 
 struct LongColumnStatsData {

@@ -1893,7 +1893,7 @@ class DoubleColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
-  STATS = 6
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'lowValue', :optional => true},
@@ -1901,7 +1901,7 @@ class DoubleColumnStatsData
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
     BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
-    STATS => {:type => ::Thrift::Types::STRING, :name => 'stats', :binary => true, :optional => true}
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end

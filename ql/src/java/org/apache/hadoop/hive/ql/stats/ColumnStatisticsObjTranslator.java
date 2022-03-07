@@ -131,7 +131,7 @@ public class ColumnStatisticsObjTranslator {
     case KLL_SKETCH:
       PrimitiveObjectInspector poi2 = (PrimitiveObjectInspector) oi;
       byte[] buf2 = ((BinaryObjectInspector) poi2).getPrimitiveJavaObject(o);
-      statsObj.getStatsData().getDoubleStats().setStats(buf2);
+      statsObj.getStatsData().getDoubleStats().setHistogram(buf2);
       break;
     default:
       throw new RuntimeException("Unsupported column stat for DOUBLE : " + csf);

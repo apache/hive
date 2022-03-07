@@ -4882,18 +4882,18 @@ class DoubleColumnStatsData(object):
      - numNulls
      - numDVs
      - bitVectors
-     - stats
+     - histogram
 
     """
 
 
-    def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None, bitVectors=None, stats=None,):
+    def __init__(self, lowValue=None, highValue=None, numNulls=None, numDVs=None, bitVectors=None, histogram=None,):
         self.lowValue = lowValue
         self.highValue = highValue
         self.numNulls = numNulls
         self.numDVs = numDVs
         self.bitVectors = bitVectors
-        self.stats = stats
+        self.histogram = histogram
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -4931,7 +4931,7 @@ class DoubleColumnStatsData(object):
                     iprot.skip(ftype)
             elif fid == 6:
                 if ftype == TType.STRING:
-                    self.stats = iprot.readBinary()
+                    self.histogram = iprot.readBinary()
                 else:
                     iprot.skip(ftype)
             else:
@@ -4964,9 +4964,9 @@ class DoubleColumnStatsData(object):
             oprot.writeFieldBegin('bitVectors', TType.STRING, 5)
             oprot.writeBinary(self.bitVectors)
             oprot.writeFieldEnd()
-        if self.stats is not None:
-            oprot.writeFieldBegin('stats', TType.STRING, 6)
-            oprot.writeBinary(self.stats)
+        if self.histogram is not None:
+            oprot.writeFieldBegin('histogram', TType.STRING, 6)
+            oprot.writeBinary(self.histogram)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -29920,7 +29920,7 @@ DoubleColumnStatsData.thrift_spec = (
     (3, TType.I64, 'numNulls', None, None, ),  # 3
     (4, TType.I64, 'numDVs', None, None, ),  # 4
     (5, TType.STRING, 'bitVectors', 'BINARY', None, ),  # 5
-    (6, TType.STRING, 'stats', 'BINARY', None, ),  # 6
+    (6, TType.STRING, 'histogram', 'BINARY', None, ),  # 6
 )
 all_structs.append(LongColumnStatsData)
 LongColumnStatsData.thrift_spec = (
