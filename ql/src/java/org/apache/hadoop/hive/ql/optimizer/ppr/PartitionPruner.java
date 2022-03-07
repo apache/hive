@@ -498,7 +498,7 @@ public class PartitionPruner extends Transform {
    * @return true iff the partition pruning expression contains non-partition columns.
    */
   static private boolean pruneBySequentialScan(Table tab, List<Partition> partitions,
-                                               ExprNodeDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
+      ExprNodeDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 

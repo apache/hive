@@ -843,7 +843,7 @@ public class SerializationUtilities {
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
     return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
-            StandardCharsets.UTF_8);
+        StandardCharsets.UTF_8);
   }
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
@@ -879,7 +879,7 @@ public class SerializationUtilities {
 
   public static String serializeObject(Serializable expr) {
     return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
-            StandardCharsets.UTF_8);
+        StandardCharsets.UTF_8);
   }
 
   public static <T extends Serializable> T deserializeObject(String s,

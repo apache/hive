@@ -188,7 +188,7 @@ public class TestMetastoreExpr {
 
     // check with partition spec as well
     PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName,
-            ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(expr)));
+        ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(expr)));
     req.setMaxParts((short)-1);
     req.setId(t.getId());
 
