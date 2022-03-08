@@ -89,9 +89,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 
-import static org.apache.hadoop.hive.ql.exec.Utilities.BLOB_FILES_KEPT;
+import static org.apache.hadoop.hive.ql.exec.Utilities.BLOB_MANIFEST_FILE;
 
 /**
  * MoveTask implementation.
@@ -119,16 +118,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       FileSystem fs = sourcePath.getFileSystem(conf);
 
       if (work.isCTAS() && BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
-        if (fs.exists(new Path(sourcePath, BLOB_FILES_KEPT))) {
-          LOG.debug("Attempting to copy using the paths available in {}", new Path(sourcePath, BLOB_FILES_KEPT));
+        if (fs.exists(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
+          LOG.debug("Attempting to copy using the paths available in {}", new Path(sourcePath, BLOB_MANIFEST_FILE));
           ArrayList<String> filesKept;
-          try (FSDataInputStream inStream = fs.open(new Path(sourcePath, BLOB_FILES_KEPT))) {
+          try (FSDataInputStream inStream = fs.open(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
             String paths = IOUtils.toString(inStream, Charset.defaultCharset());
             filesKept = new ArrayList(Arrays.asList(paths.split(System.lineSeparator())));
           }
           // Remove the first entry from the list, it is the source path.
-          Path srcPath = new Path(filesKept.get(0));
-          filesKept.remove(0);
+          Path srcPath = new Path(filesKept.remove(0));
           LOG.info("Copying files {} from {} to {}", filesKept, srcPath, targetPath);
           // Do the move using the filesKept now directly to the target dir.
           Utilities.moveSpecifiedFilesInParallel(conf, fs, srcPath, targetPath, filesKept);

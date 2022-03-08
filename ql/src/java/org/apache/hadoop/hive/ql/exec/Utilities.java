@@ -269,7 +269,7 @@ public final class Utilities {
 
   private static final Object INPUT_SUMMARY_LOCK = new Object();
   private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
-  public static final String BLOB_FILES_KEPT = "_blob_files_kept";
+  public static final String BLOB_MANIFEST_FILE = "_blob_manifest_file";
 
   @FunctionalInterface
   public interface SupplierWithCheckedException<T, X extends Exception> {
@@ -1525,13 +1525,15 @@ public final class Utilities {
 
   private static void createFileList(Set<FileStatus> filesKept, Path srcPath, Path targetPath, FileSystem fs)
       throws IOException {
-    try (FSDataOutputStream outStream = fs.create(new Path(targetPath, BLOB_FILES_KEPT))) {
+    try (FSDataOutputStream outStream = fs.create(new Path(targetPath, BLOB_MANIFEST_FILE))) {
+      // Adding the first entry in the manifest file as the source path, the entries post that are the files to be
+      // copied.
       outStream.writeBytes(srcPath.toString() + System.lineSeparator());
       for (FileStatus file : filesKept) {
         outStream.writeBytes(file.getPath().toString() + System.lineSeparator());
       }
     }
-    LOG.debug("Created path list at path: {}", new Path(targetPath, BLOB_FILES_KEPT));
+    LOG.debug("Created path list at path: {}", new Path(targetPath, BLOB_MANIFEST_FILE));
   }
 
   /**
