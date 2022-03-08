@@ -3514,7 +3514,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
       t -> t.getName().matches("tab_acid" + (blocking ? "" : SOFT_DELETE_TABLE_PATTERN)));
     if ((blocking ? 0 : 1) != stat.length) {
-      Assert.fail("Table data was " + (blocking ? "not" : "") + "removed from FS");
+      Assert.fail("Table data was " + (blocking ? "not " : "") + "removed from FS");
     }
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
@@ -4059,5 +4059,22 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
+  }
+
+  @Test
+  public void testAddColumnsNonBlocking() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int, b int) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid (a,b) values(1,2),(3,4)");
+    
+    driver.compileAndRespond("alter table tab_acid add columns (c int)");
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
   }
 }

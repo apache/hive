@@ -223,7 +223,6 @@ public class WriteEntity extends Entity implements Serializable {
     case SET_SKEWED_LOCATION:
     case INTO_BUCKETS:
     case ALTERPARTITION:
-    case ADDCOLS:
     case TRUNCATE:
     case MERGEFILES:
     case OWNER:
@@ -235,7 +234,8 @@ public class WriteEntity extends Entity implements Serializable {
       return AcidUtils.isLocklessReadsEnabled(table, conf) ? 
           WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
 
-    case ADDPARTITION:
+    case ADDPARTITION: 
+    case ADDCOLS:
     case SET_SERDE_PROPS:
     case ADDPROPS:
     case UPDATESTATS:
