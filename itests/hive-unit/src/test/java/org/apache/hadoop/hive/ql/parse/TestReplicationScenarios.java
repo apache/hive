@@ -4621,7 +4621,7 @@ public class TestReplicationScenarios {
     try {
       isMetricsEnabledForTests(true);
       MetricCollector collector = MetricCollector.getInstance();
-      run("create table " + primaryDbName + ".t1 (id int) clustered by(id) into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")", driver);
+      run("create table " + primaryDbName + ".t1 (id int) STORED AS TEXTFILE", driver);
       run("insert into " + primaryDbName + ".t1 values(1)", driver);
       run("repl dump " + primaryDbName, driver);
 
@@ -4655,7 +4655,7 @@ public class TestReplicationScenarios {
     try {
       isMetricsEnabledForTests(true);
       MetricCollector collector = MetricCollector.getInstance();
-      run("create table " + primaryDbName + ".t1 (id int) clustered by(id) into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")", driver);
+      run("create table " + primaryDbName + ".t1 (id int) STORED AS TEXTFILE", driver);
       run("insert into " + primaryDbName + ".t1 values(1)", driver);
       Tuple dumpData = replDumpDb(primaryDbName);
 
