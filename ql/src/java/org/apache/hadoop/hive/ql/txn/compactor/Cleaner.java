@@ -251,7 +251,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       txnHandler.markCleanerStart(ci);
 
       if (t != null || ci.partName != null) {
-        String path = location.orElse(resolveStorageDescriptor(t, p).getLocation());
+        Table finalT = t; Partition finalP = p;
+        String path = location.orElseGet(() -> resolveStorageDescriptor(finalT, finalP).getLocation());
         boolean dropPartition = ci.partName != null && p == null;
         cleanUpTask = () -> removeFiles(path, minOpenTxnGLB, ci, dropPartition);
       } else {
