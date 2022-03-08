@@ -17,9 +17,16 @@
  */
 package org.apache.hadoop.hive.hbase;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.Assert;
@@ -46,6 +53,58 @@ public class TestHBaseStorageHandler {
         jobConfToConfigure.get("hbase.some.fake.option.from.xml.file") != null);
   }
 
+  @Test
+  public void testGetUriForAuthEmptyTableDefaultHostPort() throws URISyntaxException {
+    Table table = createMockTable(new HashMap<>());
+    URI uri = checkURIForAuth(table);
+    // If there is no tablename provided, the default "null" is still
+    // written out. At the time this test was written, this was the current
+    // behavior, so I left this test as/is. Need to research if a null
+    // table can be provided here.
+    Assert.assertEquals("hbase://localhost:2181/null", uri.toString());
+  }
+
+  @Test
+  public void testGetUriForAuthEmptyTable() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/null", uri.toString());
+  }
+
+  @Test
+  public void testGetUriForAuthWithTable() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    serdeParams.put("hbase.table.name", "mytbl");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/mytbl", uri.toString());
+  }
+
+  @Test
+  public void testGetUriForAuthWithTableAndColumns() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    serdeParams.put("hbase.table.name", "mytbl");
+    serdeParams.put("hbase.columns.mapping", "mycolumns");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/mytbl/mycolumns", uri.toString());
+  }
+
+  @Test
+  public void testGetUriForAuthWithTableAndEncodedColumns() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    serdeParams.put("hbase.table.name", "my#tbl");
+    serdeParams.put("hbase.columns.mapping", "myco#lumns");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/my%23tbl/myco%23lumns", uri.toString());
+  }
+
   private TableDesc getHBaseTableDesc() {
     TableDesc tableDesc = Mockito.mock(TableDesc.class);
     Properties properties = new Properties();
@@ -55,5 +114,22 @@ public class TestHBaseStorageHandler {
     properties.put("cf.string.serialization.class", "org.apache.hadoop.io.serializer.avro.AvroSpecificSerialization");
     Mockito.when(tableDesc.getProperties()).thenReturn(properties);
     return tableDesc;
+  }
+
+  private static URI checkURIForAuth(Table table) throws URISyntaxException {
+    HBaseStorageHandler hbaseStorageHandler = new HBaseStorageHandler();
+    hbaseStorageHandler.setConf(new JobConf(new HiveConf()));
+    return hbaseStorageHandler.getURIForAuth(table);
+  }
+
+  private static Table createMockTable(Map<String, String> serdeParams) {
+    Table table = new Table();
+    StorageDescriptor sd = new StorageDescriptor();
+    SerDeInfo sdi = new SerDeInfo();
+    sdi.setParameters(serdeParams);
+    sd.setSerdeInfo(sdi);
+    table.setSd(sd);
+    table.setParameters(new HashMap<>());
+    return table;
   }
 }
