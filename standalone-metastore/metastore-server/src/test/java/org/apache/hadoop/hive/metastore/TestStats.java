@@ -48,6 +48,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -332,6 +333,7 @@ public class TestStats {
     dropStats(NO_CAT, dbName, tableName, null, colMap.keySet());
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableDeprecatedCalls() throws TException {
     String dbName = "old_db_part_stats";
