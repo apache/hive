@@ -78,6 +78,8 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI;
+
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
  * HBase.
@@ -308,9 +310,15 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     return new URI(URIString);
   }
 
-  private static String encodeString(String rawString) {
-    // Only url encode hash code value for now
-    return rawString != null ? rawString.replace("#", "%23") : null;
+  private String encodeString(String rawString) {
+    if (rawString == null) {
+      return null;
+    }
+    if (HiveConf.getBoolVar(jobConf, HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI)) {
+      return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
+    } else {
+      return rawString.replace("#", "%23");
+    }
   }
 
   /**
