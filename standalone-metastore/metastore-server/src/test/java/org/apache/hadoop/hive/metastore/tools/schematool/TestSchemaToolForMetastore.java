@@ -376,7 +376,6 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testSchemaUpgradeFromAlphaVersion() throws Exception {
     boolean foundException = false;
-    // Initialize 1.2.0 schema
     execute(new SchemaToolTaskInit(), "-initSchemaTo 3.1.0");
     // verify that driver fails due to older version schema
     try {
@@ -399,12 +398,10 @@ public class TestSchemaToolForMetastore {
     PrintStream outPrintStream = new PrintStream(stdout);
     System.setOut(outPrintStream);
 
-    // Upgrade schema from 0.7.0 to latest
     execute(new SchemaToolTaskUpgrade(), "-upgradeSchemaFrom 3.1.0");
 
     Assert.assertTrue(stdout.toString().contains("upgrade-3.2.0-to-4.0.0-alpha-1.derby.sql"));
 
-    // Verify that driver works fine with latest schema
     schemaTool.verifySchemaVersion();
   }
 
