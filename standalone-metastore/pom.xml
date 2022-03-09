@@ -108,6 +108,7 @@
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
     <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
+    <httpcomponents.core.version>4.4.10</httpcomponents.core.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -361,6 +362,13 @@
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <!-- TODO: check if it introduces any transitive dependencies-->
+        <version>${httpcomponents.core.version}</version>
+      </dependency>
+
       <!-- test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>

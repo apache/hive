@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-@org.junit.Ignore("HIVE-22620")
 public class TestSSL {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestSSL.class);
@@ -65,6 +64,7 @@ public class TestSSL {
   private static final String JAVA_TRUST_STORE_PROP = "javax.net.ssl.trustStore";
   private static final String JAVA_TRUST_STORE_PASS_PROP = "javax.net.ssl.trustStorePassword";
   private static final String JAVA_TRUST_STORE_TYPE_PROP = "javax.net.ssl.trustStoreType";
+  private static final String KEY_MANAGER_FACTORY_ALGORITHM = "SunX509";
 
   private MiniHS2 miniHS2 = null;
   private static HiveConf conf = new HiveConf();
@@ -290,6 +290,7 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
+  @Ignore
   @Test
   public void testSSLConnectionWithProperty() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
@@ -390,6 +391,7 @@ public class TestSSL {
    * Opening a new connection with this wrong certificate should fail
    * @throws Exception
    */
+  @Ignore
   @Test
   public void testConnectionWrongCertCN() throws Exception {
     // This call sets the default ssl params including the correct keystore in the server config
@@ -437,15 +439,36 @@ public class TestSSL {
    * Test HMS server with SSL
    * @throws Exception
    */
+  @Ignore
   @Test
   public void testMetastoreWithSSL() throws Exception {
     testSSLHMS(true);
   }
 
   /**
+   * Test HMS server with Http + SSL
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreWithHttps() throws Exception {
+    // MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    //MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_TRANSPORT_MODE, "http");
+    SSLTestUtils.setMetastoreHttpsConf(conf);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM,
+        KEY_MANAGER_FACTORY_ALGORITHM);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM,
+        KEY_MANAGER_FACTORY_ALGORITHM);
+
+    testSSLHMS(false);
+  }
+
+  /**
    * Test HMS server with SSL with input keystore type
    * @throws Exception
    */
+  @Ignore
   @Test
   public void testMetastoreWithSSLKeyStoreType() throws Exception {
     testSSLHMS(false);
@@ -511,6 +534,7 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
+  @Ignore
   @Test
   public void testSSLConnectionWithKeystoreType() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);
