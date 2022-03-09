@@ -52,8 +52,6 @@ public final class HMSHandlerContext {
   // instance of TSocket. This is also not set when kerberos is used.
   private String ipAddress;
 
-  private Map<String, com.codahale.metrics.Timer.Context> timerContexts = new HashMap<>();
-
   private HMSHandlerContext() {
   }
 
@@ -82,10 +80,6 @@ public final class HMSHandlerContext {
 
   public static Map<String, String> getModifiedConfig() {
     return context.get().modifiedConfig;
-  }
-
-  public static Map<String, com.codahale.metrics.Timer.Context> getTimerContexts() {
-    return context.get().timerContexts;
   }
 
   public static void setRawStore(RawStore rawStore) {

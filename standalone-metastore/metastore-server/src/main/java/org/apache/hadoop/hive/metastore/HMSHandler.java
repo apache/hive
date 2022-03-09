@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import com.codahale.metrics.Counter;
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
@@ -817,19 +816,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private String startFunction(String function, String extraLogInfo) {
-    incrementCounter(function);
     logAndAudit((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
         function + extraLogInfo);
-    com.codahale.metrics.Timer timer =
-        Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + function);
-    if (timer != null) {
-      // Timer will be null we aren't using the metrics
-      HMSHandlerContext.getTimerContexts().put(function, timer.time());
-    }
-    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
-    if (counter != null) {
-      counter.inc();
-    }
     return function;
   }
 
@@ -868,17 +856,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private void endFunction(String function, MetaStoreEndFunctionContext context) {
-    com.codahale.metrics.Timer.Context timerContext = HMSHandlerContext.getTimerContexts().remove(function);
-    if (timerContext != null) {
-      long timeTaken = timerContext.stop();
-      LOG.debug((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
-          function + "time taken(ns): " + timeTaken);
-    }
-    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
-    if (counter != null) {
-      counter.dec();
-    }
-
     for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
       listener.onEndFunction(function, context);
     }
@@ -2329,15 +2306,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       ms.openTransaction();
 
-      db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
       isReplicated = isDbReplicationTarget(db);
 
       firePreEvent(new PreCreateTableEvent(tbl, db, this));
-      // get_table checks whether database exists, it should be moved here
-      if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
-        throw new AlreadyExistsException("Table " + getCatalogQualifiedTableName(tbl)
-            + " already exists");
-      }
 
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
         if (tbl.getSd().getLocation() == null
@@ -7569,8 +7540,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private PrincipalPrivilegeSet get_column_privilege_set(String catName, final String dbName,
                                                          final String tableName, final String partName, final String columnName,
                                                          final String userName, final List<String> groupNames) throws TException {
-    incrementCounter("get_column_privilege_set");
-
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getColumnPrivilegeSet(
@@ -7583,8 +7552,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private PrincipalPrivilegeSet get_db_privilege_set(String catName, final String dbName,
                                                      final String userName, final List<String> groupNames) throws TException {
-    incrementCounter("get_db_privilege_set");
-
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getDBPrivilegeSet(catName, dbName, userName, groupNames);
@@ -7596,8 +7563,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private PrincipalPrivilegeSet get_connector_privilege_set(String catName, final String connectorName,
                                                             final String userName, final List<String> groupNames) throws TException {
-    incrementCounter("get_connector_privilege_set");
-
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
@@ -7614,8 +7579,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String catName, final String dbName, final String tableName, final String partName,
       final String userName, final List<String> groupNames)
       throws TException {
-    incrementCounter("get_partition_privilege_set");
-
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getPartitionPrivilegeSet(catName, dbName, tableName, partName,
@@ -7629,8 +7592,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private PrincipalPrivilegeSet get_table_privilege_set(String catName, final String dbName,
                                                         final String tableName, final String userName,
                                                         final List<String> groupNames) throws TException {
-    incrementCounter("get_table_privilege_set");
-
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getTablePrivilegeSet(catName, dbName, tableName, userName,
@@ -7646,7 +7607,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                             final String principalName, final PrincipalType principalType,
                             final String grantor, final PrincipalType grantorType, final boolean grantOption)
       throws TException {
-    incrementCounter("add_role_member");
     firePreEvent(new PreAuthorizationCallEvent(this));
     if (PUBLIC.equals(roleName)) {
       throw new MetaException("No user can be added to " + PUBLIC +". Since all users implicitly"
@@ -7701,14 +7661,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public List<Role> list_roles(final String principalName,
                                final PrincipalType principalType) throws TException {
-    incrementCounter("list_roles");
     firePreEvent(new PreAuthorizationCallEvent(this));
     return getMS().listRoles(principalName, principalType);
   }
 
   @Override
   public boolean create_role(final Role role) throws TException {
-    incrementCounter("create_role");
     firePreEvent(new PreAuthorizationCallEvent(this));
     if (PUBLIC.equals(role.getRoleName())) {
       throw new MetaException(PUBLIC + " role implicitly exists. It can't be created.");
@@ -7728,7 +7686,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public boolean drop_role(final String roleName) throws TException {
-    incrementCounter("drop_role");
     firePreEvent(new PreAuthorizationCallEvent(this));
     if (ADMIN.equals(roleName) || PUBLIC.equals(roleName)) {
       throw new MetaException(PUBLIC + "," + ADMIN + " roles can't be dropped.");
@@ -7748,7 +7705,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public List<String> get_role_names() throws TException {
-    incrementCounter("get_role_names");
     firePreEvent(new PreAuthorizationCallEvent(this));
     List<String> ret;
     try {
@@ -7761,7 +7717,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public boolean grant_privileges(final PrivilegeBag privileges) throws TException {
-    incrementCounter("grant_privileges");
     firePreEvent(new PreAuthorizationCallEvent(this));
     Boolean ret;
     try {
@@ -7784,7 +7739,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private boolean revoke_role(final String roleName, final String userName,
                               final PrincipalType principalType, boolean grantOption) throws TException {
-    incrementCounter("remove_role_member");
     firePreEvent(new PreAuthorizationCallEvent(this));
     if (PUBLIC.equals(roleName)) {
       throw new MetaException(PUBLIC + " role can't be revoked.");
@@ -7863,7 +7817,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh, String authorizer,
                                                          GrantRevokePrivilegeRequest grantRequest)
       throws TException {
-    incrementCounter("refresh_privileges");
     firePreEvent(new PreAuthorizationCallEvent(this));
     GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
     try {
@@ -7882,7 +7835,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   public boolean revoke_privileges(final PrivilegeBag privileges, boolean grantOption)
       throws TException {
-    incrementCounter("revoke_privileges");
     firePreEvent(new PreAuthorizationCallEvent(this));
     Boolean ret;
     try {
@@ -7899,7 +7851,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private PrincipalPrivilegeSet get_user_privilege_set(final String userName,
                                                        final List<String> groupNames) throws TException {
-    incrementCounter("get_user_privilege_set");
     PrincipalPrivilegeSet ret;
     try {
       ret = getMS().getUserPrivilegeSet(userName, groupNames);
@@ -7967,8 +7918,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private List<HiveObjectPrivilege> list_table_column_privileges(
       final String principalName, final PrincipalType principalType, String catName,
       final String dbName, final String tableName, final String columnName) throws TException {
-    incrementCounter("list_table_column_privileges");
-
     try {
       if (dbName == null) {
         return getMS().listPrincipalTableColumnGrantsAll(principalName, principalType);
@@ -7987,8 +7936,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final String principalName, final PrincipalType principalType,
       String catName, final String dbName, final String tableName, final List<String> partValues,
       final String columnName) throws TException {
-    incrementCounter("list_partition_column_privileges");
-
     try {
       if (dbName == null) {
         return getMS().listPrincipalPartitionColumnGrantsAll(principalName, principalType);
@@ -8008,8 +7955,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private List<HiveObjectPrivilege> list_db_privileges(final String principalName,
                                                        final PrincipalType principalType, String catName, final String dbName) throws TException {
-    incrementCounter("list_security_db_grant");
-
     try {
       if (dbName == null) {
         return getMS().listPrincipalDBGrantsAll(principalName, principalType);
@@ -8026,8 +7971,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private List<HiveObjectPrivilege> list_dc_privileges(final String principalName,
                                                        final PrincipalType principalType, final String dcName) throws TException {
-    incrementCounter("list_security_dc_grant");
-
     try {
       if (dcName == null) {
         return getMS().listPrincipalDCGrantsAll(principalName, principalType);
@@ -8046,8 +7989,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final String principalName, final PrincipalType principalType,
       String catName, final String dbName, final String tableName, final List<String> partValues)
       throws TException {
-    incrementCounter("list_security_partition_grant");
-
     try {
       if (dbName == null) {
         return getMS().listPrincipalPartitionGrantsAll(principalName, principalType);
@@ -8067,8 +8008,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private List<HiveObjectPrivilege> list_table_privileges(
       final String principalName, final PrincipalType principalType,
       String catName, final String dbName, final String tableName) throws TException {
-    incrementCounter("list_security_table_grant");
-
     try {
       if (dbName == null) {
         return getMS().listPrincipalTableGrantsAll(principalName, principalType);
@@ -8084,8 +8023,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private List<HiveObjectPrivilege> list_global_privileges(
       final String principalName, final PrincipalType principalType) throws TException {
-    incrementCounter("list_security_user_grant");
-
     try {
       if (principalName == null) {
         return getMS().listGlobalGrantsAll();
@@ -9017,8 +8954,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest request)
       throws TException {
-
-    incrementCounter("get_principals_in_role");
     firePreEvent(new PreAuthorizationCallEvent(this));
     Exception ex = null;
     GetPrincipalsInRoleResponse response = null;
@@ -9036,8 +8971,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
       GetRoleGrantsForPrincipalRequest request) throws TException {
-
-    incrementCounter("get_role_grants_for_principal");
     firePreEvent(new PreAuthorizationCallEvent(this));
     Exception ex = null;
     List<RolePrincipalGrant> roleMaps = null;

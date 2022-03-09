@@ -31,6 +31,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+
+import com.facebook.fb303.FacebookBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -104,7 +106,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.perfLogBegin(CLASS_NAME, method.getName());
     try {
-      Result result = invokeInternal(proxy, method, args);
+      Result result = invokeInternal(method, args);
       retryCount = result.numRetries;
       error = false;
       return result.result;
@@ -116,7 +118,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
+  public Result invokeInternal(final Method method, final Object[] args) throws Throwable {
 
     boolean gotNewConnectUrl = false;
     boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF);
@@ -142,6 +144,9 @@ public class RetryingHMSHandler implements InvocationHandler {
         }
         Object object = null;
         boolean isStarted = Deadline.startTimer(method.getName());
+        if (baseHandler instanceof FacebookBase) {
+          ((FacebookBase)baseHandler).incrementCounter(method.getName());
+        }
         try {
           object = method.invoke(baseHandler, args);
         } finally {
@@ -151,30 +156,12 @@ public class RetryingHMSHandler implements InvocationHandler {
         }
         return new Result(object, retryCount);
 
-      } catch (UndeclaredThrowableException e) {
-        if (e.getCause() != null) {
-          if (e.getCause() instanceof javax.jdo.JDOException) {
-            // Due to reflection, the jdo exception is wrapped in
-            // invocationTargetException
-            caughtException = e.getCause();
-          } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-              && e.getCause().getCause() instanceof javax.jdo.JDOException) {
-            // The JDOException may be wrapped further in a MetaException
-            caughtException = e.getCause().getCause();
-          } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
-            throw e.getCause();
-          }
-        } else {
-          LOG.error(ExceptionUtils.getStackTrace(e));
-          throw e;
-        }
-      } catch (InvocationTargetException e) {
+      } catch (InvocationTargetException | UndeclaredThrowableException e) {
         if (e.getCause() instanceof javax.jdo.JDOException) {
           // Due to reflection, the jdo exception is wrapped in
           // invocationTargetException
           caughtException = e.getCause();
-        } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
+        } else if (e.getCause() instanceof NoSuchObjectException || e.getCause().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
           if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
               && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")
