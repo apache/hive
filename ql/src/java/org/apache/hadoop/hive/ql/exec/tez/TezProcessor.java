@@ -155,6 +155,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
   @Override
   public void close() throws IOException {
+    ObjectCache.close();
     // we have to close in the processor's run method, because tez closes inputs
     // before calling close (TEZ-955) and we might need to read inputs
     // when we flush the pipeline.

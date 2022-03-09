@@ -253,8 +253,8 @@ public class HiveIcebergTestUtils {
     List<Record> sortedExpected = new ArrayList<>(expected);
     List<Record> sortedActual = new ArrayList<>(actual);
     // Sort based on the specified column
-    sortedExpected.sort(Comparator.comparingLong(record -> (Long) record.get(sortBy)));
-    sortedActual.sort(Comparator.comparingLong(record -> (Long) record.get(sortBy)));
+    sortedExpected.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
+    sortedActual.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
 
     Assert.assertEquals(sortedExpected.size(), sortedActual.size());
     for (int i = 0; i < sortedExpected.size(); ++i) {

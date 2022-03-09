@@ -1318,7 +1318,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     EnvironmentContext environmentContext = new EnvironmentContext(new HashMap<>());
 
     metaHook.preAlterTable(hmsTable, environmentContext);
-    metaHook.commitAlterTable(hmsTable, environmentContext, null);
+    metaHook.commitAlterTable(hmsTable, environmentContext);
   }
 
   @Test

@@ -77,7 +77,7 @@ public class TestHiveIcebergOutputCommitter {
   );
 
   private static final PartitionSpec PARTITIONED_SPEC =
-      PartitionSpec.builderFor(CUSTOMER_SCHEMA).bucket("customer_id", 3).build();
+      PartitionSpec.builderFor(CUSTOMER_SCHEMA).identity("customer_id").build();
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -123,8 +123,7 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 1, 0, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
-    // Expecting 3 files with fanout-, 4 with ClusteredWriter where writing to already completed partitions is allowed.
-    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 4);
+    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 2);
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
@@ -137,7 +136,7 @@ public class TestHiveIcebergOutputCommitter {
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
     HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 2);
-    HiveIcebergTestUtils.validateData(table, expected, 0);
+    HiveIcebergTestUtils.validateData(table, expected, 1);
   }
 
   @Test
@@ -148,9 +147,8 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 2, 0, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
 
-    // Expecting 6 files with fanout-, 8 with ClusteredWriter where writing to already completed partitions is allowed.
-    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 8);
-    HiveIcebergTestUtils.validateData(table, expected, 0);
+    HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 4);
+    HiveIcebergTestUtils.validateData(table, expected, 1);
   }
 
   @Test
@@ -174,7 +172,7 @@ public class TestHiveIcebergOutputCommitter {
     List<Record> expected = writeRecords(table.name(), 2, 2, true, false, conf);
     committer.commitJob(new JobContextImpl(conf, JOB_ID));
     HiveIcebergTestUtils.validateFiles(table, conf, JOB_ID, 4);
-    HiveIcebergTestUtils.validateData(table, expected, 0);
+    HiveIcebergTestUtils.validateData(table, expected, 1);
   }
 
   @Test
@@ -270,6 +268,10 @@ public class TestHiveIcebergOutputCommitter {
 
     for (int i = 0; i < taskNum; ++i) {
       List<Record> records = TestHelper.generateRandomRecords(schema, RECORD_NUM, i + attemptNum);
+      // making customer_id deterministic for result comparisons
+      for (int j = 0; j < RECORD_NUM; ++j) {
+        records.get(j).setField("customer_id", j / 3L);
+      }
       TaskAttemptID taskId = new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, i, attemptNum);
       int partitionId = taskId.getTaskID().getId();
       String operationId = QUERY_ID + "-" + JOB_ID;

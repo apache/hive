@@ -585,6 +585,13 @@ public final class FunctionRegistry {
     system.registerGenericUDF(GenericUDFMaskShowFirstN.UDF_NAME, GenericUDFMaskShowFirstN.class);
     system.registerGenericUDF(GenericUDFMaskShowLastN.UDF_NAME, GenericUDFMaskShowLastN.class);
     system.registerGenericUDF(GenericUDFMaskHash.UDF_NAME, GenericUDFMaskHash.class);
+
+    try {
+      system.registerGenericUDF("iceberg_bucket",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.GenericUDFIcebergBucket"));
+    } catch (ClassNotFoundException e) {
+      LOG.warn("iceberg_bucket function could not be registered");
+    }
   }
 
   public static String getNormalizedFunctionName(String fn) throws SemanticException {

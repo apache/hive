@@ -46,8 +46,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 /**
  * Superclass for all threads in the compactor.
@@ -60,13 +58,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   protected AtomicBoolean stop;
 
-  protected int threadId;
   protected String hostName;
   protected String runtimeVersion;
-
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
 
   @Override
   public void setConf(Configuration configuration) {
@@ -182,13 +175,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return Warehouse.getQualifiedName(t);
   }
 
-  private static AtomicInteger nextThreadId = new AtomicInteger(1000000);
-
   public static void initializeAndStartThread(CompactorThread thread,
       Configuration conf) throws Exception {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
-    thread.setThreadId(nextThreadId.incrementAndGet());
     thread.init(new AtomicBoolean());
     thread.start();
   }

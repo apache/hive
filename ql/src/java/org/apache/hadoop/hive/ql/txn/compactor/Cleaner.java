@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -62,6 +61,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBaseLight;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -71,14 +71,15 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
@@ -86,8 +87,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEAN
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-
-import com.codahale.metrics.Counter;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -214,7 +213,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
       Callable<Boolean> cleanUpTask;
       Table t = null;
-      Partition p = resolvePartition(ci);
+      Partition p = null;
 
       if (!location.isPresent()) {
         t = resolveTable(ci);
@@ -232,6 +231,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           return;
         }
         if (ci.partName != null) {
+          p = resolvePartition(ci);
           if (p == null) {
             // The partition was dropped before we got around to cleaning it.
             LOG.info("Unable to find partition " + ci.getFullPartitionName() +
@@ -249,10 +249,11 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       txnHandler.markCleanerStart(ci);
 
-      if (t != null) {
-        StorageDescriptor sd = resolveStorageDescriptor(t, p);
-        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci,
-            ci.partName != null && p == null);
+      if (t != null || ci.partName != null) {
+        Table finalT = t; Partition finalP = p;
+        String path = location.orElseGet(() -> resolveStorageDescriptor(finalT, finalP).getLocation());
+        boolean dropPartition = ci.partName != null && p == null;
+        cleanUpTask = () -> removeFiles(path, minOpenTxnGLB, ci, dropPartition);
       } else {
         cleanUpTask = () -> removeFiles(location.get(), ci);
       }
@@ -425,8 +426,10 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    if (obsoleteDirs.isEmpty() && !hasDataBelowWatermark(fs, path, writeIdList.getHighWatermark())) {
-      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + writeIdList.getHighWatermark() + ", ");
+
+    if (obsoleteDirs.isEmpty()
+        && !hasDataBelowWatermark(dir, fs, path, ci.highestWriteId, writeIdList.getHighWatermark())) {
+      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
       return true;
     }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
@@ -439,29 +442,40 @@ public class Cleaner extends MetaStoreCompactorThread {
     return success;
   }
 
-  private boolean hasDataBelowWatermark(FileSystem fs, Path path, long highWatermark) throws IOException {
-    FileStatus[] children = fs.listStatus(path);
+  private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark,
+      long minOpenTxn)
+      throws IOException {
+    Set<Path> acidPaths = new HashSet<>();
+    for (ParsedDelta delta : acidDir.getCurrentDirectories()) {
+      acidPaths.add(delta.getPath());
+    }
+    if (acidDir.getBaseDirectory() != null) {
+      acidPaths.add(acidDir.getBaseDirectory());
+    }
+    FileStatus[] children = fs.listStatus(path, p -> {
+      return !acidPaths.contains(p);
+    });
     for (FileStatus child : children) {
-      if (isFileBelowWatermark(child, highWatermark)) {
+      if (isFileBelowWatermark(child, highWatermark, minOpenTxn)) {
         return true;
       }
     }
     return false;
   }
 
-  private boolean isFileBelowWatermark(FileStatus child, long highWatermark) {
+  private boolean isFileBelowWatermark(FileStatus child, long highWatermark, long minOpenTxn) {
     Path p = child.getPath();
     String fn = p.getName();
     if (!child.isDirectory()) {
-      return false;
+      return true;
     }
     if (fn.startsWith(AcidUtils.BASE_PREFIX)) {
       ParsedBaseLight b = ParsedBaseLight.parseBase(p);
-      return b.getWriteId() < highWatermark;
+      return b.getWriteId() <= highWatermark;
     }
     if (fn.startsWith(AcidUtils.DELTA_PREFIX) || fn.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
       ParsedDeltaLight d = ParsedDeltaLight.parse(p);
-      return d.getMaxWriteId() < highWatermark;
+      return d.getMaxWriteId() <= highWatermark;
     }
     return false;
   }

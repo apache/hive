@@ -43,8 +43,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -852,4 +854,97 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(1, paths.size());
     Assert.assertEquals("base_22", paths.get(0).getName());
   }
+
+  @Test
+  public void nothingToCleanAfterAbortsBase() throws Exception {
+    String dbName = "default";
+    String tableName = "camtc";
+    Table t = newTable(dbName, tableName, false);
+
+    addBaseFile(t, null, 20L, 1);
+    addDeltaFile(t, null, 21L, 21L, 2);
+    addDeltaFile(t, null, 22L, 22L, 2);
+    burnThroughTransactions(dbName, tableName, 22, null, new HashSet<Long>(Arrays.asList(21L, 22L)));
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+
+    compactInTxn(rqst);
+    compactInTxn(rqst);
+
+    startCleaner();
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(1, paths.size());
+    Assert.assertEquals("base_20", paths.get(0).getName());
+  }
+
+  @Test
+  public void nothingToCleanAfterAbortsDelta() throws Exception {
+    String dbName = "default";
+    String tableName = "camtc";
+    Table t = newTable(dbName, tableName, false);
+
+    addDeltaFile(t, null, 20L, 20L, 1);
+    addDeltaFile(t, null, 21L, 21L, 2);
+    addDeltaFile(t, null, 22L, 22L, 2);
+    burnThroughTransactions(dbName, tableName, 22, null, new HashSet<Long>(Arrays.asList(21L, 22L)));
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+
+    compactInTxn(rqst);
+    compactInTxn(rqst);
+
+    startCleaner();
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(1, paths.size());
+    Assert.assertEquals("delta_0000020_0000020", paths.get(0).getName());
+  }
+
+  @Test
+  public void testReady() throws Exception {
+    String dbName = "default";
+    String tblName = "trfcp";
+    String partName = "ds=today";
+    Table t = newTable(dbName, tblName, true);
+    Partition p = newPartition(t, "today");
+
+    // minor compaction
+    addBaseFile(t, p, 19L, 19);
+    addDeltaFile(t, p, 20L, 20L, 1);
+    addDeltaFile(t, p, 21L, 21L, 1);
+    addDeltaFile(t, p, 22L, 22L, 1);
+    burnThroughTransactions(dbName, tblName, 22);
+
+    // block cleaner with an open txn
+    long blockingTxn = openTxn();
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname(partName);
+    long ctxnid = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 22, 2, ctxnid);
+    startCleaner();
+
+    // make sure cleaner didn't remove anything, and cleaning is still queued
+    List<Path> paths = getDirectories(conf, t, p);
+    Assert.assertEquals("Expected 5 files after minor compaction, instead these files were present " + paths, 5,
+        paths.size());
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Expected 1 compaction in queue, got: " + rsp.getCompacts(), 1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+  }
+
+
 }

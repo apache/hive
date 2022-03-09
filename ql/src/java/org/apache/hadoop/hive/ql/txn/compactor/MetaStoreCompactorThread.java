@@ -48,13 +48,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
 
   protected TxnStore txnHandler;
-  protected int threadId;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
-
-  @Override
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
