@@ -257,7 +257,7 @@ fi
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres','mysql']) {
+  for (def d in ['derby','postgres','mysql','oracle']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
