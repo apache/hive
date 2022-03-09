@@ -75,6 +75,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_IS_CTAS = "created_with_ctas";
 
+  TABLE_IS_CTLT = "created_with_ctlt";
+
   PARTITION_TRANSFORM_SPEC = "partition_transform_spec";
 
   NO_CLEANUP = "no_cleanup";

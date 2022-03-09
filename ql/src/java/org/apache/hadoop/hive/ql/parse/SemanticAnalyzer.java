@@ -13682,6 +13682,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
           isTransactional, isManaged);
+      tblProps.put(hive_metastoreConstants.TABLE_IS_CTLT, "true");
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
 
