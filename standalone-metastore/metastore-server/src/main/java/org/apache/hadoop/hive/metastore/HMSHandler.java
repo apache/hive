@@ -2333,11 +2333,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       isReplicated = isDbReplicationTarget(db);
 
       firePreEvent(new PreCreateTableEvent(tbl, db, this));
-      // get_table checks whether database exists, it should be moved here
-      if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
-        throw new AlreadyExistsException("Table " + getCatalogQualifiedTableName(tbl)
-            + " already exists");
-      }
 
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
         if (tbl.getSd().getLocation() == null
