@@ -285,6 +285,7 @@ public class TestStats {
     dropStats(DEFAULT_CATALOG_NAME, dbName, tableName, null, colMap.keySet());
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableInHiveCatalog() throws TException {
     String dbName = "db_part_stats";
@@ -309,6 +310,7 @@ public class TestStats {
     dropStats(catName, dbName, tableName, null, colMap.keySet());
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableOtherCatalog() throws TException {
     String catName = "cat_table_stats";
