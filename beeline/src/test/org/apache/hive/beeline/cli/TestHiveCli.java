@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
@@ -245,7 +246,7 @@ public class TestHiveCli {
     int ret = 0;
     try {
       if (input != null) {
-        inputStream = IOUtils.toInputStream(input);
+        inputStream = IOUtils.toInputStream(input, Charset.defaultCharset());
       }
       ret = cli.runWithArgs(args, inputStream);
     } catch (Throwable e) {
