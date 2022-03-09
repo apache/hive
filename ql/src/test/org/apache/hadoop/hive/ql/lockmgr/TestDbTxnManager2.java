@@ -4141,3 +4141,57 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals("[1\t2\tNULL, 3\t4\tNULL, 5\t6\t7]", res.toString());
   }
 }
+
+  @Test
+  public void testReplaceColumnsNonBlocking() throws Exception {
+    testReplaceRenameColumns("replace columns (c int, d string)");
+  }
+  @Test
+  public void testRenameColumnsNonBlocking() throws Exception {
+    testReplaceRenameColumns("change column a c string");
+  }
+  
+  private void testReplaceRenameColumns(String alterSubQuery) throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver = Mockito.spy(driver);
+    driver2 = Mockito.spy(driver2);
+
+    driver.run("create table if not exists tab_acid (a int, b int) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.compileAndRespond("insert into tab_acid (a,b) values(1,2),(3,4)");
+
+    List<String> res = new ArrayList<>();
+
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+
+    checkLock(LockType.SHARED_WRITE,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("alter table tab_acid "+ alterSubQuery);
+
+    driver2.lockAndRespond();
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+
+    Mockito.doNothing().when(driver2).lockAndRespond();
+    driver2.run();
+
+    swapTxnManager(txnMgr);
+    Mockito.doNothing().when(driver).lockAndRespond();
+    driver.run();
+
+    Mockito.reset(driver, driver2);
+    driver.run("select * from tab_acid");
+
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("[1\t2, 3\t4]", res.toString());
+  }
+}
