@@ -129,7 +129,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   static Iface newRetryingHMSHandler(Configuration conf)
       throws MetaException {
-    HMSHandler baseHandler = new HMSHandler("hive client", conf, false);
+    HMSHandler baseHandler = new HMSHandler("hive client", conf);
     return RetryingHMSHandler.getProxy(conf, baseHandler, true);
   }
 
@@ -367,7 +367,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
-    HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf, false);
+    HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
     AuthFactory authFactory = new AuthFactory(bridge, conf, baseHandler);
     useSasl = authFactory.isSASLWithKerberizedHadoop();
 
@@ -733,13 +733,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static int nextThreadId = 1000000;
-
   private static void initializeAndStartThread(MetaStoreThread thread, Configuration conf) throws
       Exception {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
-    thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean());
     thread.start();
   }

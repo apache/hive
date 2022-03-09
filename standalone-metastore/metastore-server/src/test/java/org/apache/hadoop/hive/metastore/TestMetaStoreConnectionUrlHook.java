@@ -44,5 +44,6 @@ public class TestMetaStoreConnectionUrlHook {
     // Instantiating the HMSHandler with hive.metastore.checkForDefaultDb will cause it to
     // initialize an instance of the DummyRawStoreForJdoConnection
     HMSHandler hms = new HMSHandler("test_metastore_connection_url_hook_hms_handler", conf);
+    hms.init();
   }
 }

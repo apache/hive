@@ -177,7 +177,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     if (cleaner == null) {
       cleaner =
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
-              MetastoreConf.getVar(conf, ConfVars.RAW_STORE_IMPL), 999999));
+              MetastoreConf.getVar(conf, ConfVars.RAW_STORE_IMPL)));
       cleaner.start();
     }
   }

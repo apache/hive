@@ -785,7 +785,6 @@ public class TestStreaming {
   public static void runWorker(HiveConf hiveConf) throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
     t.init(stop);
     t.run();

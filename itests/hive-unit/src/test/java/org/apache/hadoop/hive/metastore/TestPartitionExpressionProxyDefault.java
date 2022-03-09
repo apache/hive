@@ -33,7 +33,8 @@ public class TestPartitionExpressionProxyDefault {
   @Test
   public void checkPartitionExpressionProxy() throws MetaException {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    HMSHandler hms = new HMSHandler("for testing", conf, true);
+    HMSHandler hms = new HMSHandler("for testing", conf);
+    hms.init();
     Assert.assertEquals(PartitionExpressionForMetastore.class,
         hms.getExpressionProxy().getClass());
   }

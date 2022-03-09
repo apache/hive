@@ -982,7 +982,6 @@ public class TestInitiator extends CompactorTest {
 
     // run and fail initiator
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
     doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
@@ -1051,7 +1050,6 @@ public class TestInitiator extends CompactorTest {
 
     // need to mock the runtime version, because the manifest file won't be there in the mvn test setup
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     String runtimeVersion = "4.0.0-SNAPSHOT";
     doReturn(runtimeVersion).when(initiator).getRuntimeVersion();
@@ -1104,7 +1102,6 @@ public class TestInitiator extends CompactorTest {
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
     initiator.run();

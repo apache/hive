@@ -287,29 +287,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return expressionProxy;
   }
 
-  /**
-   * Use {@link #getThreadId()} instead.
-   * @return thread id
-   */
-  @Deprecated
-  public static Integer get() {
-    return HMSHandlerContext.getThreadId();
-  }
-
-  @Override
-  public int getThreadId() {
-    return HMSHandlerContext.getThreadId();
-  }
-
-  public HMSHandler(String name) throws MetaException {
-    this(name, MetastoreConf.newMetastoreConf(), true);
-  }
-
-  public HMSHandler(String name, Configuration conf) throws MetaException {
-    this(name, conf, true);
-  }
-
-  public HMSHandler(String name, Configuration conf, boolean init) throws MetaException {
+  public HMSHandler(String name, Configuration conf) {
     super(name);
     this.conf = conf;
     isInTest = MetastoreConf.getBoolVar(this.conf, ConfVars.HIVE_IN_TEST);
@@ -323,9 +301,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           tablelocks = Striped.lock(numTableLocks);
         }
       }
-    }
-    if (init) {
-      init();
     }
   }
 
@@ -651,7 +626,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Configuration newConf = new Configuration(conf);
     String rawStoreClassName = MetastoreConf.getVar(newConf, ConfVars.RAW_STORE_IMPL);
     LOG.info("Opening raw store with implementation class: {}", rawStoreClassName);
-    return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName, HMSHandlerContext.getThreadId());
+    return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName);
   }
 
   @VisibleForTesting
