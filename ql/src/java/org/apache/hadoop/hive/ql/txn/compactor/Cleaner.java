@@ -213,7 +213,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
       Callable<Boolean> cleanUpTask;
       Table t = null;
-      Partition p = resolvePartition(ci);
+      Partition p = null;
 
       if (!location.isPresent()) {
         t = resolveTable(ci);
@@ -231,6 +231,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           return;
         }
         if (ci.partName != null) {
+          p = resolvePartition(ci);
           if (p == null) {
             // The partition was dropped before we got around to cleaning it.
             LOG.info("Unable to find partition " + ci.getFullPartitionName() +
@@ -248,10 +249,11 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       txnHandler.markCleanerStart(ci);
 
-      if (t != null) {
-        StorageDescriptor sd = resolveStorageDescriptor(t, p);
-        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci,
-            ci.partName != null && p == null);
+      if (t != null || ci.partName != null) {
+        Table finalT = t; Partition finalP = p;
+        String path = location.orElseGet(() -> resolveStorageDescriptor(finalT, finalP).getLocation());
+        boolean dropPartition = ci.partName != null && p == null;
+        cleanUpTask = () -> removeFiles(path, minOpenTxnGLB, ci, dropPartition);
       } else {
         cleanUpTask = () -> removeFiles(location.get(), ci);
       }
