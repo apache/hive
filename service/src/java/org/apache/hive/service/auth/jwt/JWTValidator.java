@@ -50,6 +50,7 @@ public class JWTValidator {
   }
 
   public String validateJWTAndExtractUser(String signedJwt) throws ParseException, AuthenticationException {
+    Preconditions.checkNotNull(jwksProvider);
     final SignedJWT parsedJwt = SignedJWT.parse(signedJwt);
     List<JWK> matchedJWKS = jwksProvider.getJWKs(parsedJwt.getHeader());
 
