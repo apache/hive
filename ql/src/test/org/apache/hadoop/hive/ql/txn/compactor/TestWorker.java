@@ -993,7 +993,6 @@ public class TestWorker extends CompactorTest {
     txnHandler.compact(rqst);
 
     Worker worker = Mockito.spy(new Worker());
-    worker.setThreadId((int) t.getId());
     worker.setConf(conf);
     String workerVersion = "4.0.0-SNAPSHOT";
     doReturn(workerVersion).when(worker).getRuntimeVersion();
@@ -1168,7 +1167,6 @@ public class TestWorker extends CompactorTest {
   private TimeoutWorker getTimeoutWorker(HiveConf conf, ExecutorService executor, boolean runForever,
       boolean swallowInterrupt, CountDownLatch looped) throws Exception {
     TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt, looped);
-    timeoutWorker.setThreadId((int)timeoutWorker.getId());
     timeoutWorker.setConf(conf);
     timeoutWorker.init(new AtomicBoolean(false));
     executor.submit(timeoutWorker);

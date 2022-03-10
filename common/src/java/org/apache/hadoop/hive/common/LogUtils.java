@@ -113,7 +113,7 @@ public class LogUtils {
         return initHiveLog4jDefault(
           conf, "Not able to find conf file: " + log4jConfigFile, confVarName);
       } else {
-        // property speficied file found in local file system
+        // property specified file found in local file system
         // use the specified file
         if (confVarName == HiveConf.ConfVars.HIVE_EXEC_LOG4J_FILE) {
           String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);

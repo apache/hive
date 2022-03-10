@@ -28,15 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public interface MetaStoreThread extends Configurable {
 
   /**
-   * Set the id for this thread.
-   * @param threadId id of the thread
-   */
-  void setThreadId(int threadId);
-
-  /**
    * Initialize the thread.  This must not be called until after
-   * {@link #setConf(Configuration)}  and  {@link #setThreadId(int)}
-   * have been called.
+   * {@link #setConf(Configuration)} has been called.
    * @param stop a flag to watch for when to stop.  If this value is set to true,
    *             the thread will terminate the next time through its main loop.
    */

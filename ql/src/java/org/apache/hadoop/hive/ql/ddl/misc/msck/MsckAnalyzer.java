@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.misc.msck;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -81,8 +82,8 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
             "to be set to org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore");
       }
       // fetch the first value of partitionSpecs map since it will always have one key, value pair
-      filterExp = SerializationUtilities.serializeExpressionToKryo(
-          (ExprNodeGenericFuncDesc) ((List) partitionSpecs.values().toArray()[0]).get(0));
+      filterExp = SerializationUtilities.serializeObjectWithTypeInformation(
+          (Serializable) ((List) partitionSpecs.values().toArray()[0]).get(0));
     }
 
     if (repair && AcidUtils.isTransactionalTable(table)) {

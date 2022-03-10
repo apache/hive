@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +30,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -49,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -63,6 +66,7 @@ import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
@@ -85,7 +89,9 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +102,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+  /**
+   * Function template for producing a custom sort expression function:
+   * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
+   * the sort expression, e.g. iceberg_bucket(_col2, 5)
+   */
+  private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+      BUCKET_SORT_EXPR =
+          (idx, bucket) -> cols -> {
+            try {
+              ExprNodeDesc icebergBucketSourceCol = cols.get(idx);
+              return ExprNodeGenericFuncDesc.newInstance(new GenericUDFIcebergBucket(), "iceberg_bucket",
+                  Lists.newArrayList(
+                      icebergBucketSourceCol,
+                      new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, bucket)
+                  ));
+            } catch (UDFArgumentException e) {
+              throw new RuntimeException(e);
+            }
+          };
 
   static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
@@ -284,7 +309,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    List<PartitionTransformSpec> result = new ArrayList<>();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     return table.spec().fields().stream().map(f -> {
@@ -305,6 +329,42 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       return spec;
     }).collect(Collectors.toList());
+  }
+
+  @Override
+  public DynamicPartitionCtx createDPContext(HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable)
+      throws SemanticException {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.spec().isUnpartitioned()) {
+      return null;
+    }
+
+    // Iceberg currently doesn't have publicly accessible partition transform information, hence use above string parse
+    List<PartitionTransformSpec> partitionTransformSpecs = getPartitionTransformSpec(hmsTable);
+
+    DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
+        hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+        hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+    List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
+    dpCtx.setCustomSortExpressions(customSortExprs);
+
+    Map<String, Integer> fieldOrderMap = Maps.newHashMap();
+    List<Types.NestedField> fields = table.schema().columns();
+    for (int i = 0; i < fields.size(); ++i) {
+      fieldOrderMap.put(fields.get(i).name(), i);
+    }
+
+    for (PartitionTransformSpec spec : partitionTransformSpecs) {
+      int order = fieldOrderMap.get(spec.getColumnName());
+      if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
+        customSortExprs.add(BUCKET_SORT_EXPR.apply(order, spec.getTransformParam().get()));
+      } else {
+        customSortExprs.add(cols -> cols.get(order).clone());
+      }
+    }
+
+    return dpCtx;
   }
 
   @Override

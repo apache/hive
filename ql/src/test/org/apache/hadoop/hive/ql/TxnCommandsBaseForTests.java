@@ -259,7 +259,6 @@ public abstract class TxnCommandsBaseForTests {
       default:
         throw new IllegalArgumentException("Unknown type: " + type);
     }
-    t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
     t.init(stop);
     t.run();

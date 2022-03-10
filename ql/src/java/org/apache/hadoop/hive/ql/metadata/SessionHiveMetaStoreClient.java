@@ -127,7 +127,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTabl
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeValsFromName;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -267,7 +266,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     GetTableRequest getTableRequest = new GetTableRequest(dbName, tableName);
     getTableRequest.setGetColumnStats(getColStats);
     getTableRequest.setEngine(engine);
-    if (!DEFAULT_CATALOG_NAME.equals(catName)) {
+    if (!getDefaultCatalog(conf).equals(catName)) {
       getTableRequest.setCatName(catName);
       return super.getTable(getTableRequest);
     } else {
@@ -649,13 +648,14 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   private org.apache.hadoop.hive.metastore.api.Table getTempTable(String dbName, String tableName)
       throws MetaException {
-    if (dbName == null) {
+    String parsedDbName = MetaStoreUtils.parseDbName(dbName, conf)[1];
+    if (parsedDbName == null) {
       throw new MetaException("Db name cannot be null");
     }
     if (tableName == null) {
       throw new MetaException("Table name cannot be null");
     }
-    Map<String, Table> tables = getTempTablesForDatabase(dbName.toLowerCase(),
+    Map<String, Table> tables = getTempTablesForDatabase(parsedDbName.toLowerCase(),
         tableName.toLowerCase());
     if (tables != null) {
       Table table = tables.get(tableName.toLowerCase());
@@ -1355,17 +1355,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-      List<String> partNames, boolean getColStats, String engine) throws TException {
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDb_name(), req.getTbl_name());
     if (table == null) {
       //(assume) not a temp table - Try underlying client
-      return super.getPartitionsByNames(catName, dbName, tblName, partNames, getColStats, engine);
+      return super.getPartitionsByNames(req);
     }
     TempTable tt = getPartitionedTempTable(table);
-    List<Partition> partitions = tt.getPartitionsByNames(partNames);
+    GetPartitionsByNamesResult result = new GetPartitionsByNamesResult();
+    result.setPartitions(deepCopyPartitions(tt.getPartitionsByNames(req.getNames())));
 
-    return deepCopyPartitions(partitions);
+    return result;
   }
 
   @Override

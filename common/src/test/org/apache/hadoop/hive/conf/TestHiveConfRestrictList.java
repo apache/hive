@@ -61,7 +61,7 @@ public class TestHiveConfRestrictList {
   }
 
   /**
-   * Test that restrict list config itselft can't be changed
+   * Test that restrict list config itself can't be changed
    * @throws Exception
    */
   @Test

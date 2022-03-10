@@ -29,11 +29,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingHMSHandler;
 import org.apache.hadoop.hive.metastore.TSetIpAddressProcessor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.common.DynConstructors;
 import org.apache.iceberg.common.DynMethods;
@@ -199,6 +201,10 @@ public class TestHiveMetastore {
 
   public Table getTable(TableIdentifier identifier) throws TException, InterruptedException {
     return getTable(identifier.namespace().toString(), identifier.name());
+  }
+
+  public <R> R run(ClientPool.Action<R, IMetaStoreClient, TException> action) throws InterruptedException, TException {
+    return clientPool.run(action, false);
   }
 
   private TServer newThriftServer(TServerSocket socket, int poolSize, HiveConf conf) throws Exception {

@@ -22,7 +22,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.AcidConstants;
 import org.apache.hadoop.hive.common.metrics.MetricsMBeanImpl;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataRequest;
@@ -263,30 +262,27 @@ public class AcidMetricService implements MetastoreTaskThread {
   }
 
   private void updateDeltaMetrics() {
-    org.apache.hadoop.hive.common.metrics.common.Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      try {
-        LOG.debug("Called reporting task.");
-        List<CompactionMetricsData> deltas = txnHandler.getTopCompactionMetricsDataPerType(maxCacheSize);
-        Map<String, Integer> deltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_DELTAS).collect(
-            Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
-                CompactionMetricsData::getMetricValue));
-        updateDeltaMBeanAndMetric(deltaObject, COMPACTION_NUM_DELTAS, deltasMap);
+    try {
+      LOG.debug("Called reporting task.");
+      List<CompactionMetricsData> deltas = txnHandler.getTopCompactionMetricsDataPerType(maxCacheSize);
+      Map<String, Integer> deltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_DELTAS).collect(
+          Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
+              CompactionMetricsData::getMetricValue));
+      updateDeltaMBeanAndMetric(deltaObject, COMPACTION_NUM_DELTAS, deltasMap);
 
-        Map<String, Integer> smallDeltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_SMALL_DELTAS)
-            .collect(
-                Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
-                    CompactionMetricsData::getMetricValue));
-        updateDeltaMBeanAndMetric(smallDeltaObject, COMPACTION_NUM_SMALL_DELTAS, smallDeltasMap);
+      Map<String, Integer> smallDeltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_SMALL_DELTAS)
+          .collect(
+              Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
+                  CompactionMetricsData::getMetricValue));
+      updateDeltaMBeanAndMetric(smallDeltaObject, COMPACTION_NUM_SMALL_DELTAS, smallDeltasMap);
 
-        Map<String, Integer> obsoleteDeltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_OBSOLETE_DELTAS)
-            .collect(
-                Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
-                    CompactionMetricsData::getMetricValue));
-        updateDeltaMBeanAndMetric(obsoleteDeltaObject, COMPACTION_NUM_OBSOLETE_DELTAS, obsoleteDeltasMap);
-      } catch (Throwable e) {
-        LOG.warn("Caught exception while trying to fetch compaction metrics from metastore backend db.", e);
-      }
+      Map<String, Integer> obsoleteDeltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_OBSOLETE_DELTAS)
+          .collect(
+              Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
+                  CompactionMetricsData::getMetricValue));
+      updateDeltaMBeanAndMetric(obsoleteDeltaObject, COMPACTION_NUM_OBSOLETE_DELTAS, obsoleteDeltasMap);
+    } catch (Throwable e) {
+      LOG.warn("Caught exception while trying to fetch compaction metrics from metastore backend db.", e);
     }
   }
 
@@ -298,7 +294,7 @@ public class AcidMetricService implements MetastoreTaskThread {
 
   private void updateMetrics() throws MetaException {
     ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-    updateMetricsFromShowCompact(currentCompactions, conf);
+    updateMetricsFromShowCompact(currentCompactions);
     updateDBMetrics();
   }
 
@@ -322,7 +318,7 @@ public class AcidMetricService implements MetastoreTaskThread {
   }
 
   @VisibleForTesting
-  public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse, Configuration conf) {
+  public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse) {
     CompactionMetricData metricData = CompactionMetricData.of(showCompactResponse.getCompacts());
 
     // Get the current count for each state
@@ -341,9 +337,9 @@ public class AcidMetricService implements MetastoreTaskThread {
       }
     }
 
-    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, metricData.getOldestEnqueueTime(), conf);
-    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, metricData.getOldestWorkingTime(), conf);
-    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, metricData.getOldestCleaningTime(), conf);
+    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, metricData.getOldestEnqueueTime());
+    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, metricData.getOldestWorkingTime());
+    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, metricData.getOldestCleaningTime());
 
     Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS)
         .set((int) metricData.getInitiatorsCount());
@@ -356,7 +352,7 @@ public class AcidMetricService implements MetastoreTaskThread {
         .set((int) metricData.getWorkerVersionsCount());
   }
 
-  private static void updateOldestCompactionMetric(String metricName, Long oldestTime, Configuration conf) {
+  private static void updateOldestCompactionMetric(String metricName, Long oldestTime) {
     if (oldestTime == null) {
       Metrics.getOrCreateGauge(metricName)
           .set(0);

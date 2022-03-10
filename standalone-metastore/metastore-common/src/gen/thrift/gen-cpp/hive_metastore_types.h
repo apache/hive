@@ -10175,7 +10175,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10187,6 +10187,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool errorMessage :1;
   bool hasoldabort :1;
   bool enqueueTime :1;
+  bool retryRetention :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -10194,7 +10195,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
 
   CompactionInfoStruct(const CompactionInfoStruct&);
   CompactionInfoStruct& operator=(const CompactionInfoStruct&);
-  CompactionInfoStruct() : id(0), dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), properties(), toomanyaborts(0), state(), workerId(), start(0), highestWriteId(0), errorMessage(), hasoldabort(0), enqueueTime(0) {
+  CompactionInfoStruct() : id(0), dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), properties(), toomanyaborts(0), state(), workerId(), start(0), highestWriteId(0), errorMessage(), hasoldabort(0), enqueueTime(0), retryRetention(0) {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -10217,6 +10218,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   std::string errorMessage;
   bool hasoldabort;
   int64_t enqueueTime;
+  int64_t retryRetention;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -10249,6 +10251,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_hasoldabort(const bool val);
 
   void __set_enqueueTime(const int64_t val);
+
+  void __set_retryRetention(const int64_t val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -10303,6 +10307,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
     if (__isset.enqueueTime != rhs.__isset.enqueueTime)
       return false;
     else if (__isset.enqueueTime && !(enqueueTime == rhs.enqueueTime))
+      return false;
+    if (__isset.retryRetention != rhs.__isset.retryRetention)
+      return false;
+    else if (__isset.retryRetention && !(retryRetention == rhs.retryRetention))
       return false;
     return true;
   }

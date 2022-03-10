@@ -4489,6 +4489,7 @@ class CompactionInfoStruct
   ERRORMESSAGE = 13
   HASOLDABORT = 14
   ENQUEUETIME = 15
+  RETRYRETENTION = 16
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -4505,7 +4506,8 @@ class CompactionInfoStruct
     HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
     HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
-    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
+    RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true}
   }
 
   def struct_fields; FIELDS; end

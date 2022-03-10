@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 /**
- * Generic Metics interface.
+ * Generic Metrics interface.
  */
 public interface Metrics {
 
@@ -112,7 +112,7 @@ public interface Metrics {
                            MetricsVariable<Integer> denominator);
 
   /**
-   * Mark an event occurance for a meter. Meters measure the rate of an event and track
+   * Mark an event occurrence for a meter. Meters measure the rate of an event and track
    * 1/5/15 minute moving averages
    * @param name name of the meter
    */

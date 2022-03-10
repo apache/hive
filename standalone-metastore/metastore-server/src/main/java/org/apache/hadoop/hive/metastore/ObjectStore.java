@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -3678,6 +3677,39 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
+    boolean success = false;
+    Query query = null;
+    Long result;
+    try {
+      openTransaction();
+      LOG.debug("executing getNumPartitionsByPs");
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tblName = normalizeIdentifier(tblName);
+      Table table = getTable(catName, dbName, tblName);
+      if (table == null) {
+        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
+            + " table not found");
+      }
+      // size is known since it contains dbName, catName, tblName and partialRegex pattern
+      Map<String, String> params = new HashMap<>(4);
+      String filter = getJDOFilterStrForPartitionVals(table, partVals, params);
+      query = pm.newQuery(
+          "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"
+      );
+      query.setFilter(filter);
+      query.declareParameters(makeParameterDeclarationString(params));
+      result = (Long) query.executeWithMap(params);
+      success = commitTransaction();
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    return result.intValue();
+  }
+
   /**
    * Retrieves a Collection of partition-related results from the database that match
    *  the partial specification given for a specific table.
@@ -3939,8 +3971,8 @@ public class ObjectStore implements RawStore, Configurable {
       boolean allowSql, boolean allowJdo) throws TException {
     assert result != null;
 
-    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr,
-                                                    getDefaultPartitionName(defaultPartitionName), conf);
+    final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
+          expressionProxy, expr, getDefaultPartitionName(defaultPartitionName), conf) : ExpressionTree.EMPTY_TREE;
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     catName = normalizeIdentifier(catName);
@@ -3958,7 +3990,7 @@ public class ObjectStore implements RawStore, Configurable {
           SqlFilterForPushdown filter = new SqlFilterForPushdown();
           if (directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
               exprTree, defaultPartitionName, filter)) {
-            String catalogName = (catName != null) ? catName : DEFAULT_CATALOG_NAME;
+            String catalogName = (catName != null) ? catName : getDefaultCatalog(conf);
             return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter, null, isAcidTable);
           }
         }

@@ -233,7 +233,6 @@ public class TestCompactor {
     txnHandler.compact(rqst);
 
     Worker worker = Mockito.spy(new Worker());
-    worker.setThreadId((int) worker.getId());
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
     FieldSetter.setField(worker, RemoteCompactorThread.class.getDeclaredField("msc"), mockedClient);
@@ -1830,7 +1829,6 @@ public class TestCompactor {
       String dbName, String tblName, String... partNames) throws Exception {
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(conf);
     t.init(new AtomicBoolean(true));
     if (partNames.length == 0) {
@@ -2057,7 +2055,6 @@ public class TestCompactor {
     //Run MajorCompaction
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(conf);
     t.init(new AtomicBoolean(true));
     CompactionRequest Cr = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);

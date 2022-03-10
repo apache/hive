@@ -257,7 +257,7 @@ fi
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres','mysql']) {
+  for (def d in ['derby','postgres','mysql','oracle']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -303,6 +303,13 @@ set -e
 dev-support/nightly
 '''
             buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+        }
+        stage('Verify') {
+            sh '''#!/bin/bash
+set -e
+tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
+'''
+            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
         }
       }
   }

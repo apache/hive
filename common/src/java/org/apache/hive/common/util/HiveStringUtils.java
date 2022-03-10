@@ -298,7 +298,7 @@ public class HiveStringUtils {
    *
    * Given a finish and start time in long milliseconds, returns a
    * String in the format Xhrs, Ymins, Z sec, for the time difference between two times.
-   * If finish time comes before start time then negative valeus of X, Y and Z wil return.
+   * If finish time comes before start time then negative values of X, Y and Z will return.
    *
    * @param finishTime finish time
    * @param startTime start time
@@ -342,7 +342,7 @@ public class HiveStringUtils {
    * If finish time is 0, empty string is returned, if start time is 0
    * then difference is not appended to return value.
    * @param dateFormat date format to use
-   * @param finishTime fnish time
+   * @param finishTime finish time
    * @param startTime start time
    * @return formatted value.
    */
@@ -360,8 +360,8 @@ public class HiveStringUtils {
 
   /**
    * Returns an arraylist of strings.
-   * @param str the comma seperated string values
-   * @return the arraylist of the comma seperated string values
+   * @param str the comma separated string values
+   * @return the arraylist of the comma separated string values
    */
   public static String[] getStrings(String str){
     Collection<String> values = getStringCollection(str);
@@ -373,7 +373,7 @@ public class HiveStringUtils {
 
   /**
    * Returns a collection of strings.
-   * @param str comma seperated string values
+   * @param str comma separated string values
    * @return an <code>ArrayList</code> of string values
    */
   public static Collection<String> getStringCollection(String str){

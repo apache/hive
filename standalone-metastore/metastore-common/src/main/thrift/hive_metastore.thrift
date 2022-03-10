@@ -1297,6 +1297,7 @@ struct CompactionInfoStruct {
     13: optional string errorMessage
     14: optional bool hasoldabort
     15: optional i64 enqueueTime
+    16: optional i64 retryRetention
 }
 
 struct OptionalCompactionInfoStruct {
@@ -3135,6 +3136,7 @@ const string TABLE_BUCKETING_VERSION = "bucketing_version",
 const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
 const string TABLE_IS_CTAS = "created_with_ctas",
+const string TABLE_IS_CTLT = "created_with_ctlt",
 const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
 const string NO_CLEANUP = "no_cleanup",
 const string CTAS_LEGACY_CONFIG = "create_table_as_external",

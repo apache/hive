@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -97,7 +98,7 @@ public class MetaStoreUtils {
   public static final char CATALOG_DB_THRIFT_NAME_MARKER = '@';
 
   /**
-   * This String is used to seaprate the catalog name from the database name.  This should only
+   * This String is used to separate the catalog name from the database name.  This should only
    * be used in Strings that are prepended with {@link #CATALOG_DB_THRIFT_NAME_MARKER}.  # is
    * chosen because it is not used in regular expressions.  this is only intended for use when
    * making old Thrift calls that do not support catalog names.
@@ -1134,5 +1135,26 @@ public class MetaStoreUtils {
       noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP.toUpperCase());
     }
     return noCleanUp != null && noCleanUp.equalsIgnoreCase("true");
+  }
+
+  public static GetPartitionsByNamesRequest convertToGetPartitionsByNamesRequest(String dbName, String tblName,
+      List<String> partNames) {
+    GetPartitionsByNamesRequest result = new GetPartitionsByNamesRequest(dbName, tblName);
+    result.setNames(partNames);
+    result.setGet_col_stats(false);
+    return result;
+  }
+
+  public static GetPartitionsByNamesRequest convertToGetPartitionsByNamesRequest(String dbName, String tblName,
+      List<String> partNames, boolean getColStats, String engine, String validWriteIdList, Long tableId) {
+    GetPartitionsByNamesRequest result = new GetPartitionsByNamesRequest(dbName, tblName);
+    result.setNames(partNames);
+    result.setGet_col_stats(getColStats);
+    result.setEngine(engine);
+    result.setValidWriteIdList(validWriteIdList);
+    if (tableId != null) {
+      result.setId(tableId);
+    }
+    return result;
   }
 }

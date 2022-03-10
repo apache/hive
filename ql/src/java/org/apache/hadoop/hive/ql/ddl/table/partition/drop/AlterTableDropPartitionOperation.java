@@ -123,7 +123,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
       partitionExpressions.add(Pair.of(partSpec.getPrefixLength(),
-          SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
+          SerializationUtilities.serializeObjectWithTypeInformation(partSpec.getPartSpec())));
     }
 
     PartitionDropOptions options =

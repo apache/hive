@@ -30,6 +30,10 @@ import java.util.Properties;
 public class StringableMap extends HashMap<String, String> {
 
   public StringableMap(String s) {
+    super();
+    if (s == null || s.isEmpty()) {
+      return;
+    }
     String[] parts = s.split(":", 2);
     // read that many chars
     int numElements = Integer.parseInt(parts[0]);

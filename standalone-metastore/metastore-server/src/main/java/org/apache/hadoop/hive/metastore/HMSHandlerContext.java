@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -33,8 +32,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 public final class HMSHandlerContext {
 
   private static final ThreadLocal<HMSHandlerContext> context = ThreadLocal.withInitial(() -> new HMSHandlerContext());
-
-  private static final AtomicInteger nextSerialNum = new AtomicInteger();
 
   private RawStore rawStore;
 
@@ -50,7 +47,6 @@ public final class HMSHandlerContext {
   // Thread local Map to keep track of modified meta conf keys
   private Map<String, String> modifiedConfig = new HashMap<>();
 
-  private Integer threadId = nextSerialNum.incrementAndGet();
   // This will only be set if the metastore is being accessed from a metastore Thrift server,
   // not if it is from the CLI. Also, only if the TTransport being used to connect is an
   // instance of TSocket. This is also not set when kerberos is used.
@@ -86,10 +82,6 @@ public final class HMSHandlerContext {
 
   public static Map<String, String> getModifiedConfig() {
     return context.get().modifiedConfig;
-  }
-
-  public static Integer getThreadId() {
-    return context.get().threadId;
   }
 
   public static Map<String, com.codahale.metrics.Timer.Context> getTimerContexts() {

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
@@ -520,8 +521,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       client.alter_table_req(req);
       if (hook != null) {
-        PartitionSpecProxy partitionSpecProxy = listPartitionSpecs(dbname, tbl_name, Integer.MAX_VALUE);
-        hook.commitAlterTable(new_tbl, envContext, partitionSpecProxy);
+        hook.commitAlterTable(new_tbl, envContext);
       }
       success = true;
     } finally {
@@ -565,8 +565,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       client.alter_table_req(req);
       if (hook != null) {
-        PartitionSpecProxy partitionSpecProxy = listPartitionSpecs(catName, dbName, tbl_name, Integer.MAX_VALUE);
-        hook.commitAlterTable(new_tbl, envContext, partitionSpecProxy);
+        hook.commitAlterTable(new_tbl, envContext);
       }
       success = true;
     } finally {
@@ -2318,12 +2317,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
-  }
-
-  @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
       throws NoSuchObjectException, MetaException, TException {
 
@@ -2338,92 +2331,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-          throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
-          throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
-      validWriteIdList, tableId);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
    */
   @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
-      validWriteIdList, tableId);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-            throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats, engine,
-      null, null);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
-            throws TException {
-    checkDbAndTableFilters(catName, db_name, tbl_name);
-    GetPartitionsByNamesRequest gpbnr =
-            new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
-                    tbl_name);
-    gpbnr.setNames(part_names);
-    gpbnr.setGet_col_stats(getColStats);
-    if( validWriteIdList != null) {
-      gpbnr.setValidWriteIdList(validWriteIdList);
-    }else {
-      gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
-    }
-    if( tableId != null) {
-      gpbnr.setId(tableId);
-    }
-    if (getColStats) {
-      gpbnr.setEngine(engine);
-    }
-    if (processorCapabilities != null)
-      gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      gpbnr.setProcessorIdentifier(processorIdentifier);
-    List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
-    return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(
+        MetaStoreUtils.prependCatalogToDbName(catName, db_name, conf), tbl_name, part_names);
+    return getPartitionsByNames(req).getPartitions();
   }
 
   @Override
