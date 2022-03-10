@@ -480,7 +480,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // TODO ZZZ: HMS seems to have it's own set of handlers. Not sure if the threadpool here is actually required.
     HMSHandler baseHandler = new HMSHandler("new db based metaserver",
-        conf,false);
+        conf);
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
