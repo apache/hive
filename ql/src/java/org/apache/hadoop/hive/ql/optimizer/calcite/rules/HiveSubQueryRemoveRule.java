@@ -117,7 +117,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       final RexNode target =
           apply(call.getMetadataQuery(), e, HiveFilter.getVariablesSet(e), logic, builder, 1,
-              fieldCount, isCorrScalarQuery);
+              fieldCount, isCorrScalarQuery, true);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.filter(shuttle.apply(filter.getCondition()));
       builder.project(fields(builder, filter.getRowType().getFieldCount()));
@@ -140,7 +140,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       final RexNode target =
           apply(call.getMetadataQuery(), e, HiveFilter.getVariablesSet(e), logic, builder, 1,
-              fieldCount, isCorrScalarQuery);
+              fieldCount, isCorrScalarQuery, false);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.project(shuttle.apply(project.getProjects()), project.getRowType().getFieldNames());
       call.transformTo(builder.build());
@@ -323,7 +323,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
   private RexNode rewriteInExists(RexSubQuery e, Set<CorrelationId> variablesSet,
       RelOptUtil.Logic logic, RelBuilder builder, int offset,
-      boolean isCorrScalarAgg) {
+      boolean isCorrScalarAgg, boolean inWhereClause) {
     // Most general case, where the left and right keys might have nulls, and
     // caller requires 3-valued logic return.
     //
@@ -430,6 +430,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     // First, the cross join
     switch (logic) {
     case TRUE_FALSE_UNKNOWN:
+      if (inWhereClause) {
+        break;
+      }
     case UNKNOWN_AS_TRUE:
       // Since EXISTS/NOT EXISTS are not affected by presence of
       // null keys we do not need to generate count(*), count(c)
@@ -523,6 +526,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     final ImmutableList.Builder<RexNode> operands = ImmutableList.builder();
     switch (logic) {
     case TRUE_FALSE_UNKNOWN:
+      if (inWhereClause) {
+        break;
+      }
     case UNKNOWN_AS_TRUE:
       operands.add(builder.equals(builder.field("ct", "c"), builder.literal(0)),
           builder.literal(false));
@@ -548,6 +554,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     RexNode b = builder.literal(true);
     switch (logic) {
     case TRUE_FALSE_UNKNOWN:
+      if (inWhereClause) {
+        break;
+      }
       b = e.rel.getCluster().getRexBuilder().makeNullLiteral(SqlTypeName.BOOLEAN);
       // fall through
     case UNKNOWN_AS_TRUE:
@@ -562,7 +571,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
   protected RexNode apply(RelMetadataQuery mq, RexSubQuery e, Set<CorrelationId> variablesSet,
       RelOptUtil.Logic logic, RelBuilder builder, int inputCount, int offset,
-      boolean isCorrScalarAgg) {
+      boolean isCorrScalarAgg, boolean inWhereClause) {
     switch (e.getKind()) {
     case SCALAR_QUERY:
       return rewriteScalar(mq, e, variablesSet, builder, offset, inputCount, isCorrScalarAgg);
@@ -570,7 +579,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       return rewriteSomeAll(e, variablesSet, builder);
     case IN:
     case EXISTS:
-      return rewriteInExists(e, variablesSet, logic, builder, offset, isCorrScalarAgg);
+      return rewriteInExists(e, variablesSet, logic, builder, offset, isCorrScalarAgg, inWhereClause);
     default:
       throw new AssertionError(e.getKind());
     }
