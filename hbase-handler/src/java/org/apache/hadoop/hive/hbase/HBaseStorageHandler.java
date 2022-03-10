@@ -297,12 +297,12 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     String hbase_host = tableProperties.containsKey(HBASE_HOST_NAME)? tableProperties.get(HBASE_HOST_NAME) : hbaseConf.get(HBASE_HOST_NAME);
     String hbase_port = tableProperties.containsKey(HBASE_CLIENT_PORT)? tableProperties.get(HBASE_CLIENT_PORT) : hbaseConf.get(HBASE_CLIENT_PORT);
     String table_name = tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME, null);
-    String column_family =
-        URLEncoder.encode(tableProperties.getOrDefault(HBaseSerDe.HBASE_COLUMNS_MAPPING, null));
-    if (column_family != null)
-      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name+"/"+column_family);
-    else
-      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name);
+    String column_family = tableProperties.getOrDefault(HBaseSerDe.HBASE_COLUMNS_MAPPING, null);
+    String URIString = HBASE_PREFIX + "//" + hbase_host + ":" + hbase_port + "/" + table_name;
+    if (column_family != null) {
+      URIString += "/" + column_family;
+    }
+    return new URI(URLEncoder.encode(URIString));
   }
 
   /**
