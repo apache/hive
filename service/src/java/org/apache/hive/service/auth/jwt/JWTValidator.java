@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.auth.jwt;
 
+import com.google.common.base.Preconditions;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
@@ -53,19 +54,20 @@ public class JWTValidator {
     List<JWK> matchedJWKS = jwksProvider.getJWKs(parsedJwt.getHeader());
 
     // verify signature
+    Exception lastException = null;
     for (JWK matchedJWK : matchedJWKS) {
       try {
         JWSVerifier verifier = getVerifier(parsedJwt.getHeader(), matchedJWK);
         if (parsedJwt.verify(verifier)) {
           break;
         }
-      } catch (JOSEException e) {
-        LOG.info("Failed to verify JWT {} by JWK {} because {}", parsedJwt.getHeader(), matchedJWK.getKeyID(),
-            e.getMessage());
+      } catch (Exception e) {
+        lastException = e;
+        LOG.warn("Failed to verify JWT {} by JWK {}", parsedJwt.getPayload(), matchedJWK, e);
       }
     }
     if (parsedJwt.getState() != JWSObject.State.VERIFIED) {
-      throw new AuthenticationException("Failed to verify JWT signature");
+      throw new AuthenticationException("Failed to verify JWT signature", lastException);
     }
 
     // verify claims
@@ -83,12 +85,8 @@ public class JWTValidator {
   }
 
   private static JWSVerifier getVerifier(JWSHeader header, JWK jwk) throws JOSEException {
-    Key key = null;
-    if (jwk instanceof AsymmetricJWK) {
-      key = ((AsymmetricJWK) jwk).toPublicKey();
-    } else {
-      LOG.debug("Symmetric JWK cannot be used: kid={}, alg={}", jwk.getKeyID(), jwk.getAlgorithm());
-    }
-    return key != null ? verifierFactory.createJWSVerifier(header, key) : null;
+    Preconditions.checkArgument(jwk instanceof AsymmetricJWK, "Secret key is not allowed.");
+    Key key = ((AsymmetricJWK) jwk).toPublicKey();
+    return verifierFactory.createJWSVerifier(header, key);
   }
 }
