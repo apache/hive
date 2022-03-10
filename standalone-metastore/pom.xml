@@ -30,7 +30,7 @@
     <module>metastore-tools</module>
   </modules>
   <properties>
-    <hive.version>4.0.0-SNAPSHOT</hive.version>
+    <hive.version>4.0.0-alpha-1-SNAPSHOT</hive.version>
     <hive.version.shortname>4.0.0-alpha-1</hive.version.shortname>
     <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
     <!-- Build properties -->
