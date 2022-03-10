@@ -195,5 +195,8 @@ CREATE TABLE COMPACTION_METRICS_CACHE (
     CMC_VERSION integer NOT NULL
 );
 
+-- HIVE-25993
+ALTER TABLE "APP"."COMPACTION_QUEUE" ADD COLUMN "CQ_RETRY_RETENTION" bigint NOT NULL DEFAULT 0;
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;

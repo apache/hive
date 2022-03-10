@@ -1297,6 +1297,7 @@ struct CompactionInfoStruct {
     13: optional string errorMessage
     14: optional bool hasoldabort
     15: optional i64 enqueueTime
+    16: optional i64 retryRetention
 }
 
 struct OptionalCompactionInfoStruct {

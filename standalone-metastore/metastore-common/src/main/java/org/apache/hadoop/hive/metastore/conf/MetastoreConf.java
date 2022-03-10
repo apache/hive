@@ -613,6 +613,14 @@ public class MetastoreConf {
         "metastore.compactor.enable.stats.compression",
         "metastore.compactor.enable.stats.compression", true,
         "Can be used to disable compression and ORC indexes for files produced by minor compaction."),
+    HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS("hive.compactor.cleaner.retry.maxattempts",
+            "hive.compactor.cleaner.retry.maxattempts", 5, new RangeValidator(0, 10),
+            "Maximum number of attempts to clean a table again after a failed cycle. Must be between 0 and 10," +
+                "where 0 means the feature is turned off, the cleaner wont't retry after a failed cycle."),
+    HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME("hive.compactor.cleaner.retry.retention.time",
+            "hive.compactor.cleaner.retry.retentionTime", 300, TimeUnit.SECONDS, new TimeValidator(TimeUnit.SECONDS),
+            "Initial value of the cleaner retry retention time. The delay has a backoff, and calculated the following way: " +
+            "pow(2, number_of_failed_attempts) * HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
         "Driver class name for a JDBC metastore"),

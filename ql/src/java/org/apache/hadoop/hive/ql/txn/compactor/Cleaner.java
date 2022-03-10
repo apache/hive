@@ -56,7 +56,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -86,12 +85,17 @@ import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAM
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getIntVar;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
  */
 public class Cleaner extends MetaStoreCompactorThread {
+
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private long cleanerCheckInterval = 0;
@@ -120,11 +124,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
-        boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
-        long retentionTime = 0;
-        if (delayedCleanupEnabled) {
-          retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
-        }
+        long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
+                ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
+                : 0;
 
         // Make sure nothing escapes this run method and kills the metastore at large,
         // so wrap it in a big catch Throwable statement.
@@ -208,14 +210,13 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (metricsEnabled) {
         perfLogger.perfLogBegin(CLASS_NAME, cleanerMetric);
       }
-      Optional<String> location = Optional.ofNullable(ci.properties).map(StringableMap::new)
-          .map(config -> config.get("location"));
+      final String location = ci.getProperty("location");
 
       Callable<Boolean> cleanUpTask;
       Table t = null;
       Partition p = null;
 
-      if (!location.isPresent()) {
+      if (location == null) {
         t = resolveTable(ci);
         if (t == null) {
           // The table was dropped before we got around to cleaning it.
@@ -250,12 +251,13 @@ public class Cleaner extends MetaStoreCompactorThread {
       txnHandler.markCleanerStart(ci);
 
       if (t != null || ci.partName != null) {
-        Table finalT = t; Partition finalP = p;
-        String path = location.orElseGet(() -> resolveStorageDescriptor(finalT, finalP).getLocation());
+        String path = location == null
+            ? resolveStorageDescriptor(t, p).getLocation()
+            : location;
         boolean dropPartition = ci.partName != null && p == null;
         cleanUpTask = () -> removeFiles(path, minOpenTxnGLB, ci, dropPartition);
       } else {
-        cleanUpTask = () -> removeFiles(location.get(), ci);
+        cleanUpTask = () -> removeFiles(location, ci);
       }
 
       Ref<Boolean> removedFiles = Ref.from(false);
@@ -289,11 +291,27 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
       }
-      txnHandler.markFailed(ci);
-    } finally {
+      handleCleanerAttemptFailure(ci);
+    }  finally {
       if (metricsEnabled) {
         perfLogger.perfLogEnd(CLASS_NAME, cleanerMetric);
       }
+    }
+  }
+
+  private void handleCleanerAttemptFailure(CompactionInfo ci) throws MetaException {
+    long defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
+    int cleanAttempts = 0;
+    if (ci.retryRetention > 0) {
+      cleanAttempts = (int)(Math.log(ci.retryRetention / defaultRetention) / Math.log(2)) + 1;
+    }
+    if (cleanAttempts >= getIntVar(conf, HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS)) {
+      //Mark it as failed if the max attempt threshold is reached.
+      txnHandler.markFailed(ci);
+    } else {
+      //Calculate retry retention time and update record.
+      ci.retryRetention = (long)Math.pow(2, cleanAttempts) * defaultRetention;
+      txnHandler.setCleanerRetryRetentionTimeOnError(ci);
     }
   }
 
@@ -485,8 +503,8 @@ public class Cleaner extends MetaStoreCompactorThread {
     Path path = new Path(location);
     StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
 
-    boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
-      .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
+    String strIfPurge = ci.getProperty("ifPurge");
+    boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
 
     return remove(location, ci, Collections.singletonList(path), ifPurge,
       path.getFileSystem(conf), extraDebugInfo);
