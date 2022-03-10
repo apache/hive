@@ -50,6 +50,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $DRUID_CONFIG_PREFIX;
     static protected $JDBC_CONFIG_PREFIX;
     static protected $TABLE_IS_CTAS;
+    static protected $TABLE_IS_CTLT;
     static protected $PARTITION_TRANSFORM_SPEC;
     static protected $NO_CLEANUP;
     static protected $CTAS_LEGACY_CONFIG;
@@ -212,6 +213,11 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_TABLE_IS_CTAS()
     {
         return "created_with_ctas";
+    }
+
+    protected static function init_TABLE_IS_CTLT()
+    {
+        return "created_with_ctlt";
     }
 
     protected static function init_PARTITION_TRANSFORM_SPEC()

@@ -47,6 +47,7 @@ class hive_metastoreConstants {
   std::string DRUID_CONFIG_PREFIX;
   std::string JDBC_CONFIG_PREFIX;
   std::string TABLE_IS_CTAS;
+  std::string TABLE_IS_CTLT;
   std::string PARTITION_TRANSFORM_SPEC;
   std::string NO_CLEANUP;
   std::string CTAS_LEGACY_CONFIG;
