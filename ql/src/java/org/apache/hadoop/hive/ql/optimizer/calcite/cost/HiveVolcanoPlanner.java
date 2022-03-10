@@ -85,7 +85,6 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
       addRule(HiveDruidRules.FILTER_PROJECT_TRANSPOSE);
       addRule(HiveDruidRules.SORT_PROJECT_TRANSPOSE);
       addRule(HiveDruidRules.SORT);
-      addRule(HiveDruidRules.PROJECT_SORT_TRANSPOSE);
       return;
     }
     super.registerClass(node);
@@ -123,9 +122,12 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
     Multimap<Class<? extends RelNode>, RelNode> nodeTypes =
         mq.getNodeTypes(rel);
     for (RelNode scan : nodeTypes.get(TableScan.class)) {
-      if (((RelOptHiveTable) scan.getTable()).getHiveTableMD().isMaterializedView()) {
-        usesMaterializedViews = true;
-        break;
+      if (scan.getTable() instanceof RelOptHiveTable) {
+        RelOptHiveTable relOptHiveTable = (RelOptHiveTable) scan.getTable();
+        if (relOptHiveTable.getHiveTableMD().isMaterializedView()) {
+          usesMaterializedViews = true;
+          break;
+        }
       }
     }
     if (isHeuristic && usesMaterializedViews) {

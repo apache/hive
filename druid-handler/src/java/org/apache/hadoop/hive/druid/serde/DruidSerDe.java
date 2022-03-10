@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -67,8 +66,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,16 +86,18 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
 /**
  * DruidSerDe that is used to  deserialize objects from a Druid data source.
  */
-@SerDeSpec(schemaProps = { Constants.DRUID_DATA_SOURCE }) public class DruidSerDe extends AbstractSerDe {
-
-  private static final Logger LOG = LoggerFactory.getLogger(DruidSerDe.class);
+@SerDeSpec(schemaProps = { Constants.DRUID_DATA_SOURCE })
+public class DruidSerDe extends AbstractSerDe {
 
   private String[] columns;
   private PrimitiveTypeInfo[] types;
   private ObjectInspector inspector;
   private TimestampLocalTZTypeInfo tsTZTypeInfo;
 
-  @Override public void initialize(Configuration configuration, Properties properties) throws SerDeException {
+  @Override
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     tsTZTypeInfo = new TimestampLocalTZTypeInfo(configuration.get(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname));
     // Druid query
@@ -117,8 +116,8 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         initFromMetaDataQuery(configuration, properties);
       }
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("DruidSerDe initialized with\n"
+    if (log.isDebugEnabled()) {
+      log.debug("DruidSerDe initialized with\n"
           + "\t columns: "
           + Arrays.toString(columns)
           + "\n\t types: "
@@ -385,11 +384,6 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     }
 
     return new DruidWritable(value);
-  }
-
-  @Override public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
   /**

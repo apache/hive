@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableUtils;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -75,13 +74,6 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
     part.setValues(desc.getNewPartSpec());
 
     long writeId = desc.getWriteId();
-    if (replicationSpec != null && replicationSpec.isMigratingToTxnTable()) {
-      Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
-      if (tmpWriteId == null) {
-        throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-      }
-      writeId = tmpWriteId;
-    }
 
     context.getDb().renamePartition(tbl, oldPartSpec, part, writeId);
     Partition newPart = context.getDb().getPartition(tbl, desc.getNewPartSpec(), false);

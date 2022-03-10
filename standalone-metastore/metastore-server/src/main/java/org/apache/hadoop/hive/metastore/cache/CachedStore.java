@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -49,30 +50,18 @@ import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
-import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
-import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
-import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
-import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
-import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
-import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.*;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -86,7 +75,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -274,11 +263,6 @@ public class CachedStore implements RawStore, Configurable {
     rqst.addToEventTypeSkipList(MessageBuilder.ACID_WRITE_EVENT);
     rqst.addToEventTypeSkipList(MessageBuilder.CREATE_FUNCTION_EVENT);
     rqst.addToEventTypeSkipList(MessageBuilder.DROP_FUNCTION_EVENT);
-    rqst.addToEventTypeSkipList(MessageBuilder.ADD_PRIMARYKEY_EVENT);
-    rqst.addToEventTypeSkipList(MessageBuilder.ADD_FOREIGNKEY_EVENT);
-    rqst.addToEventTypeSkipList(MessageBuilder.ADD_UNIQUECONSTRAINT_EVENT);
-    rqst.addToEventTypeSkipList(MessageBuilder.ADD_NOTNULLCONSTRAINT_EVENT);
-    rqst.addToEventTypeSkipList(MessageBuilder.DROP_CONSTRAINT_EVENT);
     rqst.addToEventTypeSkipList(MessageBuilder.CREATE_ISCHEMA_EVENT);
     rqst.addToEventTypeSkipList(MessageBuilder.ALTER_ISCHEMA_EVENT);
     rqst.addToEventTypeSkipList(MessageBuilder.DROP_ISCHEMA_EVENT);
@@ -402,6 +386,41 @@ public class CachedStore implements RawStore, Configurable {
         sharedCache.removePartitionColStatsFromCache(catalogName, dbName, tableName, msgPart.getPartValues(),
             msgPart.getColName());
         break;
+      case MessageBuilder.ADD_PRIMARYKEY_EVENT:
+        AddPrimaryKeyMessage addPrimaryKeyMessage = deserializer.getAddPrimaryKeyMessage(message);
+        sharedCache.addPrimaryKeysToCache(catalogName, dbName, tableName, addPrimaryKeyMessage.getPrimaryKeys());
+        break;
+      case MessageBuilder.ADD_FOREIGNKEY_EVENT:
+        AddForeignKeyMessage addForeignKeyMessage = deserializer.getAddForeignKeyMessage(message);
+        for (SQLForeignKey fk : addForeignKeyMessage.getForeignKeys()) {
+          // This is done because dbName and tblName for Foreign key events are currently set to PK table and db.
+          sharedCache.addForeignKeysToCache(catalogName, fk.getFktable_db(), fk.getFktable_name(), Arrays.asList(fk));
+        }
+        break;
+      case MessageBuilder.ADD_NOTNULLCONSTRAINT_EVENT:
+        AddNotNullConstraintMessage notNullConstraintMessage = deserializer.getAddNotNullConstraintMessage(message);
+        sharedCache.addNotNullConstraintsToCache(catalogName, dbName, tableName,
+            notNullConstraintMessage.getNotNullConstraints());
+        break;
+      case MessageBuilder.ADD_UNIQUECONSTRAINT_EVENT:
+        AddUniqueConstraintMessage uniqueConstraintMessage = deserializer.getAddUniqueConstraintMessage(message);
+        sharedCache.addUniqueConstraintsToCache(catalogName, dbName, tableName,
+            uniqueConstraintMessage.getUniqueConstraints());
+        break;
+      case MessageBuilder.ADD_DEFAULTCONSTRAINT_EVENT:
+        AddDefaultConstraintMessage defaultConstraintMessage = deserializer.getAddDefaultConstraintMessage(message);
+        sharedCache.addDefaultConstraintsToCache(catalogName, dbName, tableName,
+            defaultConstraintMessage.getDefaultConstraints());
+        break;
+      case MessageBuilder.ADD_CHECKCONSTRAINT_EVENT:
+        AddCheckConstraintMessage checkConstraintMessage = deserializer.getAddCheckConstraintMessage(message);
+        sharedCache
+            .addCheckConstraintsToCache(catalogName, dbName, tableName, checkConstraintMessage.getCheckConstraints());
+        break;
+      case MessageBuilder.DROP_CONSTRAINT_EVENT:
+        DropConstraintMessage dropConstraintMessage = deserializer.getDropConstraintMessage(message);
+        sharedCache.removeConstraintFromCache(catalogName, dbName, tableName, dropConstraintMessage.getConstraint());
+        break;
       default:
         LOG.error("Event is not supported for cache invalidation : " + event.getEventType());
       }
@@ -501,10 +520,12 @@ public class CachedStore implements RawStore, Configurable {
               List<ColumnStatistics> partitionColStats = null;
               AggrStats aggrStatsAllPartitions = null;
               AggrStats aggrStatsAllButDefaultPartition = null;
+              TableCacheObjects cacheObjects = new TableCacheObjects();
               if (!table.getPartitionKeys().isEmpty()) {
                 Deadline.startTimer("getPartitions");
                 partitions = rawStore.getPartitions(catName, dbName, tblName, -1);
                 Deadline.stopTimer();
+                cacheObjects.setPartitions(partitions);
                 List<String> partNames = new ArrayList<>(partitions.size());
                 for (Partition p : partitions) {
                   partNames.add(Warehouse.makePartName(table.getPartitionKeys(), p.getValues()));
@@ -515,11 +536,13 @@ public class CachedStore implements RawStore, Configurable {
                   partitionColStats =
                       rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
                   Deadline.stopTimer();
+                  cacheObjects.setPartitionColStats(partitionColStats);
                   // Get aggregate stats for all partitions of a table and for all but default
                   // partition
                   Deadline.startTimer("getAggrPartitionColumnStatistics");
                   aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
                   Deadline.stopTimer();
+                  cacheObjects.setAggrStatsAllPartitions(aggrStatsAllPartitions);
                   // Remove default partition from partition names and get aggregate
                   // stats again
                   List<FieldSchema> partKeys = table.getPartitionKeys();
@@ -537,16 +560,23 @@ public class CachedStore implements RawStore, Configurable {
                   aggrStatsAllButDefaultPartition =
                       rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
                   Deadline.stopTimer();
+                  cacheObjects.setAggrStatsAllButDefaultPartition(aggrStatsAllButDefaultPartition);
                 }
               } else {
                 Deadline.startTimer("getTableColumnStatistics");
                 tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, CacheUtils.HIVE_ENGINE);
                 Deadline.stopTimer();
+                cacheObjects.setTableColStats(tableColStats);
               }
+
+              Deadline.startTimer("getAllTableConstraints");
+              SQLAllTableConstraints tableConstraints = rawStore.getAllTableConstraints(new AllTableConstraintsRequest(catName, dbName, tblName));
+              Deadline.stopTimer();
+              cacheObjects.setTableConstraints(tableConstraints);
+
               // If the table could not cached due to memory limit, stop prewarm
               boolean isSuccess = sharedCache
-                  .populateTableInCache(table, tableColStats, partitions, partitionColStats, aggrStatsAllPartitions,
-                      aggrStatsAllButDefaultPartition);
+                  .populateTableInCache(table, cacheObjects);
               if (isSuccess) {
                 LOG.trace("Cached Database: {}'s Table: {}.", dbName, tblName);
               } else {
@@ -777,6 +807,8 @@ public class CachedStore implements RawStore, Configurable {
               updateTablePartitionColStats(rawStore, catName, dbName, tblName);
               // Update aggregate partition column stats for a table in cache
               updateTableAggregatePartitionColStats(rawStore, catName, dbName, tblName);
+              // Update Table Constraint
+              updateAllTableConstraints(rawStore, catName, dbName, tblName);
             }
           }
         }
@@ -851,8 +883,6 @@ public class CachedStore implements RawStore, Configurable {
             sharedCache.refreshTableColStatsInCache(StringUtils.normalizeIdentifier(catName),
                 StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName),
                 tableColStats.getStatsObj());
-            // Update the table to get consistent stats state.
-            sharedCache.alterTableInCache(catName, dbName, tblName, table);
           }
         }
         committed = rawStore.commitTransaction();
@@ -866,6 +896,29 @@ public class CachedStore implements RawStore, Configurable {
         }
       }
     }
+
+    private void updateAllTableConstraints(RawStore rawStore, String catName, String dbName, String tblName) {
+      catName = StringUtils.normalizeIdentifier(catName);
+      dbName = StringUtils.normalizeIdentifier(dbName);
+      tblName = StringUtils.normalizeIdentifier(tblName);
+      LOG.debug("CachedStore: updating cached table constraints objects for catalog: {}, database: {}, table: {}", catName,
+          dbName, tblName);
+      SQLAllTableConstraints constraints = null;
+      try {
+        Deadline.startTimer("getAllTableConstraints");
+        constraints = rawStore.getAllTableConstraints(new AllTableConstraintsRequest(catName, dbName, tblName));
+        Deadline.stopTimer();
+      } catch (MetaException | NoSuchObjectException e) {
+        LOG.info("Updating CachedStore: unable to update table constraints of catalog: " + catName + ", database: " + dbName
+            + ", table: " + tblName, e);
+      }
+      if (constraints != null) {
+        sharedCache.refreshAllTableConstraintsInCache(catName, dbName, tblName, constraints);
+        LOG.debug("CachedStore: updated cached table constraints objects for catalog: {}, database: {}, table: {}", catName,
+            dbName, tblName);
+      }
+    }
+
 
     private void updateTablePartitions(RawStore rawStore, String catName, String dbName, String tblName) {
       LOG.debug("CachedStore: updating cached partition objects for catalog: {}, database: {}, table: {}", catName,
@@ -900,13 +953,6 @@ public class CachedStore implements RawStore, Configurable {
               rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
-          Deadline.startTimer("getPartitionsByNames");
-          List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
-          Deadline.stopTimer();
-          // Also save partitions for consistency as they have the stats state.
-          for (Partition part : parts) {
-            sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
-          }
         }
         committed = rawStore.commitTransaction();
         LOG.debug("CachedStore: updated cached partition col stats objects for catalog: {}, database: {}, table: {}",
@@ -936,7 +982,7 @@ public class CachedStore implements RawStore, Configurable {
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
-          Deadline.startTimer("getAggregareStatsForAllPartitions");
+          Deadline.startTimer("getAggregateStatsForAllPartitions");
           AggrStats aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
@@ -950,7 +996,7 @@ public class CachedStore implements RawStore, Configurable {
           }
           String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
           partNames.remove(defaultPartitionName);
-          Deadline.startTimer("getAggregareStatsForAllPartitionsExceptDefault");
+          Deadline.startTimer("getAggregateStatsForAllPartitionsExceptDefault");
           AggrStats aggrStatsAllButDefaultPartition =
               rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
@@ -991,6 +1037,11 @@ public class CachedStore implements RawStore, Configurable {
     // So we will not update the cache during raw store operation but wait during commit transaction to make sure that
     // the event related to the current transactions are updated in the cache and thus we can support strong
     // consistency in case there is only one metastore.
+    updateCacheUsingEvents();
+    return true;
+  }
+
+  private void updateCacheUsingEvents() {
     if (canUseEvents) {
       try {
         triggerUpdateUsingEvent(rawStore);
@@ -999,7 +1050,6 @@ public class CachedStore implements RawStore, Configurable {
         LOG.error("Failed to update cache", e);
       }
     }
-    return true;
   }
 
   @Override public boolean isActiveTransaction() {
@@ -1038,7 +1088,7 @@ public class CachedStore implements RawStore, Configurable {
     return cat;
   }
 
-  @Override public List<String> getCatalogs() throws MetaException {
+  @Override public List<String> getCatalogs() {
     // in case of event based cache update, cache will not be updated for catalog.
     if (!sharedCache.isCatalogCachePrewarmed() || canUseEvents) {
       return rawStore.getCatalogs();
@@ -1057,6 +1107,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+    if (db.getType() == null) {
+      db.setType(DatabaseType.NATIVE);
+    }
     rawStore.createDatabase(db);
     // in case of event based cache update, cache will be updated during commit.
     if (!canUseEvents) {
@@ -1115,6 +1168,32 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.listCachedDatabases(catName);
   }
 
+  @Override public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    rawStore.createDataConnector(connector);
+  }
+
+  @Override public DataConnector getDataConnector(String dcName) throws NoSuchObjectException {
+    // in case of  event based cache update, cache will be updated during commit. So within active transaction, read
+    // directly from rawStore to avoid reading stale data as the data updated during same transaction will not be
+    // updated in the cache.
+      return rawStore.getDataConnector(dcName);
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcName) throws NoSuchObjectException, MetaException {
+     return rawStore.dropDataConnector(dcName);
+  }
+
+  @Override public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.alterDataConnector(dcName, connector);
+  }
+
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+      return rawStore.getAllDataConnectorNames();
+  }
+
   @Override public boolean createType(Type type) {
     return rawStore.createType(type);
   }
@@ -1159,6 +1238,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     validateTableType(tbl);
     sharedCache.addTableToCache(catName, dbName, tblName, tbl);
+    sharedCache.addTableConstraintsToCache(catName, dbName, tblName, new SQLAllTableConstraints());
   }
 
   @Override public boolean dropTable(String catName, String dbName, String tblName)
@@ -1181,7 +1261,12 @@ public class CachedStore implements RawStore, Configurable {
     return getTable(catName, dbName, tblName, null);
   }
 
-  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds)
+  @Override
+  public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
+    return getTable(catName, dbName, tblName, null, -1);
+  }
+
+  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
       throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
@@ -1235,7 +1320,7 @@ public class CachedStore implements RawStore, Configurable {
     if (succ && !canUseEvents) {
       String dbName = normalizeIdentifier(part.getDbName());
       String tblName = normalizeIdentifier(part.getTableName());
-      String catName = part.isSetCatName() ? normalizeIdentifier(part.getCatName()) : DEFAULT_CATALOG_NAME;
+      String catName = part.isSetCatName() ? normalizeIdentifier(part.getCatName()) : getDefaultCatalog(conf);
       if (!shouldCacheTable(catName, dbName, tblName)) {
         return succ;
       }
@@ -1484,6 +1569,12 @@ public class CachedStore implements RawStore, Configurable {
     return tables;
   }
 
+  @Override
+  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
+          GetProjectionsSpec projectionsSpec, String tablePattern) throws MetaException, UnknownDBException {
+    return rawStore.getTableObjectsByName(catName, db, tbl_names, projectionsSpec, tablePattern);
+  }
+
   @Override public List<String> getAllTables(String catName, String dbName) throws MetaException {
     return rawStore.getAllTables(catName, dbName);
   }
@@ -1590,7 +1681,7 @@ public class CachedStore implements RawStore, Configurable {
   /**
    * getPartitionSpecsByFilterAndProjection interface is currently non-cacheable.
    */ public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
   }
@@ -1720,6 +1811,11 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getDBPrivilegeSet(catName, dbName, userName, groupNames);
   }
 
+  @Override public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+    return rawStore.getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
+  }
+
   @Override public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
     return rawStore.getTablePrivilegeSet(catName, dbName, tableName, userName, groupNames);
@@ -1744,6 +1840,11 @@ public class CachedStore implements RawStore, Configurable {
   @Override public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName, PrincipalType principalType,
       String catName, String dbName) {
     return rawStore.listPrincipalDBGrants(principalName, principalType, catName, dbName);
+  }
+
+  @Override public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName, PrincipalType principalType,
+                                                                   String dcName) {
+    return rawStore.listPrincipalDCGrants(principalName, principalType, dcName);
   }
 
   @Override public List<HiveObjectPrivilege> listAllTableGrants(String principalName, PrincipalType principalType,
@@ -1884,6 +1985,12 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
     return partitionNames;
+  }
+
+  @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partSpecs)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getNumPartitionsByPs(catName, dbName, tblName, partSpecs);
   }
 
   @Override public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
@@ -2080,6 +2187,21 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
+  private void updatePartitionColumnStatisticsInCache(ColumnStatistics colStats, Map<String, String> newParams,
+                                                  List<String> partVals) throws MetaException, NoSuchObjectException {
+    String catName = colStats.getStatsDesc().isSetCatName() ? normalizeIdentifier(
+            colStats.getStatsDesc().getCatName()) : getDefaultCatalog(conf);
+    String dbName = normalizeIdentifier(colStats.getStatsDesc().getDbName());
+    String tblName = normalizeIdentifier(colStats.getStatsDesc().getTableName());
+    if (!shouldCacheTable(catName, dbName, tblName)) {
+      return;
+    }
+    Partition part = getPartition(catName, dbName, tblName, partVals);
+    part.setParameters(newParams);
+    sharedCache.alterPartitionInCache(catName, dbName, tblName, partVals, part);
+    sharedCache.updatePartitionColStatsInCache(catName, dbName, tblName, partVals, colStats.getStatsObj());
+  }
+
   @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
       String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -2087,19 +2209,36 @@ public class CachedStore implements RawStore, Configurable {
         rawStore.updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
     // in case of event based cache update, cache is updated during commit txn
     if (newParams != null && !canUseEvents) {
-      String catName = colStats.getStatsDesc().isSetCatName() ? normalizeIdentifier(
-          colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;
-      String dbName = normalizeIdentifier(colStats.getStatsDesc().getDbName());
-      String tblName = normalizeIdentifier(colStats.getStatsDesc().getTableName());
-      if (!shouldCacheTable(catName, dbName, tblName)) {
-        return newParams;
-      }
-      Partition part = getPartition(catName, dbName, tblName, partVals);
-      part.setParameters(newParams);
-      sharedCache.alterPartitionInCache(catName, dbName, tblName, partVals, part);
-      sharedCache.updatePartitionColStatsInCache(catName, dbName, tblName, partVals, colStats.getStatsObj());
+      updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
     }
     return newParams;
+  }
+
+  @Override public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    Map<String, Map<String, String>> result =
+            rawStore.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
+    if (result == null) {
+      return null;
+    }
+
+    if (!canUseEvents) {
+      //TODO : Do it in one call
+      for (Map.Entry entry : result.entrySet()) {
+        Map<String, String> newParams = (Map<String, String>) entry.getValue();
+        ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
+        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+        updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
+      }
+    } else {
+      // Usually the cache update using events is done during commit. But for this method,
+      // the commit is done internally using direct sql.
+      updateCacheUsingEvents();
+    }
+    return result;
   }
 
   @Override public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName, String tblName,
@@ -2264,6 +2403,8 @@ public class CachedStore implements RawStore, Configurable {
       if (colStatsMap.size() < 1) {
         LOG.debug("No stats data found for: dbName={} tblName= {} partNames= {} colNames= ", dbName, tblName, partNames,
             colNames);
+        // TODO: If we don't find any stats then most likely we should return null. Returning an empty object will not
+        // trigger the lookup in the raw store and we will end up with missing stats.
         return new MergedColumnStatsForPartitions(new ArrayList<ColumnStatisticsObj>(), 0);
       }
     }
@@ -2358,6 +2499,11 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.listPrincipalDBGrantsAll(principalName, principalType);
   }
 
+  @Override public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(String principalName,
+                                                                      PrincipalType principalType) {
+    return rawStore.listPrincipalDCGrantsAll(principalName, principalType);
+  }
+
   @Override public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(String principalName,
       PrincipalType principalType) {
     return rawStore.listPrincipalTableGrantsAll(principalName, principalType);
@@ -2384,6 +2530,10 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
     return rawStore.listDBGrantsAll(catName, dbName);
+  }
+
+  @Override public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
+    return rawStore.listDCGrantsAll(dcName);
   }
 
   @Override public List<HiveObjectPrivilege> listPartitionColumnGrantsAll(String catName, String dbName,
@@ -2495,103 +2645,306 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getDatabaseCount();
   }
 
-  @Override public List<SQLPrimaryKey> getPrimaryKeys(String catName, String dbName, String tblName)
-      throws MetaException {
-    // TODO constraintCache
-    return rawStore.getPrimaryKeys(catName, dbName, tblName);
+  @Override
+  @Deprecated
+  public List<SQLPrimaryKey> getPrimaryKeys(String catName, String dbName, String tblName) throws MetaException {
+    PrimaryKeysRequest request = new PrimaryKeysRequest(dbName, tblName);
+    request.setCatName(catName);
+    return getPrimaryKeys(request);
   }
 
-  @Override public List<SQLForeignKey> getForeignKeys(String catName, String parentDbName, String parentTblName,
+  @Override
+  public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request) throws MetaException {
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDb_name());
+    String tblName = StringUtils.normalizeIdentifier(request.getTbl_name());
+    if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
+      return rawStore.getPrimaryKeys(request);
+    }
+    return sharedCache.listCachedPrimaryKeys(catName, dbName, tblName);
+  }
+
+  @Override
+  @Deprecated
+  public List<SQLForeignKey> getForeignKeys(String catName, String parentDbName, String parentTblName,
       String foreignDbName, String foreignTblName) throws MetaException {
-    // TODO constraintCache
-    return rawStore.getForeignKeys(catName, parentDbName, parentTblName, foreignDbName, foreignTblName);
+    ForeignKeysRequest request = new ForeignKeysRequest(parentDbName, parentTblName, foreignDbName, foreignTblName);
+    request.setCatName(catName);
+    return getForeignKeys(request);
   }
 
-  @Override public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String dbName, String tblName)
+  @Override
+  public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException {
+    // Get correct ForeignDBName and TableName
+    if (StringUtils.isEmpty(request.getParent_db_name()) || StringUtils.isEmpty(request.getParent_tbl_name())
+        || StringUtils.isEmpty(request.getForeign_db_name()) || StringUtils.isEmpty(request.getForeign_tbl_name())) {
+      return rawStore.getForeignKeys(request);
+    }
+
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String foreignDbName = StringUtils.normalizeIdentifier(request.getForeign_db_name());
+    String foreignTblName = StringUtils.normalizeIdentifier(request.getForeign_tbl_name());
+    String parentDbName =
+        StringUtils.isEmpty(request.getParent_db_name()) ? "" : normalizeIdentifier(request.getParent_db_name());
+    String parentTblName = StringUtils.isEmpty(request.getParent_tbl_name()) ? "" : StringUtils
+        .normalizeIdentifier(request.getParent_tbl_name());
+
+    if (shouldGetConstraintFromRawStore(catName, foreignDbName, foreignTblName)) {
+      return rawStore.getForeignKeys(request);
+    }
+    return sharedCache.listCachedForeignKeys(catName, foreignDbName, foreignTblName, parentDbName, parentTblName);
+  }
+
+  @Override
+  @Deprecated
+  public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String dbName, String tblName)
       throws MetaException {
-    // TODO constraintCache
-    return rawStore.getUniqueConstraints(catName, dbName, tblName);
+    UniqueConstraintsRequest request = new UniqueConstraintsRequest(catName, dbName, tblName);
+    return getUniqueConstraints(request);
   }
 
-  @Override public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String dbName, String tblName)
+  @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDb_name());
+    String tblName = StringUtils.normalizeIdentifier(request.getTbl_name());
+    if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
+      return rawStore.getUniqueConstraints(request);
+    }
+    return sharedCache.listCachedUniqueConstraint(catName, dbName, tblName);
+  }
+
+  @Override
+  @Deprecated
+  public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String dbName, String tblName)
       throws MetaException {
-    // TODO constraintCache
-    return rawStore.getNotNullConstraints(catName, dbName, tblName);
+    NotNullConstraintsRequest request = new NotNullConstraintsRequest(catName, dbName, tblName);
+    return getNotNullConstraints(request);
   }
 
-  @Override public List<SQLDefaultConstraint> getDefaultConstraints(String catName, String dbName, String tblName)
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
+    String catName = normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDb_name());
+    String tblName = StringUtils.normalizeIdentifier(request.getTbl_name());
+    if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
+      return rawStore.getNotNullConstraints(request);
+    }
+    return sharedCache.listCachedNotNullConstraints(catName, dbName, tblName);
+  }
+
+  /**
+   * Get default Constraints from cache Store if not present then fetch from raw store
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return list of default constraints for given table
+   * @throws MetaException
+   */
+  @Override
+  @Deprecated
+  public List<SQLDefaultConstraint> getDefaultConstraints(String catName, String dbName, String tblName)
       throws MetaException {
-    // TODO constraintCache
-    return rawStore.getDefaultConstraints(catName, dbName, tblName);
+    DefaultConstraintsRequest request = new DefaultConstraintsRequest(catName, dbName, tblName);
+    return getDefaultConstraints(request);
   }
 
-  @Override public List<SQLCheckConstraint> getCheckConstraints(String catName, String dbName, String tblName)
+  @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDb_name());
+    String tblName = StringUtils.normalizeIdentifier(request.getTbl_name());
+    if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
+      return rawStore.getDefaultConstraints(request);
+    }
+    return sharedCache.listCachedDefaultConstraint(catName, dbName, tblName);
+  }
+
+  /**
+   * Get check Constraints from cache Store if not present then fetch from raw store
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return list of check constraints for given table
+   * @throws MetaException
+   */
+  @Override
+  @Deprecated
+  public List<SQLCheckConstraint> getCheckConstraints(String catName, String dbName, String tblName)
       throws MetaException {
-    // TODO constraintCache
-    return rawStore.getCheckConstraints(catName, dbName, tblName);
+    CheckConstraintsRequest request = new CheckConstraintsRequest(catName, dbName, tblName);
+    return getCheckConstraints(request);
   }
 
-  @Override public List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
-      List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-      List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
-      List<SQLCheckConstraint> checkConstraints) throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    List<String> constraintNames = rawStore
-        .createTableWithConstraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints,
-            defaultConstraints, checkConstraints);
+  @Override
+  public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException {
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDb_name());
+    String tblName = StringUtils.normalizeIdentifier(request.getTbl_name());
+    if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
+      return rawStore.getCheckConstraints(request);
+    }
+    return sharedCache.listCachedCheckConstraint(catName, dbName, tblName);
+  }
+
+  /**
+   * Method to fetch all table constraints at once
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return list of all table constraints
+   * @throws MetaException
+   */
+  @Override
+  @Deprecated
+  public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException {
+    AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName,tblName,catName);
+    return getAllTableConstraints(request);
+  }
+
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException {
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDbName());
+    String tblName = StringUtils.normalizeIdentifier(request.getTblName());
+    if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
+      return rawStore.getAllTableConstraints(request);
+    }
+    return sharedCache.listCachedAllTableConstraints(catName, dbName, tblName);
+  }
+
+  @Override
+  public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
+      throws InvalidObjectException, MetaException {
+    constraints = rawStore.createTableWithConstraints(tbl, constraints);
     // in case of event based cache update, cache is updated during commit.
     if (canUseEvents) {
-      return constraintNames;
+      return constraints;
     }
     String dbName = normalizeIdentifier(tbl.getDbName());
     String tblName = normalizeIdentifier(tbl.getTableName());
-    String catName = tbl.isSetCatName() ? normalizeIdentifier(tbl.getCatName()) : DEFAULT_CATALOG_NAME;
+    String catName = tbl.isSetCatName() ? normalizeIdentifier(tbl.getCatName()) : getDefaultCatalog(conf);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return constraintNames;
+      return constraints;
     }
-    sharedCache.addTableToCache(StringUtils.normalizeIdentifier(tbl.getCatName()),
-        StringUtils.normalizeIdentifier(tbl.getDbName()), StringUtils.normalizeIdentifier(tbl.getTableName()), tbl);
-    return constraintNames;
+    sharedCache.addTableToCache(catName, dbName, tblName, tbl);
+    sharedCache.addTableConstraintsToCache(catName, dbName, tblName, constraints);
+    return constraints;
   }
 
   @Override public void dropConstraint(String catName, String dbName, String tableName, String constraintName,
       boolean missingOk) throws NoSuchObjectException {
-    // TODO constraintCache
     rawStore.dropConstraint(catName, dbName, tableName, constraintName, missingOk);
+
+    if (!canUseEvents) {
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
+      if (shouldCacheTable(catName, dbName, tableName)) {
+        sharedCache.removeConstraintFromCache(catName, dbName, tableName, constraintName);
+      }
+    }
   }
 
-  @Override public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addPrimaryKeys(pks);
+  @Override
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException {
+    pks = rawStore.addPrimaryKeys(pks);
+    // in case of event based cache update, cache will be updated during commit.
+    if (!canUseEvents && pks != null && !pks.isEmpty()) {
+      String catName = normalizeIdentifier(pks.get(0).getCatName());
+      String dbName = normalizeIdentifier(pks.get(0).getTable_db());
+      String tblName = normalizeIdentifier(pks.get(0).getTable_name());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return pks;
+      }
+      sharedCache.addPrimaryKeysToCache(catName, dbName, tblName, pks);
+    }
+    return pks;
   }
 
-  @Override public List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addForeignKeys(fks);
+  @Override
+  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
+    fks = rawStore.addForeignKeys(fks);
+    if (!canUseEvents && fks != null && !fks.isEmpty()) {
+      String catName = normalizeIdentifier(fks.get(0).getCatName());
+      String dbName = normalizeIdentifier(fks.get(0).getFktable_db());
+      String tblName = normalizeIdentifier(fks.get(0).getFktable_db());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return fks;
+      }
+      sharedCache.addForeignKeysToCache(catName, dbName, tblName, fks);
+    }
+    return fks;
   }
 
-  @Override public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  @Override
+  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks)
       throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addUniqueConstraints(uks);
+    uks = rawStore.addUniqueConstraints(uks);
+    // in case of event based cache update, cache will be updated during commit.
+    if (!canUseEvents && uks != null && !uks.isEmpty()) {
+      String catName = normalizeIdentifier(uks.get(0).getCatName());
+      String dbName = normalizeIdentifier(uks.get(0).getTable_db());
+      String tblName = normalizeIdentifier(uks.get(0).getTable_name());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return uks;
+      }
+      sharedCache.addUniqueConstraintsToCache(catName, dbName, tblName, uks);
+    }
+    return uks;
   }
 
-  @Override public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  @Override
+  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
       throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addNotNullConstraints(nns);
+    nns = rawStore.addNotNullConstraints(nns);
+    // in case of event based cache update, cache will be updated during commit.
+    if (!canUseEvents && CollectionUtils.isNotEmpty(nns)) {
+      String catName = normalizeIdentifier(nns.get(0).getCatName());
+      String dbName = normalizeIdentifier(nns.get(0).getTable_db());
+      String tblName = normalizeIdentifier(nns.get(0).getTable_name());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return nns;
+      }
+      sharedCache.addNotNullConstraintsToCache(catName, dbName, tblName, nns);
+    }
+    return nns;
   }
 
-  @Override public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+  @Override
+  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dcs)
       throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addDefaultConstraints(nns);
+    dcs = rawStore.addDefaultConstraints(dcs);
+    // in case of event based cache update, cache will be updated during commit.
+    if (!canUseEvents && CollectionUtils.isNotEmpty(dcs)) {
+      String catName = normalizeIdentifier(dcs.get(0).getCatName());
+      String dbName = normalizeIdentifier(dcs.get(0).getTable_db());
+      String tblName = normalizeIdentifier(dcs.get(0).getTable_name());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return dcs;
+      }
+      sharedCache.addDefaultConstraintsToCache(catName, dbName, tblName, dcs);
+    }
+    return dcs;
   }
 
-  @Override public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
+  @Override
+  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> ccs)
       throws InvalidObjectException, MetaException {
-    // TODO constraintCache
-    return rawStore.addCheckConstraints(nns);
+    ccs = rawStore.addCheckConstraints(ccs);
+    // in case of event based cache update, cache will be updated during commit.
+    if (!canUseEvents && CollectionUtils.isNotEmpty(ccs)) {
+      String catName = normalizeIdentifier(ccs.get(0).getCatName());
+      String dbName = normalizeIdentifier(ccs.get(0).getTable_db());
+      String tblName = normalizeIdentifier(ccs.get(0).getTable_name());
+      if (!shouldCacheTable(catName, dbName, tblName)) {
+        return ccs;
+      }
+      sharedCache.addCheckConstraintsToCache(catName, dbName, tblName, ccs);
+    }
+    return ccs;
   }
 
   // TODO - not clear if we should cache these or not.  For now, don't bother
@@ -2890,6 +3243,21 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    rawStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return rawStore.getReplicationMetrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    return rawStore.deleteReplicationMetrics(maxRetainSecs);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
     return rawStore.getScheduledQuery(scheduleKey);
   }
@@ -2902,5 +3270,55 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
+  }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tn, String w) {
+    rawStore.deleteAllPartitionColumnStatistics(tn, w);
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    rawStore.createOrUpdateStoredProcedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
+    return rawStore.getStoredProcedure(catName, db, name);
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
+    rawStore.dropStoredProcedure(catName, dbName, funcName);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    return rawStore.getAllStoredProcedures(request);
+  }
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws MetaException, NoSuchObjectException {
+    rawStore.addPackage(request);
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) {
+    return rawStore.findPackage(request);
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) {
+    return rawStore.listPackages(request);
+  }
+
+  @Override
+  public void dropPackage(DropPackageRequest request) {
+    rawStore.dropPackage(request);
+  }
+
+  private boolean shouldGetConstraintFromRawStore(String catName, String dbName, String tblName) {
+    return !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())
+        || !sharedCache.isTableConstraintValid(catName, dbName, tblName);
   }
 }

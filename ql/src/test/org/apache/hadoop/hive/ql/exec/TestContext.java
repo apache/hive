@@ -36,7 +36,7 @@ public class TestContext {
     private Context context;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         /* Only called to create session directories used by the Context class */
         SessionState.start(conf);
         SessionState.detachSession();

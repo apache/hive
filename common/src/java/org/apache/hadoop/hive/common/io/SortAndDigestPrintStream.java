@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common.io;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 
@@ -35,7 +36,7 @@ public class SortAndDigestPrintStream extends SortPrintStream {
   public void processFinal() {
     while (!outputs.isEmpty()) {
       String row = outputs.removeFirst();
-      digest.update(row.getBytes());
+      digest.update(row.getBytes(StandardCharsets.UTF_8));
       printDirect(row);
     }
     printDirect(Base64.getEncoder().encodeToString(digest.digest()));

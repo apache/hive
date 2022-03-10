@@ -56,6 +56,7 @@ public class LlapItUtils {
     // 75% for 4 executors
     final long totalExecutorMemory = (long) (0.75f * maxMemory);
     final int numExecutors = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, numExecutors);
     final boolean asyncIOEnabled = true;
     // enabling this will cause test failures in Mac OS X
     final boolean directMemoryEnabled = false;

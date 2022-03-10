@@ -34,19 +34,27 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 @SuppressWarnings("serial")
 public class PrimaryKeyInfo implements Serializable {
 
-  Map<Integer, String> colNames;
-  String constraintName;
-  String tableName;
-  String databaseName;
+  private Map<Integer, String> colNames;
+  private String constraintName;
+  private String tableName;
+  private String databaseName;
+  private String enable;
+  private String validate;
+  private String rely;
 
   public PrimaryKeyInfo() {}
 
   public PrimaryKeyInfo(List<SQLPrimaryKey> pks, String tableName, String databaseName) {
     this.tableName = tableName;
     this.databaseName = databaseName;
-    this.colNames = new TreeMap<Integer, String>();
+    this.colNames = new TreeMap<>();
     if (pks ==null) {
       return;
+    }
+    if (!pks.isEmpty()) {
+      this.enable = pks.get(0).isEnable_cstr()? "ENABLE": "DISABLE";
+      this.validate = pks.get(0).isValidate_cstr()? "VALIDATE": "NOVALIDATE";
+      this.rely = pks.get(0).isRely_cstr()? "RELY": "NORELY";
     }
     for (SQLPrimaryKey pk : pks) {
       if (pk.getTable_db().equalsIgnoreCase(databaseName) &&
@@ -88,7 +96,31 @@ public class PrimaryKeyInfo implements Serializable {
   public void setColNames(Map<Integer, String> colNames) {
     this.colNames = colNames;
   }
-  
+
+  public String getEnable() {
+    return enable;
+  }
+
+  public void setEnable(String enable) {
+    this.enable = enable;
+  }
+
+  public String getValidate() {
+    return validate;
+  }
+
+  public void setValidate(String validate) {
+    this.validate = validate;
+  }
+
+  public String getRely() {
+    return rely;
+  }
+
+  public void setRely(String rely) {
+    this.rely = rely;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -104,7 +136,7 @@ public class PrimaryKeyInfo implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isPrimaryKeyInfoNotEmpty(PrimaryKeyInfo info) {
+  public static boolean isNotEmpty(PrimaryKeyInfo info) {
     return info != null && !info.getColNames().isEmpty();
   }
 }

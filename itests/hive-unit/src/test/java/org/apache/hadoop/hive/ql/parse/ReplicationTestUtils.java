@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.DirCopyWork;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.junit.Assert;
 
 import java.io.BufferedReader;
@@ -318,7 +320,7 @@ public class ReplicationTestUtils {
             .run(txnStrCommit);
   }
 
-  private static void insertIntoDB(WarehouseInstance primary, String dbName, String tableName,
+  public static void insertIntoDB(WarehouseInstance primary, String dbName, String tableName,
                                    String tableProperty, String storageType, String[] resultArray)
           throws Throwable {
     insertIntoDB(primary, dbName, tableName, tableProperty, storageType, resultArray, false);
@@ -502,19 +504,11 @@ public class ReplicationTestUtils {
                 "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
   }
 
-  public static List<String> externalTableBasePathWithClause(String replExternalBase, WarehouseInstance replica)
-          throws IOException, SemanticException {
-    Path externalTableLocation = new Path(replExternalBase);
-    DistributedFileSystem fileSystem = replica.miniDFSCluster.getFileSystem();
-    externalTableLocation = PathBuilder.fullyQualifiedHDFSUri(externalTableLocation, fileSystem);
-    fileSystem.mkdirs(externalTableLocation);
-
-    // this is required since the same filesystem is used in both source and target
-    return Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + externalTableLocation.toString() + "'",
-            "'distcp.options.pugpb'=''"
-    );
+  public static List<String> includeExternalTableClause(boolean enable) {
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='" + enable + "'");
+    withClause.add("'distcp.options.pugpb'=''");
+    return withClause;
   }
 
   public static List<String> externalTableWithClause(List<String> externalTableBasePathWithClause, Boolean bootstrap,
@@ -531,20 +525,32 @@ public class ReplicationTestUtils {
     return withClause;
   }
 
-  public static void assertExternalFileInfo(WarehouseInstance primary,
-                                      List<String> expected,
-                                      Path externalTableInfoFile) throws IOException {
-    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
-    Assert.assertTrue(fileSystem.exists(externalTableInfoFile));
-    InputStream inputStream = fileSystem.open(externalTableInfoFile);
+  public static void assertFalseExternalFileList(WarehouseInstance warehouseInstance,
+                                                 String dumpLocation) throws IOException {
+    DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
+    Path hivePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path externalTblFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
+    Assert.assertFalse(fileSystem.exists(externalTblFileList));
+  }
+
+  public static void assertExternalFileList(List<String> expected, String dumplocation,
+                                            WarehouseInstance warehouseInstance) throws IOException {
+    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path externalTableFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
+    DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
+    Assert.assertTrue(fileSystem.exists(externalTableFileList));
+    InputStream inputStream = fileSystem.open(externalTableFileList);
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     Set<String> tableNames = new HashSet<>();
     for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-      String[] components = line.split(",");
-      Assert.assertEquals("The file should have tableName,base64encoded(data_location)",
-              2, components.length);
-      tableNames.add(components[0]);
+      String[] components = line.split(DirCopyWork.URI_SEPARATOR);
+      Assert.assertEquals("The file should have sourcelocation#targetlocation#tblName#copymode", 5,
+          components.length);
+      tableNames.add(components[2]);
+      Assert.assertTrue(components[0].length() > 0);
       Assert.assertTrue(components[1].length() > 0);
+      Assert.assertTrue(components[2].length() > 0);
+      Assert.assertTrue(components[3].length() > 0);
     }
     Assert.assertTrue(tableNames.containsAll(expected));
     reader.close();

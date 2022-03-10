@@ -1,0 +1,126 @@
+PREHOOK: query: create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
+select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n_mv
+POSTHOOK: query: create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
+select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n_mv
+POSTHOOK: Lineage: masking_test_n_mv.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n_mv.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: create materialized view `masking_test_view_n_mv` as
+select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: query: create materialized view `masking_test_view_n_mv` as
+select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: Lineage: masking_test_view_n_mv.col0 EXPRESSION [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), (masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain cbo
+select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject(col0=[$0])
+    HiveUnion(all=[true])
+      HiveProject(col0=[CAST($0):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
+          HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
+      HiveProject(col0=[reverse($1)])
+        HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
+          HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
+
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: create materialized view `masking_test_view_n_mv_masked` as
+select cast(key as string) `col0` from (SELECT `key`, CAST(reverse(value) AS string) AS `value`, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED FROM `default`.`masking_test_n_mv`  WHERE key % 2 = 0 and key < 10)`masking_test_n_mv` union select `value` `col0` from (SELECT `key`, CAST(reverse(value) AS string) AS `value`, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED FROM `default`.`masking_test_n_mv`  WHERE key % 2 = 0 and key < 10)`masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: query: create materialized view `masking_test_view_n_mv_masked` as
+select cast(key as string) `col0` from (SELECT `key`, CAST(reverse(value) AS string) AS `value`, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED FROM `default`.`masking_test_n_mv`  WHERE key % 2 = 0 and key < 10)`masking_test_n_mv` union select `value` `col0` from (SELECT `key`, CAST(reverse(value) AS string) AS `value`, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED FROM `default`.`masking_test_n_mv`  WHERE key % 2 = 0 and key < 10)`masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: Lineage: masking_test_view_n_mv_masked.col0 EXPRESSION [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), (masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain cbo
+select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, masking_test_view_n_mv_masked]], table:alias=[default.masking_test_view_n_mv_masked])
+
+PREHOOK: query: select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+POSTHOOK: query: select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+2_lav
+4
+4_lav
+0
+0_lav
+2
+8
+8_lav
+PREHOOK: query: drop materialized view `masking_test_view_n_mv`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_view_n_mv
+PREHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: query: drop materialized view `masking_test_view_n_mv`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: Output: default@masking_test_view_n_mv
+PREHOOK: query: drop materialized view `masking_test_view_n_mv_masked`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_view_n_mv_masked
+PREHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: query: drop materialized view `masking_test_view_n_mv_masked`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_view_n_mv_masked
+POSTHOOK: Output: default@masking_test_view_n_mv_masked
+PREHOOK: query: drop table `masking_test_n_mv`
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: default@masking_test_n_mv
+POSTHOOK: query: drop table `masking_test_n_mv`
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: default@masking_test_n_mv

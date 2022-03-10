@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -35,15 +37,27 @@ import java.io.Serializable;
 public class AckTask extends Task<AckWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  private Logger LOG = LoggerFactory.getLogger(AckTask.class);
 
   @Override
   public int execute() {
     try {
+      for(PreAckTask task : work.getPreAckTasks()) {
+        task.run();
+      }
       Path ackPath = work.getAckFilePath();
       Utils.create(ackPath, conf);
-    } catch (SemanticException e) {
+      LOG.info("Created ack file : {} ", ackPath);
+    } catch (Exception e) {
       setException(e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      try {
+        return ReplUtils.handleException(true, e, work.getAckFilePath().getParent().getParent().toString(),
+                work.getMetricCollector(), getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
     return 0;
   }

@@ -355,6 +355,7 @@ PREHOOK: Output: default@acidparttbl
 POSTHOOK: query: insert into table acidparttbl partition(p) values ('g', 7, 100), ('h', 8, 200)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acidparttbl
 POSTHOOK: Output: default@acidparttbl@p=100
 POSTHOOK: Output: default@acidparttbl@p=200
 POSTHOOK: Lineage: acidparttbl PARTITION(p=100).key SCRIPT []
@@ -385,6 +386,7 @@ PREHOOK: Output: default@acidparttbl
 POSTHOOK: query: insert overwrite table acidparttbl partition(p) values ('i', 9, 100), ('j', 10, 200)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acidparttbl
 POSTHOOK: Output: default@acidparttbl@p=100
 POSTHOOK: Output: default@acidparttbl@p=200
 POSTHOOK: Lineage: acidparttbl PARTITION(p=100).key SCRIPT []

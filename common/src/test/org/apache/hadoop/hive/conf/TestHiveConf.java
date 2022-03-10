@@ -85,6 +85,10 @@ public class TestHiveConf {
     checkConfVar(ConfVars.HIVETESTMODEDUMMYSTATAGGR, "");
     checkHiveConf(ConfVars.HIVETESTMODEDUMMYSTATAGGR.varname, "value2");
 
+    //Property defined for hive masking algorithm
+    checkConfVar(ConfVars.HIVE_MASKING_ALGO, "sha256");
+    checkHiveConf(ConfVars.HIVE_MASKING_ALGO.varname, "sha256");
+
     // Property defined in hive-site.xml only
     checkHadoopConf("test.property1", null);
     checkHiveConf("test.property1", "value1");

@@ -19,22 +19,29 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.tez.dag.api.DAG;
+import org.apache.tez.dag.api.Vertex;
 import org.junit.Test;
+
+import org.junit.Assert;
 
 /**
  * 
  */
 public class TestDagUtils {
-  
+
   @Test
   public void testCredentialsNotOverwritten() throws Exception {
     final UserGroupInformation testUser = UserGroupInformation.createUserForTesting("test_user", new String[0]);
@@ -57,7 +64,7 @@ public class TestDagUtils {
     testUser.doAs(new PrivilegedExceptionAction<Void>() {
       @Override
       public Void run() throws Exception {
-        dagUtils.addCredentials(work, dag);
+        dagUtils.addCredentials(work, dag, null);
         return null;
       }
     });
@@ -65,5 +72,55 @@ public class TestDagUtils {
     Token<? extends TokenIdentifier> actualToken = dag.getCredentials().getToken(testTokenAlias);
     assertEquals(testToken, actualToken);
   }
-  
+
+  @Test
+  public void outputCommitterSetToDefaultIfNotPresent() throws IOException {
+    DagUtils dagUtils = DagUtils.getInstance();
+    HiveConf conf = new HiveConf();
+
+    JobConf configuration = dagUtils.createConfiguration(conf);
+
+    assertEquals(HiveFileFormatUtils.NullOutputCommitter.class.getName(),
+        configuration.get("mapred.output.committer.class"));
+  }
+
+  @Test
+  public void outputCommitterNotOverriddenIfPresent() throws IOException {
+    DagUtils dagUtils = DagUtils.getInstance();
+    HiveConf conf = new HiveConf();
+    conf.set("mapred.output.committer.class", TestTezOutputCommitter.CountingOutputCommitter.class.getName());
+
+    JobConf configuration = dagUtils.createConfiguration(conf);
+
+    assertEquals(TestTezOutputCommitter.CountingOutputCommitter.class.getName(),
+        configuration.get("mapred.output.committer.class"));
+  }
+
+  @Test
+  public void testMapTezTaskEnvIsCopiedFromMrProperties() {
+    final DagUtils dagUtils = DagUtils.getInstance();
+
+    Vertex map = Vertex.create("mapWorkName", null);
+    HiveConf conf = new HiveConf();
+    Assert.assertNull(map.getTaskEnvironment().get("key"));
+
+    conf.set(JobConf.MAPRED_MAP_TASK_ENV, "key=value");
+    map.setTaskEnvironment(dagUtils.getContainerEnvironment(conf, true));
+
+    Assert.assertEquals("value", map.getTaskEnvironment().get("key"));
+  }
+
+  @Test
+  public void testReduceTezTaskEnvIsCopiedFromMrProperties() {
+    final DagUtils dagUtils = DagUtils.getInstance();
+
+    Vertex reduce = Vertex.create("reduceWorkName", null);
+    HiveConf conf = new HiveConf();
+    Assert.assertNull(reduce.getTaskEnvironment().get("key"));
+
+    conf.set(JobConf.MAPRED_REDUCE_TASK_ENV, "key=value");
+    reduce.setTaskEnvironment(dagUtils.getContainerEnvironment(conf, false));
+
+    Assert.assertEquals("value", reduce.getTaskEnvironment().get("key"));
+  }
 }

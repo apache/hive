@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
@@ -74,16 +75,21 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
@@ -95,6 +101,7 @@ import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
 import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
 import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.JdbcUriParseException;
 import org.apache.hive.jdbc.Utils;
@@ -186,6 +193,8 @@ public class BeeLine implements Closeable {
       "tsv", new DeprecatedSeparatedValuesOutputFormat(this, '\t'),
       "xmlattr", new XMLAttributeOutputFormat(this),
       "xmlelements", new XMLElementOutputFormat(this),
+      "json", new JSONOutputFormat(this),
+      "jsonfile", new JSONFileOutputFormat(this),
   });
 
   private List<String> supportedLocalDriver =
@@ -890,8 +899,12 @@ public class BeeLine implements Closeable {
     getOpts().setInitFiles(cl.getOptionValues("i"));
     getOpts().setScriptFile(cl.getOptionValue("f"));
 
-
     if (url != null) {
+      String hplSqlMode = Utils.parsePropertyFromUrl(url, Constants.MODE);
+      if ("HPLSQL".equalsIgnoreCase(hplSqlMode)) {
+        getOpts().setDelimiter("/");
+        getOpts().setEntireLineAsCommand(true);
+      }
       // Specifying username/password/driver explicitly will override the values from the url;
       // make sure we don't override the values present in the url with empty values.
       if (user == null) {
@@ -931,6 +944,8 @@ public class BeeLine implements Closeable {
       if (!dispatch("!properties " + propertyFile)) {
         exit = true;
         return false;
+      } else {
+        return true;
       }
     }
     return false;
@@ -1326,7 +1341,7 @@ public class BeeLine implements Closeable {
       } else {
         org.apache.hadoop.fs.Path path = new org.apache.hadoop.fs.Path(fileName);
         FileSystem fs;
-        HiveConf conf = new HiveConf();
+        Configuration conf = new Configuration();
         if (!path.toUri().isAbsolute()) {
           fs = FileSystem.getLocal(conf);
           path = fs.makeQualified(path);
@@ -1479,11 +1494,9 @@ public class BeeLine implements Closeable {
       return true;
     }
 
-    if (line.trim().length() == 0) {
-      return true;
-    }
+    line = HiveStringUtils.removeComments(line);
 
-    if (isComment(line)) {
+    if (line.trim().length() == 0) {
       return true;
     }
 
@@ -2205,38 +2218,32 @@ public class BeeLine implements Closeable {
     }
   }
 
+  boolean scanForDriver(final String url) {
+    Objects.requireNonNull(url);
 
-  boolean scanForDriver(String url) {
     try {
-      // already registered
+      // Check drivers already registered
       if (findRegisteredDriver(url) != null) {
         return true;
       }
 
-      // first try known drivers...
-      scanDrivers(true);
+      // Scan classpath for drivers and load them
+      scanDrivers();
 
+      // Try to find the driver again given the newly loaded drivers
       if (findRegisteredDriver(url) != null) {
         return true;
       }
 
-      // now really scan...
-      scanDrivers(false);
-
-      if (findRegisteredDriver(url) != null) {
-        return true;
-      }
-
-      // find whether exists a local driver to accept the url
+      // Find whether exists a local driver to accept the URL
       if (findLocalDriver(url) != null) {
         return true;
       }
-
-      return false;
     } catch (Exception e) {
-      debug(e.toString());
-      return false;
+      return error(e);
     }
+
+    return false;
   }
 
 
@@ -2255,11 +2262,10 @@ public class BeeLine implements Closeable {
   }
 
   public Driver findLocalDriver(String url) throws Exception {
-    if(drivers == null){
-      return null;
-    }
+    Objects.requireNonNull(url);
 
-    for (Driver d : drivers) {
+    Collection<Driver> currentDrivers = drivers == null ? Collections.emptyList() : drivers;
+    for (Driver d : currentDrivers) {
       try {
         String clazzName = d.getClass().getName();
         Driver driver = (Driver) Class.forName(clazzName, true,
@@ -2268,10 +2274,10 @@ public class BeeLine implements Closeable {
           return driver;
         }
       } catch (SQLException e) {
-        error(e);
-        throw new Exception(e);
+        throw e;
       }
     }
+
     return null;
   }
 
@@ -2289,23 +2295,17 @@ public class BeeLine implements Closeable {
     supportedLocalDriver.add(driverClazz);
   }
 
-  Driver[] scanDrivers(String line) throws IOException {
-    return scanDrivers(false);
-  }
-
-  Driver[] scanDrivers(boolean knownOnly) throws IOException {
-    long start = System.currentTimeMillis();
+  Collection<Driver> scanDrivers() throws IOException {
+    final long start = System.nanoTime();
 
     ServiceLoader<Driver> sqlDrivers = ServiceLoader.load(Driver.class);
 
-    Set<Driver> driverClasses = new HashSet<>();
+    Set<Driver> driverClasses = StreamSupport.stream(sqlDrivers.spliterator(), false).collect(Collectors.toSet());
 
-    for (Driver driver : sqlDrivers) {
-        driverClasses.add(driver);
-    }
-    info("scan complete in "
-        + (System.currentTimeMillis() - start) + "ms");
-    return driverClasses.toArray(new Driver[0]);
+    final long finish = System.nanoTime();
+
+    info("Driver scan complete in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + "ms");
+    return Collections.unmodifiableSet(driverClasses);
   }
 
   // /////////////////////////////////////

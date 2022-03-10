@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24265
 set hive.stats.dbclass=fs;
 set hive.stats.fetch.column.stats=true;
 set datanucleus.cache.collections=false;

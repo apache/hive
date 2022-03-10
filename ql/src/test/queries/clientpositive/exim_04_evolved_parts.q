@@ -15,7 +15,7 @@ alter table exim_employee_n12 clustered by (emp_sex, emp_dept) sorted by (emp_id
 alter table exim_employee_n12 add partition (emp_country='in', emp_state='tn');
 
 alter table exim_employee_n12 set fileformat 
-	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	inputformat  "org.apache.hadoop.hive.ql.io.RCFileInputFormat"
 	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
         serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe";
     

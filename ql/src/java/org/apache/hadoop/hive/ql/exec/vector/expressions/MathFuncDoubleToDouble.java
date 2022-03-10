@@ -38,21 +38,15 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected final int colNum;
-
   // Subclasses must override this with a function that implements the desired logic.
   protected abstract double func(double d);
 
   public MathFuncDoubleToDouble(int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
   }
 
   public MathFuncDoubleToDouble() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   @Override
@@ -62,7 +56,7 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
+    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum[0]];
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -151,6 +145,6 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 }

@@ -142,6 +142,34 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl2_n6
 POSTHOOK: Lineage: tbl2_n6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted tbl2_n6 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2_n6
+POSTHOOK: query: describe formatted tbl2_n6 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2_n6
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	199                 
+num_nulls           	0                   
+distinct_count      	121                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: select count (distinct key) from tbl2_n6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct key) from tbl2_n6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+121
 PREHOOK: query: explain
 select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key
 PREHOOK: type: QUERY
@@ -194,7 +222,7 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
-                      Statistics: Num rows: 221 Data size: 1768 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 220 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.99

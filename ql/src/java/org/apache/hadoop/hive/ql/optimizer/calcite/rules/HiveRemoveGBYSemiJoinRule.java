@@ -20,28 +20,32 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
-import org.apache.calcite.rel.core.JoinInfo;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Planner rule that removes a {@code Aggregate} from a HiveSemiJoin
+ * Planner rule that removes a {@code Aggregate} from a HiveSemiJoin/HiveAntiJoin
  * right input.
  */
 public class HiveRemoveGBYSemiJoinRule extends RelOptRule {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRemoveGBYSemiJoinRule.class);
+
   public static final HiveRemoveGBYSemiJoinRule INSTANCE =
       new HiveRemoveGBYSemiJoinRule();
 
   public HiveRemoveGBYSemiJoinRule() {
     super(
-        operand(HiveSemiJoin.class,
+        operand(Join.class,
             some(
                 operand(RelNode.class, any()),
                 operand(Aggregate.class, any()))),
@@ -49,9 +53,11 @@ public class HiveRemoveGBYSemiJoinRule extends RelOptRule {
   }
 
   @Override public void onMatch(RelOptRuleCall call) {
-    final HiveSemiJoin semijoin= call.rel(0);
+    final Join join = call.rel(0);
 
-    assert semijoin.getJoinType() == JoinRelType.SEMI;
+    if (join.getJoinType() != JoinRelType.SEMI && join.getJoinType() != JoinRelType.ANTI) {
+      return;
+    }
 
     final RelNode left = call.rel(1);
     final Aggregate rightAggregate= call.rel(2);
@@ -69,17 +75,36 @@ public class HiveRemoveGBYSemiJoinRule extends RelOptRule {
     if(!rightAggregate.getAggCallList().isEmpty()) {
       return;
     }
-    final JoinInfo joinInfo = semijoin.analyzeCondition();
 
-    boolean shouldTransform = joinInfo.rightSet().equals(
+    JoinPredicateInfo joinPredInfo;
+    try {
+      joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
+    } catch (CalciteSemanticException e) {
+      LOG.warn("Exception while extracting predicate info from {}", join);
+      return;
+    }
+    if (!joinPredInfo.getNonEquiJoinPredicateElements().isEmpty()) {
+      return;
+    }
+    ImmutableBitSet.Builder rightKeys = ImmutableBitSet.builder();
+    for (JoinLeafPredicateInfo leftPredInfo : joinPredInfo.getEquiJoinPredicateElements()) {
+      rightKeys.addAll(leftPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema());
+    }
+    boolean shouldTransform = rightKeys.build().equals(
         ImmutableBitSet.range(rightAggregate.getGroupCount()));
     if(shouldTransform) {
       final RelBuilder relBuilder = call.builder();
       RelNode newRightInput = relBuilder.project(relBuilder.push(rightAggregate.getInput()).
           fields(rightAggregate.getGroupSet().asList())).build();
-      RelNode newSemiJoin = call.builder().push(left).push(newRightInput)
-          .semiJoin(semijoin.getCondition()).build();
-      call.transformTo(newSemiJoin);
+      RelNode newJoin;
+      if (join.getJoinType() == JoinRelType.SEMI) {
+        newJoin = call.builder().push(left).push(newRightInput)
+                .semiJoin(join.getCondition()).build();
+      } else {
+        newJoin = call.builder().push(left).push(newRightInput)
+                .antiJoin(join.getCondition()).build();
+      }
+      call.transformTo(newJoin);
     }
   }
 }

@@ -36,7 +36,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
  * From itests/hive-jmh directory, run:
  *     java -jar target/benchmarks.jar org.apache.hive.benchmark.vectorization.mapjoin.MapJoinMultiKeyBench
  *
- *  {INNER, INNER_BIG_ONLY, LEFT_SEMI, OUTER}
+ *  {INNER, INNER_BIG_ONLY, LEFT_SEMI, OUTER, ANTI}
  *    X
  *  {ROW_MODE_HASH_MAP, ROW_MODE_OPTIMIZED, VECTOR_PASS_THROUGH, NATIVE_VECTOR_OPTIMIZED, NATIVE_VECTOR_FAST}
  *

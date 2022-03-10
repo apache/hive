@@ -63,6 +63,7 @@ PREHOOK: Output: default@t2_n78
 POSTHOOK: query: INSERT OVERWRITE TABLE t2_n78 partition(p1) SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n131
+POSTHOOK: Output: default@t2_n78
 POSTHOOK: Output: default@t2_n78@p1=1
 POSTHOOK: Output: default@t2_n78@p1=2
 POSTHOOK: Output: default@t2_n78@p1=3
@@ -142,6 +143,7 @@ PREHOOK: Output: default@t2_n78
 POSTHOOK: query: INSERT OVERWRITE TABLE t2_n78 SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n131
+POSTHOOK: Output: default@t2_n78
 POSTHOOK: Output: default@t2_n78@p1=1
 POSTHOOK: Output: default@t2_n78@p1=2
 POSTHOOK: Output: default@t2_n78@p1=3
@@ -242,6 +244,7 @@ PREHOOK: Output: default@table1_n15
 POSTHOOK: query: INSERT INTO TABLE table1_n15 VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1_n15
 POSTHOOK: Output: default@table1_n15@key=101
 POSTHOOK: Output: default@table1_n15@key=202
 POSTHOOK: Output: default@table1_n15@key=303
@@ -309,6 +312,7 @@ PREHOOK: Output: default@table1_n15
 POSTHOOK: query: INSERT INTO table1_n15 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1_n15
 POSTHOOK: Output: default@table1_n15@country=USA/state=CA
 POSTHOOK: Output: default@table1_n15@country=USA/state=TX
 POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=CA).age SCRIPT []
@@ -342,6 +346,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n15
 POSTHOOK: Input: default@table1_n15@country=USA/state=CA
 POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10
 POSTHOOK: Output: default@table2_n10@country=USA/state=CA
 POSTHOOK: Output: default@table2_n10@country=USA/state=TX
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
@@ -414,6 +419,7 @@ INSERT OVERWRITE TABLE dest1_n143 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2_n37 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n143
 POSTHOOK: Output: default@dest1_n143@value=val_0
 POSTHOOK: Output: default@dest1_n143@value=val_10
 POSTHOOK: Output: default@dest1_n143@value=val_11
@@ -471,6 +477,7 @@ POSTHOOK: Output: default@dest1_n143@value=val_95
 POSTHOOK: Output: default@dest1_n143@value=val_96
 POSTHOOK: Output: default@dest1_n143@value=val_97
 POSTHOOK: Output: default@dest1_n143@value=val_98
+POSTHOOK: Output: default@dest2_n37
 POSTHOOK: Output: default@dest2_n37@value=val_100
 POSTHOOK: Output: default@dest2_n37@value=val_103
 POSTHOOK: Output: default@dest2_n37@value=val_104
@@ -957,6 +964,7 @@ PREHOOK: Output: default@table1_n15
 POSTHOOK: query: INSERT INTO table1_n15 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1_n15
 POSTHOOK: Output: default@table1_n15@country=USA/state=CA
 POSTHOOK: Output: default@table1_n15@country=USA/state=TX
 POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=CA).age SCRIPT []
@@ -990,6 +998,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n15
 POSTHOOK: Input: default@table1_n15@country=USA/state=CA
 POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10
 POSTHOOK: Output: default@table2_n10@country=USA/state=CA
 POSTHOOK: Output: default@table2_n10@country=USA/state=TX
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
@@ -1029,6 +1038,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n15
 POSTHOOK: Input: default@table1_n15@country=USA/state=CA
 POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10
 POSTHOOK: Output: default@table2_n10@country=USA/state=CA
 POSTHOOK: Output: default@table2_n10@country=USA/state=TX
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).age SIMPLE []
@@ -1070,6 +1080,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n15
 POSTHOOK: Input: default@table1_n15@country=USA/state=CA
 POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10
 POSTHOOK: Output: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
@@ -1113,6 +1124,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n15
 POSTHOOK: Input: default@table1_n15@country=USA/state=CA
 POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10
 POSTHOOK: Output: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).age SIMPLE []
 POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]

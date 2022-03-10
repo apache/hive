@@ -554,7 +554,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryAST, "SubQuery can contain only 1 item in Select List."));
     }
 
-    boolean hasAggreateExprs = false;
+    boolean hasAggregateExprs = false;
     boolean hasWindowing = false;
 
     // we need to know if aggregate is COUNT since IN corr subq with count aggregate
@@ -566,7 +566,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       int r = SubQueryUtils.checkAggOrWindowing(selectItem);
 
       hasWindowing = hasWindowing | ( r == 3);
-      hasAggreateExprs = hasAggreateExprs | ( r == 1 | r== 2 );
+      hasAggregateExprs = hasAggregateExprs | ( r == 1 | r== 2 );
       hasCount = hasCount | ( r == 2 );
     }
 
@@ -595,54 +595,39 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
 
     // figure out if there is group by
-    boolean noImplicityGby = true;
+    boolean hasExplicitGby = false;
     for(int i=0; i<insertClause.getChildCount(); i++) {
       if(insertClause.getChild(i).getType() == HiveParser.TOK_GROUPBY) {
-        noImplicityGby = false;
+        hasExplicitGby = true;
         break;
       }
     }
 
     /*
-     * Restriction.14.h :: Correlated Sub Queries cannot contain Windowing clauses.
+     * Restriction.14.h :: Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses.
      */
-    if (  hasWindowing && hasCorrelation) {
+    if (operator.getType() != SubQueryType.EXISTS && operator.getType() != SubQueryType.NOT_EXISTS &&
+        hasWindowing && hasCorrelation) {
       throw new CalciteSubquerySemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
-          subQueryAST, "Correlated Sub Queries cannot contain Windowing clauses."));
+          subQueryAST, "Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses."));
     }
 
     /*
      * Restriction.13.m :: In the case of an implied Group By on a
      * correlated SubQuery, the SubQuery always returns 1 row.
-     * An exists on a SubQuery with an implied GBy will always return true.
-     * Whereas Algebraically transforming to a Join may not return true. See
-     * Specification doc for details.
-     * Similarly a not exists on a SubQuery with a implied GBY will always return false.
      */
-      // Following is special cases for different type of subqueries which have aggregate and no implicit group by
+      // Following is special cases for different type of subqueries which have aggregate and implicit group by
       // and are correlatd
-      // * EXISTS/NOT EXISTS - NOT allowed, throw an error for now. We plan to allow this later
       // * SCALAR - This should return true since later in subquery remove
       //              rule we need to know about this case.
       // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
       //        rule we need to know about this case.
       // * NOT IN - always allow, but always return true because later subq remove rule will generate diff plan for this case
-      if (hasAggreateExprs &&
-              noImplicityGby) {
+      if (hasAggregateExprs &&
+              !hasExplicitGby) {
 
-        if(operator.getType() == SubQueryType.EXISTS
-                || operator.getType() == SubQueryType.NOT_EXISTS) {
-          if(hasCorrelation) {
-            throw new CalciteSubquerySemanticException(
-                ASTErrorUtils.getMsg(
-                    ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(),
-                    subQueryAST,
-                    "A predicate on EXISTS/NOT EXISTS SubQuery with implicit Aggregation(no Group By clause) " +
-                            "cannot be rewritten."));
-          }
-        }
-        else if(operator.getType() == SubQueryType.SCALAR) {
+        if(operator.getType() == SubQueryType.SCALAR) {
             if(!hasWindowing) {
               subqueryConfig[1] = true;
             }

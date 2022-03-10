@@ -49,6 +49,13 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: expr2@sales
 POSTHOOK: Output: database:expr2
 POSTHOOK: Output: expr2@mv1
+POSTHOOK: Lineage: mv1.amt SIMPLE [(sales)sales.FieldSchema(name:amt, type:double, comment:null), ]
+POSTHOOK: Lineage: mv1.cust_id SIMPLE [(sales)sales.FieldSchema(name:cust_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.descr SIMPLE [(sales)sales.FieldSchema(name:descr, type:string, comment:null), ]
+POSTHOOK: Lineage: mv1.prod_id SIMPLE [(sales)sales.FieldSchema(name:prod_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.qty SIMPLE [(sales)sales.FieldSchema(name:qty, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.sale_date SIMPLE [(sales)sales.FieldSchema(name:sale_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: mv1.store_id SIMPLE [(sales)sales.FieldSchema(name:store_id, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select prod_id, cust_id  from sales where cust_id in (1,2,3,4,5)
 PREHOOK: type: QUERY
@@ -134,6 +141,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Output: database:in_pred
 POSTHOOK: Output: in_pred@mv2
+POSTHOOK: Lineage: mv2._c2 EXPRESSION [(census_pop)census_pop.FieldSchema(name:population, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv2.state SIMPLE [(census_pop)census_pop.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: mv2.year SIMPLE [(census_pop)census_pop.FieldSchema(name:year, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
 PREHOOK: type: QUERY
@@ -162,7 +172,7 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], $f1=[CAST(2010):INTEGER], $f10=[$1])
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
   HiveAggregate(group=[{0}], agg#0=[sum($2)])
     HiveFilter(condition=[=(2010, $1)])
       HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
@@ -180,7 +190,7 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], $f1=[CAST(2010):INTEGER], $f10=[$1])
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
   HiveAggregate(group=[{0}], agg#0=[sum($2)])
     HiveFilter(condition=[=(2010, $1)])
       HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
@@ -244,6 +254,13 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: expr9@sales
 POSTHOOK: Output: database:expr9
 POSTHOOK: Output: expr9@mv3
+POSTHOOK: Lineage: mv3.amt SIMPLE [(sales)sales.FieldSchema(name:amt, type:double, comment:null), ]
+POSTHOOK: Lineage: mv3.cust_id SIMPLE [(sales)sales.FieldSchema(name:cust_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.descr SIMPLE [(sales)sales.FieldSchema(name:descr, type:string, comment:null), ]
+POSTHOOK: Lineage: mv3.prod_id SIMPLE [(sales)sales.FieldSchema(name:prod_id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.qty SIMPLE [(sales)sales.FieldSchema(name:qty, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.sale_date SIMPLE [(sales)sales.FieldSchema(name:sale_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: mv3.store_id SIMPLE [(sales)sales.FieldSchema(name:store_id, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select  * from sales where cust_id >= 1 and  prod_id < 31
 PREHOOK: type: QUERY

@@ -6,6 +6,7 @@ SET hive.default.fileformat=textfile;
 SET hive.default.fileformat.managed=orc;
 SET metastore.create.as.acid=true;
 SET hive.groupby.position.alias=true;
+set hive.materializedview.rewriting.sql=false;
 
 drop database if exists arc_view cascade;
 create database arc_view;

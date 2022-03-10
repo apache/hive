@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.table.storage.skewed;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +55,7 @@ public class AlterTableSetSkewedLocationAnalyzer extends AbstractAlterTableAnaly
   @Override
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
-    ArrayList<Node> locationNodes = command.getChildren();
+    List<Node> locationNodes = command.getChildren();
     if (locationNodes == null) {
       throw new SemanticException(ErrorMsg.ALTER_TBL_SKEWED_LOC_NO_LOC.getMsg());
     }
@@ -100,6 +99,7 @@ public class AlterTableSetSkewedLocationAnalyzer extends AbstractAlterTableAnaly
     }
 
     AbstractAlterTableDesc desc = new AlterTableSetSkewedLocationDesc(tableName, partitionSpec, locations);
+    setAcidDdlDesc(getTable(tableName), desc);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_SKEWED_LOCATION, false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

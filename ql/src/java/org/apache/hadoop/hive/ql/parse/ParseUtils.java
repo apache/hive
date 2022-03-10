@@ -20,33 +20,44 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Preconditions;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
+
+import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -64,9 +75,6 @@ import org.slf4j.LoggerFactory;
 public final class ParseUtils {
   /** Parses the Hive query. */
   private static final Logger LOG = LoggerFactory.getLogger(ParseUtils.class);
-  public static ASTNode parse(String command) throws ParseException {
-    return parse(command, null);
-  }
 
   /** Parses the Hive query. */
   public static ASTNode parse(String command, Context ctx) throws ParseException {
@@ -77,9 +85,21 @@ public final class ParseUtils {
   public static ASTNode parse(
       String command, Context ctx, String viewFullyQualifiedName) throws ParseException {
     ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(command, ctx, viewFullyQualifiedName);
+    Configuration configuration = ctx != null ? ctx.getConf() : null;
+    ParseResult parseResult = pd.parse(command, configuration);
+    if (ctx != null) {
+      if (viewFullyQualifiedName == null) {
+        // Top level query
+        ctx.setTokenRewriteStream(parseResult.getTokenRewriteStream());
+      } else {
+        // It is a view
+        ctx.addViewTokenRewriteStream(viewFullyQualifiedName, parseResult.getTokenRewriteStream());
+      }
+      ctx.setParsedTables(parseResult.getTables());
+    }
+    ASTNode tree = parseResult.getTree();
     tree = findRootNonNullToken(tree);
-    handleSetColRefs(tree);
+    handleSetColRefs(tree, ctx);
     return tree;
   }
 
@@ -288,54 +308,13 @@ public final class ParseUtils {
       return false;
     }
 
-    public static boolean sameTree(ASTNode node, ASTNode otherNode) {
-      if (node == null && otherNode == null) {
-        return true;
-      }
-      if ((node == null && otherNode != null) ||
-              (node != null && otherNode == null)) {
-        return false;
-      }
-
-      Stack<Tree> stack = new Stack<Tree>();
-      stack.push(node);
-      Stack<Tree> otherStack = new Stack<Tree>();
-      otherStack.push(otherNode);
-
-      while (!stack.empty() && !otherStack.empty()) {
-        Tree p = stack.pop();
-        Tree otherP = otherStack.pop();
-
-        if (p.isNil() != otherP.isNil()) {
-          return false;
-        }
-        if (!p.isNil()) {
-          if (!p.toString().equals(otherP.toString())) {
-            return false;
-          }
-        }
-        if (p.getChildCount() != otherP.getChildCount()) {
-          return false;
-        }
-        for (int i = p.getChildCount()-1; i >= 0; i--) {
-          Tree t = p.getChild(i);
-          stack.push(t);
-          Tree otherT = otherP.getChild(i);
-          otherStack.push(otherT);
-        }
-      }
-
-      return stack.empty() && otherStack.empty();
-    }
-
-
-    private static void handleSetColRefs(ASTNode tree) {
+    private static void handleSetColRefs(ASTNode tree, Context ctx) {
       CalcitePlanner.ASTSearcher astSearcher = new CalcitePlanner.ASTSearcher();
       while (true) {
         astSearcher.reset();
         ASTNode setCols = astSearcher.depthFirstSearch(tree, HiveParser.TOK_SETCOLREF);
         if (setCols == null) break;
-        processSetColsNode(setCols, astSearcher);
+        processSetColsNode(setCols, astSearcher, ctx);
       }
     }
 
@@ -348,7 +327,7 @@ public final class ParseUtils {
      * @param setCols TOK_SETCOLREF ASTNode.
      * @param searcher AST searcher to reuse.
      */
-    private static void processSetColsNode(ASTNode setCols, ASTSearcher searcher) {
+    private static void processSetColsNode(ASTNode setCols, ASTSearcher searcher, Context ctx) {
       searcher.reset();
       CommonTree rootNode = setCols;
       while (rootNode != null && rootNode.getType() != HiveParser.TOK_INSERT) {
@@ -421,7 +400,7 @@ public final class ParseUtils {
         // Repeat the procedure for the new select.
       }
 
-      // Found the proper columns.
+      // Find the proper columns.
       List<ASTNode> newChildren = new ArrayList<>(select.getChildCount());
       HashSet<String> aliases = new HashSet<>();
       for (int i = 0; i < select.getChildCount(); ++i) {
@@ -429,51 +408,57 @@ public final class ParseUtils {
         if (selExpr.getType() == HiveParser.QUERY_HINT) continue;
         assert selExpr.getType() == HiveParser.TOK_SELEXPR;
         assert selExpr.getChildCount() > 0;
-        // Examine the last child. It could be an alias.
-        Tree child = selExpr.getChild(selExpr.getChildCount() - 1);
-        switch (child.getType()) {
-        case HiveParser.TOK_SETCOLREF:
-          // We have a nested setcolref. Process that and start from scratch TODO: use stack?
-          processSetColsNode((ASTNode)child, searcher);
-          processSetColsNode(setCols, searcher);
-          return;
-        case HiveParser.TOK_ALLCOLREF:
-          // We should find an alias of this insert and do (alias).*. This however won't fix e.g.
-          // positional order by alias case, cause we'd still have a star on the top level. Bail.
-          LOG.debug("Replacing SETCOLREF with ALLCOLREF because of nested ALLCOLREF");
-          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-          return;
-        case HiveParser.TOK_TABLE_OR_COL:
-          Tree idChild = child.getChild(0);
-          assert idChild.getType() == HiveParser.Identifier : idChild;
-          if (!createChildColumnRef(idChild, alias, newChildren, aliases)) {
-            setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-            return;
+        // we can have functions which generate multiple aliases (e.g. explode(map(x, y)) as (key, val))
+        boolean isFunctionWithMultipleParameters =
+            selExpr.getChild(0).getType() == HiveParser.TOK_FUNCTION && selExpr.getChildCount() > 2;
+        // if so let's skip the function token buth then examine all its parameters - otherwise check only the last item
+        int start = isFunctionWithMultipleParameters ? 1 : selExpr.getChildCount() - 1;
+        for (int j = start; j < selExpr.getChildCount(); ++j) {
+          Tree child = selExpr.getChild(j);
+          switch (child.getType()) {
+            case HiveParser.TOK_SETCOLREF:
+              // We have a nested setcolref. Process that and start from scratch TODO: use stack?
+              processSetColsNode((ASTNode) child, searcher, ctx);
+              processSetColsNode(setCols, searcher, ctx);
+              return;
+            case HiveParser.TOK_ALLCOLREF:
+              // We should find an alias of this insert and do (alias).*. This however won't fix e.g.
+              // positional order by alias case, cause we'd still have a star on the top level. Bail.
+              LOG.debug("Replacing SETCOLREF with ALLCOLREF because of nested ALLCOLREF");
+              setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+              return;
+            case HiveParser.TOK_TABLE_OR_COL:
+              Tree idChild = child.getChild(0);
+              assert idChild.getType() == HiveParser.Identifier : idChild;
+              if (!createChildColumnRef(idChild, alias, newChildren, aliases, ctx)) {
+                setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+                return;
+              }
+              break;
+            case HiveParser.Identifier:
+              if (!createChildColumnRef(child, alias, newChildren, aliases, ctx)) {
+                setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+                return;
+              }
+              break;
+            case HiveParser.DOT: {
+              Tree colChild = child.getChild(child.getChildCount() - 1);
+              assert colChild.getType() == HiveParser.Identifier : colChild;
+              if (!createChildColumnRef(colChild, alias, newChildren, aliases, ctx)) {
+                setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+                return;
+              }
+              break;
+            }
+            default:
+              // Not really sure how to refer to this (or if we can).
+              // TODO: We could find a different from branch for the union, that might have an alias?
+              //       Or we could add an alias here to refer to, but that might break other branches.
+              LOG.debug("Replacing SETCOLREF with ALLCOLREF because of the nested node "
+                  + child.getType() + " " + child.getText());
+              setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+              return;
           }
-          break;
-        case HiveParser.Identifier:
-          if (!createChildColumnRef(child, alias, newChildren, aliases)) {
-            setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-            return;
-          }
-          break;
-        case HiveParser.DOT: {
-          Tree colChild = child.getChild(child.getChildCount() - 1);
-          assert colChild.getType() == HiveParser.Identifier : colChild;
-          if (!createChildColumnRef(colChild, alias, newChildren, aliases)) {
-            setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-            return;
-          }
-          break;
-        }
-        default:
-          // Not really sure how to refer to this (or if we can).
-          // TODO: We could find a different from branch for the union, that might have an alias?
-          //       Or we could add an alias here to refer to, but that might break other branches.
-          LOG.debug("Replacing SETCOLREF with ALLCOLREF because of the nested node "
-              + child.getType() + " " + child.getText());
-          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
-          return;
         }
       }
       // Insert search in the beginning would have failed if these parents didn't exist.
@@ -488,8 +473,12 @@ public final class ParseUtils {
     }
 
     private static boolean createChildColumnRef(Tree child, String alias,
-        List<ASTNode> newChildren, HashSet<String> aliases) {
+        List<ASTNode> newChildren, HashSet<String> aliases, Context ctx) {
       String colAlias = child.getText();
+      if (SemanticAnalyzer.isRegex(colAlias, (HiveConf)ctx.getConf())) {
+        LOG.debug("Skip creating child column reference because of regexp used as alias: " + colAlias);
+        return false;
+      }
       if (!aliases.add(colAlias)) {
         // TODO: if a side of the union has 2 columns with the same name, noone on the higher
         //       level can refer to them. We could change the alias in the original node.
@@ -526,17 +515,18 @@ public final class ParseUtils {
       return sb.toString();
     }
 
-  public static RelNode parseQuery(HiveConf conf, String viewQuery)
-      throws SemanticException, IOException, ParseException {
+  public static CBOPlan parseQuery(HiveConf conf, String viewQuery)
+      throws SemanticException, ParseException {
     final Context ctx = new Context(conf);
     ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
-    return analyzer.genLogicalPlan(ast);
+    RelNode logicalPlan = analyzer.genLogicalPlan(ast);
+    return new CBOPlan(logicalPlan, analyzer.getInvalidAutomaticRewritingMaterializationReason());
   }
 
   public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
-      throws SemanticException, IOException, ParseException {
+      throws SemanticException, ParseException {
     final Context ctx = new Context(conf);
     ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
@@ -551,5 +541,124 @@ public final class ParseUtils {
     analyzer.initCtx(ctx);
     analyzer.init(false);
     return analyzer;
+  }
+
+  /**
+   * Get the partition specs from the tree. This stores the full specification
+   * with the comparator operator into the output list.
+   *
+   * @return Map of partitions by prefix length. Most of the time prefix length will
+   *         be the same for all partition specs, so we can just OR the expressions.
+   */
+  public static Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
+      CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    Map<String, String> colTypes = new HashMap<>();
+    for (FieldSchema fs : table.getPartitionKeys()) {
+      colTypes.put(fs.getName().toLowerCase(), fs.getType());
+    }
+
+    Map<Integer, List<ExprNodeGenericFuncDesc>> result = new HashMap<>();
+    for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
+      Tree partSpecTree = ast.getChild(childIndex);
+      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) {
+        continue;
+      }
+
+      ExprNodeGenericFuncDesc expr = null;
+      Set<String> names = new HashSet<>(partSpecTree.getChildCount());
+      for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
+        CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
+        assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
+        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
+        String operator = partSpecSingleKey.getChild(1).getText();
+        ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
+        TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
+        ExprNodeConstantDesc valExpr =
+            (ExprNodeConstantDesc) ExprNodeTypeCheck.genExprNode(partValNode, typeCheckCtx).get(partValNode);
+        Object val = valExpr.getValue();
+
+        boolean isDefaultPartitionName = val.equals(defaultPartitionName);
+
+        String type = colTypes.get(key);
+        if (type == null) {
+          throw new SemanticException("Column " + key + " is not a partition key");
+        }
+        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
+        // Create the corresponding hive expression to filter on partition columns.
+        if (!isDefaultPartitionName) {
+          if (!valExpr.getTypeString().equals(type)) {
+            ObjectInspectorConverters.Converter converter = ObjectInspectorConverters.getConverter(
+                TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
+                TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
+            val = converter.convert(valExpr.getValue());
+          }
+        }
+
+        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
+        ExprNodeGenericFuncDesc op;
+        if (!isDefaultPartitionName) {
+          op = PartitionUtils.makeBinaryPredicate(operator, column, new ExprNodeConstantDesc(pti, val));
+        } else {
+          GenericUDF originalOp = FunctionRegistry.getFunctionInfo(operator).getGenericUDF();
+          String fnName;
+          if (FunctionRegistry.isEq(originalOp)) {
+            fnName = "isnull";
+          } else if (FunctionRegistry.isNeq(originalOp)) {
+            fnName = "isnotnull";
+          } else {
+            throw new SemanticException(
+                "Cannot use " + operator + " in a default partition spec; only '=' and '!=' are allowed.");
+          }
+          op = PartitionUtils.makeUnaryPredicate(fnName, column);
+        }
+        // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
+        expr = (expr == null) ? op : PartitionUtils.makeBinaryPredicate("and", expr, op);
+        names.add(key);
+      }
+
+      if (expr == null) {
+        continue;
+      }
+
+      // We got the expr for one full partition spec. Determine the prefix length.
+      int prefixLength = calculatePartPrefix(table, names);
+      List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
+      // We have to tell apart partitions resulting from spec with different prefix lengths.
+      // So, if we already have smth for the same prefix length, we can OR the two.
+      // If we don't, create a new separate filter. In most cases there will only be one.
+      if (orExpr == null) {
+        result.put(prefixLength, Lists.newArrayList(expr));
+      } else if (canGroupExprs) {
+        orExpr.set(0, PartitionUtils.makeBinaryPredicate("or", expr, orExpr.get(0)));
+      } else {
+        orExpr.add(expr);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Calculates the partition prefix length based on the drop spec.
+   * This is used to avoid deleting archived partitions with lower level.
+   * For example, if, for A and B key cols, drop spec is A=5, B=6, we shouldn't drop
+   * archived A=5/, because it can contain B-s other than 6.
+   */
+  private static int calculatePartPrefix(Table tbl, Set<String> partSpecKeys) {
+    int partPrefixToDrop = 0;
+    for (FieldSchema fs : tbl.getPartCols()) {
+      if (!partSpecKeys.contains(fs.getName())) {
+        break;
+      }
+      ++partPrefixToDrop;
+    }
+    return partPrefixToDrop;
+  }
+
+  public static String stripIdentifierQuotes(String val) {
+    if ((val.charAt(0) == '`' && val.charAt(val.length() - 1) == '`')) {
+      val = val.substring(1, val.length() - 1);
+    }
+    return val;
   }
 }

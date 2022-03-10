@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
  * Requests and job request execution time outs. Verify that we get appropriate exceptions
  * and exception message.
  */
+@org.junit.Ignore("HIVE-23983")
 public class TestConcurrentJobRequestsThreadsAndTimeout extends ConcurrentJobRequestsTestBase {
 
   private static AppConfig config;

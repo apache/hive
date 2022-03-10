@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -108,9 +109,7 @@ public class PointLookupOptimizer extends Transform {
       ExprNodeDesc newPredicate = generateInClause(predicate);
       if (newPredicate != null) {
         // Replace filter in current FIL with new FIL
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Generated new predicate with IN clause: " + newPredicate);
-        }
+        LOG.debug("Generated new predicate with IN clause: {}", newPredicate);
         filterOp.getConf().setPredicate(newPredicate);
       }
 
@@ -188,8 +187,7 @@ public class PointLookupOptimizer extends Transform {
           }
 
           // One child
-          conjunctions = new ArrayList<ExprNodeDesc>(1);
-          conjunctions.add(child);
+          conjunctions = Collections.singletonList(child);
         }
 
         // 3. We will extract the literals to introduce in the IN clause.
@@ -243,7 +241,7 @@ public class PointLookupOptimizer extends Transform {
       List<String> names = new ArrayList<String>();
       List<TypeInfo> typeInfos = new ArrayList<TypeInfo>();
       for (int i = 0; i < children.size(); i++) {
-        List<ExprNodeDesc> constantFields = new ArrayList<ExprNodeDesc>(children.size());
+        List<ExprNodeDesc> constantFields = new ArrayList<ExprNodeDesc>();
 
         for (String keyString : columnConstantsMap.keySet()) {
           Pair<ExprNodeColumnDesc, ExprNodeConstantDesc> columnConstant =

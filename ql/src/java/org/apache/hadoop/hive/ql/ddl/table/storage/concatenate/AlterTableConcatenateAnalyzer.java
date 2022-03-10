@@ -78,8 +78,13 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
       if (table.isNonNative()) {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE.getMsg());
       }
+
       if (table.getTableType() != TableType.MANAGED_TABLE) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+        // Enable concatenate for external tables if config is set.
+        if (!conf.getBoolVar(ConfVars.CONCATENATE_EXTERNAL_TABLE)
+            || table.getTableType() != TableType.EXTERNAL_TABLE) {
+          throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+        }
       }
 
       if (table.isPartitioned()) {
@@ -90,11 +95,12 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     }
   }
 
-  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec) {
+  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec) throws SemanticException {
     boolean isBlocking = !HiveConf.getBoolVar(conf, ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, "MAJOR", isBlocking, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    setAcidDdlDesc(getTable(tableName), desc);
   }
 
   @SuppressWarnings("rawtypes")

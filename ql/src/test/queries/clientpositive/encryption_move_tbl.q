@@ -44,7 +44,7 @@ ALTER TABLE encrypted_table_outloc RENAME TO renamed_encrypted_table_outloc;
 SHOW TABLES;
 
 -- create database encrypted_db_outloc in a specified location other than its default in warehouse
-CREATE DATABASE encrypted_db_outloc LOCATION '${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location';
+CREATE DATABASE encrypted_db_outloc MANAGEDLOCATION '${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location';
 CRYPTO CREATE_KEY --keyName key_128_4 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128_4 --path ${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location;
 

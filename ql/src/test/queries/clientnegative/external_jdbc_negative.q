@@ -1,3 +1,4 @@
+--! qt:disabled:test is unstable HIVE-23690
 --! qt:dataset:src
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';

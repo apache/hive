@@ -24,12 +24,15 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -709,9 +712,9 @@ public final class TypeInfoUtils {
         break;
       }
       case STRUCT: {
-        StructTypeInfo strucTypeInfo = (StructTypeInfo) typeInfo;
-        List<String> fieldNames = strucTypeInfo.getAllStructFieldNames();
-        List<TypeInfo> fieldTypeInfos = strucTypeInfo
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+        List<TypeInfo> fieldTypeInfos = structTypeInfo
             .getAllStructFieldTypeInfos();
         List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(
             fieldTypeInfos.size());
@@ -883,6 +886,33 @@ public final class TypeInfoUtils {
     }
 
     return true;
+  }
+
+  private static final Set<Set<PrimitiveCategory>> LOSSY_TYPE_CONVERSIONS =
+      ImmutableSet.<Set<PrimitiveCategory>>builder()
+          .add(EnumSet.of(PrimitiveCategory.DECIMAL, PrimitiveCategory.CHAR))
+          .add(EnumSet.of(PrimitiveCategory.DECIMAL, PrimitiveCategory.VARCHAR))
+          .add(EnumSet.of(PrimitiveCategory.DECIMAL, PrimitiveCategory.STRING))
+          .add(EnumSet.of(PrimitiveCategory.DOUBLE, PrimitiveCategory.LONG))
+          .add(EnumSet.of(PrimitiveCategory.LONG, PrimitiveCategory.CHAR))
+          .add(EnumSet.of(PrimitiveCategory.LONG, PrimitiveCategory.VARCHAR))
+          .add(EnumSet.of(PrimitiveCategory.LONG, PrimitiveCategory.STRING))
+          .build();
+
+  /**
+   * Returns true if the conversion between the types is lossy (i.e., it can lead to loss of information), and false
+   * otherwise.
+   * TODO Not all cases are covered 
+   * Note that the method does not imply anything about the coercibility of types; use 
+   * {@link #isConversionRequiredForComparison(TypeInfo, TypeInfo)} to determine if a conversion is possible.
+   */
+  public static boolean isConversionLossy(TypeInfo t1, TypeInfo t2) {
+    if (t1 instanceof PrimitiveTypeInfo && t2 instanceof PrimitiveTypeInfo) {
+      PrimitiveTypeInfo pt1 = (PrimitiveTypeInfo) t1;
+      PrimitiveTypeInfo pt2 = (PrimitiveTypeInfo) t2;
+      return LOSSY_TYPE_CONVERSIONS.contains(EnumSet.of(pt1.getPrimitiveCategory(), pt2.getPrimitiveCategory()));
+    }
+    return false;
   }
 
   /**

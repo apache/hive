@@ -51,7 +51,7 @@ public class TestGetDataColumnReaderByType {
         ParquetDataColumnReaderFactory.getDataColumnReaderByType(
             Types.optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(20)
                 .as(LogicalTypeAnnotation.decimalType(2, 5)).named("value"),
-            hiveTypeInfo, null, true, null);
+            hiveTypeInfo, null, true, null, false);
     assertTrue(reader instanceof TypesFromDecimalPageReader);
   }
 
@@ -61,7 +61,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("string");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory.getDataColumnReaderByType(Types
         .optional(PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType()).named("value"),
-        hiveTypeInfo, null, true, null);
+        hiveTypeInfo, null, true, null, false);
     assertTrue(reader instanceof TypesFromStringPageReader);
   }
 
@@ -71,7 +71,7 @@ public class TestGetDataColumnReaderByType {
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.BINARY)
             .as(LogicalTypeAnnotation.decimalType(2, 5)).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromDecimalPageReader);
   }
 
@@ -81,7 +81,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("string");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.BINARY).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof DefaultParquetDataColumnReader);
   }
 
@@ -91,7 +91,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("binary");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory.getDataColumnReaderByType(Types
         .optional(PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.jsonType()).named("value"),
-        hiveTypeInfo, null, true, null);
+        hiveTypeInfo, null, true, null, false);
     assertTrue(reader instanceof DefaultParquetDataColumnReader);
   }
 
@@ -102,7 +102,7 @@ public class TestGetDataColumnReaderByType {
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.INT32)
             .as(LogicalTypeAnnotation.intType(32, false)).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromInt32PageReader);
   }
 
@@ -112,7 +112,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("int");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.INT32).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromInt32PageReader);
   }
 
@@ -121,7 +121,7 @@ public class TestGetDataColumnReaderByType {
     PrimitiveTypeInfo hiveTypeInfo = new PrimitiveTypeInfo();
     hiveTypeInfo.setTypeName("bigint");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory.getDataColumnReaderByType(
-        Types.optional(PrimitiveTypeName.INT64).named("value"), hiveTypeInfo, null, true, null);
+        Types.optional(PrimitiveTypeName.INT64).named("value"), hiveTypeInfo, null, true, null, false);
     assertTrue(reader instanceof TypesFromInt64PageReader);
   }
 
@@ -132,7 +132,7 @@ public class TestGetDataColumnReaderByType {
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.INT64)
             .as(LogicalTypeAnnotation.intType(64, false)).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromInt64PageReader);
   }
 
@@ -142,7 +142,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("float");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.FLOAT).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromFloatPageReader);
   }
 
@@ -152,7 +152,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("double");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.DOUBLE).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromDoublePageReader);
   }
 
@@ -162,7 +162,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("timestamp");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.INT96).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromInt96PageReader);
   }
 
@@ -172,7 +172,7 @@ public class TestGetDataColumnReaderByType {
     hiveTypeInfo.setTypeName("boolean");
     ParquetDataColumnReader reader = ParquetDataColumnReaderFactory
         .getDataColumnReaderByType(Types.optional(PrimitiveTypeName.BOOLEAN).named("value"), hiveTypeInfo, null, true,
-            null);
+            null, false);
     assertTrue(reader instanceof TypesFromBooleanPageReader);
   }
 }

@@ -16,10 +16,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
@@ -27,16 +24,12 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <kafka.version>2.3.0</kafka.version>
   </properties>
-
   <artifactId>kafka-handler</artifactId>
   <packaging>jar</packaging>
   <name>Hive Kafka Storage Handler</name>
-
   <dependencies>
     <!-- Intra-project -->
     <dependency>
@@ -70,11 +63,11 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <exclusions>
-         <exclusion>
+        <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
         </exclusion>
-       <exclusion>
+        <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
         </exclusion>
@@ -156,14 +149,12 @@
       </exclusions>
     </dependency>
   </dependencies>
-
   <repositories>
     <repository>
       <id>confluent</id>
-      <url>http://packages.confluent.io/maven/</url>
+      <url>https://packages.confluent.io/maven/</url>
     </repository>
   </repositories>
-
   <profiles>
     <profile>
       <id>dev-fast-build</id>

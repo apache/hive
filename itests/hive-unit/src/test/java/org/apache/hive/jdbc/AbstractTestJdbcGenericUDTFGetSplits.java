@@ -157,8 +157,12 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
   }
 
   protected void testGenericUDTFOrderBySplitCount1(String udtfName, int[] expectedCounts) throws Exception {
-    String query = "select " + udtfName + "(" + "'select value from " + tableName + "', 5)";
+    String query = "select " + udtfName + "(" + "'select value from " + tableName + "', 10)";
     runQuery(query, getConfigs(), expectedCounts[0]);
+
+    // Check number of splits is respected
+    query = "select get_splits(" + "'select value from " + tableName + "', 3)";
+    runQuery(query, getConfigs(), 3);
 
     query = "select " + udtfName + "(" + "'select value from " + tableName + " order by under_col', 5)";
     runQuery(query, getConfigs(), expectedCounts[1]);
@@ -182,7 +186,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     List<String> setCmds = getConfigs();
     setCmds.add("set hive.llap.external.splits.order.by.force.single.split=false");
     query = "select " + udtfName + "(" +
-        "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
+        "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 10)";
     runQuery(query, setCmds, expectedCounts[7]);
   }
 
@@ -197,13 +201,13 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     runQuery(query, getConfigs(), expectedCounts[1]);
 
     query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " limit 2', 5)";
-    runQuery(query, getConfigs(), expectedCounts[1]);
+    runQuery(query, getConfigs(), expectedCounts[2]);
 
     query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " where id != 0 limit 2', 5)";
-    runQuery(query, getConfigs(), expectedCounts[1]);
+    runQuery(query, getConfigs(), expectedCounts[3]);
 
     query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " group by id limit 2', 5)";
-    runQuery(query, getConfigs(), expectedCounts[1]);
+    runQuery(query, getConfigs(), expectedCounts[4]);
 
   }
 

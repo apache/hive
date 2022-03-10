@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.add.AlterTableAddConstraintOperation;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -79,7 +78,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       }
     }
 
-    finalizeAlterTableWithWriteIdOp(table, oldTable, partitions, context, environmentContext, desc);
+    finalizeAlterTableWithWriteIdOp(table, oldTable, partitions, context, environmentContext);
     return 0;
   }
 
@@ -124,7 +123,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
   }
 
   private void finalizeAlterTableWithWriteIdOp(Table table, Table oldTable, List<Partition> partitions,
-      DDLOperationContext context, EnvironmentContext environmentContext, AbstractAlterTableDesc alterTable)
+      DDLOperationContext context, EnvironmentContext environmentContext)
       throws HiveException {
     if (partitions == null) {
       updateModifiedParameters(table.getTTable().getParameters(), context.getConf());
@@ -136,28 +135,62 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     }
 
     try {
-      environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTable.getType().name());
+      environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, desc.getType().name());
+      if (desc.getType() == AlterTableType.ADDPROPS) {
+        Map<String, String> oldTableParameters = oldTable.getParameters();
+        environmentContext.putToProperties(HiveMetaHook.SET_PROPERTIES,
+            table.getParameters().entrySet().stream()
+                .filter(e -> !oldTableParameters.containsKey(e.getKey()) ||
+                    !oldTableParameters.get(e.getKey()).equals(e.getValue()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(HiveMetaHook.PROPERTIES_SEPARATOR)));
+      } else if (desc.getType() == AlterTableType.DROPPROPS) {
+        Map<String, String> newTableParameters = table.getParameters();
+        environmentContext.putToProperties(HiveMetaHook.UNSET_PROPERTIES,
+            oldTable.getParameters().entrySet().stream()
+                .filter(e -> !newTableParameters.containsKey(e.getKey()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(HiveMetaHook.PROPERTIES_SEPARATOR)));
+      }
       if (partitions == null) {
-        long writeId = alterTable.getWriteId() != null ? alterTable.getWriteId() : 0;
-        if (alterTable.getReplicationSpec() != null && alterTable.getReplicationSpec().isMigratingToTxnTable()) {
-          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
-          if (tmpWriteId == null) {
-            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
+        long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
+        try {
+          context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+        } catch (HiveException ex) {
+          if (Boolean.valueOf(environmentContext.getProperties()
+              .getOrDefault(HiveMetaHook.INITIALIZE_ROLLBACK_MIGRATION, "false"))) {
+            // in case of rollback of alter table do the following:
+            // 1. restore serde info and input/output format
+            // 2. remove table columns which are used to be partition columns
+            // 3. add partition columns
+            table.getSd().setInputFormat(oldTable.getSd().getInputFormat());
+            table.getSd().setOutputFormat(oldTable.getSd().getOutputFormat());
+            table.getSd().setSerdeInfo(oldTable.getSd().getSerdeInfo());
+            table.getSd().getCols().removeAll(oldTable.getPartitionKeys());
+            table.setPartCols(oldTable.getPartitionKeys());
+
+            table.getParameters().clear();
+            table.getParameters().putAll(oldTable.getParameters());
+            context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+            throw new HiveException("Error occurred during hive table migration to iceberg. Table properties "
+                + "and serde info was reverted to its original value. Partition info was lost during the migration "
+                + "process, but it can be reverted by running MSCK REPAIR on table/partition level.\n"
+                + "Retrying the migration without issuing MSCK REPAIR on a partitioned table will result in an empty "
+                + "iceberg table.");
+          } else {
+            throw ex;
           }
-          writeId = tmpWriteId;
         }
-        context.getDb().alterTable(alterTable.getDbTableName(), table, alterTable.isCascade(), environmentContext, true,
-            writeId);
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
         boolean isTxn = false;
-        if (alterTable.getPartitionSpec() != null && alterTable.getType() == AlterTableType.ADDPROPS) {
+        if (desc.getPartitionSpec() != null && desc.getType() == AlterTableType.ADDPROPS) {
           // ADDPROPS is used to add replication properties like repl.last.id, which isn't
           // transactional change. In case of replication check for transactional properties
           // explicitly.
-          Map<String, String> props = alterTable.getProps();
-          if (alterTable.getReplicationSpec() != null && alterTable.getReplicationSpec().isInReplicationScope()) {
+          Map<String, String> props = desc.getProps();
+          if (desc.getReplicationSpec() != null && desc.getReplicationSpec().isInReplicationScope()) {
             isTxn = (props.get(StatsSetupConst.COLUMN_STATS_ACCURATE) != null);
           } else {
             isTxn = true;
@@ -167,8 +200,8 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
         context.getDb().alterPartitions(qualifiedName, partitions, environmentContext, isTxn);
       }
       // Add constraints if necessary
-      if (alterTable instanceof AbstractAlterTableWithConstraintsDesc) {
-        AlterTableAddConstraintOperation.addConstraints((AbstractAlterTableWithConstraintsDesc)alterTable,
+      if (desc instanceof AbstractAlterTableWithConstraintsDesc) {
+        AlterTableAddConstraintOperation.addConstraints((AbstractAlterTableWithConstraintsDesc)desc,
             context.getDb());
       }
     } catch (InvalidOperationException e) {

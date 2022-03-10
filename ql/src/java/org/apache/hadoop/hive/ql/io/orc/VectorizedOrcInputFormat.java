@@ -26,15 +26,16 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -62,6 +63,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private VectorizedRowBatchCtx rbCtx;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
+    private final BucketIdentifier bucketIdentifier;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -76,8 +78,10 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
        * Do we have schema on read in the configuration variables?
        */
       int dataColumns = rbCtx.getDataColumnCount();
-      TypeDescription schema =
-          OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns);
+      String orcSchemaOverrideString = conf.get(ColumnProjectionUtils.ORC_SCHEMA_STRING);
+      TypeDescription schema = orcSchemaOverrideString == null ?
+          OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns) :
+          TypeDescription.fromString(orcSchemaOverrideString);
       if (schema == null) {
         schema = file.getSchema();
         // Even if the user isn't doing schema evolution, cut the schema
@@ -109,6 +113,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       } else {
         partitionValues = null;
       }
+
+      this.bucketIdentifier = BucketIdentifier.from(conf, fileSplit.getPath());
     }
 
     @Override
@@ -133,6 +139,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         throw new RuntimeException(e);
       }
       progress = reader.getProgress();
+
+      if (bucketIdentifier != null) {
+        rbCtx.setBucketAndWriteIdOf(value, bucketIdentifier);
+      }
+
       return true;
     }
 
@@ -196,9 +207,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       return false;
     }
     for (FileStatus file : files) {
-      try {
-        OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs));
+      try (Reader notUsed = OrcFile.createReader(file.getPath(), OrcFile.readerOptions(conf).filesystem(fs))) {
+        // We do not use the reader itself. We just check if we can open the file.
       } catch (IOException e) {
         return false;
       }

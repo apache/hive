@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.common.io;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
@@ -45,6 +47,7 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
     super();
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Ref external obj for efficiency")
   public byte[] getData() {
     return buf;
   }

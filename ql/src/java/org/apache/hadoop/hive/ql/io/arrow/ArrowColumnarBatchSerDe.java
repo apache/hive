@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.arrow;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.complex.impl.UnionListWriter;
@@ -32,11 +33,8 @@ import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAssignRow;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -47,16 +45,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -80,7 +74,7 @@ import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils.getStandardWr
  * Timestamp with local timezone is not supported. {@link VectorAssignRow} doesn't support it.
  */
 public class ArrowColumnarBatchSerDe extends AbstractSerDe {
-  public static final Logger LOG = LoggerFactory.getLogger(ArrowColumnarBatchSerDe.class.getName());
+
   private static final String DEFAULT_ARROW_FIELD_NAME = "[DEFAULT]";
 
   static final int MILLIS_PER_SECOND = 1_000;
@@ -95,42 +89,23 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   BufferAllocator rootAllocator;
   StructTypeInfo rowTypeInfo;
   StructObjectInspector rowObjectInspector;
-  Configuration conf;
 
-  private Serializer serializer;
+  @VisibleForTesting
+  Serializer serializer;
   private Deserializer deserializer;
 
   @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-    this.conf = conf;
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-
-    final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-
-    // Create an object inspector
-    final List<String> columnNames;
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<>();
-    } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    final List<TypeInfo> columnTypes;
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    }
-    rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    rowObjectInspector =
-        (StructObjectInspector) getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
+    rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
+    rowObjectInspector = (StructObjectInspector) getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
 
     final List<Field> fields = new ArrayList<>();
-    final int size = columnNames.size();
+    final int size = getColumnNames().size();
     for (int i = 0; i < size; i++) {
-      fields.add(toField(columnNames.get(i), columnTypes.get(i)));
+      fields.add(toField(getColumnNames().get(i), getColumnTypes().get(i)));
     }
 
   }
@@ -209,14 +184,14 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
         final MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         final TypeInfo keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo();
         final TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
-        final StructTypeInfo mapStructTypeInfo = new StructTypeInfo();
-        mapStructTypeInfo.setAllStructFieldNames(Lists.newArrayList("keys", "values"));
-        mapStructTypeInfo.setAllStructFieldTypeInfos(
-            Lists.newArrayList(keyTypeInfo, valueTypeInfo));
-        final ListTypeInfo mapListStructTypeInfo = new ListTypeInfo();
-        mapListStructTypeInfo.setListElementTypeInfo(mapStructTypeInfo);
 
-        return toField(name, mapListStructTypeInfo);
+        final List<Field> mapFields = Lists.newArrayList();
+        mapFields.add(toField(name+"_keys", keyTypeInfo));
+        mapFields.add(toField(name+"_values", valueTypeInfo));
+
+        FieldType struct = new FieldType(false, new ArrowType.Struct(), null);
+        List<Field> childrenOfList = Lists.newArrayList(new Field(name, struct, mapFields));
+        return new Field(name, FieldType.nullable(MinorType.LIST.getType()), childrenOfList);
       default:
         throw new IllegalArgumentException();
     }
@@ -224,7 +199,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
 
   static ListTypeInfo toStructListTypeInfo(MapTypeInfo mapTypeInfo) {
     final StructTypeInfo structTypeInfo = new StructTypeInfo();
-    structTypeInfo.setAllStructFieldNames(Lists.newArrayList("keys", "values"));
+    structTypeInfo.setAllStructFieldNames(Lists.newArrayList("key", "value"));
     structTypeInfo.setAllStructFieldTypeInfos(Lists.newArrayList(
         mapTypeInfo.getMapKeyTypeInfo(), mapTypeInfo.getMapValueTypeInfo()));
     final ListTypeInfo structListTypeInfo = new ListTypeInfo();
@@ -235,13 +210,14 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   static ListColumnVector toStructListVector(MapColumnVector mapVector) {
     final StructColumnVector structVector;
     final ListColumnVector structListVector;
-    structVector = new StructColumnVector();
+    structVector = new StructColumnVector(mapVector.childCount);
     structVector.fields = new ColumnVector[] {mapVector.keys, mapVector.values};
-    structListVector = new ListColumnVector();
+    structListVector = new ListColumnVector(mapVector.childCount, null);
     structListVector.child = structVector;
     structListVector.childCount = mapVector.childCount;
     structListVector.isRepeating = mapVector.isRepeating;
     structListVector.noNulls = mapVector.noNulls;
+    System.arraycopy(mapVector.isNull, 0, structListVector.isNull, 0, mapVector.childCount);
     System.arraycopy(mapVector.offsets, 0, structListVector.offsets, 0, mapVector.childCount);
     System.arraycopy(mapVector.lengths, 0, structListVector.lengths, 0, mapVector.childCount);
     return structListVector;
@@ -256,26 +232,20 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   public ArrowWrapperWritable serialize(Object obj, ObjectInspector objInspector) {
     if(serializer == null) {
       try {
-        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
+        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(configuration.get());
         serializer = new Serializer(this);
       } catch(Exception e) {
-        LOG.error("Unable to initialize serializer for ArrowColumnarBatchSerDe");
-        throw new RuntimeException(e);
+        throw new RuntimeException("Unable to initialize serializer for ArrowColumnarBatchSerDe", e);
       }
     }
     return serializer.serialize(obj, objInspector);
   }
 
   @Override
-  public SerDeStats getSerDeStats() {
-    return null;
-  }
-
-  @Override
   public Object deserialize(Writable writable) {
     if(deserializer == null) {
       try {
-        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
+        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(configuration.get());
         deserializer = new Deserializer(this);
       } catch(Exception e) {
         throw new RuntimeException(e);

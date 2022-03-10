@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -30,6 +28,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 
 public class AlterPartitionEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(AlterPartitionEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AlterPartitionEvent.class);
 
   private String COMMAND_STR = "alter table %s partition %s";
 
@@ -55,31 +55,25 @@ public class AlterPartitionEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterPartitionEvent.getInputHObjs()");
-    }
+    LOG.debug("==> AlterPartitionEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreAlterPartitionEvent    event = (PreAlterPartitionEvent) preEventContext;
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, event.getDbName(), event.getTableName()));
+    ret.add(getHivePrivilegeObject(event.getTable()));
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AlterPartitionEvent.getInputHObjs()" + ret);
-    }
+    LOG.debug("<== AlterPartitionEvent.getInputHObjs() ret={}", ret);
 
     return ret;
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterPartitionEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> AlterPartitionEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreAlterPartitionEvent    event = (PreAlterPartitionEvent) preEventContext;
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, event.getDbName(), event.getTableName()));
+    ret.add(getHivePrivilegeObject(event.getTable()));
 
     Partition newPartition = event.getNewPartition();
     String    newUri       = (newPartition != null) ? getSdLocation(newPartition.getSd()) : "";
@@ -90,9 +84,7 @@ public class AlterPartitionEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, event.getTableName(), newPartition);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AlterPartitionEvent.getOutputHObjs()" + ret );
-    }
+    LOG.debug("<== AlterPartitionEvent.getOutputHObjs() ret={}", ret);
 
     return ret;
   }

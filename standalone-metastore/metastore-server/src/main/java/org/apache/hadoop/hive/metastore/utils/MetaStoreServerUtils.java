@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -447,16 +449,22 @@ public class MetaStoreServerUtils {
       return;
     }
 
-    // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
-    List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
     if (params == null) {
       params = new HashMap<>();
       tbl.setParameters(params);
     }
     // The table location already exists and may contain data.
     // Let's try to populate those stats that don't require full scan.
-    LOG.info("Updating table stats for {}", tbl.getTableName());
-    populateQuickStats(fileStatus, params);
+    boolean populateQuickStats  = !((environmentContext != null)
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TRUE.equals(environmentContext.getProperties()
+        .get(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS)));
+    if (populateQuickStats) {
+      // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
+      List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+      LOG.info("Updating table stats for {}", tbl.getTableName());
+      populateQuickStats(fileStatus, params);
+    }
     LOG.info("Updated size of table {} to {}",
         tbl.getTableName(), params.get(StatsSetupConst.TOTAL_SIZE));
     if (environmentContext != null
@@ -499,6 +507,19 @@ public class MetaStoreServerUtils {
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
+  }
+
+  /**
+   * Returns true if p is a prefix of s.
+   */
+  public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
+    if (p == s) {
+      return true;
+    }
+    if (p.size() > s.size()) {
+      return false;
+    }
+    return ListUtils.isEqualList(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
@@ -1090,6 +1111,7 @@ public class MetaStoreServerUtils {
     }
     if (!partitionsOutsideTableDir.isEmpty()) {
       PartitionSpec partListSpec = new PartitionSpec();
+      partListSpec.setCatName(table.getCatName());
       partListSpec.setDbName(table.getDbName());
       partListSpec.setTableName(table.getTableName());
       partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
@@ -1120,6 +1142,7 @@ public class MetaStoreServerUtils {
     ret.setSharedSDPartitionSpec(sharedSDPartSpec);
     ret.setDbName(table.getDbName());
     ret.setTableName(table.getTableName());
+    ret.setCatName(table.getCatName());
 
     return ret;
   }
@@ -1348,6 +1371,17 @@ public class MetaStoreServerUtils {
     }
   }
 
+  public static void getPartitionListByFilterExp(IMetaStoreClient msc, Table table, byte[] filterExp,
+                                                 String defaultPartName, List<Partition> results)
+      throws MetastoreException {
+    try {
+      msc.listPartitionsByExpr(table.getCatName(), table.getDbName(), table.getTableName(), filterExp,
+          defaultPartName, (short) -1, results);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
   public static boolean isPartitioned(Table table) {
     if (getPartCols(table) == null) {
       return false;
@@ -1415,7 +1449,7 @@ public class MetaStoreServerUtils {
       // key value pairs - thrift cannot handle null return values, hence
       // getPartition() throws NoSuchObjectException to indicate null partition
     } catch (Exception e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to get partition", e);
       throw new MetastoreException(e);
     }
 
@@ -1434,7 +1468,8 @@ public class MetaStoreServerUtils {
    *          Set of partition columns from table definition
    * @return Partition name, for example partitiondate=2008-01-01
    */
-  public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols) {
+  public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
+                                        Map<String, String> partitionColToTypeMap) {
     String result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
@@ -1456,9 +1491,12 @@ public class MetaStoreServerUtils {
         String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
           if (result == null) {
-            result = partitionName + "=" + partitionValue;
+            result = partitionName + "="
+                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName));
           } else {
-            result = partitionName + "=" + partitionValue + Path.SEPARATOR + result;
+            result = partitionName + "="
+                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName))
+                    + Path.SEPARATOR + result;
           }
         }
       }
@@ -1466,6 +1504,39 @@ public class MetaStoreServerUtils {
       LOG.debug("currPath=" + currPath);
     }
     return result;
+  }
+
+  public static String getNormalisedPartitionValue(String partitionValue, String type) {
+
+    LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
+
+    if (type.equalsIgnoreCase("tinyint")
+    || type.equalsIgnoreCase("smallint")
+    || type.equalsIgnoreCase("int")){
+      return Integer.toString(Integer.parseInt(partitionValue));
+    } else if (type.equalsIgnoreCase("bigint")){
+      return Long.toString(Long.parseLong(partitionValue));
+    } else if (type.equalsIgnoreCase("float")){
+      return Float.toString(Float.parseFloat(partitionValue));
+    } else if (type.equalsIgnoreCase("double")){
+      return Double.toString(Double.parseDouble(partitionValue));
+    } else if (type.startsWith("decimal")){
+      // Decimal datatypes are stored like decimal(10,10)
+      return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+    }
+    return partitionValue;
+  }
+
+  public static Map<String, String> getPartitionColtoTypeMap(List<FieldSchema> partitionCols) {
+    Map<String, String> typeMap = new HashMap<>();
+
+    if (partitionCols != null) {
+      for (FieldSchema fSchema : partitionCols) {
+        typeMap.put(fSchema.getName(), fSchema.getType());
+      }
+    }
+
+    return typeMap;
   }
 
   public static Partition createMetaPartitionObject(Table tbl, Map<String, String> partSpec, Path location)
@@ -1491,5 +1562,34 @@ public class MetaStoreServerUtils {
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;
+  }
+
+  /**
+   * Validate bucket columns should belong to table columns.
+   * @param sd StorageDescriptor of given table
+   * @return true if bucket columns are empty or belong to table columns else false
+   */
+  public static List<String> validateBucketColumns(StorageDescriptor sd) {
+    List<String> bucketColumnNames = null;
+
+    if (CollectionUtils.isNotEmpty(sd.getBucketCols())) {
+      bucketColumnNames = sd.getBucketCols().stream().map(String::toLowerCase).collect(Collectors.toList());
+      List<String> columnNames = getColumnNames(sd.getCols());
+      if (CollectionUtils.isNotEmpty(columnNames))
+        bucketColumnNames.removeAll(columnNames);
+    }
+    return bucketColumnNames;
+  }
+
+  /**
+   * Generate list of lower case column names from the fieldSchema list
+   * @param cols fieldSchema list
+   * @return column name list
+   */
+  public static List<String> getColumnNames(List<FieldSchema> cols) {
+    if (CollectionUtils.isNotEmpty(cols)) {
+      return cols.stream().map(FieldSchema::getName).map(String::toLowerCase).collect(Collectors.toList());
+    }
+    return null;
   }
 }

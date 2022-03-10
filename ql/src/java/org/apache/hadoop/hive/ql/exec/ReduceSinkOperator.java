@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBucketNumber;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -94,7 +96,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * Evaluators for bucketing columns. This is used to compute bucket number.
    */
   protected transient ExprNodeEvaluator[] bucketEval = null;
-  // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is ready
   protected transient Serializer keySerializer;
   protected transient boolean keyIsText;
   protected transient Serializer valueSerializer;
@@ -121,7 +122,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * If there is no distinct expression, cachedKeys is simply like this.
    * cachedKeys[0] = [col0][col1]
    *
-   * with two distict expression, union(tag:key) is attatched for each distinct expression
+   * with two distict expression, union(tag:key) is attached for each distinct expression
    * cachedKeys[0] = [col0][col1][0:dist1]
    * cachedKeys[1] = [col0][col1][1:dist2]
    *
@@ -202,20 +203,21 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
       skipTag = conf.getSkipTag();
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using tag = " + tag);
-      }
+      LOG.info("Using tag = " + tag);
 
       TableDesc keyTableDesc = conf.getKeySerializeInfo();
-      keySerializer = (Serializer) keyTableDesc.getDeserializerClass()
-          .newInstance();
-      keySerializer.initialize(null, keyTableDesc.getProperties());
+      AbstractSerDe keySerDe = keyTableDesc.getSerDeClass().newInstance();
+      keySerDe.initialize(null, keyTableDesc.getProperties(), null);
+
+      keySerializer = keySerDe;
       keyIsText = keySerializer.getSerializedClass().equals(Text.class);
 
       TableDesc valueTableDesc = conf.getValueSerializeInfo();
-      valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
+      AbstractSerDe valueSerDe = valueTableDesc.getSerDeClass()
           .newInstance();
-      valueSerializer.initialize(null, valueTableDesc.getProperties());
+      valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
+
+      valueSerializer = valueSerDe;
 
       int limit = conf.getTopN();
       float memUsage = conf.getTopNMemoryUsage();
@@ -296,10 +298,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // TODO: this is fishy - we init object inspectors based on first tag. We
         //       should either init for each tag, or if rowInspector doesn't really
         //       matter, then we can create this in ctor and get rid of firstRow.
-        if (LOG.isInfoEnabled()) {
-          LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
-              conf.getNumDistributionKeys());
-        }
+        LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " + conf.getNumDistributionKeys());
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
             distinctColIndices,
             conf.getOutputKeyColumnNames(), numDistributionKeys, rowInspector);
@@ -454,6 +453,19 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (LOG.isTraceEnabled()) {
       LOG.trace("Going to return hash code " + hashCode);
     }
+    if (conf.isCompaction()) {
+      int bucket;
+      Object bucketProperty = ((Object[]) row)[2];
+      if (bucketProperty == null) {
+        return hashCode;
+      }
+      if (bucketProperty instanceof Writable) {
+        bucket = ((IntWritable) bucketProperty).get();
+      } else {
+        bucket = (int) bucketProperty;
+      }
+      return BucketCodec.determineVersion(bucket).decodeWriterId(bucket);
+    }
     return hashCode;
   }
 
@@ -592,4 +604,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     this.out = _out;
   }
 
+  @Override
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    super.replaceTabAlias(oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getBucketCols(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getPartitionCols(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getKeyCols(), oldAlias, newAlias);
+  }
 }

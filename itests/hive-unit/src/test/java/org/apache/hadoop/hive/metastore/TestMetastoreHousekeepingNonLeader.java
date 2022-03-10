@@ -52,7 +52,7 @@ public class TestMetastoreHousekeepingNonLeader extends MetastoreHousekeepingLea
       Assert.assertFalse("Thread with name " + entry.getKey() + " found.", entry.getValue());
     }
 
-    for (Map.Entry<Class, Boolean> entry : threadClasses.entrySet()) {
+    for (Map.Entry<Class<? extends Thread>, Boolean> entry : threadClasses.entrySet()) {
       // A non-leader HMS will still run the configured number of Compaction worker threads.
       if (entry.getKey() == Worker.class) {
         if (entry.getValue()) {

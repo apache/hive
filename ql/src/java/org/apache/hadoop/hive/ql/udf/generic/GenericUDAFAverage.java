@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * GenericUDAFAverage.
@@ -552,7 +551,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         } catch (NumberFormatException e) {
           if (!warned) {
             warned = true;
-            LOG.warn("Ignoring similar exceptions: " + StringUtils.stringifyException(e));
+            LOG.warn("Ignoring similar exceptions", e);
           }
         }
       }

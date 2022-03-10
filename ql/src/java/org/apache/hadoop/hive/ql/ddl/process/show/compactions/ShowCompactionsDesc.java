@@ -31,9 +31,11 @@ import java.io.Serializable;
 public class ShowCompactionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  // @formatter:off
   public static final String SCHEMA =
-      "compactionid,dbname,tabname,partname,type,state,hostname,workerid,starttime,duration,hadoopjobid,errormessage#" +
-      "string:string:string:string:string:string:string:string:string:string:string:string";
+      "compactionid,dbname,tabname,partname,type,state,workerhost,workerid,enqueuetime,starttime,duration,hadoopjobid,errormessage,initiatorhost,initiatorid#" +
+      "string:string:string:string:string:string:string:string:string:string:string:string:string:string:string";
+  // @formatter:on
 
   private String resFile;
 

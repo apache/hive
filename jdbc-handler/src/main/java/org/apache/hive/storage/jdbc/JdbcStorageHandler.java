@@ -17,11 +17,13 @@ package org.apache.hive.storage.jdbc;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -37,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class JdbcStorageHandler implements HiveStorageHandler {
 
@@ -90,6 +94,14 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     } catch (Exception e) {
       throw new IllegalArgumentException(e);
     }
+  }
+
+  @Override
+  public URI getURIForAuth(Table table) throws URISyntaxException {
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
+    String host_url = tableProperties.get(Constants.JDBC_URL);
+    String table_name = tableProperties.get(Constants.JDBC_TABLE);
+    return new URI(host_url+"/"+table_name);
   }
 
   @Override

@@ -47,15 +47,12 @@ class MetastoreHousekeepingLeaderTestBase {
   private static boolean isServerStarted = false;
   private static int port;
   private static MiniDFSCluster miniDFS;
-  // How long should we wait for the housekeeping threads to start in ms.
-  private static final long SLEEP_INTERVAL_FOR_THREADS_TO_START = 10000;
-  // Threads using ThreadPool will start after the configured interval. So, start them some time
-  // before we check the existence of threads.
-  private static final long REMOTE_TASKS_INTERVAL = SLEEP_INTERVAL_FOR_THREADS_TO_START - 3000;
+  // Threads using ThreadPool will start after the configured interval. Start them right away
+  private static final long REMOTE_TASKS_INTERVAL = 1;
   static final String METASTORE_THREAD_TASK_FREQ_CONF = "metastore.leader.test.task.freq";
 
   static Map<String, Boolean> threadNames = new HashMap<>();
-  static Map<Class, Boolean> threadClasses = new HashMap<>();
+  static Map<Class<? extends Thread>, Boolean> threadClasses = new HashMap<>();
 
   void internalSetup(final String leaderHostName) throws Exception {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
@@ -70,9 +67,9 @@ class MetastoreHousekeepingLeaderTestBase {
       Assert.assertNotNull("Unable to connect to the MetaStore server", client);
       return;
     }
-
+    // Start the metastore and wait for the background threads
     port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
-            conf, true);
+            conf, false, false,  true, true);
     System.out.println("Starting MetaStore Server on port " + port);
     isServerStarted = true;
 
@@ -136,7 +133,7 @@ class MetastoreHousekeepingLeaderTestBase {
     return 2;
   }
 
-  private long addAlwaysTasksConfigs() throws Exception {
+  private long addAlwaysTasksConfigs() {
     String alwaysTaskClassPaths = MetastoreTaskThreadAlwaysTestImpl.class.getCanonicalName();
     MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_ALWAYS, alwaysTaskClassPaths);
     threadNames.put(MetastoreTaskThreadAlwaysTestImpl.TASK_NAME, false);
@@ -156,10 +153,7 @@ class MetastoreHousekeepingLeaderTestBase {
   }
 
   void searchHousekeepingThreads() throws Exception {
-    // Client has been created so the metastore has started serving. Sleep for few seconds for
-    // the housekeeping threads to start.
-    Thread.sleep(SLEEP_INTERVAL_FOR_THREADS_TO_START);
-
+    // Client has been created so the metastore has started serving and started the background threads
     LOG.info(getAllThreadsAsString());
 
     // Check if all the housekeeping threads have been started.

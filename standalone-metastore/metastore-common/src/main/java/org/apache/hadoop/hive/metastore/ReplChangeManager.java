@@ -19,13 +19,16 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -34,21 +37,25 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.permission.AclEntry;
+import static org.apache.hadoop.fs.permission.AclEntryScope.ACCESS;
+import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
+import static org.apache.hadoop.fs.permission.AclEntryType.USER;
+import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.hive.shims.HadoopShims.HdfsEncryptionShim;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +67,6 @@ public class ReplChangeManager {
   private static boolean inited = false;
   private static boolean enabled = false;
   private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
-  private HadoopShims hadoopShims;
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -147,13 +153,19 @@ public class ReplChangeManager {
     return instance;
   }
 
+  public static synchronized ReplChangeManager getInstance() {
+    if (!inited) {
+      throw new IllegalStateException("Replication Change Manager is not initialized.");
+    }
+    return instance;
+  }
+
   private ReplChangeManager(Configuration conf) throws MetaException {
     try {
       if (!inited) {
         if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
           ReplChangeManager.conf = conf;
-          hadoopShims = ShimLoader.getHadoopShims();
           cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
           encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
           fallbackNonEncryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR);
@@ -166,12 +178,10 @@ public class ReplChangeManager {
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
           FileSystem cmRootFs = cmroot.getFileSystem(conf);
-          HdfsEncryptionShim pathEncryptionShim = hadoopShims
-                  .createHdfsEncryptionShim(cmRootFs, conf);
-          if (pathEncryptionShim.isPathEncrypted(cmroot)) {
+          if (EncryptionZoneUtils.isPathEncrypted(cmroot, conf)) {
             //If cm root is encrypted we keep using it for the encryption zone
             String encryptionZonePath = cmRootFs.getUri()
-                    + pathEncryptionShim.getEncryptionZoneForPath(cmroot).getPath();
+                    + EncryptionZoneUtils.getEncryptionZoneForPath(cmroot, conf).getPath();
             encryptionZoneToCmrootMapping.put(encryptionZonePath, cmRootDir);
           } else {
             encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
@@ -182,7 +192,7 @@ public class ReplChangeManager {
               throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
             }
             createCmRoot(cmRootFallback);
-            if (pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
+            if (EncryptionZoneUtils.isPathEncrypted(cmRootFallback, conf)) {
               throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
                       + " should not be encrypted");
             }
@@ -234,7 +244,12 @@ public class ReplChangeManager {
       }
     } else {
       String fileCheckSum = checksumFor(path, fs);
-      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, getCmRoot(path).toString());
+      Path cmRootPath = getCmRoot(path);
+      String cmRoot = null;
+      if (cmRootPath != null) {
+        cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+      }
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmRoot);
 
       // set timestamp before moving to cmroot, so we can
       // avoid race condition CM remove the file before setting
@@ -285,15 +300,12 @@ public class ReplChangeManager {
       // Ignore if a file with same content already exist in cmroot
       // We might want to setXAttr for the new location in the future
       if (success) {
-        // set the file owner to hive (or the id metastore run as)
-        fs.setOwner(cmPath, msUser, msGroup);
-
         // tag the original file name so we know where the file comes from
         // Note we currently only track the last known trace as
         // xattr has limited capacity. We shall revisit and store all original
         // locations if orig-loc becomes important
         try {
-          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes(StandardCharsets.UTF_8));
         } catch (UnsupportedOperationException e) {
           LOG.warn("Error setting xattr for {}", path.toString());
         }
@@ -409,11 +421,18 @@ public class ReplChangeManager {
     if (instance == null) {
       throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
     }
+    Path cmRootPath = getCmRoot(new Path(fileUriStr));
+    String cmRoot = null;
+    if (cmRootPath != null) {
+      cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+    }
+    return ReplChangeManager.encodeFileUri(fileUriStr, fileChecksum, cmRoot, encodedSubDir);
+  }
+
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String cmRoot, String encodedSubDir) {
     String encodedUri = fileUriStr;
-    Path cmRoot = getCmRoot(new Path(fileUriStr));
     if ((fileChecksum != null) && (cmRoot != null)) {
-      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum
-              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmRoot, conf);
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum + URI_FRAGMENT_SEPARATOR + cmRoot;
     } else {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }
@@ -500,7 +519,7 @@ public class ReplChangeManager {
           }
         }
       } catch (IOException e) {
-        LOG.error("Exception when clearing cmroot:" + StringUtils.stringifyException(e));
+        LOG.error("Exception when clearing cmroot", e);
       }
     }
   }
@@ -558,10 +577,9 @@ public class ReplChangeManager {
     String cmrootDir = fallbackNonEncryptedCmRootDir;
     String encryptionZonePath = NO_ENCRYPTION;
     if (enabled) {
-      HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
-      if (pathEncryptionShim.isPathEncrypted(path)) {
+      if (EncryptionZoneUtils.isPathEncrypted(path, conf)) {
         encryptionZonePath = path.getFileSystem(conf).getUri()
-                + pathEncryptionShim.getEncryptionZoneForPath(path).getPath();
+                + EncryptionZoneUtils.getEncryptionZoneForPath(path, conf).getPath();
         //For encryption zone, create cm at the relative path specified by hive.repl.cm.encryptionzone.rootdir
         //at the root of the encryption zone
         cmrootDir = encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir;
@@ -586,10 +604,10 @@ public class ReplChangeManager {
       @Override
       public Void execute() throws IOException {
         FileSystem cmFs = cmroot.getFileSystem(conf);
-        // Create cmroot with permission 700 if not exist
+        // Create cmroot if not exist
         if (!cmFs.exists(cmroot)) {
           cmFs.mkdirs(cmroot);
-          cmFs.setPermission(cmroot, new FsPermission("700"));
+          setCmRootPermissions(cmroot);
         }
         return null;
       }
@@ -597,7 +615,46 @@ public class ReplChangeManager {
     try {
       retriable.run();
     } catch (Exception e) {
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new IOException("Failed to createCmRoot", e);
+    }
+  }
+
+  /*
+   * Provide members of warehouse group access to the cmRoot location.
+   * To do this, assign cmRoot to group of warehouse if possible. If not, set acl for wh-group.
+   * If warehouse directory cannot be determined then give rwx permissions to default group of cmroot.
+   */
+  private static void setCmRootPermissions(Path cmroot) throws IOException{
+    FileSystem cmFs = cmroot.getFileSystem(conf);
+    cmFs.setPermission(cmroot, new FsPermission("770"));
+    try {
+      FileStatus warehouseStatus = cmFs.getFileStatus(new Path(MetastoreConf.get(conf, ConfVars.WAREHOUSE.getVarname())));
+      String warehouseOwner = warehouseStatus.getOwner();
+      String warehouseGroup = warehouseStatus.getGroup();
+      if (warehouseOwner.equals(cmFs.getFileStatus(cmroot).getOwner())) {
+        FsAction whOwnerAction = warehouseStatus.getPermission().getUserAction();
+        FsAction whGroupAction = warehouseStatus.getPermission().getGroupAction();
+        FsAction whOtherAction = warehouseStatus.getPermission().getOtherAction();
+        if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          //change group to wh-group.
+          //since cmRoot owner is already part of wh-group, this can be done.
+          cmFs.setOwner(cmroot, null, warehouseGroup);
+          cmFs.setPermission(cmroot, new FsPermission(whOwnerAction, whGroupAction, whOtherAction));
+        }
+      } else {
+        LOG.warn("Metastore-user is not same as owner of warehouse.");
+        if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          List<AclEntry> aclList = Lists.newArrayList(
+                  new AclEntry.Builder().setScope(ACCESS).setType(USER).setPermission(FsAction.ALL).build(),
+                  new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setPermission(FsAction.ALL).build(),
+                  new AclEntry.Builder().setScope(ACCESS).setType(OTHER).setPermission(FsAction.NONE).build());
+          aclList.add(new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setName(warehouseGroup).
+                  setPermission(warehouseStatus.getPermission().getGroupAction()).build());
+          cmFs.setAcl(cmroot, aclList);
+        }
+      }
+    } catch (RuntimeException | IOException e) {
+      LOG.error("Unable to set permissions corresponding to hive-warehouse on CMRoot: ", e);
     }
   }
 

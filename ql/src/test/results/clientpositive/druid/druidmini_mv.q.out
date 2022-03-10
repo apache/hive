@@ -456,13 +456,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	978.76	3	978.76
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Input: default@cmv_mat_view2_n0
 PREHOOK: Output: default@cmv_mat_view2_n0
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Input: default@cmv_mat_view2_n0
 POSTHOOK: Output: default@cmv_mat_view2_n0
@@ -569,12 +569,12 @@ STAGE PLANS:
       is overwrite: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Input: default@cmv_mat_view2_n0
 PREHOOK: Output: default@cmv_mat_view2_n0
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Input: default@cmv_mat_view2_n0
 POSTHOOK: Output: default@cmv_mat_view2_n0

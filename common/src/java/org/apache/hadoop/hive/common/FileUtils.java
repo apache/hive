@@ -37,14 +37,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.GlobFilter;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -53,13 +52,18 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.PathExistsException;
+import org.apache.hadoop.fs.PathIsDirectoryException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +73,6 @@ import org.slf4j.LoggerFactory;
 public final class FileUtils {
   private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class.getName());
   private static final Random random = new Random();
-  public static final int MAX_IO_ERROR_RETRY = 5;
   public static final int IO_ERROR_SLEEP_TIME = 100;
 
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
@@ -253,7 +256,7 @@ public final class FileUtils {
   }
 
   static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+    return c < charToEscape.size() && charToEscape.get(c);
   }
 
   public static String escapePathName(String path) {
@@ -341,7 +344,7 @@ public final class FileUtils {
   }
 
   private static void generalListStatusRecursively(FileSystem fs, FileStatus fileStatus, List<FileStatus> results) throws IOException {
-    if (fileStatus.isDir()) {
+    if (fileStatus.isDirectory()) {
       for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
         generalListStatusRecursively(fs, stat, results);
       }
@@ -358,11 +361,25 @@ public final class FileUtils {
     RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base.getPath(), true);
     while (remoteIterator.hasNext()) {
       LocatedFileStatus each = remoteIterator.next();
-      Path relativePath = new Path(each.getPath().toString().replace(base.toString(), ""));
+      Path relativePath = makeRelative(base.getPath(), each.getPath());
       if (org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
         results.add(each);
       }
     }
+  }
+
+  /**
+   * Returns a relative path wrt the parent path.
+   * @param parentPath the parent path.
+   * @param childPath the child path.
+   * @return childPath relative to parent path.
+   */
+  public static Path makeRelative(Path parentPath, Path childPath) {
+    String parentString =
+        parentPath.toString().endsWith(Path.SEPARATOR) ? parentPath.toString() : parentPath.toString() + Path.SEPARATOR;
+    String childString =
+        childPath.toString().endsWith(Path.SEPARATOR) ? childPath.toString() : childPath.toString() + Path.SEPARATOR;
+    return new Path(childString.replaceFirst(parentString, ""));
   }
 
   public static boolean isS3a(FileSystem fs) {
@@ -479,15 +496,13 @@ public final class FileUtils {
     return isActionPermittedForFileHierarchy(fs,fileStatus,userName, action, true);
   }
 
+  @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "Intended, dir privilege all-around bug")
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
       String userName, FsAction action, boolean recurse) throws Exception {
-    boolean isDir = fileStatus.isDir();
+    boolean isDir = fileStatus.isDirectory();
 
-    FsAction dirActionNeeded = action;
-    if (isDir) {
-      // for dirs user needs execute privileges as well
-      dirActionNeeded.and(FsAction.EXECUTE);
-    }
+    // for dirs user needs execute privileges as well
+    FsAction dirActionNeeded = (isDir) ? action.and(FsAction.EXECUTE) : action;
 
     List<FileStatus> subDirsToCheck = null;
     if (isDir && recurse) {
@@ -580,7 +595,7 @@ public final class FileUtils {
       return false;
     }
 
-    if ((!fileStatus.isDir()) || (!recurse)) {
+    if ((!fileStatus.isDirectory()) || (!recurse)) {
       // no sub dirs to be checked
       return true;
     }
@@ -663,9 +678,143 @@ public final class FileUtils {
       // is tried and it fails. We depend upon that behaviour in cases like replication,
       // wherein if distcp fails, there is good reason to not plod along with a trivial
       // implementation, and fail instead.
-      copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+      copied = copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS), conf);
     }
     return copied;
+  }
+
+  public static boolean copy(FileSystem srcFS, FileStatus srcStatus, FileSystem dstFS, Path dst, boolean deleteSource,
+                             boolean overwrite, boolean preserveXAttrs, Configuration conf) throws IOException {
+    Path src = srcStatus.getPath();
+    dst = checkDest(src.getName(), dstFS, dst, overwrite);
+    if (srcStatus.isDirectory()) {
+      checkDependencies(srcFS, src, dstFS, dst);
+      if (!dstFS.mkdirs(dst)) {
+        return false;
+      }
+
+      FileStatus[] fileStatus = srcFS.listStatus(src);
+      for (FileStatus file : fileStatus) {
+        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs,
+            conf);
+      }
+      if (preserveXAttrs) {
+        preserveXAttr(srcFS, src, dstFS, dst);
+      }
+    } else {
+      InputStream in = null;
+      FSDataOutputStream out = null;
+
+      try {
+        in = srcFS.open(src);
+        out = dstFS.create(dst, overwrite);
+        IOUtils.copyBytes(in, out, conf, true);
+        if (preserveXAttrs) {
+          preserveXAttr(srcFS, src, dstFS, dst);
+        }
+      } catch (IOException var11) {
+        IOUtils.closeStream(in);
+        IOUtils.closeStream(out);
+        throw var11;
+      }
+    }
+
+    return deleteSource ? srcFS.delete(src, true) : true;
+  }
+
+  public static boolean copy(FileSystem srcFS, Path[] srcs, FileSystem dstFS, Path dst, boolean deleteSource, boolean overwrite, boolean preserveXAttr, Configuration conf) throws IOException {
+    boolean gotException = false;
+    boolean returnVal = true;
+    StringBuilder exceptions = new StringBuilder();
+    if (srcs.length == 1) {
+      return copy(srcFS, srcFS.getFileStatus(srcs[0]), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf);
+    } else {
+      try {
+        FileStatus sdst = dstFS.getFileStatus(dst);
+        if (!sdst.isDirectory()) {
+          throw new IOException("copying multiple files, but last argument `" + dst + "' is not a directory");
+        }
+      } catch (FileNotFoundException var16) {
+        throw new IOException("`" + dst + "': specified destination directory does not exist", var16);
+      }
+
+      Path[] var17 = srcs;
+      int var11 = srcs.length;
+
+      for(int var12 = 0; var12 < var11; ++var12) {
+        Path src = var17[var12];
+
+        try {
+          if (!copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf)) {
+            returnVal = false;
+          }
+        } catch (IOException var15) {
+          gotException = true;
+          exceptions.append(var15.getMessage());
+          exceptions.append("\n");
+        }
+      }
+
+      if (gotException) {
+        throw new IOException(exceptions.toString());
+      } else {
+        return returnVal;
+      }
+    }
+  }
+
+  private static void preserveXAttr(FileSystem srcFS, Path src, FileSystem dstFS, Path dst) throws IOException {
+    for (Map.Entry<String, byte[]> attr : srcFS.getXAttrs(src).entrySet()) {
+      dstFS.setXAttr(dst, attr.getKey(), attr.getValue());
+    }
+  }
+
+  private static Path checkDest(String srcName, FileSystem dstFS, Path dst, boolean overwrite) throws IOException {
+    FileStatus sdst;
+    try {
+      sdst = dstFS.getFileStatus(dst);
+    } catch (FileNotFoundException var6) {
+      sdst = null;
+    }
+    if (null != sdst) {
+      if (sdst.isDirectory()) {
+        if (null == srcName) {
+          throw new PathIsDirectoryException(dst.toString());
+        }
+
+        return checkDest((String)null, dstFS, new Path(dst, srcName), overwrite);
+      }
+
+      if (!overwrite) {
+        throw new PathExistsException(dst.toString(), "Target " + dst + " already exists");
+      }
+    }
+
+    return dst;
+  }
+
+  private static void checkDependencies(FileSystem srcFS, Path src, FileSystem dstFS, Path dst) throws IOException {
+    if (srcFS == dstFS) {
+      String srcq = srcFS.makeQualified(src).toString() + "/";
+      String dstq = dstFS.makeQualified(dst).toString() + "/";
+      if (dstq.startsWith(srcq)) {
+        throw new IOException((srcq.length() == dstq.length()) ?
+                "Cannot copy " + src + " to itself." : "Cannot copy " + src + " to its subdirectory " + dst);
+      }
+    }
+  }
+
+  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS) throws IOException {
+    if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)){
+      return false;
+    }
+    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
+      String distCpOption = entry.getKey();
+      if (distCpOption.startsWith("p")) {
+        return distCpOption.contains("x");
+      }
+    }
+    return true;
   }
 
   public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,
@@ -688,6 +837,25 @@ public final class FileUtils {
       for (Path path : srcPaths) {
         srcFS.delete(path, true);
       }
+    }
+    return copied;
+  }
+
+  public static boolean distCpWithSnapshot(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, HiveConf conf, HadoopShims shims, UserGroupInformation proxyUser) {
+    boolean copied = false;
+    try {
+      if (proxyUser == null) {
+        copied = shims.runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, conf);
+      } else {
+        copied =
+            shims.runDistCpWithSnapshotsAs(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, proxyUser, conf);
+      }
+      if (copied)
+        LOG.info("Successfully copied using snapshots source {} and dest {} using snapshots {} and {}", srcPaths, dst,
+            oldSnapshot, newSnapshot);
+    } catch (IOException e) {
+      LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
     }
     return copied;
   }
@@ -925,6 +1093,7 @@ public final class FileUtils {
   /**
    * delete a temporary file and remove it from delete-on-exit hook.
    */
+  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Intended")
   public static boolean deleteTmpFile(File tempFile) {
     if (tempFile != null) {
       tempFile.delete();
@@ -1103,4 +1272,16 @@ public final class FileUtils {
     return IO_ERROR_SLEEP_TIME * (int)(Math.pow(2.0, repeatNum));
   }
 
+  /**
+   * Attempts to delete a file if it exists.
+   * @param fs FileSystem
+   * @param path Path to be deleted.
+   */
+  public static void deleteIfExists(FileSystem fs, Path path) {
+    try {
+      fs.delete(path, true);
+    } catch (IOException e) {
+      LOG.debug("Unable to delete {}", path, e);
+    }
+  }
 }

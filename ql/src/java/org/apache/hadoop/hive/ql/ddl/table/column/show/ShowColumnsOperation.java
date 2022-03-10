@@ -31,11 +31,10 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
-import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -49,7 +48,7 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
   @Override
   public int execute() throws HiveException {
     // write the results in the file
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       List<FieldSchema> columns = getColumnsByPattern();
       writeColumns(outStream, columns);
     } catch (IOException e) {
@@ -94,21 +93,22 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
       }
     }
 
-    result.sort(
-        new Comparator<FieldSchema>() {
-          @Override
-          public int compare(FieldSchema f1, FieldSchema f2) {
-            return f1.getName().compareTo(f2.getName());
-          }
-        });
-
+    if (desc.isSorted()) {
+      result.sort(
+          new Comparator<FieldSchema>() {
+            @Override
+            public int compare(FieldSchema f1, FieldSchema f2) {
+              return f1.getName().compareTo(f2.getName());
+            }
+          });
+    }
     return result;
   }
 
   private void writeColumns(DataOutputStream outStream, List<FieldSchema> columns) throws IOException {
     TextMetaDataTable tmd = new TextMetaDataTable();
     for (FieldSchema fieldSchema : columns) {
-      tmd.addRow(MetaDataFormatUtils.extractColumnValues(fieldSchema));
+      tmd.addRow(ShowUtils.extractColumnValues(fieldSchema, false, null));
     }
 
     // In case the query is served by HiveServer2, don't pad it with spaces,

@@ -164,9 +164,20 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
 
       // Add a single child and restart the loop
       for (Node childNode : node.getChildren()) {
-        if (!getDispatchedList().contains(childNode)) {
-          opStack.push(childNode);
+        // skip if already dispatched
+        if (getDispatchedList().contains(childNode)) {
+          continue;
+        }
+
+        boolean hasChildren = childNode.getChildren() != null;
+        opStack.push(childNode);
+        if (hasChildren) {
+          // exit loop to process child's children
           break;
+        } else { // no children - safe to dispatch in-line
+          dispatch(childNode, opStack);
+          opQueue.add(childNode);
+          opStack.pop();
         }
       }
     } // end while

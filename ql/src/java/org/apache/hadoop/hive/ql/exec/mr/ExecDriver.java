@@ -272,7 +272,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     propagateSplitSettings(job, mWork);
 
-    job.setNumReduceTasks(rWork != null ? rWork.getNumReduceTasks().intValue() : 0);
+    job.setNumReduceTasks(rWork != null ? rWork.getNumReduceTasks() : 0);
     job.setReducerClass(ExecReducer.class);
 
     // set input format information if necessary
@@ -495,19 +495,19 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     if (work.getMaxSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, work.getMaxSplitSize().longValue());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, work.getMaxSplitSize());
     }
 
     if (work.getMinSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work.getMinSplitSize().longValue());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work.getMinSplitSize());
     }
 
     if (work.getMinSplitSizePerNode() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE, work.getMinSplitSizePerNode().longValue());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE, work.getMinSplitSizePerNode());
     }
 
     if (work.getMinSplitSizePerRack() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK, work.getMinSplitSizePerRack().longValue());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK, work.getMinSplitSizePerRack());
     }
   }
 
@@ -582,7 +582,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
   }
 
-  public static String getCurrentDB() {
+  private static String getCurrentDB() {
     String currentDB = null;
     if (SessionState.get() != null) {
       currentDB = SessionState.get().getCurrentDatabase();

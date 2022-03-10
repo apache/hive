@@ -58,7 +58,6 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     // the scheme/authority serving as the proxy is derived
     // from the supplied URI
     this.scheme = name.getScheme();
-    String nameUriString = name.toString();
 
     String authority = name.getAuthority() != null ? name.getAuthority() : "";
     String proxyUriString = scheme + "://" + authority + "/";

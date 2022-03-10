@@ -44,6 +44,7 @@ import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
@@ -56,11 +57,13 @@ public class Metrics {
   private static Metrics self;
   private static final AtomicInteger singletonAtomicInteger = new AtomicInteger();
   private static final Counter dummyCounter = new Counter();
+  private static final MapMetrics dummyMapMetrics = new MapMetrics();
 
   private final MetricRegistry registry;
   private List<Reporter> reporters;
   private List<ScheduledReporter> scheduledReporters;
   private Map<String, AtomicInteger> gaugeAtomics;
+  private Map<String, Pair<AtomicInteger, AtomicInteger>> gaugeRatio;
   private boolean hadoopMetricsStarted;
 
   public static synchronized Metrics initialize(Configuration conf) {
@@ -75,7 +78,7 @@ public class Metrics {
     return self.registry;
   }
 
-  public static void shutdown() {
+  public static synchronized void shutdown() {
     if (self != null) {
       for (ScheduledReporter reporter : self.scheduledReporters) {
         reporter.stop();
@@ -153,6 +156,54 @@ public class Metrics {
         }
       });
       return ai;
+    }
+  }
+
+  /**
+   * Get a Map that represents a multi-field metric,
+   * or create a new one if it does not already exist.
+   * @param name Name of map metric.  This should come from MetricConstants
+   * @return MapMetric .
+   */
+  public static MapMetrics getOrCreateMapMetrics(String name) {
+    if (self == null) {
+      return dummyMapMetrics;
+    }
+
+    Map<String, Metric> metrics = self.registry.getMetrics();
+    Metric map = metrics.get(name);
+    if (map instanceof MapMetrics) {
+      return (MapMetrics) map;
+    }
+
+    // Looks like it doesn't exist.  Lock so that two threads don't create it at once.
+    synchronized (Metrics.class) {
+      // Recheck to make sure someone didn't create it while we waited.
+      map = self.registry
+          .getMetrics()
+          .get(name);
+      if (map instanceof MapMetrics) {
+        return (MapMetrics) map;
+      }
+
+      try {
+        self.registry.register(name, new MapMetrics());
+      } catch (IllegalArgumentException e) {
+        // HIVE-25959: The registry's register function will call the MetricRegistry#onMetricAdded
+        //   which forward the call to the MetricRegistry#notifyListenerOfAddedMetric method.
+        // This method will throw an IllegalArgumentException because our custom MapMetrics type not supported
+        //   to avoid this we handle this.
+        if (!e.getMessage().contains("Unknown metric type")) {
+          throw new IllegalArgumentException("Failed to register metric", e);
+        }
+      }
+      map = self.registry
+          .getMetrics()
+          .get(name);
+      if (map instanceof MapMetrics) {
+        return (MapMetrics) map;
+      }
+      return dummyMapMetrics;
     }
   }
 
@@ -263,6 +314,7 @@ public class Metrics {
 
     // Create map for tracking gauges
     gaugeAtomics = new HashMap<>();
+    gaugeRatio = new HashMap<>();
   }
 
   private void registerAll(String prefix, MetricSet metricSet) {

@@ -53,7 +53,7 @@ public class MetaStoreConfigAuthenticationProviderImpl implements MetaStorePassw
   }
 
   @Override
-  public void Authenticate(String authUser, String authPassword) throws AuthenticationException {
+  public void authenticate(String authUser, String authPassword) throws AuthenticationException {
     if (!userName.equals(authUser)) {
       LOG.debug("Invalid user " + authUser);
       throw new AuthenticationException("Invalid credentials");

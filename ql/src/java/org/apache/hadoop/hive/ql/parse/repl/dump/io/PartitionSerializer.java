@@ -40,8 +40,10 @@ public class PartitionSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
     try {
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
       // Remove all the entries from the parameters which are added by repl tasks internally.
       Map<String, String> parameters = partition.getParameters();
       if (parameters != null) {
@@ -55,11 +57,11 @@ public class PartitionSerializer implements JsonWriter.Serializer {
         if (additionalPropertiesProvider.getReplSpecType()
                 != ReplicationSpec.Type.INCREMENTAL_DUMP) {
           partition.putToParameters(
-                  ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                  ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
                   additionalPropertiesProvider.getCurrentReplicationState());
         }
       }
-      writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
+      writer.jsonGenerator.writeString(serializer.toString(partition));
       writer.jsonGenerator.flush();
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);

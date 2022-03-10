@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -29,17 +29,16 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
 
 /**
- * A serde class for ORC.
- * It transparently passes the object to/from the ORC file reader/writer.
+ * A serde class for ORC. It transparently passes the object to/from the ORC
+ * file reader/writer. This SerDe does not support statistics, since serialized
+ * size doesn't make sense in the context of ORC files.
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, OrcSerde.COMPRESSION})
 public class OrcSerde extends AbstractSerDe {
@@ -73,38 +72,27 @@ public class OrcSerde extends AbstractSerDe {
   }
 
   @Override
-  public void initialize(Configuration conf, Properties table) {
-    // Read the configuration parameters
-    String columnNameProperty = table.getProperty(serdeConstants.LIST_COLUMNS);
-    // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = table.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = table.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? table
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    // Parse the configuration parameters
-    ArrayList<String> columnNames = new ArrayList<>();
-    if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      Collections.addAll(columnNames, columnNameProperty.split(columnNameDelimiter));
-    }
-    if (columnTypeProperty == null) {
-      // Default type: all string
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < columnNames.size(); i++) {
-        if (i > 0) {
-          sb.append(":");
-        }
-        sb.append("string");
-      }
-      columnTypeProperty = sb.toString();
-    }
-
-    ArrayList<TypeInfo> fieldTypes =
-        TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     StructTypeInfo rootType = new StructTypeInfo();
     // The source column names for ORC serde that will be used in the schema.
-    rootType.setAllStructFieldNames(columnNames);
-    rootType.setAllStructFieldTypeInfos(fieldTypes);
+    rootType.setAllStructFieldNames(getColumnNames());
+    rootType.setAllStructFieldTypeInfos(getColumnTypes());
     inspector = OrcStruct.createObjectInspector(rootType);
+  }
+
+  /**
+   * NOTE: if "columns.types" is missing, all columns will be of String type.
+   */
+  @Override
+  protected List<TypeInfo> parseColumnTypes() {
+    final List<TypeInfo> fieldTypes = super.parseColumnTypes();
+    if (fieldTypes.isEmpty()) {
+      return Collections.nCopies(getColumnNames().size(), TypeInfoFactory.stringTypeInfo);
+    }
+    return fieldTypes;
   }
 
   @Override
@@ -127,17 +115,6 @@ public class OrcSerde extends AbstractSerDe {
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return inspector;
-  }
-
-  /**
-   * Always returns null, since serialized size doesn't make sense in the
-   * context of ORC files.
-   *
-   * @return null
-   */
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
 }

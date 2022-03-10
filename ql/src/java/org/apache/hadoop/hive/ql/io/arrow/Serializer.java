@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.io.arrow;
 
-import io.netty.buffer.ArrowBuf;
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.arrow.memory.ArrowBuf;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.BitVectorHelper;
@@ -44,8 +45,6 @@ import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.arrow.vector.util.DecimalUtility;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -79,6 +78,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.arrow.memory.BufferAllocator;
 
 import java.math.BigDecimal;
@@ -101,11 +102,14 @@ import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils.getTypeInfoFromObjectInspector;
 
 public class Serializer {
+  private static final Logger LOG = LoggerFactory.getLogger(Serializer.class);
+
   private final int MAX_BUFFERED_ROWS;
   private final static byte[] EMPTY_BYTES = new byte[0];
 
   // Hive columns
-  private final VectorizedRowBatch vectorizedRowBatch;
+  @VisibleForTesting
+  final VectorizedRowBatch vectorizedRowBatch;
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
   private BufferAllocator allocator;
@@ -138,10 +142,11 @@ public class Serializer {
   }
 
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
-    MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
-    long childAllocatorLimit = HiveConf.getLongVar(serDe.conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
-    this.useHybridCalendar = HiveConf.getBoolVar(serDe.conf, LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR);
-    ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
+    Configuration serdeConf = serDe.getConfiguration().get();
+    MAX_BUFFERED_ROWS = HiveConf.getIntVar(serdeConf, HIVE_ARROW_BATCH_SIZE);
+    long childAllocatorLimit = HiveConf.getLongVar(serdeConf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
+    this.useHybridCalendar = HiveConf.getBoolVar(serdeConf, LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR);
+    LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
     String childAllocatorName = Thread.currentThread().getName();
     //Use per-task allocator for accounting only, no need to reserve per-task memory
     long childAllocatorReservation = 0L;
@@ -177,17 +182,7 @@ public class Serializer {
 
   //Construct an emptyBatch which contains schema-only info
   public ArrowWrapperWritable emptyBatch() {
-    rootVector.setValueCount(0);
-    for (int fieldIndex = 0; fieldIndex < fieldTypeInfos.size(); fieldIndex++) {
-      final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
-      final String fieldName = fieldNames.get(fieldIndex);
-      final FieldType fieldType = toFieldType(fieldTypeInfo);
-      final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
-      arrowVector.setInitialCapacity(0);
-      arrowVector.allocateNew();
-    }
-    VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
-    return new ArrowWrapperWritable(vectorSchemaRoot, allocator, rootVector);
+    return serializeBatch(new VectorizedRowBatch(fieldTypeInfos.size()), false);
   }
 
   //Used for both:
@@ -281,7 +276,7 @@ public class Serializer {
       case STRUCT:
         return ArrowType.Struct.INSTANCE;
       case MAP:
-        return ArrowType.List.INSTANCE;
+        return new ArrowType.Map(false);
       case UNION:
       default:
         throw new IllegalArgumentException();
@@ -295,10 +290,14 @@ public class Serializer {
         writePrimitive(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
         break;
       case LIST:
-        writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        // the flag 'isMapDataType'=false, for all the list types except for the case when map is converted
+        // as a list of structs.
+        writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size, vectorizedRowBatch, isNative, false);
         break;
       case STRUCT:
-        writeStruct((NonNullableStructVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        // the flag 'isMapDataType'=false, for all the struct types except for the case when map is converted
+        // as a list of structs.
+        writeStruct((NonNullableStructVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative, false);
         break;
       case UNION:
         writeUnion(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
@@ -314,9 +313,10 @@ public class Serializer {
   private void writeMap(ListVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo,
       int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
-    final ListColumnVector structListVector = toStructListVector(hiveVector);
+    final ListColumnVector structListVector = hiveVector == null ? null : toStructListVector(hiveVector);
 
-    write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
+    // Map is converted as a list of structs and thus we call the writeList() method with the flag 'isMapDataType'=true
+    writeList(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative, true);
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       int selectedIndex = rowIndex;
@@ -346,26 +346,43 @@ public class Serializer {
   }
 
   private void writeStruct(NonNullableStructVector arrowVector, StructColumnVector hiveVector,
-      StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+      StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative, boolean isMapDataType) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
-    final ColumnVector[] hiveFieldVectors = hiveVector.fields;
+    final ColumnVector[] hiveFieldVectors = hiveVector == null ? null : hiveVector.fields;
     final int fieldSize = fieldTypeInfos.size();
+    // This is to handle following scenario -
+    // if any struct value itself is NULL, we get structVector.isNull[i]=true
+    // but we don't get the same for it's child fields which later causes exceptions while setting to arrow vectors
+    // see - https://issues.apache.org/jira/browse/HIVE-25243
+    if (hiveVector != null && hiveFieldVectors != null) {
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          for (ColumnVector fieldVector : hiveFieldVectors) {
+            fieldVector.isNull[i] = true;
+            fieldVector.noNulls = false;
+          }
+        }
+      }
+    }
 
     for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
       final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
-      final ColumnVector hiveFieldVector = hiveFieldVectors[fieldIndex];
+      final ColumnVector hiveFieldVector = hiveVector == null ? null : hiveFieldVectors[fieldIndex];
       final String fieldName = fieldNames.get(fieldIndex);
-      final FieldVector arrowFieldVector =
-          arrowVector.addOrGet(fieldName,
-              toFieldType(fieldTypeInfos.get(fieldIndex)), FieldVector.class);
+
+      // If the call is coming from writeMap(), then the structs within the list type should be non-nullable.
+      FieldType elementFieldType = (isMapDataType) ? (new FieldType(false, toArrowType(fieldTypeInfo), null))
+              : (toFieldType(fieldTypeInfos.get(fieldIndex)));
+      final FieldVector arrowFieldVector = arrowVector.addOrGet(fieldName, elementFieldType, FieldVector.class);
+
       arrowFieldVector.setInitialCapacity(size);
       arrowFieldVector.allocateNew();
       write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
     }
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-      if (hiveVector.isNull[rowIndex]) {
+      if (hiveVector == null || hiveVector.isNull[rowIndex]) {
         BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
         BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
@@ -411,15 +428,20 @@ public class Serializer {
   }
 
   private void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
-                         VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+                         VectorizedRowBatch vectorizedRowBatch, boolean isNative, boolean isMapDataType) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
-    final ColumnVector hiveElementVector = hiveVector.child;
+    final ColumnVector hiveElementVector = hiveVector == null ? null : hiveVector.child;
+
+    // If the call is coming from writeMap(), then the List type should be non-nullable.
+    FieldType elementFieldType = (isMapDataType) ? (new FieldType(false, toArrowType(elementTypeInfo), null))
+            : (toFieldType(elementTypeInfo));
+
     final FieldVector arrowElementVector =
-            (FieldVector) arrowVector.addOrGetVector(toFieldType(elementTypeInfo)).getVector();
+            (FieldVector) arrowVector.addOrGetVector(elementFieldType).getVector();
 
     VectorizedRowBatch correctedVrb = vectorizedRowBatch;
-    int correctedSize = hiveVector.childCount;
+    int correctedSize = hiveVector == null ? 0 : hiveVector.childCount;
     if (vectorizedRowBatch.selectedInUse) {
       correctedVrb = correctSelectedAndSize(vectorizedRowBatch, hiveVector);
       correctedSize = correctedVrb.size;
@@ -427,7 +449,13 @@ public class Serializer {
     arrowElementVector.setInitialCapacity(correctedSize);
     arrowElementVector.allocateNew();
 
-    write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
+    // If the flag 'isMapDataType' is set to True, it means that the call is coming from writeMap() and it has to call
+    // writeStruct() with the same flag value, as the map is converted as a list of structs.
+    if (isMapDataType) {
+      writeStruct((NonNullableStructVector) arrowElementVector, (StructColumnVector) hiveElementVector, (StructTypeInfo) elementTypeInfo, correctedSize, correctedVrb, isNative, isMapDataType);
+    } else {
+      write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
+    }
 
     int nextOffset = 0;
 
@@ -436,7 +464,7 @@ public class Serializer {
       if (vectorizedRowBatch.selectedInUse) {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
-      if (hiveVector.isNull[selectedIndex]) {
+      if (hiveVector == null || hiveVector.isNull[selectedIndex]) {
         arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
       } else {
         arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
@@ -923,7 +951,7 @@ public class Serializer {
     final int scale = decimalVector.getScale();
     decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[j].getHiveDecimal().bigDecimalValue().setScale(scale));
 
-    final HiveDecimalWritable writable = ((DecimalColumnVector) hiveVector).vector[i];
+    final HiveDecimalWritable writable = ((DecimalColumnVector) hiveVector).vector[j];
     decimalHolder.precision = writable.precision();
     decimalHolder.scale = scale;
     try (ArrowBuf arrowBuf = allocator.buffer(DecimalHolder.WIDTH)) {

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -90,24 +91,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   /**
-   * Searchs for a fieldName into a parquet GroupType by ignoring string case.
-   * GroupType#getType(String fieldName) is case sensitive, so we use this method.
-   *
-   * @param groupType Group of field types where to search for fieldName
-   * @param fieldName The field what we are searching
-   * @return The Type object of the field found; null otherwise.
-   */
-  private static Type getFieldTypeIgnoreCase(GroupType groupType, String fieldName) {
-    for (Type type : groupType.getFields()) {
-      if (type.getName().equalsIgnoreCase(fieldName)) {
-        return type;
-      }
-    }
-
-    return null;
-  }
-
-  /**
    * Searchs column names by name on a given Parquet schema, and returns its corresponded
    * Parquet schema types.
    *
@@ -120,11 +103,13 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     List<Type> schemaTypes = new ArrayList<Type>();
 
     ListIterator<String> columnIterator = colNames.listIterator();
+    Map<String, Type> schemaTypeMap = new HashMap<>();
+    schema.getFields().forEach(t -> schemaTypeMap.put(t.getName().toLowerCase(), t));
     while (columnIterator.hasNext()) {
       TypeInfo colType = colTypes.get(columnIterator.nextIndex());
       String colName = columnIterator.next();
 
-      Type fieldType = getFieldTypeIgnoreCase(schema, colName);
+      Type fieldType = schemaTypeMap.get(colName.toLowerCase());
       if (fieldType == null) {
         schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named(colName));
       } else {
@@ -303,7 +288,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
     return null;
   }
-
+  
   /**
    * Return the columns which contains required nested attribute level
    * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
@@ -521,6 +506,32 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     if (!metadata.containsKey(prolepticDefault)) {
       metadata.put(prolepticDefault, String.valueOf(HiveConf.getBoolVar(
           configuration, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT)));
+    }
+
+    if (!metadata.containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+      final String legacyConversion;
+      if(keyValueMetaData.containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+        // If there is meta about the legacy conversion then the file should be read in the same way it was written. 
+        legacyConversion = keyValueMetaData.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      } else if(keyValueMetaData.containsKey(DataWritableWriteSupport.WRITER_TIMEZONE)) {
+        // If there is no meta about the legacy conversion but there is meta about the timezone then we can infer the
+        // file was written with the new rules.
+        legacyConversion = "false";
+      } else {
+        // If there is no meta at all then it is not possible to determine which rules were used to write the file.
+        // Choose between old/new rules using the respective configuration property.
+        legacyConversion = String.valueOf(
+            HiveConf.getBoolVar(configuration, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED));
+      }
+      metadata.put(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY, legacyConversion);
+    } else {
+      String ctxMeta = metadata.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      String fileMeta = keyValueMetaData.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      if (!Objects.equals(ctxMeta, fileMeta)) {
+        throw new IllegalStateException(
+            "Different values for " + DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY + " metadata: context ["
+                + ctxMeta + "], file [" + fileMeta + "].");
+      }
     }
 
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);

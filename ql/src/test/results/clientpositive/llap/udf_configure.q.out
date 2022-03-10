@@ -1,0 +1,34 @@
+PREHOOK: query: create temporary function testconfigure as 'org.apache.hadoop.hive.ql.udf.generic.TestConfigureUDF'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: testconfigure
+POSTHOOK: query: create temporary function testconfigure as 'org.apache.hadoop.hive.ql.udf.generic.TestConfigureUDF'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: testconfigure
+PREHOOK: query: select *, testconfigure(key) from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select *, testconfigure(key) from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+238	val_238	configure was called
+86	val_86	configure was called
+311	val_311	configure was called
+27	val_27	configure was called
+165	val_165	configure was called
+409	val_409	configure was called
+255	val_255	configure was called
+278	val_278	configure was called
+98	val_98	configure was called
+484	val_484	configure was called
+265	val_265	configure was called
+193	val_193	configure was called
+401	val_401	configure was called
+150	val_150	configure was called
+273	val_273	configure was called
+224	val_224	configure was called
+369	val_369	configure was called
+66	val_66	configure was called
+128	val_128	configure was called
+213	val_213	configure was called

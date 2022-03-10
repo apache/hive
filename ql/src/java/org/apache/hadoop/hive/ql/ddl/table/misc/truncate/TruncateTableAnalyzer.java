@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -101,7 +102,10 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
     }
 
-    if (table.isNonNative()) {
+    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
+
+    if (table.isNonNative()
+        && (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables())) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
     }
 
@@ -112,23 +116,30 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void addTruncateTableOutputs(ASTNode root, Table table, Map<String, String> partitionSpec)
       throws SemanticException {
+    boolean truncateUseBase = (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE)
+        || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+      && AcidUtils.isTransactionalTable(table);
+    
+    WriteEntity.WriteType writeType =
+        truncateUseBase ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+    
     if (partitionSpec == null) {
       if (!table.isPartitioned()) {
-        outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
+        outputs.add(new WriteEntity(table, writeType));
       } else {
         for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
-          outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
+          outputs.add(new WriteEntity(partition, writeType));
         }
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, true);
         Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
-        outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
+        outputs.add(new WriteEntity(partition, writeType));
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);
         for (Partition partition : PartitionUtils.getPartitions(db, table, partitionSpec, false)) {
-          outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
+          outputs.add(new WriteEntity(partition, writeType));
         }
       }
     }

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +37,6 @@ public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeader
     internalSetup("localhost");
   }
 
-  @Ignore("HIVE-23221 Ignore flaky test testHouseKeepingThreadExistence in TestMetastoreHousekeepingLeaderEmptyConfig" +
-      " and TestMetastoreHousekeepingLeader")
   @Test
   public void testHouseKeepingThreadExistence() throws Exception {
     searchHousekeepingThreads();
@@ -52,7 +49,7 @@ public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeader
       Assert.assertTrue("No thread with name " + entry.getKey() + " found.", entry.getValue());
     }
 
-    for (Map.Entry<Class, Boolean> entry : threadClasses.entrySet()) {
+    for (Map.Entry<Class<? extends Thread>, Boolean> entry : threadClasses.entrySet()) {
       if (entry.getValue()) {
         LOG.info("Found thread for " + entry.getKey().getSimpleName());
       }

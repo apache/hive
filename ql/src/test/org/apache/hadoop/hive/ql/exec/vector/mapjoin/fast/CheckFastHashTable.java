@@ -764,7 +764,7 @@ public class CheckFastHashTable {
       Preconditions.checkState(count > 0);
       int index = r.nextInt(count);
 
-      // Exists aleady.
+      // Exists already.
 
       return array[index].getKey();
     }

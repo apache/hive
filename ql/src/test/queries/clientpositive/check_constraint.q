@@ -123,6 +123,7 @@ drop table src_multi2_n0;
 
 -- update
 select * from acid_uami_n0 order by de desc limit 15;
+explain cbo update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00;
 explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00;
 update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00;
 select * from acid_uami_n0 order by de desc limit 15;

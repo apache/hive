@@ -17,7 +17,7 @@ CREATE TABLE lineitem (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/lineitem.txt' OVERWRITE INTO TABLE lineitem;
+LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE lineitem;
 
 analyze table lineitem compute statistics;
 analyze table lineitem compute statistics for columns;

@@ -5,8 +5,8 @@ CREATE EXTERNAL TABLE repairtable_n4(key INT, value STRING) PARTITIONED BY (Year
 MSCK REPAIR TABLE repairtable_n4;
 show partitions repairtable_n4;
 
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n4/Year=2020/Month=3/Day=1;
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n4/Year=2020/Month=3/Day=2;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_n4/Year=2020/Month=3/Day=1;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_n4/Year=2020/Month=3/Day=2;
 
 MSCK REPAIR TABLE repairtable_n4;
 show partitions repairtable_n4;

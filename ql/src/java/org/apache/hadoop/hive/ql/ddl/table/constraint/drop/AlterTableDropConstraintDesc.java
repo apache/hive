@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.constraint.drop;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -31,12 +31,13 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... DROP CONSTRAINT ... commands.
  */
 @Explain(displayName = "Drop Constraint", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableDropConstraintDesc implements DDLDesc, Serializable {
+public class AlterTableDropConstraintDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final TableName tableName;
   private final ReplicationSpec replicationSpec;
   private final String constraintName;
+  private Long writeId;
 
   public AlterTableDropConstraintDesc(TableName tableName, ReplicationSpec replicationSpec, String constraintName)
       throws SemanticException  {
@@ -61,5 +62,24 @@ public class AlterTableDropConstraintDesc implements DDLDesc, Serializable {
   @Explain(displayName = "constraint name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getConstraintName() {
     return constraintName;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return tableName.getNotEmptyDbTable();
+  }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  public Long getWriteId() {
+    return writeId;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true;
   }
 }

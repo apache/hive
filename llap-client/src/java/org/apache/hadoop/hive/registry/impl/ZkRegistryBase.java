@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMarshal;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
@@ -211,6 +212,18 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private CuratorFramework getZookeeperClient(Configuration conf, String namespace, ACLProvider zooKeeperAclProvider) {
+    String keyStorePassword = "";
+    String trustStorePassword = "";
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE)) {
+      try {
+        keyStorePassword =
+            ShimLoader.getHadoopShims().getPassword(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname);
+        trustStorePassword =
+            ShimLoader.getHadoopShims().getPassword(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to read zookeeper conf passwords", e);
+      }
+    }
     return ZooKeeperHiveHelper.builder()
         .quorum(conf.get(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname))
         .clientPort(conf.get(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname,
@@ -224,9 +237,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         .maxRetries(HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES))
         .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
         .keyStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
-        .keyStorePassword(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
+        .keyStorePassword(keyStorePassword)
         .trustStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-        .trustStorePassword(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD))
+        .trustStorePassword(trustStorePassword)
         .build().getNewZookeeperClient(zooKeeperAclProvider, namespace);
   }
 
@@ -339,7 +352,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
 
-  final void initializeWithoutRegisteringInternal() throws IOException {
+  final protected void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
       try {

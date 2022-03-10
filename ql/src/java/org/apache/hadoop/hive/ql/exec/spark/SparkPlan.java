@@ -68,7 +68,7 @@ public class SparkPlan {
 
   @SuppressWarnings("unchecked")
   public JavaPairRDD<HiveKey, BytesWritable> generateGraph() {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
     Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> tranToOutputRDDMap
         = new HashMap<SparkTran, JavaPairRDD<HiveKey, BytesWritable>>();
     for (SparkTran tran : getAllTrans()) {
@@ -112,7 +112,7 @@ public class SparkPlan {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
 
     LOG.info("\n\nSpark RDD Graph:\n\n" + finalRDD.toDebugString() + "\n");
 
@@ -133,7 +133,7 @@ public class SparkPlan {
   private String getLongFormCallSite(SparkTran tran) {
     if (this.jobConf.getBoolean(HiveConf.ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.varname, HiveConf
             .ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.defaultBoolVal)) {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
 
       ExplainWork explainWork = new ExplainWork();
       explainWork.setConfig(new ExplainConfiguration());
@@ -153,7 +153,7 @@ public class SparkPlan {
         LOG.error("Error while generating explain plan for " + tran.getName(), e);
       }
 
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
       return explainOutput;
     }
     return "";

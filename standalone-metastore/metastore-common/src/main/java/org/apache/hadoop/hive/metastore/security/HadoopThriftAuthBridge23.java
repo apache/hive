@@ -52,8 +52,10 @@ public class HadoopThriftAuthBridge23 extends HadoopThriftAuthBridge {
       // HADOOP-10221, HADOOP-10451)
       try {
         RES_GET_INSTANCE_METHOD = SASL_PROPERTIES_RESOLVER_CLASS.getMethod("getInstance",
-            Configuration.class);
+                Configuration.class);
         GET_DEFAULT_PROP_METHOD = SASL_PROPERTIES_RESOLVER_CLASS.getMethod("getDefaultProperties");
+      } catch (RuntimeException e) {
+        throw e;
       } catch (Exception e) {
         // this must be hadoop 2.4 , where getDefaultProperties was protected
       }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -40,21 +41,40 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysResponse;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.GetTableResult;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -62,20 +82,35 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
+import org.apache.hadoop.hive.metastore.api.TableStatsResult;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -91,7 +126,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTabl
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeValsFromName;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -107,7 +141,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
+public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
   private static final Logger LOG = LoggerFactory.getLogger(SessionHiveMetaStoreClient.class);
 
   SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
@@ -195,22 +229,31 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
-  public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name) throws MetaException,
-  TException, NoSuchObjectException {
-    return getTable(dbname, name, false, null);
+  public void truncateTable(String dbName, String tableName,
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table != null) {
+      truncateTempTable(table);
+      return;
+    }
+    super.truncateTable(dbName, tableName, partNames, validWriteIds, writeId, deleteData);
   }
 
   @Override
-  public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name,
-  boolean getColStats, String engine) throws MetaException,
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name) throws MetaException,
   TException, NoSuchObjectException {
-    // First check temp tables
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, name);
-    if (table != null) {
-      return deepCopy(table);  // Original method used deepCopy(), do the same here.
-    }
-    // Try underlying client
-    return super.getTable(getDefaultCatalog(conf), dbname, name, getColStats, engine);
+    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
+    return getTable(getTableRequest);
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name, boolean getColStats,
+      String engine) throws MetaException, TException, NoSuchObjectException {
+    GetTableRequest getTableRequest = new GetTableRequest(dbname, name);
+    getTableRequest.setGetColumnStats(getColStats);
+    getTableRequest.setEngine(engine);
+    return getTable(getTableRequest);
   }
 
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks
@@ -224,14 +267,27 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks
   // before the drop.
   @Override
-  public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbName,
-          String tableName, boolean getColStats, String engine)
-          throws TException {
-    if (!DEFAULT_CATALOG_NAME.equals(catName)) {
-      return super.getTable(catName, dbName, tableName, getColStats, engine);
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbName, String tableName,
+      boolean getColStats, String engine) throws TException {
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, tableName);
+    getTableRequest.setGetColumnStats(getColStats);
+    getTableRequest.setEngine(engine);
+    if (!getDefaultCatalog(conf).equals(catName)) {
+      getTableRequest.setCatName(catName);
+      return super.getTable(getTableRequest);
     } else {
-      return getTable(dbName, tableName, getColStats, engine);
+      return getTable(getTableRequest);
     }
+  }
+
+  public org.apache.hadoop.hive.metastore.api.Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
+    // First check temp tables
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(getTableRequest.getDbName(), getTableRequest.getTblName());
+    if (table != null) {
+      return deepCopy(table);  // Original method used deepCopy(), do the same here.
+    }
+    // Try underlying client
+    return super.getTable(getTableRequest);
   }
 
   @Override
@@ -725,7 +781,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   private void truncateTempTable(org.apache.hadoop.hive.metastore.api.Table table) throws MetaException, TException {
 
-    boolean isAutopurge = "true".equalsIgnoreCase(table.getParameters().get("auto.purge"));
+    boolean isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
     try {
       // this is not transactional
       Path location = new Path(table.getSd().getLocation());
@@ -737,13 +793,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        FileUtils.moveToTrash(fs, location, conf, isAutopurge);
+        FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
         fs.mkdirs(location);
         HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
       } else {
         FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
         if ((statuses != null) && (statuses.length > 0)) {
-          boolean success = Hive.trashFiles(fs, statuses, conf, isAutopurge);
+          boolean success = Hive.trashFiles(fs, statuses, conf, isSkipTrash);
           if (!success) {
             throw new HiveException("Error in deleting the contents of " + location.toString());
           }
@@ -1098,6 +1154,24 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     List<Partition> partitions = tt.listPartitionsWithAuthInfo(userName, groupNames);
     return getPartitionsForMaxParts(tableName, partitions, maxParts);
   }
+  
+  @Override
+  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(
+      GetPartitionsPsWithAuthRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(),
+        req.getTblName());
+    if (table == null) {
+      return super.listPartitionsWithAuthInfoRequest(req);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt
+        .listPartitionsWithAuthInfo(req.getUserName(), req.getGroupNames());
+    GetPartitionsPsWithAuthResponse response = new GetPartitionsPsWithAuthResponse();
+    response.setPartitions(
+        getPartitionsForMaxParts(req.getTblName(), partitions, req.getMaxParts()));
+    return response;
+  }
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName,
@@ -1131,6 +1205,96 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     Collections.sort(result);
     return result;
+  }
+
+  @Override
+  public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionNamesRequest(req);
+    }
+    List<String> partVals = req.getPartValues();
+    short maxParts = req.getMaxParts();
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.getPartitionsByPartitionVals(partVals);
+    List<String> result = new ArrayList<>();
+    for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      result.add(makePartName(table.getPartitionKeys(), partitions.get(i).getValues()));
+    }
+    Collections.sort(result);
+    GetPartitionNamesPsResponse response = new GetPartitionNamesPsResponse();
+    response.setNames(result);
+    return response;
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionNames(req);
+    }
+    List<Partition> partitionList = getPartitionedTempTable(table).listPartitions();
+    if (partitionList.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    byte[] expr = req.getExpr();
+    boolean isEmptyFilter = (expr == null || (expr.length == 1 && expr[0] == -1));
+    if (!isEmptyFilter) {
+      partitionList = getPartitionedTempTable(table).listPartitionsByFilter(
+          generateJDOFilter(table, expr, req.getDefaultPartitionName()));
+    }
+
+    List<String> results = new ArrayList<>();
+    Collections.sort(partitionList, new PartitionNamesComparator(table, req));
+    short maxParts = req.getMaxParts();
+    for(int i = 0; i < ((maxParts < 0 || maxParts > partitionList.size()) ? partitionList.size() : maxParts); i++) {
+      results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
+    }
+    return results;
+  }
+
+  final class PartitionNamesComparator implements java.util.Comparator<Partition> {
+    private org.apache.hadoop.hive.metastore.api.Table table;
+    private PartitionsByExprRequest req;
+    PartitionNamesComparator(org.apache.hadoop.hive.metastore.api.Table table, PartitionsByExprRequest req) {
+      this.table = table;
+      this.req = req;
+    }
+    @Override
+    public int compare(Partition o1, Partition o2) {
+      List<Object[]> orders = MetaStoreUtils.makeOrderSpecs(req.getOrder());
+      for (Object[] order : orders) {
+        int partKeyIndex = (int) order[0];
+        boolean isAsc = "asc".equalsIgnoreCase((String)order[1]);
+        String partVal1 = o1.getValues().get(partKeyIndex), partVal2 = o2.getValues().get(partKeyIndex);
+        int val = partVal1.compareTo(partVal2);
+        if (val == 0) {
+          continue;
+        } else if (partVal1.equals(req.getDefaultPartitionName())) {
+          return isAsc ? 1 : -1;
+        } else if (partVal2.equals(req.getDefaultPartitionName())) {
+          return isAsc ? -1 : 1;
+        } else {
+          String type = table.getPartitionKeys().get(partKeyIndex).getType();
+          if (org.apache.hadoop.hive.metastore.ColumnType.IntegralTypes.contains(type)) {
+            val = (Double.valueOf(partVal1) - Double.valueOf(partVal2)) > 0 ? 1 : -1;
+          }
+          return isAsc ? val : - val;
+        }
+      }
+
+      try {
+        return Warehouse.makePartName(table.getPartitionKeys(), o1.getValues()).compareTo(
+            Warehouse.makePartName(table.getPartitionKeys(), o2.getValues()));
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override
@@ -1171,7 +1335,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       String defaultPartitionName, int maxParts, List<Partition> result) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
-      return super.listPartitionsByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
+      return super.listPartitionsByExpr(catName, dbName, tblName, expr,
+          defaultPartitionName, maxParts, result);
     }
     assert result != null;
     result.addAll(getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
@@ -1180,24 +1345,23 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
-  public boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<PartitionSpec> result) throws TException {
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(), req.getTblName());
     if (table == null) {
-      return super.listPartitionsSpecByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
+      return super.listPartitionsSpecByExpr(req, result);
     }
     assert result != null;
 
     result.addAll(
         MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table,
-            getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
-                generateJDOFilter(table, expr, defaultPartitionName)), maxParts)));
+            getPartitionsForMaxParts(req.getTblName(), getPartitionedTempTable(table).listPartitionsByFilter(
+                generateJDOFilter(table, req.getExpr(), req.getDefaultPartitionName())), req.getMaxParts())));
     return result.isEmpty();
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-                                              List<String> partNames, boolean getColStats, String engine) throws TException {
+      List<String> partNames, boolean getColStats, String engine) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
       //(assume) not a temp table - Try underlying client
@@ -1536,7 +1700,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private String generateJDOFilter(org.apache.hadoop.hive.metastore.api.Table table, byte[] expr,
       String defaultPartitionName) throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil
-        .makeExpressionTree(PartFilterExprUtil.createExpressionProxy(conf), expr, defaultPartitionName);
+        .makeExpressionTree(PartFilterExprUtil.createExpressionProxy(conf), expr, defaultPartitionName, conf);
     return generateJDOFilter(table, expressionTree == null ? ExpressionTree.EMPTY_TREE : expressionTree);
   }
 
@@ -1889,4 +2053,481 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     return false;
   }
+
+  @Override
+  protected String getConfigValueInternal(String name, String defaultValue)
+      throws TException, ConfigValSecurityException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.CONFIG_VALUE, name, defaultValue);
+      String v = (String) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getConfigValueInternal(name, defaultValue);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getConfigValueInternal, name={}",
+            name);
+      }
+      return v;
+    }
+    return super.getConfigValueInternal(name, defaultValue);
+  }
+
+  @Override
+  protected Database getDatabaseInternal(GetDatabaseRequest request) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.DATABASE, request);
+      Database v = (Database) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getDatabaseInternal(request);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getDatabaseInternal, name={}",
+            request.getName());
+      }
+      return v;
+    }
+    return super.getDatabaseInternal(request);
+  }
+
+  @Override
+  protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKeyTableId = new CacheKey(KeyType.TABLE_ID, req.getCatName(), req.getDbName(), req.getTblName());
+      long tableId = -1;
+
+      if (queryCache.containsKey(cacheKeyTableId))
+        tableId = (long) queryCache.get(cacheKeyTableId);
+
+      req.setId(tableId);
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
+      GetTableResult v = (GetTableResult) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getTableInternal(req);
+        if (tableId == -1) {
+          queryCache.put(cacheKeyTableId, v.getTable().getId());
+          req.setId(v.getTable().getId());
+          cacheKey = new CacheKey(KeyType.TABLE, req);
+        }
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getTableInternal, dbName={}, tblName={}", req.getDbName(),
+            req.getTblName());
+      }
+      return v;
+    }
+    return super.getTableInternal(req);
+  }
+
+  @Override
+  protected PrimaryKeysResponse getPrimaryKeysInternal(PrimaryKeysRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, req);
+      PrimaryKeysResponse v = (PrimaryKeysResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getPrimaryKeysInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
+            req.getDb_name(), req.getTbl_name());
+      }
+      return v;
+    }
+    return super.getPrimaryKeysInternal(req);
+  }
+
+  @Override
+  protected ForeignKeysResponse getForeignKeysInternal(ForeignKeysRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, req);
+      ForeignKeysResponse v = (ForeignKeysResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getForeignKeysInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
+            req.getForeign_db_name(), req.getForeign_tbl_name());
+      }
+      return v;
+    }
+    return super.getForeignKeysInternal(req);
+  }
+
+  @Override
+  protected UniqueConstraintsResponse getUniqueConstraintsInternal(UniqueConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, req);
+      UniqueConstraintsResponse v = (UniqueConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getUniqueConstraintsInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
+            req.getDb_name(), req.getTbl_name());
+      }
+      return v;
+    }
+    return super.getUniqueConstraintsInternal(req);
+  }
+
+  @Override
+  protected NotNullConstraintsResponse getNotNullConstraintsInternal(NotNullConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, req);
+      NotNullConstraintsResponse v = (NotNullConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getNotNullConstraintsInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
+            req.getDb_name(), req.getTbl_name());
+      }
+      return v;
+    }
+    return super.getNotNullConstraintsInternal(req);
+  }
+
+  @Override
+  protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest rqst) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      MapWrapper cache = new MapWrapper(queryCache);
+      // 1) Retrieve from the cache those ids present, gather the rest
+      Pair<List<ColumnStatisticsObj>, List<String>> p = getTableColumnStatisticsCache(
+          cache, rqst, null);
+      List<String> colStatsMissing = p.getRight();
+      List<ColumnStatisticsObj> colStats = p.getLeft();
+      // 2) If they were all present in the cache, return
+      if (colStatsMissing.isEmpty()) {
+        return new TableStatsResult(colStats);
+      }
+      // 3) If they were not, gather the remaining
+      TableStatsRequest newRqst = new TableStatsRequest(rqst);
+      newRqst.setColNames(colStatsMissing);
+      TableStatsResult r = super.getTableColumnStatisticsInternal(newRqst);
+      // 4) Populate the cache
+      List<ColumnStatisticsObj> newColStats = loadTableColumnStatisticsCache(
+          cache, r, rqst, null);
+      // 5) Sort result (in case there is any assumption) and return
+      return computeTableColumnStatisticsFinal(rqst, colStats, newColStats);
+    }
+    return super.getTableColumnStatisticsInternal(rqst);
+  }
+
+  @Override
+  protected AggrStats getAggrStatsForInternal(PartitionsStatsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req);
+      AggrStats v = (AggrStats) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getAggrStatsForInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
+            req.getDbName(), req.getTblName(), req.getPartNames());
+      }
+      return v;
+    }
+    return super.getAggrStatsForInternal(req);
+  }
+
+  @Override
+  protected PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
+      PartitionsByExprResult v = (PartitionsByExprResult) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getPartitionsByExprInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
+            req.getDbName(), req.getTblName());
+      }
+      return v;
+    }
+    return super.getPartitionsByExprInternal(req);
+  }
+
+  @Override
+  protected PartitionsSpecByExprResult getPartitionsSpecByExprInternal(PartitionsByExprRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
+      PartitionsSpecByExprResult v = (PartitionsSpecByExprResult) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getPartitionsSpecByExprInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getPartitionsSpecByExprInternal, dbName={}, tblName={}",
+            req.getDbName(), req.getTblName());
+      }
+      return v;
+    }
+    return super.getPartitionsSpecByExprInternal(req);
+  }
+
+  @Override
+  protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
+       int maxParts) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL,
+          catName, dbName, tableName, maxParts);
+      List<String> v = (List<String>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionNamesInternal(catName, dbName, tableName, maxParts);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=listPartitionNamesInternalAll, dbName={}, tblName={}",
+            dbName, tableName);
+      }
+      return v;
+    }
+    return super.listPartitionNamesInternal(catName, dbName, tableName, maxParts);
+  }
+
+  protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
+       List<String> partVals, int maxParts) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS,
+          catName, dbName, tableName, partVals, maxParts);
+      List<String> v = (List<String>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionNamesInternal(catName, dbName, tableName, partVals, maxParts);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
+            dbName, tableName);
+      }
+      return v;
+    }
+    return super.listPartitionNamesInternal(catName, dbName, tableName, partVals, maxParts);
+  }
+
+  @Override
+  protected GetPartitionNamesPsResponse listPartitionNamesRequestInternal(GetPartitionNamesPsRequest req)
+      throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_REQ, req);
+      GetPartitionNamesPsResponse v = (GetPartitionNamesPsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionNamesRequestInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=listPartitionNamesRequestInternal, dbName={}, tblName={}, partValues={}",
+            req.getDbName(), req.getTblName(), req.getPartValues());
+      }
+      return v;
+    }
+    return super.listPartitionNamesRequestInternal(req);
+  }
+
+  @Override
+  protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
+      int maxParts, String userName, List<String> groupNames) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_ALL,
+          catName, dbName, tableName, maxParts, userName, groupNames);
+      List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, maxParts, userName, groupNames);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=listPartitionsWithAuthInfoInternalAll, dbName={}, tblName={}",
+            dbName, tableName);
+      }
+      return v;
+    }
+    return super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, maxParts, userName, groupNames);
+  }
+
+  @Override
+  protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
+      List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
+      throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO,
+          catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
+      List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=listPartitionsWithAuthInfoInternal, dbName={}, tblName={}, partVals={}",
+            dbName, tableName, partialPvals);
+      }
+      return v;
+    }
+    return super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
+  }
+
+  @Override
+  protected GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequestInternal(GetPartitionsPsWithAuthRequest req)
+      throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req);
+      GetPartitionsPsWithAuthResponse v = (GetPartitionsPsWithAuthResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionsWithAuthInfoRequestInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=listPartitionsWithAuthInfoRequestInternal, dbName={}, tblName={}, partVals={}",
+            req.getDbName(), req.getTblName(), req.getPartVals());
+      }
+      return v;
+    }
+    return super.listPartitionsWithAuthInfoRequestInternal(req);
+  }
+
+  @Override
+  protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest rqst) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      MapWrapper cache = new MapWrapper(queryCache);
+      // 1) Retrieve from the cache those ids present, gather the rest
+      Pair<List<Partition>, List<String>> p = getPartitionsByNamesCache(
+          cache, rqst, null);
+      List<String> partitionsMissing = p.getRight();
+      List<Partition> partitions = p.getLeft();
+      // 2) If they were all present in the cache, return
+      if (partitionsMissing.isEmpty()) {
+        return new GetPartitionsByNamesResult(partitions);
+      }
+      // 3) If they were not, gather the remaining
+      GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
+      newRqst.setNames(partitionsMissing);
+      GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
+      // 4) Populate the cache
+      List<Partition> newPartitions = loadPartitionsByNamesCache(
+          cache, r, rqst, null);
+      // 5) Sort result (in case there is any assumption) and return
+      return computePartitionsByNamesFinal(rqst, partitions, newPartitions);
+    }
+    return super.getPartitionsByNamesInternal(rqst);
+  }
+
+  @Override
+  protected GetValidWriteIdsResponse getValidWriteIdsInternal(GetValidWriteIdsRequest rqst) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      MapWrapper cache = new MapWrapper(queryCache);
+      // 1) Retrieve from the cache those ids present, gather the rest
+      Pair<List<TableValidWriteIds>, List<String>> p = getValidWriteIdsCache(
+          cache, rqst);
+      List<String> fullTableNamesMissing = p.getRight();
+      List<TableValidWriteIds> tblValidWriteIds = p.getLeft();
+      // 2) If they were all present in the cache, return
+      if (fullTableNamesMissing.isEmpty()) {
+        return new GetValidWriteIdsResponse(tblValidWriteIds);
+      }
+      // 3) If they were not, gather the remaining
+      GetValidWriteIdsRequest newRqst = new GetValidWriteIdsRequest(rqst);
+      newRqst.setFullTableNames(fullTableNamesMissing);
+      GetValidWriteIdsResponse r = super.getValidWriteIdsInternal(newRqst);
+      // 4) Populate the cache
+      List<TableValidWriteIds> newTblValidWriteIds = loadValidWriteIdsCache(
+          cache, r, rqst);
+      // 5) Sort result (in case there is any assumption) and return
+      return computeValidWriteIdsFinal(rqst, tblValidWriteIds, newTblValidWriteIds);
+    }
+    return super.getValidWriteIdsInternal(rqst);
+  }
+
+  /**
+   * Wrapper to create a cache around a Map.
+   */
+  protected static class MapWrapper implements CacheI {
+
+    final Map<Object, Object> m;
+
+    protected MapWrapper(Map<Object, Object> m) {
+      this.m = m;
+    }
+
+    @Override
+    public void put(Object k, Object v) {
+      m.put(k, v);
+    }
+
+    @Override
+    public Object get(Object k) {
+      return m.get(k);
+    }
+  }
+
+  private Map<Object, Object> getQueryCache() {
+    String queryId = getQueryId();
+    if (queryId != null) {
+      SessionState ss = SessionState.get();
+      if (ss != null) {
+        return ss.getQueryCache(queryId);
+      }
+    }
+    return null;
+  }
+
+  @Override
+  protected String getValidWriteIdList(String dbName, String tblName) {
+    try {
+      final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
+      if (validTxnsList == null) {
+        return super.getValidWriteIdList(dbName, tblName);
+      }
+      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+        return null;
+      }
+      final String fullTableName = TableName.getDbTable(dbName, tblName);
+      final ValidTxnWriteIdList validTxnWriteIdList = SessionState.get().getTxnMgr()
+          .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
+      ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
+      return (writeIdList != null) ? writeIdList.toString() : null;
+    } catch (Exception e) {
+      throw new RuntimeException("Exception getting valid write id list", e);
+    }
+  }
+
 }

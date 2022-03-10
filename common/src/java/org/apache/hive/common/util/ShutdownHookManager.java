@@ -122,6 +122,7 @@ public class ShutdownHookManager {
     private final Set<File> deleteTargets = Collections.synchronizedSet(new HashSet<File>());
 
     @Override
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Intended")
     public void run() {
       for (File deleteTarget : deleteTargets) {
         deleteTarget.delete();

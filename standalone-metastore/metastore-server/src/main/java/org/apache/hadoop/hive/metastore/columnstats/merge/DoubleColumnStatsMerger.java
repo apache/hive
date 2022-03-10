@@ -22,13 +22,19 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.doubleInspectorFromStats;
 
 public class DoubleColumnStatsMerger extends ColumnStatsMerger {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DoubleColumnStatsMerger.class);
+
   @Override
-  protected void doMerge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+    LOG.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
+
     DoubleColumnStatsDataInspector aggregateData = doubleInspectorFromStats(aggregateColStats);
     DoubleColumnStatsDataInspector newData = doubleInspectorFromStats(newColStats);
     setLowValue(aggregateData, newData);
@@ -47,7 +53,7 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      log.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
+      LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }

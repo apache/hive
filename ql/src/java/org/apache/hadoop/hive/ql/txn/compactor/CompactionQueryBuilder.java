@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
+import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -65,7 +67,7 @@ class CompactionQueryBuilder {
   private StorageDescriptor storageDescriptor; // for Create in insert-only
   private String location; // for Create
   private ValidWriteIdList validWriteIdList; // for Alter/Insert in minor and CRUD
-  private AcidUtils.Directory dir; // for Alter in minor
+  private AcidDirectory dir; // for Alter in minor
   private Partition sourcePartition; // for Insert in major and insert-only minor
   private String sourceTabForInsert; // for Insert
 
@@ -139,7 +141,7 @@ class CompactionQueryBuilder {
    *
    * @param dir Acid Directory, not null
    */
-  CompactionQueryBuilder setDir(AcidUtils.Directory dir) {
+  CompactionQueryBuilder setDir(AcidDirectory dir) {
     this.dir = dir;
     return this;
   }
@@ -470,7 +472,7 @@ class CompactionQueryBuilder {
             sourceTab.getTableName());
       } finally {
         query.append(" clustered by (`bucket`)")
-            .append(" sorted by (`bucket`, `originalTransaction`, `rowId`)")
+            .append(" sorted by (`originalTransaction`, `bucket`, `rowId`)")
             .append(" into ").append(numBuckets).append(" buckets");
       }
     }
@@ -517,7 +519,7 @@ class CompactionQueryBuilder {
         .append(HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib())).append("'");
     // WITH SERDEPROPERTIES
     if (!serdeParams.isEmpty()) {
-      ShowCreateTableOperation.appendSerdeParams(query, serdeParams);
+      DDLPlanUtils.appendSerdeParams(query, serdeParams);
     }
     query.append("STORED AS INPUTFORMAT '")
         .append(HiveStringUtils.escapeHiveCommand(storageDescriptor.getInputFormat())).append("'")
@@ -543,18 +545,26 @@ class CompactionQueryBuilder {
     if (crud && minor && isBucketed) {
       tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
     }
-    if (insertOnly && sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
-      // Exclude all standard table properties.
-      Set<String> excludes = getHiveMetastoreConstants();
-      excludes.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
-      for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
-        if (e.getValue() == null) {
-          continue;
+    if (sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
+      if (insertOnly) {
+        // Exclude all standard table properties.
+        Set<String> excludes = getHiveMetastoreConstants();
+        excludes.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
+        for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
+          if (e.getValue() == null) {
+            continue;
+          }
+          if (excludes.contains(e.getKey())) {
+            continue;
+          }
+          tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
         }
-        if (excludes.contains(e.getKey())) {
-          continue;
+      } else {
+        for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
+          if (e.getKey().startsWith("orc.")) {
+            tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
+          }
         }
-        tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
       }
     }
 

@@ -25,13 +25,18 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
+import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,6 +46,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.junit.Ignore;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -92,10 +98,13 @@ public class TestStatsReplicationScenarios {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     Map<String, String> additionalOverrides = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
+        put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
+        put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
       }};
     Map<String, String> replicatedOverrides = new HashMap<>();
 
@@ -125,6 +134,10 @@ public class TestStatsReplicationScenarios {
 
   @Before
   public void setup() throws Throwable {
+    // set up metastore client cache
+    if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init(conf);
+    }
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
@@ -336,7 +349,13 @@ public class TestStatsReplicationScenarios {
         failIncrementalLoad();
       }
     }
-
+    
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
+    if(nonRecoverablePath != null){
+      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    }
+    
     // Load, possibly a retry
     replica.load(replicatedDbName, primaryDbName);
 
@@ -427,31 +446,29 @@ public class TestStatsReplicationScenarios {
     }
     callerVerifier.assertInjectionsPerformed(true, false);
 
-    // fail add notification when second update partition stats event is encountered. Thus we test
+    // fail second call to update partition column stats. Thus we test
     // successful application as well as failed application of this event.
-    callerVerifier = new BehaviourInjection<NotificationEvent, Boolean>() {
+    BehaviourInjection<Table, Boolean> callerVerifier2 = new BehaviourInjection<Table, Boolean>() {
       int cntEvents = 0;
 
       @Override
-      public Boolean apply(NotificationEvent entry) {
+      public Boolean apply(Table entry) {
         cntEvents++;
-        if (entry.getEventType().equalsIgnoreCase(EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT.toString()) &&
-            cntEvents > 1) {
+        if (cntEvents > 1) {
           injectionPathCalled = true;
           LOG.warn("Verifier - DB: " + entry.getDbName()
-                  + " Table: " + entry.getTableName()
-                  + " Event: " + entry.getEventType());
+                  + " Table: " + entry.getTableName());
           return false;
         }
         return true;
       }
     };
 
-    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
+    InjectableBehaviourObjectStore.setUpdatePartColStatsBehaviour(callerVerifier2);
     try {
       replica.loadFailure(replicatedDbName, primaryDbName);
     } finally {
-      InjectableBehaviourObjectStore.resetAddNotificationModifier();
+      InjectableBehaviourObjectStore.setUpdatePartColStatsBehaviour(null);
     }
     callerVerifier.assertInjectionsPerformed(true, false);
   }
@@ -659,7 +676,7 @@ public class TestStatsReplicationScenarios {
     lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
             metadataOnly, false);
   }
-
+  
   @Test
   public void testNonParallelBootstrapLoad() throws Throwable {
     LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());

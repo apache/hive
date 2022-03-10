@@ -72,7 +72,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -105,6 +106,7 @@ dayofweek
 decode
 degrees
 dense_rank
+deserialize
 div
 ds_cpc_estimate
 ds_cpc_estimate_bounds
@@ -173,6 +175,8 @@ e
 elt
 encode
 enforce_constraint
+exception_in_vertex_udaf
+exception_in_vertex_udf
 exp
 explode
 extract_union
@@ -211,6 +215,7 @@ initcap
 inline
 instr
 internal_interval
+is_not_distinct_from
 isfalse
 isnotfalse
 isnotnull
@@ -427,7 +432,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -459,6 +465,7 @@ coalesce
 current_database
 current_date
 decode
+deserialize
 ds_cpc_estimate
 ds_hll_estimate
 ds_kll_quantile
@@ -584,7 +591,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -617,6 +625,7 @@ dayofweek
 decode
 degrees
 dense_rank
+deserialize
 div
 ds_cpc_estimate
 ds_cpc_estimate_bounds
@@ -685,6 +694,8 @@ e
 elt
 encode
 enforce_constraint
+exception_in_vertex_udaf
+exception_in_vertex_udf
 exp
 explode
 extract_union
@@ -723,6 +734,7 @@ initcap
 inline
 instr
 internal_interval
+is_not_distinct_from
 isfalse
 isnotfalse
 isnotnull

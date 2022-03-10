@@ -126,9 +126,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
         rowObj = serde.deserialize(data);
         setRowFromStruct(value, rowObj, rowOI);
       } catch (SerDeException err) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Error deserializing row from data: " + data);
-        }
+        LOG.debug("Error deserializing row from data: {}", data);
         throw new IOException("Error deserializing row data", err);
       }
     }
@@ -254,7 +252,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
     props.put(serdeConstants.ESCAPE_CHAR, "\\");
     AbstractSerDe createdSerDe = createSerDe();
-    createdSerDe.initialize(conf, props);
+    createdSerDe.initialize(conf, props, null);
 
     return createdSerDe;
   }

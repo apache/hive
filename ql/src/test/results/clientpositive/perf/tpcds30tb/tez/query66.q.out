@@ -1,0 +1,416 @@
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 11 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
+        Map 9 <- Map 11 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
+        Reducer 10 <- Map 9 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: web_sales
+                  filterExpr: (ws_sold_time_sk is not null and ws_ship_mode_sk is not null and ws_warehouse_sk is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_198_container, bigKeyColName:ws_ship_mode_sk, smallTablePos:1, keyRatio:0.0077726123278109545
+                  Statistics: Num rows: 21594638446 Data size: 5613925340868 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (ws_sold_time_sk is not null and ws_ship_mode_sk is not null and ws_warehouse_sk is not null) (type: boolean)
+                    Statistics: Num rows: 21586536205 Data size: 5611819013600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ws_sold_time_sk (type: bigint), ws_ship_mode_sk (type: bigint), ws_warehouse_sk (type: bigint), ws_sold_date_sk (type: bigint), (ws_sales_price * CAST( ws_quantity AS decimal(10,0))) (type: decimal(18,2)), (ws_net_paid_inc_tax * CAST( ws_quantity AS decimal(10,0))) (type: decimal(18,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 21586536205 Data size: 5526088466792 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                        input vertices:
+                          1 Map 6
+                        Statistics: Num rows: 8351291272 Data size: 2071077045864 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col3 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col1, _col2, _col4, _col5, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
+                          input vertices:
+                            1 Map 11
+                          Statistics: Num rows: 1678467504 Data size: 483355451560 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col1 (type: bigint)
+                              1 _col0 (type: bigint)
+                            outputColumnNames: _col2, _col4, _col5, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
+                            input vertices:
+                              1 Map 7
+                            Statistics: Num rows: 167846753 Data size: 46975509296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Map Join Operator
+                              condition map:
+                                   Inner Join 0 to 1
+                              keys:
+                                0 _col2 (type: bigint)
+                                1 _col0 (type: bigint)
+                              outputColumnNames: _col4, _col5, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col22, _col23, _col24, _col25, _col26, _col27
+                              input vertices:
+                                1 Map 8
+                              Statistics: Num rows: 167846753 Data size: 125885064750 Basic stats: COMPLETE Column stats: COMPLETE
+                              Select Operator
+                                expressions: _col22 (type: varchar(20)), _col23 (type: int), _col24 (type: varchar(60)), _col25 (type: varchar(30)), _col26 (type: char(2)), _col27 (type: varchar(20)), if(_col8, _col4, 0) (type: decimal(18,2)), if(_col9, _col4, 0) (type: decimal(18,2)), if(_col10, _col4, 0) (type: decimal(18,2)), if(_col11, _col4, 0) (type: decimal(18,2)), if(_col12, _col4, 0) (type: decimal(18,2)), if(_col13, _col4, 0) (type: decimal(18,2)), if(_col14, _col4, 0) (type: decimal(18,2)), if(_col15, _col4, 0) (type: decimal(18,2)), if(_col16, _col4, 0) (type: decimal(18,2)), if(_col17, _col4, 0) (type: decimal(18,2)), if(_col18, _col4, 0) (type: decimal(18,2)), if(_col19, _col4, 0) (type: decimal(18,2)), if(_col8, _col5, 0) (type: decimal(18,2)), if(_col9, _col5, 0) (type: decimal(18,2)), if(_col10, _col5, 0) (type: decimal(18,2)), if(_col11, _col5, 0) (type: decimal(18,2)), if(_col12, _col5, 0) (type: decimal(18,2)), if(_col13, _col5, 0) (type: decimal(18,2)), if(_col14, _col5, 0) (type: decimal(18,2)), if(_col15, _col5, 0) (type: decimal(18,2)), if(_col16, _col5, 0) (type: decimal(18,2)), if(_col17, _col5, 0) (type: decimal(18,2)), if(_col18, _col5, 0) (type: decimal(18,2)), if(_col19, _col5, 0) (type: decimal(18,2))
+                                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                                Statistics: Num rows: 167846753 Data size: 125885064750 Basic stats: COMPLETE Column stats: COMPLETE
+                                Group By Operator
+                                  aggregations: sum(_col6), sum(_col7), sum(_col8), sum(_col9), sum(_col10), sum(_col11), sum(_col12), sum(_col13), sum(_col14), sum(_col15), sum(_col16), sum(_col17), sum(_col18), sum(_col19), sum(_col20), sum(_col21), sum(_col22), sum(_col23), sum(_col24), sum(_col25), sum(_col26), sum(_col27), sum(_col28), sum(_col29)
+                                  keys: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                                  minReductionHashAggr: 0.99
+                                  mode: hash
+                                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                                  Statistics: Num rows: 167846753 Data size: 531402819998 Basic stats: COMPLETE Column stats: COMPLETE
+                                  Reduce Output Operator
+                                    key expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                                    null sort order: zzzzzz
+                                    sort order: ++++++
+                                    Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                                    Statistics: Num rows: 167846753 Data size: 531402819998 Basic stats: COMPLETE Column stats: COMPLETE
+                                    value expressions: _col6 (type: decimal(28,2)), _col7 (type: decimal(28,2)), _col8 (type: decimal(28,2)), _col9 (type: decimal(28,2)), _col10 (type: decimal(28,2)), _col11 (type: decimal(28,2)), _col12 (type: decimal(28,2)), _col13 (type: decimal(28,2)), _col14 (type: decimal(28,2)), _col15 (type: decimal(28,2)), _col16 (type: decimal(28,2)), _col17 (type: decimal(28,2)), _col18 (type: decimal(28,2)), _col19 (type: decimal(28,2)), _col20 (type: decimal(28,2)), _col21 (type: decimal(28,2)), _col22 (type: decimal(28,2)), _col23 (type: decimal(28,2)), _col24 (type: decimal(28,2)), _col25 (type: decimal(28,2)), _col26 (type: decimal(28,2)), _col27 (type: decimal(28,2)), _col28 (type: decimal(28,2)), _col29 (type: decimal(28,2))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: (d_year = 2002) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (d_year = 2002) (type: boolean)
+                    Statistics: Num rows: 367 Data size: 5872 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: d_date_sk (type: bigint), (d_moy = 1) (type: boolean), (d_moy = 2) (type: boolean), (d_moy = 3) (type: boolean), (d_moy = 4) (type: boolean), (d_moy = 5) (type: boolean), (d_moy = 6) (type: boolean), (d_moy = 7) (type: boolean), (d_moy = 8) (type: boolean), (d_moy = 9) (type: boolean), (d_moy = 10) (type: boolean), (d_moy = 11) (type: boolean), (d_moy = 12) (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 367 Data size: 20552 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 367 Data size: 20552 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: boolean)
+                      Select Operator
+                        expressions: _col0 (type: bigint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: bigint)
+                          minReductionHashAggr: 0.4
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: cs_sold_date_sk (bigint)
+                            Target Input: catalog_sales
+                            Partition key expr: cs_sold_date_sk
+                            Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 9
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 367 Data size: 20552 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: boolean)
+                      Select Operator
+                        expressions: _col0 (type: bigint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: bigint)
+                          minReductionHashAggr: 0.4
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: ws_sold_date_sk (bigint)
+                            Target Input: web_sales
+                            Partition key expr: ws_sold_date_sk
+                            Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 1
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: time_dim
+                  filterExpr: t_time BETWEEN 49530 AND 78330 (type: boolean)
+                  Statistics: Num rows: 86400 Data size: 1036800 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: t_time BETWEEN 49530 AND 78330 (type: boolean)
+                    Statistics: Num rows: 33426 Data size: 401112 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: t_time_sk (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 33426 Data size: 267408 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 33426 Data size: 267408 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 33426 Data size: 267408 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: ship_mode
+                  filterExpr: (sm_carrier) IN ('DIAMOND             ', 'AIRBORNE            ') (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (sm_carrier) IN ('DIAMOND             ', 'AIRBORNE            ') (type: boolean)
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: sm_ship_mode_sk (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: warehouse
+                  Statistics: Num rows: 27 Data size: 13122 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: w_warehouse_sk (type: bigint), w_warehouse_name (type: varchar(20)), w_warehouse_sq_ft (type: int), w_city (type: varchar(60)), w_county (type: varchar(30)), w_state (type: char(2)), w_country (type: varchar(20))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 27 Data size: 13122 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 27 Data size: 13122 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: varchar(20)), _col2 (type: int), _col3 (type: varchar(60)), _col4 (type: varchar(30)), _col5 (type: char(2)), _col6 (type: varchar(20))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 27 Data size: 13122 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: varchar(20)), _col2 (type: int), _col3 (type: varchar(60)), _col4 (type: varchar(30)), _col5 (type: char(2)), _col6 (type: varchar(20))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: catalog_sales
+                  filterExpr: (cs_warehouse_sk is not null and cs_ship_mode_sk is not null and cs_sold_time_sk is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_202_container, bigKeyColName:cs_ship_mode_sk, smallTablePos:1, keyRatio:0.007662944600568886
+                  Statistics: Num rows: 43005109025 Data size: 11166276465348 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cs_warehouse_sk is not null and cs_ship_mode_sk is not null and cs_sold_time_sk is not null) (type: boolean)
+                    Statistics: Num rows: 42684154825 Data size: 11082940708040 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cs_sold_time_sk (type: bigint), cs_ship_mode_sk (type: bigint), cs_warehouse_sk (type: bigint), cs_sold_date_sk (type: bigint), (cs_ext_sales_price * CAST( cs_quantity AS decimal(10,0))) (type: decimal(18,2)), (cs_net_paid_inc_ship_tax * CAST( cs_quantity AS decimal(10,0))) (type: decimal(18,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 42684154825 Data size: 10924588798032 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                        input vertices:
+                          1 Map 6
+                        Statistics: Num rows: 16513432551 Data size: 4093624550056 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col3 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col1, _col2, _col4, _col5, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
+                          input vertices:
+                            1 Map 11
+                          Statistics: Num rows: 3295457622 Data size: 947385072544 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col1 (type: bigint)
+                              1 _col0 (type: bigint)
+                            outputColumnNames: _col2, _col4, _col5, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
+                            input vertices:
+                              1 Map 7
+                            Statistics: Num rows: 329545768 Data size: 91417723128 Basic stats: COMPLETE Column stats: COMPLETE
+                            Map Join Operator
+                              condition map:
+                                   Inner Join 0 to 1
+                              keys:
+                                0 _col2 (type: bigint)
+                                1 _col0 (type: bigint)
+                              outputColumnNames: _col4, _col5, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col22, _col23, _col24, _col25, _col26, _col27
+                              input vertices:
+                                1 Map 8
+                              Statistics: Num rows: 329545768 Data size: 247159326000 Basic stats: COMPLETE Column stats: COMPLETE
+                              Select Operator
+                                expressions: _col22 (type: varchar(20)), _col23 (type: int), _col24 (type: varchar(60)), _col25 (type: varchar(30)), _col26 (type: char(2)), _col27 (type: varchar(20)), if(_col8, _col4, 0) (type: decimal(18,2)), if(_col9, _col4, 0) (type: decimal(18,2)), if(_col10, _col4, 0) (type: decimal(18,2)), if(_col11, _col4, 0) (type: decimal(18,2)), if(_col12, _col4, 0) (type: decimal(18,2)), if(_col13, _col4, 0) (type: decimal(18,2)), if(_col14, _col4, 0) (type: decimal(18,2)), if(_col15, _col4, 0) (type: decimal(18,2)), if(_col16, _col4, 0) (type: decimal(18,2)), if(_col17, _col4, 0) (type: decimal(18,2)), if(_col18, _col4, 0) (type: decimal(18,2)), if(_col19, _col4, 0) (type: decimal(18,2)), if(_col8, _col5, 0) (type: decimal(18,2)), if(_col9, _col5, 0) (type: decimal(18,2)), if(_col10, _col5, 0) (type: decimal(18,2)), if(_col11, _col5, 0) (type: decimal(18,2)), if(_col12, _col5, 0) (type: decimal(18,2)), if(_col13, _col5, 0) (type: decimal(18,2)), if(_col14, _col5, 0) (type: decimal(18,2)), if(_col15, _col5, 0) (type: decimal(18,2)), if(_col16, _col5, 0) (type: decimal(18,2)), if(_col17, _col5, 0) (type: decimal(18,2)), if(_col18, _col5, 0) (type: decimal(18,2)), if(_col19, _col5, 0) (type: decimal(18,2))
+                                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                                Statistics: Num rows: 329545768 Data size: 247159326000 Basic stats: COMPLETE Column stats: COMPLETE
+                                Group By Operator
+                                  aggregations: sum(_col6), sum(_col7), sum(_col8), sum(_col9), sum(_col10), sum(_col11), sum(_col12), sum(_col13), sum(_col14), sum(_col15), sum(_col16), sum(_col17), sum(_col18), sum(_col19), sum(_col20), sum(_col21), sum(_col22), sum(_col23), sum(_col24), sum(_col25), sum(_col26), sum(_col27), sum(_col28), sum(_col29)
+                                  keys: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                                  minReductionHashAggr: 0.99
+                                  mode: hash
+                                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                                  Statistics: Num rows: 329545768 Data size: 1043341901488 Basic stats: COMPLETE Column stats: COMPLETE
+                                  Reduce Output Operator
+                                    key expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                                    null sort order: zzzzzz
+                                    sort order: ++++++
+                                    Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                                    Statistics: Num rows: 329545768 Data size: 1043341901488 Basic stats: COMPLETE Column stats: COMPLETE
+                                    value expressions: _col6 (type: decimal(28,2)), _col7 (type: decimal(28,2)), _col8 (type: decimal(28,2)), _col9 (type: decimal(28,2)), _col10 (type: decimal(28,2)), _col11 (type: decimal(28,2)), _col12 (type: decimal(28,2)), _col13 (type: decimal(28,2)), _col14 (type: decimal(28,2)), _col15 (type: decimal(28,2)), _col16 (type: decimal(28,2)), _col17 (type: decimal(28,2)), _col18 (type: decimal(28,2)), _col19 (type: decimal(28,2)), _col20 (type: decimal(28,2)), _col21 (type: decimal(28,2)), _col22 (type: decimal(28,2)), _col23 (type: decimal(28,2)), _col24 (type: decimal(28,2)), _col25 (type: decimal(28,2)), _col26 (type: decimal(28,2)), _col27 (type: decimal(28,2)), _col28 (type: decimal(28,2)), _col29 (type: decimal(28,2))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 10 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7), sum(VALUE._col8), sum(VALUE._col9), sum(VALUE._col10), sum(VALUE._col11), sum(VALUE._col12), sum(VALUE._col13), sum(VALUE._col14), sum(VALUE._col15), sum(VALUE._col16), sum(VALUE._col17), sum(VALUE._col18), sum(VALUE._col19), sum(VALUE._col20), sum(VALUE._col21), sum(VALUE._col22), sum(VALUE._col23)
+                keys: KEY._col0 (type: varchar(20)), KEY._col1 (type: int), KEY._col2 (type: varchar(60)), KEY._col3 (type: varchar(30)), KEY._col4 (type: char(2)), KEY._col5 (type: varchar(20))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                Statistics: Num rows: 2204496 Data size: 6979434336 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++++++
+                  keys: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                  null sort order: zzzzzz
+                  Statistics: Num rows: 4408992 Data size: 13958868672 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 100
+                  Select Operator
+                    expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20)), _col6 (type: decimal(28,2)), _col7 (type: decimal(28,2)), _col8 (type: decimal(28,2)), _col9 (type: decimal(28,2)), _col10 (type: decimal(28,2)), _col11 (type: decimal(28,2)), _col12 (type: decimal(28,2)), _col13 (type: decimal(28,2)), _col14 (type: decimal(28,2)), _col15 (type: decimal(28,2)), _col16 (type: decimal(28,2)), _col17 (type: decimal(28,2)), (_col6 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col7 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col8 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col9 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col10 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col11 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col12 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col13 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col14 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col15 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col16 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col17 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), _col18 (type: decimal(28,2)), _col19 (type: decimal(28,2)), _col20 (type: decimal(28,2)), _col21 (type: decimal(28,2)), _col22 (type: decimal(28,2)), _col23 (type: decimal(28,2)), _col24 (type: decimal(28,2)), _col25 (type: decimal(28,2)), _col26 (type: decimal(28,2)), _col27 (type: decimal(28,2)), _col28 (type: decimal(28,2)), _col29 (type: decimal(28,2))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41
+                    Statistics: Num rows: 4408992 Data size: 13958868672 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col6), sum(_col7), sum(_col8), sum(_col9), sum(_col10), sum(_col11), sum(_col12), sum(_col13), sum(_col14), sum(_col15), sum(_col16), sum(_col17), sum(_col18), sum(_col19), sum(_col20), sum(_col21), sum(_col22), sum(_col23), sum(_col24), sum(_col25), sum(_col26), sum(_col27), sum(_col28), sum(_col29), sum(_col30), sum(_col31), sum(_col32), sum(_col33), sum(_col34), sum(_col35), sum(_col36), sum(_col37), sum(_col38), sum(_col39), sum(_col40), sum(_col41)
+                      keys: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41
+                      Statistics: Num rows: 4408992 Data size: 19884553920 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                        null sort order: zzzzzz
+                        sort order: ++++++
+                        Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                        Statistics: Num rows: 4408992 Data size: 19884553920 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col6 (type: decimal(38,2)), _col7 (type: decimal(38,2)), _col8 (type: decimal(38,2)), _col9 (type: decimal(38,2)), _col10 (type: decimal(38,2)), _col11 (type: decimal(38,2)), _col12 (type: decimal(38,2)), _col13 (type: decimal(38,2)), _col14 (type: decimal(38,2)), _col15 (type: decimal(38,2)), _col16 (type: decimal(38,2)), _col17 (type: decimal(38,2)), _col18 (type: decimal(38,12)), _col19 (type: decimal(38,12)), _col20 (type: decimal(38,12)), _col21 (type: decimal(38,12)), _col22 (type: decimal(38,12)), _col23 (type: decimal(38,12)), _col24 (type: decimal(38,12)), _col25 (type: decimal(38,12)), _col26 (type: decimal(38,12)), _col27 (type: decimal(38,12)), _col28 (type: decimal(38,12)), _col29 (type: decimal(38,12)), _col30 (type: decimal(38,2)), _col31 (type: decimal(38,2)), _col32 (type: decimal(38,2)), _col33 (type: decimal(38,2)), _col34 (type: decimal(38,2)), _col35 (type: decimal(38,2)), _col36 (type: decimal(38,2)), _col37 (type: decimal(38,2)), _col38 (type: decimal(38,2)), _col39 (type: decimal(38,2)), _col40 (type: decimal(38,2)), _col41 (type: decimal(38,2))
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7), sum(VALUE._col8), sum(VALUE._col9), sum(VALUE._col10), sum(VALUE._col11), sum(VALUE._col12), sum(VALUE._col13), sum(VALUE._col14), sum(VALUE._col15), sum(VALUE._col16), sum(VALUE._col17), sum(VALUE._col18), sum(VALUE._col19), sum(VALUE._col20), sum(VALUE._col21), sum(VALUE._col22), sum(VALUE._col23)
+                keys: KEY._col0 (type: varchar(20)), KEY._col1 (type: int), KEY._col2 (type: varchar(60)), KEY._col3 (type: varchar(30)), KEY._col4 (type: char(2)), KEY._col5 (type: varchar(20))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                Statistics: Num rows: 2204496 Data size: 6979434336 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++++++
+                  keys: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                  null sort order: zzzzzz
+                  Statistics: Num rows: 4408992 Data size: 13958868672 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 100
+                  Select Operator
+                    expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20)), _col6 (type: decimal(28,2)), _col7 (type: decimal(28,2)), _col8 (type: decimal(28,2)), _col9 (type: decimal(28,2)), _col10 (type: decimal(28,2)), _col11 (type: decimal(28,2)), _col12 (type: decimal(28,2)), _col13 (type: decimal(28,2)), _col14 (type: decimal(28,2)), _col15 (type: decimal(28,2)), _col16 (type: decimal(28,2)), _col17 (type: decimal(28,2)), (_col6 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col7 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col8 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col9 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col10 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col11 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col12 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col13 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col14 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col15 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col16 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), (_col17 / CAST( _col1 AS decimal(10,0))) (type: decimal(38,12)), _col18 (type: decimal(28,2)), _col19 (type: decimal(28,2)), _col20 (type: decimal(28,2)), _col21 (type: decimal(28,2)), _col22 (type: decimal(28,2)), _col23 (type: decimal(28,2)), _col24 (type: decimal(28,2)), _col25 (type: decimal(28,2)), _col26 (type: decimal(28,2)), _col27 (type: decimal(28,2)), _col28 (type: decimal(28,2)), _col29 (type: decimal(28,2))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41
+                    Statistics: Num rows: 4408992 Data size: 13958868672 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col6), sum(_col7), sum(_col8), sum(_col9), sum(_col10), sum(_col11), sum(_col12), sum(_col13), sum(_col14), sum(_col15), sum(_col16), sum(_col17), sum(_col18), sum(_col19), sum(_col20), sum(_col21), sum(_col22), sum(_col23), sum(_col24), sum(_col25), sum(_col26), sum(_col27), sum(_col28), sum(_col29), sum(_col30), sum(_col31), sum(_col32), sum(_col33), sum(_col34), sum(_col35), sum(_col36), sum(_col37), sum(_col38), sum(_col39), sum(_col40), sum(_col41)
+                      keys: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41
+                      Statistics: Num rows: 4408992 Data size: 19884553920 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                        null sort order: zzzzzz
+                        sort order: ++++++
+                        Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20))
+                        Statistics: Num rows: 4408992 Data size: 19884553920 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col6 (type: decimal(38,2)), _col7 (type: decimal(38,2)), _col8 (type: decimal(38,2)), _col9 (type: decimal(38,2)), _col10 (type: decimal(38,2)), _col11 (type: decimal(38,2)), _col12 (type: decimal(38,2)), _col13 (type: decimal(38,2)), _col14 (type: decimal(38,2)), _col15 (type: decimal(38,2)), _col16 (type: decimal(38,2)), _col17 (type: decimal(38,2)), _col18 (type: decimal(38,12)), _col19 (type: decimal(38,12)), _col20 (type: decimal(38,12)), _col21 (type: decimal(38,12)), _col22 (type: decimal(38,12)), _col23 (type: decimal(38,12)), _col24 (type: decimal(38,12)), _col25 (type: decimal(38,12)), _col26 (type: decimal(38,12)), _col27 (type: decimal(38,12)), _col28 (type: decimal(38,12)), _col29 (type: decimal(38,12)), _col30 (type: decimal(38,2)), _col31 (type: decimal(38,2)), _col32 (type: decimal(38,2)), _col33 (type: decimal(38,2)), _col34 (type: decimal(38,2)), _col35 (type: decimal(38,2)), _col36 (type: decimal(38,2)), _col37 (type: decimal(38,2)), _col38 (type: decimal(38,2)), _col39 (type: decimal(38,2)), _col40 (type: decimal(38,2)), _col41 (type: decimal(38,2))
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7), sum(VALUE._col8), sum(VALUE._col9), sum(VALUE._col10), sum(VALUE._col11), sum(VALUE._col12), sum(VALUE._col13), sum(VALUE._col14), sum(VALUE._col15), sum(VALUE._col16), sum(VALUE._col17), sum(VALUE._col18), sum(VALUE._col19), sum(VALUE._col20), sum(VALUE._col21), sum(VALUE._col22), sum(VALUE._col23), sum(VALUE._col24), sum(VALUE._col25), sum(VALUE._col26), sum(VALUE._col27), sum(VALUE._col28), sum(VALUE._col29), sum(VALUE._col30), sum(VALUE._col31), sum(VALUE._col32), sum(VALUE._col33), sum(VALUE._col34), sum(VALUE._col35)
+                keys: KEY._col0 (type: varchar(20)), KEY._col1 (type: int), KEY._col2 (type: varchar(60)), KEY._col3 (type: varchar(30)), KEY._col4 (type: char(2)), KEY._col5 (type: varchar(20))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41
+                Statistics: Num rows: 2122848 Data size: 9574044480 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: varchar(20))
+                  null sort order: z
+                  sort order: +
+                  Statistics: Num rows: 2122848 Data size: 9574044480 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20)), _col6 (type: decimal(38,2)), _col7 (type: decimal(38,2)), _col8 (type: decimal(38,2)), _col9 (type: decimal(38,2)), _col10 (type: decimal(38,2)), _col11 (type: decimal(38,2)), _col12 (type: decimal(38,2)), _col13 (type: decimal(38,2)), _col14 (type: decimal(38,2)), _col15 (type: decimal(38,2)), _col16 (type: decimal(38,2)), _col17 (type: decimal(38,2)), _col18 (type: decimal(38,12)), _col19 (type: decimal(38,12)), _col20 (type: decimal(38,12)), _col21 (type: decimal(38,12)), _col22 (type: decimal(38,12)), _col23 (type: decimal(38,12)), _col24 (type: decimal(38,12)), _col25 (type: decimal(38,12)), _col26 (type: decimal(38,12)), _col27 (type: decimal(38,12)), _col28 (type: decimal(38,12)), _col29 (type: decimal(38,12)), _col30 (type: decimal(38,2)), _col31 (type: decimal(38,2)), _col32 (type: decimal(38,2)), _col33 (type: decimal(38,2)), _col34 (type: decimal(38,2)), _col35 (type: decimal(38,2)), _col36 (type: decimal(38,2)), _col37 (type: decimal(38,2)), _col38 (type: decimal(38,2)), _col39 (type: decimal(38,2)), _col40 (type: decimal(38,2)), _col41 (type: decimal(38,2))
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: varchar(20)), VALUE._col0 (type: int), VALUE._col1 (type: varchar(60)), VALUE._col2 (type: varchar(30)), VALUE._col3 (type: char(2)), VALUE._col4 (type: varchar(20)), VALUE._col5 (type: decimal(38,2)), VALUE._col6 (type: decimal(38,2)), VALUE._col7 (type: decimal(38,2)), VALUE._col8 (type: decimal(38,2)), VALUE._col9 (type: decimal(38,2)), VALUE._col10 (type: decimal(38,2)), VALUE._col11 (type: decimal(38,2)), VALUE._col12 (type: decimal(38,2)), VALUE._col13 (type: decimal(38,2)), VALUE._col14 (type: decimal(38,2)), VALUE._col15 (type: decimal(38,2)), VALUE._col16 (type: decimal(38,2)), VALUE._col17 (type: decimal(38,12)), VALUE._col18 (type: decimal(38,12)), VALUE._col19 (type: decimal(38,12)), VALUE._col20 (type: decimal(38,12)), VALUE._col21 (type: decimal(38,12)), VALUE._col22 (type: decimal(38,12)), VALUE._col23 (type: decimal(38,12)), VALUE._col24 (type: decimal(38,12)), VALUE._col25 (type: decimal(38,12)), VALUE._col26 (type: decimal(38,12)), VALUE._col27 (type: decimal(38,12)), VALUE._col28 (type: decimal(38,12)), VALUE._col29 (type: decimal(38,2)), VALUE._col30 (type: decimal(38,2)), VALUE._col31 (type: decimal(38,2)), VALUE._col32 (type: decimal(38,2)), VALUE._col33 (type: decimal(38,2)), VALUE._col34 (type: decimal(38,2)), VALUE._col35 (type: decimal(38,2)), VALUE._col36 (type: decimal(38,2)), VALUE._col37 (type: decimal(38,2)), VALUE._col38 (type: decimal(38,2)), VALUE._col39 (type: decimal(38,2)), VALUE._col40 (type: decimal(38,2))
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41
+                Statistics: Num rows: 2122848 Data size: 9574044480 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 451000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: varchar(20)), _col1 (type: int), _col2 (type: varchar(60)), _col3 (type: varchar(30)), _col4 (type: char(2)), _col5 (type: varchar(20)), 'DIAMOND,AIRBORNE' (type: string), 2002 (type: int), _col6 (type: decimal(38,2)), _col7 (type: decimal(38,2)), _col8 (type: decimal(38,2)), _col9 (type: decimal(38,2)), _col10 (type: decimal(38,2)), _col11 (type: decimal(38,2)), _col12 (type: decimal(38,2)), _col13 (type: decimal(38,2)), _col14 (type: decimal(38,2)), _col15 (type: decimal(38,2)), _col16 (type: decimal(38,2)), _col17 (type: decimal(38,2)), _col18 (type: decimal(38,12)), _col19 (type: decimal(38,12)), _col20 (type: decimal(38,12)), _col21 (type: decimal(38,12)), _col22 (type: decimal(38,12)), _col23 (type: decimal(38,12)), _col24 (type: decimal(38,12)), _col25 (type: decimal(38,12)), _col26 (type: decimal(38,12)), _col27 (type: decimal(38,12)), _col28 (type: decimal(38,12)), _col29 (type: decimal(38,12)), _col30 (type: decimal(38,2)), _col31 (type: decimal(38,2)), _col32 (type: decimal(38,2)), _col33 (type: decimal(38,2)), _col34 (type: decimal(38,2)), _col35 (type: decimal(38,2)), _col36 (type: decimal(38,2)), _col37 (type: decimal(38,2)), _col38 (type: decimal(38,2)), _col39 (type: decimal(38,2)), _col40 (type: decimal(38,2)), _col41 (type: decimal(38,2))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43
+                    Statistics: Num rows: 100 Data size: 461400 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 100 Data size: 461400 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

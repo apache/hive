@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import java.nio.charset.Charset;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.type.RelDataType;
@@ -31,6 +32,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlBinaryOperator;
+import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -39,6 +41,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -60,7 +63,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOpe
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -148,7 +150,7 @@ public class RexNodeConverter {
     ExprNodeDesc tmpExprNode;
     RexNode tmpRN;
 
-    List<RexNode> childRexNodeLst = new ArrayList<RexNode>();
+    List<RexNode> childRexNodeLst = new ArrayList<>();
     Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
 
     // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
@@ -162,7 +164,7 @@ public class RexNodeConverter {
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
     boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
     boolean isTransformableTimeStamp = func.getGenericUDF() instanceof GenericUDFUnixTimeStamp &&
-        func.getChildren().size() != 0;
+        !func.getChildren().isEmpty();
     boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
     boolean isIN = !isNumeric && tgtUdf instanceof GenericUDFIn;
     boolean isAllPrimitive = true;
@@ -242,7 +244,7 @@ public class RexNodeConverter {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         childRexNodeLst = rewriteCaseChildren(func.getFuncText(), childRexNodeLst, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a extract operator, we need to rewrite it
@@ -271,7 +273,7 @@ public class RexNodeConverter {
         // This allows to be further reduced to OR, if possible
         calciteOp = SqlStdOperatorTable.CASE;
         childRexNodeLst = rewriteCoalesceChildren(childRexNodeLst, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst, rexBuilder);
@@ -365,9 +367,15 @@ public class RexNodeConverter {
       for (int i = 1; i < length; i++) {
         if (i % 2 == 1) {
           // We rewrite it
+          RexNode node = childRexNodeLst.get(i);
+          if (node.isA(SqlKind.LITERAL) && !node.getType().equals(firstPred.getType())) {
+            // this effectively changes the type of the literal to that of the predicate
+            // to which it is anyway going to be compared with
+            // ex: CASE WHEN =($0:SMALLINT, 1:INTEGER) ... => CASE WHEN =($0:SMALLINT, 1:SMALLINT)
+            node = rexBuilder.makeCast(firstPred.getType(), node);
+          }
           newChildRexNodeLst.add(
-              rexBuilder.makeCall(
-                  SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
+              rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, firstPred, node));
         } else {
           newChildRexNodeLst.add(childRexNodeLst.get(i));
         }
@@ -377,7 +385,23 @@ public class RexNodeConverter {
         newChildRexNodeLst.add(childRexNodeLst.get(childRexNodeLst.size()-1));
       }
     } else {
-      newChildRexNodeLst.addAll(childRexNodeLst);
+      for (int i = 0; i < childRexNodeLst.size(); i++) {
+        RexNode child = childRexNodeLst.get(i);
+        if (RexUtil.isNull(child)) {
+          if (i % 2 == 0 && i != childRexNodeLst.size() - 1) {
+            if (SqlTypeName.NULL.equals(child.getType().getSqlTypeName())) {
+              child = rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN));
+            }
+          } else {
+            // this is needed to provide typed NULLs which were working before
+            // example: IF(false, array(1,2,3), NULL)
+            if (!RexUtil.isNull(childRexNodeLst.get(1))) {
+              child = rexBuilder.makeCast(childRexNodeLst.get(1).getType(), child);
+            }
+          }
+        }
+        newChildRexNodeLst.add(child);
+      }
     }
     // Calcite always needs the else clause to be defined explicitly
     if (newChildRexNodeLst.size() % 2 == 0) {
@@ -685,22 +709,7 @@ public class RexNodeConverter {
             + " is not a valid decimal", UnsupportedFeature.Invalid_decimal);
         // TODO: return createNullLiteral(literal);
       }
-      BigDecimal bd = (BigDecimal) value;
-
-      int precision = bd.unscaledValue().abs().toString().length();
-      int scale = bd.scale();
-      RelDataType relType;
-
-      if (precision > scale) {
-        // bd is greater than or equal to 1
-        relType =
-            typeFactory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
-      } else {
-        // bd is less than 1
-        relType =
-            typeFactory.createSqlType(SqlTypeName.DECIMAL, scale + 1, scale);
-      }
-      calciteLiteral = rexBuilder.makeExactLiteral(bd, relType);
+      calciteLiteral = rexBuilder.makeExactLiteral((BigDecimal) value, calciteDataType);
       break;
     case FLOAT:
       calciteLiteral = rexBuilder.makeApproxLiteral(
@@ -718,19 +727,30 @@ public class RexNodeConverter {
       if (value instanceof HiveChar) {
         value = ((HiveChar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.CHAR, (String) value));
+      final int lengthChar = TypeInfoUtils.getCharacterLengthForType(hiveType);
+      RelDataType charType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.CHAR, lengthChar),
+          Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+      calciteLiteral = rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString((String) value), charType, false);
       break;
     case VARCHAR:
       if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.VARCHAR, (String) value));
+      final int lengthVarchar = TypeInfoUtils.getCharacterLengthForType(hiveType);
+      RelDataType varcharType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, lengthVarchar),
+          Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+      calciteLiteral = rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString((String) value), varcharType, true);
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeCharLiteral(
-          RexNodeExprFactory.makeHiveUnicodeString(Interpretation.STRING, (String) value));
+      RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
+          Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+      calciteLiteral = rexBuilder.makeLiteral(
+          RexNodeExprFactory.makeHiveUnicodeString((String) value), stringType, true);
       break;
     case DATE:
       final Date date = (Date) value;

@@ -17,34 +17,68 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.metrics2.util.MBeans;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.management.ObjectName;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.BOOTSTRAP_TABLES_LIST;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkFileExists;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getBootstrapTableList;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
-public class ReplLoadWork implements Serializable {
+public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
+  private static final Logger LOG = LoggerFactory.getLogger(ReplLoadWork.class);
+  private static boolean enableMBeansRegistrationForTests = false;
+  public static boolean disableMbeanUnregistrationForTests = false;
   final String dbNameToLoadIn;
   final ReplScope currentReplScope;
   final String dumpDirectory;
   private boolean lastReplIDUpdated;
   private String sourceDbName;
+  private Long dumpExecutionId;
+  private final transient ReplicationMetricCollector metricCollector;
+  final boolean replScopeModified;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -52,6 +86,14 @@ public class ReplLoadWork implements Serializable {
   private final transient BootstrapEventsIterator bootstrapIterator;
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
   private transient Task<?> rootTask;
+  private Iterator<String> externalTableDataCopyItr;
+  private ReplStatsTracker replStatsTracker;
+  private String scheduledQueryName;
+  private String executionId;
+  private boolean shouldFailover;
+  public boolean isFirstFailover;
+  public boolean isSecondFailover;
+  public List<String> tablesToBootstrap = new ArrayList<>();
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -62,12 +104,19 @@ public class ReplLoadWork implements Serializable {
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
                       String sourceDbName, String dbNameToLoadIn, ReplScope currentReplScope,
-                      LineageState lineageState, boolean isIncrementalDump, Long eventTo) throws IOException {
+                      LineageState lineageState, boolean isIncrementalDump, Long eventTo,
+                      Long dumpExecutionId,
+                      ReplicationMetricCollector metricCollector,
+                      boolean replScopeModified) throws IOException, SemanticException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.currentReplScope = currentReplScope;
     this.sourceDbName = sourceDbName;
+    this.dumpExecutionId = dumpExecutionId;
+    this.metricCollector = metricCollector;
+    this.replScopeModified = replScopeModified;
+
 
     // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
     if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
@@ -76,18 +125,46 @@ public class ReplLoadWork implements Serializable {
 
     rootTask = null;
     if (isIncrementalDump) {
+      ObjectName name = initializeMetricsMBeans(hiveConf, dbNameToLoadIn);
+      if (replStatsTracker == null) {
+        int numEvents = hiveConf.getIntVar(REPL_STATS_TOP_EVENTS_COUNTS);
+        if (numEvents < 0) {
+          LOG.warn("Invalid value configured for {}, Using default of {}", REPL_STATS_TOP_EVENTS_COUNTS,
+              REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal);
+          numEvents = REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal;
+        }
+        replStatsTracker = new ReplStatsTracker(numEvents);
+      }
+      if (metricCollector != null) {
+        metricCollector.setMetricsMBean(name);
+      }
+      Path failoverReadyMarker = new Path(dumpDirectory, ReplAck.FAILOVER_READY_MARKER.toString());
+      FileSystem fs = failoverReadyMarker.getFileSystem(hiveConf);
+      shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
+              && fs.exists(failoverReadyMarker);
+      Path dumpDirParent = new Path(dumpDirectory).getParent();
+      isFirstFailover = checkFileExists(dumpDirParent, hiveConf, EVENT_ACK_FILE);
+      isSecondFailover =
+          !isFirstFailover && checkFileExists(dumpDirParent, hiveConf, BOOTSTRAP_TABLES_LIST);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-                  new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo);
+          new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
+          replStatsTracker, shouldFailover);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator
        * for the same.
        */
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
-      FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
       if (fs.exists(incBootstrapDir)) {
+        if (isSecondFailover) {
+          String[] tableList = getBootstrapTableList(dumpDirParent, hiveConf);
+          tablesToBootstrap = Arrays.asList(tableList);
+          LOG.info("Optimised bootstrap for database {} with load with bootstrap table list as {}", dbNameToLoadIn,
+              tablesToBootstrap);
+        }
         this.bootstrapIterator = new BootstrapEventsIterator(
-                new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true, hiveConf);
+                new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
+          hiveConf, metricCollector);
         this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       } else {
         this.bootstrapIterator = null;
@@ -95,15 +172,56 @@ public class ReplLoadWork implements Serializable {
       }
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME)
-              .toString(), dbNameToLoadIn, true, hiveConf);
+              .toString(), dbNameToLoadIn, true, hiveConf, metricCollector);
       this.constraintsIterator = new ConstraintEventsIterator(
               new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME).toString(), hiveConf);
       incrementalLoadTasksBuilder = null;
     }
   }
 
+  private ObjectName initializeMetricsMBeans(HiveConf hiveConf, String dbNameToLoadIn) {
+    try {
+      scheduledQueryName = hiveConf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
+      // If the scheduled query name isn't available we don't enable JMX.
+      if (!StringUtils.isEmpty(scheduledQueryName) || enableMBeansRegistrationForTests) {
+        executionId = hiveConf.get(SCHEDULED_QUERY_EXECUTIONID, "N/A");
+        String metricsName = "Database-" + dbNameToLoadIn + " Policy-" + scheduledQueryName;
+        // Clean-up any MBean registered previously, which couldn't be cleaned up due to some previous error.
+        unRegisterMBeanIfRegistered("HiveServer2", metricsName, Collections.emptyMap());
+        ObjectName name = MBeans.register("HiveServer2", metricsName, this);
+        return name;
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to initialise Metrics MBean, Status won't be updated in the JMX", e);
+    }
+    return null;
+  }
+
+  // Unregisters MBeans by forming the Metrics same as how the Hadoop code forms during MBean registeration.
+  private void unRegisterMBeanIfRegistered(String serviceName, String nameName,
+      Map<String, String> additionalParameters) {
+
+    String additionalKeys =
+        additionalParameters.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
+            .collect(Collectors.joining(","));
+
+    String nameStr = "Hadoop:" + "service=" + serviceName + "," + "name=" + nameName + (additionalKeys.isEmpty() ? "" :
+        "," + additionalKeys);
+    try {
+      ObjectName name = ObjectName.getInstance(nameStr);
+      MBeans.unregister(name);
+      LOG.debug("Successfully attempted to unregistered the MBean {}", name);
+    } catch (Exception e) {
+      LOG.debug("Unable to unregister MBean {}", nameStr, e);
+    }
+  }
+
   BootstrapEventsIterator bootstrapIterator() {
     return bootstrapIterator;
+  }
+
+  boolean shouldFailover() {
+    return this.shouldFailover;
   }
 
   ConstraintEventsIterator constraintsIterator() {
@@ -143,6 +261,9 @@ public class ReplLoadWork implements Serializable {
     return rootTask;
   }
 
+  @Override
+  public String getDumpDirectory() {return dumpDirectory;}
+  
   public void setRootTask(Task<?> rootTask) {
     this.rootTask = rootTask;
   }
@@ -157,5 +278,131 @@ public class ReplLoadWork implements Serializable {
 
   public String getSourceDbName() {
     return sourceDbName;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public Long getDumpExecutionId() {
+    return dumpExecutionId;
+  }
+
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      return Collections.emptyList();
+    }
+    List<Task<?>> tasks = new ArrayList<>();
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(UncheckedIOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) ()-> {
+        try{
+          int numEntriesToSkip = tasks == null ? 0 : tasks.size();
+          while (externalTableDataCopyItr.hasNext() && tracker.canAddMoreTasks()) {
+            if(numEntriesToSkip > 0) {
+              //skip entries added in the previous attempts of this retryable block
+              externalTableDataCopyItr.next();
+              numEntriesToSkip--;
+              continue;
+            }
+            DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, (new Path(dumpDirectory).getParent()).toString());
+            dirCopyWork.loadFromString(externalTableDataCopyItr.next());
+            Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+            tasks.add(task);
+            tracker.addTask(task);
+            LOG.debug("Added task for {}", dirCopyWork);
+          }
+        } catch (UncheckedIOException e) {
+          LOG.error("Reading entry for data copy failed for external tables, attempting retry.", e);
+          throw e;
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
+    }
+    LOG.info("Added total {} tasks for external table locations copy.", tasks.size());
+    return tasks;
+  }
+
+  public Iterator<String> getExternalTableDataCopyItr() {
+    return externalTableDataCopyItr;
+  }
+
+  public void setExternalTableDataCopyItr(Iterator<String> externalTableDataCopyItr) {
+    this.externalTableDataCopyItr = externalTableDataCopyItr;
+  }
+
+
+  @Override
+  public String getSourceDatabase() {
+    return sourceDbName;
+  }
+
+  @Override
+  public String getTargetDatabase() {
+    return dbNameToLoadIn;
+  }
+
+  @Override
+  public String getReplicationType() {
+    return isIncrementalLoad() ? "INCREMENTAL" : "BOOTSTRAP";
+  }
+
+  @Override
+  public String getScheduledQueryName() {
+    return scheduledQueryName;
+  }
+
+  @Override
+  public String getExecutionId() {
+    return executionId;
+  }
+
+  @Override
+  public String getReplStats() {
+    try {
+      if (replStatsTracker != null) {
+        return replStatsTracker.toString();
+      } else {
+        return "N/A";
+      }
+    } catch (Exception e) {
+      return "Got Error" + e.getMessage();
+    }
+  }
+
+  @Override
+  public String getCurrentEventId() {
+    try {
+      if (replStatsTracker != null) {
+        return replStatsTracker.getLastEventId();
+      } else {
+        return "";
+      }
+    } catch (Exception e) {
+      return "Got Error" + e.getMessage();
+    }
+  }
+
+  @Override
+  public Long getLastEventId() {
+    if (incrementalLoadTasksBuilder != null) {
+      return incrementalLoadTasksBuilder.eventTo();
+    }
+    return -1L;
+  }
+
+  /**
+   * Enable JMX tracking for testing.
+   * @param enableRegistration enable registering MBeans.
+   * @param disableUnregistration disable unregistering MBeans, so that value can be used by tests to validate.
+   */
+  @VisibleForTesting
+  public static void setMbeansParamsForTesting(boolean enableRegistration, boolean disableUnregistration) {
+    enableMBeansRegistrationForTests = enableRegistration;
+    disableMbeanUnregistrationForTests = disableUnregistration;
   }
 }

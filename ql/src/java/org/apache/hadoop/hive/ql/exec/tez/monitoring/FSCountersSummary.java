@@ -52,8 +52,7 @@ public class FSCountersSummary implements PrintSummary {
     console.printInfo("FileSystem Counters Summary");
 
     SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
-    Set<StatusGetOpts> statusOptions = new HashSet<>(1);
-    statusOptions.add(StatusGetOpts.GET_COUNTERS);
+    Set<StatusGetOpts> statusOptions = Collections.singleton(StatusGetOpts.GET_COUNTERS);
     // Assuming FileSystem.getAllStatistics() returns all schemes that are accessed on task side
     // as well. If not, we need a way to get all the schemes that are accessed by the tez task/llap.
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {

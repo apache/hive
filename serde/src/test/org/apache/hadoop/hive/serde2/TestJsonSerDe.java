@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -48,7 +49,7 @@ import org.junit.Test;
 public class TestJsonSerDe {
 
   @Test
-  public void testPrimativeDataTypes() throws Exception {
+  public void testPrimitiveDataTypes() throws Exception {
     Properties props = new Properties();
     props.setProperty(serdeConstants.LIST_COLUMNS,
         "name,height,weight,endangered,born");
@@ -57,7 +58,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final String jsonText = loadJson("simple.json");
 
@@ -74,6 +75,76 @@ public class TestJsonSerDe {
   }
 
   @Test
+  public void testComplexType() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS,
+        "__dc_timelabel," + "__dc_load_time," + "id," + "name," + "location," + "primary_contact_user_id,"
+            + "parent_id," + "parent_office_external_id," + "child_ids," + "child_office_external_ids," +"external_id");
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        "timestamp," + "timestamp," + "bigint," + "string," + "string," + "bigint," + "bigint," + "string," + "string,"
+            + "string," + "string");
+    props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "yyyy-MM-ddHH:mm:ss");
+
+    JsonSerDe serde = new JsonSerDe();
+    serde.initialize(new Configuration(), props, null, false);
+
+    final String jsonText = loadJson("nested_sample_1.json");
+    final Text text = new Text(jsonText);
+    final List<?> results = (List<?>) serde.deserialize(text);
+
+    Assert.assertEquals(11, results.size());
+    Assert.assertEquals("Brooklyn-200", results.get(3));
+    // make sure inner struct can be decoded
+    Assert.assertEquals("{\"name\":\"Brooklyn,NY\"}", results.get(4));
+  }
+
+  @Test
+  public void testDisabledComplexType() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS,
+        "__dc_timelabel," + "__dc_load_time," + "id," + "name," + "location," + "primary_contact_user_id,"
+            + "parent_id," + "parent_office_external_id," + "child_ids," + "child_office_external_ids," +"external_id");
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        "timestamp," + "timestamp," + "bigint," + "string," + "string," + "bigint," + "bigint," + "string," + "string,"
+            + "string," + "string");
+    props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "yyyy-MM-ddHH:mm:ss");
+    props.setProperty(JsonSerDe.STRINGIFY_COMPLEX, "false");
+
+    JsonSerDe serde = new JsonSerDe();
+    serde.initialize(new Configuration(), props, null, false);
+
+    final String jsonText = loadJson("nested_sample_1.json");
+    final Text text = new Text(jsonText);
+
+    Exception exception = Assert.assertThrows(SerDeException.class, () -> serde.deserialize(text));
+    String expectedMessage = "Complex field found in JSON does not match table definition: string";
+    String actualMessage = exception.getMessage();
+    Assert.assertTrue(actualMessage.contains(expectedMessage));
+  }
+
+  @Test
+  public void testMoreComplexType() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS, "data," + "messageId," + "publish_time," + "attributes");
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string," + "string," + "bigint," + "string");
+
+    JsonSerDe serde = new JsonSerDe();
+    serde.initialize(new Configuration(), props, null, false);
+    final String jsonText = loadJson("nested_sample_2.json");
+
+    final Text text = new Text(jsonText);
+    final List<?> results = (List<?>) serde.deserialize(text);
+
+    Assert.assertEquals(4, results.size());
+    Assert.assertEquals("{\"H\":{\"event\":\"track_active\",\"platform\":\"Android\"},"
+        + "\"B\":{\"device_type\":\"Phone\",\"uuid\":"
+        + "\"[36ffec24-f6a4-4f5d-aa39-72e5513d2cae,11883bee-a7aa-4010-8a66-6c3c63a73f16]\"}}", results.get(0));
+    Assert.assertEquals("2475185636801962", results.get(1));
+    Assert.assertEquals(1622514629783L, results.get(2));
+    Assert.assertEquals("{\"region\":\"IN\"}", results.get(3));
+  }
+
+  @Test
   public void testArray() throws Exception {
     Properties props = new Properties();
     props.setProperty(serdeConstants.LIST_COLUMNS, "list,items");
@@ -81,7 +152,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final String jsonText = loadJson("array.json");
 
@@ -97,7 +168,7 @@ public class TestJsonSerDe {
   /**
    * Test when a map has a key defined as a numeric value. Technically, JSON
    * does not support this because each key in a map must be a quoted string.
-   * Unquoted strings (hence an int value) is allowed by Javascript, but not by
+   * Unquoted strings (hence an int value) is allowed by JavaScript, but not by
    * JSON specification. For Hive, the int map key type is stored as a string
    * and must be converted back into an int type.
    */
@@ -109,7 +180,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final String jsonText = loadJson("map_int_key.json");
 
@@ -139,7 +210,7 @@ public class TestJsonSerDe {
     props.setProperty(JsonSerDe.NULL_EMPTY_LINES, "true");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final Text text = new Text("");
     final List<?> results = (List<?>) serde.deserialize(text);
@@ -157,7 +228,7 @@ public class TestJsonSerDe {
     props.setProperty(JsonSerDe.NULL_EMPTY_LINES, "false");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     serde.deserialize(new Text(""));
   }
@@ -170,7 +241,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, true);
+    serde.initialize(new Configuration(), props, null, false);
 
     List<?> results = (List<?>) serde.deserialize(new Text("{\"a\":\"xxx\"}"));
     Assert.assertNotNull(results);
@@ -193,7 +264,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     List<?> results =
         (List<?>) serde.deserialize(new Text("{\"a\":5,\"b\":{\"a\":true}}"));
@@ -214,7 +285,7 @@ public class TestJsonSerDe {
     final String jsonText = loadJson("complex_write.json");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     ObjectInspector oi = serde.getObjectInspector();
 
@@ -247,7 +318,7 @@ public class TestJsonSerDe {
     final String jsonText = loadJson("single_pixel.json");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     ObjectInspector oi = serde.getObjectInspector();
 
@@ -281,7 +352,7 @@ public class TestJsonSerDe {
 
     try {
       JsonSerDe serde = new JsonSerDe();
-      serde.initialize(null, props, false);
+      serde.initialize(new Configuration(), props, null, false);
 
       List<?> results = (List<?>) serde
           .deserialize(new Text("{\"__time\":\"2013-08-31T01:02:33Z\"}"));

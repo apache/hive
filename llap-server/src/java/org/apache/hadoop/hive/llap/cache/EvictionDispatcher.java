@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.LlapSerDeDataBuffer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileEstimateErrors;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
@@ -41,23 +42,45 @@ public final class EvictionDispatcher implements EvictionListener {
 
   @Override
   public void notifyEvicted(LlapCacheableBuffer buffer) {
-    buffer.notifyEvicted(this); // This will call one of the specific notifyEvicted overloads.
+    // This will call one of the specific notifyEvicted overloads.
+    buffer.notifyEvicted(this, false);
   }
 
-  public void notifyEvicted(LlapSerDeDataBuffer buffer) {
+  @Override
+  public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
+    // This will call one of the specific notifyEvicted overloads.
+    buffer.notifyEvicted(this, true);
+  }
+
+  public void notifyEvicted(LlapSerDeDataBuffer buffer, boolean isProactiveEviction) {
     serdeCache.notifyEvicted(buffer);
-    allocator.deallocateEvicted(buffer);
+    requestDeallocation(buffer, isProactiveEviction);
   }
 
-  public void notifyEvicted(LlapDataBuffer buffer) {
+  public void notifyEvicted(LlapDataBuffer buffer, boolean isProactiveEviction) {
     dataCache.notifyEvicted(buffer);
-    allocator.deallocateEvicted(buffer);
+    requestDeallocation(buffer, isProactiveEviction);
   }
 
-  public void notifyEvicted(LlapMetadataBuffer<?> buffer) {
+  public void notifyEvicted(LlapMetadataBuffer<?> buffer, boolean isProactiveEviction) {
     metadataCache.notifyEvicted(buffer);
     // Note: the metadata cache may deallocate additional buffers, but not this one.
-    allocator.deallocateEvicted(buffer);
+    requestDeallocation(buffer, isProactiveEviction);
+  }
+
+  /**
+   * For normal (reactive) evictions, MM expects the free'd up memory to be used for the originating reserve call, thus
+   * deallocateEvicted method should be used.
+   * For proactive eviction we can give back the MM the free'd up space right away, deallocate method will do that.
+   * @param buffer
+   * @param isProactiveEviction
+   */
+  private void requestDeallocation(MemoryBuffer buffer, boolean isProactiveEviction) {
+    if (isProactiveEviction) {
+      allocator.deallocateProactivelyEvicted(buffer);
+    } else {
+      allocator.deallocateEvicted(buffer);
+    }
   }
 
   public void notifyEvicted(OrcFileEstimateErrors buffer) {

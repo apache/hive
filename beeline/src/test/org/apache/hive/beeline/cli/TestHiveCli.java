@@ -146,9 +146,31 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testSqlFromCmdWithComments1() {
+    verifyCMD(null, "", out, new String[] { "-e", "show databases; --comment" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSqlFromCmdWithComments2() {
+    verifyCMD(null, "", out, new String[] { "-e", "--comment\n show database;" }, ERRNO_ARGS, true);
+  }
+
+  @Test
+  public void testSqlFromCmdWithComments3() {
+    verifyCMD(null, "", out, 
+      new String[] { "-e", "--comment \nshow databases; -------comments;one;two;three;;;;" }, ERRNO_OK, true);
+  }
+
+  @Test
   public void testSqlFromCmdWithDBName() {
     verifyCMD(null, "testtbl", out,
         new String[] { "-e", "show tables;", "--database", "test" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSqlFromCmdWithEmbeddedQuotes() {
+    verifyCMD(null, "hive", out,
+        new String[] { "-e", "select \"hive\"" }, ERRNO_OK, true);
   }
 
   @Test

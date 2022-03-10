@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
@@ -47,7 +49,7 @@ where a in (
              join othertlb o on a.a = o.c
              where o.d = 21);
 
-select * from acidtlb;
+select * from acidtlb order by a;
 
 explain cbo
 merge into acidtlb as t using othertlb as s on t.a = s.c

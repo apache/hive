@@ -25,7 +25,9 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -71,9 +73,9 @@ public class TableDesc implements Serializable, Cloneable {
     setProperties(properties);
   }
 
-  public Class<? extends Deserializer> getDeserializerClass() {
+  public Class<? extends AbstractSerDe> getSerDeClass() {
     try {
-      return (Class<? extends Deserializer>) Class.forName(
+      return (Class<? extends AbstractSerDe>) Class.forName(
           getSerdeClassName(), true, Utilities.getSessionSpecifiedClassLoader());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
@@ -84,24 +86,25 @@ public class TableDesc implements Serializable, Cloneable {
     return inputFileFormatClass;
   }
 
-  public Deserializer getDeserializer() throws Exception {
+  public AbstractSerDe getSerDe() throws Exception {
     return getDeserializer(null);
   }
 
   /**
    * Return a deserializer object corresponding to the tableDesc.
    */
-  public Deserializer getDeserializer(Configuration conf) throws Exception {
-    return getDeserializer(conf, false);
+  public AbstractSerDe getDeserializer(Configuration conf) throws Exception {
+    return getSerDe(conf, false);
   }
 
-  public Deserializer getDeserializer(Configuration conf, boolean ignoreError) throws Exception {
-    Deserializer de = ReflectionUtil.newInstance(
-        getDeserializerClass().asSubclass(Deserializer.class), conf);
-    if (ignoreError) {
-      SerDeUtils.initializeSerDeWithoutErrorCheck(de, conf, properties, null);
-    } else {
-      SerDeUtils.initializeSerDe(de, conf, properties, null);
+  public AbstractSerDe getSerDe(Configuration conf, boolean ignoreError) throws Exception {
+    AbstractSerDe de = ReflectionUtil.newInstance(getSerDeClass().asSubclass(AbstractSerDe.class), conf);
+    try {
+      de.initialize(conf, properties, null);
+    } catch (SerDeException sde) {
+      if (!ignoreError) {
+        throw sde;
+      }
     }
     return de;
   }
@@ -162,6 +165,15 @@ public class TableDesc implements Serializable, Cloneable {
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return properties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
+  }
+
+  public String getFullTableName() {
+    String tableName = getTableName();
+    String metaTable = properties.getProperty("metaTable");
+    if (metaTable != null && tableName != null) {
+      return tableName + "." + metaTable;
+    }
+    return tableName;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

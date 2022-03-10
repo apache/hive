@@ -18,23 +18,14 @@
 
 package org.apache.hadoop.hive.ql.ddl;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -46,7 +37,6 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,15 +50,6 @@ public final class DDLUtils {
 
   private DDLUtils() {
     throw new UnsupportedOperationException("DDLUtils should not be instantiated");
-  }
-
-  public static DataOutputStream getOutputStream(Path outputFile, DDLOperationContext context) throws HiveException {
-    try {
-      FileSystem fs = outputFile.getFileSystem(context.getConf());
-      return fs.create(outputFile);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
   }
 
   /**
@@ -143,65 +124,22 @@ public final class DDLUtils {
     }
     // If the table/partition exist and is older than the event, then just apply the event else noop.
     Table existingTable = db.getTable(tableName, false);
-    if ((existingTable != null) && replicationSpec.allowEventReplacementInto(existingTable.getParameters())) {
-      // Table exists and is older than the update. Now, need to ensure if update allowed on the partition.
-      if (partSpec != null) {
-        Partition existingPtn = db.getPartition(existingTable, partSpec, false);
-        return ((existingPtn != null) && replicationSpec.allowEventReplacementInto(existingPtn.getParameters()));
+    if (existingTable != null) {
+      Map<String, String> dbParams = db.getDatabase(existingTable.getDbName()).getParameters();
+      if (replicationSpec.allowEventReplacementInto(dbParams)) {
+        // Table exists and is older than the update. Now, need to ensure if update allowed on the partition.
+        if (partSpec != null) {
+          Partition existingPtn = db.getPartition(existingTable, partSpec, false);
+          return ((existingPtn != null) && replicationSpec.allowEventReplacementInto(dbParams));
+        }
+
+        // Replacement is allowed as the existing table is older than event
+        return true;
       }
-
-      // Replacement is allowed as the existing table is older than event
-      return true;
     }
-
     // The table is missing either due to drop/rename which follows the operation.
     // Or the existing table is newer than our update. So, don't allow the update.
     return false;
-  }
-
-  public static String propertiesToString(Map<String, String> props, Set<String> exclude) {
-    if (props.isEmpty()) {
-      return "";
-    }
-
-    SortedMap<String, String> sortedProperties = new TreeMap<String, String>(props);
-    List<String> realProps = new ArrayList<String>();
-    for (Map.Entry<String, String> e : sortedProperties.entrySet()) {
-      if (e.getValue() != null && (exclude == null || !exclude.contains(e.getKey()))) {
-        realProps.add("  '" + e.getKey() + "'='" + HiveStringUtils.escapeHiveCommand(e.getValue()) + "'");
-      }
-    }
-    return StringUtils.join(realProps, ", \n");
-  }
-
-  public static void writeToFile(String data, String file, DDLOperationContext context) throws IOException {
-    if (StringUtils.isEmpty(data)) {
-      return;
-    }
-
-    Path resFile = new Path(file);
-    FileSystem fs = resFile.getFileSystem(context.getConf());
-    try (FSDataOutputStream out = fs.create(resFile);
-         OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8")) {
-      writer.write(data);
-      writer.write((char) Utilities.newLineCode);
-      writer.flush();
-    }
-  }
-
-  public static void appendNonNull(StringBuilder builder, Object value) {
-    appendNonNull(builder, value, false);
-  }
-
-  public static void appendNonNull(StringBuilder builder, Object value, boolean firstColumn) {
-    if (!firstColumn) {
-      builder.append((char)Utilities.tabCode);
-    } else if (builder.length() > 0) {
-      builder.append((char)Utilities.newLineCode);
-    }
-    if (value != null) {
-      builder.append(value);
-    }
   }
 
   public static void addServiceOutput(HiveConf conf, Set<WriteEntity> outputs) throws SemanticException {
@@ -236,5 +174,16 @@ public final class DDLUtils {
     } else {
       return null;
     }
+  }
+
+  public static void addDbAndTableToOutputs(Database database, TableName tableName, TableType type, boolean isTemporary,
+      Map<String, String> properties, Set<WriteEntity> outputs) {
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
+
+    Table table = new Table(tableName.getDb(), tableName.getTable());
+    table.setParameters(properties);
+    table.setTableType(type);
+    table.setTemporary(isTemporary);
+    outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

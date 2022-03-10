@@ -1,0 +1,9 @@
+PREHOOK: query: create table table_map_types (id int, c1 map<int,int>, c2 map<int,int>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_map_types
+POSTHOOK: query: create table table_map_types (id int, c1 map<int,int>, c2 map<int,int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_map_types
+FAILED: RuntimeException map and union type is not supported for common merge join

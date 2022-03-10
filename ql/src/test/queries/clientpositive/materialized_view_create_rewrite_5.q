@@ -1,3 +1,7 @@
+-- Test Incremental rebuild of materialized view without aggregate when source tables have
+-- 1) insert operations only
+-- 2) update/delete operations since last rebuild.
+
 SET hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -59,7 +63,7 @@ WHERE cmv_basetable_2_n3.c > 10.10;
 -- NOW AN UPDATE
 UPDATE cmv_basetable_2_n3 SET a=2 WHERE a=1;
 
--- INCREMENTAL REBUILD CANNOT BE TRIGGERED
+-- INCREMENTAL REBUILD CAN BE TRIGGERED
 EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD;
 
@@ -78,7 +82,7 @@ WHERE cmv_basetable_2_n3.c > 10.10;
 -- NOW A DELETE
 DELETE FROM cmv_basetable_2_n3 WHERE a=2;
 
--- INCREMENTAL REBUILD CANNOT BE TRIGGERED
+-- INCREMENTAL REBUILD CAN BE TRIGGERED
 EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD;
 

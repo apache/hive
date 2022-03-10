@@ -56,7 +56,7 @@ public class TestTeradataBinarySerdeGeneral {
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "char(3),varchar(100),bigint,int,smallint,tinyint,double,decimal(31,30),date,timestamp,binary");
 
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
   }
 
   @Test

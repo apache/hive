@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
@@ -41,6 +43,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +55,14 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.CreateDelegationTokenOptions;
+import org.apache.kafka.clients.admin.CreateDelegationTokenResult;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.security.token.delegation.DelegationToken;
+import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.output.MROutput;
@@ -103,7 +114,9 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -116,11 +129,14 @@ import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
@@ -180,7 +196,7 @@ public class DagUtils {
       "hive.tez.current.merge.file.prefix";
   // "A comma separated list of work names used as prefix.
   public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
-
+  private static final Text KAFKA_DELEGATION_TOKEN_KEY = new Text("KAFKA_DELEGATION_TOKEN");
   /**
    * Notifiers to synchronize resource localization across threads. If one thread is localizing
    * a file, other threads can wait on the corresponding notifier object instead of just sleeping
@@ -192,9 +208,11 @@ public class DagUtils {
   class CollectFileSinkUrisNodeProcessor implements SemanticNodeProcessor {
 
     private final Set<URI> uris;
+    private final Set<TableDesc> tableDescs;
 
-    public CollectFileSinkUrisNodeProcessor(Set<URI> uris) {
+    public CollectFileSinkUrisNodeProcessor(Set<URI> uris, Set<TableDesc> tableDescs) {
       this.uris = uris;
+      this.tableDescs = tableDescs;
     }
 
     @Override
@@ -205,6 +223,8 @@ public class DagUtils {
         OperatorDesc desc = op.getConf();
         if (desc instanceof FileSinkDesc) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) desc;
+          tableDescs.add(fileSinkDesc.getTableInfo());
+
           Path dirName = fileSinkDesc.getDirName();
           if (dirName != null) {
             uris.add(dirName.toUri());
@@ -223,9 +243,9 @@ public class DagUtils {
     opRules.put(new RuleRegExp("R1", FileSinkOperator.getOperatorName() + ".*"), np);
   }
 
-  private void collectFileSinkUris(List<Node> topNodes, Set<URI> uris) {
+  private void collectFileSinkUris(List<Node> topNodes, Set<URI> uris, Set<TableDesc> tableDescs) {
 
-    CollectFileSinkUrisNodeProcessor np = new CollectFileSinkUrisNodeProcessor(uris);
+    CollectFileSinkUrisNodeProcessor np = new CollectFileSinkUrisNodeProcessor(uris, tableDescs);
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     addCollectFileSinkUrisRules(opRules, np);
@@ -240,11 +260,14 @@ public class DagUtils {
     }
   }
 
-
   /**
    * Set up credentials for the base work on secure clusters
    */
-  public void addCredentials(BaseWork work, DAG dag) {
+  public void addCredentials(BaseWork work, DAG dag, JobConf conf) {
+    Set<URI> fileSinkUris = new HashSet<URI>();
+    Set<TableDesc> fileSinkTableDescs = new HashSet<TableDesc>();
+    collectNeededFileSinkData(work, fileSinkUris, fileSinkTableDescs);
+
     if (work instanceof MapWork){
       Set<Path> paths = ((MapWork)work).getPathToAliases().keySet();
       if (!paths.isEmpty()) {
@@ -265,19 +288,111 @@ public class DagUtils {
         }
         dag.addURIsForCredentials(uris);
       }
+      getKafkaCredentials((MapWork)work, fileSinkTableDescs, dag, conf);
     }
-
-    getCredentialsForFileSinks(work, dag);
+    getCredentialsForFileSinks(work, fileSinkUris, dag);
   }
 
-  private void getCredentialsForFileSinks(BaseWork baseWork, DAG dag) {
-    Set<URI> fileSinkUris = new HashSet<URI>();
+  private void collectNeededFileSinkData(BaseWork work, Set<URI> fileSinkUris, Set<TableDesc> fileSinkTableDescs) {
+    List<Node> topNodes = getTopNodes(work);
+    LOG.debug("Collecting file sink uris for {} topnodes: {}", work.getClass(), topNodes);
+    collectFileSinkUris(topNodes, fileSinkUris, fileSinkTableDescs);
+  }
 
-    List<Node> topNodes = getTopNodes(baseWork);
+  private void getKafkaCredentials(MapWork work, Set<TableDesc> fileSinkTableDescs, DAG dag, JobConf conf) {
+    if (!UserGroupInformation.isSecurityEnabled()){
+      return;
+    }
+    Token<?> tokenCheck = dag.getCredentials().getToken(KAFKA_DELEGATION_TOKEN_KEY);
+    if (tokenCheck != null) {
+      LOG.debug("Kafka credentials already added, skipping...");
+      return;
+    }
+    LOG.debug("Getting kafka credentials for mapwork (if needed): " + work.getName());
 
-    LOG.debug("Collecting file sink uris for {} topnodes: {}", baseWork.getClass(), topNodes);
-    collectFileSinkUris(topNodes, fileSinkUris);
+    Map<String, PartitionDesc> partitions = work.getAliasToPartnInfo();
 
+    for (PartitionDesc partition : partitions.values()) {
+      TableDesc tableDesc = partition.getTableDesc();
+      boolean tokenCollected = collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc);
+      if (tokenCollected) {
+        // don't collect delegation token again, if it was already successful
+        return;
+      } else {
+        /*
+         * We don't need to iterate on all partitions, and check the same TableDesc:
+         * if partitions[0].getTableDesc() doesn't show a kafka table, let's break the loop quickly.
+         * Note: at this point we cannot return from this method, as fileSinkTableDescs should
+         * be checked too.
+         */
+        break;
+      }
+    }
+
+    for (TableDesc tableDesc : fileSinkTableDescs) {
+      if (collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc)) {
+        // don't collect delegation token again, if it was already successful
+        return;
+      }
+    }
+  }
+
+  /**
+   * Tries to collect delegation tokens for kafka in the scope of a TableDesc.
+   * @param dag
+   * @param conf
+   * @param tableDesc
+   * @return a boolean, telling whether the token collection was successful
+   */
+  private boolean collectKafkaDelegationTokenForTableDesc(DAG dag, JobConf conf, TableDesc tableDesc) {
+    String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
+    if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
+      getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
+      return true;
+    }
+    return false;
+  }
+
+  private void getKafkaDelegationTokenForBrokers(DAG dag, JobConf conf, String kafkaBrokers) {
+    LOG.info("Getting kafka credentials for brokers: {}", kafkaBrokers);
+
+    String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+    String principal = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
+    try {
+      principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    Properties config = new Properties();
+    config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+    config.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+
+    String jaasConfig =
+        String.format("%s %s %s %s serviceName=\"%s\" keyTab=\"%s\" principal=\"%s\";",
+            "com.sun.security.auth.module.Krb5LoginModule required", "debug=true", "useKeyTab=true",
+            "storeKey=true", "kafka", keytab, principal);
+    config.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+
+    LOG.debug("Jaas config for requesting kafka credentials: {}", jaasConfig);
+    AdminClient admin = AdminClient.create(config);
+
+    CreateDelegationTokenOptions createDelegationTokenOptions = new CreateDelegationTokenOptions();
+    CreateDelegationTokenResult createResult =
+        admin.createDelegationToken(createDelegationTokenOptions);
+    DelegationToken token;
+    try {
+      token = createResult.delegationToken().get();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException("Exception while getting kafka delegation tokens", e);
+    }
+    LOG.info("Got kafka delegation token: {}", token);
+
+    dag.getCredentials().addToken(KAFKA_DELEGATION_TOKEN_KEY,
+        new Token<>(token.tokenInfo().tokenId().getBytes(), token.hmac(), null, new Text("kafka")));
+  }
+
+  private void getCredentialsForFileSinks(BaseWork baseWork, Set<URI> fileSinkUris, DAG dag) {
     if (LOG.isDebugEnabled()) {
       for (URI fileSinkUri : fileSinkUris) {
         LOG.debug("Marking {} output URI as needing credentials (filesink): {}",
@@ -619,19 +734,35 @@ public class DagUtils {
    * container size isn't set.
    */
   public static Resource getContainerResource(Configuration conf) {
-    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
-      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
-      conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-    int cpus = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) > 0 ?
-      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) :
-      conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
-    return Resource.newInstance(memory, cpus);
+    int memorySizeMb = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
+    if (memorySizeMb <= 0) {
+      LOG.warn("No Tez container size specified by {}. Falling back to MapReduce container MB {}",
+          HiveConf.ConfVars.HIVETEZCONTAINERSIZE,  MRJobConfig.MAP_MEMORY_MB);
+      memorySizeMb = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+      // When config is explicitly set to "-1" defaultValue does not work!
+      if (memorySizeMb <= 0) {
+        LOG.warn("Falling back to default container MB {}", MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+        memorySizeMb = MRJobConfig.DEFAULT_MAP_MEMORY_MB;
+      }
+    }
+    int cpuCores = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES);
+    if (cpuCores <= 0) {
+      LOG.warn("No Tez VCore size specified by {}. Falling back to MapReduce container VCores {}",
+          HiveConf.ConfVars.HIVETEZCPUVCORES,  MRJobConfig.MAP_CPU_VCORES);
+      cpuCores = conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+      if (cpuCores <= 0) {
+        LOG.warn("Falling back to default container VCores {}", MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+        cpuCores = MRJobConfig.DEFAULT_MAP_CPU_VCORES;
+      }
+    }
+    return Resource.newInstance(memorySizeMb, cpuCores);
   }
 
   /*
    * Helper to setup default environment for a task in YARN.
    */
-  private Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
+  @VisibleForTesting
+  Map<String, String> getContainerEnvironment(Configuration conf, boolean isMap) {
     Map<String, String> environment = new HashMap<String, String>();
     MRHelpers.updateEnvBasedOnMRTaskEnv(conf, environment, isMap);
     return environment;
@@ -678,7 +809,14 @@ public class DagUtils {
       Vertex mergeVx = createVertexFromMapWork(
           conf, mapWork, mrScratchDir, vertexType);
 
-      conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+      Class<?> inputFormatClass = conf.getClass("mapred.input.format.class",
+              HiveInputFormat.class);
+      if (inputFormatClass != BucketizedHiveInputFormat.class &&
+              inputFormatClass != HiveInputFormat.class) {
+        // As of now only these two formats are supported.
+        inputFormatClass = HiveInputFormat.class;
+      }
+      conf.setClass("mapred.input.format.class", inputFormatClass, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set
       // to false when using this plug-in to avoid getting a serialized event at run-time.
       conf.setBoolean("mapreduce.tez.input.initializer.serialize.event.payload", false);
@@ -689,7 +827,7 @@ public class DagUtils {
         conf.set(Utilities.INPUT_NAME, mapWork.getName());
         LOG.info("Going through each work and adding MultiMRInput");
         mergeVx.addDataSource(mapWork.getName(),
-            MultiMRInput.createConfigBuilder(conf, HiveInputFormat.class).build());
+            MultiMRInput.createConfigBuilder(conf, inputFormatClass).build());
       }
 
       // To be populated for SMB joins only for all the small tables
@@ -755,8 +893,12 @@ public class DagUtils {
       groupSplitsInInputInitializer = false;
       // grouping happens in execution phase. The input payload should not enable grouping here,
       // it will be enabled in the CustomVertex.
-      inputFormatClass = HiveInputFormat.class;
-      conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+      if (inputFormatClass != BucketizedHiveInputFormat.class &&
+              inputFormatClass != HiveInputFormat.class) {
+        // As of now only these two formats are supported.
+        inputFormatClass = HiveInputFormat.class;
+      }
+      conf.setClass("mapred.input.format.class", inputFormatClass, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set to false when using
       // this plug-in to avoid getting a serialized event at run-time.
       conf.setBoolean("mapreduce.tez.input.initializer.serialize.event.payload", false);
@@ -1190,18 +1332,20 @@ public class DagUtils {
   }
 
   // the api that finds the jar being used by this class on disk
-  public String getExecJarPathLocal(Configuration configuration) throws URISyntaxException {
-    // returns the location on disc of the jar of this class.
-
-    URI uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
-      if (new File(uri.getPath()).isDirectory()) {
-        // IDE support for running tez jobs
-        uri = createEmptyArchive();
+  public String getExecJarPathLocal(Configuration configuration) {
+    try {
+      // returns the location on disc of the jar of this class.
+      String uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
+      if (uri.endsWith(".jar")) {
+        return uri;
       }
+    } catch (Exception ignored) {}
+    //Fall back to hive config, if the uri could not get, or it does not point to a .jar file
+    String jar = configuration.get(ConfVars.HIVEJAR.varname);
+    if (!StringUtils.isBlank(jar)) {
+      return jar;
     }
-    return uri.toString();
-
+    throw new RuntimeException("Could not get hive-exec local path");
   }
 
   /**
@@ -1378,7 +1522,9 @@ public class DagUtils {
         TezConfigurationFactory
             .wrapWithJobConf(hiveConf, skipAMConf ? findDefaults.negate() : null);
 
-    conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    if (conf.get("mapred.output.committer.class") == null) {
+      conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    }
 
     conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
     conf.setBoolean("mapred.committer.job.task.cleanup.needed", false);
@@ -1506,12 +1652,20 @@ public class DagUtils {
     } else {
       outputKlass = MROutput.class;
     }
+
+    // If there is a fileSink add a DataSink to the vertex
+    boolean hasFileSink = workUnit.getAllOperators().stream().anyMatch(o -> o instanceof FileSinkOperator);
     // final vertices need to have at least one output
     boolean endVertex = tezWork.getLeaves().contains(workUnit);
-    if (endVertex) {
+    if (endVertex || hasFileSink) {
+      OutputCommitterDescriptor ocd = null;
+      String committer = HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER);
+      if (committer != null && !committer.isEmpty()) {
+        ocd = OutputCommitterDescriptor.create(committer);
+      }
       vertex.addDataSink("out_"+workUnit.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(outputKlass.getName())
-          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), null, null));
+          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), ocd, null));
     }
 
     return vertex;

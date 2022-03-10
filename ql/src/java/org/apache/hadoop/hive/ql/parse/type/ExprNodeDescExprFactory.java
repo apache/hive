@@ -38,14 +38,17 @@ import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -55,7 +58,15 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -219,6 +230,15 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
+  protected ExprDynamicParamDesc createDynamicParamExpr(int index) {
+    return new ExprDynamicParamDesc(TypeInfoFactory.
+        getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class), index,null);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected ExprNodeConstantDesc createBooleanConstantExpr(String value) {
     Boolean b = value != null ? Boolean.valueOf(value) : null;
     return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, b);
@@ -318,7 +338,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    */
   @Override
   protected Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType, Object constantValue,
-      PrimitiveTypeInfo sourceType) {
+      PrimitiveTypeInfo sourceType, boolean isEqual) {
     if (constantValue instanceof Number || constantValue instanceof String) {
       try {
         PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
@@ -338,6 +358,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
           return HiveDecimal.create(constantValue.toString());
         }
       } catch (NumberFormatException | ArithmeticException nfe) {
+        if (!isEqual && (constantValue instanceof Number ||
+            NumberUtils.isNumber(constantValue.toString()))) {
+          // The target is a number, if constantToInterpret can be interpreted as a number,
+          // return the constantToInterpret directly, GenericUDFBaseCompare will do
+          // type conversion for us.
+          return constantValue;
+        }
         LOG.trace("Failed to narrow type of constant", nfe);
         return null;
       }
@@ -547,17 +574,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, GenericUDF genericUDF,
-      List<ExprNodeDesc> inputs) {
-    return new ExprNodeGenericFuncDesc(typeInfo, genericUDF, inputs);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected ExprNodeGenericFuncDesc createFuncCallExpr(GenericUDF genericUDF,
+  protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi,
       String funcText, List<ExprNodeDesc> inputs) throws UDFArgumentException {
+    GenericUDF genericUDF = fi.getGenericUDF();
+    if (genericUDF instanceof SettableUDF) {
+      ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
+    }
+
     return ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, inputs);
   }
 
@@ -704,6 +727,69 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
+  protected boolean isAndFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPAnd;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isOrFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPOr;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isInFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFIn;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFBaseCompare;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isEqualFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqual
+        && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
+  }
+
+  @Override
+  protected boolean isNSCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqualNS ||
+        fi.getGenericUDF() instanceof GenericUDFOPNotEqualNS;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return FunctionRegistry.isConsistentWithinQuery(fi.getGenericUDF());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isStateful(FunctionInfo fi) {
+    return FunctionRegistry.isStateful(fi.getGenericUDF());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected ExprNodeDesc setTypeInfo(ExprNodeDesc expr, TypeInfo type) {
     expr.setTypeInfo(type);
     return expr;
@@ -713,7 +799,8 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<ExprNodeDesc> inputs) {
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<ExprNodeDesc> inputs) {
+    GenericUDF genericUDF = fi.getGenericUDF();
     if (genericUDF instanceof GenericUDFWhen && inputs.size() == 3 &&
         inputs.get(1) instanceof ExprNodeConstantDesc &&
         inputs.get(2) instanceof ExprNodeConstantDesc) {
@@ -722,10 +809,18 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
       Object thenVal = constThen.getValue();
       Object elseVal = constElse.getValue();
       if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-        return true;
+        //only convert to COALESCE when both branches are valid
+        return !thenVal.equals(elseVal);
       }
     }
     return false;
+  }
+
+  @Override
+  protected boolean convertCASEIntoIFFuncCallExpr(FunctionInfo fi, List<ExprNodeDesc> inputs) {
+    GenericUDF genericUDF = fi.getGenericUDF();
+    return genericUDF instanceof GenericUDFWhen && inputs.size() == 3
+        && TypeInfoFactory.booleanTypeInfo.equals(inputs.get(0).getTypeInfo());
   }
 
   /**
@@ -764,7 +859,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     // subqueryToRelNode might be null if subquery expression anywhere other than
     //  as expected in filter (where/having). We should throw an appropriate error
     // message
-    Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
+    Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode = ctx.getSubqueryToRelNode();
     if (subqueryToRelNode == null) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
           " Currently SubQuery expressions are only allowed as " +
@@ -772,11 +867,14 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     }
 
     ASTNode subqueryOp = (ASTNode) expr.getChild(0);
-    RelNode subqueryRel = subqueryToRelNode.get(expr);
+    RelNode subqueryRel = subqueryToRelNode.get(expr).getSubQueryRelNode();
     // For now because subquery is only supported in filter
     // we will create subquery expression of boolean type
     switch (subqueryType) {
       case EXISTS: {
+        if (subqueryToRelNode.get(expr).hasFullAggregate()) {
+          return createConstantExpr(TypeInfoFactory.booleanTypeInfo, true);
+        }
         return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
             SubqueryType.EXISTS);
       }
@@ -814,4 +912,24 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
+    return FunctionRegistry.getFunctionInfo(funcName);
+  }
+
+  @Override
+  protected ExprNodeDesc replaceFieldNamesInStruct(ExprNodeDesc expr, List<String> newFieldNames) {
+    if (newFieldNames.isEmpty()) {
+      return expr;
+    }
+
+    ExprNodeGenericFuncDesc structCall = (ExprNodeGenericFuncDesc) expr;
+    List<TypeInfo> newTypes = structCall.getChildren().stream().map(ExprNodeDesc::getTypeInfo).collect(Collectors.toList());
+    TypeInfo newType = TypeInfoFactory.getStructTypeInfo(newFieldNames, newTypes);
+
+    return new ExprNodeGenericFuncDesc(newType, structCall.getGenericUDF(), structCall.getChildren());
+  }
 }

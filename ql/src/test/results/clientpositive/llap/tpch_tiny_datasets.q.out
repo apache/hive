@@ -1,0 +1,18 @@
+PREHOOK: query: SELECT COUNT(1) FROM lineitem
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM lineitem
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+100
+PREHOOK: query: SELECT COUNT(1) FROM part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+26

@@ -14,10 +14,32 @@ create table windowing_distinct(
            `dec` decimal,
            bin binary)
        row format delimited
-       fields terminated by '|';
+       fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 load data local inpath '../../data/files/windowing_distinct.txt' into table windowing_distinct;
 
+EXPLAIN CBO
+SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
+       COUNT(DISTINCT d) OVER (PARTITION BY index),
+       COUNT(DISTINCT bo) OVER (PARTITION BY index),
+       COUNT(DISTINCT s) OVER (PARTITION BY index),
+       COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       COUNT(DISTINCT ts) OVER (PARTITION BY index),
+       COUNT(DISTINCT `dec`) OVER (PARTITION BY index),
+       COUNT(DISTINCT bin) OVER (PARTITION BY index)
+FROM windowing_distinct;
+
+EXPLAIN VECTORIZATION
+SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
+       COUNT(DISTINCT d) OVER (PARTITION BY index),
+       COUNT(DISTINCT bo) OVER (PARTITION BY index),
+       COUNT(DISTINCT s) OVER (PARTITION BY index),
+       COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       COUNT(DISTINCT ts) OVER (PARTITION BY index),
+       COUNT(DISTINCT `dec`) OVER (PARTITION BY index),
+       COUNT(DISTINCT bin) OVER (PARTITION BY index)
+FROM windowing_distinct;
 
 SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
        COUNT(DISTINCT d) OVER (PARTITION BY index),
@@ -29,12 +51,49 @@ SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
        COUNT(DISTINCT bin) OVER (PARTITION BY index)
 FROM windowing_distinct;
 
+
+EXPLAIN CBO
 SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
        SUM(DISTINCT d) OVER (PARTITION BY index),
        SUM(DISTINCT s) OVER (PARTITION BY index),
        SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        SUM(DISTINCT ts) OVER (PARTITION BY index),
        SUM(DISTINCT `dec`) OVER (PARTITION BY index)
+FROM windowing_distinct;
+
+EXPLAIN VECTORIZATION
+SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
+       SUM(DISTINCT d) OVER (PARTITION BY index),
+       SUM(DISTINCT s) OVER (PARTITION BY index),
+       SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       SUM(DISTINCT ts) OVER (PARTITION BY index),
+       SUM(DISTINCT `dec`) OVER (PARTITION BY index)
+FROM windowing_distinct;
+
+SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
+       SUM(DISTINCT d) OVER (PARTITION BY index),
+       SUM(DISTINCT s) OVER (PARTITION BY index),
+       SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       SUM(DISTINCT ts) OVER (PARTITION BY index),
+       SUM(DISTINCT `dec`) OVER (PARTITION BY index)
+FROM windowing_distinct;
+
+EXPLAIN CBO
+SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
+       AVG(DISTINCT d) OVER (PARTITION BY index),
+       AVG(DISTINCT s) OVER (PARTITION BY index),
+       AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       AVG(DISTINCT ts) OVER (PARTITION BY index),
+       AVG(DISTINCT `dec`) OVER (PARTITION BY index)
+FROM windowing_distinct;
+
+EXPLAIN VECTORIZATION
+SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
+       AVG(DISTINCT d) OVER (PARTITION BY index),
+       AVG(DISTINCT s) OVER (PARTITION BY index),
+       AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
+       AVG(DISTINCT ts) OVER (PARTITION BY index),
+       AVG(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct;
 
 SELECT AVG(DISTINCT t) OVER (PARTITION BY index),

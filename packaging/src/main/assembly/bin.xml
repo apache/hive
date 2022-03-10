@@ -39,15 +39,18 @@
       <useStrictFiltering>true</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
+        <exclude>org.apache.calcite:*</exclude>
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive.hcatalog:*</exclude>
         <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
         <exclude>junit:*</exclude>
-        <exclude>co.cask.tephra:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
         <exclude>org.apache.hive:hive-contrib</exclude>
+        <exclude>com.oracle.database.jdbc:*</exclude>
+        <exclude>mysql:mysql-connector-java:*</exclude>
+        <exclude>org.mariadb.jdbc:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -88,7 +91,6 @@
         <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
         <include>org.apache.hive.hcatalog:hive-hcatalog-pig-adapter</include>
         <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
-        <include>org.apache.hive.hcatalog:hive-hcatalog-streaming</include>
       </includes>
     </dependencySet>
     <!-- TODO 0.12 release the webhcat server lib directory had all transitive jars
@@ -192,6 +194,7 @@
         <include>hplsql.cmd</include>
         <include>beeline.cmd</include>
         <include>ext/**/*</include>
+        <include>replstats.sh</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
     </fileSet>

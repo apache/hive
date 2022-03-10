@@ -1,0 +1,103 @@
+PREHOOK: query: create table t1(col0 string) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(col0 string) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1(col0) values('foo')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(col0) values('foo')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.col0 SCRIPT []
+PREHOOK: query: create materialized view mat1 as
+SELECT * FROM t1 WHERE col0 = 'foo'
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: create materialized view mat1 as
+SELECT * FROM t1 WHERE col0 = 'foo'
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.col0 SIMPLE []
+PREHOOK: query: explain cbo
+SELECT * FROM t1 WHERE col0 = 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT * FROM t1 WHERE col0 = 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: insert into t1(col0) values('bar')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(col0) values('bar')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.col0 SCRIPT []
+PREHOOK: query: explain cbo
+SELECT * FROM t1 WHERE col0 = 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT * FROM t1 WHERE col0 = 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[CAST(_UTF-16LE'foo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveFilter(condition=[=($0, _UTF-16LE'foo')])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: ALTER MATERIALIZED VIEW mat1 REBUILD
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: ALTER MATERIALIZED VIEW mat1 REBUILD
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.col0 SIMPLE []
+PREHOOK: query: explain cbo
+SELECT * FROM t1 WHERE col0 = 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT * FROM t1 WHERE col0 = 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: drop materialized view mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: drop materialized view mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1

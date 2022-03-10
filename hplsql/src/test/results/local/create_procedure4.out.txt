@@ -1,5 +1,5 @@
-Ln:1 CREATE PROCEDURE test1
-EXEC PROCEDURE test1
+Ln:1 CREATE PROCEDURE TEST1
+EXEC PROCEDURE TEST1
 Ln:3 DECLARE ret string = 'Initial value'
 Ln:5 PRINT
 Initial value

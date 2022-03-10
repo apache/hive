@@ -504,7 +504,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
 
     ArrayList<InputSplit> result = new ArrayList<InputSplit>();
@@ -532,18 +532,15 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         }
       } catch (Exception e) {
         LOG.error("Error checking non-combinable path", e);
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
         throw new IOException(e);
       }
     }
 
     // Store the previous value for the path specification
     String oldPaths = job.get(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("The received input paths are: [" + oldPaths +
-          "] against the property "
-          + org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
-    }
+    LOG.debug("The received input paths are: [{}] against the property {}", oldPaths,
+        org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
 
     // Process the normal splits
     if (nonCombinablePaths.size() > 0) {
@@ -585,7 +582,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     LOG.info("Number of all splits " + result.size());
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new InputSplit[result.size()]);
   }
 
@@ -713,7 +710,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath(0));
+    pushProjectionsAndFiltersAndAsOf(job, hsplit.getPath(0));
 
     return ShimLoader.getHadoopShims().getCombineFileInputFormat()
         .getRecordReader(job,

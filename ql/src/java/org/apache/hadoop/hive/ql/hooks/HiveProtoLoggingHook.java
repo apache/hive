@@ -88,6 +88,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,8 +106,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.ExplainTask;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -167,7 +166,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
 
   public enum OtherInfoType {
     QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, SESSION_ID, THREAD_NAME, VERSION, CLIENT_IP_ADDRESS,
-    HIVE_ADDRESS, HIVE_INSTANCE_TYPE, CONF, PERF, LLAP_APP_ID
+    HIVE_ADDRESS, HIVE_INSTANCE_TYPE, CONF, PERF, LLAP_APP_ID, ERROR_MESSAGE
   }
 
   public enum ExecutionMode {
@@ -252,7 +251,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         LOG.debug("Not logging events of operation type : {}", plan.getOperationName());
         return;
       }
-      HiveHookEventProto event;
+      HiveHookEventProtoPartialBuilder event;
       switch (hookContext.getHookType()) {
       case PRE_EXEC_HOOK:
         event = getPreHookEvent(hookContext);
@@ -309,13 +308,15 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     }
 
     private static final int MAX_RETRIES = 2;
-    private void writeEvent(HiveHookEventProto event) {
+    private void writeEvent(HiveHookEventProtoPartialBuilder builder) {
+      HiveHookEventProto event = builder.build();
       for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
         try {
           if (eventPerFile) {
-            if (!maybeRolloverWriterForDay()) {
-              writer = logger.getWriter(logFileName + "_" + ++logFileCount);
+            if (writer != null) {
+              IOUtils.closeQuietly(writer);
             }
+            writer = logger.getWriter(logFileName + "_" + ++logFileCount);
             LOG.debug("Event per file enabled. New proto event file: {}", writer.getPath());
             writer.writeProto(event);
             IOUtils.closeQuietly(writer);
@@ -333,7 +334,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           if (retryCount < MAX_RETRIES) {
             LOG.warn("Error writing proto message for query {}, eventType: {}, retryCount: {}," +
                 " error: {} ", event.getHiveQueryId(), event.getEventType(), retryCount,
-                e.getMessage());
+                e.getMessage(), e);
             LOG.trace("Exception", e);
           } else {
             LOG.error("Error writing proto message for query {}, eventType: {}: ",
@@ -349,7 +350,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       }
     }
 
-    private HiveHookEventProto getPreHookEvent(HookContext hookContext) {
+    private HiveHookEventProtoPartialBuilder getPreHookEvent(HookContext hookContext) {
       QueryPlan plan = hookContext.getQueryPlan();
       LOG.info("Received pre-hook notification for: " + plan.getQueryId());
 
@@ -359,6 +360,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       List<TezTask> tezTasks = Utilities.getTezTasks(plan.getRootTasks());
       ExecutionMode executionMode = getExecutionMode(plan, mrTasks, tezTasks);
 
+      Map<OtherInfoType, JSONObject> otherInfo = new HashMap<>();
       HiveHookEventProto.Builder builder = HiveHookEventProto.newBuilder();
       builder.setEventType(EventType.QUERY_SUBMITTED.name());
       builder.setTimestamp(plan.getQueryStartTime());
@@ -374,15 +376,6 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       builder.addAllTablesWritten(getTablesFromEntitySet(hookContext.getOutputs()));
       if (hookContext.getOperationId() != null) {
         builder.setOperationId(hookContext.getOperationId());
-      }
-
-      try {
-        JSONObject queryObj = new JSONObject();
-        queryObj.put("queryText", plan.getQueryStr());
-        queryObj.put("queryPlan", getExplainPlan(plan, conf, hookContext));
-        addMapEntry(builder, OtherInfoType.QUERY, queryObj.toString());
-      } catch (Exception e) {
-        LOG.error("Unexpected exception while serializing json.", e);
       }
 
       addMapEntry(builder, OtherInfoType.TEZ, Boolean.toString(tezTasks.size() > 0));
@@ -417,14 +410,28 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       for (Map.Entry<String, String> setting : conf) {
         confObj.put(setting.getKey(), setting.getValue());
       }
-      addMapEntry(builder, OtherInfoType.CONF, confObj.toString());
-      return builder.build();
+      otherInfo.put(OtherInfoType.CONF, confObj);
+
+      ExplainConfiguration explainConfig = new ExplainConfiguration();
+      explainConfig.setFormatted(true);
+      ExplainWork explainWork = new ExplainWork(null, // resFile
+              null, // pCtx
+              plan.getRootTasks(), // RootTasks
+              plan.getFetchTask(), // FetchTask
+              null, null, // analyzer
+              explainConfig, // explainConfig
+              plan.getCboInfo(), // cboInfo,
+              plan.getOptimizedQueryString(),
+              plan.getOptimizedCBOPlan());
+      return new HiveHookEventProtoPartialBuilder(
+              builder, explainWork, otherInfo, plan.getQueryStr(), conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
     }
 
-    private HiveHookEventProto getPostHookEvent(HookContext hookContext, boolean success) {
+    private HiveHookEventProtoPartialBuilder getPostHookEvent(HookContext hookContext, boolean success) {
       QueryPlan plan = hookContext.getQueryPlan();
       LOG.info("Received post-hook notification for: " + plan.getQueryId());
 
+      Map<OtherInfoType, JSONObject> other = new HashMap<>();
       HiveHookEventProto.Builder builder = HiveHookEventProto.newBuilder();
       builder.setEventType(EventType.QUERY_COMPLETED.name());
       builder.setTimestamp(clock.getTime());
@@ -435,16 +442,16 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         builder.setOperationId(hookContext.getOperationId());
       }
       addMapEntry(builder, OtherInfoType.STATUS, Boolean.toString(success));
+      addMapEntry(builder, OtherInfoType.ERROR_MESSAGE, hookContext.getErrorMessage());
       JSONObject perfObj = new JSONObject();
       for (String key : hookContext.getPerfLogger().getEndTimes().keySet()) {
         perfObj.put(key, hookContext.getPerfLogger().getDuration(key));
       }
-      addMapEntry(builder, OtherInfoType.PERF, perfObj.toString());
-
-      return builder.build();
+      other.put(OtherInfoType.PERF, perfObj);
+      return new HiveHookEventProtoPartialBuilder(builder, null, other, plan.getQueryStr(), null);
     }
 
-    private void addMapEntry(HiveHookEventProto.Builder builder, OtherInfoType key, String value) {
+    public static void addMapEntry(HiveHookEventProto.Builder builder, OtherInfoType key, String value) {
       if (value != null) {
         builder.addOtherInfo(
             MapFieldEntry.newBuilder().setKey(key.name()).setValue(value).build());
@@ -505,26 +512,6 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       } else {
         return ExecutionMode.NONE;
       }
-    }
-
-    private JSONObject getExplainPlan(QueryPlan plan, HiveConf conf, HookContext hookContext)
-        throws Exception {
-      // Get explain plan for the query.
-      ExplainConfiguration config = new ExplainConfiguration();
-      config.setFormatted(true);
-      ExplainWork work = new ExplainWork(null, // resFile
-          null, // pCtx
-          plan.getRootTasks(), // RootTasks
-          plan.getFetchTask(), // FetchTask
-          null, null, // analyzer
-          config, // explainConfig
-          plan.getCboInfo(), // cboInfo,
-          plan.getOptimizedQueryString(),
-          plan.getOptimizedCBOPlan()
-      );
-      ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
-      explain.initialize(hookContext.getQueryState(), plan, null, null);
-      return explain.getJSONPlan(null, work);
     }
 
     private ApplicationId determineLlapId(HiveConf conf, ExecutionMode mode) {

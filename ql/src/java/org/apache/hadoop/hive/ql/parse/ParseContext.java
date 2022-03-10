@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.collect.Multimap;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -97,7 +98,7 @@ public class ParseContext {
   // reducer
   private Map<String, PrunedPartitionList> prunedPartitions;
   private Map<String, ReadEntity> viewAliasToInput;
-  private Map<String, Table> tabNameToTabObject;
+  private QueryTables tabNameToTabObject;
 
   /**
    * The lineage information.
@@ -118,7 +119,7 @@ public class ParseContext {
 
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
-  private CreateViewDesc createViewDesc;
+  private CreateMaterializedViewDesc createViewDesc;
   private MaterializedViewUpdateDesc materializedViewUpdateDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
@@ -128,7 +129,15 @@ public class ParseContext {
 
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
           new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
-  private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo = new HashMap<>();
+  /**
+   * Mapping holding information about semijoins.
+   *
+   * In various places we need to iterate over the entries of the map so having a predictable iterator is important for
+   * keeping the plans stable. It is possible to use an alternative implementation that does not provide specific
+   * iteration guarantees but this might introduce small changes in the plans (e.g., different operator ids) from one
+   * execution to the other.
+   */
+  private LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo = new LinkedHashMap<>();
   private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap = new HashMap<>();
 
   private Map<String, List<SemiJoinHint>> semiJoinHints;
@@ -184,7 +193,7 @@ public class ParseContext {
       Context ctx, Map<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<String, PrunedPartitionList> prunedPartitions,
-      Map<String, Table> tabNameToTabObject,
+      QueryTables tabNameToTabObject,
       Map<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       Map<String, SplitSample> nameToSplitSample,
@@ -193,7 +202,7 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      CreateViewDesc createViewDesc, MaterializedViewUpdateDesc materializedViewUpdateDesc,
+      CreateMaterializedViewDesc createViewDesc, MaterializedViewUpdateDesc materializedViewUpdateDesc,
       QueryProperties queryProperties,
       Map<SelectOperator, Table> viewProjectToTableSchema) {
     this.queryState = queryState;
@@ -308,6 +317,17 @@ public class ParseContext {
    */
   public Map<String, TableScanOperator> getTopOps() {
     return topOps;
+  }
+
+  public Set<TableName> getTablesUsed() {
+    Set<TableName> tablesUsed = new HashSet<>();
+    for (TableScanOperator topOp : topOps.values()) {
+      Table table = topOp.getConf().getTableMetadata();
+      if (!table.isMaterializedTable() && !table.isView()) {
+        tablesUsed.add(table.getFullTableName());
+      }
+    }
+    return tablesUsed;
   }
 
   /**
@@ -591,7 +611,7 @@ public class ParseContext {
     this.createTableDesc = createTableDesc;
   }
 
-  public CreateViewDesc getCreateViewDesc() {
+  public CreateMaterializedViewDesc getCreateViewDesc() {
     return createViewDesc;
   }
 
@@ -628,7 +648,7 @@ public class ParseContext {
     this.needViewColumnAuthorization = needViewColumnAuthorization;
   }
 
-  public Map<String, Table> getTabNameToTabObject() {
+  public QueryTables getTabNameToTabObject() {
     return tabNameToTabObject;
   }
 
@@ -670,11 +690,11 @@ public class ParseContext {
     return rsToRuntimeValuesInfo;
   }
 
-  public void setRsToSemiJoinBranchInfo(Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo) {
+  public void setRsToSemiJoinBranchInfo(LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo) {
     this.rsToSemiJoinBranchInfo = rsToSemiJoinBranchInfo;
   }
 
-  public Map<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
+  public LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
     return rsToSemiJoinBranchInfo;
   }
 

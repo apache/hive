@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hadoop.hive.ql.exec.tez.ObjectCache;
+import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +58,8 @@ public class TestMiniTezCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
+    // create a new object cache for tez-based tests which rely on that
+    ObjectCache.setupObjectRegistry(new ObjectRegistryImpl());
     adapter.runTest(name, qfile);
   }
 

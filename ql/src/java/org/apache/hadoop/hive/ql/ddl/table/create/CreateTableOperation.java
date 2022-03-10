@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.create;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -35,14 +36,14 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Operation process of creating a table.
@@ -64,9 +65,9 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       // trigger replace-mode semantics.
       Table existingTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName(), false);
       if (existingTable != null) {
-        if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
+        Map<String, String> dbParams = context.getDb().getDatabase(existingTable.getDbName()).getParameters();
+        if (desc.getReplicationSpec().allowEventReplacementInto(dbParams)) {
           desc.setReplaceMode(true); // we replace existing table.
-          ReplicationSpec.copyLastReplId(existingTable.getParameters(), tbl.getParameters());
           // If location of an existing managed table is changed, then need to delete the old location if exists.
           // This scenario occurs when a managed table is converted into external table at source. In this case,
           // at target, the table data would be moved to different location under base directory for external tables.
@@ -106,15 +107,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     Long writeId = 0L;
     EnvironmentContext environmentContext = null;
     if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
-      if (replicationSpec.isMigratingToTxnTable()) {
-        // for migration we start the transaction and allocate write id in repl txn task for migration.
-        writeId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
-        if (writeId == null) {
-          throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-        }
-      } else {
-        writeId = desc.getReplWriteId();
-      }
+      writeId = desc.getReplWriteId();
 
       // In case of replication statistics is obtained from the source, so do not update those
       // on replica.
@@ -161,14 +154,15 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       if (!createdTable.isPartitioned() && AcidUtils.isTransactionalTable(createdTable)) {
         org.apache.hadoop.hive.metastore.api.Table tTable = createdTable.getTTable();
         Path tabLocation = new Path(tTable.getSd().getLocation());
-        List<Path> newFilesList = new ArrayList<>();
+        List<FileStatus> newFilesList;
         try {
-          Hive.listFilesInsideAcidDirectory(tabLocation, tabLocation.getFileSystem(context.getConf()), newFilesList);
+          newFilesList = HdfsUtils.listLocatedFileStatus(tabLocation.getFileSystem(context.getConf()), tabLocation, null, true);
         } catch (IOException e) {
           LOG.error("Error listing files", e);
           throw new HiveException(e);
         }
-        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList, tTable.getWriteId());
+        context.getDb().addWriteNotificationLog(createdTable, null,
+                newFilesList, tTable.getWriteId(), null);
       }
     }
   }

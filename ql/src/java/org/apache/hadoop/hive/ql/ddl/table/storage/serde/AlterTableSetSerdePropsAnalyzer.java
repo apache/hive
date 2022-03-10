@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for set serde properties commands.
  */
-@DDLType(types = {HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, HiveParser.TOK_ALTERPARTITION_SERDEPROPERTIES})
+@DDLType(types = {HiveParser.TOK_ALTERTABLE_SETSERDEPROPERTIES, HiveParser.TOK_ALTERPARTITION_SETSERDEPROPERTIES})
 public class AlterTableSetSerdePropsAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableSetSerdePropsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -48,5 +48,7 @@ public class AlterTableSetSerdePropsAnalyzer extends AbstractAlterTableAnalyzer 
     AlterTableSetSerdePropsDesc desc = new AlterTableSetSerdePropsDesc(tableName, partitionSpec, props);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_SERDE_PROPS, false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+
+    setAcidDdlDesc(getTable(tableName), desc);
   }
 }

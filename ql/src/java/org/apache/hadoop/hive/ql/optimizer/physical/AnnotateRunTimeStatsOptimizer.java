@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -152,22 +153,9 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
   }
 
   public void resolve(Set<Operator<?>> opSet, ParseContext pctx) throws SemanticException {
-    Set<Operator<?>> ops = getAllOperatorsForSimpleFetch(opSet);
+    Set<Operator<?>> ops = OperatorUtils.getAllOperatorsForSimpleFetch(opSet);
     setOrAnnotateStats(ops, pctx);
   }
 
-  private Set<Operator<?>> getAllOperatorsForSimpleFetch(Set<Operator<?>> opSet) {
-    Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
-    Stack<Operator<?>> opStack = new Stack<Operator<?>>();
-    // add all children
-    opStack.addAll(opSet);
-    while (!opStack.empty()) {
-      Operator<?> op = opStack.pop();
-      returnSet.add(op);
-      if (op.getChildOperators() != null) {
-        opStack.addAll(op.getChildOperators());
-      }
-    }
-    return returnSet;
-  }
+
 }

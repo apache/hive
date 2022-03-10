@@ -174,4 +174,4 @@ POSTHOOK: query: select 0.09765625BD * 0.09765625BD * 0.0125BD * 578992BD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-69.0212249755859375
+69.02122497558593750000

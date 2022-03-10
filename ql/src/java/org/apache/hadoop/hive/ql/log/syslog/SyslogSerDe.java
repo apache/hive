@@ -20,15 +20,13 @@ package org.apache.hadoop.hive.ql.log.syslog;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -51,19 +49,25 @@ public class SyslogSerDe extends AbstractSerDe {
   private List<Object> EMPTY_ROW;
 
   @Override
-  public void initialize(@Nullable final Configuration configuration, final Properties properties)
-    throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    final List<String> columnNames = Arrays.asList(COLUMN_NAMES.split(COLUMN_NAME_DELIMITER));
-    final List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(COLUMN_TYPES);
+    EMPTY_ROW = new ArrayList<>(Collections.nCopies(getColumnNames().size(), null));
 
-    EMPTY_ROW = new ArrayList<>(columnNames.size());
-    for (int i = 0; i < columnNames.size(); i++) {
-      EMPTY_ROW.add(null);
-    }
-    StructTypeInfo typeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+    StructTypeInfo typeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
     this.inspector = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     syslogParser = new SyslogParser();
+  }
+  
+  @Override
+  public List<String> getColumnNames() {
+    return Arrays.asList(COLUMN_NAMES.split(COLUMN_NAME_DELIMITER));
+  }
+
+  @Override
+  public List<TypeInfo> getColumnTypes() {
+    return TypeInfoUtils.getTypeInfosFromTypeString(COLUMN_TYPES);
   }
 
   @Override
@@ -74,11 +78,6 @@ public class SyslogSerDe extends AbstractSerDe {
   @Override
   public Writable serialize(final Object o, final ObjectInspector objectInspector) throws SerDeException {
     throw new SerDeException("Serialization is not supported yet");
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   @Override

@@ -100,7 +100,7 @@ POSTHOOK: query: select f from float_text where f=74.72
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_text
 #### A masked pattern was here ####
-74.72
+74.72000
 PREHOOK: query: select f from float_text where f=0.22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_text
@@ -109,7 +109,7 @@ POSTHOOK: query: select f from float_text where f=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_text
 #### A masked pattern was here ####
-0.22
+0.22000
 PREHOOK: query: create table float_orc(f float) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -217,7 +217,7 @@ POSTHOOK: query: select f from float_orc where f=74.72
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-74.72
+74.72000
 PREHOOK: query: select f from float_orc where f=0.22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
@@ -226,7 +226,7 @@ POSTHOOK: query: select f from float_orc where f=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-0.22
+0.22000
 PREHOOK: query: select f from float_orc where f=74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
@@ -235,7 +235,7 @@ POSTHOOK: query: select f from float_orc where f=74.72
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-74.72
+74.72000
 PREHOOK: query: select f from float_orc where f=0.22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
@@ -244,7 +244,7 @@ POSTHOOK: query: select f from float_orc where f=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-0.22
+0.22000
 PREHOOK: query: drop table float_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@float_text

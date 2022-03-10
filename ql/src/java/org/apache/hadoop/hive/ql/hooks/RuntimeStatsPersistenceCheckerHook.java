@@ -59,7 +59,7 @@ public class RuntimeStatsPersistenceCheckerHook implements ExecuteWithHookContex
         throw new RuntimeException("while checking the signature of: " + sig.getSig(), e);
       }
     }
-    LOG.info("signature checked: " + sigs.size());
+    LOG.debug("signature checked: " + sigs.size());
   }
 
   private <T> T persistenceLoop(T sig, Class<T> clazz) throws IOException {

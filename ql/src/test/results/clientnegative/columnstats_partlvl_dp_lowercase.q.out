@@ -1,0 +1,56 @@
+PREHOOK: query: DROP TABLE Employee_Part_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE Employee_Part_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE Employee_Part_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+row format delimited fields terminated by '|'  stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@Employee_Part_n0
+POSTHOOK: query: CREATE TABLE Employee_Part_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+row format delimited fields terminated by '|'  stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@Employee_Part_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n0 partition(employeeSalary='2000.0', country='USA')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n0 partition(employeeSalary='2000.0', country='USA')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary='2000.0', country) compute statistics for columns employeeName, employeeID
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@employee_part_n0
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_part_n0
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary='2000.0', country) compute statistics for columns employeeName, employeeID
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@employee_part_n0
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='USA') employeeID
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='USA') employeeID
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@employee_part_n0
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+FAILED: SemanticException [Error 10006]: Partition not found {employeesalary=2000.0, country=usa}

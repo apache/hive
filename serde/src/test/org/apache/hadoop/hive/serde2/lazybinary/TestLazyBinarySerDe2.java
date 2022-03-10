@@ -19,13 +19,9 @@ package org.apache.hadoop.hive.serde2.lazybinary;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-
 
 /**
  * TestLazyBinarySerDe2.
@@ -50,7 +46,7 @@ public class TestLazyBinarySerDe2 extends TestLazyBinarySerDe {
     schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
 
     LazyBinarySerDe2 serde = new LazyBinarySerDe2();
-    SerDeUtils.initializeSerDe(serde, new Configuration(), schema, null);
+    serde.initialize(new Configuration(), schema, null);
     return serde;
   }
 }

@@ -160,7 +160,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.amReporter = amReporter;
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     if (amReporter != null && jobToken != null) {
-      this.amNodeInfo = amReporter.registerTask(request.getAmHost(), request.getAmPort(),
+      this.amNodeInfo = amReporter.registerTask(request.getIsExternalClientRequest(), request.getAmHost(), request.getAmPort(),
           vertex.getTokenIdentifier(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(),
           attemptId, isGuaranteed);
     } else {

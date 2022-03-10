@@ -36,7 +36,6 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
   protected final int fieldStart;
   protected final int fieldLength;
   private static final String patternMin = "0000-00-00 00:00:00.000000000";
@@ -44,8 +43,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
   protected final transient Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
 
   public VectorUDFTimestampFieldString(int colNum, int outputColumnNum, int fieldStart, int fieldLength) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
     this.fieldStart = fieldStart;
     this.fieldLength = fieldLength;
   }
@@ -64,8 +62,8 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
     initCalendar();
   }
 
-  private long getField(byte[] bytes, int start, int length) throws ParseException {
-    // Validate
+  protected long getField(byte[] bytes, int start, int length) throws ParseException {
+    int field = 0;
     for (int i = 0; i < length; i++) {
       char ch = (char) bytes[start + i];
       if (ch < patternMin.charAt(i) || ch > patternMax.charAt(i)) {
@@ -73,11 +71,6 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
       }
     }
 
-    return doGetField(bytes, start, length);
-  }
-
-  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
-    int field = 0;
     if (length < fieldLength) {
       throw new ParseException("A timestamp string should be longer.", 0);
     }
@@ -96,7 +89,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
     }
 
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
-    BytesColumnVector inputCol = (BytesColumnVector)batch.cols[this.colNum];
+    BytesColumnVector inputCol = (BytesColumnVector)batch.cols[this.inputColumnNum[0]];
 
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
@@ -186,9 +179,9 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
   @Override
   public String vectorExpressionParameters() {
     if (fieldStart == -1) {
-      return getColumnParamString(0, colNum);
+      return getColumnParamString(0, inputColumnNum[0]);
     } else {
-      return getColumnParamString(0, colNum) + ", fieldStart " + fieldStart + ", fieldLength " + fieldLength;
+      return getColumnParamString(0, inputColumnNum[0]) + ", fieldStart " + fieldStart + ", fieldLength " + fieldLength;
     }
   }
 

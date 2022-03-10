@@ -45,6 +45,14 @@ public class DropPartitionEvent extends ListenerEvent {
     this.deleteData = deleteData;
   }
 
+  public DropPartitionEvent(Table table, Iterable<Partition> partitions, boolean status, boolean deleteData,
+      IHMSHandler handler) {
+    super(status, handler);
+    this.table = table;
+    this.partitions = partitions;
+    this.deleteData = deleteData;
+  }
+
   /**
    * @return the partitions
    */

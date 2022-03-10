@@ -48,7 +48,7 @@ public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldStrin
   }
 
   @Override
-  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
+  protected long getField(byte[] bytes, int start, int length) throws ParseException {
     Date date = null;
     try {
       String decoded = Text.decode(bytes, start, length);

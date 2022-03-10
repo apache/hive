@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.Base64;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1084,7 +1085,6 @@ public class TestJdbcWithMiniHS2 {
    * Test for jdbc driver retry on NoHttpResponseException
    * @throws Exception
    */
-  @Ignore("Flaky test. Should be re-enabled in HIVE-19706")
   @Test
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2
@@ -1094,7 +1094,7 @@ public class TestJdbcWithMiniHS2 {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5");
     startMiniHS2(conf, true);
     String userName = System.getProperty("user.name");
-    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName)+";retries=3", userName, "password");
     Statement stmt = conn.createStatement();
     stmt.execute("select from_unixtime(unix_timestamp())");
     // Sleep for longer than server's idletimeout and execute a query
@@ -1681,5 +1681,33 @@ public class TestJdbcWithMiniHS2 {
       stmt.execute("CREATE TABLE emp_mm_table like emp_view STORED AS ORC LOCATION '" + mndPath + "'");
       assertTrue(getDetailedTableDescription(stmt, "emp_mm_table").contains(mndPath));
     }
+  }
+
+  @Test
+  public void testInterruptPollingState() throws Exception {
+    ExecutorService pool = Executors.newFixedThreadPool(1);
+    final CountDownLatch latch = new CountDownLatch(1);
+    final Object[] results = new Object[2];
+    results[0] = false;
+    Future future = pool.submit(new Callable<Void>() {
+      @Override
+      public Void call() {
+        try (Statement stmt = conTestDb.createStatement()) {
+          stmt.execute("create temporary function sleepMsUDF as '" + SleepMsUDF.class.getName() + "'");
+          stmt.execute("SELECT sleepMsUDF(1, 10000)");
+          results[0] = true;
+        } catch (Exception e) {
+          results[1] = e;
+        } finally {
+          latch.countDown();
+        }
+        return null;
+      }
+    });
+    Thread.sleep(2000);
+    future.cancel(true);
+    latch.await();
+    assertEquals(false, results[0]);
+    assertEquals("Interrupted while polling on the operation status", ((Exception)results[1]).getMessage());
   }
 }

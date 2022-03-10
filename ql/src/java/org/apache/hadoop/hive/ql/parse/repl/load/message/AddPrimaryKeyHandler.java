@@ -66,8 +66,9 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
     Constraints constraints = new Constraints(pks, null, null, null, null, null);
     AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(tName,
         context.eventOnlyReplicationSpec(), constraints);
-    Task<DDLWork> addConstraintsTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
+    Task<DDLWork> addConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet,
+            addConstraintsDesc, true, context.getDumpDirectory(),
+            context.getMetricCollector()), context.hiveConf);
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);

@@ -1,0 +1,106 @@
+PREHOOK: query: create table cmv_basetable_n0 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_basetable_n0
+POSTHOOK: query: create table cmv_basetable_n0 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_basetable_n0
+PREHOOK: query: create materialized view if not exists cmv_mat_view2
+as select a, c from cmv_basetable_n0 where a = 3
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2
+as select a, c from cmv_basetable_n0 where a = 3
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view2
+POSTHOOK: Lineage: cmv_mat_view2.a SIMPLE []
+POSTHOOK: Lineage: cmv_mat_view2.c SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+PREHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n0
+PREHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n0
+POSTHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, cmv_mat_view2]], table:alias=[default.cmv_mat_view2])
+
+PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+PREHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[CAST(3):INTEGER], c=[$2])
+  HiveFilter(condition=[=($0, 3)])
+    HiveTableScan(table=[[default, cmv_basetable_n0]], table:alias=[cmv_basetable_n0])
+
+PREHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+PREHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n0
+PREHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n0
+POSTHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, cmv_mat_view2]], table:alias=[default.cmv_mat_view2])
+
+PREHOOK: query: drop materialized view cmv_mat_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: drop materialized view cmv_mat_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+PREHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, c from cmv_basetable_n0 where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[CAST(3):INTEGER], c=[$2])
+  HiveFilter(condition=[=($0, 3)])
+    HiveTableScan(table=[[default, cmv_basetable_n0]], table:alias=[cmv_basetable_n0])
+

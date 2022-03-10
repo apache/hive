@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.avro.Schema;
@@ -163,7 +162,7 @@ public class TestAvroObjectInspectorGenerator {
       "  \"fields\": [\n" +
       "   {\n" +
       "      \"name\":\"baddies\",\n" +
-      "      \"type\":{\"type\":\"enum\",\"name\":\"villians\", \"symbols\": " +
+      "      \"type\":{\"type\":\"enum\",\"name\":\"villains\", \"symbols\": " +
           "[\"DALEKS\", \"CYBERMEN\", \"SLITHEEN\", \"JAGRAFESS\"]}\n" +
       "      \n" +
       "      \n" +
@@ -207,7 +206,7 @@ public class TestAvroObjectInspectorGenerator {
       "  \"fields\": [\n" +
       "   {\n" +
       "      \"name\":\"nullableEnum\",\n" +
-      "      \"type\": [\"null\", {\"type\":\"enum\",\"name\":\"villians\", \"symbols\": " +
+      "      \"type\": [\"null\", {\"type\":\"enum\",\"name\":\"villains\", \"symbols\": " +
           "[\"DALEKS\", \"CYBERMEN\", \"SLITHEEN\", \"JAGRAFESS\"]}]\n" +
       "      \n" +
       "      \n" +
@@ -413,8 +412,8 @@ public class TestAvroObjectInspectorGenerator {
   /**
    * Check a given AvroObjectInspectorGenerator to verify that it matches our test
    * schema's expected map.
-   * @param aoig should already have been intitialized, may not be null
-   * @param fieldName name of the contianed column, will always fail if null.
+   * @param aoig should already have been initialized, may not be null
+   * @param fieldName name of the contained column, will always fail if null.
    */
   private void verifyMap(final AvroObjectInspectorGenerator aoig, final String fieldName) {
     // Column names
@@ -468,8 +467,8 @@ public class TestAvroObjectInspectorGenerator {
     StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
 
     // Check individual elements of subrecord
-    ArrayList<String> allStructFieldNames = structTypeInfo.getAllStructFieldNames();
-    ArrayList<TypeInfo> allStructFieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    List<String> allStructFieldNames = structTypeInfo.getAllStructFieldNames();
+    List<TypeInfo> allStructFieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     assertEquals(allStructFieldNames.size(), 3);
     String[] names = new String[]{"int1", "boolean1", "long1"};
     String [] typeInfoStrings = new String [] {"int", "boolean", "bigint"};

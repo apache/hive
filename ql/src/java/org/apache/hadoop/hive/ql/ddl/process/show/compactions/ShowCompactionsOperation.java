@@ -26,10 +26,14 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.NO_VAL;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getHostFromId;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdFromId;
 
 /**
  * Operation process of showing compactions.
@@ -46,7 +50,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     ShowCompactResponse rsp = context.getDb().showCompactions();
 
     // Write the results into the file
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       // Write a header for cliDriver
       if (!sessionState.isHiveServerQuery()) {
         writeHeader(os);
@@ -77,9 +81,11 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("State");
     os.write(Utilities.tabCode);
-    os.writeBytes("Hostname");
+    os.writeBytes("Worker host");
     os.write(Utilities.tabCode);
     os.writeBytes("Worker");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Enqueue Time");
     os.write(Utilities.tabCode);
     os.writeBytes("Start Time");
     os.write(Utilities.tabCode);
@@ -88,10 +94,12 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes("HadoopJobId");
     os.write(Utilities.tabCode);
     os.writeBytes("Error message");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Initiator host");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Initiator");
     os.write(Utilities.newLineCode);
   }
-
-  private static final String NO_VAL = " --- ";
 
   private void writeRow(DataOutputStream os, ShowCompactResponseElement e) throws IOException {
     os.writeBytes(Long.toString(e.getId()));
@@ -107,10 +115,11 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes(e.getState());
     os.write(Utilities.tabCode);
-    String wid = e.getWorkerid();
-    os.writeBytes(wid == null ? NO_VAL : wid.split("-")[0]);
+    os.writeBytes(getHostFromId(e.getWorkerid()));
     os.write(Utilities.tabCode);
-    os.writeBytes(wid == null ? NO_VAL : wid.split("-")[1]);
+    os.writeBytes(getThreadIdFromId(e.getWorkerid()));
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetEnqueueTime() ? Long.toString(e.getEnqueueTime()) : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : NO_VAL);
     os.write(Utilities.tabCode);
@@ -120,6 +129,9 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     String error = e.getErrorMessage();
     os.writeBytes(error == null ? NO_VAL : error);
+    os.writeBytes(getHostFromId(e.getInitiatorId()));
+    os.write(Utilities.tabCode);
+    os.writeBytes(getThreadIdFromId(e.getInitiatorId()));
     os.write(Utilities.newLineCode);
   }
 }

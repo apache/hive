@@ -16,11 +16,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: 0L (type: bigint)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 0L (type: bigint)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
@@ -69,7 +69,7 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -85,7 +85,7 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

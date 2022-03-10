@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -111,9 +112,7 @@ public class CliDriver {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
     Logger LOG = LoggerFactory.getLogger("CliDriver");
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
-    }
+    LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
     console = new LogHelper(LOG);
   }
 
@@ -461,6 +460,7 @@ public class CliDriver {
         }
         break;
       case '"':
+      case '`':
       case '\'':
         if (!escape) {
           if (!inQuotes) {
@@ -792,6 +792,11 @@ public class CliDriver {
     CalcitePlanner.warmup();
     // Create views registry
     HiveMaterializedViewsRegistry.get().init();
+
+    // init metastore client cache
+    if (HiveConf.getBoolVar(conf, ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init(conf);
+    }
 
     // execute cli driver work
     try {

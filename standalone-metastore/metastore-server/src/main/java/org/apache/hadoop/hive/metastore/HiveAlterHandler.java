@@ -22,6 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Multimap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -59,7 +60,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +69,6 @@ import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -131,6 +130,14 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException("Invalid column " + validate);
     }
 
+    // Validate bucketedColumns in new table
+    List<String> bucketColumns = MetaStoreServerUtils.validateBucketColumns(newt.getSd());
+    if (CollectionUtils.isNotEmpty(bucketColumns)) {
+      String errMsg = "Bucket columns - " + bucketColumns.toString() + " doesn't match with any table columns";
+      LOG.error(errMsg);
+      throw new InvalidOperationException(errMsg);
+    }
+
     Path srcPath = null;
     FileSystem srcFs;
     Path destPath = null;
@@ -180,21 +187,15 @@ public class HiveAlterHandler implements AlterHandler {
 
       // On a replica this alter table will be executed only if old and new both the databases are
       // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = HiveMetaStore.HMSHandler.isDbReplicationTarget(olddb);
+      isReplicated = HMSHandler.isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
 
-      // Views derive the column type from the base table definition.  So the view definition
-      // can be altered to change the column types.  The column type compatibility checks should
-      // be done only for non-views.
-      if (MetastoreConf.getBoolVar(handler.getConf(),
-            MetastoreConf.ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES) &&
-          !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())) {
-        // Throws InvalidOperationException if the new column types are not
-        // compatible with the current column types.
-        checkColTypeChangeCompatible(oldt.getSd().getCols(), newt.getSd().getCols());
-      }
+      // Throws InvalidOperationException if the new column types are not
+      // compatible with the current column types.
+      DefaultIncompatibleTableChangeHandler.get()
+          .allowChange(handler.getConf(), oldt, newt);
 
       //check that partition keys have not changed, except for virtual views
       //however, allow the partition comments to change
@@ -202,8 +203,13 @@ public class HiveAlterHandler implements AlterHandler {
           newt.getPartitionKeys());
 
       if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())){
-        if (!partKeysPartiallyEqual) {
-          throw new InvalidOperationException("partition keys can not be changed.");
+        Map<String, String> properties = environmentContext.getProperties();
+        if (properties == null || (properties != null &&
+            !Boolean.parseBoolean(properties.getOrDefault(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE,
+                "false")))) {
+          if (!partKeysPartiallyEqual) {
+            throw new InvalidOperationException("partition keys can not be changed.");
+          }
         }
       }
 
@@ -239,7 +245,7 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          String oldtRelativePath = wh.getDatabasePath(olddb).toUri()
+          String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
               .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
                   && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
@@ -248,8 +254,8 @@ public class HiveAlterHandler implements AlterHandler {
 
             // get new location
             Database db = msdb.getDatabase(catName, newDbName);
-            assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
-            Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
+            assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+            Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
             destPath = new Path(databasePath, newTblName);
             destFs = wh.getFs(destPath);
 
@@ -338,7 +344,7 @@ public class HiveAlterHandler implements AlterHandler {
                   partBatch, newt.getWriteId(), writeIdList);
             }
           }
-
+          Deadline.checkTimeout();
           for (Entry<Partition, ColumnStatistics> partColStats : columnStatsNeedUpdated.entries()) {
             ColumnStatistics newPartColStats = partColStats.getValue();
             newPartColStats.getStatsDesc().setDbName(newDbName);
@@ -355,31 +361,46 @@ public class HiveAlterHandler implements AlterHandler {
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
-          assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
+          assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }
 
         if (isPartitionedTable) {
           //Currently only column related changes can be cascaded in alter table
-          if(!MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
-            parts = msdb.getPartitions(catName, dbname, name, -1);
-            for (Partition part : parts) {
-              Partition oldPart = new Partition(part);
-              List<FieldSchema> oldCols = part.getSd().getCols();
-              part.getSd().setCols(newt.getSd().getCols());
-              List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
-                  part.getValues(), oldCols, oldt, part, null, null);
-              assert(colStats.isEmpty());
-              if (cascade) {
-                msdb.alterPartition(
+          boolean runPartitionMetadataUpdate =
+              (cascade && !MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols()));
+          // we may skip the update entirely if there are only new columns added
+          runPartitionMetadataUpdate |=
+              !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
+
+          boolean retainOnColRemoval =
+              MetastoreConf.getBoolVar(handler.getConf(), MetastoreConf.ConfVars.COLSTATS_RETAIN_ON_COLUMN_REMOVAL);
+
+          if (runPartitionMetadataUpdate) {
+            if (cascade || retainOnColRemoval) {
+              parts = msdb.getPartitions(catName, dbname, name, -1);
+              for (Partition part : parts) {
+                Partition oldPart = new Partition(part);
+                List<FieldSchema> oldCols = part.getSd().getCols();
+                part.getSd().setCols(newt.getSd().getCols());
+                List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
+                    part.getValues(), oldCols, oldt, part, null, null);
+                assert (colStats.isEmpty());
+                Deadline.checkTimeout();
+                if (cascade) {
+                  msdb.alterPartition(
                     catName, dbname, name, part.getValues(), part, writeIdList);
-              } else {
-                // update changed properties (stats)
-                oldPart.setParameters(part.getParameters());
-                msdb.alterPartition(
-                    catName, dbname, name, part.getValues(), oldPart, writeIdList);
+                } else {
+                  // update changed properties (stats)
+                  oldPart.setParameters(part.getParameters());
+                  msdb.alterPartition(catName, dbname, name, part.getValues(), oldPart, writeIdList);
+                }
               }
+            } else {
+              // clear all column stats to prevent incorract behaviour in case same column is reintroduced
+              TableName tableName = new TableName(catName, dbname, name);
+              msdb.deleteAllPartitionColumnStatistics(tableName, writeIdList);
             }
             // Don't validate table-level stats for a partitoned table.
             msdb.alterTable(catName, dbname, name, newt, null);
@@ -426,9 +447,9 @@ public class HiveAlterHandler implements AlterHandler {
           assert(olddb != null);
           assert(oldt != null);
           Path deleteOldDataLoc = new Path(oldt.getSd().getLocation());
-          boolean isAutoPurge = "true".equalsIgnoreCase(oldt.getParameters().get("auto.purge"));
+          boolean isSkipTrash = MetaStoreUtils.isSkipTrash(oldt.getParameters());
           try {
-            wh.deleteDir(deleteOldDataLoc, true, isAutoPurge,
+            wh.deleteDir(deleteOldDataLoc, true, isSkipTrash,
                     ReplChangeManager.shouldEnableCm(olddb, oldt));
             LOG.info("Deleted the old data location: {} for the table: {}",
                     deleteOldDataLoc, dbname + "." + name);
@@ -490,7 +511,7 @@ public class HiveAlterHandler implements AlterHandler {
     final String name, final List<String> part_vals, final Partition new_part,
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
-    return alterPartition(msdb, wh, DEFAULT_CATALOG_NAME, dbname, name, part_vals, new_part,
+    return alterPartition(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, part_vals, new_part,
         environmentContext, null, null);
   }
 
@@ -540,6 +561,7 @@ public class HiveAlterHandler implements AlterHandler {
           updateOrGetPartitionColumnStats(msdb, catName, dbname, name, new_part.getValues(),
               oldPart.getSd().getCols(), tbl, new_part, null, null);
         }
+        Deadline.checkTimeout();
         msdb.alterPartition(
             catName, dbname, name, new_part.getValues(), new_part, validWriteIds);
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
@@ -577,7 +599,7 @@ public class HiveAlterHandler implements AlterHandler {
     Database db;
     try {
       msdb.openTransaction();
-      Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name, null);
+      Table tbl = msdb.getTable(catName, dbname, name, null);
       if (tbl == null) {
         throw new InvalidObjectException(
             "Unable to alter partition because table or database does not exist.");
@@ -731,7 +753,7 @@ public class HiveAlterHandler implements AlterHandler {
     final String name, final List<Partition> new_parts,
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
-    return alterPartitions(msdb, wh, DEFAULT_CATALOG_NAME, dbname, name, new_parts,
+    return alterPartitions(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, new_parts,
         environmentContext, null, -1, null);
   }
 
@@ -1040,8 +1062,8 @@ public class HiveAlterHandler implements AlterHandler {
           }
         }
       }
-
       if (doAlterTable) {
+        Deadline.checkTimeout();
         // Change to new table and append stats for the new table
         msdb.alterTable(catName, dbName, tableName, newTable, validWriteIds);
         if (updateColumnStats) {
@@ -1109,6 +1131,7 @@ public class HiveAlterHandler implements AlterHandler {
                 break;
               }
             }
+            Deadline.checkTimeout();
             if (found) {
               if (rename) {
                 if (updateColumnStats) {
@@ -1145,25 +1168,4 @@ public class HiveAlterHandler implements AlterHandler {
 
     return newPartsColStats;
   }
-
-  private void checkColTypeChangeCompatible(List<FieldSchema> oldCols, List<FieldSchema> newCols)
-      throws InvalidOperationException {
-    List<String> incompatibleCols = new ArrayList<>();
-    int maxCols = Math.min(oldCols.size(), newCols.size());
-    for (int i = 0; i < maxCols; i++) {
-      if (!ColumnType.areColTypesCompatible(
-          ColumnType.getTypeName(oldCols.get(i).getType()),
-          ColumnType.getTypeName(newCols.get(i).getType()))) {
-        incompatibleCols.add(newCols.get(i).getName());
-      }
-    }
-    if (!incompatibleCols.isEmpty()) {
-      throw new InvalidOperationException(
-          "The following columns have types incompatible with the existing " +
-              "columns in their respective positions :\n" +
-              org.apache.commons.lang3.StringUtils.join(incompatibleCols, ',')
-      );
-    }
-  }
-
 }

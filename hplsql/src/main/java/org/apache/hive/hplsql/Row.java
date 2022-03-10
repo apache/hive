@@ -18,85 +18,81 @@
 
 package org.apache.hive.hplsql;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Table row (all columns)
  */
 public class Row {
-    
-  ArrayList<Column> columns = new ArrayList<Column>();
-  HashMap<String, Column> columnMap = new HashMap<String, Column>();
-  
-  /**
-   * Constructors
-   */
-  Row() {}
+  private final ColumnMap colMap = new ColumnMap();
+
+  public Row() {}
   
   Row(Row row) {
-    for (Column c : row.columns) {
-      addColumn(c.name, c.type); 
+    for (Column c : row.colMap.columns()) {
+      addColumnDefinition(c.getName(), c.getType());
     }    
   }
   
   /**
    * Add a column with specified data type
    */
-  void addColumn(String name, String type) {
-    Column column = new Column(name, type);
-    columns.add(column);
-    columnMap.put(name.toUpperCase(), column);
+  public void addColumnDefinition(String name, String type) {
+    colMap.add(new Column(name, type, null));
+  }
+
+  public void addColumn(String name, String type, Var value) {
+    Column column = new Column(name, type, value);
+    colMap.add(column);
   }
   
   /**
    * Get the data type by column name
    */
-  String getType(String name) {
-    Column column = columnMap.get(name.toUpperCase());
-    if (column != null) {
-      return column.getType();
-    }
-    return null;
+  public String getType(String name) {
+    Column column = colMap.get(name);
+    return column != null ? column.getType() : null;
   }
   
   /**
    * Get value by index
    */
-  Var getValue(int i) {
-    return columns.get(i).getValue();
+  public Var getValue(int i) {
+    return colMap.at(i).getValue();
   }
   
   /**
    * Get value by column name
    */
   Var getValue(String name) {
-    Column column = columnMap.get(name.toUpperCase());
-    if (column != null) {
-      return column.getValue();
-    }
-    return null;
+    Column column = colMap.get(name);
+    return column != null ? column.getValue() : null;
   }
   
   /**
    * Get columns
    */
-  ArrayList<Column> getColumns() {
-    return columns;
+  List<Column> getColumns() {
+    return colMap.columns();
   }
   
   /**
    * Get column by index
    */
-  Column getColumn(int i) {
-    return columns.get(i);
+  public Column getColumn(int i) {
+    return colMap.at(i);
   }
   
   /**
    * Get the number of columns
    */
   int size() {
-    return columns.size();
+    return colMap.size();
+  }
+
+  public List<ColumnDefinition> columnDefinitions() {
+    return getColumns().stream().map(Column::definition).collect(Collectors.toList());
   }
 }
 

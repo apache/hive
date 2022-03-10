@@ -201,7 +201,6 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   }
 
-
   @Test
   public void testPigFilterProjection() throws Exception {
     Initialize();

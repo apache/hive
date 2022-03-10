@@ -23,10 +23,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.fs.BlockLocation;
@@ -85,15 +89,22 @@ public class HiveSplitGenerator extends InputInitializer {
   private static final Logger LOG = LoggerFactory.getLogger(HiveSplitGenerator.class);
 
   private final DynamicPartitionPruner pruner;
-  private final Configuration conf;
-  private final JobConf jobConf;
-  private final MRInputUserPayloadProto userPayloadProto;
-  private final MapWork work;
+  private Configuration conf;
+  private JobConf jobConf;
+  private MRInputUserPayloadProto userPayloadProto;
+  private MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
-  private final SplitLocationProvider splitLocationProvider;
+  private SplitLocationProvider splitLocationProvider;
+  private Optional<Integer> numSplits;
+
   private boolean generateSingleSplit;
 
   public HiveSplitGenerator(Configuration conf, MapWork work, final boolean generateSingleSplit) throws IOException {
+    this(conf, work, generateSingleSplit, null);
+  }
+
+  public HiveSplitGenerator(Configuration conf, MapWork work, final boolean generateSingleSplit, Integer numSplits)
+      throws IOException {
     super(null);
 
     this.conf = conf;
@@ -117,13 +128,17 @@ public class HiveSplitGenerator extends InputInitializer {
     // initialized, which may cause it to drop events.
     // No dynamic partition pruning
     pruner = null;
+    this.numSplits = Optional.ofNullable(numSplits);
   }
 
-  public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
-      SerDeException {
+  public HiveSplitGenerator(InputInitializerContext initializerContext) {
     super(initializerContext);
-
     Preconditions.checkNotNull(initializerContext);
+    pruner = new DynamicPartitionPruner();
+    this.numSplits = Optional.empty();
+  }
+
+  private void prepare(InputInitializerContext initializerContext) throws IOException, SerDeException {
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
@@ -139,18 +154,16 @@ public class HiveSplitGenerator extends InputInitializer {
     this.splitLocationProvider =
         Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
     LOG.info("SplitLocationProvider: " + splitLocationProvider);
-
-    // Events can start coming in the moment the InputInitializer is created. The pruner
-    // must be setup and initialized here so that it sets up it's structures to start accepting events.
-    // Setting it up in initialize leads to a window where events may come in before the pruner is
-    // initialized, which may cause it to drop events.
-    pruner = new DynamicPartitionPruner(initializerContext, work, jobConf);
-
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public List<Event> initialize() throws Exception {
+    if (getContext() != null) {
+      // called from Tez AM.
+      prepare(getContext());
+    }
+
     // Setup the map work for this thread. Pruning modified the work instance to potentially remove
     // partitions. The same work instance must be used when generating splits.
     Utilities.setMapWork(jobConf, work);
@@ -160,6 +173,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
       // perform dynamic partition pruning
       if (pruner != null) {
+        pruner.initialize(getContext(), work, jobConf);
         pruner.prune();
       }
 
@@ -201,10 +215,16 @@ public class HiveSplitGenerator extends InputInitializer {
           LOG.info("The preferred split size is " + preferredSplitSize);
         }
 
+        float waves;
         // Create the un-grouped splits
-        float waves =
-          conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
-            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
+        if (numSplits.isPresent()) {
+          waves = numSplits.get().floatValue() / availableSlots;
+        } else {
+          waves =
+              conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
+                  TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
+
+        }
 
         InputSplit[] splits;
         if (generateSingleSplit &&
@@ -240,7 +260,7 @@ public class HiveSplitGenerator extends InputInitializer {
           }
         } else {
           // Raw splits
-          splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+          splits = inputFormat.getSplits(jobConf, numSplits.orElse(Math.multiplyExact(availableSlots, (int)waves)));
         }
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());
@@ -254,29 +274,33 @@ public class HiveSplitGenerator extends InputInitializer {
         String groupName = null;
         String vertexName = null;
         if (inputInitializerContext != null) {
-          tezCounters = new TezCounters();
-          groupName = HiveInputCounters.class.getName();
-          vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(splits.length);
-          final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(paths.size());
-          final Set<String> files = new HashSet<>();
-          for (InputSplit inputSplit : splits) {
-            if (inputSplit instanceof FileSplit) {
-              final FileSplit fileSplit = (FileSplit) inputSplit;
-              final Path path = fileSplit.getPath();
-              // The assumption here is the path is a file. Only case this is different is ACID deltas.
-              // The isFile check is avoided here for performance reasons.
-              final String fileStr = path.toString();
-              if (!files.contains(fileStr)) {
-                files.add(fileStr);
+          try {
+            tezCounters = new TezCounters();
+            groupName = HiveInputCounters.class.getName();
+            vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(splits.length);
+            final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(paths.size());
+            final Set<String> files = new HashSet<>();
+            for (InputSplit inputSplit : splits) {
+              if (inputSplit instanceof FileSplit) {
+                final FileSplit fileSplit = (FileSplit) inputSplit;
+                final Path path = fileSplit.getPath();
+                // The assumption here is the path is a file. Only case this is different is ACID deltas.
+                // The isFile check is avoided here for performance reasons.
+                final String fileStr = path.toString();
+                if (!files.contains(fileStr)) {
+                  files.add(fileStr);
+                }
               }
             }
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(files.size());
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update Tez counters", e);
           }
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(files.size());
         }
 
         if (work.getIncludedBuckets() != null) {
@@ -289,13 +313,16 @@ public class HiveSplitGenerator extends InputInitializer {
         InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
         LOG.info("Number of split groups: " + flatSplits.length);
         if (inputInitializerContext != null) {
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
+          try {
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
 
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Published tez counters: " + tezCounters);
+            LOG.debug("Published tez counters: {}", tezCounters);
+
+            inputInitializerContext.addCounters(tezCounters);
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update Tez counters", e);
           }
-          inputInitializerContext.addCounters(tezCounters);
         }
 
         List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits, generateConsistentSplits);
@@ -370,6 +397,8 @@ public class HiveSplitGenerator extends InputInitializer {
 
   @Override
   public void onVertexStateUpdated(VertexStateUpdate stateUpdate) {
+    // pruner registers for vertex state updates after it is ready to handle them
+    // so we do not worry about events coming before pruner was initialized
     pruner.processVertex(stateUpdate.getVertexName());
   }
 

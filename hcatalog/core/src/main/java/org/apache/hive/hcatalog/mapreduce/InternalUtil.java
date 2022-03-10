@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -143,18 +142,16 @@ class InternalUtil {
   //TODO this has to find a better home, it's also hardcoded as default in hive would be nice
   // if the default was decided by the serde
   static void initializeOutputSerDe(AbstractSerDe serDe, Configuration conf, OutputJobInfo jobInfo)
-    throws SerDeException {
-    SerDeUtils.initializeSerDe(serDe, conf,
-                               getSerdeProperties(jobInfo.getTableInfo(),
-                                                  jobInfo.getOutputSchema()),
-                               null);
+      throws SerDeException {
+    serDe.initialize(conf, getSerdeProperties(jobInfo.getTableInfo(), jobInfo.getOutputSchema()), null);
   }
 
   static void initializeDeserializer(Deserializer deserializer, Configuration conf,
                      HCatTableInfo info, HCatSchema schema) throws SerDeException {
     Properties props = getSerdeProperties(info, schema);
     LOG.info("Initializing " + deserializer.getClass().getName() + " with properties " + props);
-    SerDeUtils.initializeSerDe(deserializer, conf, props, null);
+    AbstractSerDe serDe = (AbstractSerDe) deserializer;
+    serDe.initialize(conf, props, null);
   }
 
   private static Properties getSerdeProperties(HCatTableInfo info, HCatSchema s)

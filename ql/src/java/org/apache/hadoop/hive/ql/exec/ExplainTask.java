@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.base.Joiner;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -49,6 +50,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -84,6 +89,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.TreeSet;
 
 /**
  * ExplainTask implementation.
@@ -93,8 +101,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(ExplainTask.class.getName());
 
   public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
+  private static final String EXCLUDED_RULES_PREFIX = "Excluded rules: ";
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
+  private static final String CBO_INFO_JSON_LABEL = "cboInfo";
+  private static final String CBO_PLAN_JSON_LABEL = "CBOPlan";
+  private static final String CBO_PLAN_TEXT_LABEL = "CBO PLAN:";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
 
@@ -144,15 +156,22 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outJSONObject;
   }
 
-  public JSONObject getJSONCBOPlan(PrintStream out, ExplainWork work) throws Exception {
+  public JSONObject getJSONCBOPlan(PrintStream out, ExplainWork work) {
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
     boolean jsonOutput = work.isFormatted();
     String cboPlan = work.getCboPlan();
     if (cboPlan != null) {
+      String ruleExclusionRegex = getRuleExcludedRegex();
       if (jsonOutput) {
-        outJSONObject.put("CBOPlan", cboPlan);
+        outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
+        if (!ruleExclusionRegex.isEmpty()) {
+          outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+        }
       } else {
-        out.println("CBO PLAN:");
+        if (!ruleExclusionRegex.isEmpty()) {
+          out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
+        }
+        out.println(CBO_PLAN_TEXT_LABEL);
         out.println(cboPlan);
       }
     }
@@ -244,9 +263,27 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         work.getCboPlan(), work.getOptimizedSQL());
   }
 
+  public JSONObject getJSONPlan(PrintStream out, ExplainWork work, String stageIdRearrange)
+          throws Exception {
+    return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
+            work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getCboInfo(),
+            work.getCboPlan(), work.getOptimizedSQL(), stageIdRearrange);
+  }
+
+  public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
+                                boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
+                                String cboPlan, String optimizedSQL) throws Exception {
+    return getJSONPlan(
+            out, tasks, fetchTask, jsonOutput, isExtended,
+            appendTaskType, cboInfo, cboPlan, optimizedSQL,
+            conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+  }
+
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
       boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
-      String cboPlan, String optimizedSQL) throws Exception {
+      String cboPlan, String optimizedSQL, String stageIdRearrange) throws Exception {
+
+    String ruleExclusionRegex = getRuleExcludedRegex();
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -258,9 +295,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (cboPlan != null) {
       if (jsonOutput) {
-        outJSONObject.put("CBOPlan", cboPlan);
+        outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
+        if (!ruleExclusionRegex.isEmpty()) {
+          outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+        }
       } else {
-        out.print("CBO PLAN:");
+        if (!ruleExclusionRegex.isEmpty()) {
+          out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
+        }
+        out.print(CBO_PLAN_TEXT_LABEL);
         out.println(cboPlan);
       }
     }
@@ -274,7 +317,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
     }
 
-    List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
+    List<Task> ordered = StageIDsRearranger.getExplainOrder(tasks, stageIdRearrange);
 
     if (fetchTask != null) {
       fetchTask.setParentTasks((List)StageIDsRearranger.getFetchSources(tasks));
@@ -285,7 +328,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     boolean suppressOthersForVectorization = false;
-    if (this.work != null && this.work.isVectorization()) {
+    if (this.work != null && (this.work.isVectorization() || this.work.isDDL())) {
       ImmutablePair<Boolean, JSONObject> planVecPair = outputPlanVectorization(out, jsonOutput);
 
       if (this.work.isVectorizationOnly()) {
@@ -303,6 +346,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     if (!suppressOthersForVectorization) {
+      if (!jsonOutput && !ruleExclusionRegex.isEmpty()) {
+        out.println(EXCLUDED_RULES_PREFIX + ruleExclusionRegex + "\n");
+      }
+
       JSONObject jsonDependencies = outputDependencies(out, jsonOutput, appendTaskType, ordered);
 
       if (out != null) {
@@ -311,7 +358,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       if (jsonOutput) {
         if (cboInfo != null) {
-          outJSONObject.put("cboInfo", cboInfo);
+          outJSONObject.put(CBO_INFO_JSON_LABEL, cboInfo);
         }
         outJSONObject.put(STAGE_DEPENDENCIES, jsonDependencies);
       }
@@ -406,6 +453,97 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonObject;
   }
 
+  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils)
+    throws HiveException {
+    tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
+  }
+  
+  public void addPKandBasicStats(Table tbl, List<String> basicDef, DDLPlanUtils ddlPlanUtils){
+    String primaryKeyStmt = ddlPlanUtils.getAlterTableStmtPrimaryKeyConstraint(tbl.getPrimaryKeyInfo());
+    if (primaryKeyStmt != null) {
+      basicDef.add(primaryKeyStmt);
+    }
+    basicDef.add(ddlPlanUtils.getAlterTableStmtTableStatsBasic(tbl));
+  }
+
+  public void addConstraints(Table tbl, List<String> constraints, Set<String> allTableNames,
+      DDLPlanUtils ddlPlanUtils){
+    constraints.addAll(ddlPlanUtils.populateConstraints(tbl, allTableNames));
+  }
+
+  public void addStats(Table table,List<String> alterTableStmt ,Map<String, List<Partition>> tablePartitionsMap,
+      DDLPlanUtils ddlPlanUtils)
+      throws HiveException, MetaException{
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(conf, false);
+    perfLogger.perfLogBegin(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+    if (table.isPartitioned()) {
+      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(table, tablePartitionsMap));
+    } else {
+      alterTableStmt.addAll(ddlPlanUtils.getAlterTableStmtTableStatsColsAll(table));
+    }
+    perfLogger.perfLogEnd(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+  }
+
+  public void addExplain(String sql , List<String> explainStmt, DDLPlanUtils ddlPlanUtils){
+    explainStmt.addAll(ddlPlanUtils.addExplainPlans(sql));
+    return;
+  }
+
+  public void getDDLPlan(PrintStream out) throws HiveException, MetaException, Exception {
+    DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
+    Set<String> createDatabase = new TreeSet<String>();
+    List<String> tableCreateStmt = new LinkedList<String>();
+    List<String> tableBasicDef = new LinkedList<String>();
+    List<String> createViewList = new LinkedList<String>();
+    List<String> alterTableStmt = new LinkedList<String>();
+    List<String> explainStmt = new LinkedList<String>();
+    Map<String, Table> tableMap = new HashMap<>();
+    Map<String, List<Partition>> tablePartitionsMap = new HashMap<>();
+    for (ReadEntity ent : work.getInputs()) {
+      switch (ent.getType()) {
+      // Views are also covered in table
+      case TABLE:
+        Table tbl = ent.getTable();
+        createDatabase.add(tbl.getDbName());
+        tableMap.put(tbl.getTableName(), tbl);
+        tablePartitionsMap.putIfAbsent(tbl.getTableName(), new ArrayList<Partition>());
+        break;
+      case PARTITION:
+        tablePartitionsMap.get(ent.getTable().getTableName()).add(ent.getPartition());
+        break;
+      default:
+        break;
+      }
+    }
+    //process the databases
+    List<String> createDatabaseStmt = ddlPlanUtils.getCreateDatabaseStmt(createDatabase);
+    //process the tables
+    for (String tableName : tableMap.keySet()) {
+      Table table = tableMap.get(tableName);
+      if (table.isView()) {
+        createViewList.add(ddlPlanUtils.getCreateViewStmt(table));
+        continue;
+      } else {
+        addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
+        addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
+        addConstraints(table, alterTableStmt, tableMap.keySet(), ddlPlanUtils);
+        addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
+      }
+    }
+    addExplain(conf.getQueryString(), explainStmt, ddlPlanUtils);
+    Joiner jn = Joiner.on("\n");
+    out.println(jn.join(createDatabaseStmt));
+    out.println(jn.join(tableCreateStmt));
+    out.println(jn.join(tableBasicDef));
+    out.println(jn.join(alterTableStmt));
+    out.println(jn.join(createViewList));
+    out.println(jn.join(explainStmt));
+    // Get the explain plan outputs and print them in the console.
+    getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
+        false, false, work.isAppendTaskType(), work.getCboInfo(),
+        work.getCboPlan(), work.getOptimizedSQL());
+  }
+
   @Override
   public int execute() {
 
@@ -415,7 +553,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      if (work.isCbo()) {
+      if(work.isDDL()){
+        getDDLPlan(out);
+      } else if (work.isCbo()) {
         JSONObject jsonCBOPlan = getJSONCBOPlan(out, work);
         if (work.isFormatted()) {
           out.print(jsonCBOPlan);
@@ -482,7 +622,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return (0);
     }
     catch (Exception e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to execute", e);
       setException(e);
       return (1);
     }
@@ -833,6 +973,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     return invokeFlag;
+  }
+
+  private String getRuleExcludedRegex() {
+    return conf == null ? "" : conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
   }
 
   @VisibleForTesting
@@ -1322,7 +1466,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
       if (conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
         JSONObject jsonPlan = task.getJSONPlan(
-            null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
+            null, rootTasks, sem.getFetchTask(), true,
+            conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_INCLUDE_EXTENDED), true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
             jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=

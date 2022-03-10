@@ -131,7 +131,7 @@ public class TestMetastoreConf {
     conf = MetastoreConf.newMetastoreConf();
     Assert.assertEquals("defaultval", MetastoreConf.getVar(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals(42, MetastoreConf.getLongVar(conf, ConfVars.LONG_TEST_ENTRY));
-    Assert.assertEquals(3.141592654, MetastoreConf.getDoubleVar(conf, ConfVars.DOUBLE_TEST_ENTRY),
+    Assert.assertEquals(Math.PI, MetastoreConf.getDoubleVar(conf, ConfVars.DOUBLE_TEST_ENTRY),
         0.0000001);
     Assert.assertTrue(MetastoreConf.getBoolVar(conf, ConfVars.BOOLEAN_TEST_ENTRY));
     Assert.assertEquals(1, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY, TimeUnit.SECONDS));
@@ -148,7 +148,7 @@ public class TestMetastoreConf {
     Assert.assertEquals("defaultval", MetastoreConf.get(conf, ConfVars.STR_TEST_ENTRY.getHiveName()));
     Assert.assertEquals("defaultval", MetastoreConf.getAsString(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals("42", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
-    Assert.assertEquals("3.141592654", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
+    Assert.assertEquals("" + Math.PI, MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
     Assert.assertEquals("true", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
   }
 
@@ -308,6 +308,36 @@ public class TestMetastoreConf {
     Assert.assertEquals("89", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
     Assert.assertEquals("1.9", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
     Assert.assertEquals("false", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
+  }
+
+  /**
+   * Verify that a config can be set with a deprecated key/name.
+   */
+  @Test
+  public void testDeprecatedConfigs() throws IOException {
+    // set with deprecated key
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "this.is.the.metastore.deprecated.name", "1" // default is 0
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+
+    // set with hive (HiveConf) deprecated key
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "this.is.the.hive.deprecated.name", "2" // default is 0
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(2, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+
+    // set with normal key
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "test.deprecated", "3" // default is 0
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
   }
 
   @Test

@@ -51,8 +51,10 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -93,7 +95,7 @@ public class Compiler {
   public QueryPlan compile(String rawCommand, boolean deferClose) throws CommandProcessorException {
     initialize(rawCommand);
 
-    boolean compileError = false;
+    Throwable compileException = null;
     boolean parsed = false;
     QueryPlan plan = null;
     try {
@@ -106,25 +108,26 @@ public class Compiler {
       DriverUtils.checkInterrupted(driverState, driverContext, "after analyzing query.", null, null);
 
       plan = createPlan(sem);
+      initializeFetchTask(plan);
       authorize(sem);
       explainOutput(sem, plan);
     } catch (CommandProcessorException cpe) {
-      compileError = true;
+      compileException = cpe.getCause();
       throw cpe;
     } catch (Exception e) {
-      compileError = true;
+      compileException = e;
       DriverUtils.checkInterrupted(driverState, driverContext, "during query compilation: " + e.getMessage(), null,
           null);
       handleException(e);
     } finally {
-      cleanUp(compileError, parsed, deferClose);
+      cleanUp(compileException, parsed, deferClose);
     }
 
     return plan;
   }
 
   private void initialize(String rawCommand) throws CommandProcessorException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
     driverState.compilingWithLocking();
 
     VariableSubstitution variableSubstitution = new VariableSubstitution(new HiveVariableSource() {
@@ -158,7 +161,7 @@ public class Compiler {
   }
 
   private void parse() throws ParseException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARSE);
 
     // Trigger query hook before compilation
     driverContext.getHookRunner().runBeforeParseHook(context.getCmd());
@@ -170,11 +173,11 @@ public class Compiler {
     } finally {
       driverContext.getHookRunner().runAfterParseHook(context.getCmd(), !success);
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARSE);
   }
 
   private BaseSemanticAnalyzer analyze() throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
 
     driverContext.getHookRunner().runBeforeCompileHook(context.getCmd());
 
@@ -206,8 +209,7 @@ public class Compiler {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(driverContext.getQueryState(), tree);
 
     if (!driverContext.isRetrial()) {
-      if ((driverContext.getQueryState().getHiveOperation() != null) &&
-          driverContext.getQueryState().getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+      if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())) {
         setLastReplIdForDump(driverContext.getQueryState().getConf());
       }
       driverContext.setTxnType(AcidUtils.getTxnType(driverContext.getConf(), tree));
@@ -217,7 +219,12 @@ public class Compiler {
     }
 
     // Do semantic analysis and plan generation
-    sem.analyze(tree, context);
+    try {
+      sem.startAnalysis();
+      sem.analyze(tree, context);
+    } finally {
+      sem.endAnalysis();
+    }
 
     if (executeHooks) {
       hookCtx.update(sem);
@@ -234,7 +241,7 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
     return sem;
   }
@@ -257,8 +264,12 @@ public class Compiler {
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen()) {
+        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+      if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())
+         || HiveOperation.REPLLOAD.equals(driverContext.getQueryState().getHiveOperation())) {
+        context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
+      }
       driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
     }
   }
@@ -280,6 +291,8 @@ public class Compiler {
        */
     case SHOWDATABASES:
     case SHOWTABLES:
+    case SHOW_TABLESTATUS:
+    case SHOW_TBLPROPERTIES:
     case SHOWCOLUMNS:
     case SHOWFUNCTIONS:
     case SHOWPARTITIONS:
@@ -339,12 +352,22 @@ public class Compiler {
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
+    // this is required so that later driver can skip executing prepare queries
+    if (sem.isPrepareQuery()) {
+      plan.setPrepareQuery(true);
+    }
+    return plan;
+  }
+
+  protected void initializeFetchTask(QueryPlan plan) {
+    // for PREPARE statement we should avoid initializing operators
+    if (plan.isPrepareQuery()) {
+      return;
+    }
     // initialize FetchTask right here
     if (plan.getFetchTask() != null) {
       plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);
     }
-
-    return plan;
   }
 
   /**
@@ -379,7 +402,7 @@ public class Compiler {
         try {
           lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(driverContext.getConf()));
         } catch (Exception e) {
-          LOG.warn("Error getting schema: " + StringUtils.stringifyException(e));
+          LOG.warn("Error getting schema", e);
         }
         if (lst != null) {
           schema = new Schema(lst, null);
@@ -393,11 +416,9 @@ public class Compiler {
 
   private void authorize(BaseSemanticAnalyzer sem) throws HiveException, CommandProcessorException {
     // do the authorization check
-    if (!sem.skipAuthorization() &&
-        HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-
+    if (!sem.skipAuthorization()) {
       try {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         // Authorization check for kill query will be in KillQueryImpl
         // As both admin or operation owner can perform the operation.
         // Which is not directly supported in authorizer
@@ -408,7 +429,7 @@ public class Compiler {
         CONSOLE.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
         throw DriverUtils.createProcessorException(driverContext, 403, authExp.getMessage(), "42000", null);
       } finally {
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
       }
     }
   }
@@ -420,7 +441,11 @@ public class Compiler {
           context, driverContext.getConf());
       if (explainOutput != null) {
         if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-          LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_TO_CONSOLE)) {
+            CONSOLE.printInfo("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          } else {
+            LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          }
         }
         if (driverContext.getConf().isWebUiQueryInfoCacheEnabled() &&
             driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
@@ -448,23 +473,25 @@ public class Compiler {
       errorMessage += ". Failed command: " + driverContext.getQueryString();
     }
 
-    CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+    if (!(e instanceof ReCompileException)) {
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+    }
     throw DriverUtils.createProcessorException(driverContext, error.getErrorCode(), errorMessage, error.getSQLState(),
         e);
   }
 
-  private void cleanUp(boolean compileError, boolean parsed, boolean deferClose) {
+  private void cleanUp(Throwable compileException, boolean parsed, boolean deferClose) {
     // Trigger post compilation hook. Note that if the compilation fails here then
     // before/after execution hook will never be executed.
     if (parsed) {
       try {
-        driverContext.getHookRunner().runAfterCompilationHook(context.getCmd(), compileError);
+        driverContext.getHookRunner().runAfterCompilationHook(driverContext, context, compileException);
       } catch (Exception e) {
         LOG.warn("Failed when invoking query after-compilation hook.", e);
       }
     }
 
-    double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE) / 1000.00;
+    double duration = perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.COMPILE) / 1000.00;
     ImmutableMap<String, Long> compileHMSTimings = Hive.dumpMetaCallTimingWithoutEx("compilation");
     driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
 
@@ -473,7 +500,7 @@ public class Compiler {
       LOG.info("Compiling command(queryId={}) has been interrupted after {} seconds", driverContext.getQueryId(),
           duration);
     } else {
-      driverState.compilationFinishedWithLocking(compileError);
+      driverState.compilationFinishedWithLocking(compileException != null);
       LOG.info("Completed compiling command(queryId={}); Time taken: {} seconds", driverContext.getQueryId(),
           duration);
     }

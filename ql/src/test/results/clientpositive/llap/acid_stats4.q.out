@@ -83,7 +83,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -289,7 +289,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(key2)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -352,12 +352,20 @@ STAGE PLANS:
 
 PREHOOK: query: alter table stats_nonpart2 add constraint primary_key primary key (key2) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
 POSTHOOK: query: alter table stats_nonpart2 add constraint primary_key primary key (key2) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
 PREHOOK: query: alter table stats_nonpart2 drop constraint primary_key
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
 POSTHOOK: query: alter table stats_nonpart2 drop constraint primary_key
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
 PREHOOK: query: explain select count(key2) from stats_nonpart2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_nonpart2
@@ -682,7 +690,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -819,7 +827,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -917,7 +925,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -995,7 +1003,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

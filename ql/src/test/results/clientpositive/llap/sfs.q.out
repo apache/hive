@@ -1,0 +1,103 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: select * from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	Acura	4	NULL	NULL
+2	Toyota	3	NULL	NULL
+3	Tesla	5	NULL	NULL
+4	Honda	5	NULL	NULL
+11	Mazda	2	NULL	NULL
+1	Acura	4	NULL	NULL
+2	Toyota	3	NULL	NULL
+3	Tesla	5	NULL	NULL
+4	Honda	5	NULL	NULL
+11	Mazda	2	NULL	NULL
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1s
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1s
+PREHOOK: query: select * from t1s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1s
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1s
+#### A masked pattern was here ####
+1	Acura	4	NULL	NULL
+2	Toyota	3	NULL	NULL
+3	Tesla	5	NULL	NULL
+4	Honda	5	NULL	NULL
+11	Mazda	2	NULL	NULL
+PREHOOK: query: desc formatted t1s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1s
+POSTHOOK: query: desc formatted t1s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1s
+# col_name            	data_type           	comment             
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	1                   
+	totalSize           	52                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(1) from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+10
+PREHOOK: query: select count(1) from t1s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1s
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from t1s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1s
+#### A masked pattern was here ####
+5

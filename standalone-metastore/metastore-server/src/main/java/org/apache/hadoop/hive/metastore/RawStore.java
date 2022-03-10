@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.*;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,12 +28,96 @@ import java.util.Map;
 
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.ISchema;
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
+import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
-
   /***
    * Annotation to skip retries
    */
@@ -103,9 +184,8 @@ public interface RawStore extends Configurable {
   /**
    * Get all the catalogs.
    * @return list of names of all catalogs in the system
-   * @throws MetaException if something goes wrong, usually in reading from the database.
    */
-  List<String> getCatalogs() throws MetaException;
+  List<String> getCatalogs();
 
   /**
    * Drop a catalog.  The catalog must be empty.
@@ -175,6 +255,52 @@ public interface RawStore extends Configurable {
    */
   List<String> getAllDatabases(String catalogName) throws MetaException;
 
+  /**
+   * Create a dataconnector.
+   * @param dataConnector dataconnector to create.
+   * @throws InvalidObjectException not sure it actually ever throws this.
+   * @throws MetaException if something goes wrong, usually in writing it to the dataconnector.
+   */
+  void createDataConnector(DataConnector dataConnector)
+      throws InvalidObjectException, MetaException;
+
+  /**
+   * Drop a dataconnector.
+   * @param dcName name of the dataconnector.
+   * @return true if the database was dropped, pretty much always returns this if it returns.
+   * @throws NoSuchObjectException no database in this catalog of this name to drop
+   * @throws MetaException something went wrong, usually with the database.
+   */
+  boolean dropDataConnector(String dcName)
+      throws NoSuchObjectException, MetaException;
+
+  /**
+   * Alter a dataconnector.
+   * @param dcName name of the dataconnector to alter
+   * @param connector new version of the dataconnector.  This should be complete as it will fully replace the
+   *          existing db object.
+   * @return true if the change succeeds, false otherwise.
+   * @throws NoSuchObjectException no dataconnector of this name exists to alter.
+   * @throws MetaException something went wrong, usually with the backend HMSDB.
+   */
+  boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException;
+
+  /**
+   * Get the dataconnector with a given name, if exists.
+   * @param dcName pattern names should match
+   * @return DataConnector object.
+   * @throws MetaException something went wrong, usually with the database.
+   */
+  DataConnector getDataConnector(String dcName) throws NoSuchObjectException;
+
+  /**
+   * Get names of all the databases in a catalog.
+   * @return list of names of all dataconnectors
+   * @throws MetaException something went wrong, usually with the database.
+   */
+  List<String> getAllDataConnectorNames() throws MetaException;
+
   boolean createType(Type type);
 
   Type getType(String typeName);
@@ -221,6 +347,19 @@ public interface RawStore extends Configurable {
    */
   Table getTable(String catalogName, String dbName, String tableName,
                  String writeIdList) throws MetaException;
+
+  /**
+   * Get a table object.
+   * @param catalogName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param writeIdList string format of valid writeId transaction list
+   * @return table object, or null if no such table exists (wow it would be nice if we either
+   * consistently returned null or consistently threw NoSuchObjectException).
+   * @throws MetaException something went wrong in the RDBMS
+   */
+  Table getTable(String catalogName, String dbName, String tableName,
+      String writeIdList, long tableId) throws MetaException;
 
   /**
    * Add a partition.
@@ -446,6 +585,22 @@ public interface RawStore extends Configurable {
       throws MetaException, UnknownDBException;
 
   /**
+   * @param catName catalog name
+   * @param dbname
+   *        The name of the database from which to retrieve the tables
+   * @param tableNames
+   *        The names of the tables to retrieve.
+   * @param projectionSpec
+   *        Projection Specification containing the columns that need to be returned.
+   * @return A list of the tables retrievable from the database
+   *          whose names are in the list tableNames.
+   *         If there are duplicate names, only one instance of the table will be returned
+   * @throws MetaException failure in querying the RDBMS.
+   */
+  List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
+                                    GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException;
+
+  /**
    * Get all tables in a database.
    * @param catName catalog name.
    * @param dbName database name.
@@ -597,7 +752,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException when table isn't found
    */
   List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+                                                         GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException;
   /**
    * Get partitions using an already parsed expression.
@@ -639,6 +794,20 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such table.
    */
   int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get the number of partitions that match a given partial specification.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param partVals A partial list of values for partitions in order of the table's partition keys.
+   *                  Entries can be empty if you need to specify latter partitions.
+   * @return number of matching partitions.
+   * @throws MetaException error accessing the RDBMS or working with the specification.
+   * @throws NoSuchObjectException no such table.
+   */
+  int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
       throws MetaException, NoSuchObjectException;
 
   /**
@@ -686,6 +855,19 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    */
   PrincipalPrivilegeSet getDBPrivilegeSet (String catName, String dbName, String userName,
+      List<String> groupNames)  throws InvalidObjectException, MetaException;
+
+  /**
+   * Get privileges for a connector for a user.
+   * @param catName catalog name
+   * @param connectorName connector name
+   * @param userName user name
+   * @param groupNames list of groups the user is in
+   * @return privileges for that user on indicated connector
+   * @throws InvalidObjectException no such database
+   * @throws MetaException error accessing the RDBMS
+   */
+  PrincipalPrivilegeSet getConnectorPrivilegeSet (String catName, String connectorName, String userName,
       List<String> groupNames)  throws InvalidObjectException, MetaException;
 
   /**
@@ -746,6 +928,16 @@ public interface RawStore extends Configurable {
    */
   List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String catName, String dbName);
+
+  /**
+   * For a given principal name and type, list the DC Grants
+   * @param principalName principal name
+   * @param principalType type
+   * @param dcName data connector name
+   * @return list of privileges for that principal on the specified data connector.
+   */
+  List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+                                                  PrincipalType principalType, String dcName);
 
   /**
    * For a given principal name and type, list the Table Grants
@@ -1122,6 +1314,15 @@ public interface RawStore extends Configurable {
       String principalName, PrincipalType principalType);
 
   /**
+   * List all DC grants for a given principal.
+   * @param principalName principal name
+   * @param principalType type
+   * @return all DC grants for this principal
+   */
+  List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+          String principalName, PrincipalType principalType);
+
+  /**
    * List all Table grants for a given principal
    * @param principalName principal name
    * @param principalType type
@@ -1166,6 +1367,13 @@ public interface RawStore extends Configurable {
    * @return list of all privileges.
    */
   List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName);
+
+  /**
+   * Find all the privileges for a given data connector.
+   * @param dcName data connector name
+   * @return list of all privileges.
+   */
+  List<HiveObjectPrivilege> listDCGrantsAll(String dcName);
 
   /**
    * Find all of the privileges for a given column in a given partition.
@@ -1313,7 +1521,7 @@ public interface RawStore extends Configurable {
   List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException;
 
-  /**
+    /**
    * Get the next notification event.
    * @param rqst Request containing information on the last processed notification.
    * @return list of notifications, sorted by eventId
@@ -1330,7 +1538,8 @@ public interface RawStore extends Configurable {
 
   /**
    * Remove older notification events.
-   * @param olderThan Remove any events older than a given number of seconds
+   *
+   * @param olderThan Remove any events older or equal to a given number of seconds
    */
   void cleanNotificationEvents(int olderThan);
 
@@ -1365,7 +1574,7 @@ public interface RawStore extends Configurable {
   /**
    * @param fileIds List of file IDs from the filesystem.
    * @param metadata Metadata buffers corresponding to fileIds in the list.
-   * @param type The type; determines the class that can do additiona processing for metadata.
+   * @param type The type; determines the class that can do additional processing for metadata.
    */
   void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata,
       FileMetadataExprType type) throws MetaException;
@@ -1422,7 +1631,19 @@ public interface RawStore extends Configurable {
    * @return list of primary key columns or an empty list if the table does not have a primary key
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name)
+      throws MetaException;
+
+  /**
+   * SQLPrimaryKey represents a single primary key column.
+   * Since a table can have one or more primary keys ( in case of composite primary key ),
+   * this method returns List<SQLPrimaryKey>
+   * @param request primary key request
+   * @return list of primary key columns or an empty list if the table does not have a primary key
+   * @throws MetaException error accessing the RDBMS
+   */
+  List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
       throws MetaException;
 
   /**
@@ -1438,9 +1659,22 @@ public interface RawStore extends Configurable {
    * matches the arguments the results here will be all mixed together into a single list.
    * @throws MetaException error access the RDBMS.
    */
+  @Deprecated
   List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException;
+
+  /**
+   * SQLForeignKey represents a single foreign key column.
+   * Since a table can have one or more foreign keys ( in case of composite foreign key ),
+   * this method returns List<SQLForeignKey>
+   * @param request ForeignKeysRequest object
+   * @return List of all matching foreign key columns.  Note that if more than one foreign key
+   * matches the arguments the results here will be all mixed together into a single list.
+   * @throws MetaException error access the RDBMS.
+   */
+  List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request)
+      throws MetaException;
 
   /**
    * Get unique constraints associated with a table.
@@ -1450,8 +1684,19 @@ public interface RawStore extends Configurable {
    * @return list of unique constraints
    * @throws MetaException error access the RDBMS.
    */
+  @Deprecated
   List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name,
     String tbl_name) throws MetaException;
+
+  /**
+   * SQLUniqueConstraint represents a single unique constraint column.
+   * Since a table can have one or more unique constraint ( in case of composite unique constraint ),
+   * this method returns List<SQLUniqueConstraint>
+   * @param request UniqueConstraintsRequest object.
+   * @return list of unique constraints
+   * @throws MetaException error access the RDBMS.
+   */
+  List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException;
 
   /**
    * Get not null constraints on a table.
@@ -1461,8 +1706,19 @@ public interface RawStore extends Configurable {
    * @return list of not null constraints
    * @throws MetaException error accessing the RDBMS.
    */
+  @Deprecated
   List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name,
     String tbl_name) throws MetaException;
+
+  /**
+   * SQLNotNullConstraint represents a single not null constraint column.
+   * Since a table can have one or more not null constraint ( in case of composite not null constraint ),
+   * this method returns List<SQLNotNullConstraint>
+   * @param request NotNullConstraintsRequest object.
+   * @return list of not null constraints
+   * @throws MetaException error accessing the RDBMS.
+   */
+  List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException;
 
   /**
    * Get default values for columns in a table.
@@ -1472,8 +1728,19 @@ public interface RawStore extends Configurable {
    * @return list of default values defined on the table.
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   List<SQLDefaultConstraint> getDefaultConstraints(String catName, String db_name,
                                                    String tbl_name) throws MetaException;
+
+  /**
+   * SQLDefaultConstraint represents a single default constraint column.
+   * Since a table can have one or more default constraint ( in case of composite default constraint ),
+   * this method returns List<SQLDefaultConstraint>
+   * @param request DefaultConstraintsRequest object.
+   * @return list of default values defined on the table.
+   * @throws MetaException error accessing the RDBMS
+   */
+  List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException;
 
   /**
    * Get check constraints for columns in a table.
@@ -1483,26 +1750,51 @@ public interface RawStore extends Configurable {
    * @return ccheck constraints for this table
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name,
                                                    String tbl_name) throws MetaException;
 
   /**
+   * SQLCheckConstraint represents a single check constraint column.
+   * Since a table can have one or more check constraint ( in case of composite check constraint ),
+   * this method returns List<SQLCheckConstraint>
+   * @param request CheckConstraintsRequest object.
+   * @return ccheck constraints for this table
+   * @throws MetaException error accessing the RDBMS
+   */
+  List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException;
+
+  /**
+   * Get all constraints of the table
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return all constraints for this table
+   * @throws MetaException error accessing the RDBMS
+   */
+  @Deprecated
+  SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get table constraints
+   * @param request AllTableConstraintsRequest object
+   * @return all constraints for this table
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   */
+  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException;
+
+  /**
    * Create a table with constraints
    * @param tbl table definition
-   * @param primaryKeys primary key definition, or null
-   * @param foreignKeys foreign key definition, or null
-   * @param uniqueConstraints unique constraints definition, or null
-   * @param notNullConstraints not null constraints definition, or null
-   * @param defaultConstraints default values definition, or null
+   * @param constraints wrapper of all table constraints
    * @return list of constraint names
    * @throws InvalidObjectException one of the provided objects is malformed.
    * @throws MetaException error accessing the RDBMS
    */
-  List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
-    List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints,
-    List<SQLDefaultConstraint> defaultConstraints,
-    List<SQLCheckConstraint> checkConstraints) throws InvalidObjectException, MetaException;
+  SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints) throws InvalidObjectException, MetaException;
 
   /**
    * Drop a constraint, any constraint.  I have no idea why add and get each have separate
@@ -1539,7 +1831,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException The SQLPrimaryKeys list is malformed
    * @throws MetaException error accessing the RDMBS
    */
-  List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
+  List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   /**
    * Add a foreign key to a table.
@@ -1548,7 +1840,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+  List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
 
   /**
    * Add unique constraints to a table.
@@ -1557,7 +1849,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+  List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
 
   /**
    * Add not null constraints to a table.
@@ -1566,29 +1858,29 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
+  List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
 
   /**
-   * Add default values to a table definition
+   * Add default values to a table definition.
    * @param dv list of default values
    * @return constraint names
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addDefaultConstraints(List<SQLDefaultConstraint> dv)
+  List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dv)
       throws InvalidObjectException, MetaException;
 
   /**
-   * Add check constraints to a table
+   * Add check constraints to a table.
    * @param cc check constraints to add
    * @return list of constraint names
    * @throws InvalidObjectException the specification is malformed
    * @throws MetaException error accessing the RDBMS
    */
-  List<String> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
+  List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
 
   /**
-   * Gets the unique id of the backing datastore for the metadata
+   * Gets the unique id of the backing datastore for the metadata.
    * @return
    * @throws MetaException
    */
@@ -1659,7 +1951,7 @@ public interface RawStore extends Configurable {
       NoSuchObjectException;
 
   /**
-   * Alter an existing ISchema.  This assumes the caller has already checked that such a schema
+   * Alter an existing ISchema.  This assumes the caller has already checked that such a schema.
    * exists.
    * @param schemaName name of the schema
    * @param newSchema new schema object
@@ -1677,7 +1969,8 @@ public interface RawStore extends Configurable {
   ISchema getISchema(ISchemaName schemaName) throws MetaException;
 
   /**
-   * Drop an ISchema.  This does not check whether there are valid versions of the schema in
+   * Drop an ISchema.
+   * This does not check whether there are valid versions of the schema in
    * existence, it assumes the caller has already done that.
    * @param schemaName schema descriptor
    * @throws NoSuchObjectException no schema of this name exists
@@ -1698,7 +1991,8 @@ public interface RawStore extends Configurable {
       throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
 
   /**
-   * Alter a schema version.  Note that the Thrift interface only supports changing the serde
+   * Alter a schema version.
+   * Note that the Thrift interface only supports changing the serde
    * mapping and states.  This method does not guarantee it will check anymore than that.  This
    * method does not understand the state transitions and just assumes that the new state it is
    * passed is reasonable.
@@ -1727,7 +2021,7 @@ public interface RawStore extends Configurable {
   SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
 
   /**
-   * Get all of the versions of a schema
+   * Get all of the versions of a schema.
    * @param schemaName name of the schema
    * @return all versions of the schema
    * @throws MetaException general database exception
@@ -1735,7 +2029,8 @@ public interface RawStore extends Configurable {
   List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
 
   /**
-   * Find all SchemaVersion objects that match a query.  The query will select all SchemaVersions
+   * Find all SchemaVersion objects that match a query.
+   * The query will select all SchemaVersions
    * that are equal to all of the non-null passed in arguments.  That is, if arguments
    * colName='name', colNamespace=null, type='string' are passed in, then all schemas that have
    * a column with colName 'name' and type 'string' will be returned.
@@ -1762,7 +2057,7 @@ public interface RawStore extends Configurable {
   void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
 
   /**
-   * Get serde information
+   * Get serde information.
    * @param serDeName name of the SerDe
    * @return the SerDe, or null if there is no such serde
    * @throws NoSuchObjectException no serde with this name exists
@@ -1771,7 +2066,7 @@ public interface RawStore extends Configurable {
   SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException;
 
   /**
-   * Add a serde
+   * Add a serde.
    * @param serde serde to add
    * @throws AlreadyExistsException a serde of this name already exists
    * @throws MetaException general database exception
@@ -1843,7 +2138,42 @@ public interface RawStore extends Configurable {
   void scheduledQueryProgress(ScheduledQueryProgressInfo info)
       throws MetaException, NoSuchObjectException, InvalidOperationException;
 
+  /**
+   * Add the replication metrics and progress info.
+   * @param replicationMetricList
+   */
+  void addReplicationMetrics(ReplicationMetricList replicationMetricList);
+
+  /**
+   * Gets the replication metrics and progress info.
+   * @param replicationMetricsRequest
+   */
+  ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
+
+  Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
+  int deleteReplicationMetrics(int maxRetainSecs);
+
   int deleteScheduledExecutions(int maxRetainSecs);
 
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
+
+  void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
+
+  void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
+
+  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException;
+
+  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
+
+  void addPackage(AddPackageRequest request) throws MetaException, NoSuchObjectException;
+  Package findPackage(GetPackageRequest request);
+  List<String> listPackages(ListPackageRequest request);
+  void dropPackage(DropPackageRequest request);
 }

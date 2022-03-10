@@ -114,12 +114,27 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   }
 
   @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
+  public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
     evictionDispatcher.notifyEvicted(this);
   }
 
   @Override
   protected boolean isLocked() {
+    return false;
+  }
+
+  @Override
+  public long markForEviction() {
+    return 0;
+  }
+
+  @Override
+  public void removeProactiveEvictionMark() {
+    //No-op
+  }
+
+  @Override
+  public boolean isMarkedForEviction() {
     return false;
   }
 

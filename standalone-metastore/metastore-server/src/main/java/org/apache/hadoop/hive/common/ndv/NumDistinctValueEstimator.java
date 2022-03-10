@@ -38,6 +38,8 @@ public interface NumDistinctValueEstimator {
 
   void addToEstimator(String s);
 
+  void addToEstimator(byte[] value, int offset, int length);
+
   void addToEstimator(HiveDecimal decimal);
 
   void mergeEstimators(NumDistinctValueEstimator o);

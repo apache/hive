@@ -47,6 +47,7 @@ PREHOOK: Output: default@loc_orc_1d_n2
 POSTHOOK: query: insert overwrite table loc_orc_1d_n2 partition(year) select * from ext_loc_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ext_loc_n2
+POSTHOOK: Output: default@loc_orc_1d_n2
 POSTHOOK: Output: default@loc_orc_1d_n2@year=2000
 POSTHOOK: Output: default@loc_orc_1d_n2@year=2001
 POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2000).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
@@ -187,6 +188,7 @@ PREHOOK: Output: default@loc_orc_2d_n2
 POSTHOOK: query: insert overwrite table loc_orc_2d_n2 partition(zip, year) select * from ext_loc_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ext_loc_n2
+POSTHOOK: Output: default@loc_orc_2d_n2
 POSTHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2000
 POSTHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2001
 POSTHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2000

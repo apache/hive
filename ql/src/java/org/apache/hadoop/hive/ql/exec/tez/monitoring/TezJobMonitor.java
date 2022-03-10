@@ -155,8 +155,8 @@ public class TezJobMonitor {
     synchronized (shutdownList) {
       shutdownList.add(dagClient);
     }
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
     DAGStatus.State lastState = null;
     boolean running = false;
 
@@ -194,9 +194,7 @@ public class TezJobMonitor {
           if (mergedCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(mergedCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
-            }
+            LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
             wmContext.setCurrentCounters(currentCounters);
           }
         }
@@ -218,7 +216,7 @@ public class TezJobMonitor {
               break;
             case RUNNING:
               if (!running) {
-                perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+                perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
                 console.printInfo("Status: Running (" + dagClient.getExecutionContext() + ")\n");
                 this.executionStartTime = System.currentTimeMillis();
                 running = true;
@@ -308,7 +306,7 @@ public class TezJobMonitor {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     printSummary(success, vertexProgressMap);
     return rc;
   }
@@ -437,6 +435,7 @@ public class TezJobMonitor {
 
       double duration = (System.currentTimeMillis() - this.executionStartTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in " + String.format("%.2f seconds", duration));
+      console.printInfo("DAG ID: " + this.dagClient.getDagIdentifierString());
       console.printInfo("");
 
       new QueryExecutionBreakdownSummary(perfLogger).print(console);
@@ -491,6 +490,10 @@ public class TezJobMonitor {
                                          String counterName) {
     TezCounter tezCounter = vertexCounters.getGroup(groupNamePattern).findCounter(counterName);
     return (tezCounter == null) ? 0 : tezCounter.getValue();
+  }
+
+  public HiveConf getHiveConf() {
+    return hiveConf;
   }
 
   public String getDiagnostics() {

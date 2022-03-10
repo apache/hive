@@ -16,6 +16,7 @@
  */
 package org.apache.hive.http.security;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.eclipse.jetty.util.security.Constraint;
 
 public class PamConstraint extends Constraint {
@@ -27,6 +28,7 @@ public class PamConstraint extends Constraint {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Ref external obj for efficiency")
   public String[] getRoles() {
     return roles;
   }

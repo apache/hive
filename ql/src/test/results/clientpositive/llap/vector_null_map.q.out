@@ -75,7 +75,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -137,8 +137,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 3]
-                        selectExpressions: VectorUDFAdaptor(map_keys(content)) -> 3:array<int>
+                        projectedOutputColumnNums: [0, 4]
+                        selectExpressions: VectorUDFAdaptor(map_keys(content)) -> 4:array<int>
                     Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -151,7 +151,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

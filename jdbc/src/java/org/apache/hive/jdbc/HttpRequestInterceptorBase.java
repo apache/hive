@@ -20,8 +20,6 @@ package org.apache.hive.jdbc;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;

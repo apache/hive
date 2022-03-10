@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
@@ -31,9 +32,9 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -68,35 +69,37 @@ public class HiveMetaStoreUtils {
    *
    */
   static public Deserializer getDeserializer(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table table, boolean skipConfError) throws
-          MetaException {
+      org.apache.hadoop.hive.metastore.api.Table table, String metaTable, boolean skipConfError) throws
+      MetaException {
     String lib = table.getSd().getSerdeInfo().getSerializationLib();
     if (lib == null) {
       return null;
     }
-    return getDeserializer(conf, table, skipConfError, lib);
+    return getDeserializer(conf, table, metaTable, skipConfError, lib);
   }
 
-  public static Deserializer getDeserializer(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table table, boolean skipConfError,
-      String lib) throws MetaException {
+  public static Deserializer getDeserializer(Configuration conf, org.apache.hadoop.hive.metastore.api.Table table,
+      String metaTable, boolean skipConfError, String lib) throws MetaException {
+    AbstractSerDe deserializer;
     try {
-      Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).
-              asSubclass(Deserializer.class), conf);
-      if (skipConfError) {
-        SerDeUtils.initializeSerDeWithoutErrorCheck(deserializer, conf,
-                MetaStoreUtils.getTableMetadata(table), null);
-      } else {
-        SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table), null);
-      }
-      return deserializer;
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (Throwable e) {
-      LOG.error("error in initSerDe: " + e.getClass().getName() + " "
-          + e.getMessage(), e);
+      deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).asSubclass(AbstractSerDe.class), conf);
+    } catch (Exception e) {
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
     }
+
+    try {
+      Properties properties = MetaStoreUtils.getTableMetadata(table);
+      if (metaTable != null) {
+        properties.put("metaTable", metaTable);
+      }
+      deserializer.initialize(conf, properties, null);
+    } catch (SerDeException e) {
+      if (!skipConfError) {
+        LOG.error("error in initSerDe: " + e.getClass().getName() + " " + e.getMessage(), e);
+        throw new MetaException(e.getClass().getName() + " " + e.getMessage());
+      }
+    }
+    return deserializer;
   }
 
   public static Class<? extends Deserializer> getDeserializerClass(
@@ -128,10 +131,10 @@ public class HiveMetaStoreUtils {
       org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
     String lib = part.getSd().getSerdeInfo().getSerializationLib();
     try {
-      Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).
-        asSubclass(Deserializer.class), conf);
-      SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table),
-                                 MetaStoreUtils.getPartitionMetadata(part, table));
+      AbstractSerDe deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).
+        asSubclass(AbstractSerDe.class), conf);
+      deserializer.initialize(conf, MetaStoreUtils.getTableMetadata(table),
+          MetaStoreUtils.getPartitionMetadata(part, table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;

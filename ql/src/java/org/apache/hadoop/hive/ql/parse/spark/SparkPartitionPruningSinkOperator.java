@@ -80,7 +80,7 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
   public void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     serializer = (Serializer) ReflectionUtils.newInstance(
-        conf.getTable().getDeserializerClass(), null);
+        conf.getTable().getSerDeClass(), null);
     buffer = new DataOutputBuffer();
   }
 

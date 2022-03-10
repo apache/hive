@@ -68,7 +68,7 @@ public class TestOldSchema {
 
   public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
     @Override
-    public String convertExprToFilter(byte[] expr, String defaultPartitionName) throws MetaException {
+    public String convertExprToFilter(byte[] expr, String defaultPartitionName, boolean decodeFilterExpToStr) throws MetaException {
       return null;
     }
 
@@ -106,7 +106,7 @@ public class TestOldSchema {
     store = new ObjectStore();
     store.setConf(conf);
     dropAllStoreObjects(store);
-    HiveMetaStore.HMSHandler.createDefaultCatalog(store, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(store, new Warehouse(conf));
 
     HyperLogLog hll = HyperLogLog.builder().build();
     hll.addLong(1);

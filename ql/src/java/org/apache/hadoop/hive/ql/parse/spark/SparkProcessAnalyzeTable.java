@@ -94,8 +94,8 @@ public class SparkProcessAnalyzeTable implements SemanticNodeProcessor {
       Preconditions.checkArgument(alias != null, "AssertionError: expected alias to be not null");
 
       SparkWork sparkWork = context.currentTask.getWork();
-      if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
-        // For ORC & Parquet, all the following statements are the same
+      if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
+        // For ORC, Parquet and Iceberg tables, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // There will not be any Spark job above this task

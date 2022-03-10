@@ -18,14 +18,12 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import org.apache.hadoop.hive.common.repl.ReplConst;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
-import javax.annotation.Nullable;
-import java.text.Collator;
 import java.util.Map;
+
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 
 /**
  * Statements executed to handle replication have some additional
@@ -47,22 +45,25 @@ public class ReplicationSpec {
   //TxnIds snapshot
   private String validTxnList = null;
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
-  private boolean isMigratingToTxnTable = false;
-  private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
   //Determine if replication is done using repl or export-import
   private boolean isRepl = false;
   private boolean isMetadataOnlyForExternalTables = false;
 
+  public void setInReplicationScope(boolean inReplicationScope) {
+    isInReplicationScope = inReplicationScope;
+  }
+
   // Key definitions related to replication.
   public enum KEY {
     REPL_SCOPE("repl.scope"),
     EVENT_ID("repl.event.id"),
-    CURR_STATE_ID(ReplConst.REPL_TARGET_TABLE_PROPERTY),
+    CURR_STATE_ID_SOURCE(ReplConst.REPL_TARGET_TABLE_PROPERTY),
     NOOP("repl.noop"),
     IS_REPLACE("repl.is.replace"),
     VALID_WRITEID_LIST("repl.valid.writeid.list"),
-    VALID_TXN_LIST("repl.valid.txnid.list")
+    VALID_TXN_LIST("repl.valid.txnid.list"),
+    CURR_STATE_ID_TARGET(REPL_TARGET_DATABASE_PROPERTY),
     ;
     private final String keyName;
 
@@ -122,7 +123,7 @@ public class ReplicationSpec {
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isReplace) {
-    this.isInReplicationScope = isInReplicationScope;
+    this.setInReplicationScope(isInReplicationScope);
     this.isMetadataOnly = isMetadataOnly;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
@@ -133,19 +134,19 @@ public class ReplicationSpec {
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
     String scope = keyFetcher.apply(ReplicationSpec.KEY.REPL_SCOPE.toString());
-    this.isInReplicationScope = false;
+    this.setInReplicationScope(false);
     this.isMetadataOnly = false;
     this.specType = Type.DEFAULT;
     if (scope != null) {
       if (scope.equalsIgnoreCase("metadata")) {
         this.isMetadataOnly = true;
-        this.isInReplicationScope = true;
+        this.setInReplicationScope(true);
       } else if (scope.equalsIgnoreCase("all")) {
-        this.isInReplicationScope = true;
+        this.setInReplicationScope(true);
       }
     }
     this.eventId = keyFetcher.apply(ReplicationSpec.KEY.EVENT_ID.toString());
-    this.currStateId = keyFetcher.apply(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    this.currStateId = keyFetcher.apply(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
     this.isNoop = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.NOOP.toString()));
     this.isReplace = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_REPLACE.toString()));
     this.validWriteIdList = keyFetcher.apply(ReplicationSpec.KEY.VALID_WRITEID_LIST.toString());
@@ -209,25 +210,9 @@ public class ReplicationSpec {
     return allowReplacement(getLastReplicatedStateFromParameters(params), getReplicationState());
   }
 
-  /**
-   * Returns a predicate filter to filter an Iterable&lt;Partition&gt; to return all partitions
-   * that the current replication event specification is allowed to replicate-replace-into
-   */
-  public Predicate<Partition> allowEventReplacementInto() {
-    return new Predicate<Partition>() {
-      @Override
-      public boolean apply(@Nullable Partition partition) {
-        if (partition == null){
-          return false;
-        }
-        return (allowEventReplacementInto(partition.getParameters()));
-      }
-    };
-  }
-
   private void init(ASTNode node){
     // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
-    isInReplicationScope = true;
+    setInReplicationScope(true);
     eventId = PlanUtils.stripQuotes(node.getChild(0).getText());
     if ((node.getChildCount() > 1)
             && node.getChild(1).getText().toLowerCase().equals("metadata")) {
@@ -245,8 +230,15 @@ public class ReplicationSpec {
   }
 
   public static String getLastReplicatedStateFromParameters(Map<String, String> m) {
-    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID.toString()))){
-      return m.get(KEY.CURR_STATE_ID.toString());
+    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID_SOURCE.toString()))){
+      return m.get(KEY.CURR_STATE_ID_SOURCE.toString());
+    }
+    return null;
+  }
+
+  public static String getTargetLastReplicatedStateFromParameters(Map<String, String> m) {
+    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID_TARGET.toString()))){
+      return m.get(KEY.CURR_STATE_ID_TARGET.toString());
     }
     return null;
   }
@@ -375,7 +367,7 @@ public class ReplicationSpec {
         }
       case EVENT_ID:
         return getReplicationState();
-      case CURR_STATE_ID:
+      case CURR_STATE_ID_SOURCE:
         return getCurrentReplicationState();
       case NOOP:
         return String.valueOf(isNoop());
@@ -401,25 +393,11 @@ public class ReplicationSpec {
     }
   }
 
-  public boolean isMigratingToTxnTable() {
-    return isMigratingToTxnTable;
-  }
-  public void setMigratingToTxnTable() {
-    isMigratingToTxnTable = true;
-  }
-
-  public boolean isMigratingToExternalTable() {
-    return isMigratingToExternalTable;
-  }
-
-  public void setMigratingToExternalTable() {
-    isMigratingToExternalTable = true;
-  }
 
   public static void copyLastReplId(Map<String, String> srcParameter, Map<String, String> destParameter) {
-    String lastReplId = srcParameter.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    String lastReplId = srcParameter.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
     if (lastReplId != null) {
-      destParameter.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastReplId);
+      destParameter.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), lastReplId);
     }
   }
 

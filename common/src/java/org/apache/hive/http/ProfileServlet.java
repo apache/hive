@@ -36,7 +36,7 @@ import com.google.common.base.Joiner;
 
 /**
  * Servlet that runs async-profiler as web-endpoint.
- * Following options from async-profiler can be specified as query paramater.
+ * Following options from async-profiler can be specified as query parameter.
  * //  -e event          profiling event: cpu|alloc|lock|cache-misses etc.
  * //  -d duration       run profiling for &lt;duration&gt; seconds (integer)
  * //  -i interval       sampling interval in nanoseconds (long)
@@ -146,7 +146,7 @@ public class ProfileServlet extends HttpServlet {
   private Lock profilerLock = new ReentrantLock();
   private Integer pid;
   private String asyncProfilerHome;
-  private Process process;
+  private transient Process process;
 
   public ProfileServlet() {
     this.asyncProfilerHome = getAsyncProfilerHome();

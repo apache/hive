@@ -1,0 +1,79 @@
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: create table db1.t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@t1
+POSTHOOK: query: create table db1.t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@t1
+PREHOOK: query: create materialized view db1.mat1 as
+SELECT * FROM db1.t1 WHERE col0 = 1
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: db1@t1
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@mat1
+POSTHOOK: query: create materialized view db1.mat1 as
+SELECT * FROM db1.t1 WHERE col0 = 1
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: db1@t1
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@mat1
+POSTHOOK: Lineage: mat1.col0 SIMPLE []
+PREHOOK: query: grant select on table db1.t1 to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: db1@t1
+POSTHOOK: query: grant select on table db1.t1 to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: db1@t1
+PREHOOK: query: explain cbo
+SELECT * FROM db1.t1 WHERE col0 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT * FROM db1.t1 WHERE col0 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[CAST(1):INTEGER])
+  HiveFilter(condition=[=($0, 1)])
+    HiveTableScan(table=[[db1, t1]], table:alias=[t1])
+
+PREHOOK: query: grant all on db1.mat1 to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: db1@mat1
+POSTHOOK: query: grant all on db1.mat1 to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: db1@mat1
+PREHOOK: query: explain cbo
+SELECT * FROM db1.t1 WHERE col0 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@mat1
+PREHOOK: Input: db1@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT * FROM db1.t1 WHERE col0 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@mat1
+POSTHOOK: Input: db1@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[db1, mat1]], table:alias=[db1.mat1])
+
+PREHOOK: query: drop materialized view db1.mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: db1@mat1
+PREHOOK: Output: db1@mat1
+POSTHOOK: query: drop materialized view db1.mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: db1@mat1
+POSTHOOK: Output: db1@mat1

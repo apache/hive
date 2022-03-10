@@ -13,7 +13,7 @@ CREATE TABLE part_tiny(
 )
 LOCATION '${hiveconf:test.blobstore.path.unique}/ptf_general_queries/part_tiny';
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' INTO TABLE part_tiny;
+LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/part.tbl.bz2' INTO TABLE part_tiny;
 
 -- Test DISTRIBUTE BY without any aggregate function 
 SELECT p_mfgr, p_name, p_size

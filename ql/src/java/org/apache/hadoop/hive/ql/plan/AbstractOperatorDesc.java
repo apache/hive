@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -46,6 +48,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    * reduce sink and group by op
    */
   protected Map<String, ExprNodeDesc> colExprMap;
+
+  private Set<String> computedFields = new HashSet<String>();
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
@@ -122,8 +126,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Override
-  public void setMaxMemoryAvailable(final long memoryAvailble) {
-    this.memAvailable = memoryAvailble;
+  public void setMaxMemoryAvailable(final long memoryAvailable) {
+    this.memAvailable = memoryAvailable;
   }
 
   @Override
@@ -180,5 +184,15 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   @Override
   public void setBucketingVersion(int bucketingVersion) {
     this.bucketingVersion = bucketingVersion;
+  }
+
+  @Override
+  public void addComputedField(String column) {
+    computedFields.add(column);
+  }
+
+  @Override
+  public Set<String> getComputedFields() {
+    return computedFields;
   }
 }

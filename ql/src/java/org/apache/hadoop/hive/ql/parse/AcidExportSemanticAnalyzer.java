@@ -163,7 +163,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
       createTableTask.initialize(null, null, new TaskQueue(context), context);
       createTableTask.execute();
       newTable = db.getTable(newTableName);
-    } catch(IOException|HiveException ex) {
+    } catch(HiveException ex) {
       throw new SemanticException(ex);
     }
 

@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcConf;
@@ -74,6 +75,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -115,6 +117,52 @@ public class TestOrcRawRecordMerger {
     assertEquals(false, left.equals(ri));
   }
 
+  @Test
+  public void testIntersect() {
+    OrcRawRecordMerger.KeyInterval ki1 = generateKeyInterval(1000L, 2000L);
+    OrcRawRecordMerger.KeyInterval ki2 = generateKeyInterval(1500L, 2500L);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(500L, 1000L);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(500L, 999L);
+    checkIntersect(ki1, ki2, false);
+
+    ki2 = generateKeyInterval(500L, null);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(2500L, null);
+    checkIntersect(ki1, ki2, false);
+
+    ki2 = generateKeyInterval(null, null);
+    checkIntersect(ki1, ki2, true);
+  }
+
+  private static OrcRawRecordMerger.KeyInterval generateKeyInterval(Long minRowId, Long maxRowId) {
+    RecordIdentifier min = null;
+    if (minRowId != null) {
+      min = new RecordIdentifier(1, 100, minRowId);
+    }
+    RecordIdentifier max = null;
+    if (maxRowId != null) {
+      max = new RecordIdentifier(1, 100, maxRowId);
+    }
+    return new OrcRawRecordMerger.KeyInterval(min, max);
+  }
+
+  private static void checkIntersect(OrcRawRecordMerger.KeyInterval ki1, OrcRawRecordMerger.KeyInterval ki2,
+      boolean isIntersect)
+  {
+    if (isIntersect) {
+      assertTrue(ki1.isIntersects(ki2));
+      assertTrue(ki2.isIntersects(ki1));
+    } else {
+      assertFalse(ki1.isIntersects(ki2));
+      assertFalse(ki2.isIntersects(ki1));
+    }
+  }
+
   private static void setRow(OrcStruct event,
                              int operation,
                              long originalTransaction,
@@ -142,13 +190,14 @@ public class TestOrcRawRecordMerger {
     long offset = 0;
     List<StripeInformation> result =
         new ArrayList<StripeInformation>(rowCounts.length);
+    int stripeCount = 0;
     for(long count: rowCounts) {
       OrcProto.StripeInformation.Builder stripe =
           OrcProto.StripeInformation.newBuilder();
       stripe.setDataLength(800).setIndexLength(100).setFooterLength(100)
           .setNumberOfRows(count).setOffset(offset);
       offset += 1000;
-      result.add(new ReaderImpl.StripeInformationImpl(stripe.build()));
+      result.add(new ReaderImpl.StripeInformationImpl(stripe.build(), stripeCount++, -1, null));
     }
     return result;
   }
@@ -597,7 +646,7 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false, null, false);
+    AcidDirectory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
@@ -668,8 +717,7 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format, null,
-        use130Format);
+    AcidDirectory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
     assertEquals(new Path(root, use130Format ?

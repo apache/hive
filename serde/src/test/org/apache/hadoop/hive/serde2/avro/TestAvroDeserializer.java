@@ -293,7 +293,7 @@ public class TestAvroDeserializer {
     record.put("timestampField", 1546387200999L);
     assertTrue(GENERIC_DATA.validate(readerSchema, record));
 
-    AvroGenericRecordWritable agrw = new AvroGenericRecordWritable(ZoneId.of("America/New_York"), false);
+    AvroGenericRecordWritable agrw = new AvroGenericRecordWritable(ZoneId.of("America/New_York"), false, false);
     agrw.setRecord(record);
     agrw.setFileSchema(readerSchema);
     agrw.setRecordReaderID(new UID());
@@ -510,7 +510,7 @@ public class TestAvroDeserializer {
     assertEquals("DALEKS", finalValue);
   }
 
-  @Test // Fixed doesn't exist in Hive. Fixeds go in, lists of bytes go out.
+  @Test // Fixed doesn't exist in Hive. Fixed go in, lists of bytes go out.
   public void canDeserializeFixed() throws SerDeException, IOException {
     Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.FIXED_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);

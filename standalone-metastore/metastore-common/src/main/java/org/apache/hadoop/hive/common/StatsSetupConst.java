@@ -102,6 +102,10 @@ public class StatsSetupConst {
 
   public static final String RUN_TIME_ROW_COUNT = "runTimeNumRows";
 
+  public static final String INSERT_COUNT = "insertCount";
+  public static final String UPDATE_COUNT = "updateCount";
+  public static final String DELETE_COUNT = "deleteCount";
+
   /**
    * The name of the statistic Raw Data Size to be published or gathered.
    */
@@ -148,6 +152,10 @@ public class StatsSetupConst {
   // update stats. It is set by any client-side task which wishes to signal that no stats
   // update should take place, such as with replication.
   public static final String DO_NOT_UPDATE_STATS = "DO_NOT_UPDATE_STATS";
+
+  // This string constant is used by AlterHandler to figure out that it should not attempt to
+  // populate quick stats based on the file listing
+  public static final String DO_NOT_POPULATE_QUICK_STATS = "DO_NOT_POPULATE_QUICK_STATS";
 
   //This string constant will be persisted in metastore to indicate whether corresponding
   //table or partition's statistics and table or partition's column statistics are accurate or not.
@@ -308,7 +316,7 @@ public class StatsSetupConst {
   }
 
   public static void clearColumnStatsState(Map<String, String> params) {
-    if (params == null) {
+    if (params == null || params.get(COLUMN_STATS_ACCURATE) == null) {
       return;
     }
 

@@ -30,11 +30,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InitializeTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -223,7 +223,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       files already present in the table. */
       TxnStore t = TxnUtils.getTxnStore(getConf());
       //For now assume no partition may have > 10M files.  Perhaps better to count them.
-      t.seedWriteIdOnAcidConversion(new InitializeTableWriteIdsRequest(newTable.getDbName(),
+      t.seedWriteId(new SeedTableWriteIdsRequest(newTable.getDbName(),
           newTable.getTableName(), 10000000));
     }
   }

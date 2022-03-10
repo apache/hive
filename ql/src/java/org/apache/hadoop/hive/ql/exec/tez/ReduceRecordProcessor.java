@@ -101,7 +101,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
   @Override
   void init(MRTaskReporter mrReporter, Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs)
       throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(mrReporter, inputs, outputs);
 
     MapredContext.init(false, new JobConf(jconf));
@@ -241,7 +241,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
   private void initializeMultipleSources(ReduceWork redWork, int numTags, ObjectInspector[] ois,

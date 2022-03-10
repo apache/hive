@@ -32,8 +32,7 @@ import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -142,15 +141,13 @@ public class DemuxOperator extends Operator<DemuxDesc>
         cntrs[newTag] = 0;
         nextCntrs[newTag] = 0;
         TableDesc keyTableDesc = conf.getKeysSerializeInfos().get(newTag);
-        Deserializer inputKeyDeserializer = ReflectionUtil.newInstance(keyTableDesc
-            .getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
+        AbstractSerDe inputKeyDeserializer = ReflectionUtil.newInstance(keyTableDesc.getSerDeClass(), null);
+        inputKeyDeserializer.initialize(null, keyTableDesc.getProperties(), null);
 
         TableDesc valueTableDesc = conf.getValuesSerializeInfos().get(newTag);
-        Deserializer inputValueDeserializer = ReflectionUtil.newInstance(valueTableDesc
-            .getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputValueDeserializer, null, valueTableDesc.getProperties(),
-                                   null);
+        AbstractSerDe inputValueDeserializer = ReflectionUtil.newInstance(valueTableDesc
+            .getSerDeClass(), null);
+        inputValueDeserializer.initialize(null, valueTableDesc.getProperties(), null);
 
         List<ObjectInspector> oi = new ArrayList<ObjectInspector>();
         oi.add(inputKeyDeserializer.getObjectInspector());
@@ -188,10 +185,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
       }
       newChildOperatorsTag[i] = toArray(childOperatorTags);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("newChildOperatorsTag " + Arrays.toString(newChildOperatorsTag));
-    }
-
+    LOG.info("newChildOperatorsTag " + Arrays.toString(newChildOperatorsTag));
   }
 
   private int[] toArray(List<Integer> list) {
@@ -214,15 +208,11 @@ public class DemuxOperator extends Operator<DemuxDesc>
   @Override
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Operator " + id + " " + getName() + " initialized");
-      LOG.info("Initializing children of " + id + " " + getName());
-    }
+    LOG.info("Operator " + id + " " + getName() + " initialized");
+    LOG.info("Initializing children of " + id + " " + getName());
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
-          childOperatorsArray[i].getName() + " " + childInputObjInspectors[i].length);
-      }
+      LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " "
+          + childOperatorsArray[i].getName() + " " + childInputObjInspectors[i].length);
       // We need to initialize those MuxOperators first because if we first
       // initialize other operators, the states of all parents of those MuxOperators
       // are INIT (including this DemuxOperator),
@@ -246,10 +236,8 @@ public class DemuxOperator extends Operator<DemuxDesc>
       }
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
-          childOperatorsArray[i].getName() + " " + childInputObjInspectors[i].length);
-      }
+      LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " "
+          + childOperatorsArray[i].getName() + " " + childInputObjInspectors[i].length);
       if (!(childOperatorsArray[i] instanceof MuxOperator)) {
         childOperatorsArray[i].initialize(hconf, childInputObjInspectors[i]);
       } else {
@@ -309,10 +297,8 @@ public class DemuxOperator extends Operator<DemuxDesc>
       int newTag = i;
       int oldTag = newTagToOldTag[i];
       int childIndex = newTagToChildIndex[newTag];
-      if (LOG.isInfoEnabled()) {
-        LOG.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
-          + oldTag + "),  forwarded " + cntrs[newTag] + " rows");
-      }
+      LOG.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", " + oldTag + "),  forwarded "
+          + cntrs[newTag] + " rows");
     }
   }
 

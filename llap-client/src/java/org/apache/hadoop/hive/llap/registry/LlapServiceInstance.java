@@ -14,6 +14,9 @@
 package org.apache.hadoop.hive.llap.registry;
 
 
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 
 import org.apache.hadoop.yarn.api.records.Resource;
@@ -47,6 +50,24 @@ public interface LlapServiceInstance extends ServiceInstance {
    */
   public int getOutputFormatPort();
 
+  /**
+   * External host, usually needed in cloud envs where we cannot access internal host from outside
+   *
+   * @return
+   */
+  String getExternalHostname();
+
+  /**
+   * RPC endpoint for external clients - tcp traffic on this port should be opened on cloud.
+   *
+   * @return
+   */
+  int getExternalClientsRpcPort();
+
+
+  default void ensureCloudEnv(Configuration conf) {
+    Preconditions.checkState(LlapUtil.isCloudDeployment(conf), "Only supported in cloud based deployments");
+  }
 
   /**
    * Memory and Executors available for the LLAP tasks

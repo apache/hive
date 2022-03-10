@@ -90,26 +90,26 @@ public class TestHiveStringUtils {
   public void testLinesEndingWithComments() {
     int[] escape = {-1};
     assertEquals("show tables;", removeComments("show tables;",escape));
-    assertEquals("show tables;", removeComments("show tables; --comments",escape));
-    assertEquals("show tables;", removeComments("show tables; -------comments",escape));
-    assertEquals("show tables;", removeComments("show tables; -------comments;one;two;three;;;;",escape));
+    assertEquals("show tables; ", removeComments("show tables; --comments",escape));
+    assertEquals("show tables; ", removeComments("show tables; -------comments",escape));
+    assertEquals("show tables; ", removeComments("show tables; -------comments;one;two;three;;;;",escape));
     assertEquals("show", removeComments("show-- tables; -------comments",escape));
-    assertEquals("show", removeComments("show --tables; -------comments",escape));
+    assertEquals("show ", removeComments("show --tables; -------comments",escape));
     assertEquals("s", removeComments("s--how --tables; -------comments",escape));
     assertEquals("", removeComments("-- show tables; -------comments",escape));
 
-    assertEquals("\"show tables\"", removeComments("\"show tables\" --comments",escape));
-    assertEquals("\"show --comments tables\"", removeComments("\"show --comments tables\" --comments",escape));
-    assertEquals("\"'show --comments' tables\"", removeComments("\"'show --comments' tables\" --comments",escape));
-    assertEquals("'show --comments tables'", removeComments("'show --comments tables' --comments",escape));
-    assertEquals("'\"show --comments tables\"'", removeComments("'\"show --comments tables\"' --comments",escape));
+    assertEquals("\"show tables\" ", removeComments("\"show tables\" --comments",escape));
+    assertEquals("\"show --comments tables\" ", removeComments("\"show --comments tables\" --comments",escape));
+    assertEquals("\"'show --comments' tables\" ", removeComments("\"'show --comments' tables\" --comments",escape));
+    assertEquals("'show --comments tables' ", removeComments("'show --comments tables' --comments",escape));
+    assertEquals("'\"show --comments tables\"' ", removeComments("'\"show --comments tables\"' --comments",escape));
   }
 
   /**
    * check that statement is unchanged after stripping
    */
   private void assertUnchanged(String statement) {
-    assertEquals("statement should not have been affected by stripping commnents", statement,
+    assertEquals("statement should not have been affected by stripping comments", statement,
         removeComments(statement));
   }
 }

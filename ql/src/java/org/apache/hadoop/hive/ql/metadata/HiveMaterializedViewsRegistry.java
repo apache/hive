@@ -18,13 +18,12 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.function.BiFunction;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
@@ -42,7 +40,6 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
@@ -63,9 +60,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewIncrementalRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.CBOPlan;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.QueryTables;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -79,6 +80,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import com.google.common.collect.ImmutableList;
+
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.TEXT;
 
 /**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
@@ -94,12 +100,10 @@ public final class HiveMaterializedViewsRegistry {
   /* Singleton */
   private static final HiveMaterializedViewsRegistry SINGLETON = new HiveMaterializedViewsRegistry();
 
-  /* Key is the database name. Value a map from the qualified name to the view object. */
-  private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
-      new ConcurrentHashMap<String, ConcurrentMap<String, RelOptMaterialization>>();
+  private final MaterializedViewsCache materializedViewsCache = new MaterializedViewsCache();
 
   /* Whether the cache has been initialized or not. */
-  private AtomicBoolean initialized = new AtomicBoolean(false);
+  private final AtomicBoolean initialized = new AtomicBoolean(false);
 
   private HiveMaterializedViewsRegistry() {
   }
@@ -167,17 +171,18 @@ public final class HiveMaterializedViewsRegistry {
       ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
       SessionState.start(ss);
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
-            RelOptMaterialization existingMV = getRewritingMaterializedView(mvTable.getDbName(), mvTable.getTableName());
+            RelOptMaterialization existingMV = getRewritingMaterializedView(
+                    mvTable.getDbName(), mvTable.getTableName(), ALL);
             if (existingMV != null) {
               // We replace if the existing MV is not newer
-              Table existingMVTable = extractTable(existingMV);
+              Table existingMVTable = HiveMaterializedViewUtils.extractTable(existingMV);
               if (existingMVTable.getCreateTime() < mvTable.getCreateTime() ||
                   (existingMVTable.getCreateTime() == mvTable.getCreateTime() &&
-                      existingMVTable.getCreationMetadata().getMaterializationTime() <= mvTable.getCreationMetadata().getMaterializationTime())) {
+                      existingMVTable.getMVMetadata().getMaterializationTime() <= mvTable.getMVMetadata().getMaterializationTime())) {
                 refreshMaterializedView(db.getConf(), existingMVTable, mvTable);
               }
             } else {
@@ -200,7 +205,7 @@ public final class HiveMaterializedViewsRegistry {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
       }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
     }
   }
 
@@ -211,7 +216,7 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Parses and creates a materialization.
    */
-  public RelOptMaterialization createMaterialization(HiveConf conf, Table materializedViewTable) {
+  public HiveRelOptMaterialization createMaterialization(HiveConf conf, Table materializedViewTable) {
     // First we parse the view query and create the materialization object
     final String viewQuery = materializedViewTable.getViewExpandedText();
     final RelNode viewScan = createMaterializedViewScan(conf, materializedViewTable);
@@ -220,17 +225,32 @@ public final class HiveMaterializedViewsRegistry {
           " ignored; error creating view replacement");
       return null;
     }
-    final RelNode queryRel;
+    final CBOPlan plan;
     try {
-      queryRel = ParseUtils.parseQuery(conf, viewQuery);
+      plan = ParseUtils.parseQuery(conf, viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
       return null;
     }
 
-    return new RelOptMaterialization(viewScan, queryRel,
-        null, viewScan.getTable().getQualifiedName());
+    return new HiveRelOptMaterialization(viewScan, plan.getPlan(),
+            null, viewScan.getTable().getQualifiedName(),
+        isBlank(plan.getInvalidAutomaticRewritingMaterializationReason()) ?
+            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class) : EnumSet.of(TEXT),
+            determineIncrementalRebuildMode(plan.getPlan()));
+  }
+
+  private HiveRelOptMaterialization.IncrementalRebuildMode determineIncrementalRebuildMode(RelNode definitionPlan) {
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    visitor.go(definitionPlan);
+    if (!visitor.isRewritingAllowed()) {
+      return HiveRelOptMaterialization.IncrementalRebuildMode.NOT_AVAILABLE;
+    }
+    if (visitor.isContainsAggregate() && !visitor.hasCountStar()) {
+      return HiveRelOptMaterialization.IncrementalRebuildMode.INSERT_ONLY;
+    }
+    return HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE;
   }
 
   /**
@@ -251,26 +271,29 @@ public final class HiveMaterializedViewsRegistry {
       return;
     }
 
-    // We are going to create the map for each view in the given database
-    ConcurrentMap<String, RelOptMaterialization> dbMap =
-        new ConcurrentHashMap<String, RelOptMaterialization>();
-    // If we are caching the MV, we include it in the cache
-    final ConcurrentMap<String, RelOptMaterialization> prevDbMap = materializedViews.putIfAbsent(
-        materializedViewTable.getDbName(), dbMap);
-    if (prevDbMap != null) {
-      dbMap = prevDbMap;
-    }
-
-    RelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
+    HiveRelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
     if (materialization == null) {
       return;
     }
-    // You store the materialized view
-    dbMap.put(materializedViewTable.getTableName(), materialization);
+
+    materializedViewsCache.putIfAbsent(materializedViewTable, materialization);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created materialized view for rewriting: " + materializedViewTable.getFullyQualifiedName());
     }
+  }
+
+  /**
+   * Update the materialized view in the registry (if materialized view exists).
+   */
+  public void refreshMaterializedView(HiveConf conf, Table materializedViewTable) {
+    RelOptMaterialization cached = materializedViewsCache.get(
+        materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    if (cached == null) {
+      return;
+    }
+    Table cachedTable = HiveMaterializedViewUtils.extractTable(cached);
+    refreshMaterializedView(conf, cachedTable, materializedViewTable);
   }
 
   /**
@@ -292,35 +315,11 @@ public final class HiveMaterializedViewsRegistry {
       return;
     }
 
-    // We are going to create the map for each view in the given database
-    ConcurrentMap<String, RelOptMaterialization> dbMap =
-        new ConcurrentHashMap<String, RelOptMaterialization>();
-    // If we are caching the MV, we include it in the cache
-    final ConcurrentMap<String, RelOptMaterialization> prevDbMap = materializedViews.putIfAbsent(
-        materializedViewTable.getDbName(), dbMap);
-    if (prevDbMap != null) {
-      dbMap = prevDbMap;
-    }
-    final RelOptMaterialization newMaterialization = createMaterialization(conf, materializedViewTable);
+    final HiveRelOptMaterialization newMaterialization = createMaterialization(conf, materializedViewTable);
     if (newMaterialization == null) {
       return;
     }
-    dbMap.compute(materializedViewTable.getTableName(), new BiFunction<String, RelOptMaterialization, RelOptMaterialization>() {
-      @Override
-      public RelOptMaterialization apply(String tableName, RelOptMaterialization existingMaterialization) {
-        if (existingMaterialization == null) {
-          // If it was not existing, we just create it
-          return newMaterialization;
-        }
-        Table existingMaterializedViewTable = extractTable(existingMaterialization);
-        if (existingMaterializedViewTable.equals(oldMaterializedViewTable)) {
-          // If the old version is the same, we replace it
-          return newMaterialization;
-        }
-        // Otherwise, we return existing materialization
-        return existingMaterialization;
-      }
-    });
+    materializedViewsCache.refresh(oldMaterializedViewTable, materializedViewTable, newMaterialization);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Materialized view refreshed: " + materializedViewTable.getFullyQualifiedName());
@@ -331,41 +330,25 @@ public final class HiveMaterializedViewsRegistry {
    * Removes the materialized view from the cache (based on table object equality), if exists.
    */
   public void dropMaterializedView(Table materializedViewTable) {
-    ConcurrentMap<String, RelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
-    if (dbMap != null) {
-      // Delete only if the create time for the input materialized view table and the table
-      // in the map match. Otherwise, keep the one in the map.
-      dbMap.computeIfPresent(materializedViewTable.getTableName(), new BiFunction<String, RelOptMaterialization, RelOptMaterialization>() {
-        @Override
-        public RelOptMaterialization apply(String tableName, RelOptMaterialization oldMaterialization) {
-          if (extractTable(oldMaterialization).equals(materializedViewTable)) {
-            return null;
-          }
-          return oldMaterialization;
-        }
-      });
-    }
+    materializedViewsCache.remove(materializedViewTable);
   }
 
   /**
    * Removes the materialized view from the cache (based on qualified name), if exists.
    */
   public void dropMaterializedView(String dbName, String tableName) {
-    ConcurrentMap<String, RelOptMaterialization> dbMap = materializedViews.get(dbName);
-    if (dbMap != null) {
-      dbMap.remove(tableName);
-    }
+    materializedViewsCache.remove(dbName, tableName);
   }
 
   /**
-   * Returns all the materialized views in the cache.
+   * Returns all the materialized views enabled for Calcite based rewriting in the cache.
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  List<RelOptMaterialization> getRewritingMaterializedViews() {
-    List<RelOptMaterialization> result = new ArrayList<>();
-    materializedViews.forEach((dbName, mvs) -> result.addAll(mvs.values()));
-    return result;
+  List<HiveRelOptMaterialization> getRewritingMaterializedViews() {
+    return materializedViewsCache.values().stream()
+            .filter(materialization -> materialization.getScope().contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE))
+            .collect(toList());
   }
 
   /**
@@ -373,12 +356,26 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  RelOptMaterialization getRewritingMaterializedView(String dbName, String viewName) {
-    if (materializedViews.get(dbName) != null) {
-      return materializedViews.get(dbName).get(viewName);
+  public HiveRelOptMaterialization getRewritingMaterializedView(String dbName, String viewName,
+                                                         EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope) {
+    HiveRelOptMaterialization materialization = materializedViewsCache.get(dbName, viewName);
+    if (materialization == null) {
+      return null;
     }
-    return null;
+    if (!materialization.isSupported(scope)) {
+      return null;
+    }
+    return materialization;
   }
+
+  public List<HiveRelOptMaterialization> getRewritingMaterializedViews(String querySql) {
+    return materializedViewsCache.get(querySql);
+  }
+
+  public boolean isEmpty() {
+    return materializedViewsCache.isEmpty();
+  }
+
 
   private static RelNode createMaterializedViewScan(HiveConf conf, Table viewTable) {
     // 0. Recreate cluster
@@ -402,12 +399,12 @@ public final class HiveMaterializedViewsRegistry {
     List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
     ColumnInfo colInfo;
     String colName;
-    ArrayList<ColumnInfo> cInfoLst = new ArrayList<ColumnInfo>();
-    for (int i = 0; i < fields.size(); i++) {
-      colName = fields.get(i).getFieldName();
+    ArrayList<ColumnInfo> cInfoLst = new ArrayList<>();
+    for (StructField structField : fields) {
+      colName = structField.getFieldName();
       colInfo = new ColumnInfo(
-          fields.get(i).getFieldName(),
-          TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i).getFieldObjectInspector()),
+          structField.getFieldName(),
+          TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
           null, false);
       rr.put(null, colName, colInfo);
       cInfoLst.add(colInfo);
@@ -474,14 +471,14 @@ public final class HiveMaterializedViewsRegistry {
         metrics.add(field.getName());
       }
 
-      List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+      List<Interval> intervals = Collections.singletonList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
       // We can pass null for Hive object because it is only used to retrieve tables
       // if constraints on a table object are existing, but constraints cannot be defined
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -496,7 +493,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
@@ -518,17 +515,6 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     return TableType.NATIVE;
-  }
-
-  private static Table extractTable(RelOptMaterialization materialization) {
-    RelOptHiveTable cachedMaterializedViewTable;
-    if (materialization.tableRel instanceof Project) {
-      // There is a Project on top (due to nullability)
-      cachedMaterializedViewTable = (RelOptHiveTable) materialization.tableRel.getInput(0).getTable();
-    } else {
-      cachedMaterializedViewTable = (RelOptHiveTable) materialization.tableRel.getTable();
-    }
-    return cachedMaterializedViewTable.getHiveTableMD();
   }
 
   //@TODO this seems to be the same as org.apache.hadoop.hive.ql.parse.CalcitePlanner.TableType.DRUID do we really need both

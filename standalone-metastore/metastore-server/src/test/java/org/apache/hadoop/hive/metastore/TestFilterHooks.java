@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -239,8 +239,8 @@ public class TestFilterHooks {
         .addValue("value2")
         .addToTable(client, conf);
 
-    TxnDbUtil.cleanDb(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.prepDb(conf);
     client.compact2(DBNAME1, TAB1, null, CompactionType.MAJOR, new HashMap<>());
     client.compact2(DBNAME1, TAB2, "name=value1", CompactionType.MINOR, new HashMap<>());
   }

@@ -16,9 +16,11 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import com.google.common.base.Strings;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
+import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -55,6 +57,7 @@ public class ParquetRecordReaderBase {
   protected ProjectionPusher projectionPusher;
   protected boolean skipTimestampConversion = false;
   protected Boolean skipProlepticConversion;
+  protected Boolean legacyConversionEnabled;
   protected SerDeStats serDeStats;
   protected JobConf jobConf;
 
@@ -75,6 +78,9 @@ public class ParquetRecordReaderBase {
     final org.apache.hadoop.mapred.InputSplit oldSplit,
     final JobConf conf
   ) throws IOException {
+    if (oldSplit.getLength() == 0) {
+      return null;
+    }
     ParquetInputSplit split;
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
@@ -139,6 +145,11 @@ public class ParquetRecordReaderBase {
       if (skipProlepticConversion == null) {
         skipProlepticConversion = HiveConf.getBoolVar(
             conf, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT);
+      }
+      legacyConversionEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
+      if (fileMetaData.getKeyValueMetaData().containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+        legacyConversionEnabled = Boolean.parseBoolean(
+            fileMetaData.getKeyValueMetaData().get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY));
       }
 
       split = new ParquetInputSplit(finalPath,

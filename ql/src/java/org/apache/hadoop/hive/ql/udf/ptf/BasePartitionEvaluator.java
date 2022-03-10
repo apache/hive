@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage.AbstractGenericUDAFAverageEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AbstractAggregationBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -42,6 +43,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is mostly used for RANGE windowing type to do some optimization. ROWS
@@ -49,43 +52,14 @@ import org.apache.hadoop.io.Writable;
  *
  */
 public class BasePartitionEvaluator {
+  protected static final Logger LOG = LoggerFactory.getLogger(BasePartitionEvaluator.class);
   protected final GenericUDAFEvaluator wrappedEvaluator;
   protected final WindowFrameDef winFrame;
   protected final PTFPartition partition;
   protected final List<PTFExpressionDef> parameters;
   protected final ObjectInspector outputOI;
   protected final boolean nullsLast;
-
-  /**
-   * Internal class to represent a window range in a partition by searching the
-   * relative position (ROWS) or relative value (RANGE) of the current row
-   */
-  protected static class Range
-  {
-    int start;
-    int end;
-    PTFPartition p;
-
-    public Range(int start, int end, PTFPartition p)
-    {
-      this.start = start;
-      this.end = end;
-      this.p = p;
-    }
-
-    public PTFPartitionIterator<Object> iterator()
-    {
-      return p.range(start, end);
-    }
-
-    public int getDiff(Range prevRange) {
-      return this.start - prevRange.start + this.end - prevRange.end;
-    }
-
-    public int getSize() {
-      return end - start;
-    }
-  }
+  protected final boolean isCountEvaluator;
 
   /**
    * Define some type specific operation to used in the subclass
@@ -99,13 +73,17 @@ public class BasePartitionEvaluator {
   private static class TypeOperationLongWritable extends TypeOperationBase<LongWritable> {
     @Override
     public LongWritable add(LongWritable t1, LongWritable t2) {
-      if (t1 == null && t2 == null) return null;
+      if (t1 == null && t2 == null) {
+        return null;
+      }
       return new LongWritable((t1 == null ? 0 : t1.get()) + (t2 == null ? 0 : t2.get()));
     }
 
     @Override
     public LongWritable minus(LongWritable t1, LongWritable t2) {
-      if (t1 == null && t2 == null) return null;
+      if (t1 == null && t2 == null) {
+        return null;
+      }
       return new LongWritable((t1 == null ? 0 : t1.get()) - (t2 == null ? 0 : t2.get()));
     }
 
@@ -118,27 +96,35 @@ public class BasePartitionEvaluator {
   private static class TypeOperationDoubleWritable extends TypeOperationBase<DoubleWritable> {
     @Override
     public DoubleWritable add(DoubleWritable t1, DoubleWritable t2) {
-      if (t1 == null && t2 == null) return null;
+      if (t1 == null && t2 == null) {
+        return null;
+      }
       return new DoubleWritable((t1 == null ? 0 : t1.get()) + (t2 == null ? 0 : t2.get()));
     }
 
     public DoubleWritable minus(DoubleWritable t1, DoubleWritable t2) {
-      if (t1 == null && t2 == null) return null;
+      if (t1 == null && t2 == null) {
+        return null;
+      }
       return new DoubleWritable((t1 == null ? 0 : t1.get()) - (t2 == null ? 0 : t2.get()));
     }
 
     @Override
     public DoubleWritable div(DoubleWritable sum, long numRows) {
-      if (sum == null || numRows == 0) return null;
+      if (sum == null || numRows == 0) {
+        return null;
+      }
 
-      return new DoubleWritable(sum.get() / (double)numRows);
+      return new DoubleWritable(sum.get() / numRows);
     }
   }
 
   private static class TypeOperationHiveDecimalWritable extends TypeOperationBase<HiveDecimalWritable> {
     @Override
     public HiveDecimalWritable div(HiveDecimalWritable sum, long numRows) {
-      if (sum == null || numRows == 0) return null;
+      if (sum == null || numRows == 0) {
+        return null;
+      }
 
       HiveDecimalWritable result = new HiveDecimalWritable(sum);
       result.mutateDivide(HiveDecimal.create(numRows));
@@ -147,7 +133,9 @@ public class BasePartitionEvaluator {
 
     @Override
     public HiveDecimalWritable add(HiveDecimalWritable t1, HiveDecimalWritable t2) {
-      if (t1 == null && t2 == null) return null;
+      if (t1 == null && t2 == null) {
+        return null;
+      }
 
       if (t1 == null) {
         return new HiveDecimalWritable(t2);
@@ -162,7 +150,9 @@ public class BasePartitionEvaluator {
 
     @Override
     public HiveDecimalWritable minus(HiveDecimalWritable t1, HiveDecimalWritable t2) {
-      if (t1 == null && t2 == null) return null;
+      if (t1 == null && t2 == null) {
+        return null;
+      }
 
       if (t2 == null) {
         return new HiveDecimalWritable(t1);
@@ -190,6 +180,9 @@ public class BasePartitionEvaluator {
     this.parameters = parameters;
     this.outputOI = outputOI;
     this.nullsLast = nullsLast;
+    this.isCountEvaluator = wrappedEvaluator instanceof GenericUDAFCount.GenericUDAFCountEvaluator;
+    LOG.info("isCountEvaluator: {}, parameters count: {}", isCountEvaluator,
+        (parameters != null) ? parameters.size() : 0);
   }
 
   /**
@@ -209,7 +202,7 @@ public class BasePartitionEvaluator {
    * @throws HiveException
    */
   public Object iterate(int currentRow, LeadLagInfo leadLagInfo) throws HiveException {
-    Range range = getRange(winFrame, currentRow, partition, nullsLast);
+    Range range = PTFRangeUtil.getRange(winFrame, currentRow, partition, nullsLast);
     PTFPartitionIterator<Object> pItr = range.iterator();
     return calcFunctionValue(pItr, leadLagInfo);
   }
@@ -227,9 +220,14 @@ public class BasePartitionEvaluator {
     PTFOperator.connectLeadLagFunctionsToPartition(leadLagInfo, pItr);
 
     AggregationBuffer aggBuffer = wrappedEvaluator.getNewAggregationBuffer();
+    if (isCountEvaluator && parameters == null) {
+      // count(*) specific optimisation, where record count would be equal to itr count
+      // No need to iterate through entire iterator and read rowContainer again
+      return ObjectInspectorUtils.copyToStandardObject(new LongWritable(pItr.count()), outputOI);
+    }
+
     Object[] argValues = new Object[parameters == null ? 0 : parameters.size()];
-    while(pItr.hasNext())
-    {
+    while(pItr.hasNext()) {
       Object row = pItr.next();
       int i = 0;
       if ( parameters != null ) {
@@ -245,65 +243,12 @@ public class BasePartitionEvaluator {
     return ObjectInspectorUtils.copyToStandardObject(wrappedEvaluator.evaluate(aggBuffer), outputOI);
   }
 
-  protected static Range getRange(WindowFrameDef winFrame, int currRow, PTFPartition p,
-      boolean nullsLast) throws HiveException {
-    BoundaryDef startB = winFrame.getStart();
-    BoundaryDef endB = winFrame.getEnd();
-
-    int start, end;
-    if (winFrame.getWindowType() == WindowType.ROWS) {
-      start = getRowBoundaryStart(startB, currRow);
-      end = getRowBoundaryEnd(endB, currRow, p);
-    } else {
-      ValueBoundaryScanner vbs = ValueBoundaryScanner.getScanner(winFrame, nullsLast);
-      vbs.handleCache(currRow, p);
-      start = vbs.computeStart(currRow, p);
-      end = vbs.computeEnd(currRow, p);
-    }
-    start = start < 0 ? 0 : start;
-    end = end > p.size() ? p.size() : end;
-    return new Range(start, end, p);
-  }
-
-  private static int getRowBoundaryStart(BoundaryDef b, int currRow) throws HiveException {
-    Direction d = b.getDirection();
-    int amt = b.getAmt();
-    switch(d) {
-    case PRECEDING:
-      if (amt == BoundarySpec.UNBOUNDED_AMOUNT) {
-        return 0;
-      }
-      else {
-        return currRow - amt;
-      }
-    case CURRENT:
-      return currRow;
-    case FOLLOWING:
-      return currRow + amt;
-    }
-    throw new HiveException("Unknown Start Boundary Direction: " + d);
-  }
-
-  private static int getRowBoundaryEnd(BoundaryDef b, int currRow, PTFPartition p) throws HiveException {
-    Direction d = b.getDirection();
-    int amt = b.getAmt();
-    switch(d) {
-    case PRECEDING:
-      if ( amt == 0 ) {
-        return currRow + 1;
-      }
-      return currRow - amt + 1;
-    case CURRENT:
-      return currRow + 1;
-    case FOLLOWING:
-      if (amt == BoundarySpec.UNBOUNDED_AMOUNT) {
-        return p.size();
-      }
-      else {
-        return currRow + amt + 1;
-      }
-    }
-    throw new HiveException("Unknown End Boundary Direction: " + d);
+  /**
+   * When there are no parameters specified, partition iterator can be made faster;
+   * In such cases, it need not materialize the ROW from RowContainer. This saves lots of IO.
+   */
+  protected Range newRange(int end, int end2, PTFPartition partition) {
+    return new Range(end, end2, partition, (parameters == null || parameters.isEmpty()));
   }
 
   /**
@@ -341,7 +286,7 @@ public class BasePartitionEvaluator {
         return super.iterate(currentRow, leadLagInfo);
       }
 
-      Range currentRange = getRange(winFrame, currentRow, partition, nullsLast);
+      Range currentRange = PTFRangeUtil.getRange(winFrame, currentRow, partition, nullsLast);
       ResultType result;
       if (currentRow == 0 ||  // Reset for the new partition
           sumAgg.prevRange == null ||
@@ -353,8 +298,8 @@ public class BasePartitionEvaluator {
       } else {
         // Given the previous range and the current range, calculate the new sum
         // from the previous sum and the difference to save the computation.
-        Range r1 = new Range(sumAgg.prevRange.start, currentRange.start, partition);
-        Range r2 = new Range(sumAgg.prevRange.end, currentRange.end, partition);
+        Range r1 = newRange(sumAgg.prevRange.start, currentRange.start, partition);
+        Range r2 = newRange(sumAgg.prevRange.end, currentRange.end, partition);
         ResultType sum1 = (ResultType)calcFunctionValue(r1.iterator(), leadLagInfo);
         ResultType sum2 = (ResultType)calcFunctionValue(r2.iterator(), leadLagInfo);
         result = typeOperation.add(typeOperation.minus(sumAgg.prevSum, sum1), sum2);
@@ -459,11 +404,11 @@ public class BasePartitionEvaluator {
         return super.iterate(currentRow, leadLagInfo);
       }
 
-      Range currentRange = getRange(winFrame, currentRow, partition, nullsLast);
+      Range currentRange = PTFRangeUtil.getRange(winFrame, currentRow, partition, nullsLast);
       if (currentRow == 0 ||  // Reset for the new partition
           avgAgg.prevRange == null ||
           currentRange.getSize() <= currentRange.getDiff(avgAgg.prevRange)) {
-        Object[] partial = (Object[])calcPartialResult(currentRange.iterator(), leadLagInfo);
+        Object[] partial = calcPartialResult(currentRange.iterator(), leadLagInfo);
         avgAgg.prevRange = currentRange;
         avgAgg.empty = false;
         avgAgg.prevSum = (ResultType)partial[1];
@@ -471,10 +416,10 @@ public class BasePartitionEvaluator {
       } else {
         // Given the previous range and the current range, calculate the new sum
         // from the previous sum and the difference to save the computation.
-        Range r1 = new Range(avgAgg.prevRange.start, currentRange.start, partition);
-        Range r2 = new Range(avgAgg.prevRange.end, currentRange.end, partition);
-        Object[] partial1 = (Object[])calcPartialResult(r1.iterator(), leadLagInfo);
-        Object[] partial2 = (Object[])calcPartialResult(r2.iterator(), leadLagInfo);
+        Range r1 = newRange(avgAgg.prevRange.start, currentRange.start, partition);
+        Range r2 = newRange(avgAgg.prevRange.end, currentRange.end, partition);
+        Object[] partial1 = calcPartialResult(r1.iterator(), leadLagInfo);
+        Object[] partial2 = calcPartialResult(r2.iterator(), leadLagInfo);
         ResultType sum = typeOperation.add(typeOperation.minus(avgAgg.prevSum, (ResultType)partial1[1]), (ResultType)partial2[1]);
         long count = avgAgg.prevCount - (long)partial1[0]+ (long)partial2[0];
 
@@ -485,6 +430,7 @@ public class BasePartitionEvaluator {
 
       return typeOperation.div(avgAgg.prevSum, avgAgg.prevCount);
     }
+
   }
 
   public static class AvgPartitionDoubleEvaluator extends AvgPartitionEvaluator<DoubleWritable> {

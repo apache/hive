@@ -76,6 +76,7 @@ public class TestGenericUDFMonthsBetween {
 
     runTestStr("2002-03", "2002-02-24", null, udf);
     runTestStr("2002-03-24", "2002-02", null, udf);
+    runTestStr("2002-02-31", "2002-03-01", null, udf);
   }
 
   public void testMonthsBetweenForString(GenericUDFMonthsBetween udf) throws HiveException {
@@ -88,15 +89,12 @@ public class TestGenericUDFMonthsBetween {
     runTestStr("2000-06-01", "2004-07-01", -49.0, udf);
     // test February of non-leap year, 2/28
     runTestStr("2002-02-28", "2002-03-01", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-    runTestStr("2002-02-31", "2002-03-01", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestStr("2012-02-29", "2012-03-01", -0.09677419, udf);
     // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
     // 2/31 to 2/29
-    runTestStr("2012-02-31", "2012-03-01", 0.03225806, udf);
+    runTestStr("2012-02-31", "2012-03-01", null, udf);
 
     // time part
     // test that there is no lead second adjustment
@@ -229,15 +227,9 @@ public class TestGenericUDFMonthsBetween {
     runTestDt("2000-06-01", "2004-07-01", -49.0, udf);
     // test February of non-leap year, 2/28
     runTestDt("2002-02-28", "2002-03-01", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-    runTestDt("2002-02-31", "2002-03-01", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestDt("2012-02-29", "2012-03-01", -0.09677419, udf);
-    // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
-    // 2/31 to 2/29
-    runTestDt("2012-02-31", "2012-03-01", 0.03225806, udf);
     // Test with null args
     runTestDt(null, "2002-03-01", null, udf);
     runTestDt("2002-02-28", null, null, udf);

@@ -48,10 +48,11 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -63,6 +64,7 @@ import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -141,6 +143,7 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hiveConf.setVar(HiveConf.ConfVars.REPLCMDIR, cmRoot);
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
+    hiveConf.setBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
         "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
     hiveConf.setVar(HiveConf.ConfVars.REPLDIR, this.repldDir);
@@ -191,8 +194,8 @@ public class WarehouseInstance implements Closeable {
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
 
-    TxnDbUtil.cleanDb(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
 
     // change the value for the next instance.
     ++uniqueIdentifier;
@@ -224,7 +227,7 @@ public class WarehouseInstance implements Closeable {
       driver.getResults(lastResults);
     }
     // Split around the 'tab' character
-    return (lastResults.get(0).split("\\t"))[colNum];
+    return !lastResults.isEmpty() ? (lastResults.get(0).split("\\t"))[colNum] : "";
   }
 
   public WarehouseInstance run(String command) throws Throwable {
@@ -232,7 +235,10 @@ public class WarehouseInstance implements Closeable {
       driver.run(command);
       return this;
     } catch (CommandProcessorException e) {
-      throw e.getCause();
+      if (e.getCause() != null) {
+        throw  e.getCause();
+      }
+      throw e;
     }
   }
 
@@ -267,22 +273,11 @@ public class WarehouseInstance implements Closeable {
     return dump(dbName, Collections.emptyList());
   }
 
-  Tuple dump(String dbName, List<String> withClauseOptions)
+  Tuple dump(String dumpExpression, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
-        "REPL DUMP " + dbName;
+        "REPL DUMP " + dumpExpression;
     if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
-      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
-    }
-    return dumpWithCommand(dumpCommand);
-  }
-
-  Tuple dump(String replPolicy, String oldReplPolicy, List<String> withClauseOptions)
-          throws Throwable {
-    String dumpCommand =
-            "REPL DUMP " + replPolicy
-                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy);
-    if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return dumpWithCommand(dumpCommand);
@@ -393,7 +388,7 @@ public class WarehouseInstance implements Closeable {
     List<String> lowerCaseData =
         Arrays.stream(data).map(String::toLowerCase).collect(Collectors.toList());
     assertEquals(data.length, filteredResults.size());
-    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected" + StringUtils
+    assertTrue(StringUtils.join(filteredResults, ",") + " does not contain all expected " + StringUtils
             .join(lowerCaseData, ","), filteredResults.containsAll(lowerCaseData));
     return this;
   }
@@ -468,15 +463,9 @@ public class WarehouseInstance implements Closeable {
     assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
   }
 
-  public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {
-    for (String tblName : tblNames) {
-      verifyReplTargetProperty(getTable(dbName, tblName).getParameters());
-    }
-    return this;
-  }
-
   public WarehouseInstance verifyReplTargetProperty(String dbName) throws Exception {
-    return verifyReplTargetProperty(dbName, getAllTables(dbName));
+    verifyReplTargetProperty(getDatabase(dbName).getParameters());
+    return this;
   }
 
   public Database getDatabase(String dbName) throws Exception {
@@ -485,6 +474,12 @@ public class WarehouseInstance implements Closeable {
     } catch (NoSuchObjectException e) {
       return null;
     }
+  }
+
+  public int getNoOfEventsDumped(String dumpLocation, HiveConf conf) throws Throwable {
+    IncrementalLoadEventsIterator itr = new IncrementalLoadEventsIterator(
+            dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR, conf);
+    return itr.getNumEvents();
   }
 
   public List<String> getAllTables(String dbName) throws Exception {

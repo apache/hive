@@ -250,12 +250,12 @@ POSTHOOK: Input: default@v2_n7
 POSTHOOK: Input: default@v_n9
 #### A masked pattern was here ####
 val_0
+val_10
 val_100
+val_103
 val_104
+val_105
 val_11
 val_111
 val_113
-val_116
-val_119
-val_125
-val_133
+val_114

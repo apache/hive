@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * the epoch offset rather than holding the instant in time constant and change
  * the string representation.
  *
- * These utilities will be fast for the common case (> 1582 AD), but slow for
+ * These utilities will be fast for the common case (&gt; 1582 AD), but slow for
  * old dates.
  */
 public class CalendarUtils {

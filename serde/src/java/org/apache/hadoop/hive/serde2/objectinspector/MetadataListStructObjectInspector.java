@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,15 +41,14 @@ public class MetadataListStructObjectInspector extends
     StandardStructObjectInspector {
 
   static ConcurrentHashMap<List<List<String>>, MetadataListStructObjectInspector>
-      cached = new ConcurrentHashMap<List<List<String>>, MetadataListStructObjectInspector>();
+      cached = new ConcurrentHashMap<>();
 
   // public static MetadataListStructObjectInspector getInstance(int fields) {
   // return getInstance(ObjectInspectorUtils.getIntegerArray(fields));
   // }
   public static MetadataListStructObjectInspector getInstance(
       List<String> columnNames) {
-    ArrayList<List<String>> key = new ArrayList<List<String>>(1);
-    key.add(columnNames);
+    List<List<String>> key = Collections.singletonList(columnNames);
     MetadataListStructObjectInspector result = cached.get(key);
     if (result == null) {
       result = new MetadataListStructObjectInspector(columnNames);
@@ -62,8 +62,7 @@ public class MetadataListStructObjectInspector extends
 
   public static MetadataListStructObjectInspector getInstance(
       List<String> columnNames, List<String> columnComments) {
-    ArrayList<List<String>> key = new ArrayList<List<String>>(2);
-    Collections.addAll(key, columnNames, columnComments);
+    List<List<String>> key = Arrays.asList(columnNames, columnComments);
 
     MetadataListStructObjectInspector result = cached.get(key);
     if (result == null) {
@@ -76,13 +75,9 @@ public class MetadataListStructObjectInspector extends
     return result;
   }
 
-  static ArrayList<ObjectInspector> getFieldObjectInspectors(int fields) {
-    ArrayList<ObjectInspector> r = new ArrayList<ObjectInspector>(fields);
-    for (int i = 0; i < fields; i++) {
-      r.add(PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING));
-    }
-    return r;
+  static List<ObjectInspector> getFieldObjectInspectors(int fields) {
+    return Collections.nCopies(fields,
+        PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING));
   }
 
   protected MetadataListStructObjectInspector() {

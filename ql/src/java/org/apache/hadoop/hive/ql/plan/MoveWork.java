@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -41,6 +42,9 @@ public class MoveWork implements Serializable {
   private boolean checkFileFormat;
   private boolean srcLocal;
   private boolean needCleanTarget;
+  private boolean isReplication;
+  private String dumpDirectory;
+  private transient ReplicationMetricCollector metricCollector;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -85,6 +89,16 @@ public class MoveWork implements Serializable {
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat) {
     this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
+  }
+
+  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+                  final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
+                  boolean checkFileFormat, String dumpRoot, ReplicationMetricCollector metricCollector,
+                  boolean isReplication) {
+    this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
+    this.dumpDirectory = dumpRoot;
+    this.metricCollector = metricCollector;
+    this.isReplication = isReplication;
   }
 
   public MoveWork(final MoveWork o) {
@@ -167,6 +181,18 @@ public class MoveWork implements Serializable {
 
   public void setIsInReplicationScope(boolean isInReplicationScope) {
     this.isInReplicationScope = isInReplicationScope;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public String getDumpDirectory() {
+    return dumpDirectory;
+  }
+
+  public boolean isReplication() {
+    return isReplication;
   }
 
   public boolean getIsInReplicationScope() {

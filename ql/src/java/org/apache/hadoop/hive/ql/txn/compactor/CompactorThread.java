@@ -17,33 +17,35 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.security.AccessControlException;
-import org.apache.hadoop.security.UserGroupInformation;
+
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 /**
  * Superclass for all threads in the compactor.
@@ -55,13 +57,9 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected HiveConf conf;
 
   protected AtomicBoolean stop;
-  protected AtomicBoolean looped;
 
-  protected int threadId;
-
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
+  protected String hostName;
+  protected String runtimeVersion;
 
   @Override
   public void setConf(Configuration configuration) {
@@ -78,11 +76,12 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return conf;
   }
 
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
+  public void init(AtomicBoolean stop) throws Exception {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
     this.stop = stop;
-    this.looped = looped;
+    this.hostName = ServerUtils.hostname();
+    this.runtimeVersion = getRuntimeVersion();
   }
 
   /**
@@ -110,7 +109,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws Exception if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
-  protected Partition resolvePartition(CompactionInfo ci) throws Exception {
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
     if (ci.partName != null) {
       List<Partition> parts;
       try {
@@ -120,17 +119,35 @@ public abstract class CompactorThread extends Thread implements Configurable {
           return null;
         }
       } catch (Exception e) {
-        LOG.error("Unable to find partition " + ci.getFullPartitionName() + ", " + e.getMessage());
+        LOG.error("Unable to find partition " + ci.getFullPartitionName(), e);
         throw e;
       }
       if (parts.size() != 1) {
-        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " + parts);
+        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " +
+                      Arrays.toString(parts.toArray()));
         throw new MetaException("Too many partitions for : " + ci.getFullPartitionName());
       }
       return parts.get(0);
     } else {
       return null;
     }
+  }
+
+  /**
+   * Check for that special case when minor compaction is supported or not.
+   * <ul>
+   *   <li>The table is Insert-only OR</li>
+   *   <li>Query based compaction is not enabled OR</li>
+   *   <li>The table has only acid data in it.</li>
+   * </ul>
+   * @param tblproperties The properties of the table to check
+   * @param dir The {@link AcidDirectory} instance pointing to the table's folder on the filesystem.
+   * @return Returns true if minor compaction is supported based on the given parameters, false otherwise.
+   */
+  protected boolean isMinorCompactionSupported(Map<String, String> tblproperties, AcidDirectory dir) {
+    //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
+    return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
+            || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
   }
 
   /**
@@ -144,63 +161,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   /**
-   * Determine which user to run an operation as, based on the owner of the directory to be
-   * compacted.  It is asserted that either the user running the hive metastore or the table
-   * owner must be able to stat the directory and determine the owner.
-   * @param location directory that will be read or written to.
-   * @param t metastore table object
-   * @return username of the owner of the location.
-   * @throws java.io.IOException if neither the hive metastore user nor the table owner can stat
-   * the location.
-   */
-  protected String findUserToRunAs(String location, Table t) throws IOException,
-      InterruptedException {
-    LOG.debug("Determining who to run the job as.");
-    final Path p = new Path(location);
-    final FileSystem fs = p.getFileSystem(conf);
-    try {
-      FileStatus stat = fs.getFileStatus(p);
-      LOG.debug("Running job as " + stat.getOwner());
-      return stat.getOwner();
-    } catch (AccessControlException e) {
-      // TODO not sure this is the right exception
-      LOG.debug("Unable to stat file as current user, trying as table owner");
-
-      // Now, try it as the table owner and see if we get better luck.
-      final List<String> wrapper = new ArrayList<>(1);
-      UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
-          UserGroupInformation.getLoginUser());
-      ugi.doAs(new PrivilegedExceptionAction<Object>() {
-        @Override
-        public Object run() throws Exception {
-          // need to use a new filesystem object here to have the correct ugi
-          FileSystem proxyFs = p.getFileSystem(conf);
-          FileStatus stat = proxyFs.getFileStatus(p);
-          wrapper.add(stat.getOwner());
-          return null;
-        }
-      });
-      try {
-        FileSystem.closeAllForUGI(ugi);
-      } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
-      }
-
-      if (wrapper.size() == 1) {
-        LOG.debug("Running job as " + wrapper.get(0));
-        return wrapper.get(0);
-      }
-    }
-    LOG.error("Unable to stat file " + p + " as either current user(" + UserGroupInformation.getLoginUser() +
-      ") or table owner(" + t.getOwner() + "), giving up");
-    throw new IOException("Unable to stat file: " + p);
-  }
-
-  /**
    * Determine whether to run this job as the current user or whether we need a doAs to switch
    * users.
    * @param owner of the directory we will be working in, as determined by
-   * {@link #findUserToRunAs(String, org.apache.hadoop.hive.metastore.api.Table)}
+   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#findUserToRunAs(String, Table, Configuration)}
    * @return true if the job should run as the current user, false if a doAs is needed.
    */
   protected boolean runJobAsSelf(String owner) {
@@ -211,14 +175,11 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return Warehouse.getQualifiedName(t);
   }
 
-  private static AtomicInteger nextThreadId = new AtomicInteger(1000000);
-
   public static void initializeAndStartThread(CompactorThread thread,
       Configuration conf) throws Exception {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
-    thread.setThreadId(nextThreadId.incrementAndGet());
-    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.init(new AtomicBoolean());
     thread.start();
   }
 
@@ -229,5 +190,33 @@ public abstract class CompactorThread extends Thread implements Configurable {
       LOG.info("Compaction is disabled for table " + tbl.getTableName());
     }
     return isCompactDisabled;
+  }
+
+  @VisibleForTesting
+  protected String getRuntimeVersion() {
+    return this.getClass().getPackage().getImplementationVersion();
+  }
+  
+  protected LockRequest createLockRequest(CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
+    String agentInfo = Thread.currentThread().getName();
+    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
+    requestBuilder.setUser(ci.runAs);
+    requestBuilder.setTransactionId(txnId);
+
+    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+      .setLock(lockType)
+      .setOperationType(opType)
+      .setDbName(ci.dbname)
+      .setTableName(ci.tableName)
+      .setIsTransactional(true);
+
+    if (ci.partName != null) {
+      lockCompBuilder.setPartitionName(ci.partName);
+    }
+    requestBuilder.addLockComponent(lockCompBuilder.build());
+
+    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+      !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+    return requestBuilder.build();
   }
 }

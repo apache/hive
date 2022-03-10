@@ -242,7 +242,7 @@ public class AccumuloPredicateHandler {
   }
 
   /**
-   * Encapsulates the traversal over some {@link ExprNodeDesc} tree for the generation of Accumuluo.
+   * Encapsulates the traversal over some {@link ExprNodeDesc} tree for the generation of Accumulo.
    * Ranges using expressions involving the Accumulo rowid-mapped Hive column.
    *
    * @param conf
@@ -320,9 +320,7 @@ public class AccumuloPredicateHandler {
         itrs.add(toSetting(mapping, sc, binaryEncodedRow));
       }
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("num iterators = " + itrs.size());
-    }
+    LOG.info("num iterators = " + itrs.size());
     return itrs;
   }
 

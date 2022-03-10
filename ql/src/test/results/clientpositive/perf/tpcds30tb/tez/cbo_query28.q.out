@@ -1,0 +1,37 @@
+Warning: Map Join MAPJOIN[105][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[104][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[103][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[102][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[101][bigTable=?] in task 'Reducer 3' is a cross product
+CBO PLAN:
+HiveProject(b1_lp=[$0], b1_cnt=[$1], b1_cntd=[$2], b2_lp=[$15], b2_cnt=[$16], b2_cntd=[$17], b3_lp=[$12], b3_cnt=[$13], b3_cntd=[$14], b4_lp=[$9], b4_cnt=[$10], b4_cntd=[$11], b5_lp=[$6], b5_cnt=[$7], b5_cntd=[$8], b6_lp=[$3], b6_cnt=[$4], b6_cntd=[$5])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(b1_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b1_cnt=[$1], b1_cntd=[$2])
+              HiveAggregate(group=[{}], agg#0=[sum($11)], agg#1=[count($11)], agg#2=[count(DISTINCT $11)])
+                HiveFilter(condition=[AND(BETWEEN(false, $9, 0, 5), OR(BETWEEN(false, $11, 11:DECIMAL(12, 2), 21:DECIMAL(12, 2)), BETWEEN(false, $18, 460:DECIMAL(12, 2), 1460:DECIMAL(12, 2)), BETWEEN(false, $10, 14:DECIMAL(12, 2), 34:DECIMAL(12, 2))))])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject(b6_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b6_cnt=[$1], b6_cntd=[$2])
+              HiveAggregate(group=[{}], agg#0=[sum($11)], agg#1=[count($11)], agg#2=[count(DISTINCT $11)])
+                HiveFilter(condition=[AND(BETWEEN(false, $9, 26, 30), OR(BETWEEN(false, $11, 28:DECIMAL(12, 2), 38:DECIMAL(12, 2)), BETWEEN(false, $18, 2513:DECIMAL(12, 2), 3513:DECIMAL(12, 2)), BETWEEN(false, $10, 42:DECIMAL(12, 2), 62:DECIMAL(12, 2))))])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveProject(b5_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b5_cnt=[$1], b5_cntd=[$2])
+            HiveAggregate(group=[{}], agg#0=[sum($11)], agg#1=[count($11)], agg#2=[count(DISTINCT $11)])
+              HiveFilter(condition=[AND(BETWEEN(false, $9, 21, 25), OR(BETWEEN(false, $11, 135:DECIMAL(12, 2), 145:DECIMAL(12, 2)), BETWEEN(false, $18, 14180:DECIMAL(12, 2), 15180:DECIMAL(12, 2)), BETWEEN(false, $10, 38:DECIMAL(12, 2), 58:DECIMAL(12, 2))))])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+        HiveProject(b4_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b4_cnt=[$1], b4_cntd=[$2])
+          HiveAggregate(group=[{}], agg#0=[sum($11)], agg#1=[count($11)], agg#2=[count(DISTINCT $11)])
+            HiveFilter(condition=[AND(BETWEEN(false, $9, 16, 20), OR(BETWEEN(false, $11, 142:DECIMAL(12, 2), 152:DECIMAL(12, 2)), BETWEEN(false, $18, 3054:DECIMAL(12, 2), 4054:DECIMAL(12, 2)), BETWEEN(false, $10, 80:DECIMAL(12, 2), 100:DECIMAL(12, 2))))])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject(b3_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b3_cnt=[$1], b3_cntd=[$2])
+        HiveAggregate(group=[{}], agg#0=[sum($11)], agg#1=[count($11)], agg#2=[count(DISTINCT $11)])
+          HiveFilter(condition=[AND(BETWEEN(false, $9, 11, 15), OR(BETWEEN(false, $11, 66:DECIMAL(12, 2), 76:DECIMAL(12, 2)), BETWEEN(false, $18, 920:DECIMAL(12, 2), 1920:DECIMAL(12, 2)), BETWEEN(false, $10, 4:DECIMAL(12, 2), 24:DECIMAL(12, 2))))])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+    HiveProject(b2_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b2_cnt=[$1], b2_cntd=[$2])
+      HiveAggregate(group=[{}], agg#0=[sum($11)], agg#1=[count($11)], agg#2=[count(DISTINCT $11)])
+        HiveFilter(condition=[AND(BETWEEN(false, $9, 6, 10), OR(BETWEEN(false, $11, 91:DECIMAL(12, 2), 101:DECIMAL(12, 2)), BETWEEN(false, $18, 1430:DECIMAL(12, 2), 2430:DECIMAL(12, 2)), BETWEEN(false, $10, 32:DECIMAL(12, 2), 52:DECIMAL(12, 2))))])
+          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+

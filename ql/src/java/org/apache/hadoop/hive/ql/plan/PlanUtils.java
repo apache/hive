@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -44,7 +46,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -75,6 +77,7 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
@@ -220,7 +223,7 @@ public final class PlanUtils {
   public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, boolean lastColumnTakesRestOfTheLine) {
-    return getTableDesc(serdeClass, separatorCode, columns, null,
+    return getTableDesc(serdeClass, separatorCode, columns, null, null,
         lastColumnTakesRestOfTheLine);
   }
 
@@ -232,20 +235,20 @@ public final class PlanUtils {
   public static TableDesc getDefaultTableDesc(String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine) {
     return getTableDesc(getDefaultSerDe(), separatorCode, columns,
-        columnTypes, lastColumnTakesRestOfTheLine);
+        columnTypes, null, lastColumnTakesRestOfTheLine);
   }
 
   public static TableDesc getTableDesc(Class<? extends Deserializer> serdeClass,
-      String separatorCode, String columns, String columnTypes,
+      String separatorCode, String columns, String columnTypes, List<FieldSchema> partCols,
       boolean lastColumnTakesRestOfTheLine) {
 
-    return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
+    return getTableDesc(serdeClass, separatorCode, columns, columnTypes, partCols,
         lastColumnTakesRestOfTheLine, "TextFile");
   }
 
   public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
-      String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
+      String columns, String columnTypes, List<FieldSchema> partCols, boolean lastColumnTakesRestOfTheLine,
       String fileFormat) {
 
     Properties properties = Utilities.makeProperties(
@@ -258,6 +261,15 @@ public final class PlanUtils {
 
     if (columnTypes != null) {
       properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, columnTypes);
+    }
+
+    if (partCols != null && !partCols.isEmpty()) {
+      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMNS,
+          MetaStoreUtils.getColumnNamesFromFieldSchema(partCols));
+      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES,
+          MetaStoreUtils.getColumnTypesFromFieldSchema(partCols, ":"));
+      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS,
+          MetaStoreUtils.getColumnCommentsFromFieldSchema(partCols));
     }
 
     if (lastColumnTakesRestOfTheLine) {
@@ -293,7 +305,7 @@ public final class PlanUtils {
   public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
       String fileFormat, Class<? extends Deserializer> serdeClass) {
     TableDesc tblDesc =
-        getTableDesc(serdeClass, "" + Utilities.ctrlaCode, cols, colTypes, false, fileFormat);
+        getTableDesc(serdeClass, "" + Utilities.ctrlaCode, cols, colTypes, null, false, fileFormat);
     // enable escaping
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF, "true");
@@ -335,7 +347,7 @@ public final class PlanUtils {
         separatorCode = crtTblDesc.getFieldDelim();
       }
 
-      ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes,
+      ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes, crtTblDesc.getPartCols(),
           lastColumnTakesRestOfTheLine);
 
       // set other table properties
@@ -410,7 +422,7 @@ public final class PlanUtils {
  /**
    * Generate a table descriptor from a createViewDesc.
    */
-  public static TableDesc getTableDesc(CreateViewDesc crtViewDesc, String cols, String colTypes) {
+  public static TableDesc getTableDesc(CreateMaterializedViewDesc crtViewDesc, String cols, String colTypes) {
     TableDesc ret;
 
     try {
@@ -432,7 +444,7 @@ public final class PlanUtils {
         serdeClass = JavaUtils.loadClass(crtViewDesc.getSerde());
       }
 
-      ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes,
+      ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes, crtViewDesc.getPartCols(),
           lastColumnTakesRestOfTheLine);
 
       // set other table properties
@@ -444,7 +456,7 @@ public final class PlanUtils {
                 crtViewDesc.getStorageHandler());
       }
 
-      if (crtViewDesc.getViewName() != null && crtViewDesc.isMaterialized()) {
+      if (crtViewDesc.getViewName() != null) {
         properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
             crtViewDesc.getViewName());
       }
@@ -578,7 +590,7 @@ public final class PlanUtils {
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.ESCAPE_CHAR, "\\",
-        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+        serdeConstants.SERIALIZATION_LIB, LazyBinarySerDe2.class.getName()));
   }
 
   /**
@@ -711,7 +723,7 @@ public final class PlanUtils {
       List<ExprNodeDesc> keyCols, List<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
       List<ExprNodeDesc> partitionCols, String order, String nullOrder, NullOrdering defaultNullOrder,
-      int numReducers, AcidUtils.Operation writeType) {
+      int numReducers, AcidUtils.Operation writeType, boolean isCompaction) {
     ReduceSinkDesc reduceSinkDesc = getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
             new ArrayList<List<Integer>>(),
             includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
@@ -719,10 +731,7 @@ public final class PlanUtils {
             includeKeyCols ? outputColumnNames.subList(keyCols.size(),
                     outputColumnNames.size()) : outputColumnNames,
             includeKeyCols, tag, partitionCols, order, nullOrder, defaultNullOrder, numReducers, writeType);
-    if (writeType == AcidUtils.Operation.UPDATE || writeType == AcidUtils.Operation.DELETE) {
-      reduceSinkDesc.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
-      reduceSinkDesc.setNumReducers(1);
-    }
+    reduceSinkDesc.setIsCompaction(isCompaction);
     return reduceSinkDesc;
   }
 
@@ -1172,7 +1181,7 @@ public final class PlanUtils {
 
       // Adds tables only for create view (PPD filter can be appended by outer query)
       Table table = topOp.getConf().getTableMetadata();
-      PlanUtils.addInput(inputs, new ReadEntity(table, parentViewInfo));
+      PlanUtils.addInput(inputs, new ReadEntity(table, parentViewInfo, parentViewInfo == null));
     }
   }
 
@@ -1234,6 +1243,12 @@ public final class PlanUtils {
           clone = new HashMap<>(properties);
         }
         clone.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
+      }
+      if (properties.containsKey(TABLE_IS_CTAS)) {
+        if (clone == null) {
+          clone = new HashMap<>(properties);
+        }
+        clone.remove(TABLE_IS_CTAS);
       }
       if (clone != null) {
         return clone;

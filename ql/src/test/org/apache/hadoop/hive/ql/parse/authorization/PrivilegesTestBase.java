@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse.authorization;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
@@ -35,8 +37,9 @@ public class PrivilegesTestBase {
 
   public static void grantUserTable(String privStr, PrivilegeType privType, QueryState queryState, Hive db)
       throws Exception {
+    Context ctx=new Context(new HiveConf());
     DDLWork work = AuthorizationTestUtil.analyze(
-        "GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db);
+        "GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db, ctx);
     GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
 

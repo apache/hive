@@ -29,9 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
-
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
 /**
  * DataSourceProvider for the HikariCP connection pool.
@@ -42,6 +41,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   static final String HIKARI = "hikaricp";
   private static final String CONNECTION_TIMEOUT_PROPERTY = HIKARI + ".connectionTimeout";
+  private static final String LEAK_DETECTION_THRESHOLD = HIKARI + ".leakDetectionThreshold";
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
@@ -57,6 +57,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     Properties properties = replacePrefix(
         DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
+    long leakDetectionThreshold = hdpConfig.getLong(LEAK_DETECTION_THRESHOLD, 3600000L);
 
     HikariConfig config;
     try {
@@ -68,21 +69,24 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
+    config.setLeakDetectionThreshold(leakDetectionThreshold);
 
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
-    switch (dbProduct){
-      case MYSQL:
-        config.setConnectionInitSql("SET @@session.sql_mode=ANSI_QUOTES");
-        config.addDataSourceProperty("allowMultiQueries", true);
-        config.addDataSourceProperty("rewriteBatchedStatements", true);
-        break;
-      case POSTGRES:
-        config.addDataSourceProperty("reWriteBatchedInserts", true);
-        break;
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
+    
+    String s = dbProduct.getPrepareTxnStmt();
+    if (s!= null) {
+      config.setConnectionInitSql(s);
     }
+    
+    Map<String, String> props = dbProduct.getDataSourceProperties();
+    
+    for ( Map.Entry<String, String> kv : props.entrySet()) {
+      config.addDataSourceProperty(kv.getKey(), kv.getValue());
+    }
+
     return new HikariDataSource(initMetrics(config));
   }
 

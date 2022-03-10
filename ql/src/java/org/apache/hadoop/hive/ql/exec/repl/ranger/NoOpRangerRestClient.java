@@ -31,15 +31,22 @@ public class NoOpRangerRestClient implements RangerRestClient {
 
   @Override
   public RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
-                                                     String dbName, String rangerHiveServiceName) {
+                                                     String dbName, String rangerHiveServiceName,
+                                                     HiveConf hiveConf) {
     return new RangerExportPolicyList();
   }
 
   @Override
   public RangerExportPolicyList importRangerPolicies(RangerExportPolicyList rangerExportPolicyList, String dbName,
                                                      String baseUrl,
-                                                     String rangerHiveServiceName) throws Exception {
+                                                     String rangerHiveServiceName,
+                                                     HiveConf hiveConf) throws Exception {
     return null;
+  }
+
+  public void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                                 HiveConf hiveConf) throws Exception {
+    return;
   }
 
   @Override
@@ -65,14 +72,14 @@ public class NoOpRangerRestClient implements RangerRestClient {
   }
 
   @Override
-  public boolean checkConnection(String url) throws Exception {
+  public boolean checkConnection(String url, HiveConf hiveConf) throws Exception {
     return true;
   }
 
   @Override
-  public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                            String sourceDb, String targetDb) throws SemanticException {
-    return rangerPolicies;
+  public RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName,
+                                                   String sourceDb, String targetDb) throws SemanticException {
+    return null;
   }
 
 }

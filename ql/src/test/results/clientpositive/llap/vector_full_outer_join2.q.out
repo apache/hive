@@ -75,17 +75,17 @@ POSTHOOK: Input: default@t_letters
 POSTHOOK: Input: default@t_roman
 #### A masked pattern was here ####
 one         	1	50	NULL	NULL	NULL
-NULL	NULL	NULL	I           	1	50
 two         	2	30	NULL	NULL	NULL
-NULL	NULL	NULL	II          	2	30
 three       	3	30	NULL	NULL	NULL
+NULL	NULL	NULL	I           	1	50
+NULL	NULL	NULL	II          	2	30
+NULL	NULL	NULL	IV          	4	60
+NULL	NULL	NULL	V           	5	70
+NULL	NULL	NULL	VI          	6	80
 NULL	NULL	NULL	III         	3	30
 four        	4	60	NULL	NULL	NULL
-NULL	NULL	NULL	IV          	4	60
 five        	5	70	NULL	NULL	NULL
-NULL	NULL	NULL	V           	5	70
 six         	6	80	NULL	NULL	NULL
-NULL	NULL	NULL	VI          	6	80
 PREHOOK: query: select x1.`z`, x1.`x`, x1.`y`,
        x2.`z`, x2.`x`, x2.`y`
 from t_letters x1 full outer join t_roman x2 on (x1.`x` > 2) and (x2.`x` < 4) and (x1.`x` = x2.`x`)
@@ -101,13 +101,13 @@ POSTHOOK: Input: default@t_letters
 POSTHOOK: Input: default@t_roman
 #### A masked pattern was here ####
 one         	1	50	NULL	NULL	NULL
-NULL	NULL	NULL	I           	1	50
 two         	2	30	NULL	NULL	NULL
+NULL	NULL	NULL	I           	1	50
 NULL	NULL	NULL	II          	2	30
+NULL	NULL	NULL	IV          	4	60
+NULL	NULL	NULL	V           	5	70
+NULL	NULL	NULL	VI          	6	80
 three       	3	30	III         	3	30
 four        	4	60	NULL	NULL	NULL
-NULL	NULL	NULL	IV          	4	60
 five        	5	70	NULL	NULL	NULL
-NULL	NULL	NULL	V           	5	70
 six         	6	80	NULL	NULL	NULL
-NULL	NULL	NULL	VI          	6	80

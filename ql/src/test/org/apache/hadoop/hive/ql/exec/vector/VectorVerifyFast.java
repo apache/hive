@@ -479,8 +479,8 @@ public class VectorVerifyFast {
     case STRUCT:
     {
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-      ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-      ArrayList<Object> fieldValues = (ArrayList<Object>) object;
+      List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      List<Object> fieldValues = (List<Object>) object;
       final int size = fieldValues.size();
       serializeWrite.beginStruct(fieldValues);
       boolean isFirst = true;
@@ -647,7 +647,7 @@ public class VectorVerifyFast {
     case STRUCT:
     {
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-      ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
       final int size = fieldTypeInfos.size();
       ArrayList<Object> fieldValues = new ArrayList<Object>();
       Object fieldObj;

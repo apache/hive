@@ -25,7 +25,6 @@ import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -35,8 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,7 +70,7 @@ public class JsonReporter extends ScheduledReporter {
   //    dumps metrics to a temporary file in the same directory as the actual metrics
   //    file and then renames it to the destination. Since both are located on the same
   //    filesystem, this rename is likely to be atomic (as long as the underlying OS
-  //    support atomic renames.
+  //    support atomic renames).
   //
   // NOTE: This reporter is very similar to
   //       org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter.
@@ -118,8 +117,9 @@ public class JsonReporter extends ScheduledReporter {
         return;
       }
     }
-    jsonWriter = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.MILLISECONDS,
-        TimeUnit.MILLISECONDS, false)).writerWithDefaultPrettyPrinter();
+    jsonWriter = new ObjectMapper().registerModule(
+            new MapCapableJsonMetricsModule(TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS, false))
+        .writerWithDefaultPrettyPrinter();
     super.start(period, unit);
   }
 
@@ -127,7 +127,6 @@ public class JsonReporter extends ScheduledReporter {
   public void report(SortedMap<String, Gauge> sortedMap, SortedMap<String, Counter> sortedMap1,
                      SortedMap<String, Histogram> sortedMap2, SortedMap<String, Meter> sortedMap3,
                      SortedMap<String, Timer> sortedMap4) {
-
     String json;
     try {
       json = jsonWriter.writeValueAsString(registry);
@@ -137,7 +136,7 @@ public class JsonReporter extends ScheduledReporter {
     }
 
     // Metrics are first dumped to a temp file which is then renamed to the destination
-    Path tmpFile = null;
+    Path tmpFile;
     try {
       tmpFile = Files.createTempFile(metricsDir, "hmsmetrics", "json", FILE_ATTRS);
     } catch (IOException e) {
@@ -149,17 +148,17 @@ public class JsonReporter extends ScheduledReporter {
       return;
     } catch (UnsupportedOperationException e) {
       // This shouldn't ever happen
-      LOG.error("failed to create temp file for JSON metrics: operartion not supported", e);
+      LOG.error("failed to create temp file for JSON metrics: operation not supported", e);
       return;
     }
 
     // Use try .. finally to cleanup temp file if something goes wrong
     try {
       // Write json to the temp file
-      try (BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile.toFile()))) {
+      try (BufferedWriter bw = Files.newBufferedWriter(tmpFile, StandardCharsets.UTF_8)) {
         bw.write(json);
       } catch (IOException e) {
-        LOG.error("Unable to write to temp file {}" + tmpFile, e);
+        LOG.error("Unable to write to temp file {}", tmpFile, e);
         return;
       }
 

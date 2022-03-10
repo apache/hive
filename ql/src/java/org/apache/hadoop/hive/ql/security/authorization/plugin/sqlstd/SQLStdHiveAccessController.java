@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
@@ -121,7 +121,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       getAllRoleAncestors(name2Rolesmap, roles);
       List<HiveRoleGrant> currentRoles = new ArrayList<HiveRoleGrant>(roles.size());
       for (HiveRoleGrant role : name2Rolesmap.values()) {
-        if (!HiveMetaStore.ADMIN.equalsIgnoreCase(role.getRoleName())) {
+        if (!HMSHandler.ADMIN.equalsIgnoreCase(role.getRoleName())) {
           currentRoles.add(role);
         } else {
           this.adminRole = role;
@@ -541,7 +541,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
       }
     }
     // set to ADMIN role, if user belongs there.
-    if (HiveMetaStore.ADMIN.equalsIgnoreCase(roleName) && null != this.adminRole) {
+    if (HMSHandler.ADMIN.equalsIgnoreCase(roleName) && null != this.adminRole) {
       currentRoles.clear();
       currentRoles.add(adminRole);
       return;
@@ -565,7 +565,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     List<HiveRoleGrant> roles;
     roles = getCurrentRoles();
     for (HiveRoleGrant role : roles) {
-      if (role.getRoleName().equalsIgnoreCase(HiveMetaStore.ADMIN)) {
+      if (role.getRoleName().equalsIgnoreCase(HMSHandler.ADMIN)) {
         return true;
       }
     }

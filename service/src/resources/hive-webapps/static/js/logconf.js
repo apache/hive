@@ -11,7 +11,7 @@ $(document).ready(function () {
 
 function setLoggersWithLevel(e) {
     console.log("handler called");
-    var loggerName = $("#logger-name").val();
+    var loggerName = sanitize($("#logger-name").val());
     var logLevel = $("#log-level").val();
     var data = JSON.stringify( { "loggers" : [ { "logger" : loggerName, "level" : logLevel } ] } );
 
@@ -37,4 +37,17 @@ function loadLoggers() {
         });
 
     });
+}
+
+function sanitize(string) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        "/": '&#x2F;',
+    };
+    const reg = /[&<>"'/]/ig;
+    return string.replace(reg, (match)=>(map[match]));
 }

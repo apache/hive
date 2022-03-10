@@ -39,9 +39,9 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
@@ -64,7 +64,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -110,7 +116,7 @@ public class HiveFunctionHelper implements FunctionHelper {
   @Override
   public FunctionInfo getFunctionInfo(String functionText)
       throws SemanticException {
-    return FunctionRegistry.getFunctionInfo(functionText);
+    return new HiveFunctionInfo(FunctionRegistry.getFunctionInfo(functionText));
   }
 
   /**
@@ -247,7 +253,7 @@ public class HiveFunctionHelper implements FunctionHelper {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         inputs = RexNodeConverter.rewriteCaseChildren(functionText, inputs, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         inputs = RexNodeConverter.adjustCaseBranchTypes(inputs, returnType, rexBuilder);
         checkForStatefulFunctions(inputs);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
@@ -286,7 +292,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         // This allows to be further reduced to OR, if possible
         calciteOp = SqlStdOperatorTable.CASE;
         inputs = RexNodeConverter.rewriteCoalesceChildren(inputs, rexBuilder);
-        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        // Adjust branch types by inserting explicit casts if the actual is ambiguous
         inputs = RexNodeConverter.adjustCaseBranchTypes(inputs, returnType, rexBuilder);
         checkForStatefulFunctions(inputs);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
@@ -389,7 +395,7 @@ public class HiveFunctionHelper implements FunctionHelper {
 
     if (FunctionRegistry.isRankingFunction(aggregateName)) {
       // Rank functions type is 'int'/'double'
-      if (aggregateName.equalsIgnoreCase("percent_rank")) {
+      if (aggregateName.equalsIgnoreCase("percent_rank") || aggregateName.equalsIgnoreCase("cume_dist")) {
         returnType = TypeInfoFactory.doubleTypeInfo;
       } else {
         returnType = TypeInfoFactory.intTypeInfo;
@@ -406,7 +412,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
             || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
           GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggregateName,
-              aggParameterOIs, isDistinct, isAllColumns);
+              aggParameterOIs, isDistinct, isAllColumns, true);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
               genericUDAFEvaluator, udafMode, aggParameterOIs);
           returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();
@@ -544,6 +550,73 @@ public class HiveFunctionHelper implements FunctionHelper {
     List<RexNode> result = new ArrayList<>();
     executor.reduce(rexBuilder, ImmutableList.of(expr), result);
     return result.get(0);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isAndFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPAnd;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isOrFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPOr;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isInFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFIn;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFBaseCompare;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isEqualFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqual
+        && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
+  }
+
+  @Override
+  public boolean isNSCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqualNS ||
+        fi.getGenericUDF() instanceof GenericUDFOPNotEqualNS;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return FunctionRegistry.isConsistentWithinQuery(fi.getGenericUDF());
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isStateful(FunctionInfo fi) {
+    GenericUDF genericUDF = fi.getGenericUDF();
+    if (genericUDF == null) {
+      return false;
+    }
+    return FunctionRegistry.isStateful(fi.getGenericUDF());
   }
 
 }

@@ -17,21 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+
+import com.google.common.collect.ImmutableList;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
@@ -75,6 +80,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -488,7 +495,7 @@ public class HiveRelOptUtil extends RelOptUtil {
               ImmutableList.of(i), -1, 0, rel, null, null));
     }
 
-    return aggregateFactory.createAggregate(rel, false, ImmutableBitSet.of(), null, aggCalls);
+    return aggregateFactory.createAggregate(rel, Collections.emptyList(), ImmutableBitSet.of(), null, aggCalls);
   }
 
   /**
@@ -740,12 +747,23 @@ public class HiveRelOptUtil extends RelOptUtil {
   }
 
   public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join,
-        boolean leftInputPotentialFK, RelMetadataQuery mq) {
+        final RelNode fkInput, final RelNode nonFkInput,
+        RelMetadataQuery mq) {
     final JoinRelType joinType = join.getJoinType();
     final RexNode cond = join.getCondition();
-    final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
-    final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
+
+    Preconditions.checkArgument(fkInput == join.getLeft()
+        || fkInput == join.getRight(), "Invalid input: " + fkInput);
+    Preconditions.checkArgument(nonFkInput == join.getLeft()
+        || nonFkInput == join.getRight(), "Invalid input: " + nonFkInput);
+
     final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
+
+    // TODO : Need to handle Anti join.
+    // https://issues.apache.org/jira/browse/HIVE-23906
+    if (joinType == JoinRelType.ANTI) {
+      return nonRewritable;
+    }
 
     if (joinType != JoinRelType.INNER && !join.isSemiJoin()) {
       // If it is not an inner, we transform it as the metadata
@@ -854,6 +872,7 @@ public class HiveRelOptUtil extends RelOptUtil {
             if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
                 ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
               if (foreignKeyColumnType.isNullable()) {
+                //TODO : Handle Anti Join. https://issues.apache.org/jira/browse/HIVE-23906
                 if (joinType == JoinRelType.INNER || join.isSemiJoin()) {
                   // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
                   RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
@@ -1087,8 +1106,8 @@ public class HiveRelOptUtil extends RelOptUtil {
       }
     }
     Map<Integer, Integer> m = new HashMap<>();
-    for (int projPos = 0; projPos < project.getChildExps().size(); projPos++) {
-      RexNode expr = project.getChildExps().get(projPos);
+    for (int projPos = 0; projPos < project.getProjects().size(); projPos++) {
+      RexNode expr = project.getProjects().get(projPos);
       if (expr instanceof RexInputRef) {
         Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
         if (positions.size() <= 1) {
@@ -1121,8 +1140,8 @@ public class HiveRelOptUtil extends RelOptUtil {
           HiveProject project, RelDistribution distribution) {
     Set<Integer> needed = new HashSet<>(distribution.getKeys());
     Map<Integer, Integer> m = new HashMap<>();
-    for (int projPos = 0; projPos < project.getChildExps().size(); projPos++) {
-      RexNode expr = project.getChildExps().get(projPos);
+    for (int projPos = 0; projPos < project.getProjects().size(); projPos++) {
+      RexNode expr = project.getProjects().get(projPos);
       if (expr instanceof RexInputRef) {
         Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
         if (positions.size() <= 1) {

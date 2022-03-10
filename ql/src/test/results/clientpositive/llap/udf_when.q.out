@@ -193,4 +193,4 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-123	123	abcd
+123	123.00	abcd

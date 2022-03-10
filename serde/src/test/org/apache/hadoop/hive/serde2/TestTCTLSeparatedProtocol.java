@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.protocol.TField;
 import org.apache.thrift.protocol.TList;
 import org.apache.thrift.protocol.TMap;
@@ -165,7 +166,7 @@ public class TestTCTLSeparatedProtocol {
 
     prot.writeStructEnd();
     trans.flush();
-    byte[] b = new byte[3 * 1024];
+    byte[] b = new byte[1024];
     int len = trans.read(b, 0, b.length);
     String test = new String(b, 0, len);
 
@@ -230,12 +231,12 @@ public class TestTCTLSeparatedProtocol {
     assertTrue(prot.readString().equals("bye!"));
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
@@ -298,12 +299,12 @@ public class TestTCTLSeparatedProtocol {
     prot.readListEnd();
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
 
-    // shouldl return nulls at end
+    // should return nulls at end
     prot.readFieldBegin();
     assertNull(prot.readString());
     prot.readFieldEnd();
@@ -428,7 +429,7 @@ public class TestTCTLSeparatedProtocol {
 
     prot.writeStructEnd();
 
-    byte b[] = new byte[3 * 1024];
+    byte b[] = new byte[1024];
     int len = trans.read(b, 0, b.length);
     String written = new String(b, 0, len);
 
@@ -510,11 +511,26 @@ public class TestTCTLSeparatedProtocol {
       @Override
       public void write(byte[] buf, int off, int len) throws TTransportException {
       }
+
+      @Override
+      public TConfiguration getConfiguration() {
+        return null;
+      }
+
+      @Override
+      public void updateKnownMessageSize(long l) throws TTransportException {
+
+      }
+
+      @Override
+      public void checkReadBytesAvailable(long l) throws TTransportException {
+
+      }
     });
     separatedProtocol.initialize(null, new Properties());
     try {
       separatedProtocol.readStructBegin();
-      fail("Runtime Exception is expected if the intialization of tokenizer failed.");
+      fail("Runtime Exception is expected if the initialization of tokenizer failed.");
     } catch (Exception e) {
       assertTrue(e.getCause() instanceof TTransportException);
     }

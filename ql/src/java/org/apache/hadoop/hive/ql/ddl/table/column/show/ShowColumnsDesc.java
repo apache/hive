@@ -37,11 +37,13 @@ public class ShowColumnsDesc implements DDLDesc, Serializable {
   private final String resFile;
   private final String tableName;
   private final String pattern;
+  private final boolean sorted;
 
-  public ShowColumnsDesc(Path resFile, String tableName, String pattern) {
+  public ShowColumnsDesc(Path resFile, String tableName, String pattern, boolean sorted) {
     this.resFile = resFile.toString();
     this.pattern = pattern;
     this.tableName = tableName;
+    this.sorted = sorted;
   }
 
   @Explain(displayName = "pattern", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -57,5 +59,10 @@ public class ShowColumnsDesc implements DDLDesc, Serializable {
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
+  }
+
+  @Explain(displayName = "sorted", explainLevels = { Level.EXTENDED })
+  public boolean isSorted() {
+    return sorted;
   }
 }

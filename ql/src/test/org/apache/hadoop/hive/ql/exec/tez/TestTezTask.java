@@ -93,7 +93,6 @@ public class TestTezTask {
   Path path;
   FileSystem fs;
 
-  @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
     utils = mock(DagUtils.class);
@@ -196,7 +195,7 @@ public class TestTezTask {
   }
 
   @Test
-  public void testBuildDag() throws IllegalArgumentException, IOException, Exception {
+  public void testBuildDag() throws Exception {
     DAG dag = task.build(conf, work, path, new Context(conf),
         DagUtils.createTezLrMap(appLr, null));
     for (BaseWork w: work.getAllWork()) {
@@ -217,7 +216,7 @@ public class TestTezTask {
   }
 
   @Test
-  public void testEmptyWork() throws IllegalArgumentException, IOException, Exception {
+  public void testEmptyWork() throws Exception {
     DAG dag = task.build(conf, new TezWork("", null), path, new Context(conf),
         DagUtils.createTezLrMap(appLr, null));
     assertEquals(dag.getVertices().size(), 0);

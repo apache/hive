@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import static org.apache.hadoop.hive.llap.cache.TestProactiveEviction.closeSweeperExecutorForTest;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -30,11 +32,15 @@ import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.IntStream;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -111,13 +117,28 @@ public class TestLowLevelLrfuCachePolicy {
     testHeapSize(64);
   }
 
-  private class EvictionTracker implements EvictionListener {
+  static class EvictionTracker implements EvictionListener {
     public List<LlapDataBuffer> evicted = new ArrayList<LlapDataBuffer>();
+    public List<LlapDataBuffer> proactivelyEvicted = new ArrayList<LlapDataBuffer>();
+    public MemoryManager mm;
 
     @Override
     public void notifyEvicted(LlapCacheableBuffer buffer) {
       evicted.add((LlapDataBuffer)buffer);
     }
+
+    @Override
+    public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
+      // In reality allocator.deallocateProactivelyEvicted is called which:
+      // * expects an invalidated buffer (must have FLAG_EVICTED)
+      // * and then removes it from memory (setting FLAG_REMOVED) (no-op if it finds FLAG_REMOVED set)
+      int res = ((LlapAllocatorBuffer) buffer).releaseInvalidated();
+      if (mm != null && res >= 0) {
+        mm.releaseMemory(buffer.getMemoryUsage());
+      }
+      proactivelyEvicted.add((LlapDataBuffer)buffer);
+    }
+
   }
 
   @Test
@@ -248,6 +269,317 @@ public class TestLowLevelLrfuCachePolicy {
     assertTrue(evicted.isInvalid());
     assertNotSame(locked, evicted);
     unlock(lrfu, locked);
+  }
+
+  @Test
+  public void testBPWrapperFlush() {
+    int heapSize = 20;
+    LOG.info("Testing bp wrapper flush logic");
+    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
+    EvictionTracker et = new EvictionTracker();
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 10);
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lrfu,
+        LlapDaemonCacheMetrics.create("test", "1"));
+    lrfu.setEvictionListener(et);
+
+    // Test with 4 buffers: they should all remain in BP wrapper and not go to heap upon insertion.
+    // .. but after purging, they need to show up as 4 evicted bytes.
+    for (int i = 0; i < 4; ++i) {
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+      assertTrue(cache(mm, lrfu, et, buffer));
+      inserted.add(buffer);
+    }
+    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0}, lrfu.metrics.getUsageStats());
+    assertEquals(4, mm.purge());
+    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
+
+    // Testing with 8 buffers: on the 6th buffer BP wrapper content should be flushed into heap, next 2 buffers won't
+    for (int i = 0; i < 8; ++i) {
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+      assertTrue(cache(mm, lrfu, et, buffer));
+      inserted.add(buffer);
+    }
+    assertArrayEquals(new long[] {6, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0}, lrfu.metrics.getUsageStats());
+    assertEquals(8, mm.purge());
+    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
+
+    assertTrue(et.evicted.containsAll(inserted));
+  }
+
+  @Test
+  public void testProactiveEvictionLFU() throws Exception {
+    testProactiveEviction(0.0f, false);
+  }
+
+  @Test
+  public void testProactiveEvictionLFUWithInstantDealloc() throws Exception {
+    testProactiveEviction(0.0f, true);
+  }
+
+  @Test
+  public void testProactiveEvictionLRU() throws Exception {
+    testProactiveEviction(1.0f, false);
+  }
+
+  @Test
+  public void testProactiveEvictionLRUWithInstantDealloc() throws Exception {
+    testProactiveEviction(1.0f, true);
+  }
+
+  @Test
+  public void testHotBuffers() {
+    int heapSize = 10;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.1f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first two are the hottest
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(2, hotBuffers.size());
+  }
+
+  @Test
+  public void testHotBuffersHeapAndList() {
+    int heapSize = 3;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
+  public void testHotBuffersOnHalfFullHeap() {
+    int heapSize = 39;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
+  public void testHotBuffersCutoff() {
+    int heapSize = 3;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+
+    buffs[5].allocSize = 40;
+    // Access the big one
+    lrfu.notifyUnlock(buffs[5]);
+
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The big one
+    assertEquals(hotBuffers.get(0), buffs[5]);
+    assertEquals(1, hotBuffers.size());
+  }
+
+  private void testProactiveEviction(float lambda, boolean isInstantDealloc) throws Exception {
+    closeSweeperExecutorForTest();
+    int lrfuMaxSize = 10;
+    HiveConf conf = new HiveConf();
+    // This is to make sure no sweep happens automatically in the background, the test here will call evictProactively()
+    // on the policy
+    conf.setTimeVar(HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_SWEEP_INTERVAL, 1, TimeUnit.HOURS);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, lambda);
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    if (isInstantDealloc) {
+      conf.setBoolVar(HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC, true);
+    }
+    EvictionTracker et = new EvictionTracker();
+    LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(1, lrfuMaxSize, conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(lrfuMaxSize, lfu,
+        LlapDaemonCacheMetrics.create("test", "1"));
+    lfu.setEvictionListener(et);
+    et.mm = mm;
+
+    // 10 buffers, go into the cache policy
+    LlapDataBuffer[] buffs = IntStream.range(0, lrfuMaxSize).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> assertTrue(cache(mm, lfu, et, b)));
+
+    // To test all code paths with instant deallocation feature on, these buffer accesses are simulated, so that in
+    // both LFU and LRU cases the same buffers will get reactively evicted at any test run.
+    if (isInstantDealloc) {
+      if (lambda < 0.5) {
+        lfu.notifyUnlock(buffs[4]);
+        lfu.notifyUnlock(buffs[1]);
+      } else {
+        lfu.notifyUnlock(buffs[1]);
+        lfu.notifyUnlock(buffs[5]);
+        lfu.notifyUnlock(buffs[2]);
+        lfu.notifyUnlock(buffs[4]);
+        lfu.notifyUnlock(buffs[9]);
+        lfu.notifyUnlock(buffs[6]);
+      }
+    }
+
+    // Marking 1, 3, 5, 7 for proactive eviction
+    buffs[1].markForEviction();
+    buffs[3].markForEviction();
+    buffs[5].markForEviction();
+    buffs[7].markForEviction();
+
+    if (isInstantDealloc) {
+      for (int i = 0; i < buffs.length; ++i) {
+        if (i == 1 || i == 3 || i == 5 || i == 7) {
+          buffs[i].invalidateAndRelease();
+          mm.releaseMemory(buffs[i].getMemoryUsage());
+        }
+      }
+      // By this time the marked buffers should also be -instantly..- deallocated, but not yet cleaned up from LRFU.
+
+      // MM should report 6/10 memory usage
+      assertEquals(6, mm.getCurrentUsedSize());
+
+      // Testing one reactive eviction - should evict buffer 0 and 8 normally
+      assertEquals(2, lfu.evictSomeBlocks(2));
+      mm.releaseMemory(2);
+      for (int i = 0; i < buffs.length; ++i) {
+        // Reactively evicted and deallocated buffers 0 and 8, proactively deallocated buffers 1 3 5 and 7
+        // This leaves buffers 2 4 6 and 9 remaining to be valid only
+        assertEquals(i != 2 && i != 4 && i != 6 && i != 9, buffs[i].isInvalid());
+
+        // Check that buffers 0 and 8 were indeed evicted reactively
+        assertEquals(i == 0 || i == 8, et.evicted.contains(buffs[i]));
+
+        // Although buffers 1 3 5 and 7 are deallocated due to instant deallocation, they might not all be cleaned
+        // up just yet from lrfu: currently only buffers 3 and 7 are, as they were 'found' during the past reactive
+        // eviction
+        assertEquals(i == 3 || i == 7, et.proactivelyEvicted.contains(buffs[i]));
+      }
+
+      // Simulating sweep run invoking this - after which lrfu DS cleanup should be done, and all marked and deallocated
+      // buffers should be taken care of: 1 3 5 and 7. As buffers 3 and 7 already are, this call will only touch buffers
+      // 1 and 5. Other buffers should be unchanged - no reactive eviction happened.
+      lfu.evictProactively();
+      for (int i = 0; i < buffs.length; ++i) {
+        // Same check
+        assertEquals(i != 2 && i != 4 && i != 6 && i != 9, buffs[i].isInvalid());
+        // Same check
+        assertEquals(i == 0 || i == 8, et.evicted.contains(buffs[i]));
+        // Check cleanup happened on buffers 1 and 5 too
+        assertEquals(i == 1 || i == 3 || i == 5 || i == 7, et.proactivelyEvicted.contains(buffs[i]));
+      }
+
+      // Now another mark and instant deallocation comes for buffer 9
+      buffs[9].markForEviction();
+      buffs[9].invalidateAndRelease();
+      mm.releaseMemory(buffs[9].getMemoryUsage());
+
+      // Purging the remaining buffers will cause "reactive" eviction on buffers 2 4 and 6 and also a cleanup of the
+      // already deallocated buffer 9. So purge should free up 3 bytes.
+      assertEquals(3, lfu.purge());
+      for (int i = 0; i < buffs.length; ++i) {
+        assertTrue(buffs[i].isInvalid());
+        assertEquals(i == 0 || i == 2 || i == 4 || i == 6 || i == 8, et.evicted.contains(buffs[i]));
+        assertEquals(i == 1 || i == 3 || i == 5 || i == 7 || i == 9, et.proactivelyEvicted.contains(buffs[i]));
+      }
+
+    } else {
+
+      // MM should report a full cache yet
+      assertEquals(lrfuMaxSize, mm.getCurrentUsedSize());
+
+      // Testing the very rare scenario of a marked buffer being accessed again
+      // (in reality this needs a reading, dropping, recreating and then finally re-reading the same table again)
+      // If this happens before proactive eviction sweep, the buffer gets unmarked and thus has 1 extra life
+      buffs[4].markForEviction();
+      lfu.notifyUnlock(buffs[4]);
+      assertFalse(buffs[4].isMarkedForEviction());
+
+      // Simulating sweep run invoking this
+      lfu.evictProactively();
+
+      // Should see 4 evicted buffers (1 3 5 and 7), rest of them not invalidated
+      assertEquals(6, mm.getCurrentUsedSize());
+      for (int i = 0; i < buffs.length; ++i) {
+        assertEquals(i == 1 || i == 3 || i == 5 || i == 7, buffs[i].isInvalid());
+        assertEquals(i == 1 || i == 3 || i == 5 || i == 7, et.proactivelyEvicted.contains(buffs[i]));
+      }
+      // Causing reactive eviction should make the rest of the buffers invalidated too
+      mm.reserveMemory(10, false, null);
+      IntStream.range(0, lrfuMaxSize).forEach(i -> assertTrue(buffs[i].isInvalid()));
+      // But nothing was cached following the reactive eviction - so policy should be "empty"
+      assertEquals(0, lfu.purge());
+    }
+
   }
 
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.

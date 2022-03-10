@@ -17,6 +17,7 @@
  */
 package org.apache.hive.service.cli.thrift;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
@@ -42,13 +43,14 @@ public class ThriftHttpServletTest {
   private ThriftHttpServlet thriftHttpServlet;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     String authType = HiveAuthConstants.AuthTypes.KERBEROS.toString();
-    thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null);
+    thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null,
+        new HiveConf());
   }
 
   @Test
-  public void testMissingAuthorizatonHeader() throws Exception {
+  public void testMissingAuthorizationHeader() throws Exception {
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
     Mockito.when(httpServletRequest.getHeader(HttpAuthUtils.AUTHORIZATION)).thenReturn(null);
 
@@ -59,7 +61,7 @@ public class ThriftHttpServletTest {
   }
 
   @Test
-  public void testEmptyAuthorizatonHeader() throws Exception {
+  public void testEmptyAuthorizationHeader() throws Exception {
     HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
     Mockito.when(httpServletRequest.getHeader(HttpAuthUtils.AUTHORIZATION)).thenReturn("");
 

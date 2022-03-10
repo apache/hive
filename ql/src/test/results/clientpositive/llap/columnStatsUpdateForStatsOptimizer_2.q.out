@@ -86,7 +86,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	3                   
-	rawDataSize         	24                  
+	rawDataSize         	36                  
 	totalSize           	571                 
 #### A masked pattern was here ####
 	 	 
@@ -184,7 +184,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	numFiles            	2                   
 	numRows             	3                   
-	rawDataSize         	24                  
+	rawDataSize         	36                  
 	totalSize           	571                 
 #### A masked pattern was here ####
 	 	 

@@ -37,8 +37,10 @@ public class ProtobufBytesWritableSerDe extends ProtobufSerDe {
   private Parser<? extends Message> parser;
 
   @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-    super.initialize(conf, tbl);
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     try {
       @SuppressWarnings("unchecked")
       Parser<? extends Message> tmpParser = (Parser<? extends Message>)protoMessageClass

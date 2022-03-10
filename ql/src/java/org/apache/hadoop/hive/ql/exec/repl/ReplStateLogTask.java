@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.Serializable;
@@ -34,7 +35,14 @@ public class ReplStateLogTask extends Task<ReplStateLogWork> implements Serializ
 
   @Override
   public int execute() {
-    work.replStateLog();
+    try {
+      work.replStateLog();
+    } catch (Exception e) {
+      LOG.error("Exception while logging metrics ", e);
+      setException(e);
+      return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
+              getName(), conf);
+    }
     return 0;
   }
 

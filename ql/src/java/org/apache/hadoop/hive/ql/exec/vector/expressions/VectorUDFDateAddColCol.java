@@ -36,29 +36,19 @@ import org.apache.hive.common.util.DateParser;
 public class VectorUDFDateAddColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
-  private final int colNum2;
-
   protected boolean isPositive = true;
 
   private transient final Text text = new Text();
-  private transient final DateParser dateParser = new DateParser();
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
 
   public VectorUDFDateAddColCol(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
-    this.colNum2 = colNum2;
+    super(colNum1, colNum2, outputColumnNum);
   }
 
   public VectorUDFDateAddColCol() {
     super();
-
-    // Dummy final assignments.
-    colNum1 = -1;
-    colNum2 = -1;
   }
 
   @Override
@@ -76,8 +66,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector1 = batch.cols[colNum1];
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
+    ColumnVector inputColVector1 = batch.cols[inputColumnNum[0]];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[1]];
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector2 = inputColVector2.vector;
@@ -290,9 +280,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
       outputVector.isNull[index] = true;
     } else {
       text.set(inputColumnVector1.vector[index], inputColumnVector1.start[index], inputColumnVector1.length[index]);
-      Date hDate = new Date();
-      boolean parsed = dateParser.parseDate(text.toString(), hDate);
-      if (!parsed) {
+      Date hDate = DateParser.parseDate(text.toString());
+      if (hDate == null) {
         outputVector.noNulls = false;
         outputVector.isNull[index] = true;
         return;
@@ -318,9 +307,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     }
     text.set(
         inputColumnVector1.vector[0], inputColumnVector1.start[0], inputColumnVector1.length[0]);
-    Date date = new Date();
-    boolean parsed = dateParser.parseDate(text.toString(), date);
-    if (!parsed) {
+    Date date = DateParser.parseDate(text.toString());
+    if (date == null) {
       outputVector.noNulls = false;
       outputVector.isNull[0] = true;
       outputVector.isRepeating = true;
@@ -333,7 +321,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

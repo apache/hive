@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * Polymorphic proxy class, equivalent to org.apache.hadoop.hive.metastore.api.PartitionSpec.
@@ -213,7 +214,7 @@ public abstract class PartitionSpecProxy {
     @Override public String getLocation() { return partition.getSd().getLocation(); }
     @Override public void setCreateTime(long time) { partition.setCreateTime((int)time);}
     @Override public boolean hasNext() { return false; } // No next partition.
-    @Override public Partition next() { return null; } // No next partition.
+    @Override public Partition next() { throw new NoSuchElementException(); } // No next partition.
     @Override public void remove() {} // Do nothing.
   } // P
 

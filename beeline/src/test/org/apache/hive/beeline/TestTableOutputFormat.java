@@ -105,5 +105,14 @@ public class TestTableOutputFormat {
         return mockRow.getColumn(index);
       }
     });
+
+    when(mockResultSet.getString(anyInt())).thenAnswer(new Answer<String>() {
+      @Override
+      public String answer(final InvocationOnMock invocation) {
+        Object[] args = invocation.getArguments();
+        int index = ((Integer) args[0]);
+        return mockRow.getColumn(index);
+      }
+    });
   }
 }

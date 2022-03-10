@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 /**
- * Hive query executer driver
+ * Hive query executer driver.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
@@ -53,6 +53,7 @@ public interface IDriver extends CommandProcessor {
   CommandProcessorResponse run(String command) throws CommandProcessorException;
 
   // create some "cover" to the result?
+  @SuppressWarnings("rawtypes")
   boolean getResults(List res) throws IOException;
 
   void setMaxRows(int maxRows);
@@ -65,7 +66,8 @@ public interface IDriver extends CommandProcessor {
 
   void resetFetch() throws IOException;
 
-  // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
+  // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant
+  // remove?
   @Override
   void close();
   void destroy();

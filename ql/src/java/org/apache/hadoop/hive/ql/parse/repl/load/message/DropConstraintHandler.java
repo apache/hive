@@ -43,7 +43,8 @@ public class DropConstraintHandler extends AbstractMessageHandler {
     AlterTableDropConstraintDesc dropConstraintsDesc =
         new AlterTableDropConstraintDesc(tName, context.eventOnlyReplicationSpec(), constraintName);
     Task<DDLWork> dropConstraintsTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, dropConstraintsDesc), context.hiveConf);
+            new DDLWork(readEntitySet, writeEntitySet, dropConstraintsDesc, true,
+                    context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     context.log.debug("Added drop constrain task : {}:{}", dropConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
     return Collections.singletonList(dropConstraintsTask);

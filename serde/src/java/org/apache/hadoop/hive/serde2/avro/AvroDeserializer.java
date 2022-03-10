@@ -93,6 +93,8 @@ class AvroDeserializer {
    */
   private Boolean writerProleptic = null;
 
+  private Boolean writerZoneConversionLegacy = null;
+
   private Configuration configuration = null;
 
   AvroDeserializer() {}
@@ -156,7 +158,7 @@ class AvroDeserializer {
    * @param writable Instance of GenericAvroWritable to deserialize
    * @param readerSchema Schema of the writable to deserialize
    * @return A list of objects suitable for Hive to work with further
-   * @throws AvroSerdeException For any exception during deseriliazation
+   * @throws AvroSerdeException For any exception during deserialization
    */
   public Object deserialize(List<String> columnNames, List<TypeInfo> columnTypes,
                             Writable writable, Schema readerSchema) throws AvroSerdeException {
@@ -175,6 +177,7 @@ class AvroDeserializer {
     Schema fileSchema = recordWritable.getFileSchema();
     writerTimezone = recordWritable.getWriterTimezone();
     writerProleptic = recordWritable.getWriterProleptic();
+    writerZoneConversionLegacy = recordWritable.getWriterZoneConversionLegacy(); 
 
     UID recordReaderId = recordWritable.getRecordReaderID();
     //If the record reader (from which the record is originated) is already seen and valid,
@@ -278,7 +281,7 @@ class AvroDeserializer {
 
       int scale = 0;
       try {
-        scale = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).asInt();
+        scale = AvroSerdeUtils.getIntFromSchema(fileSchema, AvroSerDe.AVRO_PROP_SCALE);
       } catch(Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + fileSchema, ex);
       }
@@ -294,7 +297,7 @@ class AvroDeserializer {
 
       int maxLength = 0;
       try {
-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = AvroSerdeUtils.getIntFromSchema(fileSchema, AvroSerDe.AVRO_PROP_MAX_LENGTH);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value for char field from file schema: " + fileSchema, ex);
       }
@@ -309,7 +312,7 @@ class AvroDeserializer {
 
       maxLength = 0;
       try {
-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = AvroSerdeUtils.getIntFromSchema(fileSchema, AvroSerDe.AVRO_PROP_MAX_LENGTH);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value for varchar field from file schema: " + fileSchema, ex);
       }
@@ -355,6 +358,17 @@ class AvroDeserializer {
       } else {
         skipUTCConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION.defaultBoolVal;
       }
+      final boolean legacyConversion;
+      if (writerZoneConversionLegacy != null) {
+        legacyConversion = writerZoneConversionLegacy;
+      } else if (writerTimezone != null) {
+        legacyConversion = false;
+      } else if (configuration != null) {
+        legacyConversion =
+            HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
+      } else {
+        legacyConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED.defaultBoolVal;
+      }
       ZoneId convertToTimeZone;
       if (writerTimezone != null) {
         convertToTimeZone = writerTimezone;
@@ -375,7 +389,7 @@ class AvroDeserializer {
         }
       }
       Timestamp timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone);
+          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone, legacyConversion);
       if (!skipProlepticConversion) {
         timestamp = Timestamp.ofEpochMilli(
             CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
@@ -391,8 +405,8 @@ class AvroDeserializer {
   private Object deserializeStruct(GenericData.Record datum, Schema fileSchema, StructTypeInfo columnType)
           throws AvroSerdeException {
     // No equivalent Java type for the backing structure, need to recurse and build a list
-    ArrayList<TypeInfo> innerFieldTypes = columnType.getAllStructFieldTypeInfos();
-    ArrayList<String> innerFieldNames = columnType.getAllStructFieldNames();
+    List<TypeInfo> innerFieldTypes = columnType.getAllStructFieldTypeInfos();
+    List<String> innerFieldNames = columnType.getAllStructFieldNames();
     List<Object> innerObjectRow = new ArrayList<Object>(innerFieldTypes.size());
 
     return workerBase(innerObjectRow, fileSchema, innerFieldNames, innerFieldTypes, datum);
@@ -404,16 +418,16 @@ class AvroDeserializer {
     // and we would end up doing calculations twice to get the same tag
     int fsTag = GenericData.get().resolveUnion(fileSchema, datum); // Determine index of value from fileSchema
     int rsTag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value from recordSchema
-    Object desered = worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(fsTag),
+    Object desired = worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(fsTag),
         recordSchema.getTypes().get(rsTag), columnType.getAllUnionObjectTypeInfos().get(rsTag));
-    return new StandardUnionObjectInspector.StandardUnion((byte)rsTag, desered);
+    return new StandardUnionObjectInspector.StandardUnion((byte)rsTag, desired);
   }
 
   private Object deserializeList(Object datum, Schema fileSchema, Schema recordSchema,
                                  ListTypeInfo columnType) throws AvroSerdeException {
     // Need to check the original schema to see if this is actually a Fixed.
     if(recordSchema.getType().equals(Schema.Type.FIXED)) {
-    // We're faking out Hive to work through a type system impedence mismatch.
+    // We're faking out Hive to work through a type system impedance mismatch.
     // Pull out the backing array and convert to a list.
       GenericData.Fixed fixed = (GenericData.Fixed) datum;
       List<Byte> asList = new ArrayList<Byte>(fixed.bytes().length);

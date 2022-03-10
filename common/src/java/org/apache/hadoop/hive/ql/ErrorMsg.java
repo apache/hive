@@ -146,7 +146,7 @@ public enum ErrorMsg {
   UDTF_NO_GROUP_BY(10077, "GROUP BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_SORT_BY(10078, "SORT BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_CLUSTER_BY(10079, "CLUSTER BY is not supported with a UDTF in the SELECT clause"),
-  UDTF_NO_DISTRIBUTE_BY(10080, "DISTRUBTE BY is not supported with a UDTF in the SELECT clause"),
+  UDTF_NO_DISTRIBUTE_BY(10080, "DISTRIBUTE BY is not supported with a UDTF in the SELECT clause"),
   UDTF_INVALID_LOCATION(10081, "UDTF's are not supported outside the SELECT clause, nor nested "
       + "in expressions"),
   UDTF_LATERAL_VIEW(10082, "UDTF's cannot be in a select expression when there is a lateral view"),
@@ -218,7 +218,7 @@ public enum ErrorMsg {
   BUCKET_MAPJOIN_NOT_POSSIBLE(10136,
     "Bucketed mapjoin cannot be performed. " +
     "This can be due to multiple reasons: " +
-    " . Join columns dont match bucketed columns. " +
+    " . Join columns don't match bucketed columns. " +
     " . Number of buckets are not a multiple of each other. " +
     "If you really want to perform the operation, either remove the " +
     "mapjoin hint from your query or set hive.enforce.bucketmapjoin to false."),
@@ -331,8 +331,8 @@ public enum ErrorMsg {
   TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
   DATABASE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
-  BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri."),
-  UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
+  BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri.", true),
+  UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported", true),
   INVALID_BIGTABLE_MAPJOIN(10246, "{0} table chosen for streaming is not valid", true),
   MISSING_OVER_CLAUSE(10247, "Missing over clause for function : "),
   PARTITION_SPEC_TYPE_MISMATCH(10248, "Cannot add partition column {0} of type {1} as it cannot be converted to type {2}", true),
@@ -387,8 +387,6 @@ public enum ErrorMsg {
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
-  UPDATEDELETE_IO_ERROR(10291, "Encountered I/O error while parsing rewritten update or " +
-      "delete query"),
   UPDATE_CANNOT_UPDATE_PART_VALUE(10292, "Updating values of partition columns is not supported"),
   INSERT_CANNOT_CREATE_TEMP_FILE(10293, "Unable to create temp file for insert values "),
   ACID_OP_ON_NONACID_TXNMGR(10294, "Attempt to do update or delete using transaction manager that" +
@@ -439,14 +437,15 @@ public enum ErrorMsg {
   LOCK_ACQUIRE_CANCELLED(10330, "Query was cancelled while acquiring locks on the underlying objects. "),
   NOT_RECOGNIZED_CONSTRAINT(10331, "Constraint not recognized"),
   INVALID_CONSTRAINT(10332, "Invalid constraint definition"),
+  @Deprecated // kept for backwards reference
   REPLACE_VIEW_WITH_MATERIALIZED(10400, "Attempt to replace view {0} with materialized view", true),
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
   MATERIALIZED_VIEW_DEF_EMPTY(10403, "Query for the materialized view rebuild could not be retrieved"),
   MERGE_PREDIACTE_REQUIRED(10404, "MERGE statement with both UPDATE and DELETE clauses " +
     "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
-  MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
-  MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
+  MERGE_TOO_MANY_DELETE(10405, "MERGE statement can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
+  MERGE_TOO_MANY_UPDATE(10406, "MERGE statement can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
   INVALID_JOIN_CONDITION(10407, "Error parsing condition in join"),
   INVALID_TARGET_COLUMN_IN_SET_CLAUSE(10408, "Target column \"{0}\" of set clause is not found in table \"{1}\".", true),
   HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
@@ -460,7 +459,6 @@ public enum ErrorMsg {
       true),
   ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
     "insert-only transactional", true),
-  LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
@@ -470,6 +468,16 @@ public enum ErrorMsg {
           "Not an ordered-set aggregate function: {0}. WITHIN GROUP clause is not allowed.", true),
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,
           "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
+  AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
+  OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
+  WITH_COL_LIST_NUM_OVERFLOW(10425, "WITH-clause query {0} returns {1} columns, but {2} labels were specified. The number of column labels must be smaller or equal to the number of expressions returned by the query.", true),
+  NULL_TREATMENT_NOT_SUPPORTED(10426, "Function {0} does not support null treatment.", true),
+  DATACONNECTOR_ALREADY_EXISTS(10427, "Dataconnector {0} already exists", true),
+  DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
+  TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
+  INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
+  METADATA_TABLE_NOT_SUPPORTED(10431, "Metadata tables are not supported for table {0}.", true),
+
 
   //========================== 20000 range starts here ========================//
 
@@ -504,18 +512,9 @@ public enum ErrorMsg {
           " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
 
-  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
-  //method in HiveMetaStoreClient
-  REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
-  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
-          "from some other path : {1}."),
-  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
-  REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
-  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
-          "Source of replication (repl.source.for) is not set in the database properties."),
-  REPL_INVALID_DB_OR_TABLE_PATTERN(20021,
-          "Invalid pattern for the DB or table name in the replication policy. "
-                  + "It should be a valid regex enclosed within single or double quotes."),
+  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20016, "File is missing from both source and cm path."),
+  REPL_EXTERNAL_SERVICE_CONNECTION_ERROR(20017, "Failed to connect to {0} service. Error code {1}.",true),
+  CLIENT_POLLING_OPSTATUS_INTERRUPTED(20018, "Interrupted while polling on the operation status", "70100"),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
@@ -524,23 +523,23 @@ public enum ErrorMsg {
 
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_INITIALIZATION_ERROR(30001, "StatsPublisher cannot be initialized. " +
     "There was a error in the initialization of StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_CONNECTION_ERROR(30002, "StatsPublisher cannot be connected to." +
     "There was a error while connecting to the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_PUBLISHING_ERROR(30003, "Error in publishing stats. There was an " +
     "error in publishing stats via StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_CLOSING_ERROR(30004, "StatsPublisher cannot be closed." +
     "There was a error while closing the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
 
   COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
@@ -548,7 +547,6 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, "Invalid partitioning key/value specified in " +
     "ANALYZE statement"),
   COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
-  COLUMNSTATSCOLLECTOR_IO_ERROR(30010, "Encountered I/O exception while parsing rewritten query"),
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
@@ -604,9 +602,10 @@ public enum ErrorMsg {
 
   SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
   SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
-  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
+  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}", true),
 
-  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
+  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired. Error {0}",
+    true),
   SPARK_GET_STAGES_INFO_TIMEOUT(30048, "Spark job GetSparkStagesInfoJob timed out after {0} seconds.", true),
   SPARK_GET_STAGES_INFO_INTERRUPTED(30049, "Spark job GetSparkStagesInfoJob was interrupted."),
   SPARK_GET_STAGES_INFO_EXECUTIONERROR(30050, "Spark job GetSparkStagesInfoJob failed in execution while getting job info due to exception {0}", true),
@@ -614,7 +613,28 @@ public enum ErrorMsg {
   //========================== 40000 range starts here ========================//
 
   SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
-  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true)
+  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true),
+  REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication."),
+  REPL_INVALID_DB_OR_TABLE_PATTERN(40005,
+                                     "Invalid pattern for the DB or table name in the replication policy. "
+                                     + "It should be a valid regex enclosed within single or double quotes."),
+  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
+  //method in HiveMetaStoreClient
+  REPL_EVENTS_MISSING_IN_METASTORE(40006, "Notification events are missing in the meta store."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(40007, "Load path {0} not valid as target database is bootstrapped " +
+    "from some other path : {1}.", true),
+  REPL_INVALID_CONFIG_FOR_SERVICE(40008, "Invalid config error : {0} for {1} service.", true),
+  REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE(40009, "Invalid internal config error : {0} for {1} service.", true),
+  REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true),
+  REPL_FAILED_WITH_NON_RECOVERABLE_ERROR(40011, "Replication failed with non recoverable error. Needs manual intervention"),
+  REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true),
+  REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
+  REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true),
+  REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true),
+  RANGER_AUTHORIZATION_FAILED(40016, "Authorization Failure while communicating to Ranger admin", true),
+  RANGER_AUTHENTICATION_FAILED(40017, "Authentication Failure while communicating to Ranger admin", true),
+  REPL_INCOMPATIBLE_EXCEPTION(40018, "Cannot load into database {0} as it is replication incompatible.", true),
+  REPL_FAILOVER_TARGET_MODIFIED(40019,"Database event id changed post table diff generation.")
   ;
 
   private int errorCode;
@@ -634,7 +654,7 @@ public enum ErrorMsg {
     for (ErrorMsg errorMsg : values()) {
       if (errorMsg.format != null) {
         String pattern = errorMsg.mesg.replaceAll("\\{[0-9]+\\}", ".*");
-        formatToErrorMsgMap.put(Pattern.compile("^" + pattern + "$"), errorMsg);
+        formatToErrorMsgMap.put(Pattern.compile("^" + pattern + "$", Pattern.DOTALL), errorMsg);
       } else {
         mesgToErrorMsgMap.put(errorMsg.getMsg().trim(), errorMsg);
         int length = errorMsg.getMsg().trim().length();
