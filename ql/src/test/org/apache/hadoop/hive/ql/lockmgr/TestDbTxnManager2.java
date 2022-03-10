@@ -3666,9 +3666,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Mockito.reset(driver, driver2);
 
     FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
-      t -> t.getName().matches("tab_acid" + (blocking ? "" : SOFT_DELETE_TABLE_PATTERN)));
-    if ((blocking ? 0 : 1) != stat.length) {
-      Assert.fail("Table data was " + (blocking ? "not" : "") + "removed from FS");
+      t -> t.getName().matches("tab_acid" + (blocking ? "_v2" : SOFT_DELETE_TABLE_PATTERN)));
+    if (1 != stat.length) {
+      Assert.fail("Table couldn't be found on FS");
     }
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
@@ -3684,7 +3684,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
 
-    //re-create table with the same name
+    //create table with the same name
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
