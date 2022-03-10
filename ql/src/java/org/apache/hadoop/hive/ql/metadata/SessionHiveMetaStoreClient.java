@@ -654,13 +654,14 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   private org.apache.hadoop.hive.metastore.api.Table getTempTable(String dbName, String tableName)
       throws MetaException {
-    if (dbName == null) {
+    String parsedDbName = MetaStoreUtils.parseDbName(dbName, conf)[1];
+    if (parsedDbName == null) {
       throw new MetaException("Db name cannot be null");
     }
     if (tableName == null) {
       throw new MetaException("Table name cannot be null");
     }
-    Map<String, Table> tables = getTempTablesForDatabase(dbName.toLowerCase(),
+    Map<String, Table> tables = getTempTablesForDatabase(parsedDbName.toLowerCase(),
         tableName.toLowerCase());
     if (tables != null) {
       Table table = tables.get(tableName.toLowerCase());
@@ -1360,17 +1361,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-      List<String> partNames, boolean getColStats, String engine) throws TException {
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDb_name(), req.getTbl_name());
     if (table == null) {
       //(assume) not a temp table - Try underlying client
-      return super.getPartitionsByNames(catName, dbName, tblName, partNames, getColStats, engine);
+      return super.getPartitionsByNames(req);
     }
     TempTable tt = getPartitionedTempTable(table);
-    List<Partition> partitions = tt.getPartitionsByNames(partNames);
+    GetPartitionsByNamesResult result = new GetPartitionsByNamesResult();
+    result.setPartitions(deepCopyPartitions(tt.getPartitionsByNames(req.getNames())));
 
-    return deepCopyPartitions(partitions);
+    return result;
   }
 
   @Override
