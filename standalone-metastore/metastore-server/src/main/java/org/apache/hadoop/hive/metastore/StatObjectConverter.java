@@ -273,7 +273,7 @@ public class StatObjectConverter {
       setStmt.append("\"BIT_VECTOR\" = ? ,");
     }
     if (mStatsObj.getHistogram() != null) {
-      setStmt.append("\"STATS\" = ? ,");
+      setStmt.append("\"HISTOGRAM\" = ? ,");
     }
     if (mStatsObj.getNumFalses() != null) {
       setStmt.append("\"NUM_FALSES\" = ? ,");
