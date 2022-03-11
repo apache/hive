@@ -1,5 +1,5 @@
--- The file has some overlapping with upgrade-3.2.0-to-4.0.0.postgres.sql
-SELECT 'Upgrading MetaStore schema from 3.1.3000 to 4.0.0';
+-- The file has some overlapping with upgrade-3.2.0-to-4.0.0-alpha-1.postgres.sql
+SELECT 'Upgrading MetaStore schema from 3.1.3000 to 4.0.0-alpha-1';
 
 -- HIVE-20793
 ALTER TABLE "WM_RESOURCEPLAN" ADD "NS" character varying(128);
@@ -132,5 +132,5 @@ CREATE TABLE "COMPACTION_METRICS_CACHE" (
 ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_RETRY_RETENTION" integer NOT NULL DEFAULT 0;
 
 -- These lines need to be last. Insert any changes above.
-UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0';
+UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-alpha-1', "VERSION_COMMENT"='Hive release version 4.0.0-alpha-1' where "VER_ID"=1;
+SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0-alpha-1';
