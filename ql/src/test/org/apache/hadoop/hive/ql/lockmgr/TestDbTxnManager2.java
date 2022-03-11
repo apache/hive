@@ -4063,18 +4063,81 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   @Test
   public void testAddColumnsNonBlocking() throws Exception {
+    testAddColumns(false);
+  }
+  @Test
+  public void testAddColumnsBlocking() throws Exception {
+    testAddColumns(true);
+  }
+
+  private void testAddColumns(boolean blocking) throws Exception {
     dropTable(new String[] {"tab_acid"});
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
+    driver = Mockito.spy(driver);
+
+    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
+    driver2 = Mockito.spy(driver2);
 
     driver.run("create table if not exists tab_acid (a int, b int) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid (a,b) values(1,2),(3,4)");
-    
-    driver.compileAndRespond("alter table tab_acid add columns (c int)");
+
+    driver.compileAndRespond("select * from tab_acid");
+    List<String> res = new ArrayList<>();
+
     driver.lockAndRespond();
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    
+
     checkLock(LockType.SHARED_READ,
       LockState.ACQUIRED, "default", "tab_acid", null, locks);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("alter table tab_acid add columns (c int)");
+
+    if (blocking) {
+      txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
+      locks = getLocks();
+
+      ShowLocksResponseElement checkLock = checkLock(LockType.EXCLUSIVE,
+        LockState.WAITING, "default", "tab_acid", null, locks);
+
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+
+      driver.getFetchTask().fetch(res);
+      swapTxnManager(txnMgr2);
+
+      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      txnMgr2.getMS().unlock(checkLock.getLockid());
+    }
+    driver2.lockAndRespond();
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", blocking ? 1 : 2, locks.size());
+
+    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+
+    Mockito.doNothing().when(driver2).lockAndRespond();
+    driver2.run();
+
+    if (!blocking) {
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+    }
+    Mockito.reset(driver, driver2);
+    
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("[1\t2, 3\t4]", res.toString());
+    driver.run("insert into tab_acid values(5,6,7)");
+    
+    driver.run("select * from tab_acid");
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("[1\t2\tNULL, 3\t4\tNULL, 5\t6\t7]", res.toString());
   }
 }

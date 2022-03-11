@@ -227,15 +227,15 @@ public class WriteEntity extends Entity implements Serializable {
     case MERGEFILES:
     case OWNER:
       return WriteType.DDL_EXCLUSIVE;
-      
+
+    case ADDCOLS:  
     case ADD_CONSTRAINT: 
     case DROP_CONSTRAINT:
     case RENAME:
       return AcidUtils.isLocklessReadsEnabled(table, conf) ? 
           WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
 
-    case ADDPARTITION: 
-    case ADDCOLS:
+    case ADDPARTITION:
     case SET_SERDE_PROPS:
     case ADDPROPS:
     case UPDATESTATS:
