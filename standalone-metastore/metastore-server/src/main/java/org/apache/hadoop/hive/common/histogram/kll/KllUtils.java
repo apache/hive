@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 /**
  * KLL serialization utilities.
@@ -37,27 +36,13 @@ public class KllUtils {
     throw new AssertionError("Suppress default constructor for non instantiation");
   }
 
-  public static final byte[] MAGIC = new byte[] { 'K', 'L', 'L' };
-
   /**
-   * HyperLogLog is serialized using the following format
-   *
-   * <pre>
-   * |-3 byte-|---variable KLL serialization---|
-   * -----------------------------------------_
-   * | header |            KLL sketch         |
-   * ------------------------------------------
-   *
-   * the header consists of 3 bytes of KLL magic string, used to identify the serialized stream
-   *
-   * Followed by header is the KLL serialization as provided by datasketches library.
-   * </pre>
+   * KLL is serialized according to what provided by data-sketches library
    * @param out output stream to write to
    * @param kll KLL sketch that needs to be serialized
    * @throws IOException
    */
   public static void serializeKLL(OutputStream out, KllFloatsSketch kll) throws IOException {
-    out.write(MAGIC);
     out.write(kll.toByteArray());
   }
 
@@ -67,26 +52,7 @@ public class KllUtils {
    * @return KLL histogram estimator
    */
   public static HistogramEstimator deserializeKLL(final byte[] buf) {
-    try {
-      checkMagicString(buf);
-      return new KllHistogramEstimator(KllFloatsSketch.heapify(Memory.wrap(buf)));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Check if the specified input stream is actually a KLL stream
-   * @param buf buffer
-   * @throws IOException
-   */
-  private static void checkMagicString(byte[] buf) throws IOException {
-    byte[] magic = new byte[3];
-    System.arraycopy(buf, 0, magic, 0, 3);
-
-    if (!Arrays.equals(magic, MAGIC)) {
-      throw new IllegalArgumentException("The input stream is not a KLL stream.");
-    }
+    return new KllHistogramEstimator(KllFloatsSketch.heapify(Memory.wrap(buf)));
   }
 
   /**
@@ -100,9 +66,8 @@ public class KllUtils {
   }
 
   public static int lengthFor(JavaDataModel model, KllFloatsSketch kll) {
-    // 3 bytes for header + KLL serialized
-    return kll == null ? (int) model.lengthForByteArrayOfSize(3L
-        + KllFloatsSketch.getMaxSerializedSizeBytes(200, (long) Math.pow(10, 6)))
-        : (int) model.lengthForByteArrayOfSize(3L + kll.getSerializedSizeBytes());
+    // KLL serialized
+    return kll == null ? KllFloatsSketch.getMaxSerializedSizeBytes(200, (long) Math.pow(10, 6))
+        : (int) model.lengthForByteArrayOfSize(kll.getSerializedSizeBytes());
   }
 }

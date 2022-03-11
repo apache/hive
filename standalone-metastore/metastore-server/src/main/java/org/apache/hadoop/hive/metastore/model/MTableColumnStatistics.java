@@ -292,21 +292,18 @@ public class MTableColumnStatistics {
   }
 
   public byte[] getHistogram() {
-    // workaround for DN bug in persisting nulls in pg bytea column
-    // instead set empty bit vector with header.
+    // workaround for DN bug in persisting nulls in pg bytea column instead set empty histogram.
     // https://issues.apache.org/jira/browse/HIVE-17836
-    if (histogram != null
-        && histogram.length == 3 && histogram[0] == 'K' && histogram[1] == 'L' && histogram[2] == 'L') {
+    if (histogram != null && histogram.length == 0) {
       return null;
     }
     return histogram;
   }
 
   public void setHistogram(byte[] histogram) {
-    // workaround for DN bug in persisting nulls in pg bytea column
-    // instead set empty bit vector with header.
+    // workaround for DN bug in persisting nulls in pg bytea column instead set empty histogram.
     // https://issues.apache.org/jira/browse/HIVE-17836
-    this.histogram = (histogram == null ? new byte[] { 'K', 'L', 'L' } : histogram);
+    this.histogram = (histogram == null ? new byte[] { } : histogram);
   }
 
   public String getEngine() {

@@ -21,29 +21,13 @@ package org.apache.hadoop.hive.common.histogram;
 
 import org.apache.hadoop.hive.common.histogram.kll.KllUtils;
 
-import java.util.Arrays;
-
 public class HistogramEstimatorFactory {
 
   private HistogramEstimatorFactory() {
   }
 
-  private static boolean isKllSketch(byte[] buf) {
-    byte[] magic = new byte[3];
-    magic[0] = buf[0];
-    magic[1] = buf[1];
-    magic[2] = buf[2];
-    return Arrays.equals(magic, KllUtils.MAGIC);
-  }
-
   public static HistogramEstimator getHistogramEstimator(byte[] buf) {
-    // Right now we assume only KLL is available.
-    if (isKllSketch(buf)) {
-      return KllUtils.deserializeKLL(buf);
-    } else {
-      throw new RuntimeException("Unknown histogram estimator with magic number: "
-          + buf[0] + buf[1] + buf[2]);
-    }
+    return KllUtils.deserializeKLL(buf);
   }
 
   public static HistogramEstimator getEmptyHistogramEstimator(int k) {
