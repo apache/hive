@@ -226,7 +226,9 @@ public class WriteEntity extends Entity implements Serializable {
     case OWNER:
       return WriteType.DDL_EXCLUSIVE;
 
-    case ADDCOLS:  
+    case ADDCOLS:
+    case REPLACE_COLUMNS:
+    case RENAME_COLUMN:
     case ADD_CONSTRAINT: 
     case DROP_CONSTRAINT:
     case RENAME:
@@ -234,8 +236,6 @@ public class WriteEntity extends Entity implements Serializable {
           WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
 
     case ADDPARTITION:
-    case RENAME_COLUMN:
-    case REPLACE_COLUMNS:
     case SET_SERDE_PROPS:
     case ADDPROPS:
     case UPDATESTATS:
