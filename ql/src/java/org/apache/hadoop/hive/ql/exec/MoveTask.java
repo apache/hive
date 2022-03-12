@@ -129,7 +129,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           Path srcPath = new Path(filesKept.remove(0));
           LOG.info("Copying files {} from {} to {}", filesKept, srcPath, targetPath);
           // Do the move using the filesKept now directly to the target dir.
-          Utilities.moveSpecifiedFilesInParallel(conf, fs, srcPath, targetPath, filesKept);
+          Utilities.moveSpecifiedFilesInParallel(conf, fs, srcPath, targetPath, new HashSet<>(filesKept));
           perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
           return;
         }

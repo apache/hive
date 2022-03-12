@@ -1503,7 +1503,7 @@ public final class Utilities {
             // Do this optimisation only for External tables.
             createFileList(filesKept, tmpPath, specPath, fs);
           } else {
-            List<String> filesKeptPaths = filesKept.stream().map(x -> x.getPath().toString()).collect(Collectors.toList());
+            Set<String> filesKeptPaths = filesKept.stream().map(x -> x.getPath().toString()).collect(Collectors.toSet());
             moveSpecifiedFilesInParallel(hconf, fs, tmpPath, specPath, filesKeptPaths);
           }
           perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
@@ -1549,7 +1549,7 @@ public final class Utilities {
    * @throws IOException
    */
   public static void moveSpecifiedFilesInParallel(Configuration conf, FileSystem fs,
-      Path srcPath, Path destPath, List<String> filesToMove)
+      Path srcPath, Path destPath, Set<String> filesToMove)
       throws HiveException, IOException {
 
     LOG.info("rename {} files from {} to dest {}",
@@ -1579,7 +1579,7 @@ public final class Utilities {
    * @throws IOException
    */
   private static void moveSpecifiedFilesInParallel(FileSystem fs,
-      Path src, Path dst, List<String> filesToMove, List<Future<Void>> futures,
+      Path src, Path dst, Set<String> filesToMove, List<Future<Void>> futures,
       ExecutorService pool) throws IOException {
     if (!fs.exists(dst)) {
       LOG.info("Creating {}", dst);
