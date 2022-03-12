@@ -79,8 +79,12 @@ public abstract class AbstractHTLoadBench {
   @Param({"0", "1", "2", "4", "8", "16", "32", "64"})
   static int LOAD_THREADS_NUM;
 
-  @Param({"10000", "10000000"})
+  @Param({"10000", "2000000"})
   static int ROWS_NUM;
+
+  // MultiSet, HashSet, HashMap
+  @Param({"INNER_BIG_ONLY", "LEFT_SEMI", "INNER"})
+  static String JOIN_TYPE;
 
   @Benchmark
   public void hashTableLoadBench() throws Exception {

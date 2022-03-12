@@ -38,39 +38,11 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
  */
 public class VectorFastHTBytesKeyBench {
 
-  public static class HashMultiSetFastVectorBench extends BytesKeyBase {
+  public static class FastHashVectorBench extends BytesKeyBase {
     @Setup
     public void setup() throws Exception {
       LOG.info("Do Setup");
-      doSetup(VectorMapJoinVariation.INNER_BIG_ONLY, MapJoinTestImplementation.NATIVE_VECTOR_FAST, ROWS_NUM);
-    }
-
-    @TearDown(Level.Invocation)
-    public void doTearDown() {
-      LOG.info("Do TearDown");
-      customKeyValueReader.reset();
-    }
-  }
-
-  public static class HashSetFastVectorBench extends BytesKeyBase {
-    @Setup
-    public void setup() throws Exception {
-      LOG.info("Do Setup");
-      doSetup(VectorMapJoinVariation.LEFT_SEMI, MapJoinTestImplementation.NATIVE_VECTOR_FAST, ROWS_NUM);
-    }
-
-    @TearDown(Level.Invocation)
-    public void doTearDown() {
-      LOG.info("Do TearDown");
-      customKeyValueReader.reset();
-    }
-  }
-
-  public static class HashMapFastVectorBench extends BytesKeyBase {
-    @Setup
-    public void setup() throws Exception {
-      LOG.info("Do Setup");
-      doSetup(VectorMapJoinVariation.INNER, MapJoinTestImplementation.NATIVE_VECTOR_FAST, ROWS_NUM);
+      doSetup(VectorMapJoinVariation.valueOf(JOIN_TYPE), MapJoinTestImplementation.NATIVE_VECTOR_FAST, ROWS_NUM);
     }
 
     @TearDown(Level.Invocation)
