@@ -85,6 +85,8 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * Class to manage storing object in and reading them from HBase.
@@ -2803,7 +2805,7 @@ public class HBaseReadWrite implements MetadataStore {
     TMemoryBuffer buf = new TMemoryBuffer(1000);
     TProtocol protocol = new TSimpleJSONProtocol(buf);
     obj.write(protocol);
-    return buf.toString("UTF-8");
+    return buf.toString(UTF_8);
   }
 
   /**********************************************************************************************
