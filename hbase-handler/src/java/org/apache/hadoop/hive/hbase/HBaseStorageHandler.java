@@ -294,15 +294,23 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public URI getURIForAuth(Table table) throws URISyntaxException {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     hbaseConf = getConf();
-    String hbase_host = tableProperties.containsKey(HBASE_HOST_NAME)? tableProperties.get(HBASE_HOST_NAME) : hbaseConf.get(HBASE_HOST_NAME);
-    String hbase_port = tableProperties.containsKey(HBASE_CLIENT_PORT)? tableProperties.get(HBASE_CLIENT_PORT) : hbaseConf.get(HBASE_CLIENT_PORT);
-    String table_name = tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME, null);
-    String column_family = tableProperties.getOrDefault(HBaseSerDe.HBASE_COLUMNS_MAPPING, null);
+    String hbase_host = tableProperties.getOrDefault(HBASE_HOST_NAME,
+        hbaseConf.get(HBASE_HOST_NAME));
+    String hbase_port = tableProperties.getOrDefault(HBASE_CLIENT_PORT,
+        hbaseConf.get(HBASE_CLIENT_PORT));
+    String table_name = encodeString(tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME,
+        null));
+    String column_family = encodeString(tableProperties.getOrDefault(
+        HBaseSerDe.HBASE_COLUMNS_MAPPING, null));
     String URIString = HBASE_PREFIX + "//" + hbase_host + ":" + hbase_port + "/" + table_name;
     if (column_family != null) {
       URIString += "/" + column_family;
     }
-    return new URI(URLEncoder.encode(URIString));
+    return new URI(URIString);
+  }
+
+  private static String encodeString(String encodedString) {
+    return encodedString != null ? URLEncoder.encode(encodedString): null;
   }
 
   /**
