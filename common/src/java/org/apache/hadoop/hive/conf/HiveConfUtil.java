@@ -35,10 +35,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Stream;
@@ -275,5 +277,14 @@ public class HiveConfUtil {
     }
     String propertyValue = HiveStringUtils.insertValue(keyName, newKeyValue, existingValue);
     jobConf.set(property, propertyValue);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static void copyFromProperties(Properties propSource, HiveConf confTarget) {
+    Enumeration<String> props = (Enumeration<String>) propSource.propertyNames();
+    while (props.hasMoreElements()) {
+      String key = props.nextElement();
+      confTarget.set(key, propSource.getProperty(key));
+    }
   }
 }
