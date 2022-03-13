@@ -99,7 +99,7 @@
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>4.2.0</curator.version>
     <zookeeper.version>3.5.5</zookeeper.version>
-    <cron-utils.version>9.1.3</cron-utils.version>
+    <cron-utils.version>9.1.6</cron-utils.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
