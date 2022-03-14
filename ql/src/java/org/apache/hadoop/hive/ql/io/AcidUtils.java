@@ -1310,7 +1310,7 @@ public class AcidUtils {
    * @return the state of the directory
    * @throws IOException on filesystem errors
    */
-  private static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
+  public static AcidDirectory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
       HdfsDirSnapshot> dirSnapshots) throws IOException {
     ValidTxnList validTxnList = getValidTxnList(conf);

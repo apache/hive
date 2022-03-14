@@ -401,7 +401,7 @@ public abstract class CompactorTest {
     switch (type) {
       case BASE: filename = AcidUtils.BASE_PREFIX + maxTxn + (visibilityId > 0 ? AcidUtils.VISIBILITY_PREFIX + visibilityId : ""); break;
       case LENGTH_FILE: // Fall through to delta
-      case DELTA: filename = makeDeltaDirName(minTxn, maxTxn); break;
+      case DELTA: filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn),visibilityId); break;
       case LEGACY: break; // handled below
     }
 

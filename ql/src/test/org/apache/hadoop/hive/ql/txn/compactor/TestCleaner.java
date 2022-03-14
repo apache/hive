@@ -1071,8 +1071,8 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tblName, 22);
 
     // block cleaner with an open txn
-    long blockingTxn = openTxn();
-
+    openTxn();
+    
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
     long ctxnid = compactInTxn(rqst);
