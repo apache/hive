@@ -157,12 +157,13 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       jobConf = conf;
       isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
       rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
-      ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
+      ParquetInputSplit inputSplit = getSplit(oldInputSplit, jobConf);
+      // use jobConf consistently throughout, as getSplit clones it & adds filter to it.
       if (inputSplit != null) {
-        initialize(inputSplit, conf);
+        initialize(inputSplit, jobConf);
       }
       FileSplit fileSplit = (FileSplit) oldInputSplit;
-      initPartitionValues(fileSplit, conf);
+      initPartitionValues(fileSplit, jobConf);
       bucketIdentifier = BucketIdentifier.from(conf, fileSplit.getPath());
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
@@ -270,9 +271,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
     }
 
-    for (BlockMetaData block : blocks) {
-      this.totalRowCount += block.getRowCount();
-    }
     this.fileSchema = footer.getFileMetaData().getSchema();
     this.writerTimezone = DataWritableReadSupport
         .getWriterTimeZoneId(footer.getFileMetaData().getKeyValueMetaData());
@@ -281,9 +279,12 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
 
-    Path path = wrapPathForCache(file, cacheKey, configuration, blocks, cacheTag);
+    //TODO: For data cache this needs to be fixed and passed to reader.
+    //Path path = wrapPathForCache(file, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
-      configuration, footer.getFileMetaData(), path, blocks, requestedSchema.getColumns());
+      configuration, footer.getFileMetaData(), file, blocks, requestedSchema.getColumns());
+    this.totalRowCount = this.reader.getFilteredRecordCount();
+    LOG.debug("totalRowCount: {}", totalRowCount);
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
@@ -302,6 +303,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     for (BlockMetaData block : blocks) {
       for (ColumnChunkMetaData mc : block.getColumns()) {
         if (!includedCols.contains(mc.getPath())) continue;
+        LOG.info("Patch: chunkIndex: k:" + mc.getStartingPos() + ", val: " + mc.getStartingPos() + mc.getTotalSize());
         chunkIndex.put(mc.getStartingPos(), mc.getStartingPos() + mc.getTotalSize());
       }
     }
@@ -450,7 +452,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     if (rowsReturned != totalCountLoadedSoFar) {
       return;
     }
-    PageReadStore pages = reader.readNextRowGroup();
+    PageReadStore pages = reader.readNextFilteredRowGroup();
     if (pages == null) {
       throw new IOException("expecting more rows but reached last block. Read "
         + rowsReturned + " out of " + totalRowCount);
