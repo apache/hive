@@ -45,6 +45,7 @@ public class MoveWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
+  private boolean isCTAS;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -91,6 +92,12 @@ public class MoveWork implements Serializable {
     this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
   }
 
+  public MoveWork(boolean isCTAS, Set<ReadEntity> inputs, Set<WriteEntity> outputs, final LoadTableDesc loadTableWork,
+      final LoadFileDesc loadFileWork, boolean checkFileFormat) {
+    this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat);
+    this.isCTAS = isCTAS;
+  }
+
   public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
                   final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
                   boolean checkFileFormat, String dumpRoot, ReplicationMetricCollector metricCollector,
@@ -110,6 +117,9 @@ public class MoveWork implements Serializable {
     inputs = o.getInputs();
     outputs = o.getOutputs();
     needCleanTarget = o.needCleanTarget;
+  }
+  public boolean isCTAS() {
+    return isCTAS;
   }
 
   @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
