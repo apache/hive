@@ -17,6 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import java.io.FileInputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import javax.net.ssl.SSLContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenSelector;
@@ -27,12 +33,21 @@ import org.apache.hadoop.security.authentication.util.KerberosUtil;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
+import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -269,6 +284,31 @@ public class SecurityUtils {
     // SSLContext created with the given params
     TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
     return getSSLSocketWithHttps(tSSLSocket);
+  }
+
+  public static THttpClient getHttpSSLSocket(String httpsUrl, String trustStorePath,
+      String trustStorePasswd, String trustStoreAlgorithm, String trustStoreType)
+      throws TTransportException, IOException, KeyStoreException, NoSuchAlgorithmException,
+      CertificateException, KeyManagementException {
+    if (trustStoreType == null || trustStoreType.isEmpty()) {
+      trustStoreType = KeyStore.getDefaultType();
+    }
+    KeyStore sslTrustStore = KeyStore.getInstance(trustStoreType);
+    try (FileInputStream fis = new FileInputStream(trustStorePath)) {
+      sslTrustStore.load(fis, trustStorePasswd.toCharArray());
+    }
+
+    SSLContext sslContext =
+        SSLContexts.custom().setTrustManagerFactoryAlgorithm(trustStoreAlgorithm).
+            loadTrustMaterial(sslTrustStore, null).build();
+    SSLConnectionSocketFactory socketFactory =
+        new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier(null));
+    final Registry<ConnectionSocketFactory> registry =
+        RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
+            .build();
+    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+    httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
+    return new THttpClient(httpsUrl, httpClientBuilder.build());
   }
 
   // Using endpoint identification algorithm as HTTPS enables us to do

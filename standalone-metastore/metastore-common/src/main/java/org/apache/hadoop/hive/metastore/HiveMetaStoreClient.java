@@ -84,6 +84,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -591,6 +592,31 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.rename_partition_req(req);
   }
 
+  /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  private String getHttpPath(String httpPath) {
+    if(httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    }
+    else {
+      if(!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if(httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if(!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
+  }
+
+
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
@@ -599,10 +625,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
     String clientAuthMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
     boolean usePasswordAuth = false;
-    boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
         ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+    boolean isHttpTransportMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
+        equalsIgnoreCase("http");
 
     if (clientAuthMode != null) {
       usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
@@ -611,8 +638,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI ({})", store);
-
         try {
+          String httpUrl = null;
+          String httpUser = null;
+          if (isHttpTransportMode) {
+            String[] urlAndUser = getHttpUrlAndUser(store);
+            httpUrl = urlAndUser[0];
+            httpUser = urlAndUser[1];
+          }
           if (useSSL) {
             try {
               String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
@@ -627,9 +660,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               String trustStoreAlgorithm =
                       MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
 
+              if (isHttpTransportMode) {
+                LOG.info("Creating HTTP transport client to url: {}", httpUrl);
+                try {
+                  THttpClient httpClient = SecurityUtils.getHttpSSLSocket(httpUrl, trustStorePath, trustStorePassword,
+                      trustStoreAlgorithm, trustStoreType);
+                  httpClient.setCustomHeader("x-actor-username", httpUser);
+                  transport = httpClient;
+                } catch (Exception e) {
+                  throw new MetaException("Failed to create http transport client to url: " + httpUrl
+                      + ".Error message:" + e.getMessage());
+                }
+              } else {
+                transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
+                    trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+              }
               // Create an SSL socket and connect
-              transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-                  trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+
               final int newCount = connCount.incrementAndGet();
               LOG.debug(
                   "Opened an SSL connection to metastore, current connections: {}",
@@ -646,82 +693,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           } else {
             try {
-              transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(), clientSocketTimeout);
+              if (isHttpTransportMode) {
+                THttpClient httpClient = new THttpClient(httpUrl);
+                httpClient.setCustomHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
+                transport = httpClient;
+              } else {
+                new TSocket(new TConfiguration(),store.getHost(), store.getPort()
+                    , clientSocketTimeout);
+              }
             } catch (TTransportException e) {
               tte = e;
               throw new MetaException(e.toString());
             }
           }
-
-          if (usePasswordAuth) {
-            // we are using PLAIN Sasl connection with user/password
-            LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
-            String userName = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
-
-            if (null == userName || userName.isEmpty()) {
-              throw new MetaException("No user specified for plain transport.");
-            }
-
-            // The password is not directly provided. It should be obtained from a keystore pointed
-            // by configuration "hadoop.security.credential.provider.path".
-            try {
-              String passwd = null;
-              char[] pwdCharArray = conf.getPassword(userName);
-              if (null != pwdCharArray) {
-                passwd = new String(pwdCharArray);
-              }
-              if (null == passwd) {
-                throw new MetaException("No password found for user " + userName);
-              }
-              // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-              transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
-            } catch (IOException | TTransportException sasle) {
-              // IOException covers SaslException
-              LOG.error("Could not create client transport", sasle);
-              throw new MetaException(sasle.toString());
-            }
-          } else if (useSasl) {
-            // Wrap thrift connection with SASL for secure connection.
-            try {
-              HadoopThriftAuthBridge.Client authBridge =
-                HadoopThriftAuthBridge.getBridge().createClient();
-
-              // check if we should use delegation tokens to authenticate
-              // the call below gets hold of the tokens if they are set up by hadoop
-              // this should happen on the map/reduce tasks if the client added the
-              // tokens into hadoop's credential store in the front end during job
-              // submission.
-              String tokenSig = MetastoreConf.getVar(conf, ConfVars.TOKEN_SIGNATURE);
-              // tokenSig could be null
-              tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
-
-              if (tokenStrForm != null) {
-                LOG.debug("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
-                // authenticate using delegation tokens via the "DIGEST" mechanism
-                transport = authBridge.createClientTransport(null, store.getHost(),
-                    "DIGEST", tokenStrForm, transport,
-                        MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
-              } else {
-                LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
-                String principalConfig =
-                    MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
-                transport = authBridge.createClientTransport(
-                    principalConfig, store.getHost(), "KERBEROS", null,
-                    transport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
-              }
-            } catch (IOException ioe) {
-              LOG.error("Failed to create client transport", ioe);
-              throw new MetaException(ioe.toString());
-            }
-          } else {
-            if (useFramedTransport) {
-              try {
-                transport = new TFramedTransport(transport);
-              } catch (TTransportException e) {
-                LOG.error("Failed to create client transport", e);
-                throw new MetaException(e.toString());
-              }
-            }
+          if (!isHttpTransportMode) {
+            transport = createAuthTransportNonHttp(store, transport);
           }
 
           final TProtocol protocol;
@@ -751,7 +737,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 store, e);
           }
 
-          if (isConnected && !useSasl && !usePasswordAuth &&
+          if (isConnected && !useSasl && !usePasswordAuth && !isHttpTransportMode &&
                   MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
             // Call set_ugi, only in unsecure mode.
             try {
@@ -801,6 +787,114 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     snapshotActiveConf();
+  }
+
+  private String[] getHttpUrlAndUser(URI store) throws MetaException {
+    boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
+    String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
+    String httpUser = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+    if (httpUser == null || httpUser.equals("")) {
+      try {
+        httpUser = UserGroupInformation.getCurrentUser().getShortUserName();
+      } catch (IOException e) {
+        throw new MetaException("Failed to get client username from UGI");
+      }
+    }
+    return new String[] {httpUrl, httpUser};
+  }
+
+  // wraps the underlyingTransport in the appropriate transport based on mode of authentication
+  private TTransport createAuthTransportNonHttp(URI store, TTransport underlyingTransport)
+      throws MetaException {
+    boolean isHttpTransportMode =
+        MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
+        equalsIgnoreCase("http");
+    Preconditions.checkArgument(!isHttpTransportMode);
+    Preconditions.checkNotNull(underlyingTransport);
+    // default transport is the underlying one
+    TTransport transport = underlyingTransport;
+    boolean useFramedTransport =
+        MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
+    boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
+    String clientAuthMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    boolean usePasswordAuth = false;
+
+    if (clientAuthMode != null) {
+      usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
+    }
+    if (usePasswordAuth) {
+      // we are using PLAIN Sasl connection with user/password
+      LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
+      String userName = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+
+      if (null == userName || userName.isEmpty()) {
+        throw new MetaException("No user specified for plain transport.");
+      }
+
+      // The password is not directly provided. It should be obtained from a keystore pointed
+      // by configuration "hadoop.security.credential.provider.path".
+      try {
+        String passwd = null;
+        char[] pwdCharArray = conf.getPassword(userName);
+        if (null != pwdCharArray) {
+          passwd = new String(pwdCharArray);
+        }
+        if (null == passwd) {
+          throw new MetaException("No password found for user " + userName);
+        }
+        // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+        transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, underlyingTransport);
+      } catch (IOException | TTransportException sasle) {
+        // IOException covers SaslException
+        LOG.error("Could not create client transport", sasle);
+        throw new MetaException(sasle.toString());
+      }
+    } else if (useSasl) {
+      // Wrap thrift connection with SASL for secure connection.
+      try {
+        HadoopThriftAuthBridge.Client authBridge =
+            HadoopThriftAuthBridge.getBridge().createClient();
+
+        // check if we should use delegation tokens to authenticate
+        // the call below gets hold of the tokens if they are set up by hadoop
+        // this should happen on the map/reduce tasks if the client added the
+        // tokens into hadoop's credential store in the front end during job
+        // submission.
+        String tokenSig = MetastoreConf.getVar(conf, ConfVars.TOKEN_SIGNATURE);
+        // tokenSig could be null
+        tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
+
+        if (tokenStrForm != null) {
+          LOG.debug("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
+          // authenticate using delegation tokens via the "DIGEST" mechanism
+          transport = authBridge.createClientTransport(null, store.getHost(),
+              "DIGEST", tokenStrForm, underlyingTransport,
+              MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+        } else {
+          LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
+          String principalConfig =
+              MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
+          transport = authBridge.createClientTransport(
+              principalConfig, store.getHost(), "KERBEROS", null,
+              underlyingTransport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+        }
+      } catch (IOException ioe) {
+        LOG.error("Failed to create client transport", ioe);
+        throw new MetaException(ioe.toString());
+      }
+    } else {
+      if (useFramedTransport) {
+        try {
+          transport = new TFramedTransport(transport);
+        } catch (TTransportException e) {
+          LOG.error("Failed to create client transport", e);
+          throw new MetaException(e.toString());
+        }
+      }
+    }
+    return transport;
   }
 
   private void snapshotActiveConf() {
