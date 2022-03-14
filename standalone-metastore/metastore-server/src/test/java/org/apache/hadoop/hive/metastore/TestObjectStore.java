@@ -393,6 +393,14 @@ public class TestObjectStore {
     try (AutoCloseable c = deadline()) {
       objectStore.addPartition(part2);
     }
+    List<String> value3 = Arrays.asList("US", "MA");
+    Partition part3 = new Partition(value3, DB1, "not_existed_table", 333, 333, sd, partitionParams);
+    part3.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part3);
+    } catch (InvalidObjectException e) {
+      // expected
+    }
 
     List<Partition> partitions;
     try (AutoCloseable c = deadline()) {
