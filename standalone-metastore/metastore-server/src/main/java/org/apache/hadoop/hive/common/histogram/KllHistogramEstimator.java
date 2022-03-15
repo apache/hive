@@ -37,12 +37,8 @@ public class KllHistogramEstimator implements HistogramEstimator {
     this.kll = kll;
   }
 
-  public KllFloatsSketch getKll() {
-    return kll;
-  }
-
   @Override public void reset() {
-
+    // TODO: AS - do we need reset?
   }
 
   @Override public byte[] serialize() {
@@ -87,6 +83,7 @@ public class KllHistogramEstimator implements HistogramEstimator {
   }
 
   @Override public long computeHistogram() {
+    // TODO: AS - plug binned histogram class here, and change return type too
     return 0;
   }
 
@@ -96,5 +93,9 @@ public class KllHistogramEstimator implements HistogramEstimator {
 
   @Override public boolean canMerge(HistogramEstimator o) {
     return o instanceof KllHistogramEstimator && this.kll.getK() == ((KllHistogramEstimator) o).kll.getK();
+  }
+
+  @Override public KllFloatsSketch getSketch() {
+    return kll;
   }
 }

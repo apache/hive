@@ -35,6 +35,6 @@ public class HistogramEstimatorFactory {
   }
 
   public static HistogramEstimator getEmptyHistogramEstimator(HistogramEstimator histogramEstimator) {
-    return new KllHistogramEstimator(((KllHistogramEstimator) histogramEstimator).getKll());
+    return new KllHistogramEstimator(histogramEstimator.getSketch());
   }
 }

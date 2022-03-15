@@ -159,7 +159,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         }
         aggregateData.setNumDVs(estimation);
 
-        // TODO: estimation for histogram?
+        // TODO: AS - add estimation for histograms
       }
       columnStatisticsData.setDoubleStats(aggregateData);
     } else {
@@ -251,6 +251,8 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       }
       extrapolate(columnStatisticsData, partNames.size(), colStatsWithSourceInfo.size(),
           adjustedIndexMap, adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
+
+      // TODO: AS - add extrapolation for histograms
     }
     LOG.debug(
         "Ndv estimation for {} is {}. # of partitions requested: {}. # of partitions found: {}",

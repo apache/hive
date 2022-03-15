@@ -63,8 +63,10 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
       HistogramEstimator oldEst = aggregateData.getHistogramEstimator();
       HistogramEstimator newEst = newData.getHistogramEstimator();
       if (oldEst.canMerge(newEst)) {
+        LOG.trace("Merging old sketch {} with new sketch {}...", oldEst.getSketch(), newEst.getSketch());
         oldEst.mergeEstimators(newEst);
         aggregateData.setHistogramEstimator(oldEst);
+        LOG.trace("Resulting sketch is {}", oldEst.getSketch());
       }
       LOG.debug("Merging histograms of column {}", aggregateColStats.getColName());
     }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.histogram;
 
+import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
@@ -44,10 +45,11 @@ public interface HistogramEstimator {
 
   void mergeEstimators(HistogramEstimator o);
 
-  long computeHistogram(); // TODO: plug Ryan's class here
+  long computeHistogram();
 
   int lengthFor(JavaDataModel model);
 
   boolean canMerge(HistogramEstimator o);
 
+  KllFloatsSketch getSketch();
 }
