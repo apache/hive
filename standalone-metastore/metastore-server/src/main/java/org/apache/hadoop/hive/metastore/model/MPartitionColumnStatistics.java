@@ -51,7 +51,7 @@ public class MPartitionColumnStatistics {
   private Long numNulls;
   private Long numDVs;
   private byte[] bitVector = new byte[] { 'H', 'L' };
-  private byte[] histogram = new byte[] { 'K', 'L', 'L' };
+  private byte[] histogram = new byte[] {};
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
