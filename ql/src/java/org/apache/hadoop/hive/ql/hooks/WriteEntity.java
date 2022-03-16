@@ -205,7 +205,7 @@ public class WriteEntity extends Entity implements Serializable {
    * @param op Operation type from the alter table description
    * @return the write type this should use.
    */
-  public static WriteType determineAlterTableWriteType(AlterTableType op, Table table, Configuration conf) {
+  public static WriteType determineAlterTableWriteType(AlterTableType op, Table table, HiveConf conf) {
     switch (op) {
     case RENAME_COLUMN:
     case CLUSTERED_BY:
