@@ -44,6 +44,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   private RowResolver inputRR;
 
+  private HiveRelDataType hiveRelDataType;
+
   /**
    * RowResolver of outer query. This is used to resolve co-rrelated columns in Filter
    * TODO:
@@ -165,6 +167,14 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   public RowResolver getInputRR() {
     return inputRR;
+  }
+
+  public void setHiveRelDataType(HiveRelDataType hiveRelDataType) {
+    this.hiveRelDataType = hiveRelDataType;
+  }
+
+  public HiveRelDataType getHiveRelDataType() {
+    return hiveRelDataType;
   }
 
   /**
