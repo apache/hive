@@ -397,6 +397,16 @@ public class TestCompactionTxnHandler {
     assertEquals(partitionName, lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
 
+    // response should contain the latest compaction
+    rqst.setLastCompactionId(1);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+    assertNotNull(response);
+    assertEquals("Expecting a single record", 1, response.getCompactionsSize());
+    lci = response.getCompactions().get(0);
+    assertEquals("Expecting the second succeeded compaction record", 2, lci.getId());
+    assertEquals(partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
     // response should only include compaction with id > 2
     rqst.setLastCompactionId(2);
     response = txnHandler.getLatestCommittedCompactionInfo(rqst);
