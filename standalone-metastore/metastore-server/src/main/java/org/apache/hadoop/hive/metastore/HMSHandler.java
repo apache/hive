@@ -6676,7 +6676,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       checkLimitNumberOfPartitionsByPs(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-              tbl_name, part_vals, max_parts);
+              tbl_name, part_vals, UNLIMITED_MAX_PARTITIONS);
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().listPartitionsPsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name, part_vals, max_parts, userName, groupNames);
