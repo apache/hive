@@ -367,7 +367,7 @@ public class Warehouse {
       dbPath = getDatabaseManagedPath(db);
     }
     if (!isExternal && tableName.matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
-      String[] groups = tableName.split(SOFT_DELETE_PATH_SUFFIX);
+      String[] groups = tableName.split("\\" + SOFT_DELETE_PATH_SUFFIX);
       tableName = String.join(SOFT_DELETE_PATH_SUFFIX, 
           MetaStoreUtils.encodeTableName(groups[0].toLowerCase()), groups[1]);
     } else {

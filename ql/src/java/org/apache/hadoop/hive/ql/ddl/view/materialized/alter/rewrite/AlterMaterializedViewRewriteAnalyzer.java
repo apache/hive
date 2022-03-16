@@ -85,7 +85,7 @@ public class AlterMaterializedViewRewriteAnalyzer extends BaseSemanticAnalyzer {
     }
 
     inputs.add(new ReadEntity(materializedViewTable));
-    outputs.add(new WriteEntity(materializedViewTable, AcidUtils.isLocklessReadsSupported(materializedViewTable, conf) ?
+    outputs.add(new WriteEntity(materializedViewTable, AcidUtils.isLocklessReadsEnabled(materializedViewTable, conf) ?
       WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
 
     // Create task for alterMVRewriteDesc

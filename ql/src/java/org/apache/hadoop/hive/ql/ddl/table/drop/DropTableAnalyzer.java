@@ -56,11 +56,7 @@ public class DropTableAnalyzer extends BaseSemanticAnalyzer {
     if (table != null) {
       inputs.add(new ReadEntity(table));
 
-      boolean tableWithSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-        && AcidUtils.isTransactionalTable(table)
-        && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
-
+      boolean tableWithSuffix = AcidUtils.isTableSoftDeleteEnabled(table, conf);
       outputs.add(new WriteEntity(table, 
         tableWithSuffix ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE));
     }

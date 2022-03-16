@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
@@ -409,9 +410,16 @@ public class AcidUtils {
         + String.format(DELTA_DIGITS, visibilityTxnId);
   }
 
-  public static boolean isLocklessReadsSupported(Table table, HiveConf conf) {
+  public static boolean isLocklessReadsEnabled(Table table, HiveConf conf) {
     return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
         && AcidUtils.isTransactionalTable(table);
+  }
+
+  public static boolean isTableSoftDeleteEnabled(Table table, HiveConf conf) {
+    return (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+      && AcidUtils.isTransactionalTable(table)
+      && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
   }
 
   /**
@@ -3121,7 +3129,7 @@ public class AcidUtils {
       return TxnType.COMPACTION;
     }
     // check if soft delete
-    if (tree.getToken().getType() == HiveParser.TOK_DROPTABLE 
+    if ((tree.getToken().getType() == HiveParser.TOK_DROPTABLE || tree.getToken().getType() == HiveParser.TOK_DROP_MATERIALIZED_VIEW)
       && (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))){
       return TxnType.SOFT_DELETE;

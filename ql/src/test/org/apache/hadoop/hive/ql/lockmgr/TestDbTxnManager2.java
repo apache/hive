@@ -3713,4 +3713,107 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 0, locks.size());
   }
+
+  @Test
+  public void testDropMaterializedViewNonBlocking() throws Exception {
+    testDropMaterializedView(false);
+  }
+  @Test
+  public void testDropMaterializedViewBlocking() throws Exception {
+    testDropMaterializedView(true);
+  }
+
+  private void testDropMaterializedView(boolean blocking) throws Exception {
+    driver.run("drop materialized view if exists mv_tab_acid");
+    dropTable(new String[] {"tab_acid"});
+    FileSystem fs = FileSystem.get(conf);
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
+    driver = Mockito.spy(driver);
+
+    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, !blocking);
+    driver2 = Mockito.spy(driver2);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.run("create materialized view mv_tab_acid partitioned on (p) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
+
+    driver.compileAndRespond("select a, p from tab_acid where b > 1");
+    List<String> res = new ArrayList<>();
+
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "mv_tab_acid", null, locks);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("drop materialized view if exists mv_tab_acid");
+
+    if (blocking) {
+      txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
+      locks = getLocks();
+
+      ShowLocksResponseElement checkLock = checkLock(LockType.EXCLUSIVE,
+        LockState.WAITING, "default", "mv_tab_acid", null, locks);
+
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+
+      driver.getFetchTask().fetch(res);
+      swapTxnManager(txnMgr2);
+
+      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
+      txnMgr2.getMS().unlock(checkLock.getLockid());
+    }
+    driver2.lockAndRespond();
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", blocking ? 1 : 3, locks.size());
+
+    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
+      LockState.ACQUIRED, "default", "mv_tab_acid", null, locks);
+
+    Mockito.doNothing().when(driver2).lockAndRespond();
+    driver2.run();
+
+    if (!blocking) {
+      swapTxnManager(txnMgr);
+      Mockito.doNothing().when(driver).lockAndRespond();
+      driver.run();
+    }
+    Mockito.reset(driver, driver2);
+
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches("mv_tab_acid" + (blocking ? "" : SOFT_DELETE_TABLE_PATTERN)));
+    if ((blocking ? 0 : 1) != stat.length) {
+      Assert.fail("Table data was " + (blocking ? "not" : "") + "removed from FS");
+    }
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
+
+    try {
+      driver.run("select * from mv_tab_acid");
+    } catch (CommandProcessorException ex) {
+      Assert.assertEquals(ErrorMsg.INVALID_TABLE.getErrorCode(), ex.getResponseCode());
+    }
+
+    //re-create MV with the same name
+    driver.run("create materialized view mv_tab_acid partitioned on (p) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
+
+    driver.run("select * from mv_tab_acid ");
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
+    driver.run("drop materialized view mv_tab_acid");
+  }
 }
