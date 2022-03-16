@@ -325,7 +325,7 @@ public class ThriftHttpServlet extends TServlet {
       Preconditions.checkState(!user.isEmpty(), "User name should not be empty");
       LOG.info("JWT verification successful for user {}", user);
     } catch (Exception e) {
-      LOG.info("JWT verification failed", e);
+      LOG.error("JWT verification failed", e);
       throw new HttpAuthenticationException(e);
     }
     return user;

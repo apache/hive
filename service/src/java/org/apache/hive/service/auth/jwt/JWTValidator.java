@@ -39,6 +39,11 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class is used to validate JWT. JWKS is fetched during instantiation and kept in the memory.
+ * We disallow JWT signature verification with symmetric key, because that means anyone can get the same key
+ * and use it to sign a JWT.
+ */
 public class JWTValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JWTValidator.class.getName());
@@ -86,7 +91,8 @@ public class JWTValidator {
   }
 
   private static JWSVerifier getVerifier(JWSHeader header, JWK jwk) throws JOSEException {
-    Preconditions.checkArgument(jwk instanceof AsymmetricJWK, "Secret key is not allowed.");
+    Preconditions.checkArgument(jwk instanceof AsymmetricJWK,
+        "JWT signature verification with symmetric key is not allowed.");
     Key key = ((AsymmetricJWK) jwk).toPublicKey();
     return verifierFactory.createJWSVerifier(header, key);
   }
