@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -143,6 +144,11 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     ExprNodeColumnDesc column = new ExprNodeColumnDesc(colInfo);
     column.setSkewedCol(colInfo.isSkewedCol());
     return column;
+  }
+
+  protected ExprNodeDesc toExpr(ColumnInfo colInfo, RelDataType relDataType, int offset)
+          throws SemanticException {
+    throw new UnsupportedOperationException("TEST");
   }
 
   private static ExprNodeConstantDesc toPrimitiveConstDesc(ColumnInfo colInfo, ObjectInspector inspector) {

@@ -20,8 +20,12 @@ package org.apache.hadoop.hive.ql.parse.type;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
+
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -54,6 +58,9 @@ public abstract class ExprFactory<T> {
    */
   protected abstract T toExpr(ColumnInfo colInfo, RowResolver rowResolver, int offset)
       throws SemanticException;
+
+  protected abstract T toExpr(ColumnInfo colInfo, RelDataType relDataType, int offset)
+          throws SemanticException;
 
   /* FIELD REFERENCES */
   /**

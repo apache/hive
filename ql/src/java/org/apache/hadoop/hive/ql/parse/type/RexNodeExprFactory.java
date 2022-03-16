@@ -136,6 +136,21 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         TypeConverter.convert(colInfo.getType(), rexBuilder.getTypeFactory()), index + offset);
   }
 
+  @Override
+  protected RexNode toExpr(ColumnInfo colInfo, RelDataType relDataType, int offset) throws SemanticException {
+    ObjectInspector inspector = colInfo.getObjectInspector();
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof PrimitiveObjectInspector) {
+      return toPrimitiveConstDesc(colInfo, inspector, rexBuilder);
+    }
+
+    RelDataTypeField dataTypeField = relDataType.getField(colInfo.getAlias(), false, false);
+
+    if (dataTypeField == null) {
+      throw new CalciteSemanticException("Unexpected error: Cannot find column");
+    }
+    return rexBuilder.makeInputRef(dataTypeField.getType(), dataTypeField.getIndex() + offset);
+  }
+
   private static RexNode toPrimitiveConstDesc(
       ColumnInfo colInfo, ObjectInspector inspector, RexBuilder rexBuilder)
       throws CalciteSemanticException {

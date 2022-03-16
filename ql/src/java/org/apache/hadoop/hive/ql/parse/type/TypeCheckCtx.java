@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse.type;
 
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -43,6 +44,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    * expression descriptors from the expression ASTs.
    */
   private RowResolver inputRR;
+
+  private RelDataType calciteInpDataType;
 
   /**
    * RowResolver of outer query. This is used to resolve co-rrelated columns in Filter
@@ -165,6 +168,14 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   public RowResolver getInputRR() {
     return inputRR;
+  }
+
+  public void setCalciteInpDataType(RelDataType calciteInpDataType) {
+    this.calciteInpDataType = calciteInpDataType;
+  }
+
+  public RelDataType getCalciteInpDataType() {
+    return calciteInpDataType;
   }
 
   /**
