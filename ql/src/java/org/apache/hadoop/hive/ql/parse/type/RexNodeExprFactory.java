@@ -148,7 +148,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       return rexBuilder.makeInputRef(
               TypeConverter.convert(colInfo.getType(), rexBuilder.getTypeFactory()), index + offset);
     }
-    int pos = hiveRelDataType.getHiveNameToPosMap().get(colInfo.getAlias());
+    int pos = hiveRelDataType.getHiveNameToPosMap().get(colInfo.getInternalName());
     return rexBuilder.makeInputRef(
             hiveRelDataType.getRelDataType().getFieldList().get(pos).getType(), pos + offset);
   }
@@ -1103,7 +1103,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       hiveRelDataType = hiveRelDataTypes.get(0);
     } else {
       String tableAlias = col.getTabAlias();
-      String colAlias = col.getAlias();
+      String colAlias = col.getInternalName();
       int noInp = 0;
       for (HiveRelDataType dataType : hiveRelDataTypes) {
         if (tableAlias == null || dataType.getRowResolver().hasTableAlias(tableAlias)) {

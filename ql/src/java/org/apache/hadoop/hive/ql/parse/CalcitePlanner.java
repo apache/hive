@@ -4776,6 +4776,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR, cluster.getRexBuilder());
             // We allow stateful functions in the SELECT list (but nowhere else)
             tcCtx.setAllowStatefulFunctions(true);
+            tcCtx.setHiveRelDataType(createHiveRelDataType(srcRel));
             if (!qbp.getDestToGroupBy().isEmpty()) {
               // Special handling of grouping function
               expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr,
