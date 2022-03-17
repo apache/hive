@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.ddl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -165,7 +167,7 @@ public final class ShowUtils {
           DoubleColumnStatsData doubleStats = statsData.getDoubleStats();
           values.addAll(Lists.newArrayList("" + doubleStats.getLowValue(), "" + doubleStats.getHighValue(),
               "" + doubleStats.getNumNulls(), "" + doubleStats.getNumDVs(), "", "", "", "",
-              convertToString(doubleStats.getBitVectors())));
+              convertToString(doubleStats.getBitVectors()), convertHistogram(doubleStats.getHistogram())));
         } else if (statsData.isSetLongStats()) {
           LongColumnStatsData longStats = statsData.getLongStats();
           values.addAll(Lists.newArrayList("" + longStats.getLowValue(), "" + longStats.getHighValue(),
@@ -207,6 +209,13 @@ public final class ShowUtils {
 
     DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
     return writableValue.toString();
+  }
+
+  private static String convertHistogram(byte[] buffer) {
+    if (buffer == null || buffer.length == 0) {
+      return "";
+    }
+    return KllFloatsSketch.heapify(Memory.wrap(buffer)).toString();
   }
 
   private static String convertToString(byte[] buffer) {

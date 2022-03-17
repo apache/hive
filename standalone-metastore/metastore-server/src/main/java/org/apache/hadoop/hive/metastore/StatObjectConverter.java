@@ -1024,6 +1024,9 @@ public class StatObjectConverter {
       if (newDoubleStatsData.isSetBitVectors()) {
         oldDoubleStatsData.setBitVectors(newDoubleStatsData.getBitVectors());
       }
+      if (newDoubleStatsData.isSetHistogram()) {
+        oldDoubleStatsData.setHistogram(newDoubleStatsData.getHistogram());
+      }
       break;
     }
     case STRING_STATS: {

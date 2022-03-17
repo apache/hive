@@ -32,7 +32,7 @@ public class ColStatistics {
   private boolean isEstimated;
   private boolean isFilteredColumn;
   private byte[] bitVectors;
-  private byte[] kllSketch;
+  private byte[] histogram;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -121,12 +121,12 @@ public class ColStatistics {
     this.bitVectors = bitVectors;
   }
 
-  public byte[] getKllSketch() {
-    return kllSketch;
+  public byte[] getHistogram() {
+    return histogram;
   }
 
-  public void setKllSketch(byte[] kllSketch) {
-    this.kllSketch = kllSketch;
+  public void setHistogram(byte[] histogram) {
+    this.histogram = histogram;
   }
 
   @Override
