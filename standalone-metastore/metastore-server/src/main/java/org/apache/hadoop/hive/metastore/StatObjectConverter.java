@@ -665,10 +665,21 @@ public class StatObjectConverter {
     return bytes;
   }
 
+  public static byte[] getHistogram(byte[] bytes) {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (bytes != null && bytes.length == 0) {
+      return null;
+    }
+    return bytes;
+  }
+
   // JAVA
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
-      Object nulls, Object dist, Object bitVector, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+      Object nulls, Object dist, Object bitVector, Object histogram,
+      Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
@@ -715,6 +726,7 @@ public class StatObjectConverter {
       }
       doubleStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
       doubleStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
+      doubleStats.setHistogram((MetastoreDirectSqlUtils.extractSqlBlob(histogram)));
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
