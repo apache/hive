@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 3.1.0 to 4.0.0';
+SELECT 'Upgrading MetaStore schema from 3.1.0 to 4.0.0-alpha-1';
 
 USE SYS;
 
@@ -597,8 +597,8 @@ FROM \"NOTIFICATION_LOG\""
 
 DROP TABLE IF EXISTS `VERSION`;
 
-CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0' AS `SCHEMA_VERSION`,
-  'Hive release version 4.0.0' AS `VERSION_COMMENT`;
+CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0-alpha-1' AS `SCHEMA_VERSION`,
+  'Hive release version 4.0.0-alpha-1' AS `VERSION_COMMENT`;
 
 USE INFORMATION_SCHEMA;
 
@@ -884,4 +884,4 @@ WHERE
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
 
 
-SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 4.0.0';
+SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 4.0.0-alpha-1';

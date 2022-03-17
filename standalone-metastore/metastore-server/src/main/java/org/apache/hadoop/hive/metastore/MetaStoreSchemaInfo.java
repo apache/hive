@@ -103,7 +103,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     // Find the list of scripts to execute for this upgrade
     int firstScript = hiveSchemaVersions.length;
     for (int i=0; i < hiveSchemaVersions.length; i++) {
-      if (hiveSchemaVersions[i].startsWith(fromVersion)) {
+      if (hiveSchemaVersions[i].startsWith(fromVersion + "-to-")) {
         firstScript = i;
       }
     }

@@ -112,7 +112,7 @@ import javax.management.ObjectName;
 public abstract class CompactorTest {
   static final private String CLASS_NAME = CompactorTest.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  public static final String WORKER_VERSION = "4.0.0";
+  public static final String WORKER_VERSION = "4.0.0-alpha-1";
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;

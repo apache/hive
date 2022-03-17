@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 3.2.0 to 4.0.0' AS MESSAGE;
+SELECT 'Upgrading MetaStore schema from 3.2.0 to 4.0.0-alpha-1' AS MESSAGE;
 
 -- HIVE-19416
 ALTER TABLE TBLS ADD WRITE_ID bigint DEFAULT 0;
@@ -227,5 +227,5 @@ CREATE TABLE COMPACTION_METRICS_CACHE (
 ALTER TABLE `COMPACTION_QUEUE` ADD COLUMN `CQ_RETRY_RETENTION` bigint NOT NULL DEFAULT 0;
 
 -- These lines need to be last.  Insert any changes above.
-UPDATE VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0' AS MESSAGE;
+UPDATE VERSION SET SCHEMA_VERSION='4.0.0-alpha-1', VERSION_COMMENT='Hive release version 4.0.0-alpha-1' where VER_ID=1;
+SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0-alpha-1' AS MESSAGE;

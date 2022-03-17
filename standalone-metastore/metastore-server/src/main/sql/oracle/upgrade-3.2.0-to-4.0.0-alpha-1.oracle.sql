@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 3.2.0 to 4.0.0' AS Status from dual;
+SELECT 'Upgrading MetaStore schema from 3.2.0 to 4.0.0-alpha-1' AS Status from dual;
 
 -- HIVE-21336 safeguards from changes user may have made after 3.x schema was installed.
 ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
@@ -224,5 +224,5 @@ CREATE TABLE COMPACTION_METRICS_CACHE (
 ALTER TABLE COMPACTION_QUEUE ADD "CQ_RETRY_RETENTION" NUMBER(19) DEFAULT 0 NOT NULL;
 
 -- These lines need to be last.  Insert any changes above.
-UPDATE VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0' AS Status from dual;
+UPDATE VERSION SET SCHEMA_VERSION='4.0.0-alpha-1', VERSION_COMMENT='Hive release version 4.0.0-alpha-1' where VER_ID=1;
+SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0-alpha-1' AS Status from dual;
