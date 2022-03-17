@@ -3694,4 +3694,23 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
   }
+
+  @Test
+  public void testDropViewNoLocks() throws Exception {
+    driver.run("drop view if exists v_tab_acid");
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.run("create view v_tab_acid partitioned on (p) " +
+      "as select a, p from tab_acid where b > 1");
+
+    driver.compileAndRespond("drop view if exists v_tab_acid");
+    
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 0, locks.size());
+  }
 }
