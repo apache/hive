@@ -31,7 +31,6 @@ import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -62,7 +61,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
@@ -76,8 +74,6 @@ import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
-import org.apache.hadoop.hive.ql.udf.SettableUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -95,6 +91,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
 /**
  * Expression factory for Calcite {@link RexNode}.
  */
@@ -108,6 +107,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   public RexNodeExprFactory(RexBuilder rexBuilder) {
     this.rexBuilder = rexBuilder;
     this.functionHelper = new HiveFunctionHelper(rexBuilder);
+    this.hiveRelDataTypes = emptyList();
+  }
+
+  public RexNodeExprFactory(RexBuilder rexBuilder, HiveRelDataType hiveRelDataType) {
+    this.rexBuilder = rexBuilder;
+    this.functionHelper = new HiveFunctionHelper(rexBuilder);
+    this.hiveRelDataTypes = hiveRelDataType == null ? emptyList() : singletonList(hiveRelDataType);
   }
 
   /**
@@ -128,27 +134,23 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     if (inspector instanceof ConstantObjectInspector && inspector instanceof PrimitiveObjectInspector) {
       return toPrimitiveConstDesc(colInfo, inspector, rexBuilder);
     }
-    int index = rowResolver.getPosition(colInfo.getInternalName());
-    if (index < 0) {
-      throw new CalciteSemanticException("Unexpected error: Cannot find column");
+
+    //if this is co-rrelated we need to make RexCorrelVariable(with id and type)
+    // id and type should be retrieved from outerRR
+    HiveRelDataType hiveRelDataType = getInputCtx(colInfo);
+    if(hiveRelDataType == null) {
+      // we have correlated column, build data type from outer rr
+      int index = rowResolver.getPosition(colInfo.getInternalName());
+      if (index < 0) {
+        throw new CalciteSemanticException("Unexpected error: Cannot find column");
+      }
+
+      return rexBuilder.makeInputRef(
+              TypeConverter.convert(colInfo.getType(), rexBuilder.getTypeFactory()), index + offset);
     }
+    int pos = hiveRelDataType.getHiveNameToPosMap().get(colInfo.getAlias());
     return rexBuilder.makeInputRef(
-        TypeConverter.convert(colInfo.getType(), rexBuilder.getTypeFactory()), index + offset);
-  }
-
-  @Override
-  protected RexNode toExpr(ColumnInfo colInfo, RelDataType relDataType, int offset) throws SemanticException {
-    ObjectInspector inspector = colInfo.getObjectInspector();
-    if (inspector instanceof ConstantObjectInspector && inspector instanceof PrimitiveObjectInspector) {
-      return toPrimitiveConstDesc(colInfo, inspector, rexBuilder);
-    }
-
-    RelDataTypeField dataTypeField = relDataType.getField(colInfo.getAlias(), false, false);
-
-    if (dataTypeField == null) {
-      throw new CalciteSemanticException("Unexpected error: Cannot find column");
-    }
-    return rexBuilder.makeInputRef(dataTypeField.getType(), dataTypeField.getIndex() + offset);
+            hiveRelDataType.getRelDataType().getFieldList().get(pos).getType(), pos + offset);
   }
 
   private static RexNode toPrimitiveConstDesc(
@@ -1090,5 +1092,33 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
 
   public static NlsString makeHiveUnicodeString(String text) {
     return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  }
+
+  private List<HiveRelDataType> hiveRelDataTypes;
+
+  private HiveRelDataType getInputCtx(ColumnInfo col) {
+    HiveRelDataType hiveRelDataType = null;
+
+    if (hiveRelDataTypes.size() == 1 && hiveRelDataTypes.get(0).getRowResolver() == null) {
+      hiveRelDataType = hiveRelDataTypes.get(0);
+    } else {
+      String tableAlias = col.getTabAlias();
+      String colAlias = col.getAlias();
+      int noInp = 0;
+      for (HiveRelDataType dataType : hiveRelDataTypes) {
+        if (tableAlias == null || dataType.getRowResolver().hasTableAlias(tableAlias)) {
+          if (dataType.getRowResolver().getPosition(colAlias) >= 0) {
+            hiveRelDataType = dataType;
+            noInp++;
+          }
+        }
+      }
+
+      if (noInp > 1) {
+        throw new RuntimeException("Ambiguous column mapping");
+      }
+    }
+
+    return hiveRelDataType;
   }
 }

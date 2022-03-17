@@ -146,11 +146,6 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     return column;
   }
 
-  protected ExprNodeDesc toExpr(ColumnInfo colInfo, RelDataType relDataType, int offset)
-          throws SemanticException {
-    throw new UnsupportedOperationException("TEST");
-  }
-
   private static ExprNodeConstantDesc toPrimitiveConstDesc(ColumnInfo colInfo, ObjectInspector inspector) {
     PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
     Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();

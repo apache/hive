@@ -280,6 +280,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper.AggregateInfo;
 import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
+import org.apache.hadoop.hive.ql.parse.type.HiveRelDataType;
 import org.apache.hadoop.hive.ql.parse.type.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForReturnPath;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
@@ -295,6 +296,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
@@ -3201,10 +3203,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genFilterRelNode(ASTNode filterNode, RelNode srcRel,
             ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
             boolean useCaching) throws SemanticException {
-      RexNode filterExpression = genRexNode(filterNode, srcRel, relToHiveRR.get(srcRel),
+      RexNode filterExpression = genRexNode(filterNode, createHiveRelDataType(srcRel), relToHiveRR.get(srcRel),
           outerRR, null, useCaching, cluster.getRexBuilder());
 
       return genFilterRelNode(filterExpression, srcRel, outerNameToPosMap, outerRR);
+    }
+
+    private HiveRelDataType createHiveRelDataType(RelNode srcRel) {
+      return new HiveRelDataType(
+              srcRel.getRowType(),
+              relToHiveRR.get(srcRel),
+              relToHiveColNameCalcitePosMap.get(srcRel)
+      );
     }
 
     private RelNode genFilterRelNode(RexNode filterExpression, RelNode srcRel,
@@ -3526,7 +3536,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final Map<ASTNode, QBSubQueryParseInfo> subQueryToRelNode = new HashMap<>();
       boolean isSubQuery = genSubQueryRelNode(qb, searchCond, srcRel, forHavingClause, subQueryToRelNode);
       if(isSubQuery) {
-        RexNode filterExpression = genRexNode(searchCond, srcRel, relToHiveRR.get(srcRel),
+        RexNode filterExpression = genRexNode(searchCond, createHiveRelDataType(srcRel), relToHiveRR.get(srcRel),
                 outerRR, subQueryToRelNode, forHavingClause, cluster.getRexBuilder());
 
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
@@ -4708,7 +4718,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         boolean isSubQuery = genSubQueryRelNode(qb, expr, srcRel, false,
                 subQueryToRelNode);
         if(isSubQuery) {
-          RexNode subQueryExpr = genRexNode(expr, srcRel, relToHiveRR.get(srcRel),
+          RexNode subQueryExpr = genRexNode(expr, createHiveRelDataType(srcRel), relToHiveRR.get(srcRel),
                   outerRR, subQueryToRelNode, true, cluster.getRexBuilder());
           columnList.add(subQueryExpr);
           ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
@@ -5398,13 +5408,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return tabNameToTabObject.get(fullyQualName);
   }
 
-  RexNode genRexNode(ASTNode expr, RelNode srcRel, RowResolver input,
-      RowResolver outerRR, Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode,
-      boolean useCaching, RexBuilder rexBuilder) throws SemanticException {
+  RexNode genRexNode(ASTNode expr, HiveRelDataType relDataType, RowResolver input,
+                     RowResolver outerRR, Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode,
+                     boolean useCaching, RexBuilder rexBuilder) throws SemanticException {
     TypeCheckCtx tcCtx = new TypeCheckCtx(input, rexBuilder, useCaching, false);
     tcCtx.setOuterRR(outerRR);
     tcCtx.setSubqueryToRelNode(subqueryToRelNode);
-    tcCtx.setCalciteInpDataType(srcRel.getRowType());
+    tcCtx.setHiveRelDataType(relDataType);
     return genRexNode(expr, input, tcCtx);
   }
 

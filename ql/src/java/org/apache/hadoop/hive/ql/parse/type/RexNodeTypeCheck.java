@@ -36,7 +36,7 @@ public class RexNodeTypeCheck {
   public static Map<ASTNode, RexNode> genExprNode(ASTNode expr, TypeCheckCtx tcCtx)
       throws SemanticException {
     TypeCheckProcFactory<RexNode> factory =
-        new TypeCheckProcFactory<>(new RexNodeExprFactory(tcCtx.getRexBuilder()));
+        new TypeCheckProcFactory<>(new RexNodeExprFactory(tcCtx.getRexBuilder(), tcCtx.getHiveRelDataType()));
     return factory.genExprNode(expr, tcCtx);
   }
 

@@ -656,11 +656,7 @@ public class TypeCheckProcFactory<T> {
             return null;
           }
           // It's a column.
-          if (ctx.getCalciteInpDataType() == null) {
-            return exprFactory.toExpr(colInfo, usedRR, offset);
-          } else  {
-            return exprFactory.toExpr(colInfo, ctx.getCalciteInpDataType(), offset);
-          }
+          return exprFactory.toExpr(colInfo, usedRR, offset);
         } else {
           // It's a table alias.
           // We will process that later in DOT.
@@ -694,11 +690,7 @@ public class TypeCheckProcFactory<T> {
           }
         } else {
           // It's a column.
-          if (ctx.getCalciteInpDataType() == null) {
-            return exprFactory.toExpr(colInfo, usedRR, offset);
-          } else  {
-            return exprFactory.toExpr(colInfo, ctx.getCalciteInpDataType(), offset);
-          }
+          return exprFactory.toExpr(colInfo, usedRR, offset);
         }
       }
     }
