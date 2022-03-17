@@ -280,7 +280,7 @@ public class TestCleaner extends CompactorTest {
 
     FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
     findNextCompactRequest.setWorkerId("fred");
-    findNextCompactRequest.setWorkerVersion("4.0.0-alpha-1");
+    findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
     CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
     ci.runAs = System.getProperty("user.name");
     long compactTxn = openTxn(TxnType.COMPACTION);

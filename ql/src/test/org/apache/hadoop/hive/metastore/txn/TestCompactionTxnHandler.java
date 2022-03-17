@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +74,7 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPA
  */
 public class TestCompactionTxnHandler {
 
-  public static final String WORKER_VERSION = "4.0.0-alpha-1";
+  public static final String WORKER_VERSION = HiveVersionInfo.getShortVersion();
   private HiveConf conf = new HiveConf();
   private TxnStore txnHandler;
 
