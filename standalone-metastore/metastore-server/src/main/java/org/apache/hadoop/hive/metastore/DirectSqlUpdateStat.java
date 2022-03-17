@@ -668,9 +668,9 @@ class DirectSqlUpdateStat {
       // the caller gets a reserved range for CSId not used by any other thread.
       boolean insertDone = false;
       while (maxCsId == 0) {
-        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
-                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
-                + " FOR UPDATE";
+        String query = sqlGenerator.addForUpdateClause("SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" "
+                + "WHERE \"SEQUENCE_NAME\"= "
+                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
         LOG.debug("Going to execute query " + query);
         statement = dbConn.createStatement();
         rs = statement.executeQuery(query);
