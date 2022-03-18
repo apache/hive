@@ -23,8 +23,8 @@ import org.apache.hadoop.hive.ql.udf.UDFLike;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
 
 /**
  * Evaluate LIKE filter on a batch for a vector of strings.

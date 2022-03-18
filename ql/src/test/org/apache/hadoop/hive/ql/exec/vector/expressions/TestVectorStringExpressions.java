@@ -4331,6 +4331,13 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
         expr.checker.getClass());
 
+    expr = new FilterStringColLikeStringScalar(0,
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_b".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
     // NONE pattern
     expr = new FilterStringColLikeStringScalar(0, "abc".getBytes());
     expr.transientInit(hiveConf);
